@@ -1,0 +1,38 @@
+Your Appointment is Confirmed!
+
+Hi {{ appointment.client_name }},
+
+We're pleased to confirm your appointment. Here are the details:
+
+APPOINTMENT DETAILS
+-------------------
+Service: {{ appointment.service_name }}
+Barber: {{ appointment.barber_name }}
+Date: {{ appointment.date }}
+Time: {{ appointment.time }}
+Duration: {{ appointment.duration }} minutes
+Location: {{ appointment.location_name }}
+Address: {{ appointment.location_address }}
+{% if appointment.price %}Price: ${{ appointment.price }}{% endif %}
+
+{% if appointment.notes %}
+SPECIAL INSTRUCTIONS
+-------------------
+{{ appointment.notes }}
+{% endif %}
+
+We'll send you a reminder 24 hours before your appointment.
+
+View your appointment: {{ website_url }}/appointments/{{ appointment.id }}
+Need to reschedule? {{ reschedule_url }}
+
+IMPORTANT: If you need to cancel your appointment, please do so at least 24 hours in advance to avoid any cancellation fees.
+
+We look forward to seeing you!
+
+Best regards,
+The 6FB Platform Team
+
+---
+© {{ current_year }} 6FB Platform. All rights reserved.
+Questions? Contact us at {{ support_email }}

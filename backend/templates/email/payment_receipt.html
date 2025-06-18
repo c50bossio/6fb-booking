@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Receipt - 6FB Platform{% endblock %}
+
+{% block content %}
+<h2>Payment Receipt</h2>
+
+<p>Hi {{ payment.customer_name }},</p>
+
+<p>Thank you for your payment. This email serves as your official receipt.</p>
+
+<div class="info-box">
+    <h3>Payment Details</h3>
+    <p><strong>Receipt Number:</strong> {{ payment.receipt_number }}</p>
+    <p><strong>Date:</strong> {{ payment.date }}</p>
+    <p><strong>Amount Paid:</strong> ${{ payment.amount }}</p>
+    <p><strong>Payment Method:</strong> {{ payment.payment_method }}</p>
+    {% if payment.card_last_four %}
+    <p><strong>Card:</strong> **** **** **** {{ payment.card_last_four }}</p>
+    {% endif %}
+</div>
+
+<div class="info-box">
+    <h3>Service Details</h3>
+    <p><strong>Service:</strong> {{ payment.service_name }}</p>
+    <p><strong>Barber:</strong> {{ payment.barber_name }}</p>
+    <p><strong>Date of Service:</strong> {{ payment.service_date }}</p>
+    {% if payment.tip_amount %}
+    <p><strong>Service Amount:</strong> ${{ payment.service_amount }}</p>
+    <p><strong>Tip:</strong> ${{ payment.tip_amount }}</p>
+    {% endif %}
+</div>
+
+{% if payment.notes %}
+<div class="info-box">
+    <h3>Additional Information</h3>
+    <p>{{ payment.notes }}</p>
+</div>
+{% endif %}
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ invoice_url }}" class="button">Download Invoice</a>
+</div>
+
+<p>This receipt has been emailed to you for your records. You can also access it anytime from your account dashboard.</p>
+
+<p>If you have any questions about this payment, please contact us at {{ support_email }}.</p>
+
+<p>Thank you for your business!</p>
+
+<p>Best regards,<br>
+The 6FB Platform Team</p>
+{% endblock %}
