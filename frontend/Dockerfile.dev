@@ -1,0 +1,19 @@
+# Frontend Development Dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install dependencies for development
+RUN apk add --no-cache git
+
+# Copy package files
+COPY package*.json ./
+
+# Install all dependencies (including devDependencies)
+RUN npm install
+
+# Expose port
+EXPOSE 3000
+
+# Development command (will be overridden by docker-compose)
+CMD ["npm", "run", "dev"]
