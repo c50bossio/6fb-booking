@@ -1,0 +1,31 @@
+{
+  "name": "6FB Platform",
+  "description": "Barbershop management platform",
+  "keywords": ["python", "fastapi", "nextjs"],
+  "website": "https://6fbmentorship.com",
+  "repository": "https://github.com/c50bossio/6fb-booking",
+  "scripts": {
+    "postdeploy": "cd backend && alembic upgrade head"
+  },
+  "env": {
+    "SECRET_KEY": {
+      "description": "Secret key for JWT tokens",
+      "generator": "secret"
+    },
+    "DATABASE_URL": {
+      "description": "PostgreSQL database URL",
+      "value": "postgresql://user:pass@localhost/db"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ]
+}
