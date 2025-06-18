@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Appointment Reminder - 6FB Platform{% endblock %}
+
+{% block content %}
+<h2>Appointment Reminder</h2>
+
+<p>Hi {{ appointment.client_name }},</p>
+
+<p>This is a friendly reminder about your upcoming appointment {% if hours_before == 24 %}tomorrow{% else %}in {{ hours_before }} hours{% endif %}.</p>
+
+<div class="info-box">
+    <h3>Your Appointment</h3>
+    <p><strong>Service:</strong> {{ appointment.service_name }}</p>
+    <p><strong>Barber:</strong> {{ appointment.barber_name }}</p>
+    <p><strong>Date:</strong> {{ appointment.date }}</p>
+    <p><strong>Time:</strong> {{ appointment.time }}</p>
+    <p><strong>Duration:</strong> {{ appointment.duration }} minutes</p>
+    <p><strong>Location:</strong> {{ appointment.location_name }}</p>
+    <p><strong>Address:</strong> {{ appointment.location_address }}</p>
+    {% if appointment.price %}
+    <p><strong>Price:</strong> ${{ appointment.price }}</p>
+    {% endif %}
+</div>
+
+{% if appointment.preparation_instructions %}
+<div class="info-box">
+    <h3>How to Prepare</h3>
+    <p>{{ appointment.preparation_instructions }}</p>
+</div>
+{% endif %}
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ view_url }}" class="button">View Appointment Details</a>
+</div>
+
+<p><strong>Running late or need to cancel?</strong><br>
+Please let us know as soon as possible. You can manage your appointment using the button above or by calling us directly.</p>
+
+<p>We're looking forward to seeing you!</p>
+
+<p>Best regards,<br>
+The 6FB Platform Team</p>
+{% endblock %}

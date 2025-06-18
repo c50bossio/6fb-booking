@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to 6FB Platform{% endblock %}
+
+{% block content %}
+<h2>Welcome to 6FB Platform!</h2>
+
+<p>Hi {{ user.first_name }},</p>
+
+<p>We're excited to have you join the 6FB Platform community! Your account has been successfully created and you're ready to get started.</p>
+
+<div class="info-box">
+    <h3>Your Account Information</h3>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+    <p><strong>Role:</strong> {{ user.role|title }}</p>
+    {% if user.location %}
+    <p><strong>Location:</strong> {{ user.location }}</p>
+    {% endif %}
+</div>
+
+<h3>Getting Started</h3>
+<p>Here are some things you can do right away:</p>
+
+<ul style="color: #4b5563; font-size: 16px; line-height: 1.8;">
+    {% if user.role == 'barber' %}
+    <li>Complete your profile to attract more clients</li>
+    <li>Set up your availability and services</li>
+    <li>Explore the 6FB training modules</li>
+    <li>Track your performance metrics</li>
+    {% elif user.role == 'mentor' %}
+    <li>Review your assigned locations and team members</li>
+    <li>Access performance dashboards</li>
+    <li>Create training schedules</li>
+    <li>Set up automated reports</li>
+    {% elif user.role == 'admin' %}
+    <li>Configure location settings</li>
+    <li>Manage team members and permissions</li>
+    <li>Set up automation rules</li>
+    <li>Access comprehensive analytics</li>
+    {% else %}
+    <li>Complete your profile setup</li>
+    <li>Explore available features</li>
+    <li>Configure your notification preferences</li>
+    {% endif %}
+</ul>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ login_url }}" class="button">Login to Your Account</a>
+    <br><br>
+    <a href="{{ profile_url }}" class="button button-secondary">Complete Your Profile</a>
+</div>
+
+<h3>Need Help?</h3>
+<p>Our support team is here to help you succeed. If you have any questions or need assistance:</p>
+<ul style="color: #4b5563; font-size: 16px;">
+    <li>Email us at <a href="mailto:{{ support_email }}">{{ support_email }}</a></li>
+    <li>Check out our <a href="{{ website_url }}/help">Help Center</a></li>
+    <li>Join our <a href="{{ website_url }}/community">Community Forum</a></li>
+</ul>
+
+<p>Welcome aboard! We're looking forward to your success with 6FB Platform.</p>
+
+<p>Best regards,<br>
+The 6FB Platform Team</p>
+{% endblock %}

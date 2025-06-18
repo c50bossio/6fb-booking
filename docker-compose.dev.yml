@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  backend-dev:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: 6fb-backend-dev
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./data/6fb_booking.db
+      - SECRET_KEY=dev-secret-key
+      - JWT_SECRET_KEY=dev-jwt-secret-key
+      - ENVIRONMENT=development
+      - REDIS_URL=redis://redis-dev:6379
+    volumes:
+      - ./backend:/app
+      - backend-data-dev:/app/data
+      - backend-logs-dev:/app/logs
+    depends_on:
+      - redis-dev
+    networks:
+      - 6fb-network-dev
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend-dev:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: 6fb-frontend-dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NODE_ENV=development
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend-dev
+    networks:
+      - 6fb-network-dev
+    command: npm run dev
+
+  redis-dev:
+    image: redis:7-alpine
+    container_name: 6fb-redis-dev
+    ports:
+      - "6379:6379"
+    networks:
+      - 6fb-network-dev
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: 6fb-mailhog
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web UI
+    networks:
+      - 6fb-network-dev
+
+networks:
+  6fb-network-dev:
+    driver: bridge
+
+volumes:
+  backend-data-dev:
+  backend-logs-dev:

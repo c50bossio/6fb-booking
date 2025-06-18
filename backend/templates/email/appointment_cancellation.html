@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Appointment Cancelled - 6FB Platform{% endblock %}
+
+{% block content %}
+<h2>Appointment Cancellation Confirmation</h2>
+
+<p>Hi {{ appointment.client_name }},</p>
+
+<p>We've successfully cancelled your appointment. Here are the details of the cancelled appointment:</p>
+
+<div class="info-box">
+    <h3>Cancelled Appointment</h3>
+    <p><strong>Service:</strong> {{ appointment.service_name }}</p>
+    <p><strong>Barber:</strong> {{ appointment.barber_name }}</p>
+    <p><strong>Original Date:</strong> {{ appointment.date }}</p>
+    <p><strong>Original Time:</strong> {{ appointment.time }}</p>
+    {% if reason %}
+    <p><strong>Cancellation Reason:</strong> {{ reason }}</p>
+    {% endif %}
+</div>
+
+{% if appointment.cancellation_fee %}
+<div class="info-box" style="border-left-color: #ef4444;">
+    <h3>Cancellation Fee</h3>
+    <p>A cancellation fee of ${{ appointment.cancellation_fee }} has been applied as this cancellation was made less than 24 hours before your appointment.</p>
+</div>
+{% endif %}
+
+<p>We're sorry to see you cancel. If you'd like to book another appointment, we'd be happy to help you find a time that works better for you.</p>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ rebook_url }}" class="button">Book New Appointment</a>
+</div>
+
+<p>If you have any questions about this cancellation, please don't hesitate to contact us.</p>
+
+<p>Best regards,<br>
+The 6FB Platform Team</p>
+{% endblock %}
