@@ -1,0 +1,119 @@
+/**
+ * Payment management page
+ */
+'use client';
+
+import React, { useState } from 'react';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card } from '@/components/ui/card';
+import { PaymentMethodsList } from '@/components/payments/PaymentMethodsList';
+import { AddPaymentMethodForm } from '@/components/payments/AddPaymentMethodForm';
+import { PaymentHistory } from '@/components/payments/PaymentHistory';
+import { CreditCard, Clock, FileText } from 'lucide-react';
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
+
+export default function PaymentsPage() {
+  const [activeTab, setActiveTab] = useState('methods');
+  const [showAddMethod, setShowAddMethod] = useState(false);
+
+  const handleAddMethodSuccess = () => {
+    setShowAddMethod(false);
+    // The PaymentMethodsList will automatically refresh via the hook
+  };
+
+  const handleViewPaymentDetails = (paymentId: number) => {
+    // TODO: Navigate to payment details page or show modal
+    console.log('View payment details:', paymentId);
+  };
+
+  return (
+    <div className="container mx-auto py-8 px-4">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold">Payment Management</h1>
+        <p className="text-gray-600 mt-2">
+          Manage your payment methods and view transaction history
+        </p>
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-3 mb-8">
+          <TabsTrigger value="methods" className="flex items-center gap-2">
+            <CreditCard className="h-4 w-4" />
+            Payment Methods
+          </TabsTrigger>
+          <TabsTrigger value="history" className="flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            Payment History
+          </TabsTrigger>
+          <TabsTrigger value="reports" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Reports
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="methods">
+          <Card className="p-6">
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold mb-2">Saved Payment Methods</h2>
+              <p className="text-gray-600 text-sm">
+                Add and manage your payment methods for faster checkout
+              </p>
+            </div>
+
+            {showAddMethod ? (
+              <Elements
+                stripe={stripePromise}
+                options={{
+                  mode: 'setup',
+                  currency: 'usd',
+                  setupFutureUsage: 'off_session',
+                  appearance: {
+                    theme: 'stripe',
+                    variables: {
+                      colorPrimary: '#0066cc',
+                    },
+                  },
+                }}
+              >
+                <AddPaymentMethodForm
+                  onSuccess={handleAddMethodSuccess}
+                  onCancel={() => setShowAddMethod(false)}
+                  setAsDefault={true}
+                />
+              </Elements>
+            ) : (
+              <PaymentMethodsList onAddNew={() => setShowAddMethod(true)} />
+            )}
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="history">
+          <Card className="p-6">
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold mb-2">Payment History</h2>
+              <p className="text-gray-600 text-sm">
+                View all your past transactions and payment details
+              </p>
+            </div>
+            <PaymentHistory onViewDetails={handleViewPaymentDetails} />
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="reports">
+          <Card className="p-6">
+            <div className="text-center py-12">
+              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Payment Reports</h3>
+              <p className="text-gray-600">
+                Payment reporting features coming soon
+              </p>
+            </div>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
