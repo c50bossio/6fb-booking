@@ -1,0 +1,49 @@
+name: sixfb-platform
+region: nyc
+services:
+- dockerfile_path: backend/Dockerfile
+  github:
+    branch: main
+    deploy_on_push: true
+    repo: c50bossio/6fb-booking
+  http_port: 8000
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  name: backend
+  health_check:
+    http_path: /health
+  envs:
+  - key: DATABASE_URL
+    scope: RUN_TIME
+    value: ${db.DATABASE_URL}
+  - key: SECRET_KEY
+    scope: RUN_TIME
+    type: SECRET
+    value: "0!%zSPydOb$&IKiVMF7CIKxc3%VnAEKpWzERl#UK3XpitWW#yAt!j2TAIs1^^OYW"
+  - key: ENVIRONMENT
+    scope: RUN_TIME
+    value: production
+  source_dir: /
+
+- dockerfile_path: frontend/Dockerfile
+  github:
+    branch: main
+    deploy_on_push: true
+    repo: c50bossio/6fb-booking
+  http_port: 3000
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  name: frontend
+  routes:
+  - path: /
+  envs:
+  - key: NEXT_PUBLIC_API_URL
+    scope: BUILD_TIME
+    value: ${backend.PUBLIC_URL}
+  source_dir: /
+
+databases:
+- engine: PG
+  name: db
+  production: false
+  version: "15"
