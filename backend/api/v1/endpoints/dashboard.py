@@ -9,7 +9,7 @@ from typing import Optional, List, Dict
 import pytz
 
 from config.database import get_db
-from middleware.auth import get_current_user
+from utils.auth_decorators import get_current_user
 from models.user import User
 
 router = APIRouter()

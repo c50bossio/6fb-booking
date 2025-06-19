@@ -11,7 +11,7 @@ from config.database import get_db
 from models.appointment import Appointment
 from models.client import Client
 from models.barber import Barber
-from middleware.auth import get_current_user
+from utils.auth_decorators import get_current_user
 
 router = APIRouter()
 

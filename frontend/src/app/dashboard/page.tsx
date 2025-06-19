@@ -213,8 +213,8 @@ export default function DashboardPage() {
                 className="rounded-full"
               />
               <div>
-                <h1 className="text-xl font-bold text-white">6FB Booking Platform</h1>
-                <p className="text-xs text-gray-400">Barbershop Management System</p>
+                <h1 className="text-xl font-bold text-white">Booking Platform</h1>
+                <p className="text-xs text-gray-400">Management Dashboard</p>
               </div>
             </div>
             
