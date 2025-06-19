@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
 import uvicorn
+import os
 from datetime import datetime
 
 from config.database import engine, Base, get_db
@@ -57,9 +58,19 @@ app.add_middleware(RateLimitMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 
 # Configure CORS
+# Get allowed origins from environment or use defaults
+cors_origins = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",") if os.getenv("CORS_ALLOWED_ORIGINS") else []
+if not cors_origins:
+    cors_origins = [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "https://sixfb-frontend.onrender.com",  # Your Render frontend URL
+        "https://*.onrender.com"  # Allow all Render subdomains during deployment
+    ]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],  # Frontend URLs
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
