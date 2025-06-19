@@ -9,7 +9,7 @@ import uvicorn
 import os
 from datetime import datetime
 
-from config.database import engine, Base, get_db
+from config.database import engine, Base, get_db, SessionLocal
 from config.settings import settings
 
 # Import all models to ensure they're registered with SQLAlchemy
@@ -30,11 +30,17 @@ from api.v1 import (
     analytics, training as training_router, revenue, automation as automation_router,
     websocket, notifications
 )
-from api.v1.endpoints import payments, webhooks, communications, sync_status
+from api.v1.endpoints import payments, webhooks, communications, sync_status, public_status
 
 # Import logging setup
 from utils.logging import setup_logging
 import logging
+
+# Import Sentry configuration
+from sentry_config import init_sentry
+
+# Initialize Sentry before anything else
+init_sentry()
 
 # Setup logging
 setup_logging()
@@ -95,6 +101,7 @@ app.include_router(payments.router, prefix="/api/v1/payments", tags=["Payments"]
 app.include_router(webhooks.router, prefix="/api/v1/webhooks", tags=["Webhooks"])
 app.include_router(communications.router, prefix="/api/v1", tags=["Communications"])
 app.include_router(sync_status.router, prefix="/api/v1/sync", tags=["Sync Status"])
+app.include_router(public_status.router, prefix="/api/v1/public", tags=["Public Status"])
 
 @app.on_event("startup")
 async def startup_event():
@@ -139,6 +146,16 @@ def health_check():
         # Don't fail the health check if database is down
         
     return health_status
+
+@app.get("/sentry-debug")
+def trigger_error():
+    """Sentry debug endpoint - triggers a test error"""
+    logger.info("Sentry debug endpoint called - triggering test error")
+    
+    # This will be captured by Sentry
+    division_by_zero = 1 / 0
+    
+    return {"message": "This should not be reached"}
 
 if __name__ == "__main__":
     uvicorn.run(
