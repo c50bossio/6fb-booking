@@ -123,4 +123,4 @@ The frontend is structured to easily integrate with the FastAPI backend:
 - All components are TypeScript with proper type definitions
 - Responsive design optimized for desktop and mobile
 - Ready for backend API integration
-- Follows 6FB methodology and current spreadsheet structure
+- Follows 6FB methodology and current spreadsheet structure# Build trigger
