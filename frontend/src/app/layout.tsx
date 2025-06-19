@@ -31,14 +31,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {/* Temporarily simplified for deployment */}
-        <div className="min-h-screen">
-          <nav className="bg-gray-800 text-white p-4">
-            <div className="container mx-auto">
-              <h1 className="text-xl font-bold">6FB Platform</h1>
-            </div>
-          </nav>
-          <main>{children}</main>
-        </div>
+        {children}
       </body>
     </html>
   );
