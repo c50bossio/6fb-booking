@@ -108,11 +108,13 @@ async def handle_trafft_webhook(
     # Get raw body for signature verification
     body = await request.body()
     
+    # Log request details for debugging
+    content_type = request.headers.get("content-type", "")
+    logger.info(f"Received Trafft webhook - Content-Type: {content_type}")
+    logger.info(f"Body preview: {body[:200]}")
+    
     # Try different signature header names
     signature = x_webhook_signature or x_trafft_signature
-    
-    # Log the webhook receipt
-    logger.info(f"Received Trafft webhook - Signature present: {bool(signature)}")
     
     # Verify signature if provided
     if signature and TRAFFT_WEBHOOK_SECRET:
@@ -120,12 +122,24 @@ async def handle_trafft_webhook(
             logger.warning("Invalid Trafft webhook signature")
             # Log but don't reject - Trafft might not send signatures
     
-    # Parse the JSON payload
+    # Parse the payload based on content type
     try:
-        data = json.loads(body)
-    except:
-        logger.error("Invalid JSON in Trafft webhook payload")
-        raise HTTPException(status_code=400, detail="Invalid JSON")
+        if "application/json" in content_type:
+            data = json.loads(body)
+        elif "application/x-www-form-urlencoded" in content_type:
+            # Parse form data
+            from urllib.parse import parse_qs
+            form_data = parse_qs(body.decode('utf-8'))
+            # Convert form data to dict (taking first value of each key)
+            data = {k: v[0] if len(v) == 1 else v for k, v in form_data.items()}
+            logger.info(f"Parsed form data: {data}")
+        else:
+            # Try JSON anyway
+            data = json.loads(body)
+    except Exception as e:
+        logger.error(f"Failed to parse webhook payload: {str(e)}")
+        # Return 200 to prevent Trafft from retrying
+        return {"status": "error", "message": "Invalid payload format"}
     
     # Log the event type and data
     event_type = data.get("event") or data.get("type") or "unknown"
