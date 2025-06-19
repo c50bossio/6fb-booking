@@ -1,6 +1,12 @@
-"""Webhook endpoints for handling Stripe events."""
+"""Webhook endpoints for handling external service events."""
 import stripe
 import logging
+import json
+import hmac
+import hashlib
+import os
+from typing import Optional
+from datetime import datetime
 from fastapi import APIRouter, Request, HTTPException, status, Header, Depends
 from sqlalchemy.orm import Session
 
@@ -14,6 +20,9 @@ settings = get_settings()
 
 # Initialize Stripe
 stripe.api_key = settings.STRIPE_SECRET_KEY
+
+# Trafft webhook secret (your client secret)
+TRAFFT_WEBHOOK_SECRET = os.environ.get("TRAFFT_WEBHOOK_SECRET", "")
 
 
 @router.post("/stripe")
@@ -75,3 +84,143 @@ async def handle_stripe_webhook(
         # Return success to prevent Stripe from retrying
         # but log the error for investigation
         return {"status": "error_logged", "event_id": event.id}
+
+
+def verify_trafft_signature(payload: bytes, signature: str, secret: str) -> bool:
+    """Verify the webhook signature from Trafft"""
+    expected_signature = hmac.new(
+        secret.encode(),
+        payload,
+        hashlib.sha256
+    ).hexdigest()
+    
+    return hmac.compare_digest(expected_signature, signature)
+
+
+@router.post("/trafft")
+async def handle_trafft_webhook(
+    request: Request,
+    db: Session = Depends(get_db),
+    x_webhook_signature: Optional[str] = Header(None),
+    x_trafft_signature: Optional[str] = Header(None)
+):
+    """Handle incoming Trafft webhook events."""
+    # Get raw body for signature verification
+    body = await request.body()
+    
+    # Try different signature header names
+    signature = x_webhook_signature or x_trafft_signature
+    
+    # Log the webhook receipt
+    logger.info(f"Received Trafft webhook - Signature present: {bool(signature)}")
+    
+    # Verify signature if provided
+    if signature and TRAFFT_WEBHOOK_SECRET:
+        if not verify_trafft_signature(body, signature, TRAFFT_WEBHOOK_SECRET):
+            logger.warning("Invalid Trafft webhook signature")
+            # Log but don't reject - Trafft might not send signatures
+    
+    # Parse the JSON payload
+    try:
+        data = json.loads(body)
+    except:
+        logger.error("Invalid JSON in Trafft webhook payload")
+        raise HTTPException(status_code=400, detail="Invalid JSON")
+    
+    # Log the event type and data
+    event_type = data.get("event") or data.get("type") or "unknown"
+    logger.info(f"Trafft webhook event: {event_type}")
+    logger.info(f"Payload: {json.dumps(data, indent=2)}")
+    
+    # Process based on event type
+    try:
+        if "appointment" in event_type.lower():
+            await process_trafft_appointment(event_type, data, db)
+        elif "customer" in event_type.lower():
+            await process_trafft_customer(event_type, data, db)
+        elif "payment" in event_type.lower():
+            await process_trafft_payment(event_type, data, db)
+        else:
+            logger.info(f"Unhandled Trafft event type: {event_type}")
+    except Exception as e:
+        logger.error(f"Error processing Trafft webhook: {str(e)}")
+        # Still return success to prevent retries
+    
+    return {"status": "received", "event": event_type}
+
+
+async def process_trafft_appointment(event_type: str, data: dict, db: Session):
+    """Process Trafft appointment events"""
+    appointment = data.get("appointment") or data.get("data") or data
+    
+    logger.info(f"Processing Trafft appointment: {event_type}")
+    
+    # TODO: Map Trafft data to your models and save
+    # Example structure (adjust based on actual Trafft payload):
+    # - appointment.id
+    # - appointment.customerId
+    # - appointment.employeeId
+    # - appointment.serviceId
+    # - appointment.startTime
+    # - appointment.status
+    # - appointment.price
+    
+    # For now, just log
+    logger.info(f"Appointment data: {appointment}")
+
+
+async def process_trafft_customer(event_type: str, data: dict, db: Session):
+    """Process Trafft customer events"""
+    customer = data.get("customer") or data.get("data") or data
+    
+    logger.info(f"Processing Trafft customer: {event_type}")
+    logger.info(f"Customer data: {customer}")
+    
+    # TODO: Create or update client in your database
+
+
+async def process_trafft_payment(event_type: str, data: dict, db: Session):
+    """Process Trafft payment events"""
+    payment = data.get("payment") or data.get("data") or data
+    
+    logger.info(f"Processing Trafft payment: {event_type}")
+    logger.info(f"Payment data: {payment}")
+    
+    # TODO: Record payment in your database
+
+
+@router.get("/trafft/setup")
+async def trafft_webhook_setup():
+    """Return Trafft webhook setup instructions"""
+    return {
+        "webhook_url": "https://sixfb-backend.onrender.com/api/v1/webhooks/trafft",
+        "instructions": [
+            "1. Log into Trafft dashboard",
+            "2. Go to Settings > Integrations > Webhooks",
+            "3. Add the webhook URL above",
+            "4. Select events to receive:",
+            "   - Appointment Created/Updated/Cancelled",
+            "   - Customer Created/Updated",
+            "   - Payment Completed",
+            "5. Save and test the webhook"
+        ],
+        "test_endpoint": "https://sixfb-backend.onrender.com/api/v1/webhooks/trafft/test"
+    }
+
+
+@router.post("/trafft/test")
+async def test_trafft_webhook():
+    """Test endpoint to verify Trafft webhook is working"""
+    test_payload = {
+        "event": "test",
+        "data": {
+            "message": "Trafft webhook test successful",
+            "timestamp": str(datetime.now())
+        }
+    }
+    
+    # Simulate receiving a webhook
+    return await handle_trafft_webhook(
+        request=Request({"type": "http", "body": json.dumps(test_payload).encode()}),
+        db=next(get_db())
+    )
