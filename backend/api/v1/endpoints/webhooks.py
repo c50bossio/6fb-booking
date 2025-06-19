@@ -164,6 +164,31 @@ async def handle_trafft_webhook(
     logger.info(f"Trafft webhook event: {event_type}")
     logger.info(f"Payload: {json.dumps(data, indent=2)}")
     
+    # Store webhook data for analysis (temporary)
+    try:
+        import sqlite3
+        conn = sqlite3.connect("/tmp/trafft_webhooks.db")
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS webhook_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                event_type TEXT,
+                content_type TEXT,
+                body_raw TEXT,
+                body_parsed TEXT
+            )
+        """)
+        cursor.execute("""
+            INSERT INTO webhook_logs (event_type, content_type, body_raw, body_parsed)
+            VALUES (?, ?, ?, ?)
+        """, (event_type, content_type, body.decode('utf-8', errors='ignore'), json.dumps(data)))
+        conn.commit()
+        conn.close()
+        logger.info("Webhook data stored for analysis")
+    except Exception as e:
+        logger.error(f"Failed to store webhook data: {str(e)}")
+    
     # Process based on event type
     try:
         if "appointment" in event_type.lower():
@@ -259,6 +284,42 @@ async def trafft_webhook_setup():
         ],
         "test_endpoint": "https://sixfb-backend.onrender.com/api/v1/webhooks/trafft/test"
     }
+
+
+@router.get("/trafft/logs")
+async def view_trafft_webhook_logs(limit: int = 10):
+    """View recent Trafft webhook logs for debugging"""
+    try:
+        import sqlite3
+        conn = sqlite3.connect("/tmp/trafft_webhooks.db")
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            SELECT timestamp, event_type, content_type, body_raw, body_parsed 
+            FROM webhook_logs 
+            ORDER BY timestamp DESC 
+            LIMIT ?
+        """, (limit,))
+        
+        logs = cursor.fetchall()
+        conn.close()
+        
+        webhook_logs = []
+        for log in logs:
+            webhook_logs.append({
+                "timestamp": log[0],
+                "event_type": log[1],
+                "content_type": log[2],
+                "body_raw": log[3][:200] + "..." if len(log[3]) > 200 else log[3],
+                "body_parsed": json.loads(log[4]) if log[4] else None
+            })
+        
+        return {
+            "count": len(webhook_logs),
+            "logs": webhook_logs
+        }
+    except Exception as e:
+        return {"error": str(e), "message": "No webhook logs found yet"}
 
 
 @router.post("/trafft/debug")
