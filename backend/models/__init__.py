@@ -1,4 +1,6 @@
 from .base import BaseModel
+from .user import User
+from .location import Location
 from .barber import Barber
 from .client import Client
 from .appointment import Appointment
@@ -16,6 +18,8 @@ from .communication import (
 # Export all models for easy importing
 __all__ = [
     "BaseModel",
+    "User",
+    "Location",
     "Barber", 
     "Client",
     "Appointment",
