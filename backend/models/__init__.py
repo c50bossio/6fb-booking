@@ -5,14 +5,27 @@ from .barber import Barber
 from .client import Client
 from .appointment import Appointment
 from .analytics import DailyMetrics, WeeklyMetrics, MonthlyMetrics, SixFBScore
+from .training import TrainingModule, TrainingEnrollment, TrainingAttempt, Certification
+from .notification import Notification, NotificationType, NotificationPriority
 from .payment import (
-    Payment, PaymentMethod, PaymentStatus, PaymentMethodType,
-    Refund, RefundStatus, PaymentWebhookEvent, StripeCustomer,
-    PaymentReport
+    Payment,
+    PaymentMethod,
+    PaymentStatus,
+    PaymentMethodType,
+    Refund,
+    RefundStatus,
+    PaymentWebhookEvent,
+    StripeCustomer,
+    PaymentReport,
 )
 from .communication import (
-    EmailLog, SMSLog, NotificationPreference, CommunicationTemplate,
-    EmailStatus, SMSStatus, CommunicationType
+    EmailLog,
+    SMSLog,
+    NotificationPreference,
+    CommunicationTemplate,
+    EmailStatus,
+    SMSStatus,
+    CommunicationType,
 )
 
 # Export all models for easy importing
@@ -20,13 +33,20 @@ __all__ = [
     "BaseModel",
     "User",
     "Location",
-    "Barber", 
+    "Barber",
     "Client",
     "Appointment",
     "DailyMetrics",
-    "WeeklyMetrics", 
+    "WeeklyMetrics",
     "MonthlyMetrics",
     "SixFBScore",
+    "TrainingModule",
+    "TrainingEnrollment",
+    "TrainingAttempt",
+    "Certification",
+    "Notification",
+    "NotificationType",
+    "NotificationPriority",
     "Payment",
     "PaymentMethod",
     "PaymentStatus",
@@ -42,5 +62,5 @@ __all__ = [
     "CommunicationTemplate",
     "EmailStatus",
     "SMSStatus",
-    "CommunicationType"
+    "CommunicationType",
 ]

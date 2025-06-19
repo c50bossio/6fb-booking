@@ -48,7 +48,7 @@ In your **Trafft admin panel**:
    ```
 3. Select these events:
    - ✅ `appointment.booked`
-   - ✅ `appointment.cancelled` 
+   - ✅ `appointment.cancelled`
    - ✅ `appointment.updated`
    - ✅ `customer.created`
 
@@ -68,7 +68,7 @@ In your **Trafft admin panel**:
 ## 🎯 What You'll See After Setup
 
 - ✅ **Real appointments** from Trafft in your dashboard
-- ✅ **Client profiles** with visit history  
+- ✅ **Client profiles** with visit history
 - ✅ **Revenue tracking** with automatic commission calculations
 - ✅ **Analytics charts** with real data
 - ✅ **Payment processing** for appointment fees and tips
@@ -85,7 +85,7 @@ If data doesn't appear:
 
 The integration system includes:
 - **Real-time webhook processing**
-- **Automatic data sync** 
+- **Automatic data sync**
 - **Error handling and logging**
 - **Sync status dashboard**
 - **Manual resync capabilities**

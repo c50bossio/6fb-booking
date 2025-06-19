@@ -89,5 +89,5 @@ repos:
 # Global configuration
 default_language_version:
   python: python3
-  
+
 fail_fast: false
