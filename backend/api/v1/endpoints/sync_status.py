@@ -11,7 +11,7 @@ from config.database import get_db
 from models.appointment import Appointment
 from models.client import Client
 from models.barber import Barber
-from middleware.auth import require_auth
+from middleware.auth import get_current_user
 
 router = APIRouter()
 
@@ -19,7 +19,7 @@ router = APIRouter()
 @router.get("/dashboard")
 async def get_sync_dashboard(
     db: Session = Depends(get_db),
-    current_user = Depends(require_auth)
+    current_user = Depends(get_current_user)
 ):
     """Get comprehensive sync status dashboard"""
     
@@ -94,7 +94,7 @@ async def get_sync_dashboard(
 async def get_webhook_logs(
     limit: int = 50,
     db: Session = Depends(get_db),
-    current_user = Depends(require_auth)
+    current_user = Depends(get_current_user)
 ):
     """Get recent webhook logs"""
     try:
@@ -141,7 +141,7 @@ async def get_webhook_logs(
 async def get_sync_errors(
     limit: int = 20,
     db: Session = Depends(get_db),
-    current_user = Depends(require_auth)
+    current_user = Depends(get_current_user)
 ):
     """Get appointments with sync errors"""
     
@@ -168,7 +168,7 @@ async def get_sync_errors(
 async def resync_appointment(
     appointment_id: int,
     db: Session = Depends(get_db),
-    current_user = Depends(require_auth)
+    current_user = Depends(get_current_user)
 ):
     """Manually trigger resync for a specific appointment"""
     
@@ -189,7 +189,7 @@ async def resync_appointment(
 @router.get("/barber-sync-status")
 async def get_barber_sync_status(
     db: Session = Depends(get_db),
-    current_user = Depends(require_auth)
+    current_user = Depends(get_current_user)
 ):
     """Get sync status for all barbers"""
     
