@@ -17,7 +17,12 @@ class Appointment(BaseModel):
     
     # Trafft Integration
     trafft_appointment_id = Column(String(100), unique=True, index=True)
+    trafft_booking_uuid = Column(String(100), unique=True, index=True)
     trafft_service_id = Column(String(100))
+    trafft_employee_id = Column(String(100))
+    trafft_location_name = Column(String(200))
+    trafft_sync_status = Column(String(50), default="synced")  # synced, pending, error
+    trafft_last_sync = Column(DateTime)
     
     # Relationships
     barber_id = Column(Integer, ForeignKey("barbers.id"), nullable=False)

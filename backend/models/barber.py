@@ -22,6 +22,8 @@ class Barber(BaseModel):
     # Trafft Integration
     trafft_api_key = Column(String(500))
     trafft_subdomain = Column(String(100))
+    trafft_employee_id = Column(String(100), index=True)  # Employee ID from Trafft
+    trafft_employee_email = Column(String(255), index=True)  # Email used in Trafft
     trafft_last_sync = Column(String(50))  # ISO timestamp of last successful sync
     
     # Business Settings (for 6FB calculations)
