@@ -16,8 +16,17 @@ if not DATABASE_URL:
     print("ERROR: DATABASE_URL not set")
     sys.exit(1)
 
-# Parse DATABASE_URL and connect
-conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+# Parse DATABASE_URL and connect with SSL
+# For Render PostgreSQL, we need to add SSL parameters
+if 'render.com' in DATABASE_URL:
+    # Add SSL mode to the connection string
+    if '?' in DATABASE_URL:
+        db_url = DATABASE_URL + '&sslmode=require'
+    else:
+        db_url = DATABASE_URL + '?sslmode=require'
+    conn = psycopg2.connect(db_url, cursor_factory=RealDictCursor)
+else:
+    conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
 cur = conn.cursor()
 
 # User details
