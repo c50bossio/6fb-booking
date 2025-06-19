@@ -1,0 +1,12 @@
+# Trafft Integration Environment Variables for Render
+# Add these to your backend service on Render
+
+TRAFFT_API_URL=https://api.trafft.com
+TRAFFT_API_KEY=cf0e541ffb9bb5a1ad777eff256f1f96
+TRAFFT_WEBHOOK_SECRET=bdc3e1eb65cc5638fb89f0997e1e3858f0e021440e42c16a0e66f5984732599e
+
+# Your Trafft subdomain (extracted from admin URL)
+TRAFFT_SUBDOMAIN=headlinesbarbershops
+
+# Webhook URL for Trafft to send events
+WEBHOOK_URL=https://sixfb-backend.onrender.com/api/v1/webhooks/trafft
