@@ -65,6 +65,63 @@ def require_role(allowed_roles: Union[str, List[str]]):
     return decorator
 
 
+def require_permissions(permissions: Union[str, List[str]]):
+    """
+    Decorator to require specific permission(s) for endpoint access
+    
+    Usage:
+        @router.post("/users")
+        @require_permissions("users.create")
+        async def create_user(current_user: User = Depends(get_current_active_user)):
+            return {"message": "User created"}
+            
+        @router.post("/admin")
+        @require_permissions(["users.create", "users.delete"])
+        async def admin_action(current_user: User = Depends(get_current_active_user)):
+            return {"message": "Admin action"}
+    """
+    if isinstance(permissions, str):
+        permissions = [permissions]
+    
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            # Get current user from kwargs
+            current_user = kwargs.get('current_user')
+            
+            if not current_user:
+                # Try to find it in args
+                for arg in args:
+                    if isinstance(arg, User):
+                        current_user = arg
+                        break
+            
+            if not current_user:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Authentication required"
+                )
+            
+            # Super admin has all permissions
+            if current_user.role == "super_admin":
+                return await func(*args, **kwargs)
+            
+            # Check if user has all required permissions
+            user_permissions = current_user.permissions or []
+            missing_permissions = [p for p in permissions if p not in user_permissions]
+            
+            if missing_permissions:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=f"Access forbidden. Required permission(s): {', '.join(missing_permissions)}"
+                )
+            
+            return await func(*args, **kwargs)
+        
+        return wrapper
+    return decorator
+
+
 def require_permission(permission: str):
     """
     Decorator to require specific permission for endpoint access
