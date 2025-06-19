@@ -102,9 +102,21 @@ async def handle_trafft_webhook(
     request: Request,
     db: Session = Depends(get_db),
     x_webhook_signature: Optional[str] = Header(None),
-    x_trafft_signature: Optional[str] = Header(None)
+    x_trafft_signature: Optional[str] = Header(None),
+    x_verification_token: Optional[str] = Header(None)
 ):
     """Handle incoming Trafft webhook events."""
+    # Check for verification token in headers or query params
+    verification_token = x_verification_token or request.query_params.get("verification_token")
+    
+    # Trafft verification token
+    TRAFFT_VERIFICATION_TOKEN = "$1$ecfe1c41$.krVxYWuJm8I1mTRcT00j0"
+    
+    # If this is a verification request, just return the token
+    if verification_token == TRAFFT_VERIFICATION_TOKEN:
+        logger.info("Trafft webhook verification successful")
+        return {"status": "verified", "token": verification_token}
+    
     # Get raw body for signature verification
     body = await request.body()
     
@@ -113,10 +125,11 @@ async def handle_trafft_webhook(
     logger.info(f"Received Trafft webhook - Content-Type: {content_type}")
     logger.info(f"Body length: {len(body)}, preview: {body[:200]}")
     
-    # Handle empty body
+    # Handle empty body (might be verification ping)
     if not body:
         logger.warning("Trafft webhook received with empty body")
-        return {"status": "received", "message": "Empty webhook body"}
+        # Return verification token if this is a verification request
+        return {"status": "received", "verification_token": TRAFFT_VERIFICATION_TOKEN}
     
     # Try different signature header names
     signature = x_webhook_signature or x_trafft_signature
@@ -206,6 +219,27 @@ async def process_trafft_payment(event_type: str, data: dict, db: Session):
     logger.info(f"Payment data: {payment}")
     
     # TODO: Record payment in your database
+
+
+@router.get("/trafft")
+async def verify_trafft_webhook(
+    verification_token: Optional[str] = None,
+    token: Optional[str] = None,
+    challenge: Optional[str] = None
+):
+    """Handle Trafft webhook verification (GET request)"""
+    TRAFFT_VERIFICATION_TOKEN = "$1$ecfe1c41$.krVxYWuJm8I1mTRcT00j0"
+    
+    logger.info(f"Trafft GET verification - token: {verification_token or token}, challenge: {challenge}")
+    
+    # Return the verification token or challenge
+    if challenge:
+        return {"challenge": challenge}
+    elif verification_token == TRAFFT_VERIFICATION_TOKEN or token == TRAFFT_VERIFICATION_TOKEN:
+        return {"status": "verified", "token": TRAFFT_VERIFICATION_TOKEN}
+    else:
+        # Return the token for verification
+        return {"verification_token": TRAFFT_VERIFICATION_TOKEN}
 
 
 @router.get("/trafft/setup")
