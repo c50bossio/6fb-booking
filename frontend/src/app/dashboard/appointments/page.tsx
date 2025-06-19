@@ -144,7 +144,7 @@ export default function AppointmentsDashboard() {
       {/* Header */}
       <header className="bg-gray-800 border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center h-20">
             <div className="flex items-center space-x-4">
               <a
                 href="/dashboard"
@@ -155,8 +155,8 @@ export default function AppointmentsDashboard() {
               <Image
                 src="/6fb-logo.png"
                 alt="6FB Logo"
-                width={40}
-                height={40}
+                width={60}
+                height={60}
                 className="rounded-full"
               />
               <div>

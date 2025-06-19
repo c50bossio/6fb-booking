@@ -203,13 +203,13 @@ export default function DashboardPage() {
       {/* Header */}
       <header className="bg-gray-800 border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center h-20">
             <div className="flex items-center space-x-4">
               <Image
                 src="/6fb-logo.png"
                 alt="6FB Logo"
-                width={50}
-                height={50}
+                width={75}
+                height={75}
                 className="rounded-full"
               />
               <div>
