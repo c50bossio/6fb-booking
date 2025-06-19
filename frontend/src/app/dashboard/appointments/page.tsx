@@ -161,7 +161,7 @@ export default function AppointmentsDashboard() {
               />
               <div>
                 <h1 className="text-xl font-bold text-white">Today's Appointments</h1>
-                <p className="text-xs text-gray-400">Real-time Trafft Integration</p>
+                <p className="text-xs text-gray-400">Live Updates Every 30 Seconds</p>
               </div>
             </div>
             
