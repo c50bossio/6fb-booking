@@ -18,7 +18,7 @@ export default function DashboardPage() {
   const router = useRouter()
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('access_token')
     const userData = localStorage.getItem('user')
 
     if (!token || !userData) {
@@ -38,7 +38,7 @@ export default function DashboardPage() {
   }, [router])
 
   const handleLogout = () => {
-    localStorage.removeItem('token')
+    localStorage.removeItem('access_token')
     localStorage.removeItem('user')
     router.push('/login')
   }
@@ -98,6 +98,12 @@ export default function DashboardPage() {
             <div className="mt-8">
               <h3 className="text-lg font-semibold mb-2">Quick Links</h3>
               <div className="grid grid-cols-2 gap-4 max-w-md">
+                <a
+                  href="/dashboard/appointments"
+                  className="bg-indigo-600 text-white px-4 py-2 rounded text-center hover:bg-indigo-700"
+                >
+                  Today's Appointments
+                </a>
                 <a
                   href="/analytics"
                   className="bg-blue-600 text-white px-4 py-2 rounded text-center hover:bg-blue-700"
