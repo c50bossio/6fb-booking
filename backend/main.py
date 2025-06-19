@@ -30,7 +30,7 @@ from api.v1 import (
     analytics, training as training_router, revenue, automation as automation_router,
     websocket, notifications
 )
-from api.v1.endpoints import payments, webhooks, communications, sync_status, public_status, dashboard
+from api.v1.endpoints import payments, webhooks, communications, sync_status, public_status, dashboard, temp_reset
 
 # Import logging setup
 from utils.logging import setup_logging
@@ -103,6 +103,7 @@ app.include_router(communications.router, prefix="/api/v1", tags=["Communication
 app.include_router(sync_status.router, prefix="/api/v1/sync", tags=["Sync Status"])
 app.include_router(public_status.router, prefix="/api/v1/public", tags=["Public Status"])
 app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["Dashboard"])
+app.include_router(temp_reset.router, prefix="/api/v1/temp", tags=["Temp"])
 
 @app.on_event("startup")
 async def startup_event():
