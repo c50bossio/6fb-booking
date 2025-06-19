@@ -1,0 +1,93 @@
+# Pre-commit hooks configuration for 6FB Booking
+# Helps prevent secrets and maintain code quality
+
+repos:
+  # Secret detection using detect-secrets
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        name: Detect secrets
+        description: 'Detects high entropy strings that are likely to be passwords/secrets'
+        entry: detect-secrets-hook
+        language: python
+        types: [text]
+        exclude: |
+          (?x)^(
+            node_modules/.*|
+            .*\.lock$|
+            .*\.min\.js$|
+            .*\.min\.css$|
+            .*-lock\.json$|
+            package-lock\.json$|
+            yarn\.lock$|
+            .*\.egg-info/.*|
+            \.git/.*|
+            .*\.pyc$|
+            __pycache__/.*|
+            \.pytest_cache/.*|
+            \.coverage$|
+            \.pre-commit-config\.yaml$|
+            \.secrets\.baseline$|
+            \.ai-context/.*\.md$|
+            migrations/.*|
+            .*\.sqlite$|
+            .*\.db$
+          )$
+        args: ['--baseline', '.secrets.baseline']
+
+  # Basic Python code quality checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        name: Trim trailing whitespace
+      - id: end-of-file-fixer
+        name: Fix end of files
+      - id: check-yaml
+        name: Check YAML syntax
+      - id: check-json
+        name: Check JSON syntax
+      - id: check-added-large-files
+        name: Check for large files
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+        name: Check for merge conflicts
+      - id: check-case-conflict
+        name: Check for case conflicts
+      - id: mixed-line-ending
+        name: Check for mixed line endings
+
+  # Python-specific checks
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        name: Black Python formatter
+        language_version: python3
+        exclude: |
+          (?x)^(
+            migrations/.*|
+            .*\.min\.js$
+          )$
+
+  # Security-focused Python checks
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.10
+    hooks:
+      - id: bandit
+        name: Bandit security linter
+        args: ['-r', '.', '-f', 'custom']
+        exclude: |
+          (?x)^(
+            tests/.*|
+            .*/tests/.*|
+            test_.*\.py$|
+            .*_test\.py$
+          )$
+
+# Global configuration
+default_language_version:
+  python: python3
+  
+fail_fast: false
