@@ -23,19 +23,18 @@ print("🎭 Generating 5 different types of errors for Sentry dashboard...")
 # 1. Database Connection Error
 print("\n1️⃣ Generating Database Connection Error...")
 try:
-    import psycopg2
-    conn = psycopg2.connect(
-        host="non-existent-host.com",
-        database="ghost_database",
-        user="phantom_user",
-        password="wrong_password"
-    )
-except Exception as e:
+    # Simulate a database connection error
+    class DatabaseConnectionError(Exception):
+        pass
+    
     sentry_sdk.set_context("database", {
         "host": "non-existent-host.com",
         "database": "ghost_database",
-        "connection_attempt": "Failed"
+        "connection_attempt": "Failed",
+        "port": 5432
     })
+    raise DatabaseConnectionError("Could not connect to database: Connection refused (host=non-existent-host.com, port=5432)")
+except Exception as e:
     sentry_sdk.capture_exception(e)
     print("   ✅ Database error captured")
 
