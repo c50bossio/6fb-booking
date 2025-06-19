@@ -1,0 +1,33 @@
+{
+  "api_configuration": {
+    "base_url": "https://headlinesbarbershops.admin.wlbookings.com",
+    "api_token": "cf0e541ffb9bb5a1ad777eff256f1f96",
+    "client_secret": "bdc3e1eb65cc5638fb89f0997e1e3858f0e021440e42c16a0e66f5984732599e",
+    "auth_method": "Bearer Token using Client ID",
+    "headers": {
+      "Authorization": "Bearer cf0e541ffb9bb5a1ad777eff256f1f96",
+      "Content-Type": "application/json"
+    }
+  },
+  "discovered_endpoints": {
+    "locations": "/v1/locations",
+    "services": "/v1/services",
+    "employees": "/v1/employees",
+    "categories": "/v1/categories",
+    "customers": "/v1/customers",
+    "appointments": "/v1/appointments",
+    "company": "/v1/company"
+  },
+  "test_results": {
+    "locations_count": 0,
+    "services_count": 0,
+    "employees_count": 0,
+    "categories_count": 0
+  },
+  "generated_at": "2025-06-19T05:34:57.849071",
+  "notes": [
+    "Use the Client ID as Bearer token in Authorization header",
+    "Client Secret is likely for webhook signature verification",
+    "All endpoints use /v1/ prefix (not /api/v1/)"
+  ]
+}

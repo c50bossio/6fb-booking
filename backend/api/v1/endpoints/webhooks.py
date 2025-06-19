@@ -216,80 +216,32 @@ async def handle_trafft_webhook(
 
 async def process_trafft_appointment(event_type: str, data: dict, db: Session):
     """Process Trafft appointment events"""
+    from services.trafft_sync_service import TrafftSyncService
+    
     logger.info(f"Processing Trafft appointment: {event_type}")
     
-    # Trafft sends form-encoded data with these fields
-    appointment_data = {
-        "trafft_id": data.get("appointmentId"),
-        "booking_uuid": data.get("bookingUuid"),
-        "status": data.get("appointmentStatus"),
-        "start_datetime": data.get("appointmentStartDateTime"),
-        "end_datetime": data.get("appointmentEndDateTime"),
-        "price": data.get("appointmentPrice", "$0.00").replace("$", ""),
-        
-        # Customer info
-        "customer_name": data.get("customerFullName"),
-        "customer_email": data.get("customerEmail"),
-        "customer_phone": data.get("customerPhone"),
-        
-        # Employee (Barber) info
-        "barber_name": data.get("employeeFullName"),
-        "barber_email": data.get("employeeEmail"),
-        "barber_phone": data.get("employeePhone"),
-        
-        # Service info
-        "service_name": data.get("serviceName"),
-        "service_category": data.get("serviceCategory"),
-        "service_duration": data.get("serviceDuration"),
-        
-        # Location info
-        "location_name": data.get("locationName"),
-        "location_address": data.get("locationAddress"),
-        "location_phone": data.get("locationPhone"),
-        
-        # Cancellation reason if applicable
-        "cancellation_reason": data.get("reasonForCanceling")
-    }
+    # Use the sync service to process the webhook
+    sync_service = TrafftSyncService(db)
+    result = await sync_service.process_appointment_webhook(data)
     
-    logger.info(f"Parsed appointment data: {appointment_data}")
+    logger.info(f"Appointment processing result: {result}")
     
-    # Determine the actual event type based on status
-    if data.get("appointmentStatus") == "Approved":
-        event_type = "appointment.booked"
-    elif data.get("appointmentStatus") == "Canceled":
-        event_type = "appointment.cancelled"
-    
-    # TODO: Save to database using your models
-    # Example:
-    # from models.appointment import Appointment
-    # from models.client import Client
-    # 
-    # # Find or create customer
-    # customer = db.query(Client).filter_by(email=appointment_data["customer_email"]).first()
-    # if not customer:
-    #     customer = Client(
-    #         name=appointment_data["customer_name"],
-    #         email=appointment_data["customer_email"],
-    #         phone=appointment_data["customer_phone"]
-    #     )
-    #     db.add(customer)
-    #
-    # # Create or update appointment
-    # appointment = Appointment(
-    #     trafft_id=appointment_data["trafft_id"],
-    #     client_id=customer.id,
-    #     ...
-    # )
+    return result
 
 
 async def process_trafft_customer(event_type: str, data: dict, db: Session):
     """Process Trafft customer events"""
-    customer = data.get("customer") or data.get("data") or data
+    from services.trafft_sync_service import TrafftSyncService
     
     logger.info(f"Processing Trafft customer: {event_type}")
-    logger.info(f"Customer data: {customer}")
     
-    # TODO: Create or update client in your database
+    # Use the sync service to process the webhook
+    sync_service = TrafftSyncService(db)
+    result = await sync_service.process_customer_webhook(data)
+    
+    logger.info(f"Customer processing result: {result}")
+    
+    return result
 
 
 async def process_trafft_payment(event_type: str, data: dict, db: Session):
