@@ -7,7 +7,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from typing import Callable
 import time
 
-from utils.security import get_client_ip, check_api_rate_limit
+from utils.security import get_client_ip, check_api_rate_limit, check_endpoint_rate_limit
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
@@ -30,19 +30,35 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    """Apply rate limiting to all API endpoints"""
+    """Apply granular rate limiting to API endpoints"""
+    
+    def _get_endpoint_type(self, path: str) -> str:
+        """Determine endpoint type for rate limiting"""
+        if path == "/health":
+            return "health"
+        elif path.startswith("/api/v1/auth"):
+            return "login"
+        elif path.startswith("/api/v1/payments") or path.startswith("/api/v1/webhooks"):
+            return "payment"
+        elif path.startswith("/api/v1/appointments"):
+            return "booking"
+        elif "webhook" in path.lower():
+            return "webhook"
+        else:
+            return "api"
     
     async def dispatch(self, request: Request, call_next: Callable):
-        # Skip rate limiting for health checks and docs
-        if request.url.path in ["/health", "/docs", "/redoc", "/openapi.json"]:
+        # Skip rate limiting for docs endpoints only
+        if request.url.path in ["/docs", "/redoc", "/openapi.json", "/"]:
             return await call_next(request)
         
-        # Get client identifier
+        # Get client identifier and endpoint type
         client_ip = get_client_ip(request)
+        endpoint_type = self._get_endpoint_type(request.url.path)
         
         try:
-            # Check rate limit
-            check_api_rate_limit(client_ip)
+            # Check rate limit and get headers
+            rate_limit_headers = check_endpoint_rate_limit(client_ip, endpoint_type)
         except HTTPException as exc:
             return JSONResponse(
                 status_code=exc.status_code,
@@ -50,7 +66,14 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 headers=exc.headers if hasattr(exc, 'headers') else {}
             )
         
-        return await call_next(request)
+        # Process request
+        response = await call_next(request)
+        
+        # Add rate limit headers to response
+        for header_name, header_value in rate_limit_headers.items():
+            response.headers[header_name] = header_value
+        
+        return response
 
 
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
