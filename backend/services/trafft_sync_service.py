@@ -70,9 +70,29 @@ class TrafftSyncService:
         location = self.db.query(Location).filter_by(name=location_name).first()
         
         if not location:
+            # Parse address to extract city, state, zip if possible
+            address = webhook_data.get("locationAddress", "")
+            city = "Unknown"
+            state = "FL"  # Default for Florida
+            zip_code = "00000"
+            
+            # Try to parse address (format: "street, city, state zip, country")
+            if address:
+                parts = address.split(", ")
+                if len(parts) >= 3:
+                    city = parts[-3] if len(parts) > 2 else "Unknown"
+                    state_zip = parts[-2] if len(parts) > 1 else "FL 00000"
+                    if " " in state_zip:
+                        state, zip_code = state_zip.split(" ", 1)
+            
             location = Location(
                 name=location_name,
-                address=webhook_data.get("locationAddress"),
+                business_name=location_name,  # Use name as business_name
+                location_code=location_name.lower().replace(" ", "_").replace("-", "_"),  # Generate code
+                address=address,
+                city=city,
+                state=state,
+                zip_code=zip_code,
                 phone=webhook_data.get("locationPhone"),
                 is_active=True
             )
