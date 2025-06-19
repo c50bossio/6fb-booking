@@ -63,7 +63,8 @@ if not cors_origins:
     cors_origins = [
         "http://localhost:3000",
         "http://localhost:3001",
-        "https://sixfb-frontend.onrender.com",  # Your Render frontend URL
+        "https://sixfb-frontend.onrender.com",
+        "https://sixfb-frontend-paby.onrender.com",  # Your actual Render frontend URL
         "https://*.onrender.com"  # Allow all Render subdomains during deployment
     ]
 
