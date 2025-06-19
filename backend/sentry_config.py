@@ -50,7 +50,6 @@ def init_sentry():
         
         # Additional options
         attach_stacktrace=True,
-        send_default_pii=False,  # Don't send personally identifiable information
         
         # Before send hook to filter sensitive data
         before_send=before_send_filter,
