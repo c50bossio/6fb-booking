@@ -42,12 +42,12 @@ class Barber(BaseModel):
     # User Account Link
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     
-    # Relationships
+    # Relationships (temporarily simplified for Trafft integration)
     appointments = relationship("Appointment", back_populates="barber")
     clients = relationship("Client", back_populates="barber")
     location = relationship("Location", back_populates="barbers")
-    user = relationship("User")
-    revenue_shares = relationship("RevenueShare", back_populates="barber")
+    # user = relationship("User")  # Commented out due to import issues
+    # revenue_shares = relationship("RevenueShare", back_populates="barber")  # Commented out due to import issues
     
     def __repr__(self):
         return f"<Barber(email={self.email}, business_name={self.business_name})>"

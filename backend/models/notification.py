@@ -57,7 +57,7 @@ class Notification(Base):
     expires_at = Column(DateTime, nullable=True)  # Auto-delete after this time
     
     # Relationships
-    user = relationship("User", back_populates="notifications")
+    # user = relationship("User", back_populates="notifications")  # Temporarily disabled
     
     def to_dict(self):
         """Convert notification to dictionary"""

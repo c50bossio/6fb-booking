@@ -59,11 +59,11 @@ class User(Base):
     # Relationships
     primary_location = relationship("Location", foreign_keys=[primary_location_id])
     mentee_locations = relationship("Location", foreign_keys="Location.mentor_id", back_populates="mentor")
-    barber_profile = relationship("Barber", back_populates="user", uselist=False)
+    # barber_profile = relationship("Barber", back_populates="user", uselist=False)  # Temporarily disabled
     sessions = relationship("UserSession", back_populates="user")
     activities = relationship("UserActivity", back_populates="user")
-    training_enrollments = relationship("TrainingEnrollment", back_populates="user")
-    notifications = relationship("Notification", back_populates="user")
+    # training_enrollments = relationship("TrainingEnrollment", back_populates="user")  # Temporarily disabled
+    # notifications = relationship("Notification", back_populates="user")  # Temporarily disabled
     
     # Payment relationships
     payment_methods = relationship("PaymentMethod", back_populates="user")
