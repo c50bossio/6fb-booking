@@ -1,0 +1,20 @@
+# Environment Variables for Render Backend Service
+
+# Database (already added)
+DATABASE_URL=postgresql://sixfb_user:mxQrZ0HDH0MjYQQK0iOkwRvhCuLGdNON@dpg-ct7qsoa3esus73ff5710-a.oregon-postgres.render.com/sixfb_db
+
+# Environment
+ENVIRONMENT=production
+
+# CORS Settings
+CORS_ALLOWED_ORIGINS=https://sixfb-frontend.onrender.com,http://localhost:3000,http://localhost:3001
+
+# Trafft Integration (add these when ready)
+TRAFFT_API_URL=https://api.trafft.com
+TRAFFT_API_KEY=cf0e541ffb9bb5a1ad777eff256f1f96
+TRAFFT_WEBHOOK_SECRET=bdc3e1eb65cc5638fb89f0997e1e3858f0e021440e42c16a0e66f5984732599e
+
+# SendGrid Email (already configured)
+SENDGRID_API_KEY=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
+FROM_EMAIL=support@em3014.6fbmentorship.com
+FROM_NAME=6FB Mentorship

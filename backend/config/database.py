@@ -10,12 +10,25 @@ import os
 # Get database URL from environment or use SQLite for development
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./6fb_booking.db")
 
+# Handle Render's postgres:// URLs (convert to postgresql://)
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+# Configure connection args based on database type
+if "sqlite" in DATABASE_URL:
+    connect_args = {"check_same_thread": False}
+elif "postgresql" in DATABASE_URL:
+    # Add SSL requirement for PostgreSQL on Render
+    connect_args = {"sslmode": "require"}
+else:
+    connect_args = {}
+
 # Create engine
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {},
+    connect_args=connect_args,
     pool_pre_ping=True,
-    echo=True  # Set to False in production
+    echo=os.getenv("ENVIRONMENT", "development") == "development"  # Only echo in development
 )
 
 # Create session factory
