@@ -89,19 +89,27 @@ export default function DashboardPage() {
     try {
       // Fetch today's appointments stats
       const appointmentsResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/dashboard/appointments/today`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/dashboard/appointments/today`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
       )
       
-      if (appointmentsResponse.data.summary) {
-        setTodayStats(appointmentsResponse.data.summary)
+      if (appointmentsResponse.data.stats) {
+        // Map backend stats to frontend format
+        const stats = appointmentsResponse.data.stats
+        setTodayStats({
+          total_appointments: stats.total,
+          upcoming_appointments: stats.upcoming,
+          completed_appointments: stats.completed,
+          cancelled_appointments: stats.cancelled,
+          today_revenue: stats.revenue
+        })
       }
 
       // Fetch barber list
       const barbersResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/barbers`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/barbers`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
