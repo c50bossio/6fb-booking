@@ -63,7 +63,7 @@ class EmailLog(Base):
     error_message = Column(Text, nullable=True)
     
     # Metadata
-    metadata = Column(JSON, default={})
+    email_metadata = Column(JSON, default={})
     message_id = Column(String(255), nullable=True, index=True)  # Email provider message ID
     
     # Timestamps
@@ -87,7 +87,7 @@ class EmailLog(Base):
             "clicked_at": self.clicked_at.isoformat() if self.clicked_at else None,
             "bounced_at": self.bounced_at.isoformat() if self.bounced_at else None,
             "error_message": self.error_message,
-            "metadata": self.metadata,
+            "metadata": self.email_metadata,
             "created_at": self.created_at.isoformat()
         }
 
@@ -114,7 +114,7 @@ class SMSLog(Base):
     cost = Column(Float, nullable=True)
     
     # Metadata
-    metadata = Column(JSON, default={})
+    sms_metadata = Column(JSON, default={})
     
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
@@ -135,7 +135,7 @@ class SMSLog(Base):
             "error_message": self.error_message,
             "twilio_sid": self.twilio_sid,
             "cost": self.cost,
-            "metadata": self.metadata,
+            "metadata": self.sms_metadata,
             "created_at": self.created_at.isoformat()
         }
 
