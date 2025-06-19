@@ -139,6 +139,7 @@ def health_check():
     
     # Try to check database connection
     try:
+        from config.database import SessionLocal
         db = SessionLocal()
         from sqlalchemy import text
         db.execute(text("SELECT 1"))
