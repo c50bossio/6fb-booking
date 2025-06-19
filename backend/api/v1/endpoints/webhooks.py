@@ -111,7 +111,12 @@ async def handle_trafft_webhook(
     # Log request details for debugging
     content_type = request.headers.get("content-type", "")
     logger.info(f"Received Trafft webhook - Content-Type: {content_type}")
-    logger.info(f"Body preview: {body[:200]}")
+    logger.info(f"Body length: {len(body)}, preview: {body[:200]}")
+    
+    # Handle empty body
+    if not body:
+        logger.warning("Trafft webhook received with empty body")
+        return {"status": "received", "message": "Empty webhook body"}
     
     # Try different signature header names
     signature = x_webhook_signature or x_trafft_signature
@@ -222,19 +227,32 @@ async def trafft_webhook_setup():
     }
 
 
-@router.post("/trafft/test")
-async def test_trafft_webhook():
-    """Test endpoint to verify Trafft webhook is working"""
-    test_payload = {
-        "event": "test",
-        "data": {
-            "message": "Trafft webhook test successful",
-            "timestamp": str(datetime.now())
-        }
-    }
+@router.post("/trafft/debug")
+async def debug_trafft_webhook(request: Request):
+    """Debug endpoint to see exactly what Trafft sends"""
+    body = await request.body()
     
-    # Simulate receiving a webhook
-    return await handle_trafft_webhook(
-        request=Request({"type": "http", "body": json.dumps(test_payload).encode()}),
-        db=next(get_db())
-    )
+    # Get all headers
+    headers = dict(request.headers)
+    
+    # Log everything
+    logger.info("=== TRAFFT WEBHOOK DEBUG ===")
+    logger.info(f"Method: {request.method}")
+    logger.info(f"URL: {request.url}")
+    logger.info(f"Headers: {json.dumps(headers, indent=2)}")
+    logger.info(f"Body length: {len(body)}")
+    logger.info(f"Body (raw): {body}")
+    
+    try:
+        # Try to decode as text
+        body_text = body.decode('utf-8')
+        logger.info(f"Body (text): {body_text}")
+    except:
+        logger.info("Body could not be decoded as UTF-8")
+    
+    return {
+        "status": "debug_received",
+        "body_length": len(body),
+        "content_type": headers.get("content-type", "none"),
+        "headers_count": len(headers)
+    }
