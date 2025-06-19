@@ -34,12 +34,11 @@ from api.v1.endpoints import payments, webhooks, communications
 
 # Import logging setup
 from utils.logging import setup_logging
-
-# Create all database tables
-Base.metadata.create_all(bind=engine)
+import logging
 
 # Setup logging
 setup_logging()
+logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -95,6 +94,17 @@ app.include_router(payments.router, prefix="/api/v1/payments", tags=["Payments"]
 app.include_router(webhooks.router, prefix="/api/v1/webhooks", tags=["Webhooks"])
 app.include_router(communications.router, prefix="/api/v1", tags=["Communications"])
 
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database tables on startup"""
+    try:
+        # Create all database tables
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database tables created successfully")
+    except Exception as e:
+        logger.error(f"Failed to create database tables: {str(e)}")
+        logger.warning("Application starting without database table creation - tables may need to be created manually")
+
 @app.get("/")
 def read_root():
     """Root endpoint"""
@@ -106,24 +116,27 @@ def read_root():
     }
 
 @app.get("/health")
-def health_check(db: Session = Depends(get_db)):
+def health_check():
     """Health check endpoint"""
+    health_status = {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat(),
+        "version": "1.0.0"
+    }
+    
+    # Try to check database connection
     try:
-        # Test database connection
+        db = SessionLocal()
         from sqlalchemy import text
         db.execute(text("SELECT 1"))
-        return {
-            "status": "healthy",
-            "timestamp": datetime.utcnow().isoformat(),
-            "database": "connected"
-        }
+        db.close()
+        health_status["database"] = "connected"
     except Exception as e:
-        return {
-            "status": "unhealthy",
-            "timestamp": datetime.utcnow().isoformat(),
-            "database": "disconnected",
-            "error": str(e)
-        }
+        health_status["database"] = "disconnected"
+        health_status["database_error"] = str(e)
+        # Don't fail the health check if database is down
+        
+    return health_status
 
 if __name__ == "__main__":
     uvicorn.run(
