@@ -48,12 +48,13 @@ export default function TrafftConnectPage() {
 
       const token = localStorage.getItem('access_token')
 
-      // Use simple reliable endpoint
-      console.log('Making API call to simple Trafft endpoint...')
+      // Use working endpoint while new one deploys
+      console.log('Making API call to working endpoint...')
+      console.log('Trying URL:', `${process.env.NEXT_PUBLIC_API_URL}/api/trafft/connect`)
 
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/trafft-simple/simple-connect`,
-        formData,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/trafft/connect?api_key=${formData.client_secret}&base_url=${encodeURIComponent(formData.subdomain)}`,
+        {},
         {
           headers: {
             Authorization: `Bearer ${token}`,
