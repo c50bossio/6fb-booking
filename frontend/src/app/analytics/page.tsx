@@ -28,8 +28,8 @@ import {
   CalendarIcon,
   UserGroupIcon,
   ClockIcon,
-  TrendingUpIcon,
-  TrendingDownIcon
+  ChevronUpIcon,
+  ChevronDownIcon
 } from '@heroicons/react/24/outline'
 
 interface RevenueData {
@@ -260,9 +260,9 @@ export default function AnalyticsDashboard() {
                 </p>
                 <div className="flex items-center mt-2">
                   {(metrics?.revenue_growth || 0) >= 0 ? (
-                    <TrendingUpIcon className="h-4 w-4 text-green-500 mr-1" />
+                    <ChevronUpIcon className="h-4 w-4 text-green-500 mr-1" />
                   ) : (
-                    <TrendingDownIcon className="h-4 w-4 text-red-500 mr-1" />
+                    <ChevronDownIcon className="h-4 w-4 text-red-500 mr-1" />
                   )}
                   <span className={`text-sm ${(metrics?.revenue_growth || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                     {formatPercent(metrics?.revenue_growth || 0)}
@@ -280,9 +280,9 @@ export default function AnalyticsDashboard() {
                 <p className="text-2xl font-bold text-white">{metrics?.total_bookings || 0}</p>
                 <div className="flex items-center mt-2">
                   {(metrics?.booking_growth || 0) >= 0 ? (
-                    <TrendingUpIcon className="h-4 w-4 text-green-500 mr-1" />
+                    <ChevronUpIcon className="h-4 w-4 text-green-500 mr-1" />
                   ) : (
-                    <TrendingDownIcon className="h-4 w-4 text-red-500 mr-1" />
+                    <ChevronDownIcon className="h-4 w-4 text-red-500 mr-1" />
                   )}
                   <span className={`text-sm ${(metrics?.booking_growth || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                     {formatPercent(metrics?.booking_growth || 0)}
