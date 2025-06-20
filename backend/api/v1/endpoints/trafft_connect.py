@@ -3,13 +3,14 @@ One-Click Trafft Integration for 6FB Platform Scaling
 Streamlined connection flow for new barbershop partners
 """
 
-from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, status
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, status, Query
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from typing import Dict, Any, Optional
 import logging
 from datetime import datetime
 import secrets
+import requests
 
 from config.database import get_db
 from config.settings import get_settings
@@ -26,10 +27,13 @@ settings = get_settings()
 
 @router.post("/connect")
 async def one_click_trafft_connect(
-    trafft_data: Dict[str, Any],
     background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
+    trafft_data: Optional[Dict[str, Any]] = None,
+    api_key: Optional[str] = Query(None),
+    base_url: Optional[str] = Query(None),
+    client_id: Optional[str] = Query(None),
 ):
     """
     One-click Trafft connection for new barbershop partners
@@ -46,45 +50,137 @@ async def one_click_trafft_connect(
     }
     """
     try:
-        client_id = trafft_data.get("client_id")
-        client_secret = trafft_data.get("client_secret")
-        subdomain = trafft_data.get("subdomain")
-        business_name = trafft_data.get("business_name")
-        verification_token = trafft_data.get("verification_token")
-
-        if not all([client_id, client_secret, subdomain, business_name]):
+        # Handle both query parameters and JSON body approaches
+        if api_key and base_url:
+            # Query parameter approach from frontend
+            client_secret = api_key
+            subdomain = base_url
+            client_id = (
+                client_id or "frontend_provided"
+            )  # Use provided client_id or default
+            business_name = "Trafft Business"  # Default for query param approach
+            verification_token = None
+        elif trafft_data:
+            # JSON body approach
+            client_id = trafft_data.get("client_id")
+            client_secret = trafft_data.get("client_secret")
+            subdomain = trafft_data.get("subdomain")
+            business_name = trafft_data.get("business_name")
+            verification_token = trafft_data.get("verification_token")
+        else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Missing required fields: client_id, client_secret, subdomain, business_name",
+                detail="Must provide either trafft_data in body or api_key/base_url query parameters",
+            )
+
+        if not all([client_secret, subdomain]):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Missing required fields: client_secret, subdomain",
             )
 
         # Step 1: Validate Trafft OAuth connection
         logger.info(f"Testing Trafft OAuth connection for {business_name}")
+        logger.info(f"Using base_url: {subdomain}")
+        logger.info(f"Using client_secret: {client_secret[:8]}...")
 
-        # For now, simulate a successful connection since we don't have the actual TrafftClient OAuth implementation
-        # In a real implementation, you would:
-        # 1. Use client_id + client_secret to get OAuth access token
-        # 2. Make API calls using the access token
-        # 3. Store the refresh token for future use
+        # Real OAuth 2.0 authentication with Trafft
+        try:
+            # Step 1: Get OAuth access token
+            auth_url = f"{subdomain.rstrip('/')}/oauth/token"
+            auth_data = {
+                "grant_type": "client_credentials",
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "scope": "read write",
+            }
 
-        # Simulate API response for testing
-        locations = [
-            {
-                "id": 1,
-                "name": business_name,
-                "address": "123 Main St",
-                "phone": "555-0123",
+            headers = {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Accept": "application/json",
             }
-        ]
-        employees = [
-            {
-                "id": 1,
-                "firstName": "Test",
-                "lastName": "Barber",
-                "email": "test@example.com",
+
+            logger.info(f"Attempting OAuth at: {auth_url}")
+
+            response = requests.post(
+                auth_url, data=auth_data, headers=headers, timeout=30
+            )
+
+            if response.status_code != 200:
+                error_text = response.text[:500]
+                logger.error(f"OAuth failed: {response.status_code} - {error_text}")
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail=f"Trafft authentication failed: {response.status_code} - {error_text}",
+                )
+
+            token_data = response.json()
+            access_token = token_data.get("access_token")
+
+            if not access_token:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="No access token received from Trafft",
+                )
+
+            logger.info("OAuth successful, testing API access...")
+
+            # Step 2: Test API access with locations endpoint
+            api_headers = {
+                "Authorization": f"Bearer {access_token}",
+                "Accept": "application/json",
             }
-        ]
-        services = [{"id": 1, "name": "Haircut", "price": 30}]
+
+            locations_url = f"{subdomain.rstrip('/')}/api/v1/locations"
+            locations_response = requests.get(
+                locations_url, headers=api_headers, timeout=30
+            )
+
+            if locations_response.status_code != 200:
+                error_text = locations_response.text[:500]
+                logger.error(
+                    f"API test failed: {locations_response.status_code} - {error_text}"
+                )
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Trafft API test failed: {locations_response.status_code} - {error_text}",
+                )
+
+            locations_data = locations_response.json()
+            locations = locations_data.get("data", [])
+
+            logger.info(f"Found {len(locations)} locations")
+
+            # Get employees
+            employees_url = f"{subdomain.rstrip('/')}/api/v1/users/employees"
+            employees_response = requests.get(
+                employees_url, headers=api_headers, timeout=30
+            )
+            employees = []
+            if employees_response.status_code == 200:
+                employees_data = employees_response.json()
+                employees = employees_data.get("data", [])
+
+            # Get services
+            services_url = f"{subdomain.rstrip('/')}/api/v1/services"
+            services_response = requests.get(
+                services_url, headers=api_headers, timeout=30
+            )
+            services = []
+            if services_response.status_code == 200:
+                services_data = services_response.json()
+                services = services_data.get("data", [])
+
+        except requests.exceptions.Timeout:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Connection timeout - please check your Trafft URL and try again",
+            )
+        except requests.exceptions.ConnectionError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Connection error - please check your Trafft URL and try again",
+            )
 
         if not locations:
             raise HTTPException(
