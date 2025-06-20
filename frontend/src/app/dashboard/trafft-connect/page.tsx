@@ -53,7 +53,7 @@ export default function TrafftConnectPage() {
       console.log('Trying URL:', `${process.env.NEXT_PUBLIC_API_URL}/api/trafft/connect`)
 
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/trafft/connect?api_key=${formData.client_secret}&base_url=${encodeURIComponent(formData.subdomain)}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/trafft/connect?api_key=${formData.client_secret}&base_url=${encodeURIComponent(formData.subdomain)}&client_id=${formData.client_id}`,
         {},
         {
           headers: {
