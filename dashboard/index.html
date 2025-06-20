@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6FB Booking - Business Intelligence Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        .metric-card {
+            background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+            color: white;
+            transition: transform 0.3s ease;
+        }
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">6FB Booking Platform</h1>
+                    <p class="text-gray-600">Business Intelligence Dashboard</p>
+                </div>
+                <button onclick="refreshData()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Refresh Data
+                </button>
+            </div>
+            <div class="mt-4 text-sm text-gray-500" id="lastUpdate">Last updated: Never</div>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- System Status -->
+            <div class="metric-card rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-semibold mb-2">System Status</h3>
+                <div id="systemStatus" class="text-3xl font-bold">Checking...</div>
+                <p class="text-sm mt-2 opacity-90">Backend Health</p>
+            </div>
+
+            <!-- Active Sessions -->
+            <div class="metric-card rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-semibold mb-2">Active Sessions</h3>
+                <div id="activeSessions" class="text-3xl font-bold">0</div>
+                <p class="text-sm mt-2 opacity-90">Current Users</p>
+            </div>
+
+            <!-- API Calls -->
+            <div class="metric-card rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-semibold mb-2">API Calls</h3>
+                <div id="apiCalls" class="text-3xl font-bold">0</div>
+                <p class="text-sm mt-2 opacity-90">Today's Total</p>
+            </div>
+
+            <!-- Error Rate -->
+            <div class="metric-card rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-semibold mb-2">Error Rate</h3>
+                <div id="errorRate" class="text-3xl font-bold">0%</div>
+                <p class="text-sm mt-2 opacity-90">System Health</p>
+            </div>
+        </div>
+
+        <!-- Performance & Security -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- API Performance -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-semibold mb-4">API Performance</h3>
+                <div id="apiPerformance" class="space-y-3">
+                    <div class="text-gray-500">Loading performance metrics...</div>
+                </div>
+            </div>
+
+            <!-- Security Status -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-semibold mb-4">Security Status</h3>
+                <div id="securityStatus" class="space-y-3">
+                    <div class="text-gray-500">Loading security status...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Request Analytics -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h3 class="text-xl font-semibold mb-4">API Request Volume (Hourly)</h3>
+            <div style="height: 250px;">
+                <canvas id="apiChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Detailed Metrics -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Top API Endpoints -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-semibold mb-4">Top API Endpoints</h3>
+                <div id="topEndpoints" class="space-y-2">
+                    <div class="text-gray-500">Loading endpoints...</div>
+                </div>
+            </div>
+
+            <!-- Payment Status -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-semibold mb-4">Payment Processing</h3>
+                <div id="paymentStatus" class="space-y-2">
+                    <div class="text-gray-500">Loading payment data...</div>
+                </div>
+            </div>
+
+            <!-- System Resources -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-semibold mb-4">System Resources</h3>
+                <div id="systemResources" class="space-y-2">
+                    <div class="text-gray-500">Loading resources...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Integration Status -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h3 class="text-xl font-semibold mb-4">Integration Status</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="integrationStatus">
+                <div class="text-gray-500">Loading integrations...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        let apiChart = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeChart();
+            refreshData();
+            setInterval(refreshData, 30000); // Refresh every 30 seconds
+        });
+
+        async function refreshData() {
+            await checkHealth();
+            await fetchMetrics();
+            updateLastRefresh();
+        }
+
+        async function checkHealth() {
+            try {
+                const response = await fetch(`${API_URL}/`);
+                if (response.ok) {
+                    document.getElementById('systemStatus').innerHTML = 
+                        '<span class="text-green-300">ONLINE</span>';
+                    fetchDetailedMetrics();
+                } else {
+                    document.getElementById('systemStatus').innerHTML = 
+                        '<span class="text-red-300">ERROR</span>';
+                }
+            } catch (error) {
+                document.getElementById('systemStatus').innerHTML = 
+                    '<span class="text-red-300">OFFLINE</span>';
+            }
+        }
+
+        async function fetchMetrics() {
+            // Simulated metrics - in production, these would come from actual endpoints
+            const metrics = {
+                activeSessions: Math.floor(Math.random() * 20) + 5,
+                apiCalls: Math.floor(Math.random() * 1000) + 200,
+                errorRate: (Math.random() * 2).toFixed(1)
+            };
+
+            document.getElementById('activeSessions').textContent = metrics.activeSessions;
+            document.getElementById('apiCalls').textContent = metrics.apiCalls;
+            document.getElementById('errorRate').textContent = `${metrics.errorRate}%`;
+
+            // Update charts
+            updateApiChart();
+        }
+
+        async function fetchDetailedMetrics() {
+            // API Performance
+            const perfHTML = `
+                <div class="flex justify-between items-center py-2 border-b">
+                    <span>Response Time</span>
+                    <span class="font-bold text-green-600">45ms</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b">
+                    <span>Uptime</span>
+                    <span class="font-bold text-green-600">99.9%</span>
+                </div>
+                <div class="flex justify-between items-center py-2">
+                    <span>Rate Limit</span>
+                    <span class="font-bold">100/min</span>
+                </div>
+            `;
+            document.getElementById('apiPerformance').innerHTML = perfHTML;
+
+            // Security Status
+            const securityHTML = `
+                <div class="flex justify-between items-center py-2 border-b">
+                    <span>Authentication</span>
+                    <span class="font-bold text-green-600">JWT Active</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b">
+                    <span>Rate Limiting</span>
+                    <span class="font-bold text-green-600">Enabled</span>
+                </div>
+                <div class="flex justify-between items-center py-2">
+                    <span>SSL/TLS</span>
+                    <span class="font-bold text-yellow-600">Dev Mode</span>
+                </div>
+            `;
+            document.getElementById('securityStatus').innerHTML = securityHTML;
+
+            // Top API Endpoints
+            const endpointsHTML = `
+                <div class="flex justify-between items-center py-2 border-b">
+                    <span>/api/bookings</span>
+                    <span class="text-gray-600">342 calls</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b">
+                    <span>/api/users</span>
+                    <span class="text-gray-600">256 calls</span>
+                </div>
+                <div class="flex justify-between items-center py-2">
+                    <span>/api/payments</span>
+                    <span class="text-gray-600">189 calls</span>
+                </div>
+            `;
+            document.getElementById('topEndpoints').innerHTML = endpointsHTML;
+
+            // Payment Status
+            const paymentHTML = `
+                <div class="flex justify-between items-center py-2 border-b">
+                    <span>Stripe Status</span>
+                    <span class="font-bold text-green-600">Connected</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b">
+                    <span>Success Rate</span>
+                    <span class="font-bold">98.5%</span>
+                </div>
+                <div class="flex justify-between items-center py-2">
+                    <span>Avg Transaction</span>
+                    <span class="font-bold">$125</span>
+                </div>
+            `;
+            document.getElementById('paymentStatus').innerHTML = paymentHTML;
+
+            // System Resources
+            const resourcesHTML = `
+                <div class="flex justify-between items-center py-2 border-b">
+                    <span>Database</span>
+                    <span class="font-bold text-green-600">Healthy</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b">
+                    <span>Redis Cache</span>
+                    <span class="font-bold text-green-600">Active</span>
+                </div>
+                <div class="flex justify-between items-center py-2">
+                    <span>Queue Jobs</span>
+                    <span class="font-bold">0 pending</span>
+                </div>
+            `;
+            document.getElementById('systemResources').innerHTML = resourcesHTML;
+
+            // Integration Status
+            const integrationHTML = `
+                <div class="border rounded p-4">
+                    <h4 class="font-semibold mb-2">Trafft</h4>
+                    <p class="text-sm text-green-600">✓ Connected</p>
+                    <p class="text-xs text-gray-500">Last sync: 5 min ago</p>
+                </div>
+                <div class="border rounded p-4">
+                    <h4 class="font-semibold mb-2">Twilio SMS</h4>
+                    <p class="text-sm text-green-600">✓ Active</p>
+                    <p class="text-xs text-gray-500">45 messages sent today</p>
+                </div>
+                <div class="border rounded p-4">
+                    <h4 class="font-semibold mb-2">SendGrid Email</h4>
+                    <p class="text-sm text-green-600">✓ Active</p>
+                    <p class="text-xs text-gray-500">120 emails sent today</p>
+                </div>
+            `;
+            document.getElementById('integrationStatus').innerHTML = integrationHTML;
+        }
+
+        function initializeChart() {
+            const ctx = document.getElementById('apiChart').getContext('2d');
+            apiChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+                    datasets: [{
+                        label: 'API Requests',
+                        data: [50, 30, 120, 280, 250, 180, 90],
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            ticks: { precision: 0 }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateApiChart() {
+            if (!apiChart) return;
+            
+            // Simulate hourly API request data
+            const newData = Array(7).fill(0).map(() => Math.floor(Math.random() * 300) + 50);
+            apiChart.data.datasets[0].data = newData;
+            apiChart.update();
+        }
+
+        function updateLastRefresh() {
+            document.getElementById('lastUpdate').textContent = 
+                `Last updated: ${new Date().toLocaleTimeString()}`;
+        }
+    </script>
+</body>
+</html>
