@@ -60,6 +60,7 @@ from api.v1.endpoints import (
     dashboard,
     temp_reset,
     debug,
+    trafft_connect,
 )
 from api import trafft_sync
 
@@ -156,6 +157,7 @@ app.include_router(
 app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["Dashboard"])
 app.include_router(temp_reset.router, prefix="/api/v1/temp", tags=["Temp"])
 app.include_router(debug.router, prefix="/api/v1/debug", tags=["Debug"])
+app.include_router(trafft_connect.router, prefix="/api/v1/trafft", tags=["Trafft Connect"])
 app.include_router(trafft_sync.router, tags=["Trafft Sync"])
 
 
