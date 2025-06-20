@@ -39,8 +39,8 @@ export default function TrafftConnectPage() {
       const token = localStorage.getItem('access_token')
 
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/trafft/connect`,
-        formData,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/trafft/connect?api_key=${formData.client_secret}`,
+        {},
         {
           headers: {
             Authorization: `Bearer ${token}`,
