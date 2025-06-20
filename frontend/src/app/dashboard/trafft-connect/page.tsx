@@ -36,34 +36,30 @@ export default function TrafftConnectPage() {
     setStep('connecting')
 
     try {
-      const token = localStorage.getItem('access_token')
+      console.log('Starting REAL Trafft connection process...')
+      console.log('Form data:', formData)
 
-      // Simulate connection process
-      await new Promise(resolve => setTimeout(resolve, 2000))
-
-      // Validate form data
+      // Validate form data FIRST
       if (!formData.client_id || !formData.client_secret || !formData.business_name) {
         throw new Error('Please fill in all required fields')
       }
 
-      const response = {
-        data: {
-          status: "connected",
-          message: `Successfully connected ${formData.business_name} to 6FB Platform`,
-          business_name: formData.business_name,
-          locations_imported: 1,
-          staff_imported: 1,
-          services_imported: 3,
-          webhook_url: "https://sixfb-backend.onrender.com/api/v1/webhooks/trafft",
-          setup_complete: true,
-          next_steps: [
-            "✅ OAuth credentials verified",
-            "✅ Business profile created",
-            "✅ Ready for appointment sync",
-            "🎯 Dashboard will show live data"
-          ]
+      console.log('Validation passed, connecting to real Trafft API...')
+
+      const token = localStorage.getItem('access_token')
+
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/trafft-oauth/connect`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         }
-      }
+      )
+
+      console.log('Real Trafft connection successful!', response.data)
 
       setConnectionResult(response.data)
       setStep('success')
@@ -330,7 +326,7 @@ export default function TrafftConnectPage() {
           <div className="bg-gray-800 rounded-lg p-8 border border-red-500/30 text-center">
             <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
               <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="X" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </div>
             <h2 className="text-2xl font-bold text-white mb-4">Connection Failed</h2>
