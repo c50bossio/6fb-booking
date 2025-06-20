@@ -39,7 +39,6 @@ async def get_todays_appointments(
                 a.status,
                 a.service_name,
                 a.service_revenue,
-                a.trafft_location_name,
                 -- Client info
                 c.first_name as client_first_name,
                 c.last_name as client_last_name,
@@ -106,7 +105,7 @@ async def get_todays_appointments(
                     "name": f"{row.barber_first_name} {row.barber_last_name}".strip(),
                     "email": row.barber_email or row.barber_trafft_email
                 },
-                "location": row.trafft_location_name
+                "location": "Headlines Barbershop"  # Default for now
             })
         
         # Get summary stats
@@ -220,10 +219,9 @@ async def get_upcoming_appointments(
                 a.appointment_time,
                 a.service_name,
                 a.service_revenue,
-                c.first_name || ' ' || c.last_name as client_name,
+                CONCAT(c.first_name, ' ', c.last_name) as client_name,
                 c.phone as client_phone,
-                b.first_name || ' ' || b.last_name as barber_name,
-                a.trafft_location_name
+                CONCAT(b.first_name, ' ', b.last_name) as barber_name
             FROM appointments a
             LEFT JOIN clients c ON a.client_id = c.id
             LEFT JOIN barbers b ON a.barber_id = b.id
@@ -257,7 +255,7 @@ async def get_upcoming_appointments(
                 "client": row.client_name,
                 "client_phone": row.client_phone,
                 "barber": row.barber_name,
-                "location": row.trafft_location_name
+                "location": "Headlines Barbershop"
             })
         
         return {
