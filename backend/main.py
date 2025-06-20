@@ -71,6 +71,12 @@ import logging
 # Import Sentry configuration
 from sentry_config import init_sentry
 
+# Import authentication system
+import sys
+
+sys.path.append("/Users/bossio/auth-system")
+from fastapi_auth_integration import add_auth_to_sixfb_backend
+
 # Initialize Sentry before anything else
 init_sentry()
 
@@ -157,8 +163,13 @@ app.include_router(
 app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["Dashboard"])
 app.include_router(temp_reset.router, prefix="/api/v1/temp", tags=["Temp"])
 app.include_router(debug.router, prefix="/api/v1/debug", tags=["Debug"])
-app.include_router(trafft_connect.router, prefix="/api/v1/trafft", tags=["Trafft Connect"])
-app.include_router(trafft_sync.router, tags=["Trafft Sync"])
+app.include_router(
+    trafft_connect.router, prefix="/api/v1/trafft", tags=["Trafft Connect"]
+)
+app.include_router(trafft_sync.router, prefix="/api/trafft", tags=["Trafft Sync"])
+
+# Add authentication system
+app = add_auth_to_sixfb_backend(app)
 
 
 @app.on_event("startup")
