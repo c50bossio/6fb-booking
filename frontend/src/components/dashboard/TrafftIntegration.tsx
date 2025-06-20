@@ -1,9 +1,6 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 
 // Mock data - in real app this would come from API
 const mockTrafftStatus = {
@@ -101,238 +98,64 @@ const getSyncTypeIcon = (type: string) => {
 export default function TrafftIntegration() {
   const [isConnected, setIsConnected] = useState(mockTrafftStatus.connected)
   const [lastSync, setLastSync] = useState(mockTrafftStatus.lastSync)
-  const [syncHistory, setSyncHistory] = useState(mockSyncHistory)
-  const [isLoading, setIsLoading] = useState(false)
-
-  const handleConnect = () => {
-    setIsLoading(true)
-    // Simulate API call
-    setTimeout(() => {
-      setIsConnected(!isConnected)
-      setIsLoading(false)
-      alert(`Trafft ${isConnected ? 'disconnected' : 'connected'}! In Phase 2: Real API integration.`)
-    }, 1000)
-  }
-
-  const handleManualSync = () => {
-    setIsLoading(true)
-    // Simulate sync
-    setTimeout(() => {
-      const newSyncEvent = {
-        id: syncHistory.length + 1,
-        timestamp: new Date().toLocaleString(),
-        type: "manual",
-        event: "manual_sync",
-        status: "success",
-        details: "Manual sync completed - 5 new appointments imported"
-      }
-      setSyncHistory([newSyncEvent, ...syncHistory])
-      setLastSync(new Date().toLocaleString())
-      setIsLoading(false)
-      alert('Manual sync completed! In Phase 2: Real data import from Trafft.')
-    }, 2000)
-  }
-
-  const handleInitialImport = () => {
-    alert('Initial Import started! In Phase 2: Import last 30 days of appointments, customers, and services from Trafft.')
-  }
-
-  const handleWebhookConfig = () => {
-    alert('Webhook Configuration! In Phase 2: Configure real-time webhook endpoints for appointment updates.')
-  }
 
   return (
-    <div className="space-y-6">
-      {/* Connection Status */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <span>Trafft Integration</span>
-                <Badge variant={isConnected ? "default" : "destructive"}>
-                  {isConnected ? "Connected" : "Disconnected"}
-                </Badge>
-              </CardTitle>
-              <CardDescription>
-                Real-time synchronization with your Trafft booking system
-              </CardDescription>
-            </div>
-            <Button 
-              variant={isConnected ? "outline" : "default"}
-              onClick={handleConnect}
-              disabled={isLoading}
-            >
-              {isLoading ? "..." : (isConnected ? "Disconnect" : "Connect")}
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-3 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{mockTrafftStatus.totalAppointments}</div>
-              <div className="text-xs text-blue-800 font-medium">Total Appointments</div>
-            </div>
-            <div className="text-center p-3 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">{mockTrafftStatus.syncedToday}</div>
-              <div className="text-xs text-green-800 font-medium">Synced Today</div>
-            </div>
-            <div className="text-center p-3 bg-purple-50 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">{mockTrafftStatus.locationCount}</div>
-              <div className="text-xs text-purple-800 font-medium">Locations</div>
-            </div>
-            <div className="text-center p-3 bg-orange-50 rounded-lg">
-              <div className="text-2xl font-bold text-orange-600">${mockTrafftStatus.todayRevenue.toLocaleString()}</div>
-              <div className="text-xs text-orange-800 font-medium">Today's Revenue</div>
-            </div>
-          </div>
-          
-          <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm font-medium text-gray-800">{mockTrafftStatus.businessName}</div>
-                <div className="text-xs text-gray-600">{mockTrafftStatus.staffCount} barbers • API: {mockTrafftStatus.apiHealth}</div>
-              </div>
-              <Badge variant="default" className="bg-green-100 text-green-800">
-                Connected
-              </Badge>
-            </div>
-          </div>
-          
-          <div className="mt-4 text-sm text-gray-600">
-            <span className="font-medium">Last Sync:</span> {lastSync}
-          </div>
-        </CardContent>
-      </Card>
+    <div className="p-6">
+      {/* Status Overview - Clean & Minimal */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="text-center p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
+          <div className="text-xl font-bold text-white">{mockTrafftStatus.totalAppointments}</div>
+          <div className="text-xs text-slate-400 font-medium">Total Synced</div>
+        </div>
+        <div className="text-center p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
+          <div className="text-xl font-bold text-emerald-400">{mockTrafftStatus.syncedToday}</div>
+          <div className="text-xs text-slate-400 font-medium">Today</div>
+        </div>
+        <div className="text-center p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
+          <div className="text-xl font-bold text-blue-400">{mockTrafftStatus.locationCount}</div>
+          <div className="text-xs text-slate-400 font-medium">Locations</div>
+        </div>
+        <div className="text-center p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
+          <div className="text-xl font-bold text-amber-400">${mockTrafftStatus.todayRevenue.toLocaleString()}</div>
+          <div className="text-xs text-slate-400 font-medium">Revenue</div>
+        </div>
+      </div>
 
-      {/* Sync Controls */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Sync Controls</CardTitle>
-          <CardDescription>Manage data synchronization with Trafft</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button 
-              variant="outline" 
-              onClick={handleManualSync}
-              disabled={!isConnected || isLoading}
-              className="flex items-center gap-2"
-            >
-              🔄 Manual Sync
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={handleInitialImport}
-              disabled={!isConnected}
-              className="flex items-center gap-2"
-            >
-              📥 Initial Import
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={handleWebhookConfig}
-              disabled={!isConnected}
-              className="flex items-center gap-2"
-            >
-              ⚙️ Webhook Config
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Business Info - Streamlined */}
+      <div className="flex items-center justify-between p-4 bg-slate-700/20 rounded-lg border border-slate-600/30 mb-6">
+        <div>
+          <div className="text-sm font-medium text-white">{mockTrafftStatus.businessName}</div>
+          <div className="text-xs text-slate-400">{mockTrafftStatus.staffCount} barbers • Last sync: {new Date(lastSync).toLocaleTimeString()}</div>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+          <span className="text-xs font-medium text-emerald-400">Live</span>
+        </div>
+      </div>
 
-      {/* Webhook Status */}
-      {isConnected && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Real-time Webhook Status</CardTitle>
-            <CardDescription>Live updates from Trafft</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm">Appointment Events</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-                <span className="text-sm">Customer Events</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></div>
-                <span className="text-sm">Payment Events</span>
-              </div>
-            </div>
-            
-            <div className="text-sm text-gray-600">
-              <div>• Receiving real-time updates from Trafft</div>
-              <div>• Webhook endpoint: /api/webhooks/trafft</div>
-              <div>• Events processed automatically</div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Sync History */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Sync History</CardTitle>
-          <CardDescription>Recent synchronization events</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {syncHistory.map((event) => (
-              <div 
-                key={event.id}
-                className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-lg">{getSyncTypeIcon(event.type)}</span>
-                  <div>
-                    <div className="font-medium text-sm">{event.event}</div>
-                    <div className="text-xs text-gray-600">{event.details}</div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <div className="text-xs text-gray-500">{event.timestamp}</div>
-                  <Badge 
-                    variant="secondary" 
-                    className={getStatusColor(event.status)}
-                  >
-                    {event.status}
-                  </Badge>
+      {/* Recent Activity - Simplified */}
+      <div>
+        <h4 className="text-sm font-medium text-white mb-3">Recent Sync Activity</h4>
+        <div className="space-y-2 max-h-48 overflow-y-auto">
+          {mockSyncHistory.slice(0, 4).map((event) => (
+            <div 
+              key={event.id}
+              className="flex items-center justify-between p-3 bg-slate-700/20 rounded-lg border border-slate-600/20 hover:bg-slate-700/30 transition-colors"
+            >
+              <div className="flex items-center space-x-3">
+                <span className="text-sm">{getSyncTypeIcon(event.type)}</span>
+                <div>
+                  <div className="text-xs font-medium text-white">{event.event.replace('_', ' ')}</div>
+                  <div className="text-xs text-slate-400 truncate max-w-64">{event.details}</div>
                 </div>
               </div>
-            ))}
-          </div>
-          
-          {syncHistory.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              No sync events yet. Connect to Trafft to start syncing.
+              <div className="text-xs text-slate-500">
+                {new Date(event.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Error Log */}
-      {mockTrafftStatus.errors.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-red-600">Sync Errors</CardTitle>
-            <CardDescription>Issues that need attention</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {mockTrafftStatus.errors.map((error, index) => (
-                <div key={index} className="p-3 bg-red-50 border border-red-200 rounded">
-                  <div className="text-sm text-red-800">{error}</div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

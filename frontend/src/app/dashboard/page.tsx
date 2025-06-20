@@ -226,9 +226,9 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-900">
       {/* Header */}
-      <header className="bg-gray-800 border-b border-gray-700">
+      <header className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             <div className="flex items-center space-x-4">
@@ -288,140 +288,160 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-            <div className="flex items-center justify-between">
+        {/* Key Metrics - Simplified */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-emerald-500/10 rounded-lg">
+                <CurrencyDollarIcon className="h-6 w-6 text-emerald-400" />
+              </div>
               <div>
-                <p className="text-gray-400 text-sm">Today's Revenue</p>
+                <p className="text-slate-400 text-sm font-medium">Today's Revenue</p>
                 <p className="text-2xl font-bold text-white">
                   {todayStats ? formatCurrency(todayStats.today_revenue) : '$200'}
                 </p>
               </div>
-              <CurrencyDollarIcon className="h-8 w-8 text-green-500" />
             </div>
           </div>
           
-          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-            <div className="flex items-center justify-between">
+          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-blue-500/10 rounded-lg">
+                <CalendarIcon className="h-6 w-6 text-blue-400" />
+              </div>
               <div>
-                <p className="text-gray-400 text-sm">Appointments</p>
+                <p className="text-slate-400 text-sm font-medium">Total Appointments</p>
                 <p className="text-2xl font-bold text-white">
                   {todayStats ? todayStats.total_appointments : 5}
                 </p>
+                <p className="text-xs text-blue-400 mt-1">5 via Trafft</p>
               </div>
-              <CalendarIcon className="h-8 w-8 text-blue-500" />
             </div>
           </div>
           
-          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Trafft Synced</p>
-                <p className="text-2xl font-bold text-white">5</p>
-                <p className="text-xs text-orange-400">via Trafft API</p>
+          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-amber-500/10 rounded-lg">
+                <ClockIcon className="h-6 w-6 text-amber-400" />
               </div>
-              <LinkIcon className="h-8 w-8 text-orange-500" />
-            </div>
-          </div>
-          
-          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-            <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">Active Barbers</p>
-                <p className="text-2xl font-bold text-white">{activeBarbers || 4}</p>
-              </div>
-              <UserGroupIcon className="h-8 w-8 text-purple-500" />
-            </div>
-          </div>
-          
-          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Completed Today</p>
+                <p className="text-slate-400 text-sm font-medium">Completed</p>
                 <p className="text-2xl font-bold text-white">
                   {todayStats ? todayStats.completed_appointments : 1}
                 </p>
+                <p className="text-xs text-slate-400 mt-1">{activeBarbers || 4} active barbers</p>
               </div>
-              <ClockIcon className="h-8 w-8 text-yellow-500" />
             </div>
           </div>
         </div>
 
-        {/* Dashboard Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {dashboardCards.map((card) => (
-            <a
-              key={card.title}
-              href={card.href}
-              className="group bg-gray-800 rounded-lg p-6 border border-gray-700 hover:border-gray-600 transition-all hover:shadow-lg hover:shadow-black/20"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className={`p-3 rounded-lg ${card.color}`}>
-                  <card.icon className="h-6 w-6 text-white" />
-                </div>
-                {card.stats && (
-                  <span className="text-xs font-medium text-gray-400 bg-gray-700 px-2 py-1 rounded">
-                    {card.stats}
-                  </span>
-                )}
+        {/* Main Actions - Streamlined */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <a
+            href="/dashboard/appointments"
+            className="group bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 hover:border-slate-600/50 transition-all duration-200"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-blue-500/10 rounded-lg group-hover:bg-blue-500/20 transition-colors">
+                <CalendarIcon className="h-6 w-6 text-blue-400" />
               </div>
-              
-              <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-green-400 transition-colors">
-                {card.title}
-              </h3>
-              <p className="text-sm text-gray-400">
-                {card.description}
-              </p>
-            </a>
-          ))}
+              <span className="text-xs font-medium text-slate-400 bg-slate-700/50 px-3 py-1 rounded-full">
+                {todayStats ? `${todayStats.total_appointments} Today` : '5 Today'}
+              </span>
+            </div>
+            <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-blue-400 transition-colors">
+              Appointments
+            </h3>
+            <p className="text-sm text-slate-400">
+              View and manage today's schedule
+            </p>
+          </a>
+
+          <a
+            href="/dashboard/trafft-connect"
+            className="group bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 hover:border-slate-600/50 transition-all duration-200"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-orange-500/10 rounded-lg group-hover:bg-orange-500/20 transition-colors">
+                <LinkIcon className="h-6 w-6 text-orange-400" />
+              </div>
+              <span className="text-xs font-medium text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full">
+                Connected
+              </span>
+            </div>
+            <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-orange-400 transition-colors">
+              Trafft Integration
+            </h3>
+            <p className="text-sm text-slate-400">
+              Manage booking system connection
+            </p>
+          </a>
         </div>
 
-        {/* Trafft Integration Status */}
+        {/* Secondary Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <a
+            href="/analytics"
+            className="group bg-slate-800/30 backdrop-blur-sm rounded-lg p-4 border border-slate-700/30 hover:border-slate-600/50 transition-all duration-200"
+          >
+            <div className="flex items-center space-x-3">
+              <ChartBarIcon className="h-5 w-5 text-purple-400" />
+              <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">Analytics</span>
+            </div>
+          </a>
+          
+          <a
+            href="/payments"
+            className="group bg-slate-800/30 backdrop-blur-sm rounded-lg p-4 border border-slate-700/30 hover:border-slate-600/50 transition-all duration-200"
+          >
+            <div className="flex items-center space-x-3">
+              <CreditCardIcon className="h-5 w-5 text-emerald-400" />
+              <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">Payments</span>
+            </div>
+          </a>
+          
+          <a
+            href="/clients"
+            className="group bg-slate-800/30 backdrop-blur-sm rounded-lg p-4 border border-slate-700/30 hover:border-slate-600/50 transition-all duration-200"
+          >
+            <div className="flex items-center space-x-3">
+              <UserGroupIcon className="h-5 w-5 text-blue-400" />
+              <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">Clients</span>
+            </div>
+          </a>
+          
+          <a
+            href="/revenue"
+            className="group bg-slate-800/30 backdrop-blur-sm rounded-lg p-4 border border-slate-700/30 hover:border-slate-600/50 transition-all duration-200"
+          >
+            <div className="flex items-center space-x-3">
+              <CurrencyDollarIcon className="h-5 w-5 text-amber-400" />
+              <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">Revenue</span>
+            </div>
+          </a>
+        </div>
+
+        {/* Trafft Integration Status - Streamlined */}
         <div className="mt-8">
-          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white">Trafft Integration Status</h3>
-              <a
-                href="/dashboard/trafft-connect"
-                className="text-orange-400 hover:text-orange-300 text-sm font-medium"
-              >
-                Manage Connection →
-              </a>
+          <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm rounded-xl border border-slate-700/50">
+            <div className="p-6 border-b border-slate-700/50">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Trafft Integration</h3>
+                  <p className="text-sm text-slate-400 mt-1">Real-time booking synchronization</p>
+                </div>
+                <a
+                  href="/dashboard/trafft-connect"
+                  className="text-orange-400 hover:text-orange-300 text-sm font-medium px-4 py-2 bg-orange-500/10 rounded-lg border border-orange-500/20 hover:bg-orange-500/20 transition-all"
+                >
+                  Manage →
+                </a>
+              </div>
             </div>
             <TrafftIntegration />
           </div>
         </div>
 
-        {/* Additional Options */}
-        <div className="mt-8 flex justify-center space-x-4">
-          <a
-            href="/dashboard/trafft-connect"
-            className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 border border-green-500 rounded-lg text-sm text-white font-semibold transition-colors"
-          >
-            <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-            </svg>
-            Connect New Trafft Account
-          </a>
-          
-          <a
-            href={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}/docs`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
-          >
-            <DocumentTextIcon className="h-4 w-4 mr-2" />
-            API Documentation
-          </a>
-          
-          <button
-            className="inline-flex items-center px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
-          >
-            <Cog6ToothIcon className="h-4 w-4 mr-2" />
-            Settings
-          </button>
-        </div>
       </main>
     </div>
   )
