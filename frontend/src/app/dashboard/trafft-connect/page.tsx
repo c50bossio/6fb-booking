@@ -6,16 +6,19 @@ import Image from 'next/image'
 import axios from 'axios'
 
 interface TrafftData {
-  api_key: string
+  client_id: string
+  client_secret: string
   subdomain: string
   business_name: string
   owner_email: string
   phone: string
+  verification_token?: string
 }
 
 export default function TrafftConnectPage() {
   const [formData, setFormData] = useState<TrafftData>({
-    api_key: '',
+    client_id: '',
+    client_secret: '',
     subdomain: '',
     business_name: '',
     owner_email: '',
@@ -34,12 +37,12 @@ export default function TrafftConnectPage() {
 
     try {
       const token = localStorage.getItem('access_token')
-      
+
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/trafft/connect`,
         formData,
         {
-          headers: { 
+          headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
@@ -99,10 +102,10 @@ export default function TrafftConnectPage() {
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-white mb-4">Connect Your Trafft Account</h2>
               <p className="text-gray-400 mb-6">
-                Connect your Trafft booking system to automatically sync appointments, 
+                Connect your Trafft booking system to automatically sync appointments,
                 clients, and revenue data with your 6FB dashboard.
               </p>
-              
+
               <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 mb-6">
                 <h3 className="text-blue-400 font-semibold mb-2">What happens when you connect:</h3>
                 <ul className="text-blue-300 text-sm space-y-1">
@@ -118,37 +121,72 @@ export default function TrafftConnectPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label className="block text-white font-medium mb-2">
-                  Trafft API Key <span className="text-red-400">*</span>
+                  Client ID <span className="text-red-400">*</span>
                 </label>
                 <input
-                  type="password"
-                  name="api_key"
-                  value={formData.api_key}
+                  type="text"
+                  name="client_id"
+                  value={formData.client_id}
                   onChange={handleInputChange}
                   required
-                  placeholder="sk_live_..."
+                  placeholder="your-client-id-here"
                   className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-green-500"
                 />
                 <p className="text-xs text-gray-400 mt-1">
-                  Found in your Trafft dashboard under Settings → API Keys
+                  Public identifier from your Trafft integration settings
                 </p>
               </div>
 
               <div>
                 <label className="block text-white font-medium mb-2">
-                  Trafft Subdomain <span className="text-red-400">*</span>
+                  Client Secret <span className="text-red-400">*</span>
                 </label>
                 <input
-                  type="text"
+                  type="password"
+                  name="client_secret"
+                  value={formData.client_secret}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="your-client-secret-here"
+                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-green-500"
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  Private authentication credential - keep this secure
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-white font-medium mb-2">
+                  Verification Token
+                </label>
+                <input
+                  type="password"
+                  name="verification_token"
+                  value={formData.verification_token || ''}
+                  onChange={handleInputChange}
+                  placeholder="your-verification-token-here"
+                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-green-500"
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  Used for webhook verification (optional for initial setup)
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-white font-medium mb-2">
+                  Trafft Admin URL <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="url"
                   name="subdomain"
                   value={formData.subdomain}
                   onChange={handleInputChange}
                   required
-                  placeholder="mybarbershop"
+                  placeholder="https://headlinesbarbershops.admin.wlbookings.com"
                   className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-green-500"
                 />
                 <p className="text-xs text-gray-400 mt-1">
-                  From your Trafft URL: https://mydomain.trafft.com
+                  Your full Trafft admin URL (e.g., https://yourbusiness.admin.wlbookings.com)
                 </p>
               </div>
 
@@ -236,7 +274,7 @@ export default function TrafftConnectPage() {
             <p className="text-gray-400 mb-6">
               Your Trafft account has been connected to 6FB. Appointments will now sync automatically.
             </p>
-            
+
             {connectionResult && (
               <div className="bg-gray-700 rounded-lg p-4 mb-6 text-left">
                 <h3 className="text-white font-semibold mb-2">Connection Summary:</h3>
@@ -277,7 +315,7 @@ export default function TrafftConnectPage() {
             <p className="text-gray-400 mb-4">
               We couldn't connect your Trafft account. Please check your credentials and try again.
             </p>
-            
+
             <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4 mb-6">
               <p className="text-red-300 text-sm">{errorMessage}</p>
             </div>
