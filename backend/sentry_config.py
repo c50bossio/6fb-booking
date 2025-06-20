@@ -19,11 +19,10 @@ def init_sentry():
         dsn=SENTRY_DSN,
         integrations=[
             FastApiIntegration(
-                transaction_style="endpoint",
-                failed_request_status_codes={403, range(500, 599)}
+                transaction_style="endpoint"
             ),
             StarletteIntegration(
-                transaction_style="endpoint",
+                transaction_style="endpoint"
             ),
             SqlalchemyIntegration(),
         ],
