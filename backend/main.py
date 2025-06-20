@@ -94,23 +94,28 @@ app.add_middleware(RateLimitMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 
 # Configure CORS
-# Get allowed origins from environment or use defaults
-cors_origins = (
+# Get allowed origins from environment
+env_origins = (
     os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
     if os.getenv("CORS_ALLOWED_ORIGINS")
     else []
 )
-if not cors_origins:
-    cors_origins = [
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://localhost:8081",  # 6FB Dashboard
-        "http://localhost:8082",  # Bossio Dashboard
-        "http://localhost:8083",  # Alternative dashboard
-        "https://sixfb-frontend.onrender.com",
-        "https://sixfb-frontend-paby.onrender.com",  # Your actual Render frontend URL
-        "https://*.onrender.com",  # Allow all Render subdomains during deployment
-    ]
+
+# Always include these origins
+default_origins = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:8081",  # 6FB Dashboard
+    "http://localhost:8082",  # Bossio Dashboard
+    "http://localhost:8083",  # Alternative dashboard
+    "https://sixfb-frontend.onrender.com",
+    "https://sixfb-frontend-paby.onrender.com",  # Your actual Render frontend URL
+]
+
+# Combine environment and default origins
+cors_origins = list(set(env_origins + default_origins))
+# Remove empty strings
+cors_origins = [origin.strip() for origin in cors_origins if origin.strip()]
 
 app.add_middleware(
     CORSMiddleware,
