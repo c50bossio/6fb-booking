@@ -62,6 +62,7 @@ from api.v1.endpoints import (
     debug,
     trafft_connect,
     trafft_oauth,
+    simple_trafft,
 )
 from api import trafft_sync
 
@@ -169,6 +170,9 @@ app.include_router(
 )
 app.include_router(
     trafft_oauth.router, prefix="/api/v1/trafft-oauth", tags=["Trafft OAuth"]
+)
+app.include_router(
+    simple_trafft.router, prefix="/api/v1/trafft-simple", tags=["Trafft Simple"]
 )
 app.include_router(trafft_sync.router, prefix="/api/trafft", tags=["Trafft Sync"])
 
