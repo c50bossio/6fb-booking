@@ -8,55 +8,67 @@ import { Button } from '@/components/ui/button'
 // Mock data - in real app this would come from API
 const mockTrafftStatus = {
   connected: true,
-  lastSync: "2024-12-18 14:30:25",
+  lastSync: "2024-12-20 14:30:25",
   webhookStatus: "active",
-  totalAppointments: 156,
-  syncedToday: 23,
+  totalAppointments: 342,
+  syncedToday: 18,
   pendingSync: 0,
   errors: [],
-  apiHealth: "healthy"
+  apiHealth: "healthy",
+  businessName: "Headlines Barbershop",
+  locationCount: 3,
+  staffCount: 8,
+  todayRevenue: 1250.00
 }
 
 const mockSyncHistory = [
   {
     id: 1,
-    timestamp: "2024-12-18 14:30:25",
+    timestamp: "2024-12-20 14:30:25",
     type: "webhook",
     event: "appointment.created",
     status: "success",
-    details: "New appointment for John Smith synced"
+    details: "New appointment: Marcus Johnson - Fade + Beard Trim ($45)"
   },
   {
     id: 2,
-    timestamp: "2024-12-18 14:15:12",
+    timestamp: "2024-12-20 14:15:12",
     type: "webhook", 
-    event: "appointment.updated",
+    event: "appointment.completed",
     status: "success",
-    details: "Appointment status changed to completed"
+    details: "Appointment completed: DeAndre Williams - Classic Cut ($35)"
   },
   {
     id: 3,
-    timestamp: "2024-12-18 13:45:33",
+    timestamp: "2024-12-20 13:45:33",
     type: "periodic",
     event: "bulk_sync",
     status: "success",
-    details: "12 appointments synced from last 24 hours"
+    details: "18 appointments synced from Headlines Barbershop"
   },
   {
     id: 4,
-    timestamp: "2024-12-18 12:30:15",
+    timestamp: "2024-12-20 12:30:15",
     type: "webhook",
     event: "payment.completed", 
     status: "success",
-    details: "Payment of $75.00 recorded for appointment"
+    details: "Payment processed: $65.00 - Jaylen Carter (Signature Cut)"
   },
   {
     id: 5,
-    timestamp: "2024-12-18 11:22:44",
+    timestamp: "2024-12-20 11:22:44",
     type: "webhook",
-    event: "customer.created",
+    event: "customer.updated",
+    status: "success", 
+    details: "Customer profile updated: Isaiah Brooks - loyalty points added"
+  },
+  {
+    id: 6,
+    timestamp: "2024-12-20 10:15:33",
+    type: "webhook",
+    event: "appointment.cancelled",
     status: "warning", 
-    details: "Customer created but missing phone number"
+    details: "Appointment cancelled: Xavier Thompson - Refund processed"
   }
 ]
 
@@ -156,24 +168,34 @@ export default function TrafftIntegration() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className="text-lg font-bold text-blue-600">{mockTrafftStatus.totalAppointments}</div>
-              <div className="text-sm text-gray-600">Total Appointments</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center p-3 bg-blue-50 rounded-lg">
+              <div className="text-2xl font-bold text-blue-600">{mockTrafftStatus.totalAppointments}</div>
+              <div className="text-xs text-blue-800 font-medium">Total Appointments</div>
             </div>
-            <div className="text-center">
-              <div className="text-lg font-bold text-green-600">{mockTrafftStatus.syncedToday}</div>
-              <div className="text-sm text-gray-600">Synced Today</div>
+            <div className="text-center p-3 bg-green-50 rounded-lg">
+              <div className="text-2xl font-bold text-green-600">{mockTrafftStatus.syncedToday}</div>
+              <div className="text-xs text-green-800 font-medium">Synced Today</div>
             </div>
-            <div className="text-center">
-              <div className="text-lg font-bold text-purple-600">{mockTrafftStatus.pendingSync}</div>
-              <div className="text-sm text-gray-600">Pending Sync</div>
+            <div className="text-center p-3 bg-purple-50 rounded-lg">
+              <div className="text-2xl font-bold text-purple-600">{mockTrafftStatus.locationCount}</div>
+              <div className="text-xs text-purple-800 font-medium">Locations</div>
             </div>
-            <div className="text-center">
+            <div className="text-center p-3 bg-orange-50 rounded-lg">
+              <div className="text-2xl font-bold text-orange-600">${mockTrafftStatus.todayRevenue.toLocaleString()}</div>
+              <div className="text-xs text-orange-800 font-medium">Today's Revenue</div>
+            </div>
+          </div>
+          
+          <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium text-gray-800">{mockTrafftStatus.businessName}</div>
+                <div className="text-xs text-gray-600">{mockTrafftStatus.staffCount} barbers • API: {mockTrafftStatus.apiHealth}</div>
+              </div>
               <Badge variant="default" className="bg-green-100 text-green-800">
-                {mockTrafftStatus.apiHealth}
+                Connected
               </Badge>
-              <div className="text-sm text-gray-600 mt-1">API Status</div>
             </div>
           </div>
           
