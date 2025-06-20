@@ -48,7 +48,6 @@ async def get_todays_appointments(
                 b.first_name as barber_first_name,
                 b.last_name as barber_last_name,
                 b.email as barber_email,
-                b.trafft_employee_email as barber_trafft_email,
                 -- Computed fields
                 CASE 
                     WHEN a.status = 'completed' THEN 'completed'
@@ -102,8 +101,8 @@ async def get_todays_appointments(
                     "phone": row.client_phone
                 },
                 "barber": {
-                    "name": f"{row.barber_first_name} {row.barber_last_name}".strip(),
-                    "email": row.barber_email or row.barber_trafft_email
+                    "name": f"{row.barber_first_name} {row.barber_last_name}".strip() if row.barber_first_name else "Unknown",
+                    "email": row.barber_email if row.barber_email else ""
                 },
                 "location": "Headlines Barbershop"  # Default for now
             })
