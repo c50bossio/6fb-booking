@@ -47,7 +47,7 @@ class Barber(BaseModel):
     clients = relationship("Client", back_populates="barber")
     location = relationship("Location", back_populates="barbers")
     # user = relationship("User")  # Commented out due to import issues
-    # revenue_shares = relationship("RevenueShare", back_populates="barber")  # Commented out due to import issues
+    revenue_shares = relationship("RevenueShare", back_populates="barber", lazy="dynamic")  # Fixed with lazy loading
     
     def __repr__(self):
         return f"<Barber(email={self.email}, business_name={self.business_name})>"
