@@ -26,9 +26,14 @@
                     <h1 class="text-3xl font-bold text-gray-800 mb-2">6FB Booking Platform</h1>
                     <p class="text-gray-600">Business Intelligence Dashboard</p>
                 </div>
-                <button onclick="refreshData()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Refresh Data
-                </button>
+                <div class="flex space-x-4">
+                    <a href="/payment-dashboard.html" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                        Payment Dashboard
+                    </a>
+                    <button onclick="refreshData()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Refresh Data
+                    </button>
+                </div>
             </div>
             <div class="mt-4 text-sm text-gray-500" id="lastUpdate">Last updated: Never</div>
         </div>
