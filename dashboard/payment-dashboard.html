@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6FB Payment Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="min-h-screen">
+        <!-- Header -->
+        <header class="bg-gray-800 border-b border-gray-700">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center py-4">
+                    <div class="flex items-center space-x-8">
+                        <h1 class="text-2xl font-bold">💈 6FB Payment Dashboard</h1>
+                        <nav class="flex space-x-6">
+                            <a href="/index.html" class="text-gray-300 hover:text-white transition">Main Dashboard</a>
+                            <a href="/payment-dashboard.html" class="text-white font-medium">Payments</a>
+                            <a href="http://localhost:8000/docs" class="text-gray-300 hover:text-white transition">API Docs</a>
+                        </nav>
+                    </div>
+                    <div class="text-sm text-gray-400">
+                        <span id="connection-status" class="flex items-center">
+                            <span class="h-2 w-2 bg-green-500 rounded-full mr-2"></span>
+                            Connected: Stripe
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <h3 class="text-sm font-medium text-gray-400">Today's Revenue</h3>
+                    <p class="mt-2 text-3xl font-bold">$<span id="today-revenue">0</span></p>
+                    <p class="mt-1 text-sm text-green-400">+15% from yesterday</p>
+                </div>
+                
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <h3 class="text-sm font-medium text-gray-400">Your Earnings (70%)</h3>
+                    <p class="mt-2 text-3xl font-bold">$<span id="barber-earnings">0</span></p>
+                    <p class="mt-1 text-sm text-gray-400">Instant payout</p>
+                </div>
+                
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <h3 class="text-sm font-medium text-gray-400">Shop Commission (30%)</h3>
+                    <p class="mt-2 text-3xl font-bold">$<span id="shop-commission">0</span></p>
+                    <p class="mt-1 text-sm text-gray-400">Auto-deducted</p>
+                </div>
+                
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <h3 class="text-sm font-medium text-gray-400">Appointments Today</h3>
+                    <p class="mt-2 text-3xl font-bold"><span id="appointment-count">0</span></p>
+                    <p class="mt-1 text-sm text-gray-400">Average: $<span id="avg-ticket">0</span></p>
+                </div>
+            </div>
+
+            <!-- Test Payment Section -->
+            <div class="bg-gray-800 rounded-lg p-6 mb-8">
+                <h2 class="text-xl font-bold mb-4">🧪 Test Payment Split</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Service Amount</label>
+                        <input type="number" id="test-amount" value="100" min="1" step="0.01"
+                               class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Payment Split Preview</label>
+                        <div class="bg-gray-700 rounded p-3">
+                            <div class="flex justify-between text-sm">
+                                <span>Barber Gets (70%):</span>
+                                <span class="font-bold">$<span id="preview-barber">70.00</span></span>
+                            </div>
+                            <div class="flex justify-between text-sm mt-1">
+                                <span>Shop Gets (30%):</span>
+                                <span class="font-bold">$<span id="preview-shop">30.00</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="processTestPayment()" 
+                        class="mt-4 bg-green-600 hover:bg-green-700 px-6 py-2 rounded-md font-medium transition">
+                    Process Test Payment
+                </button>
+                <div id="payment-result" class="mt-4"></div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="bg-gray-800 rounded-lg p-6">
+                <h2 class="text-xl font-bold mb-4">Recent Transactions</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-left border-b border-gray-700">
+                                <th class="pb-3 font-medium text-gray-400">Time</th>
+                                <th class="pb-3 font-medium text-gray-400">Client</th>
+                                <th class="pb-3 font-medium text-gray-400">Service</th>
+                                <th class="pb-3 font-medium text-gray-400">Total</th>
+                                <th class="pb-3 font-medium text-gray-400">Your Cut</th>
+                                <th class="pb-3 font-medium text-gray-400">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactions-table">
+                            <tr class="border-b border-gray-700">
+                                <td class="py-3 text-gray-400">2:30 PM</td>
+                                <td class="py-3">John Doe</td>
+                                <td class="py-3">Haircut & Beard</td>
+                                <td class="py-3">$65.00</td>
+                                <td class="py-3 text-green-400">$45.50</td>
+                                <td class="py-3"><span class="bg-green-900 text-green-300 px-2 py-1 rounded text-xs">Paid</span></td>
+                            </tr>
+                            <tr class="border-b border-gray-700">
+                                <td class="py-3 text-gray-400">1:15 PM</td>
+                                <td class="py-3">Mike Smith</td>
+                                <td class="py-3">Fade Cut</td>
+                                <td class="py-3">$45.00</td>
+                                <td class="py-3 text-green-400">$31.50</td>
+                                <td class="py-3"><span class="bg-green-900 text-green-300 px-2 py-1 rounded text-xs">Paid</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Account Info -->
+            <div class="mt-8 bg-gray-800 rounded-lg p-6">
+                <h2 class="text-xl font-bold mb-4">Payment Account Status</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="font-medium text-gray-400 mb-2">Stripe Connect</h3>
+                        <div class="bg-gray-700 rounded p-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm">Account ID:</span>
+                                <code class="text-xs bg-gray-800 px-2 py-1 rounded" id="stripe-account">Loading...</code>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm">Status:</span>
+                                <span class="text-green-400 text-sm">✓ Active</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-gray-400 mb-2">Commission Settings</h3>
+                        <div class="bg-gray-700 rounded p-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm">Service Commission:</span>
+                                <span class="font-bold">30%</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm">Product Commission:</span>
+                                <span class="font-bold">15%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        
+        // Update amount preview
+        document.getElementById('test-amount').addEventListener('input', (e) => {
+            const amount = parseFloat(e.target.value) || 0;
+            document.getElementById('preview-barber').textContent = (amount * 0.7).toFixed(2);
+            document.getElementById('preview-shop').textContent = (amount * 0.3).toFixed(2);
+        });
+
+        // Process test payment
+        async function processTestPayment() {
+            const amount = parseFloat(document.getElementById('test-amount').value);
+            const resultDiv = document.getElementById('payment-result');
+            
+            resultDiv.innerHTML = '<div class="bg-blue-900 text-blue-300 p-3 rounded">Processing payment...</div>';
+            
+            try {
+                // In a real app, you'd process the payment here
+                // For now, we'll just simulate it
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                const barberAmount = (amount * 0.7).toFixed(2);
+                const shopAmount = (amount * 0.3).toFixed(2);
+                
+                resultDiv.innerHTML = `
+                    <div class="bg-green-900 text-green-300 p-3 rounded">
+                        ✅ Payment Successful!<br>
+                        💰 $${barberAmount} instantly sent to your Stripe account<br>
+                        🏪 $${shopAmount} kept as shop commission
+                    </div>
+                `;
+                
+                // Update stats
+                updateStats(amount, barberAmount, shopAmount);
+                
+                // Add to transactions table
+                addTransaction({
+                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                    client: 'Test Client',
+                    service: 'Test Service',
+                    total: amount,
+                    barberCut: barberAmount
+                });
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="bg-red-900 text-red-300 p-3 rounded">
+                        ❌ Payment failed: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Update dashboard stats
+        function updateStats(amount, barberAmount, shopAmount) {
+            const todayRevenue = document.getElementById('today-revenue');
+            const barberEarnings = document.getElementById('barber-earnings');
+            const shopCommission = document.getElementById('shop-commission');
+            const appointmentCount = document.getElementById('appointment-count');
+            
+            todayRevenue.textContent = (parseFloat(todayRevenue.textContent) + amount).toFixed(2);
+            barberEarnings.textContent = (parseFloat(barberEarnings.textContent) + parseFloat(barberAmount)).toFixed(2);
+            shopCommission.textContent = (parseFloat(shopCommission.textContent) + parseFloat(shopAmount)).toFixed(2);
+            
+            const count = parseInt(appointmentCount.textContent) + 1;
+            appointmentCount.textContent = count;
+            
+            const avgTicket = document.getElementById('avg-ticket');
+            avgTicket.textContent = (parseFloat(todayRevenue.textContent) / count).toFixed(2);
+        }
+
+        // Add transaction to table
+        function addTransaction(transaction) {
+            const table = document.getElementById('transactions-table');
+            const row = table.insertRow(0);
+            row.className = 'border-b border-gray-700';
+            row.innerHTML = `
+                <td class="py-3 text-gray-400">${transaction.time}</td>
+                <td class="py-3">${transaction.client}</td>
+                <td class="py-3">${transaction.service}</td>
+                <td class="py-3">$${transaction.total.toFixed(2)}</td>
+                <td class="py-3 text-green-400">$${transaction.barberCut}</td>
+                <td class="py-3"><span class="bg-green-900 text-green-300 px-2 py-1 rounded text-xs">Paid</span></td>
+            `;
+        }
+
+        // Load account info
+        async function loadAccountInfo() {
+            try {
+                const response = await axios.get(`${API_BASE}/payment-splits/test-split-calculation`);
+                if (response.data.stripe_account) {
+                    document.getElementById('stripe-account').textContent = response.data.stripe_account;
+                }
+            } catch (error) {
+                console.error('Failed to load account info:', error);
+            }
+        }
+
+        // Initialize
+        loadAccountInfo();
+    </script>
+</body>
+</html>
