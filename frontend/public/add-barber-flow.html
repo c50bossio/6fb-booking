@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Barber - Complete Flow</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            position: relative;
+        }
+        .steps::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #e0e0e0;
+            z-index: 0;
+        }
+        .step {
+            background: white;
+            z-index: 1;
+            text-align: center;
+            flex: 1;
+        }
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .step.active .step-circle {
+            background: #635bff;
+            color: white;
+        }
+        .step.completed .step-circle {
+            background: #4caf50;
+            color: white;
+        }
+        .step-label {
+            font-size: 14px;
+            color: #666;
+        }
+        .form-section {
+            display: none;
+        }
+        .form-section.active {
+            display: block;
+        }
+        .form-group {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        .button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .button-primary {
+            background: #635bff;
+            color: white;
+            flex: 1;
+        }
+        .button-primary:hover {
+            background: #5046e5;
+        }
+        .button-secondary {
+            background: #e0e0e0;
+            color: #666;
+        }
+        .button-secondary:hover {
+            background: #d0d0d0;
+        }
+        .payment-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .payment-option {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .payment-option:hover {
+            border-color: #635bff;
+            background: #f8f7ff;
+        }
+        .payment-option.selected {
+            border-color: #635bff;
+            background: #f8f7ff;
+        }
+        .payment-option h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .payment-option p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .commission-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .commission-input input {
+            width: 100px;
+        }
+        .result {
+            background: #e8f5e9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+        .result h3 {
+            margin-top: 0;
+            color: #2e7d32;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #635bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Add New Barber</h1>
+        
+        <!-- Progress Steps -->
+        <div class="steps">
+            <div class="step active" id="step1">
+                <div class="step-circle">1</div>
+                <div class="step-label">Basic Info</div>
+            </div>
+            <div class="step" id="step2">
+                <div class="step-circle">2</div>
+                <div class="step-label">Payment Setup</div>
+            </div>
+            <div class="step" id="step3">
+                <div class="step-circle">3</div>
+                <div class="step-label">Connect Accounts</div>
+            </div>
+        </div>
+
+        <!-- Step 1: Basic Information -->
+        <div class="form-section active" id="section1">
+            <h2>Step 1: Basic Information</h2>
+            <form id="basicInfoForm">
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" id="firstName" required placeholder="John">
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" id="lastName" required placeholder="Doe">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="email" required placeholder="john.doe@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" id="phone" required placeholder="(555) 123-4567">
+                </div>
+                <div class="form-group">
+                    <label>Location</label>
+                    <select id="location" required>
+                        <option value="">Select Location</option>
+                        <option value="1">Main Street Shop</option>
+                        <option value="2">Downtown Location</option>
+                        <option value="3">Mall Location</option>
+                    </select>
+                </div>
+                <div class="button-group">
+                    <button type="submit" class="button button-primary">Next: Payment Setup</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Step 2: Payment Setup -->
+        <div class="form-section" id="section2">
+            <h2>Step 2: Payment Setup</h2>
+            <form id="paymentSetupForm">
+                <div class="form-group">
+                    <label>Select Payment Model</label>
+                    <div class="payment-options">
+                        <div class="payment-option" data-model="commission">
+                            <h3>Commission Only</h3>
+                            <p>Shop takes a percentage of each service</p>
+                        </div>
+                        <div class="payment-option" data-model="booth_rent">
+                            <h3>Booth Rent</h3>
+                            <p>Fixed weekly/monthly rent</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="commissionSettings" style="display:none;">
+                    <div class="form-group">
+                        <label>Commission Rate</label>
+                        <div class="commission-input">
+                            <input type="number" id="commissionRate" min="0" max="100" value="30">
+                            <span>% (Shop keeps this percentage)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="boothRentSettings" style="display:none;">
+                    <div class="form-group">
+                        <label>Booth Rent Amount</label>
+                        <div class="commission-input">
+                            <span>$</span>
+                            <input type="number" id="rentAmount" min="0" value="500">
+                            <select id="rentFrequency">
+                                <option value="weekly">per week</option>
+                                <option value="monthly">per month</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button type="button" class="button button-secondary" onclick="goToStep(1)">Back</button>
+                    <button type="submit" class="button button-primary">Next: Connect Accounts</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Step 3: Connect Payment Accounts -->
+        <div class="form-section" id="section3">
+            <h2>Step 3: Connect Payment Accounts</h2>
+            <p>Connect payment processing accounts so the barber can receive instant payouts:</p>
+            
+            <div class="payment-options" style="margin-top: 30px;">
+                <div class="payment-option" id="stripeConnect">
+                    <h3>💳 Stripe</h3>
+                    <p>Instant payouts, 2.9% + 30¢ fee</p>
+                    <button class="button button-primary" style="margin-top: 15px; width: 100%;" onclick="connectStripe()">
+                        Connect Stripe
+                    </button>
+                </div>
+                <div class="payment-option" id="squareConnect">
+                    <h3>⬜ Square</h3>
+                    <p>Next-day payouts, 2.6% + 10¢ fee</p>
+                    <button class="button button-primary" style="margin-top: 15px; width: 100%;" onclick="connectSquare()">
+                        Connect Square
+                    </button>
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button type="button" class="button button-secondary" onclick="goToStep(2)">Back</button>
+                <button type="button" class="button button-primary" onclick="finishSetup()">Finish Setup</button>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading" id="loadingSection">
+            <div class="spinner"></div>
+            <h3>Creating barber profile...</h3>
+            <p>Please wait while we set everything up.</p>
+        </div>
+
+        <!-- Result -->
+        <div class="result" id="resultSection">
+            <h3>✅ Barber Added Successfully!</h3>
+            <div id="resultDetails"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://be47-65-50-128-213.ngrok-free.app';
+        let currentStep = 1;
+        let barberData = {};
+        let createdBarberId = null;
+        
+        // Payment option selection
+        document.querySelectorAll('.payment-option').forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove selected class from all options in this group
+                this.parentElement.querySelectorAll('.payment-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                // Add selected class to clicked option
+                this.classList.add('selected');
+                
+                // Show/hide relevant settings
+                const model = this.dataset.model;
+                if (model === 'commission') {
+                    document.getElementById('commissionSettings').style.display = 'block';
+                    document.getElementById('boothRentSettings').style.display = 'none';
+                } else if (model === 'booth_rent') {
+                    document.getElementById('boothRentSettings').style.display = 'block';
+                    document.getElementById('commissionSettings').style.display = 'none';
+                }
+            });
+        });
+        
+        // Step 1 Form
+        document.getElementById('basicInfoForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            barberData = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                location: document.getElementById('location').value
+            };
+            
+            goToStep(2);
+        });
+        
+        // Step 2 Form
+        document.getElementById('paymentSetupForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const selectedModel = document.querySelector('.payment-option.selected');
+            if (!selectedModel) {
+                alert('Please select a payment model');
+                return;
+            }
+            
+            barberData.paymentModel = selectedModel.dataset.model;
+            
+            if (barberData.paymentModel === 'commission') {
+                barberData.commissionRate = document.getElementById('commissionRate').value;
+            } else {
+                barberData.rentAmount = document.getElementById('rentAmount').value;
+                barberData.rentFrequency = document.getElementById('rentFrequency').value;
+            }
+            
+            // Simulate creating barber (in real app, this would call the API)
+            createdBarberId = Math.floor(Math.random() * 1000) + 1;
+            barberData.id = createdBarberId;
+            
+            goToStep(3);
+        });
+        
+        function goToStep(step) {
+            // Update progress indicators
+            document.querySelectorAll('.step').forEach((s, index) => {
+                if (index < step - 1) {
+                    s.classList.add('completed');
+                    s.classList.remove('active');
+                } else if (index === step - 1) {
+                    s.classList.add('active');
+                    s.classList.remove('completed');
+                } else {
+                    s.classList.remove('active', 'completed');
+                }
+            });
+            
+            // Show correct section
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(`section${step}`).classList.add('active');
+            
+            currentStep = step;
+        }
+        
+        async function connectStripe() {
+            try {
+                // Request OAuth URL
+                const response = await fetch(`${API_URL}/api/v1/payment-splits/connect-account`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true'
+                    },
+                    body: JSON.stringify({
+                        barber_id: createdBarberId,
+                        platform: 'stripe'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.oauth_url) {
+                    // Store barber data for return
+                    localStorage.setItem('creating_barber', JSON.stringify(barberData));
+                    
+                    // Mark Stripe as connecting
+                    document.getElementById('stripeConnect').style.opacity = '0.5';
+                    
+                    // Redirect to Stripe
+                    window.location.href = data.oauth_url;
+                }
+            } catch (error) {
+                alert('Failed to connect Stripe: ' + error.message);
+            }
+        }
+        
+        function connectSquare() {
+            alert('Square integration coming soon! For now, use Stripe.');
+        }
+        
+        function finishSetup() {
+            // Hide form sections
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.querySelector('.steps').style.display = 'none';
+            
+            // Show result
+            document.getElementById('resultSection').style.display = 'block';
+            document.getElementById('resultDetails').innerHTML = `
+                <p><strong>Name:</strong> ${barberData.firstName} ${barberData.lastName}</p>
+                <p><strong>Email:</strong> ${barberData.email}</p>
+                <p><strong>Phone:</strong> ${barberData.phone}</p>
+                <p><strong>Payment Model:</strong> ${barberData.paymentModel === 'commission' ? 
+                    `Commission (${barberData.commissionRate}%)` : 
+                    `Booth Rent ($${barberData.rentAmount}/${barberData.rentFrequency})`}</p>
+                <p><strong>Stripe Connected:</strong> ${localStorage.getItem('stripe_connected') === 'true' ? '✅ Yes' : '❌ No'}</p>
+                <p style="margin-top: 20px;">
+                    <a href="/add-barber-flow.html" class="button button-primary" style="text-decoration: none; display: inline-block;">
+                        Add Another Barber
+                    </a>
+                </p>
+            `;
+        }
+        
+        // Check if returning from OAuth
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('oauth_return')) {
+            const storedData = localStorage.getItem('creating_barber');
+            if (storedData) {
+                barberData = JSON.parse(storedData);
+                createdBarberId = barberData.id;
+                
+                // Mark Stripe as connected
+                localStorage.setItem('stripe_connected', 'true');
+                
+                // Go directly to step 3
+                goToStep(3);
+                
+                // Update UI to show Stripe is connected
+                document.getElementById('stripeConnect').innerHTML = `
+                    <h3>💳 Stripe</h3>
+                    <p>✅ Connected!</p>
+                `;
+                document.getElementById('stripeConnect').style.background = '#e8f5e9';
+            }
+        }
+    </script>
+</body>
+</html>

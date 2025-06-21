@@ -71,6 +71,7 @@ from api.v1.endpoints import (
     barber_payment_splits,
     barber_payroll,
     compensation_plans,
+    barber_payments,
 )
 from api import trafft_sync
 
@@ -204,6 +205,11 @@ app.include_router(
     compensation_plans.router,
     prefix="/api/v1/compensation-plans",
     tags=["Compensation Plans"],
+)
+app.include_router(
+    barber_payments.router,
+    prefix="/api/v1/barber-payments",
+    tags=["Barber Payments"],
 )
 
 # Add authentication system

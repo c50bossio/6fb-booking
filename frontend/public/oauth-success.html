@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Account Connected Successfully!</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f0f0f;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container {
+            text-align: center;
+            max-width: 500px;
+            padding: 40px;
+        }
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            animation: scaleIn 0.5s ease-out;
+        }
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        .checkmark {
+            width: 40px;
+            height: 40px;
+            stroke: white;
+            stroke-width: 3;
+            fill: none;
+            stroke-dasharray: 100;
+            animation: draw 0.5s ease-out 0.3s forwards;
+        }
+        @keyframes draw {
+            from {
+                stroke-dashoffset: 100;
+            }
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 16px;
+            color: #fff;
+        }
+        .message {
+            color: #9ca3af;
+            font-size: 18px;
+            line-height: 1.5;
+            margin-bottom: 32px;
+        }
+        .details {
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 32px;
+            text-align: left;
+        }
+        .details p {
+            margin: 8px 0;
+            color: #e5e7eb;
+        }
+        .details strong {
+            color: #fff;
+        }
+        .button {
+            display: inline-block;
+            background: #7c3aed;
+            color: white;
+            padding: 12px 32px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .button:hover {
+            background: #6d28d9;
+        }
+        .countdown {
+            color: #6b7280;
+            font-size: 14px;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-icon">
+            <svg class="checkmark" viewBox="0 0 52 52">
+                <path d="M14 27 L22 35 L38 16" />
+            </svg>
+        </div>
+        
+        <h1>Payment Account Connected!</h1>
+        
+        <p class="message">
+            Your Stripe account has been successfully connected. You're all set to receive instant payouts!
+        </p>
+        
+        <div class="details">
+            <p><strong>What happens now?</strong></p>
+            <p>✓ You'll receive 70% of each service instantly</p>
+            <p>✓ Payments go directly to your bank account</p>
+            <p>✓ Track all earnings in your Stripe dashboard</p>
+            <p>✓ Download reports for tax purposes</p>
+        </div>
+        
+        <a href="/barbers" class="button">Return to Barbers</a>
+        
+        <p class="countdown">Redirecting in <span id="countdown">10</span> seconds...</p>
+    </div>
+
+    <script>
+        // Parse URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const platform = urlParams.get('platform') || 'Stripe';
+        
+        // Auto-redirect countdown
+        let seconds = 10;
+        const countdownEl = document.getElementById('countdown');
+        
+        const countdown = setInterval(() => {
+            seconds--;
+            countdownEl.textContent = seconds;
+            
+            if (seconds <= 0) {
+                clearInterval(countdown);
+                window.location.href = '/barbers';
+            }
+        }, 1000);
+        
+        // Allow manual click to cancel countdown
+        document.querySelector('.button').addEventListener('click', () => {
+            clearInterval(countdown);
+        });
+    </script>
+</body>
+</html>

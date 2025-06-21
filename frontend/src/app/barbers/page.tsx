@@ -26,6 +26,7 @@ import {
 } from '@heroicons/react/24/outline'
 
 import CompensationPlanForm from '../../components/CompensationPlanForm'
+import AddBarberModal from '../../components/AddBarberModal'
 
 interface Barber {
   id: number
@@ -48,16 +49,20 @@ interface Barber {
 }
 
 interface BarberPaymentModel {
+  id?: number
   barber_id: number
-  payment_type: 'booth_rent' | 'commission'
-  commission_rate?: number
+  payment_type: 'booth_rent' | 'commission' | 'hybrid'
+  service_commission_rate?: number
+  product_commission_rate?: number
   booth_rent_amount?: number
-  booth_rent_frequency?: string
-  stripe_connected: boolean
-  square_connected: boolean
-  rentpedi_connected: boolean
-  stripe_account_id?: string
+  rent_frequency?: string
+  stripe_connect_account_id?: string
+  stripe_onboarding_completed: boolean
+  stripe_payouts_enabled: boolean
   square_merchant_id?: string
+  square_account_verified: boolean
+  rentredi_tenant_id?: string
+  active: boolean
 }
 
 export default function BarbersPage() {
@@ -97,7 +102,9 @@ export default function BarbersPage() {
   const fetchBarbers = async () => {
     try {
       const token = localStorage.getItem('access_token')
+      console.log('Current token:', token ? 'Token exists' : 'No token found')
       if (!token) {
+        console.log('No token, redirecting to login')
         router.push('/login')
         return
       }
@@ -106,7 +113,7 @@ export default function BarbersPage() {
 
       // Fetch barbers with their payment models
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/barbers`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/barbers`,
         { headers }
       )
 
@@ -205,7 +212,7 @@ export default function BarbersPage() {
 
   const validateStep1 = () => {
     const errors = {}
-    
+
     if (!formData.first_name.trim()) {
       errors.first_name = 'First name is required'
     }
@@ -217,7 +224,7 @@ export default function BarbersPage() {
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       errors.email = 'Email is invalid'
     }
-    
+
     setFormErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -276,7 +283,7 @@ export default function BarbersPage() {
       // Mark as pending connection
       setNewBarberConnections(prev => ({ ...prev, stripe: true }))
       setShowConnectionDialog({ type: null, show: false })
-      
+
       // If we're in Step 2 and barber creation is imminent, we'll handle OAuth after creation
       // For now, just mark it as ready
       alert('✅ Stripe connection ready! OAuth will open after creating the barber.')
@@ -301,7 +308,7 @@ export default function BarbersPage() {
       // Mark as pending connection
       setNewBarberConnections(prev => ({ ...prev, square: true }))
       setShowConnectionDialog({ type: null, show: false })
-      
+
       // If we're in Step 2 and barber creation is imminent, we'll handle OAuth after creation
       // For now, just mark it as ready
       alert('✅ Square connection ready! OAuth will open after creating the barber.')
@@ -333,7 +340,7 @@ export default function BarbersPage() {
       if (response.data.oauth_url) {
         // Open OAuth URL in new tab for security
         const oauthWindow = window.open(response.data.oauth_url, 'stripe_oauth', 'width=600,height=700')
-        
+
         // Listen for OAuth completion
         const pollTimer = setInterval(() => {
           try {
@@ -382,7 +389,7 @@ export default function BarbersPage() {
       if (response.data.oauth_url) {
         // Open OAuth URL in new tab for security
         const oauthWindow = window.open(response.data.oauth_url, 'square_oauth', 'width=600,height=700')
-        
+
         // Listen for OAuth completion
         const pollTimer = setInterval(() => {
           try {
@@ -412,35 +419,25 @@ export default function BarbersPage() {
   const handleAddBarber = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
-    
+
+    console.log('🎯 Starting barber creation...')
+    console.log('🔌 Payment connections state:', newBarberConnections)
+
     try {
       const token = localStorage.getItem('access_token')
-      
-      // Create user account first
-      const userResponse = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/users`,
-        {
-          email: formData.get('email'),
-          password: 'TempPassword123!', // Temporary password
+
+      // For testing OAuth, skip user creation and use a fake barber ID
+      console.log('⚠️ Skipping user creation for OAuth testing')
+
+      // Use a fake barber response
+      const barberResponse = {
+        data: {
+          id: 999, // Fake barber ID for testing
           first_name: formData.get('first_name'),
           last_name: formData.get('last_name'),
-          role: 'barber'
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-
-      // Create barber profile
-      const barberResponse = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/barbers`,
-        {
-          user_id: userResponse.data.id,
-          location_id: parseInt(formData.get('location_id') as string),
-          phone: formData.get('phone'),
-          is_active: true,
-          is_verified: false
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
+          email: formData.get('email')
+        }
+      }
 
       // Create payment model with new compensation plan structure
       const paymentType = formData.get('payment_type') as string
@@ -495,18 +492,21 @@ export default function BarbersPage() {
         no_show_penalty: { type: 'fixed', value: 15 }
       }
 
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/compensation-plans`,
-        compensationPlan,
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
+      // Skip compensation plan creation for OAuth testing
+      console.log('⚠️ Skipping compensation plan creation for OAuth testing')
 
       // Handle payment account connections if any were selected
       const barberId = barberResponse.data.id
       let connectionResults = []
 
+      console.log('Barber created successfully with ID:', barberId)
+      console.log('Payment connections to setup:', newBarberConnections)
+
       if (newBarberConnections.stripe) {
         try {
+          console.log('🚀 Starting Stripe OAuth for barber ID:', barberId)
+          console.log('🔗 OAuth URL:', `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payment-splits/connect-account`)
+
           const stripeResponse = await axios.post(
             `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payment-splits/connect-account`,
             {
@@ -516,17 +516,21 @@ export default function BarbersPage() {
             },
             { headers: { Authorization: `Bearer ${token}` } }
           )
-          
+
+          console.log('✅ Stripe API response:', stripeResponse.data)
+
           if (stripeResponse.data.oauth_url) {
-            // Open Stripe OAuth immediately
-            const oauthWindow = window.open(stripeResponse.data.oauth_url, 'stripe_oauth', 'width=600,height=700')
-            connectionResults.push('✅ Stripe OAuth opened - complete connection in popup')
+            console.log('📍 OAuth URL received:', stripeResponse.data.oauth_url)
+            // Try direct redirect instead of popup
+            window.location.href = stripeResponse.data.oauth_url
+            return // Stop execution since we're redirecting
           } else {
             connectionResults.push('⚠️ Stripe OAuth URL not received')
           }
         } catch (error) {
           console.error('Failed to initiate Stripe connection:', error)
-          connectionResults.push('⚠️ Stripe connection setup failed')
+          console.error('Error details:', error.response?.data)
+          connectionResults.push(`⚠️ Stripe connection setup failed: ${error.response?.data?.detail || error.message}`)
         }
       }
 
@@ -541,7 +545,7 @@ export default function BarbersPage() {
             },
             { headers: { Authorization: `Bearer ${token}` } }
           )
-          
+
           if (squareResponse.data.oauth_url) {
             // Open Square OAuth immediately
             const oauthWindow = window.open(squareResponse.data.oauth_url, 'square_oauth', 'width=600,height=700')
@@ -551,7 +555,8 @@ export default function BarbersPage() {
           }
         } catch (error) {
           console.error('Failed to initiate Square connection:', error)
-          connectionResults.push('⚠️ Square connection setup failed')
+          console.error('Error details:', error.response?.data)
+          connectionResults.push(`⚠️ Square connection setup failed: ${error.response?.data?.detail || error.message}`)
         }
       }
 
@@ -563,7 +568,7 @@ export default function BarbersPage() {
       // Show comprehensive success message
       let successMessage = '🎉 Barber added successfully!\n\n'
       successMessage += '📧 They will receive an email to set up their password.\n'
-      
+
       if (connectionResults.length > 0) {
         successMessage += '\n💳 Payment Connections:\n'
         successMessage += connectionResults.join('\n')
@@ -574,7 +579,12 @@ export default function BarbersPage() {
       alert(successMessage)
     } catch (error) {
       console.error('Failed to add barber:', error)
-      alert('Failed to add barber. Please try again.')
+      console.error('Error details:', error.response?.data)
+      let errorMessage = 'Failed to add barber. Please try again.'
+      if (error.response?.data?.detail) {
+        errorMessage += `\n\nError: ${error.response.data.detail}`
+      }
+      alert(errorMessage)
     }
   }
 
@@ -607,7 +617,7 @@ export default function BarbersPage() {
                 <p className="text-sm text-gray-400">Manage your team and their accounts</p>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setShowAddBarber(true)}
@@ -706,7 +716,7 @@ export default function BarbersPage() {
                     </div>
                   </div>
                   <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    barber.is_active 
+                    barber.is_active
                       ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                       : 'bg-red-500/20 text-red-400 border border-red-500/30'
                   }`}>
@@ -753,8 +763,10 @@ export default function BarbersPage() {
                           : 'bg-purple-500/20 text-purple-400'
                       }`}>
                         {barber.payment_model.payment_type === 'commission'
-                          ? `${barber.payment_model.commission_rate}% Commission`
-                          : `$${barber.payment_model.booth_rent_amount}/mo Booth Rent`
+                          ? `${(barber.payment_model.service_commission_rate || 0) * 100}% Commission`
+                          : barber.payment_model.payment_type === 'booth_rent'
+                          ? `$${barber.payment_model.booth_rent_amount}/${barber.payment_model.rent_frequency || 'month'} Booth Rent`
+                          : `Hybrid: ${(barber.payment_model.service_commission_rate || 0) * 100}% + $${barber.payment_model.booth_rent_amount}`
                         }
                       </span>
                     </div>
@@ -763,7 +775,7 @@ export default function BarbersPage() {
                     <div className="grid grid-cols-2 gap-2">
                       <div className="flex items-center justify-between p-2 bg-gray-700/50 rounded">
                         <span className="text-xs text-gray-400">Stripe</span>
-                        {barber.payment_model.stripe_connected ? (
+                        {barber.payment_model.stripe_onboarding_completed ? (
                           <CheckCircleIcon className="h-4 w-4 text-green-400" />
                         ) : (
                           <XCircleIcon className="h-4 w-4 text-gray-500" />
@@ -771,7 +783,7 @@ export default function BarbersPage() {
                       </div>
                       <div className="flex items-center justify-between p-2 bg-gray-700/50 rounded">
                         <span className="text-xs text-gray-400">Square</span>
-                        {barber.payment_model.square_connected ? (
+                        {barber.payment_model.square_account_verified ? (
                           <CheckCircleIcon className="h-4 w-4 text-green-400" />
                         ) : (
                           <XCircleIcon className="h-4 w-4 text-gray-500" />
@@ -803,33 +815,37 @@ export default function BarbersPage() {
       </main>
 
       {/* Add Barber Modal */}
-      {showAddBarber && (
+      <AddBarberModal
+        isOpen={showAddBarber}
+        onClose={() => setShowAddBarber(false)}
+        onSuccess={() => {
+          setShowAddBarber(false)
+          fetchBarbers()
+        }}
+      />
+
+      {/* Keep the old modal code for now - will remove later */}
+      {false && showAddBarber && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-800 rounded-lg max-w-2xl w-full max-h-[85vh] overflow-y-auto">
+          <div className="bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-700">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold text-white">Add New Barber - 2 Steps</h2>
-                  <div className="flex items-center mt-2 space-x-4">
-                    <div className={`flex items-center space-x-2 ${addBarberStep === 1 ? 'text-purple-400' : 'text-gray-500'}`}>
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${addBarberStep === 1 ? 'bg-purple-600 text-white' : addBarberStep > 1 ? 'bg-green-600 text-white' : 'bg-gray-600 text-gray-300'}`}>
-                        {addBarberStep > 1 ? '✓' : '1'}
-                      </div>
-                      <span className="text-sm">Basic Info</span>
-                    </div>
-                    <div className={`w-8 h-0.5 ${addBarberStep > 1 ? 'bg-green-500' : 'bg-gray-600'}`}></div>
-                    <div className={`flex items-center space-x-2 ${addBarberStep === 2 ? 'text-purple-400' : 'text-gray-500'}`}>
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${addBarberStep === 2 ? 'bg-purple-600 text-white' : 'bg-gray-600 text-gray-300'}`}>
-                        2
-                      </div>
-                      <span className="text-sm">Advanced Setup</span>
-                    </div>
-                  </div>
+                  <h2 className="text-2xl font-bold text-white">Add New Barber</h2>
+                  <p className="text-gray-400 mt-1">Create a new barber profile with payment configuration</p>
                 </div>
                 <button
                   onClick={() => {
                     setShowAddBarber(false)
-                    setAddBarberStep(1)
+                    setFormData({
+                      first_name: '',
+                      last_name: '',
+                      email: '',
+                      phone: '',
+                      location_id: '',
+                      compensation_preset: ''
+                    })
+                    setFormErrors({})
                   }}
                   className="text-gray-400 hover:text-white"
                 >
@@ -838,17 +854,16 @@ export default function BarbersPage() {
               </div>
             </div>
 
-            <form onSubmit={handleAddBarber} className="p-6 space-y-6">
-              
-              {/* Step 1: Basic Information */}
-              {addBarberStep === 1 && (
-                <>
+            <form onSubmit={handleAddBarber} className="p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Left Column - Basic Information */}
+                <div className="space-y-6">
                   {/* Basic Information */}
                   <div>
-                <h3 className="text-lg font-semibold text-white mb-4">Basic Information</h3>
-                <p className="text-gray-400 text-sm mb-4">
-                  Complete the required fields below to continue. Additional details can be added later.
-                </p>
+                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                      <UserGroupIcon className="h-5 w-5 mr-2 text-purple-400" />
+                      Basic Information
+                    </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -984,7 +999,7 @@ export default function BarbersPage() {
                   {selectedPreset && selectedPreset !== 'custom' && (
                     <div className="bg-gray-700/30 rounded-lg p-4 space-y-4">
                       <h4 className="text-white font-medium text-sm">💡 Customize Your Preset</h4>
-                      
+
                       {/* Commission-based presets */}
                       {['apprentice', 'new_barber', 'experienced', 'master'].includes(selectedPreset) && (
                         <div className="grid grid-cols-2 gap-4">
@@ -1121,7 +1136,7 @@ export default function BarbersPage() {
                           </div>
                         </div>
                       )}
-                      
+
                       <p className="text-xs text-gray-400">
                         💡 Adjust these values to perfectly match your needs. Changes are saved automatically.
                       </p>
@@ -1134,8 +1149,8 @@ export default function BarbersPage() {
                       <div className="flex-1">
                         <p className="text-sm text-purple-300 font-medium">💰 Commission = Barbershop Revenue</p>
                         <p className="text-xs text-gray-400 mt-1">
-                          Commission percentages are what <strong>your barbershop keeps</strong>. 
-                          You can modify all details after creating the barber - just click their name 
+                          Commission percentages are what <strong>your barbershop keeps</strong>.
+                          You can modify all details after creating the barber - just click their name
                           and go to the Payments tab for full customization.
                         </p>
                       </div>
@@ -1154,13 +1169,13 @@ export default function BarbersPage() {
                       {selectedPreset === 'custom' ? 'Custom Compensation Setup' : 'Advanced Compensation Setup'}
                     </h3>
                     <p className="text-gray-400 text-sm mb-6">
-                      {selectedPreset === 'custom' 
+                      {selectedPreset === 'custom'
                         ? 'Build a completely custom compensation plan with all available options.'
                         : 'Configure detailed commission structures, performance bonuses, and special conditions for this barber.'
                       }
                     </p>
                   </div>
-                  
+
                   {/* Custom Setup - Full Configuration */}
                   {selectedPreset === 'custom' ? (
                     <div className="space-y-6">
@@ -1418,7 +1433,7 @@ export default function BarbersPage() {
                       <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
                         <p className="text-sm text-green-300 font-medium mb-2">✨ You can modify all these settings later</p>
                         <p className="text-xs text-gray-400">
-                          This creates a comprehensive compensation plan. You can always access the full advanced editor 
+                          This creates a comprehensive compensation plan. You can always access the full advanced editor
                           by clicking on the barber's name and going to the Payments tab.
                         </p>
                       </div>
@@ -1447,7 +1462,7 @@ export default function BarbersPage() {
                   <p className="text-gray-400 text-sm mb-4">
                     Connect the barber's payment account to receive commission payouts instantly. This can also be set up later.
                   </p>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     {/* Stripe Connect */}
                     <div className="bg-gray-700/50 rounded-lg p-4">
@@ -1465,8 +1480,8 @@ export default function BarbersPage() {
                         onClick={handleNewBarberStripeConnect}
                         disabled={newBarberConnections.stripe}
                         className={`w-full px-3 py-2 rounded text-sm transition-colors flex items-center justify-center space-x-2 ${
-                          newBarberConnections.stripe 
-                            ? 'bg-green-600 text-white cursor-default' 
+                          newBarberConnections.stripe
+                            ? 'bg-green-600 text-white cursor-default'
                             : 'bg-purple-600 hover:bg-purple-700 text-white'
                         }`}
                       >
@@ -1503,8 +1518,8 @@ export default function BarbersPage() {
                         onClick={handleNewBarberSquareConnect}
                         disabled={newBarberConnections.square}
                         className={`w-full px-3 py-2 rounded text-sm transition-colors flex items-center justify-center space-x-2 ${
-                          newBarberConnections.square 
-                            ? 'bg-green-600 text-white cursor-default' 
+                          newBarberConnections.square
+                            ? 'bg-green-600 text-white cursor-default'
                             : 'bg-gray-600 hover:bg-gray-500 text-white'
                         }`}
                       >
@@ -1571,7 +1586,7 @@ export default function BarbersPage() {
                   >
                     Cancel
                   </button>
-                  
+
                   {addBarberStep === 1 && (
                     <button
                       type="button"
@@ -1582,7 +1597,7 @@ export default function BarbersPage() {
                       <ArrowLeftIcon className="h-4 w-4 ml-2 rotate-180" />
                     </button>
                   )}
-                  
+
                   {addBarberStep === 2 && (
                     <button
                       type="submit"
@@ -1944,7 +1959,7 @@ export default function BarbersPage() {
               <p className="text-gray-300">
                 This will immediately open {showConnectionDialog.type === 'stripe' ? 'Stripe' : 'Square'} OAuth after the barber is created.
               </p>
-              
+
               <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
                 <p className="text-blue-300 text-sm font-medium mb-1">🔗 What happens next:</p>
                 <ul className="text-blue-300/80 text-sm space-y-1">
@@ -1970,8 +1985,8 @@ export default function BarbersPage() {
               <button
                 onClick={showConnectionDialog.type === 'stripe' ? confirmStripeConnection : confirmSquareConnection}
                 className={`px-6 py-2 rounded-lg font-medium text-white transition-colors ${
-                  showConnectionDialog.type === 'stripe' 
-                    ? 'bg-purple-600 hover:bg-purple-700' 
+                  showConnectionDialog.type === 'stripe'
+                    ? 'bg-purple-600 hover:bg-purple-700'
                     : 'bg-gray-600 hover:bg-gray-500'
                 }`}
               >
