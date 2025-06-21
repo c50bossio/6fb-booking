@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test OAuth Flow</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 50px; }
+        button { padding: 15px 30px; margin: 10px; font-size: 16px; cursor: pointer; }
+        .stripe { background: #635bff; color: white; border: none; }
+        .square { background: #3e4348; color: white; border: none; }
+        .result { margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Test OAuth Flow</h1>
+    <p>Click the buttons below to test OAuth popup windows:</p>
+    
+    <button class="stripe" onclick="testStripeOAuth()">Test Stripe OAuth</button>
+    <button class="square" onclick="testSquareOAuth()">Test Square OAuth</button>
+    
+    <div id="result" class="result" style="display: none;"></div>
+
+    <script>
+        async function testStripeOAuth() {
+            try {
+                const response = await fetch('http://localhost:8001/test-oauth/stripe');
+                const data = await response.json();
+                
+                if (data.success && data.oauth_url) {
+                    // Open OAuth popup
+                    const popup = window.open(data.oauth_url, 'stripe_oauth', 'width=600,height=700');
+                    showResult('✅ Stripe OAuth popup opened! Complete the OAuth flow in the popup window.');
+                } else {
+                    showResult('❌ Failed to get Stripe OAuth URL: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                showResult('❌ Error: ' + error.message);
+            }
+        }
+
+        async function testSquareOAuth() {
+            try {
+                const response = await fetch('http://localhost:8001/test-oauth/square');
+                const data = await response.json();
+                
+                if (data.success && data.oauth_url) {
+                    // Open OAuth popup
+                    const popup = window.open(data.oauth_url, 'square_oauth', 'width=600,height=700');
+                    showResult('✅ Square OAuth popup opened! Complete the OAuth flow in the popup window.');
+                } else {
+                    showResult('❌ Failed to get Square OAuth URL: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                showResult('❌ Error: ' + error.message);
+            }
+        }
+
+        function showResult(message) {
+            const result = document.getElementById('result');
+            result.textContent = message;
+            result.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

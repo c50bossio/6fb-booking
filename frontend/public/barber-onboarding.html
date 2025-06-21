@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barber Onboarding - Connect Your Stripe Account</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .info-box {
+            background: #f0f8ff;
+            border: 2px solid #2196f3;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .info-box h3 {
+            margin-top: 0;
+            color: #2196f3;
+        }
+        .form-group {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .connect-button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 30px 0;
+            background: #635bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            transition: background 0.2s;
+        }
+        .connect-button:hover {
+            background: #5046e5;
+        }
+        .connect-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .benefits {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .benefits ul {
+            margin: 10px 0;
+            padding-left: 25px;
+        }
+        .benefits li {
+            margin: 8px 0;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+            display: none;
+        }
+        .status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #4caf50;
+        }
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #f44336;
+        }
+        .stripe-logo {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .powered-by {
+            text-align: center;
+            font-size: 14px;
+            color: #999;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💈 Welcome, Barber!</h1>
+        <p class="subtitle">Connect your Stripe account to receive instant payouts</p>
+
+        <div class="info-box">
+            <h3>🚀 How It Works</h3>
+            <p>When customers pay for your services:</p>
+            <ul>
+                <li>You receive 70% instantly to your bank account</li>
+                <li>The shop keeps 30% commission automatically</li>
+                <li>No waiting for weekly payouts!</li>
+            </ul>
+        </div>
+
+        <form id="barber-form">
+            <div class="form-group">
+                <label>Your Name</label>
+                <input type="text" id="barberName" placeholder="John Doe" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Barber ID (provided by your shop)</label>
+                <input type="number" id="barberId" placeholder="Enter your barber ID" required>
+            </div>
+
+            <button type="submit" class="connect-button" id="connectButton">
+                Connect Your Stripe Account
+            </button>
+        </form>
+
+        <div class="status success" id="successStatus"></div>
+        <div class="status error" id="errorStatus"></div>
+
+        <div class="benefits">
+            <h3>✨ Benefits of Connecting</h3>
+            <ul>
+                <li><strong>Instant Payouts</strong> - Get paid within minutes, not days</li>
+                <li><strong>Direct Deposits</strong> - Money goes straight to your bank</li>
+                <li><strong>Track Earnings</strong> - See all your transactions in Stripe</li>
+                <li><strong>Tax Ready</strong> - Download reports for tax season</li>
+                <li><strong>Secure</strong> - Bank-level encryption protects your data</li>
+            </ul>
+        </div>
+
+        <div class="stripe-logo">
+            <svg width="100" height="42" viewBox="0 0 100 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M100 20.9985C100 9.39515 91.6041 0 80.0015 0C68.3959 0 60 9.39515 60 20.9985C60 32.6041 68.3959 42 80.0015 42C91.6041 42 100 32.6041 100 20.9985Z" fill="#635BFF"/>
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M80.0014 10.125C74.487 10.125 70.8741 12.7589 70.8741 16.7228C70.8741 21.5253 75.9544 22.4858 80.0014 23.086C82.2827 23.4144 84.1253 23.6752 84.1253 24.7645C84.1253 25.6875 83.2497 26.3125 81.3745 26.3125C78.6873 26.3125 75.6247 25.25 73.1248 23.5625V28.375C75.2498 29.6875 77.9997 30.375 81.0623 30.375C86.5631 30.375 90.3755 27.8125 90.3755 23.6875C90.3755 18.875 85.2499 17.9063 81.1872 17.2905C79.1638 16.9902 77.3747 16.7228 77.3747 15.6875C77.3747 14.8125 78.1247 14.1875 79.9995 14.1875C82.4372 14.1875 85.0624 15.0625 87.3122 16.5V11.8125C85.3746 10.6875 82.8746 10.125 80.0014 10.125Z" fill="white"/>
+            </svg>
+        </div>
+
+        <p class="powered-by">Powered by Stripe Connect</p>
+    </div>
+
+    <script>
+        const API_URL = 'https://be47-65-50-128-213.ngrok-free.app';
+        
+        document.getElementById('barber-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const barberId = document.getElementById('barberId').value;
+            const barberName = document.getElementById('barberName').value;
+            const connectButton = document.getElementById('connectButton');
+            const successStatus = document.getElementById('successStatus');
+            const errorStatus = document.getElementById('errorStatus');
+            
+            // Hide status messages
+            successStatus.style.display = 'none';
+            errorStatus.style.display = 'none';
+            
+            // Disable button
+            connectButton.disabled = true;
+            connectButton.textContent = 'Connecting...';
+            
+            try {
+                // Request OAuth URL from backend
+                const response = await fetch(`${API_URL}/api/v1/payment-splits/connect-account`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true'
+                    },
+                    body: JSON.stringify({
+                        barber_id: parseInt(barberId),
+                        platform: 'stripe'
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to get OAuth URL: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.oauth_url) {
+                    // Store barber info for later
+                    localStorage.setItem('connecting_barber', JSON.stringify({
+                        id: barberId,
+                        name: barberName
+                    }));
+                    
+                    // Show success message briefly
+                    successStatus.textContent = `Great, ${barberName}! Redirecting to Stripe...`;
+                    successStatus.style.display = 'block';
+                    
+                    // Redirect to Stripe OAuth
+                    setTimeout(() => {
+                        window.location.href = data.oauth_url;
+                    }, 1500);
+                } else {
+                    throw new Error('No OAuth URL received');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                errorStatus.textContent = `Error: ${error.message}`;
+                errorStatus.style.display = 'block';
+                
+                // Re-enable button
+                connectButton.disabled = false;
+                connectButton.textContent = 'Connect Your Stripe Account';
+            }
+        });
+        
+        // Check if returning from OAuth
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('success')) {
+            const successStatus = document.getElementById('successStatus');
+            const barberInfo = JSON.parse(localStorage.getItem('connecting_barber') || '{}');
+            
+            successStatus.innerHTML = `
+                <h3>✅ Success!</h3>
+                <p>${barberInfo.name || 'Your'} Stripe account has been connected.</p>
+                <p>You'll now receive instant payouts for all your services!</p>
+            `;
+            successStatus.style.display = 'block';
+            
+            // Clear stored info
+            localStorage.removeItem('connecting_barber');
+        }
+    </script>
+</body>
+</html>
