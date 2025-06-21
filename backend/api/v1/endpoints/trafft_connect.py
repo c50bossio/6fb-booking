@@ -18,7 +18,7 @@ from models.user import User
 from models.location import Location
 from models.barber import Barber
 from services.trafft_client import TrafftClient, TrafftAPIError
-from middleware.auth import get_current_user
+from api.v1.auth import get_current_user
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
