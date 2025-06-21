@@ -259,54 +259,65 @@ export default function BarbersPage() {
 
   const handleNewBarberStripeConnect = async () => {
     try {
-      // In a real implementation, this would open Stripe Connect OAuth
-      // For now, we'll simulate the connection
-      console.log('Initiating Stripe Connect for new barber...')
-      
-      // Simulate the OAuth flow
+      // Validate required fields first
+      if (!formData.first_name || !formData.last_name || !formData.email) {
+        alert('⚠️ Please fill in the required fields (Name and Email) before connecting payment accounts.')
+        return
+      }
+
       const confirmed = confirm(
-        'This would redirect to Stripe to connect the barber\'s account.\n\n' +
-        'After the barber completes OAuth, they would return here with their account connected.\n\n' +
-        'Simulate successful connection?'
+        '🔗 Stripe Connect Integration\n\n' +
+        'This will mark Stripe for connection after the barber is created.\n' +
+        'The barber will receive an email with OAuth instructions.\n\n' +
+        'Continue with Stripe setup?'
       )
       
       if (confirmed) {
         setNewBarberConnections(prev => ({ ...prev, stripe: true }))
-        alert('✅ Stripe account connected! Barber can now receive commission payouts.')
+        alert('✅ Stripe connection queued! After creating the barber, they\'ll receive OAuth instructions.')
       }
     } catch (error) {
-      console.error('Stripe connect failed:', error)
-      alert('❌ Failed to connect Stripe account. Please try again.')
+      console.error('Stripe connect setup failed:', error)
+      alert('❌ Failed to prepare Stripe connection. Please try again.')
     }
   }
 
   const handleNewBarberSquareConnect = async () => {
     try {
-      // In a real implementation, this would open Square Connect OAuth
-      console.log('Initiating Square Connect for new barber...')
-      
-      // Simulate the OAuth flow
+      // Validate required fields first
+      if (!formData.first_name || !formData.last_name || !formData.email) {
+        alert('⚠️ Please fill in the required fields (Name and Email) before connecting payment accounts.')
+        return
+      }
+
       const confirmed = confirm(
-        'This would redirect to Square to connect the barber\'s account.\n\n' +
-        'After the barber completes OAuth, they would return here with their account connected.\n\n' +
-        'Simulate successful connection?'
+        '🔗 Square Connect Integration\n\n' +
+        'This will mark Square for connection after the barber is created.\n' +
+        'The barber will receive an email with OAuth instructions.\n\n' +
+        'Continue with Square setup?'
       )
       
       if (confirmed) {
         setNewBarberConnections(prev => ({ ...prev, square: true }))
-        alert('✅ Square account connected! Barber can now receive commission payouts.')
+        alert('✅ Square connection queued! After creating the barber, they\'ll receive OAuth instructions.')
       }
     } catch (error) {
-      console.error('Square connect failed:', error)
-      alert('❌ Failed to connect Square account. Please try again.')
+      console.error('Square connect setup failed:', error)
+      alert('❌ Failed to prepare Square connection. Please try again.')
     }
   }
 
   const handleStripeConnect = async (barberId: number) => {
     try {
       const token = localStorage.getItem('access_token')
+      if (!token) {
+        alert('Please log in to connect payment accounts')
+        return
+      }
+
+      // Use the real backend API endpoint
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/payment-splits/oauth-connect`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payment-splits/connect-account`,
         {
           barber_id: barberId,
           platform: 'stripe',
@@ -315,19 +326,47 @@ export default function BarbersPage() {
         { headers: { Authorization: `Bearer ${token}` } }
       )
 
-      if (response.data.auth_url) {
-        window.location.href = response.data.auth_url
+      if (response.data.oauth_url) {
+        // Open OAuth URL in new tab for security
+        const oauthWindow = window.open(response.data.oauth_url, 'stripe_oauth', 'width=600,height=700')
+        
+        // Listen for OAuth completion
+        const pollTimer = setInterval(() => {
+          try {
+            if (oauthWindow?.closed) {
+              clearInterval(pollTimer)
+              // Refresh the barber data to show updated connection status
+              fetchBarbers()
+              alert('✅ Payment account connection completed!')
+            }
+          } catch (e) {
+            // Ignore cross-origin errors
+          }
+        }, 1000)
       }
     } catch (error) {
-      console.error('Failed to initiate Stripe Connect:', error)
+      console.error('Stripe connect failed:', error)
+      if (error.response?.status === 404) {
+        alert('❌ API endpoint not found. Please ensure backend is running.')
+      } else if (error.response?.status === 403) {
+        alert('❌ Permission denied. Please check your account permissions.')
+      } else {
+        alert('❌ Failed to connect Stripe account. Please try again.')
+      }
     }
   }
 
   const handleSquareConnect = async (barberId: number) => {
     try {
       const token = localStorage.getItem('access_token')
+      if (!token) {
+        alert('Please log in to connect payment accounts')
+        return
+      }
+
+      // Use the real backend API endpoint
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/payment-splits/oauth-connect`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payment-splits/connect-account`,
         {
           barber_id: barberId,
           platform: 'square',
@@ -336,11 +375,33 @@ export default function BarbersPage() {
         { headers: { Authorization: `Bearer ${token}` } }
       )
 
-      if (response.data.auth_url) {
-        window.location.href = response.data.auth_url
+      if (response.data.oauth_url) {
+        // Open OAuth URL in new tab for security
+        const oauthWindow = window.open(response.data.oauth_url, 'square_oauth', 'width=600,height=700')
+        
+        // Listen for OAuth completion
+        const pollTimer = setInterval(() => {
+          try {
+            if (oauthWindow?.closed) {
+              clearInterval(pollTimer)
+              // Refresh the barber data to show updated connection status
+              fetchBarbers()
+              alert('✅ Payment account connection completed!')
+            }
+          } catch (e) {
+            // Ignore cross-origin errors
+          }
+        }, 1000)
       }
     } catch (error) {
-      console.error('Failed to initiate Square Connect:', error)
+      console.error('Square connect failed:', error)
+      if (error.response?.status === 404) {
+        alert('❌ API endpoint not found. Please ensure backend is running.')
+      } else if (error.response?.status === 403) {
+        alert('❌ Permission denied. Please check your account permissions.')
+      } else {
+        alert('❌ Failed to connect Square account. Please try again.')
+      }
     }
   }
 
@@ -436,12 +497,62 @@ export default function BarbersPage() {
         { headers: { Authorization: `Bearer ${token}` } }
       )
 
+      // Handle payment account connections if any were selected
+      const barberId = barberResponse.data.id
+      let connectionResults = []
+
+      if (newBarberConnections.stripe) {
+        try {
+          const stripeResponse = await axios.post(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payment-splits/connect-account`,
+            {
+              barber_id: barberId,
+              platform: 'stripe',
+              redirect_uri: window.location.origin + '/barbers'
+            },
+            { headers: { Authorization: `Bearer ${token}` } }
+          )
+          connectionResults.push('✅ Stripe OAuth URL generated')
+        } catch (error) {
+          console.error('Failed to initiate Stripe connection:', error)
+          connectionResults.push('⚠️ Stripe connection setup failed')
+        }
+      }
+
+      if (newBarberConnections.square) {
+        try {
+          const squareResponse = await axios.post(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payment-splits/connect-account`,
+            {
+              barber_id: barberId,
+              platform: 'square',
+              redirect_uri: window.location.origin + '/barbers'
+            },
+            { headers: { Authorization: `Bearer ${token}` } }
+          )
+          connectionResults.push('✅ Square OAuth URL generated')
+        } catch (error) {
+          console.error('Failed to initiate Square connection:', error)
+          connectionResults.push('⚠️ Square connection setup failed')
+        }
+      }
+
       // Refresh barbers list
       await fetchBarbers()
       setShowAddBarber(false)
+      resetForm()
 
-      // Show success message (you could add a toast notification here)
-      alert('Barber added successfully! They will receive an email to set up their password.')
+      // Show comprehensive success message
+      let successMessage = '🎉 Barber added successfully!\n\n'
+      successMessage += '📧 They will receive an email to set up their password.\n'
+      
+      if (connectionResults.length > 0) {
+        successMessage += '\n💳 Payment Connections:\n'
+        successMessage += connectionResults.join('\n')
+        successMessage += '\n\n📱 They will receive OAuth instructions via email.'
+      }
+
+      alert(successMessage)
     } catch (error) {
       console.error('Failed to add barber:', error)
       alert('Failed to add barber. Please try again.')
