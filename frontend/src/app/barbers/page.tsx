@@ -80,6 +80,10 @@ export default function BarbersPage() {
     compensation_preset: ''
   })
   const [formErrors, setFormErrors] = useState({})
+  const [newBarberConnections, setNewBarberConnections] = useState({
+    stripe: false,
+    square: false
+  })
   const router = useRouter()
 
   useEffect(() => {
@@ -247,6 +251,55 @@ export default function BarbersPage() {
     setFormErrors({})
     setSelectedPreset('')
     setAddBarberStep(1)
+    setNewBarberConnections({
+      stripe: false,
+      square: false
+    })
+  }
+
+  const handleNewBarberStripeConnect = async () => {
+    try {
+      // In a real implementation, this would open Stripe Connect OAuth
+      // For now, we'll simulate the connection
+      console.log('Initiating Stripe Connect for new barber...')
+      
+      // Simulate the OAuth flow
+      const confirmed = confirm(
+        'This would redirect to Stripe to connect the barber\'s account.\n\n' +
+        'After the barber completes OAuth, they would return here with their account connected.\n\n' +
+        'Simulate successful connection?'
+      )
+      
+      if (confirmed) {
+        setNewBarberConnections(prev => ({ ...prev, stripe: true }))
+        alert('✅ Stripe account connected! Barber can now receive commission payouts.')
+      }
+    } catch (error) {
+      console.error('Stripe connect failed:', error)
+      alert('❌ Failed to connect Stripe account. Please try again.')
+    }
+  }
+
+  const handleNewBarberSquareConnect = async () => {
+    try {
+      // In a real implementation, this would open Square Connect OAuth
+      console.log('Initiating Square Connect for new barber...')
+      
+      // Simulate the OAuth flow
+      const confirmed = confirm(
+        'This would redirect to Square to connect the barber\'s account.\n\n' +
+        'After the barber completes OAuth, they would return here with their account connected.\n\n' +
+        'Simulate successful connection?'
+      )
+      
+      if (confirmed) {
+        setNewBarberConnections(prev => ({ ...prev, square: true }))
+        alert('✅ Square account connected! Barber can now receive commission payouts.')
+      }
+    } catch (error) {
+      console.error('Square connect failed:', error)
+      alert('❌ Failed to connect Square account. Please try again.')
+    }
   }
 
   const handleStripeConnect = async (barberId: number) => {
@@ -1241,6 +1294,122 @@ export default function BarbersPage() {
                       </div>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Payment Account Connection - Show in Step 2 */}
+              {addBarberStep === 2 && (
+                <div className="bg-gray-800/50 rounded-lg p-6 space-y-4">
+                  <div className="flex items-center space-x-2 mb-4">
+                    <CreditCardIcon className="h-5 w-5 text-purple-400" />
+                    <h4 className="text-white font-medium">Payment Account Setup</h4>
+                    <span className="text-gray-500 text-sm">(Optional)</span>
+                    {(newBarberConnections.stripe || newBarberConnections.square) && (
+                      <div className="flex items-center space-x-1 ml-2">
+                        <CheckCircleIcon className="h-4 w-4 text-green-400" />
+                        <span className="text-green-400 text-xs font-medium">
+                          {newBarberConnections.stripe && newBarberConnections.square ? 'Both Connected' :
+                           newBarberConnections.stripe ? 'Stripe Connected' : 'Square Connected'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-gray-400 text-sm mb-4">
+                    Connect the barber's payment account to receive commission payouts instantly. This can also be set up later.
+                  </p>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Stripe Connect */}
+                    <div className="bg-gray-700/50 rounded-lg p-4">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <div className="w-8 h-8 bg-purple-600 rounded flex items-center justify-center">
+                          <span className="text-white text-sm font-bold">S</span>
+                        </div>
+                        <div>
+                          <h5 className="text-white font-medium">Stripe</h5>
+                          <p className="text-gray-400 text-xs">Industry standard payments</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleNewBarberStripeConnect}
+                        disabled={newBarberConnections.stripe}
+                        className={`w-full px-3 py-2 rounded text-sm transition-colors flex items-center justify-center space-x-2 ${
+                          newBarberConnections.stripe 
+                            ? 'bg-green-600 text-white cursor-default' 
+                            : 'bg-purple-600 hover:bg-purple-700 text-white'
+                        }`}
+                      >
+                        {newBarberConnections.stripe ? (
+                          <>
+                            <CheckCircleIcon className="h-4 w-4" />
+                            <span>Connected</span>
+                          </>
+                        ) : (
+                          <>
+                            <LinkIcon className="h-4 w-4" />
+                            <span>Connect Stripe Account</span>
+                          </>
+                        )}
+                      </button>
+                      <p className="text-xs text-gray-500 mt-2">
+                        2.9% + 30¢ per transaction
+                      </p>
+                    </div>
+
+                    {/* Square Connect */}
+                    <div className="bg-gray-700/50 rounded-lg p-4">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <div className="w-8 h-8 bg-gray-600 rounded flex items-center justify-center">
+                          <span className="text-white text-sm font-bold">□</span>
+                        </div>
+                        <div>
+                          <h5 className="text-white font-medium">Square</h5>
+                          <p className="text-gray-400 text-xs">All-in-one payment solution</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleNewBarberSquareConnect}
+                        disabled={newBarberConnections.square}
+                        className={`w-full px-3 py-2 rounded text-sm transition-colors flex items-center justify-center space-x-2 ${
+                          newBarberConnections.square 
+                            ? 'bg-green-600 text-white cursor-default' 
+                            : 'bg-gray-600 hover:bg-gray-500 text-white'
+                        }`}
+                      >
+                        {newBarberConnections.square ? (
+                          <>
+                            <CheckCircleIcon className="h-4 w-4" />
+                            <span>Connected</span>
+                          </>
+                        ) : (
+                          <>
+                            <LinkIcon className="h-4 w-4" />
+                            <span>Connect Square Account</span>
+                          </>
+                        )}
+                      </button>
+                      <p className="text-xs text-gray-500 mt-2">
+                        2.6% + 10¢ per transaction
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 mt-4">
+                    <div className="flex items-start space-x-2">
+                      <InformationCircleIcon className="h-4 w-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                      <div className="text-xs text-blue-300">
+                        <p className="font-medium mb-1">💡 Payment Setup Tips:</p>
+                        <ul className="space-y-1 text-blue-300/80">
+                          <li>• Barbers can connect their own accounts later from their profile</li>
+                          <li>• Payouts are processed automatically based on commission split</li>
+                          <li>• Multiple payment methods can be connected</li>
+                          <li>• Skip this step if setting up payment accounts later</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 
