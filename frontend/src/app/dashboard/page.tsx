@@ -52,6 +52,7 @@ interface BarberInfo {
 }
 
 export default function DashboardPage() {
+  const [mounted, setMounted] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -60,6 +61,12 @@ export default function DashboardPage() {
   const router = useRouter()
 
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
+    
     const token = localStorage.getItem('access_token')
     const userData = localStorage.getItem('user')
 
@@ -78,7 +85,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false)
     }
-  }, [router])
+  }, [router, mounted])
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -91,7 +98,7 @@ export default function DashboardPage() {
     try {
       // Fetch today's appointments stats
       const appointmentsResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/dashboard/appointments/today`,
+        `${process.env.NEXT_PUBLIC_API_URL}/dashboard/appointments/today`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -111,7 +118,7 @@ export default function DashboardPage() {
 
       // Fetch barber list
       const barbersResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/barbers`,
+        `${process.env.NEXT_PUBLIC_API_URL}/barbers`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -153,6 +160,14 @@ export default function DashboardPage() {
 
   const dashboardCards: DashboardCard[] = [
     {
+      title: 'Barbers',
+      description: 'Manage your team and payment accounts',
+      href: '/barbers',
+      icon: UserGroupIcon,
+      color: 'bg-purple-500',
+      stats: activeBarbers ? `${activeBarbers} active barbers` : 'Loading...'
+    },
+    {
       title: 'Appointments',
       description: 'View and manage today\'s appointments',
       href: '/dashboard/appointments',
@@ -165,7 +180,7 @@ export default function DashboardPage() {
       description: 'Track performance metrics and insights',
       href: '/analytics',
       icon: ChartBarIcon,
-      color: 'bg-purple-500',
+      color: 'bg-green-500',
       stats: '+23% This Week'
     },
     {
@@ -173,7 +188,7 @@ export default function DashboardPage() {
       description: 'Manage client messages and notifications',
       href: '/communications',
       icon: ChatBubbleLeftRightIcon,
-      color: 'bg-green-500',
+      color: 'bg-orange-500',
       stats: 'Coming Soon'
     },
     {
@@ -210,19 +225,11 @@ export default function DashboardPage() {
     }
   ]
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500 mx-auto"></div>
-          <p className="mt-4 text-gray-400">Loading...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return null
+  // Show dashboard immediately with mock data if not loaded
+  const currentUser = user || { 
+    first_name: 'Admin', 
+    last_name: 'User', 
+    role: 'admin' 
   }
 
   return (
@@ -232,16 +239,18 @@ export default function DashboardPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             <div className="flex items-center space-x-4">
-              <Image
-                src="/6fb-logo.png"
-                alt="6FB Logo"
-                width={75}
-                height={75}
-                className="rounded-full"
-              />
+              <a href="/" className="cursor-pointer">
+                <Image
+                  src="/6fb-logo.png"
+                  alt="6FB Logo"
+                  width={75}
+                  height={75}
+                  className="rounded-full hover:opacity-80 transition-opacity"
+                />
+              </a>
               <div>
-                <h1 className="text-xl font-bold text-white">Booking Platform</h1>
-                <p className="text-xs text-gray-400">Management Dashboard</p>
+                <h1 className="text-xl font-bold text-white">6FB Booking Platform</h1>
+                <p className="text-xs text-gray-400">Barber Management Dashboard</p>
               </div>
             </div>
             
@@ -258,9 +267,9 @@ export default function DashboardPage() {
               <div className="flex items-center space-x-4 border-l border-gray-700 pl-6">
                 <div className="text-right">
                   <p className="text-sm font-medium text-white">
-                    {user.first_name} {user.last_name}
+                    {currentUser.first_name} {currentUser.last_name}
                   </p>
-                  <p className="text-xs text-gray-400 capitalize">{user.role}</p>
+                  <p className="text-xs text-gray-400 capitalize">{currentUser.role}</p>
                 </div>
                 
                 <button
@@ -281,7 +290,7 @@ export default function DashboardPage() {
         {/* Welcome Section */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-white mb-2">
-            Welcome back, {user.first_name}!
+            Welcome back, {currentUser.first_name}!
           </h2>
           <p className="text-gray-400">
             Here's what's happening with your barbershop today.
@@ -375,6 +384,38 @@ export default function DashboardPage() {
             <p className="text-sm text-slate-400">
               Manage booking system connection
             </p>
+          </a>
+        </div>
+
+        {/* Primary Action - Barbers (More Discreet) */}
+        <div className="mb-8">
+          <a
+            href="/barbers"
+            className="group block bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 hover:border-purple-600/50 transition-all duration-200"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-purple-500/10 rounded-lg group-hover:bg-purple-500/20 transition-colors">
+                  <UserGroupIcon className="h-6 w-6 text-purple-400" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-purple-400 transition-colors">
+                    Manage Barbers
+                  </h3>
+                  <p className="text-sm text-slate-400">
+                    Team management, payment accounts, and schedules
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3">
+                <span className="text-xs font-medium text-purple-400 bg-purple-500/10 px-3 py-1 rounded-full">
+                  {activeBarbers ? `${activeBarbers} active` : 'Loading...'}
+                </span>
+                <svg className="w-5 h-5 text-slate-400 group-hover:text-purple-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </div>
           </a>
         </div>
 
