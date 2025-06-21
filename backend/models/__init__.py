@@ -27,6 +27,14 @@ from .communication import (
     SMSStatus,
     CommunicationType,
 )
+from .barber_payment import BarberPaymentModel
+from .compensation_plan import (
+    CompensationPlan,
+    CommissionCalculation,
+    PaymentHistory,
+    CompensationType,
+    PaymentFrequency,
+)
 
 # Export all models for easy importing
 __all__ = [
@@ -63,4 +71,10 @@ __all__ = [
     "EmailStatus",
     "SMSStatus",
     "CommunicationType",
+    "BarberPaymentModel",
+    "CompensationPlan",
+    "CommissionCalculation",
+    "PaymentHistory",
+    "CompensationType",
+    "PaymentFrequency",
 ]

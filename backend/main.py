@@ -5,6 +5,8 @@ Main FastAPI application for 6FB Booking Platform
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, RedirectResponse
 from sqlalchemy.orm import Session
 import uvicorn
 import os
@@ -27,6 +29,7 @@ from models import (
     notification,
     payment,
     communication,
+    barber_payment,
 )
 
 # Import security middleware
@@ -63,6 +66,11 @@ from api.v1.endpoints import (
     trafft_connect,
     trafft_oauth,
     simple_trafft,
+    square_integration,
+    location_payment_management,
+    barber_payment_splits,
+    barber_payroll,
+    compensation_plans,
 )
 from api import trafft_sync
 
@@ -78,6 +86,9 @@ import sys
 
 sys.path.append("/Users/bossio/auth-system")
 from fastapi_auth_integration import add_auth_to_sixfb_backend
+
+# Import Square sync scheduler
+from tasks.square_sync import start_square_sync, stop_square_sync
 
 # Initialize Sentry before anything else
 init_sentry()
@@ -175,9 +186,43 @@ app.include_router(
     simple_trafft.router, prefix="/api/v1/trafft-simple", tags=["Trafft Simple"]
 )
 app.include_router(trafft_sync.router, prefix="/api/trafft", tags=["Trafft Sync"])
+app.include_router(
+    square_integration.router, prefix="/api/v1/square", tags=["Square Integration"]
+)
+app.include_router(
+    location_payment_management.router,
+    prefix="/api/v1/location-payments",
+    tags=["Location Payments"],
+)
+app.include_router(
+    barber_payment_splits.router,
+    prefix="/api/v1/payment-splits",
+    tags=["Payment Splits"],
+)
+app.include_router(barber_payroll.router, prefix="/api/v1/payroll", tags=["Payroll"])
+app.include_router(
+    compensation_plans.router,
+    prefix="/api/v1/compensation-plans",
+    tags=["Compensation Plans"],
+)
 
 # Add authentication system
 app = add_auth_to_sixfb_backend(app)
+
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+# Homepage route
+@app.get("/")
+async def serve_homepage():
+    return FileResponse("static/index.html")
+
+
+# Dashboard route - Redirect to Next.js frontend
+@app.get("/dashboard")
+async def redirect_to_frontend_dashboard():
+    return RedirectResponse(url="http://localhost:3000/dashboard", status_code=302)
 
 
 @app.on_event("startup")
@@ -192,6 +237,23 @@ async def startup_event():
         logger.warning(
             "Application starting without database table creation - tables may need to be created manually"
         )
+
+    # Start Square sync scheduler
+    try:
+        start_square_sync()
+        logger.info("Square sync scheduler started successfully")
+    except Exception as e:
+        logger.error(f"Failed to start Square sync scheduler: {str(e)}")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Clean up resources on shutdown"""
+    try:
+        stop_square_sync()
+        logger.info("Square sync scheduler stopped successfully")
+    except Exception as e:
+        logger.error(f"Failed to stop Square sync scheduler: {str(e)}")
 
 
 @app.get("/")
