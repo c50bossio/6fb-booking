@@ -84,6 +84,10 @@ export default function BarbersPage() {
     stripe: false,
     square: false
   })
+  const [showConnectionDialog, setShowConnectionDialog] = useState<{
+    type: 'stripe' | 'square' | null,
+    show: boolean
+  }>({ type: null, show: false })
   const router = useRouter()
 
   useEffect(() => {
@@ -257,54 +261,34 @@ export default function BarbersPage() {
     })
   }
 
-  const handleNewBarberStripeConnect = async () => {
-    try {
-      // Validate required fields first
-      if (!formData.first_name || !formData.last_name || !formData.email) {
-        alert('⚠️ Please fill in the required fields (Name and Email) before connecting payment accounts.')
-        return
-      }
-
-      const confirmed = confirm(
-        '🔗 Stripe Connect Integration\n\n' +
-        'This will mark Stripe for connection after the barber is created.\n' +
-        'The barber will receive an email with OAuth instructions.\n\n' +
-        'Continue with Stripe setup?'
-      )
-      
-      if (confirmed) {
-        setNewBarberConnections(prev => ({ ...prev, stripe: true }))
-        alert('✅ Stripe connection queued! After creating the barber, they\'ll receive OAuth instructions.')
-      }
-    } catch (error) {
-      console.error('Stripe connect setup failed:', error)
-      alert('❌ Failed to prepare Stripe connection. Please try again.')
+  const handleNewBarberStripeConnect = () => {
+    // Validate required fields first
+    if (!formData.first_name || !formData.last_name || !formData.email) {
+      alert('⚠️ Please fill in the required fields (Name and Email) before connecting payment accounts.')
+      return
     }
+
+    setShowConnectionDialog({ type: 'stripe', show: true })
   }
 
-  const handleNewBarberSquareConnect = async () => {
-    try {
-      // Validate required fields first
-      if (!formData.first_name || !formData.last_name || !formData.email) {
-        alert('⚠️ Please fill in the required fields (Name and Email) before connecting payment accounts.')
-        return
-      }
+  const confirmStripeConnection = () => {
+    setNewBarberConnections(prev => ({ ...prev, stripe: true }))
+    setShowConnectionDialog({ type: null, show: false })
+  }
 
-      const confirmed = confirm(
-        '🔗 Square Connect Integration\n\n' +
-        'This will mark Square for connection after the barber is created.\n' +
-        'The barber will receive an email with OAuth instructions.\n\n' +
-        'Continue with Square setup?'
-      )
-      
-      if (confirmed) {
-        setNewBarberConnections(prev => ({ ...prev, square: true }))
-        alert('✅ Square connection queued! After creating the barber, they\'ll receive OAuth instructions.')
-      }
-    } catch (error) {
-      console.error('Square connect setup failed:', error)
-      alert('❌ Failed to prepare Square connection. Please try again.')
+  const handleNewBarberSquareConnect = () => {
+    // Validate required fields first
+    if (!formData.first_name || !formData.last_name || !formData.email) {
+      alert('⚠️ Please fill in the required fields (Name and Email) before connecting payment accounts.')
+      return
     }
+
+    setShowConnectionDialog({ type: 'square', show: true })
+  }
+
+  const confirmSquareConnection = () => {
+    setNewBarberConnections(prev => ({ ...prev, square: true }))
+    setShowConnectionDialog({ type: null, show: false })
   }
 
   const handleStripeConnect = async (barberId: number) => {
@@ -1897,6 +1881,68 @@ export default function BarbersPage() {
               }}
               onCancel={() => setShowCompensationPlan(false)}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Payment Connection Confirmation Dialog */}
+      {showConnectionDialog.show && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-[60]">
+          <div className="bg-gray-800 rounded-lg max-w-md w-full p-6 border border-gray-700">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                showConnectionDialog.type === 'stripe' ? 'bg-purple-600' : 'bg-gray-600'
+              }`}>
+                <span className="text-white font-bold">
+                  {showConnectionDialog.type === 'stripe' ? 'S' : '□'}
+                </span>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">
+                  {showConnectionDialog.type === 'stripe' ? 'Stripe' : 'Square'} Connect Integration
+                </h3>
+                <p className="text-gray-400 text-sm">Payment account setup</p>
+              </div>
+            </div>
+
+            <div className="space-y-3 mb-6">
+              <p className="text-gray-300">
+                This will mark {showConnectionDialog.type === 'stripe' ? 'Stripe' : 'Square'} for connection after the barber is created.
+              </p>
+              
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+                <p className="text-blue-300 text-sm font-medium mb-1">📧 What happens next:</p>
+                <ul className="text-blue-300/80 text-sm space-y-1">
+                  <li>• Barber account will be created</li>
+                  <li>• OAuth instructions sent via email</li>
+                  <li>• Barber completes secure account connection</li>
+                  <li>• Instant commission payouts activated</li>
+                </ul>
+              </div>
+
+              <p className="text-gray-400 text-sm">
+                <strong>Note:</strong> The barber must complete their own OAuth for security compliance.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end space-x-3">
+              <button
+                onClick={() => setShowConnectionDialog({ type: null, show: false })}
+                className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={showConnectionDialog.type === 'stripe' ? confirmStripeConnection : confirmSquareConnection}
+                className={`px-6 py-2 rounded-lg font-medium text-white transition-colors ${
+                  showConnectionDialog.type === 'stripe' 
+                    ? 'bg-purple-600 hover:bg-purple-700' 
+                    : 'bg-gray-600 hover:bg-gray-500'
+                }`}
+              >
+                Continue Setup
+              </button>
+            </div>
           </div>
         </div>
       )}
