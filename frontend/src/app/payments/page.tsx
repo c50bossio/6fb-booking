@@ -14,7 +14,9 @@ import {
   XCircleIcon,
   EyeIcon,
   PlusIcon,
-  TrashIcon
+  TrashIcon,
+  CurrencyDollarIcon,
+  UserGroupIcon
 } from '@heroicons/react/24/outline'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
@@ -28,6 +30,22 @@ interface Payment {
   payment_method: string
   created_at: string
   description: string
+}
+
+interface BarberPaymentModel {
+  barber_id: number
+  barber_name: string
+  payment_type: string
+  commission_rate: string
+  stripe_connected: boolean
+  square_connected: boolean
+}
+
+interface PaymentSplit {
+  total: number
+  barber_gets: number
+  shop_gets: number
+  commission_rate: string
   client_name?: string
   barber_name?: string
   service_name?: string

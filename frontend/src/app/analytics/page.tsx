@@ -223,6 +223,21 @@ export default function AnalyticsDashboard() {
             </div>
             
             <div className="flex items-center space-x-4">
+              <a
+                href="/barber-payments"
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2 mr-2"
+              >
+                <UserGroupIcon className="h-4 w-4" />
+                <span>Barber Payments</span>
+              </a>
+              <a
+                href="/payments"
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2"
+              >
+                <CurrencyDollarIcon className="h-4 w-4" />
+                <span>Customer Payments</span>
+              </a>
+              
               <select
                 value={timeRange}
                 onChange={(e) => setTimeRange(e.target.value)}

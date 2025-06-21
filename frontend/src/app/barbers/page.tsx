@@ -71,6 +71,15 @@ export default function BarbersPage() {
   const [addBarberStep, setAddBarberStep] = useState(1) // 1 = Basic Info, 2 = Advanced Compensation
   const [newBarberPaymentType, setNewBarberPaymentType] = useState('commission_only')
   const [selectedPreset, setSelectedPreset] = useState('')
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
+    location_id: '',
+    compensation_preset: ''
+  })
+  const [formErrors, setFormErrors] = useState({})
   const router = useRouter()
 
   useEffect(() => {
@@ -184,6 +193,60 @@ export default function BarbersPage() {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(amount)
+  }
+
+  const validateStep1 = () => {
+    const errors = {}
+    
+    if (!formData.first_name.trim()) {
+      errors.first_name = 'First name is required'
+    }
+    if (!formData.last_name.trim()) {
+      errors.last_name = 'Last name is required'
+    }
+    if (!formData.email.trim()) {
+      errors.email = 'Email is required'
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      errors.email = 'Email is invalid'
+    }
+    
+    setFormErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+    // Clear error when user starts typing
+    if (formErrors[name]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }))
+    }
+  }
+
+  const handleNextStep = () => {
+    if (validateStep1()) {
+      setAddBarberStep(2)
+    }
+  }
+
+  const resetForm = () => {
+    setFormData({
+      first_name: '',
+      last_name: '',
+      email: '',
+      phone: '',
+      location_id: '',
+      compensation_preset: ''
+    })
+    setFormErrors({})
+    setSelectedPreset('')
+    setAddBarberStep(1)
   }
 
   const handleStripeConnect = async (barberId: number) => {
@@ -600,51 +663,74 @@ export default function BarbersPage() {
                   {/* Basic Information */}
                   <div>
                 <h3 className="text-lg font-semibold text-white mb-4">Basic Information</h3>
+                <p className="text-gray-400 text-sm mb-4">
+                  Complete the required fields below to continue. Additional details can be added later.
+                </p>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      First Name
+                      First Name <span className="text-red-400">*</span>
                     </label>
                     <input
                       type="text"
                       name="first_name"
-                      required
-                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                      value={formData.first_name}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-2 bg-gray-700 border rounded-lg text-white focus:outline-none focus:border-purple-500 ${
+                        formErrors.first_name ? 'border-red-500' : 'border-gray-600'
+                      }`}
                     />
+                    {formErrors.first_name && (
+                      <p className="text-red-400 text-sm mt-1">{formErrors.first_name}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Last Name
+                      Last Name <span className="text-red-400">*</span>
                     </label>
                     <input
                       type="text"
                       name="last_name"
-                      required
-                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                      value={formData.last_name}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-2 bg-gray-700 border rounded-lg text-white focus:outline-none focus:border-purple-500 ${
+                        formErrors.last_name ? 'border-red-500' : 'border-gray-600'
+                      }`}
                     />
+                    {formErrors.last_name && (
+                      <p className="text-red-400 text-sm mt-1">{formErrors.last_name}</p>
+                    )}
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 mt-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Email
+                      Email <span className="text-red-400">*</span>
                     </label>
                     <input
                       type="email"
                       name="email"
-                      required
-                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-2 bg-gray-700 border rounded-lg text-white focus:outline-none focus:border-purple-500 ${
+                        formErrors.email ? 'border-red-500' : 'border-gray-600'
+                      }`}
                     />
+                    {formErrors.email && (
+                      <p className="text-red-400 text-sm mt-1">{formErrors.email}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Phone
+                      Phone <span className="text-gray-500 text-sm">(Optional)</span>
                     </label>
                     <input
                       type="tel"
                       name="phone"
-                      required
+                      value={formData.phone}
+                      onChange={handleInputChange}
                       className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                      placeholder="Optional"
                     />
                   </div>
                 </div>
@@ -654,10 +740,11 @@ export default function BarbersPage() {
                   </label>
                   <select
                     name="location_id"
-                    required
+                    value={formData.location_id}
+                    onChange={handleInputChange}
                     className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
                   >
-                    <option value="">Select Location</option>
+                    <option value="">Select Location (Optional)</option>
                     <option value="1">Downtown Shop</option>
                     <option value="2">Uptown Premium</option>
                     <option value="3">Brooklyn Style</option>
@@ -671,14 +758,15 @@ export default function BarbersPage() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Choose a Preset Plan
+                      Choose a Preset Plan <span className="text-gray-500 text-sm">(Optional - can be set later)</span>
                     </label>
                     <select
                       name="compensation_preset"
-                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                      value={formData.compensation_preset}
                       onChange={(e) => {
                         const preset = e.target.value;
                         setSelectedPreset(preset);
+                        handleInputChange(e);
                         // Auto-fill based on preset selection
                         if (['apprentice', 'new_barber', 'experienced', 'master'].includes(preset)) {
                           setNewBarberPaymentType('commission_only');
@@ -693,6 +781,7 @@ export default function BarbersPage() {
                           setNewBarberPaymentType('salary_plus_commission');
                         }
                       }}
+                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
                     >
                       <option value="">Select a compensation plan...</option>
                       <option value="apprentice">🎓 Apprentice (40% commission + training support)</option>
@@ -1177,7 +1266,7 @@ export default function BarbersPage() {
                     type="button"
                     onClick={() => {
                       setShowAddBarber(false)
-                      setAddBarberStep(1)
+                      resetForm()
                     }}
                     className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
                   >
@@ -1187,7 +1276,7 @@ export default function BarbersPage() {
                   {addBarberStep === 1 && (
                     <button
                       type="button"
-                      onClick={() => setAddBarberStep(2)}
+                      onClick={handleNextStep}
                       className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors flex items-center"
                     >
                       Next

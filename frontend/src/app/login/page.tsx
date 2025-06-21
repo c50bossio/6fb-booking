@@ -1,15 +1,23 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
 
 export default function LoginPage() {
+  const [mounted, setMounted] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
+  const [showEmailLogin, setShowEmailLogin] = useState(false)
+  const [resetMessage, setResetMessage] = useState('')
   const router = useRouter()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -18,14 +26,14 @@ export default function LoginPage() {
 
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/token`,
-        new URLSearchParams({
-          username: email,
+        `http://localhost:8000/auth/login`,
+        {
+          username_or_email: email,
           password: password,
-        }),
+        },
         {
           headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Type': 'application/json',
           },
         }
       )
@@ -41,6 +49,47 @@ export default function LoginPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+
+    try {
+      await axios.post(`http://localhost:8000/auth/forgot-password`, {
+        email: email
+      })
+      setResetMessage('Password reset instructions have been sent to your email.')
+      setShowForgotPassword(false)
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to send reset email')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+
+    try {
+      await axios.post(`http://localhost:8000/auth/send-magic-link`, {
+        email: email
+      })
+      setResetMessage('A secure login link has been sent to your email.')
+      setShowEmailLogin(false)
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to send magic link')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) {
+    return null
   }
 
   return (
@@ -140,6 +189,132 @@ export default function LoginPage() {
                 </button>
               </div>
             </form>
+
+            {resetMessage && (
+              <div className="mt-4 rounded-md bg-green-50 border border-green-200 p-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-green-800">{resetMessage}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Forgot Password Form */}
+            {showForgotPassword && (
+              <div className="mt-6 border-t border-gray-200 pt-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Reset Password</h3>
+                <form onSubmit={handleForgotPassword} className="space-y-4">
+                  <div>
+                    <label htmlFor="reset-email" className="block text-sm font-medium text-gray-700">
+                      Email address
+                    </label>
+                    <input
+                      id="reset-email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      placeholder="Enter your email"
+                    />
+                  </div>
+                  <div className="flex space-x-3">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-50"
+                    >
+                      {loading ? 'Sending...' : 'Send Reset Link'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowForgotPassword(false)}
+                      className="flex-1 bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {/* Email Login Form */}
+            {showEmailLogin && (
+              <div className="mt-6 border-t border-gray-200 pt-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Sign in with Email Link</h3>
+                <form onSubmit={handleEmailLogin} className="space-y-4">
+                  <div>
+                    <label htmlFor="magic-email" className="block text-sm font-medium text-gray-700">
+                      Email address
+                    </label>
+                    <input
+                      id="magic-email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      placeholder="Enter your email"
+                    />
+                  </div>
+                  <div className="flex space-x-3">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="flex-1 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 disabled:opacity-50"
+                    >
+                      {loading ? 'Sending...' : 'Send Magic Link'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowEmailLogin(false)}
+                      className="flex-1 bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {/* Alternative Login Options */}
+            {!showForgotPassword && !showEmailLogin && (
+              <div className="mt-6 space-y-3">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="w-full text-center text-sm text-indigo-600 hover:text-indigo-500"
+                >
+                  Forgot your password?
+                </button>
+                
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300" />
+                  </div>
+                  <div className="relative flex justify-center text-xs">
+                    <span className="bg-white px-2 text-gray-500">or</span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowEmailLogin(true)}
+                  className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  Sign in with Email Link
+                </button>
+              </div>
+            )}
 
             <div className="mt-10">
               <div className="relative">
