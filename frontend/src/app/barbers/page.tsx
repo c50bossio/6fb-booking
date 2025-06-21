@@ -271,9 +271,19 @@ export default function BarbersPage() {
     setShowConnectionDialog({ type: 'stripe', show: true })
   }
 
-  const confirmStripeConnection = () => {
-    setNewBarberConnections(prev => ({ ...prev, stripe: true }))
-    setShowConnectionDialog({ type: null, show: false })
+  const confirmStripeConnection = async () => {
+    try {
+      // Mark as pending connection
+      setNewBarberConnections(prev => ({ ...prev, stripe: true }))
+      setShowConnectionDialog({ type: null, show: false })
+      
+      // If we're in Step 2 and barber creation is imminent, we'll handle OAuth after creation
+      // For now, just mark it as ready
+      alert('✅ Stripe connection ready! OAuth will open after creating the barber.')
+    } catch (error) {
+      console.error('Failed to prepare Stripe connection:', error)
+      alert('❌ Failed to prepare Stripe connection.')
+    }
   }
 
   const handleNewBarberSquareConnect = () => {
@@ -286,9 +296,19 @@ export default function BarbersPage() {
     setShowConnectionDialog({ type: 'square', show: true })
   }
 
-  const confirmSquareConnection = () => {
-    setNewBarberConnections(prev => ({ ...prev, square: true }))
-    setShowConnectionDialog({ type: null, show: false })
+  const confirmSquareConnection = async () => {
+    try {
+      // Mark as pending connection
+      setNewBarberConnections(prev => ({ ...prev, square: true }))
+      setShowConnectionDialog({ type: null, show: false })
+      
+      // If we're in Step 2 and barber creation is imminent, we'll handle OAuth after creation
+      // For now, just mark it as ready
+      alert('✅ Square connection ready! OAuth will open after creating the barber.')
+    } catch (error) {
+      console.error('Failed to prepare Square connection:', error)
+      alert('❌ Failed to prepare Square connection.')
+    }
   }
 
   const handleStripeConnect = async (barberId: number) => {
@@ -496,7 +516,14 @@ export default function BarbersPage() {
             },
             { headers: { Authorization: `Bearer ${token}` } }
           )
-          connectionResults.push('✅ Stripe OAuth URL generated')
+          
+          if (stripeResponse.data.oauth_url) {
+            // Open Stripe OAuth immediately
+            const oauthWindow = window.open(stripeResponse.data.oauth_url, 'stripe_oauth', 'width=600,height=700')
+            connectionResults.push('✅ Stripe OAuth opened - complete connection in popup')
+          } else {
+            connectionResults.push('⚠️ Stripe OAuth URL not received')
+          }
         } catch (error) {
           console.error('Failed to initiate Stripe connection:', error)
           connectionResults.push('⚠️ Stripe connection setup failed')
@@ -514,7 +541,14 @@ export default function BarbersPage() {
             },
             { headers: { Authorization: `Bearer ${token}` } }
           )
-          connectionResults.push('✅ Square OAuth URL generated')
+          
+          if (squareResponse.data.oauth_url) {
+            // Open Square OAuth immediately
+            const oauthWindow = window.open(squareResponse.data.oauth_url, 'square_oauth', 'width=600,height=700')
+            connectionResults.push('✅ Square OAuth opened - complete connection in popup')
+          } else {
+            connectionResults.push('⚠️ Square OAuth URL not received')
+          }
         } catch (error) {
           console.error('Failed to initiate Square connection:', error)
           connectionResults.push('⚠️ Square connection setup failed')
@@ -533,7 +567,8 @@ export default function BarbersPage() {
       if (connectionResults.length > 0) {
         successMessage += '\n💳 Payment Connections:\n'
         successMessage += connectionResults.join('\n')
-        successMessage += '\n\n📱 They will receive OAuth instructions via email.'
+        successMessage += '\n\n🔗 OAuth popup windows opened for account connection.'
+        successMessage += '\n📱 Complete the login process in the popup windows.'
       }
 
       alert(successMessage)
@@ -1907,21 +1942,21 @@ export default function BarbersPage() {
 
             <div className="space-y-3 mb-6">
               <p className="text-gray-300">
-                This will mark {showConnectionDialog.type === 'stripe' ? 'Stripe' : 'Square'} for connection after the barber is created.
+                This will immediately open {showConnectionDialog.type === 'stripe' ? 'Stripe' : 'Square'} OAuth after the barber is created.
               </p>
               
               <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
-                <p className="text-blue-300 text-sm font-medium mb-1">📧 What happens next:</p>
+                <p className="text-blue-300 text-sm font-medium mb-1">🔗 What happens next:</p>
                 <ul className="text-blue-300/80 text-sm space-y-1">
                   <li>• Barber account will be created</li>
-                  <li>• OAuth instructions sent via email</li>
-                  <li>• Barber completes secure account connection</li>
+                  <li>• OAuth popup window opens immediately</li>
+                  <li>• Complete {showConnectionDialog.type === 'stripe' ? 'Stripe' : 'Square'} login in popup</li>
                   <li>• Instant commission payouts activated</li>
                 </ul>
               </div>
 
               <p className="text-gray-400 text-sm">
-                <strong>Note:</strong> The barber must complete their own OAuth for security compliance.
+                <strong>Ready to connect?</strong> The OAuth login will open in a new popup window.
               </p>
             </div>
 
