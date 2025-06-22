@@ -30,6 +30,7 @@ from models import (
     payment,
     communication,
     barber_payment,
+    booking,
 )
 
 # Import security middleware
@@ -53,27 +54,31 @@ from api.v1 import (
     automation as automation_router,
     websocket,
     notifications,
+    booking,
+    calendar,
 )
 from api.v1.endpoints import (
     payments,
     webhooks,
     communications,
-    sync_status,
     public_status,
     dashboard,
     temp_reset,
     debug,
-    trafft_connect,
-    trafft_oauth,
-    simple_trafft,
     square_integration,
     location_payment_management,
     barber_payment_splits,
     barber_payroll,
     compensation_plans,
     barber_payments,
+    test_stripe_status,
+    barber_stripe_connect,
+    test_payout,
+    booking_public,
+    booking_authenticated,
+    public_dashboard,
+    test_email,
 )
-from api import trafft_sync
 
 # Import logging setup
 from utils.logging import setup_logging
@@ -82,11 +87,10 @@ import logging
 # Import Sentry configuration
 from sentry_config import init_sentry
 
-# Import authentication system
-import sys
-
-sys.path.append("/Users/bossio/auth-system")
-from fastapi_auth_integration import add_auth_to_sixfb_backend
+# Import authentication system (disabled for now)
+# import sys
+# sys.path.append("/Users/bossio/auth-system")
+# from fastapi_auth_integration import add_auth_to_sixfb_backend
 
 # Import Square sync scheduler
 from tasks.square_sync import start_square_sync, stop_square_sync
@@ -131,6 +135,11 @@ default_origins = [
     "http://localhost:8083",  # Alternative dashboard
     "https://sixfb-frontend.onrender.com",
     "https://sixfb-frontend-paby.onrender.com",  # Your actual Render frontend URL
+    "https://bookbarber-dkbwc7iez-6fb.vercel.app",  # New Vercel deployment
+    "https://bookbarber.com",  # Production domain
+    "https://app.bookbarber.com",  # App subdomain
+    "https://*.bookbarber.com",  # All subdomains
+    "https://*.vercel.app",  # All Vercel preview deployments
 ]
 
 # Combine environment and default origins
@@ -142,8 +151,16 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=[
+        "Accept",
+        "Accept-Language",
+        "Content-Language",
+        "Content-Type",
+        "Authorization",
+        "X-Requested-With",
+        "Cache-Control"
+    ],
 )
 
 # Register exception handlers
@@ -167,26 +184,19 @@ app.include_router(websocket.router, prefix="/api/v1", tags=["WebSocket"])
 app.include_router(
     notifications.router, prefix="/api/v1/notifications", tags=["Notifications"]
 )
+app.include_router(booking.router, prefix="/api/v1/booking", tags=["Booking"])
+app.include_router(calendar.router, prefix="/api/v1/calendar", tags=["Calendar"])
 app.include_router(payments.router, prefix="/api/v1/payments", tags=["Payments"])
 app.include_router(webhooks.router, prefix="/api/v1/webhooks", tags=["Webhooks"])
 app.include_router(communications.router, prefix="/api/v1", tags=["Communications"])
-app.include_router(sync_status.router, prefix="/api/v1/sync", tags=["Sync Status"])
+app.include_router(compensation_plans.router, prefix="/api/v1/compensation-plans", tags=["Compensation Plans"])
+app.include_router(test_payout.router, prefix="/api/v1/test-payout", tags=["Test Payout"])
 app.include_router(
     public_status.router, prefix="/api/v1/public", tags=["Public Status"]
 )
 app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["Dashboard"])
 app.include_router(temp_reset.router, prefix="/api/v1/temp", tags=["Temp"])
 app.include_router(debug.router, prefix="/api/v1/debug", tags=["Debug"])
-app.include_router(
-    trafft_connect.router, prefix="/api/v1/trafft", tags=["Trafft Connect"]
-)
-app.include_router(
-    trafft_oauth.router, prefix="/api/v1/trafft-oauth", tags=["Trafft OAuth"]
-)
-app.include_router(
-    simple_trafft.router, prefix="/api/v1/trafft-simple", tags=["Trafft Simple"]
-)
-app.include_router(trafft_sync.router, prefix="/api/trafft", tags=["Trafft Sync"])
 app.include_router(
     square_integration.router, prefix="/api/v1/square", tags=["Square Integration"]
 )
@@ -211,9 +221,39 @@ app.include_router(
     prefix="/api/v1/barber-payments",
     tags=["Barber Payments"],
 )
+app.include_router(
+    test_stripe_status.router,
+    prefix="/api/v1/test-stripe",
+    tags=["Test Stripe"],
+)
+app.include_router(
+    barber_stripe_connect.router,
+    prefix="/api/v1/stripe-connect",
+    tags=["Stripe Connect"],
+)
+app.include_router(
+    booking_public.router,
+    prefix="/api/v1/booking-public",
+    tags=["Booking Public"],
+)
+app.include_router(
+    booking_authenticated.router,
+    prefix="/api/v1/booking-auth",
+    tags=["Booking Authenticated"],
+)
+app.include_router(
+    public_dashboard.router,
+    prefix="/api/v1",
+    tags=["Public Dashboard"],
+)
+app.include_router(
+    test_email.router,
+    prefix="/api/v1",
+    tags=["Test"],
+)
 
-# Add authentication system
-app = add_auth_to_sixfb_backend(app)
+# Add authentication system (disabled for now)
+# app = add_auth_to_sixfb_backend(app)
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -250,6 +290,22 @@ async def startup_event():
         logger.info("Square sync scheduler started successfully")
     except Exception as e:
         logger.error(f"Failed to start Square sync scheduler: {str(e)}")
+    
+    # Start payout scheduler
+    try:
+        from services.payout_scheduler import payout_scheduler
+        payout_scheduler.start()
+        
+        # Schedule all active compensation plans
+        db = SessionLocal()
+        try:
+            payout_scheduler.schedule_all_payouts(db)
+        finally:
+            db.close()
+            
+        logger.info("Payout scheduler started successfully")
+    except Exception as e:
+        logger.error(f"Failed to start payout scheduler: {str(e)}")
 
 
 @app.on_event("shutdown")
@@ -260,6 +316,13 @@ async def shutdown_event():
         logger.info("Square sync scheduler stopped successfully")
     except Exception as e:
         logger.error(f"Failed to stop Square sync scheduler: {str(e)}")
+    
+    try:
+        from services.payout_scheduler import payout_scheduler
+        payout_scheduler.stop()
+        logger.info("Payout scheduler stopped successfully")
+    except Exception as e:
+        logger.error(f"Failed to stop payout scheduler: {str(e)}")
 
 
 @app.get("/")
@@ -362,8 +425,14 @@ def get_cost_estimates():
 @app.get("/sentry-debug")
 def trigger_error():
     """Sentry debug endpoint - triggers a test error"""
+    # Only allow in development environment
+    if settings.ENVIRONMENT.lower() != "development":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Not found"
+        )
+    
     logger.info("Sentry debug endpoint called - triggering test error")
-
     # This will be captured by Sentry
     division_by_zero = 1 / 0
 
