@@ -24,9 +24,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
   return (
     <ThemeProvider>
       <div className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}>
-        <div className="flex min-h-screen">
+        <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
           <DemoModernSidebar />
-          <main className="flex-1 transition-all duration-300">
+          <main className="flex-1 transition-all duration-300 overflow-y-auto">
             {children}
           </main>
         </div>

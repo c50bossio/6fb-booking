@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import { NavigationProvider } from "@/components/NavigationProvider";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import ClientOnly from "@/components/ClientOnly";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ExtensionDetector from "@/components/ExtensionDetector";
@@ -42,10 +43,10 @@ export default function RootLayout({
   const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_TRACKING_ID;
 
   return (
-    <html lang="en" suppressHydrationWarning className="dark">
+    <html lang="en" suppressHydrationWarning>
       <head />
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased dark bg-slate-900 text-white`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
         {/* Google Analytics */}
@@ -71,14 +72,16 @@ export default function RootLayout({
         )}
 
         <ErrorBoundary>
-          <AuthProvider>
-            <NavigationProvider>
-              <ClientOnly>
-                {children}
-              </ClientOnly>
-            </NavigationProvider>
-          </AuthProvider>
-          <ExtensionDetector />
+          <ThemeProvider>
+            <AuthProvider>
+              <NavigationProvider>
+                <ClientOnly>
+                  {children}
+                </ClientOnly>
+              </NavigationProvider>
+            </AuthProvider>
+            <ExtensionDetector />
+          </ThemeProvider>
         </ErrorBoundary>
       </body>
     </html>

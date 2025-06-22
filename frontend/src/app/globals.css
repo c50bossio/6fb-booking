@@ -910,11 +910,16 @@ button:hover::before {
 
   /* Theme-specific sidebar styles */
   .sidebar-dark {
-    @apply bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900;
+    background: linear-gradient(180deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
   }
 
   .sidebar-light {
-    @apply bg-white shadow-lg;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 50%, #ffffff 100%);
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    color: #1f2937;
   }
 
   /* Theme body backgrounds */

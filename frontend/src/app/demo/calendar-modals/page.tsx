@@ -290,7 +290,6 @@ export default function CalendarModalsDemo() {
           </div>
         </div>
       </div>
-    </div>
 
       {/* Modals */}
       <CreateAppointmentModal

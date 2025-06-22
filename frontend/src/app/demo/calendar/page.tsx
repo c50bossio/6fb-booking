@@ -106,6 +106,7 @@ export default function StandaloneCalendarDemo() {
             <p className="text-center text-violet-700 dark:text-violet-300">
               💡 <strong>Pro Tip:</strong> All settings apply instantly - try changing the accent color or density to see real-time updates!
             </p>
+          </div>
         </div>
       </div>
     </div>
