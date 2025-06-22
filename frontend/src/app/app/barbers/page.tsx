@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTheme } from '@/contexts/ThemeContext'
 import {
   UserGroupIcon,
   PlusIcon,
@@ -150,7 +151,7 @@ export default function BarbersPage() {
       paymentAccount: null,
       lastPayout: new Date().toISOString().split('T')[0]
     }
-    
+
     setBarbers([...barbers, newBarber])
     setShowAddModal(false)
     setFormData({ name: '', email: '', phone: '', commission: 65 })
@@ -163,12 +164,12 @@ export default function BarbersPage() {
       return
     }
 
-    setBarbers(barbers.map(barber => 
-      barber.id === editingBarber.id 
+    setBarbers(barbers.map(barber =>
+      barber.id === editingBarber.id
         ? { ...barber, ...formData }
         : barber
     ))
-    
+
     setShowEditModal(false)
     setEditingBarber(null)
     setFormData({ name: '', email: '', phone: '', commission: 65 })
@@ -179,47 +180,16 @@ export default function BarbersPage() {
     setFormData({ name: '', email: '', phone: '', commission: 65 })
   }
 
+  const { theme } = useTheme();
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navigation Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">6FB Platform</h1>
-              <nav className="ml-10 flex space-x-4">
-                <a href="/app" className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
-                  Dashboard
-                </a>
-                <a href="/app/calendar" className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
-                  Calendar
-                </a>
-                <a href="/app/analytics" className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
-                  Analytics
-                </a>
-                <a href="/app/barbers" className="text-gray-900 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
-                  Barbers
-                </a>
-                <a href="/app/payments" className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
-                  Payments
-                </a>
-              </nav>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-500">Demo Mode</span>
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
-                D
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className={`min-h-screen transition-colors ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
 
       {/* Notification System */}
       {notification && (
         <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg ${
-          notification.type === 'success' 
-            ? 'bg-green-500 text-white' 
+          notification.type === 'success'
+            ? 'bg-green-500 text-white'
             : 'bg-red-500 text-white'
         }`}>
           {notification.message}
@@ -253,7 +223,7 @@ export default function BarbersPage() {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow-sm p-4">
+          <div className={`rounded-lg shadow-sm p-4 transition-colors ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Barbers</p>
@@ -262,7 +232,7 @@ export default function BarbersPage() {
               <UserGroupIcon className="h-8 w-8 text-violet-600" />
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm p-4">
+          <div className={`rounded-lg shadow-sm p-4 transition-colors ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Active</p>
@@ -273,7 +243,7 @@ export default function BarbersPage() {
               <CheckCircleIcon className="h-8 w-8 text-green-600" />
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm p-4">
+          <div className={`rounded-lg shadow-sm p-4 transition-colors ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Weekly Earnings</p>
@@ -284,7 +254,7 @@ export default function BarbersPage() {
               <CurrencyDollarIcon className="h-8 w-8 text-emerald-600" />
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm p-4">
+          <div className={`rounded-lg shadow-sm p-4 transition-colors ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Next Payout</p>
@@ -296,7 +266,7 @@ export default function BarbersPage() {
         </div>
 
         {/* Barbers Table */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div className={`rounded-xl shadow-sm overflow-hidden transition-colors ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
@@ -362,14 +332,14 @@ export default function BarbersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <div className="flex items-center space-x-3">
-                        <button 
+                        <button
                           onClick={() => handleEditBarber(barber)}
                           className="text-violet-600 hover:text-violet-700 font-medium flex items-center space-x-1"
                         >
                           <PencilIcon className="h-4 w-4" />
                           <span>Edit</span>
                         </button>
-                        <button 
+                        <button
                           onClick={() => handlePayNow(barber.id)}
                           disabled={!barber.paymentAccount || barber.weeklyEarnings === 0}
                           className={`font-medium flex items-center space-x-1 ${
@@ -543,10 +513,10 @@ export default function BarbersPage() {
               <div className="flex justify-end space-x-3 mt-6">
                 <button
                   type="button"
-                  onClick={() => { 
-                    setShowEditModal(false); 
-                    setEditingBarber(null); 
-                    resetForm(); 
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditingBarber(null);
+                    resetForm();
                   }}
                   className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
                 >

@@ -156,7 +156,7 @@ export default function DemoSidebar({ onNavigate }: DemoSidebarProps) {
               </div>
             </div>
           )}
-          
+
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors focus-ring"
@@ -195,7 +195,7 @@ export default function DemoSidebar({ onNavigate }: DemoSidebarProps) {
         {navigationItems.map((item) => {
           const Icon = item.icon
           const isActive = pathname === item.href || (pathname.startsWith('/demo') && item.href.includes(pathname.split('/').pop() || ''))
-          
+
           return (
             <Link
               key={item.name}
@@ -243,7 +243,7 @@ export default function DemoSidebar({ onNavigate }: DemoSidebarProps) {
         {bottomItems.map((item) => {
           const Icon = item.icon
           const isActive = pathname === item.href
-          
+
           return (
             <Link
               key={item.name}

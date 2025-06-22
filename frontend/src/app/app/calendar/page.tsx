@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Plus, Clock, User, DollarSign, Calendar as CalendarIcon, Filter, X, Check, AlertCircle } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 // Types
 type ViewType = 'month' | 'week' | 'day';
@@ -77,31 +78,31 @@ const generateDemoAppointments = (): Appointment[] => {
   const appointments: Appointment[] = [];
   const today = new Date();
   const statuses: AppointmentStatus[] = ['confirmed', 'pending', 'completed', 'cancelled'];
-  
+
   // Generate appointments for the past 7 days and next 14 days
   for (let dayOffset = -7; dayOffset <= 14; dayOffset++) {
     const date = new Date(today);
     date.setDate(date.getDate() + dayOffset);
-    
+
     // Skip Sundays
     if (date.getDay() === 0) continue;
-    
+
     // Generate 8-12 appointments per day
     const appointmentsPerDay = Math.floor(Math.random() * 5) + 8;
-    
+
     for (let i = 0; i < appointmentsPerDay; i++) {
       const barberId = barbers[Math.floor(Math.random() * barbers.length)].id;
       const clientId = clients[Math.floor(Math.random() * clients.length)].id;
       const serviceId = services[Math.floor(Math.random() * services.length)].id;
       const service = services.find(s => s.id === serviceId)!;
-      
+
       // Random time between 9 AM and 7 PM
       const hour = Math.floor(Math.random() * 10) + 9;
       const minute = Math.random() < 0.5 ? 0 : 30;
-      
+
       const appointmentDate = new Date(date);
       appointmentDate.setHours(hour, minute, 0, 0);
-      
+
       // Past appointments are mostly completed, future are confirmed/pending
       let status: AppointmentStatus;
       if (dayOffset < 0) {
@@ -116,7 +117,7 @@ const generateDemoAppointments = (): Appointment[] => {
       } else {
         status = Math.random() < 0.8 ? 'confirmed' : 'pending';
       }
-      
+
       appointments.push({
         id: `apt-${Date.now()}-${i}-${dayOffset}`,
         barberId,
@@ -129,7 +130,7 @@ const generateDemoAppointments = (): Appointment[] => {
       });
     }
   }
-  
+
   return appointments;
 };
 
@@ -143,16 +144,16 @@ export default function CalendarPage() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedBarber, setSelectedBarber] = useState<string>('all');
   const [draggedAppointment, setDraggedAppointment] = useState<Appointment | null>(null);
-  
+
   // Initialize demo appointments
   useEffect(() => {
     setAppointments(generateDemoAppointments());
   }, []);
-  
+
   // Navigation functions
   const navigatePeriod = (direction: 'prev' | 'next') => {
     const newDate = new Date(currentDate);
-    
+
     switch (viewType) {
       case 'month':
         newDate.setMonth(newDate.getMonth() + (direction === 'next' ? 1 : -1));
@@ -164,53 +165,53 @@ export default function CalendarPage() {
         newDate.setDate(newDate.getDate() + (direction === 'next' ? 1 : -1));
         break;
     }
-    
+
     setCurrentDate(newDate);
   };
-  
+
   const goToToday = () => {
     setCurrentDate(new Date());
   };
-  
+
   // Get calendar data based on view type
   const getCalendarDays = useMemo(() => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-    
+
     if (viewType === 'month') {
       const firstDay = new Date(year, month, 1);
       const lastDay = new Date(year, month + 1, 0);
       const startDate = new Date(firstDay);
       startDate.setDate(startDate.getDate() - firstDay.getDay());
-      
+
       const days = [];
       const endDate = new Date(lastDay);
       endDate.setDate(endDate.getDate() + (6 - lastDay.getDay()));
-      
+
       const current = new Date(startDate);
       while (current <= endDate) {
         days.push(new Date(current));
         current.setDate(current.getDate() + 1);
       }
-      
+
       return days;
     } else if (viewType === 'week') {
       const startOfWeek = new Date(currentDate);
       startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
-      
+
       const days = [];
       for (let i = 0; i < 7; i++) {
         const day = new Date(startOfWeek);
         day.setDate(startOfWeek.getDate() + i);
         days.push(day);
       }
-      
+
       return days;
     } else {
       return [new Date(currentDate)];
     }
   }, [currentDate, viewType]);
-  
+
   // Get appointments for a specific date
   const getAppointmentsForDate = useCallback((date: Date) => {
     return appointments.filter(apt => {
@@ -223,7 +224,7 @@ export default function CalendarPage() {
       );
     }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [appointments, selectedBarber]);
-  
+
   // Format date for display
   const formatDate = (date: Date) => {
     const options: Intl.DateTimeFormatOptions = {
@@ -234,7 +235,7 @@ export default function CalendarPage() {
     };
     return date.toLocaleDateString('en-US', options);
   };
-  
+
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', {
       hour: 'numeric',
@@ -242,18 +243,18 @@ export default function CalendarPage() {
       hour12: true,
     });
   };
-  
+
   // Check for appointment conflicts
   const hasConflict = (barberId: string, date: Date, duration: number, excludeId?: string) => {
     const endTime = new Date(date.getTime() + duration * 60000);
-    
+
     return appointments.some(apt => {
       if (apt.id === excludeId || apt.barberId !== barberId) return false;
       if (apt.status === 'cancelled') return false;
-      
+
       const aptStart = new Date(apt.date);
       const aptEnd = new Date(aptStart.getTime() + apt.duration * 60000);
-      
+
       return (
         (date >= aptStart && date < aptEnd) ||
         (endTime > aptStart && endTime <= aptEnd) ||
@@ -261,51 +262,51 @@ export default function CalendarPage() {
       );
     });
   };
-  
+
   // Get available time slots for a date and barber
   const getAvailableSlots = (date: Date, barberId: string, duration: number): TimeSlot[] => {
     const slots: TimeSlot[] = [];
     const workStart = 9; // 9 AM
     const workEnd = 19; // 7 PM
-    
+
     for (let hour = workStart; hour < workEnd; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
         const slotDate = new Date(date);
         slotDate.setHours(hour, minute, 0, 0);
-        
+
         // Don't show past slots for today
         if (date.toDateString() === new Date().toDateString() && slotDate < new Date()) {
           continue;
         }
-        
+
         const available = !hasConflict(barberId, slotDate, duration);
-        
+
         slots.push({
           time: formatTime(slotDate),
           available,
         });
       }
     }
-    
+
     return slots;
   };
-  
+
   // Handle drag and drop
   const handleDragStart = (e: React.DragEvent, appointment: Appointment) => {
     setDraggedAppointment(appointment);
     e.dataTransfer.effectAllowed = 'move';
   };
-  
+
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
   };
-  
+
   const handleDrop = (e: React.DragEvent, date: Date, hour?: number) => {
     e.preventDefault();
-    
+
     if (!draggedAppointment) return;
-    
+
     const newDate = new Date(date);
     if (hour !== undefined) {
       newDate.setHours(hour, 0, 0, 0);
@@ -314,36 +315,36 @@ export default function CalendarPage() {
       const originalTime = new Date(draggedAppointment.date);
       newDate.setHours(originalTime.getHours(), originalTime.getMinutes(), 0, 0);
     }
-    
+
     // Check for conflicts
     if (hasConflict(draggedAppointment.barberId, newDate, draggedAppointment.duration, draggedAppointment.id)) {
       alert('Cannot move appointment - time slot conflict!');
       return;
     }
-    
+
     // Update appointment
-    setAppointments(prev => prev.map(apt => 
+    setAppointments(prev => prev.map(apt =>
       apt.id === draggedAppointment.id
         ? { ...apt, date: newDate }
         : apt
     ));
-    
+
     setDraggedAppointment(null);
   };
-  
+
   // Render appointment in calendar
   const renderAppointment = (appointment: Appointment) => {
     const service = services.find(s => s.id === appointment.serviceId)!;
     const barber = barbers.find(b => b.id === appointment.barberId)!;
     const client = clients.find(c => c.id === appointment.clientId)!;
-    
+
     const statusColors = {
       confirmed: 'bg-green-100 text-green-800 border-green-300',
       pending: 'bg-yellow-100 text-yellow-800 border-yellow-300',
       completed: 'bg-gray-100 text-gray-600 border-gray-300',
       cancelled: 'bg-red-100 text-red-800 border-red-300 line-through',
     };
-    
+
     return (
       <div
         key={appointment.id}
@@ -363,7 +364,7 @@ export default function CalendarPage() {
       </div>
     );
   };
-  
+
   // Add new appointment
   const addAppointment = (formData: {
     barberId: string;
@@ -376,15 +377,15 @@ export default function CalendarPage() {
     const [hour, minute] = formData.time.split(':').map(Number);
     const appointmentDate = new Date(formData.date);
     appointmentDate.setHours(hour, minute, 0, 0);
-    
+
     const service = services.find(s => s.id === formData.serviceId)!;
-    
+
     // Check for conflicts
     if (hasConflict(formData.barberId, appointmentDate, service.duration)) {
       alert('Cannot book appointment - time slot conflict!');
       return;
     }
-    
+
     const newAppointment: Appointment = {
       id: `apt-${Date.now()}`,
       barberId: formData.barberId,
@@ -395,38 +396,38 @@ export default function CalendarPage() {
       status: 'pending',
       notes: formData.notes,
     };
-    
+
     setAppointments(prev => [...prev, newAppointment]);
     setShowAddModal(false);
   };
-  
+
   // Update appointment status
   const updateAppointmentStatus = (appointmentId: string, status: AppointmentStatus) => {
-    setAppointments(prev => prev.map(apt => 
+    setAppointments(prev => prev.map(apt =>
       apt.id === appointmentId ? { ...apt, status } : apt
     ));
   };
-  
+
   // Get period label
   const getPeriodLabel = () => {
-    const options: Intl.DateTimeFormatOptions = viewType === 'month' 
+    const options: Intl.DateTimeFormatOptions = viewType === 'month'
       ? { month: 'long', year: 'numeric' }
       : viewType === 'week'
       ? { month: 'short', day: 'numeric' }
       : { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
-    
+
     if (viewType === 'week') {
       const startOfWeek = new Date(currentDate);
       startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
       const endOfWeek = new Date(startOfWeek);
       endOfWeek.setDate(startOfWeek.getDate() + 6);
-      
+
       return `${startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
     }
-    
+
     return currentDate.toLocaleDateString('en-US', options);
   };
-  
+
   // Calculate stats
   const todayAppointments = getAppointmentsForDate(new Date()).filter(apt => apt.status !== 'cancelled');
   const thisWeekAppointments = appointments.filter(apt => {
@@ -435,59 +436,27 @@ export default function CalendarPage() {
     const weekStart = new Date(today.setDate(today.getDate() - today.getDay()));
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekStart.getDate() + 6);
-    
+
     return aptDate >= weekStart && aptDate <= weekEnd && apt.status !== 'cancelled';
   });
-  
-  const cancellationRate = appointments.length > 0 
+
+  const cancellationRate = appointments.length > 0
     ? (appointments.filter(apt => apt.status === 'cancelled').length / appointments.length * 100).toFixed(1)
     : '0.0';
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navigation Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">6FB Platform</h1>
-              <nav className="ml-10 flex space-x-4">
-                <a href="/app" className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
-                  Dashboard
-                </a>
-                <a href="/app/calendar" className="text-gray-900 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
-                  Calendar
-                </a>
-                <a href="/app/analytics" className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
-                  Analytics
-                </a>
-                <a href="/app/barbers" className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
-                  Barbers
-                </a>
-                <a href="/app/payments" className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
-                  Payments
-                </a>
-              </nav>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-500">Demo Mode</span>
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
-                D
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+  const { theme } = useTheme();
 
+  return (
+    <div className={`min-h-screen transition-colors ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900">Calendar</h2>
-              <p className="text-gray-600 mt-1">Manage appointments and schedules</p>
+              <h2 className={`text-3xl font-bold transition-colors ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Calendar</h2>
+              <p className={`mt-1 transition-colors ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Manage appointments and schedules</p>
             </div>
-            <button 
+            <button
               onClick={() => setShowAddModal(true)}
               className="bg-gradient-to-r from-violet-600 to-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:from-violet-700 hover:to-purple-700 transition-all flex items-center space-x-2"
             >
@@ -498,7 +467,7 @@ export default function CalendarPage() {
         </div>
 
         {/* Calendar Controls */}
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+        <div className={`rounded-xl shadow-sm p-6 mb-6 transition-colors ${theme === 'dark' ? 'bg-gray-800 border border-gray-700' : 'bg-white'}`}>
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
               <button
@@ -521,7 +490,7 @@ export default function CalendarPage() {
                 Today
               </button>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               {/* Barber Filter */}
               <select
@@ -534,7 +503,7 @@ export default function CalendarPage() {
                   <option key={barber.id} value={barber.id}>{barber.name}</option>
                 ))}
               </select>
-              
+
               {/* View Type Selector */}
               <div className="flex rounded-lg border border-gray-300 overflow-hidden">
                 {(['month', 'week', 'day'] as ViewType[]).map(view => (
@@ -564,12 +533,12 @@ export default function CalendarPage() {
                     {day}
                   </div>
                 ))}
-                
+
                 {getCalendarDays.map((date, index) => {
                   const dayAppointments = getAppointmentsForDate(date);
                   const isCurrentMonth = date.getMonth() === currentDate.getMonth();
                   const isToday = date.toDateString() === new Date().toDateString();
-                  
+
                   return (
                     <div
                       key={index}
@@ -623,7 +592,7 @@ export default function CalendarPage() {
                     </div>
                   );
                 })}
-                
+
                 {/* Time slots */}
                 {Array.from({ length: 10 }, (_, hour) => hour + 9).map(hour => (
                   <React.Fragment key={hour}>
@@ -635,7 +604,7 @@ export default function CalendarPage() {
                         const aptHour = new Date(apt.date).getHours();
                         return aptHour === hour;
                       });
-                      
+
                       return (
                         <div
                           key={`${dayIndex}-${hour}`}
@@ -668,7 +637,7 @@ export default function CalendarPage() {
                     {formatDate(currentDate)}
                   </h3>
                 </div>
-                
+
                 <div className="grid grid-cols-12 gap-px bg-gray-200">
                   <div className="col-span-2 bg-gray-50 p-2">
                     <div className="text-sm font-medium text-gray-700">Time</div>
@@ -680,7 +649,7 @@ export default function CalendarPage() {
                       </div>
                     </div>
                   ))}
-                  
+
                   {/* Time slots */}
                   {Array.from({ length: 10 }, (_, hour) => hour + 9).map(hour => (
                     <React.Fragment key={hour}>
@@ -692,7 +661,7 @@ export default function CalendarPage() {
                           const aptHour = new Date(apt.date).getHours();
                           return aptHour === hour && apt.barberId === barber.id;
                         });
-                        
+
                         return (
                           <div
                             key={`${barber.id}-${hour}`}
@@ -837,24 +806,24 @@ function AddAppointmentModal({
     time: '',
     notes: ''
   });
-  
+
   const selectedService = services.find(s => s.id === formData.serviceId);
   const availableSlots = formData.barberId && selectedService
     ? getAvailableSlots(formData.date, formData.barberId, selectedService.duration)
     : [];
-  
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.barberId || !formData.clientId || !formData.serviceId || !formData.time) {
       alert('Please fill in all required fields');
       return;
     }
-    
+
     onAdd(formData);
   };
-  
+
   if (!isOpen) return null;
-  
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg max-w-md w-full p-6">
@@ -864,7 +833,7 @@ function AddAppointmentModal({
             <X className="h-5 w-5" />
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
@@ -876,7 +845,7 @@ function AddAppointmentModal({
               required
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Barber</label>
             <select
@@ -891,7 +860,7 @@ function AddAppointmentModal({
               ))}
             </select>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Service</label>
             <select
@@ -908,7 +877,7 @@ function AddAppointmentModal({
               ))}
             </select>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Client</label>
             <select
@@ -923,7 +892,7 @@ function AddAppointmentModal({
               ))}
             </select>
           </div>
-          
+
           {formData.barberId && selectedService && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Available Times</label>
@@ -948,7 +917,7 @@ function AddAppointmentModal({
               </div>
             </div>
           )}
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
             <textarea
@@ -959,7 +928,7 @@ function AddAppointmentModal({
               placeholder="Any special requests or notes..."
             />
           </div>
-          
+
           <div className="flex space-x-3 pt-4">
             <button
               type="button"
@@ -1002,16 +971,16 @@ function AppointmentDetailModal({
   onStatusUpdate
 }: AppointmentDetailModalProps) {
   if (!isOpen) return null;
-  
+
   const statusColors = {
     confirmed: 'bg-green-100 text-green-800',
     pending: 'bg-yellow-100 text-yellow-800',
     completed: 'bg-gray-100 text-gray-600',
     cancelled: 'bg-red-100 text-red-800',
   };
-  
+
   const endTime = new Date(appointment.date.getTime() + appointment.duration * 60000);
-  
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg max-w-md w-full p-6">
@@ -1021,7 +990,7 @@ function AppointmentDetailModal({
             <X className="h-5 w-5" />
           </button>
         </div>
-        
+
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-gray-600">Status</span>
@@ -1029,7 +998,7 @@ function AppointmentDetailModal({
               {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
             </span>
           </div>
-          
+
           <div className="border-t pt-4">
             <div className="flex items-center space-x-3 mb-3">
               <div className="text-2xl">{barber.avatar}</div>
@@ -1038,7 +1007,7 @@ function AppointmentDetailModal({
                 <div className="text-sm text-gray-600">Barber</div>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-3 mb-3">
               <User className="h-5 w-5 text-gray-400" />
               <div>
@@ -1046,32 +1015,32 @@ function AppointmentDetailModal({
                 <div className="text-sm text-gray-600">{client.phone}</div>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-3 mb-3">
               <Clock className="h-5 w-5 text-gray-400" />
               <div>
                 <div className="font-medium text-gray-900">{service.name}</div>
                 <div className="text-sm text-gray-600">
-                  {appointment.date.toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    month: 'long', 
-                    day: 'numeric' 
+                  {appointment.date.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    month: 'long',
+                    day: 'numeric'
                   })}
                 </div>
                 <div className="text-sm text-gray-600">
-                  {appointment.date.toLocaleTimeString('en-US', { 
-                    hour: 'numeric', 
-                    minute: '2-digit', 
-                    hour12: true 
-                  })} - {endTime.toLocaleTimeString('en-US', { 
-                    hour: 'numeric', 
-                    minute: '2-digit', 
-                    hour12: true 
+                  {appointment.date.toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                  })} - {endTime.toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
                   })}
                 </div>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-3 mb-3">
               <DollarSign className="h-5 w-5 text-gray-400" />
               <div>
@@ -1079,7 +1048,7 @@ function AppointmentDetailModal({
                 <div className="text-sm text-gray-600">{service.duration} minutes</div>
               </div>
             </div>
-            
+
             {appointment.notes && (
               <div className="bg-gray-50 rounded-md p-3 mt-4">
                 <div className="text-sm font-medium text-gray-700 mb-1">Notes</div>
@@ -1087,7 +1056,7 @@ function AppointmentDetailModal({
               </div>
             )}
           </div>
-          
+
           {appointment.status !== 'completed' && appointment.status !== 'cancelled' && (
             <div className="border-t pt-4">
               <div className="text-sm font-medium text-gray-700 mb-2">Actions</div>

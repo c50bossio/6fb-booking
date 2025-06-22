@@ -135,8 +135,8 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             className={`p-2 rounded-lg transition-colors focus-ring ${
-              theme === 'dark' 
-                ? 'text-gray-400 hover:text-white hover:bg-white/5' 
+              theme === 'dark'
+                ? 'text-gray-400 hover:text-white hover:bg-white/5'
                 : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
             }`}
           >
@@ -153,8 +153,8 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
       <div className={`px-6 py-4 border-b ${theme === 'dark' ? 'border-white/10' : 'border-gray-200'}`}>
         <div className="flex items-center space-x-3">
           <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${
-            theme === 'dark' 
-              ? 'bg-violet-600 text-white' 
+            theme === 'dark'
+              ? 'bg-violet-600 text-white'
               : 'bg-violet-100 text-violet-700'
           }`}>
             {getUserInitials(demoUser.first_name, demoUser.last_name)}
@@ -214,7 +214,7 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
       {/* Bottom Section */}
       <div className={`px-4 py-4 border-t space-y-2 ${theme === 'dark' ? 'border-white/10' : 'border-gray-200'}`}>
         {/* Theme Toggle */}
-        <button 
+        <button
           onClick={toggleTheme}
           className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 w-full ${
             theme === 'dark'
