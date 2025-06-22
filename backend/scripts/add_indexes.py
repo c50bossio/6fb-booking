@@ -47,6 +47,16 @@ INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_locations_is_active ON locations(is_active);",
     "CREATE INDEX IF NOT EXISTS idx_locations_mentor_id ON locations(mentor_id);",
     
+    # Critical composite indexes for analytics performance
+    "CREATE INDEX IF NOT EXISTS idx_appointments_barber_date_status ON appointments(barber_id, appointment_date, status);",
+    "CREATE INDEX IF NOT EXISTS idx_appointments_date_status ON appointments(appointment_date, status);",
+    "CREATE INDEX IF NOT EXISTS idx_appointments_status_date ON appointments(status, appointment_date);",
+    "CREATE INDEX IF NOT EXISTS idx_appointments_composite_analytics ON appointments(barber_id, appointment_date, status, service_revenue);",
+    "CREATE INDEX IF NOT EXISTS idx_appointments_revenue_completed ON appointments(service_revenue, status) WHERE status = 'completed';",
+    
+    # Location-based filtering
+    "CREATE INDEX IF NOT EXISTS idx_barbers_location_active ON barbers(location_id, is_active);",
+    
     # Analytics indexes
     "CREATE INDEX IF NOT EXISTS idx_daily_metrics_barber_id ON daily_metrics(barber_id);",
     "CREATE INDEX IF NOT EXISTS idx_daily_metrics_date ON daily_metrics(date);",

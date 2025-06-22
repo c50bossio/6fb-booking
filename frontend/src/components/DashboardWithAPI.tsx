@@ -1,11 +1,12 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { analyticsService } from '@/lib/api'
-import { useAuth } from '@/hooks/useAuth'
+import { analyticsService } from '@/lib/api/analytics'
+import { useAuth } from '@/components/AuthProvider'
 import { 
   TrendingUp, 
   Users, 
@@ -14,7 +15,8 @@ import {
   BarChart3,
   Clock,
   CheckCircle,
-  AlertTriangle
+  AlertTriangle,
+  ArrowUpRight
 } from 'lucide-react'
 
 interface DashboardData {
@@ -32,10 +34,12 @@ interface TrendData {
 
 export default function DashboardWithAPI() {
   const { user, hasRole } = useAuth()
+  const router = useRouter()
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
   const [revenueTrend, setRevenueTrend] = useState<TrendData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedMetric, setSelectedMetric] = useState<string | null>(null)
 
   useEffect(() => {
     loadDashboardData()
@@ -99,30 +103,48 @@ export default function DashboardWithAPI() {
     return (
       <>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card>
+          <Card 
+            className="cursor-pointer hover:shadow-lg transition-shadow group"
+            onClick={() => router.push('/locations')}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Locations</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center space-x-2">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-blue-600 transition-colors" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{metrics.total_locations || 0}</div>
               <p className="text-xs text-muted-foreground">Active barbershops</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card 
+            className="cursor-pointer hover:shadow-lg transition-shadow group"
+            onClick={() => router.push('/barbers')}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Barbers</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center space-x-2">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-blue-600 transition-colors" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{metrics.total_barbers || 0}</div>
               <p className="text-xs text-muted-foreground">Network professionals</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card 
+            className="cursor-pointer hover:shadow-lg transition-shadow group"
+            onClick={() => router.push('/analytics')}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center space-x-2">
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+                <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-blue-600 transition-colors" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -131,10 +153,16 @@ export default function DashboardWithAPI() {
               <p className="text-xs text-muted-foreground">Last 30 days</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card 
+            className="cursor-pointer hover:shadow-lg transition-shadow group"
+            onClick={() => router.push('/dashboard/appointments')}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Appointments</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center space-x-2">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-blue-600 transition-colors" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{metrics.total_appointments || 0}</div>
@@ -302,11 +330,19 @@ export default function DashboardWithAPI() {
             <div className="grid grid-cols-2 gap-3">
               {hasRole(['super_admin', 'admin']) && (
                 <>
-                  <Button variant="outline" className="justify-start">
+                  <Button 
+                    variant="outline" 
+                    className="justify-start"
+                    onClick={() => router.push('/barbers')}
+                  >
                     <Users className="w-4 h-4 mr-2" />
                     Manage Users
                   </Button>
-                  <Button variant="outline" className="justify-start">
+                  <Button 
+                    variant="outline" 
+                    className="justify-start"
+                    onClick={() => router.push('/analytics')}
+                  >
                     <BarChart3 className="w-4 h-4 mr-2" />
                     View Analytics
                   </Button>
@@ -314,11 +350,19 @@ export default function DashboardWithAPI() {
               )}
               {hasRole(['mentor']) && (
                 <>
-                  <Button variant="outline" className="justify-start">
+                  <Button 
+                    variant="outline" 
+                    className="justify-start"
+                    onClick={() => router.push('/barbers')}
+                  >
                     <Users className="w-4 h-4 mr-2" />
                     View Mentees
                   </Button>
-                  <Button variant="outline" className="justify-start">
+                  <Button 
+                    variant="outline" 
+                    className="justify-start"
+                    onClick={() => router.push('/dashboard/appointments')}
+                  >
                     <CheckCircle className="w-4 h-4 mr-2" />
                     Schedule Check-in
                   </Button>
@@ -326,11 +370,19 @@ export default function DashboardWithAPI() {
               )}
               {hasRole(['barber']) && (
                 <>
-                  <Button variant="outline" className="justify-start">
+                  <Button 
+                    variant="outline" 
+                    className="justify-start"
+                    onClick={() => router.push('/dashboard/calendar')}
+                  >
                     <Calendar className="w-4 h-4 mr-2" />
                     My Schedule
                   </Button>
-                  <Button variant="outline" className="justify-start">
+                  <Button 
+                    variant="outline" 
+                    className="justify-start"
+                    onClick={() => router.push('/analytics')}
+                  >
                     <TrendingUp className="w-4 h-4 mr-2" />
                     My Performance
                   </Button>

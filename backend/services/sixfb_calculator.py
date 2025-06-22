@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, and_, or_
 
 from models import Appointment, Client, Barber, DailyMetrics, WeeklyMetrics
+from utils.cache import cache_result, monitor_performance
 
 
 class SixFBCalculator:
@@ -15,6 +16,8 @@ class SixFBCalculator:
     def __init__(self, db: Session):
         self.db = db
     
+    @cache_result(ttl_seconds=900, key_prefix="daily_metrics")  # Cache for 15 minutes
+    @monitor_performance
     def calculate_daily_metrics(self, barber_id: int, target_date: date) -> Dict:
         """
         Calculate daily metrics for a specific barber and date
@@ -80,6 +83,8 @@ class SixFBCalculator:
             "revenue_per_hour": round(total_revenue / 8, 2) if total_revenue > 0 else 0  # Assuming 8-hour workday
         }
     
+    @cache_result(ttl_seconds=1800, key_prefix="weekly_metrics")  # Cache for 30 minutes
+    @monitor_performance
     def calculate_weekly_metrics(self, barber_id: int, week_start: date) -> Dict:
         """
         Calculate weekly metrics for a specific barber and week
@@ -151,6 +156,8 @@ class SixFBCalculator:
             "revenue_per_hour": round(weekly_totals["total_revenue"] / 40, 2) if weekly_totals["total_revenue"] > 0 else 0  # Assuming 40-hour work week
         }
     
+    @cache_result(ttl_seconds=3600, key_prefix="customer_analytics")  # Cache for 1 hour
+    @monitor_performance
     def calculate_customer_analytics(self, barber_id: int, period_days: int = 30) -> Dict:
         """
         Calculate customer analytics for dashboard
@@ -199,6 +206,8 @@ class SixFBCalculator:
             "retention_rate": self._calculate_retention_rate(barber_id, period_days)
         }
     
+    @cache_result(ttl_seconds=600, key_prefix="sixfb_score")  # Cache for 10 minutes
+    @monitor_performance
     def calculate_sixfb_score(self, barber_id: int, period_type: str = "weekly") -> Dict:
         """
         Calculate the overall 6FB Score based on multiple performance factors

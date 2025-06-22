@@ -7,16 +7,31 @@ import os
 from typing import Dict, List, Optional
 from datetime import datetime
 from decimal import Decimal
-from square.client import Client
-from square.models import (
-    CreatePayoutRequest,
-    CreateTeamMemberRequest,
-    TeamMember,
-    Money,
-    Payout,
-    ListPayoutsRequest,
-    GetPayoutRequest,
-)
+# Square SDK is optional
+try:
+    from square.client import Client
+    from square.models import (
+        CreatePayoutRequest,
+        CreateTeamMemberRequest,
+        TeamMember,
+        Money,
+        Payout,
+        ListPayoutsRequest,
+        GetPayoutRequest,
+    )
+    SQUARE_AVAILABLE = True
+except ImportError:
+    Client = None
+    SQUARE_AVAILABLE = False
+    # Define placeholder classes so the code doesn't break
+    CreatePayoutRequest = None
+    CreateTeamMemberRequest = None
+    TeamMember = None
+    Money = None
+    Payout = None
+    ListPayoutsRequest = None
+    GetPayoutRequest = None
+
 import uuid
 
 from config.settings import Settings
@@ -34,21 +49,40 @@ class SquarePayoutsService:
     def __init__(self):
         self.settings = Settings()
 
-        # Initialize Square client
-        self.client = Client(
-            access_token=os.getenv("SQUARE_ACCESS_TOKEN"),
-            environment=os.getenv("SQUARE_ENVIRONMENT", "sandbox"),
-        )
+        # Initialize Square client (if available)
+        self.client = None
+        self.enabled = False
+        
+        if SQUARE_AVAILABLE and os.getenv("SQUARE_ACCESS_TOKEN"):
+            try:
+                self.client = Client(
+                    access_token=os.getenv("SQUARE_ACCESS_TOKEN"),
+                    environment=os.getenv("SQUARE_ENVIRONMENT", "sandbox")
+                )
+                self.enabled = True
+            except Exception as e:
+                print(f"Warning: Failed to initialize Square client: {e}")
+                self.client = None
+                self.enabled = False
 
-        self.payouts_api = self.client.payouts
-        self.team_api = self.client.team
-        self.locations_api = self.client.locations
+        # Initialize API endpoints if client is available
+        if self.client:
+            self.payouts_api = self.client.payouts
+            self.team_api = self.client.team
+            self.locations_api = self.client.locations
+        else:
+            self.payouts_api = None
+            self.team_api = None
+            self.locations_api = None
 
     def create_team_member_for_barber(self, barber_data: Dict) -> Dict:
         """
         Create a Square team member for the barber
         This is required before they can receive payouts
         """
+        if not self.enabled or not self.team_api:
+            raise Exception("Square integration is not available. Please configure Square or use an alternative payment method.")
+        
         try:
             # Create team member
             request = CreateTeamMemberRequest(
@@ -101,6 +135,9 @@ class SquarePayoutsService:
         - reference_id: Your internal reference
         - note: Optional note for the payout
         """
+        if not self.enabled or not self.payouts_api:
+            raise Exception("Square integration is not available. Please configure Square or use an alternative payment method.")
+        
         try:
             # Convert amount to cents
             amount_cents = int(payout_data["amount"] * 100)
@@ -165,6 +202,9 @@ class SquarePayoutsService:
         """
         Check the status of a payout
         """
+        if not self.enabled or not self.payouts_api:
+            raise Exception("Square integration is not available.")
+        
         try:
             result = self.payouts_api.get_payout(payout_id)
 
@@ -192,6 +232,9 @@ class SquarePayoutsService:
         """
         List payouts for a location within a time range
         """
+        if not self.enabled or not self.payouts_api:
+            raise Exception("Square integration is not available.")
+        
         try:
             request_params = {"location_id": location_id, "limit": limit}
 
@@ -271,6 +314,9 @@ class SquarePayoutsService:
         """
         Check if team member has completed bank account setup
         """
+        if not self.enabled or not self.team_api:
+            return False
+        
         try:
             # Get team member details
             result = self.team_api.retrieve_team_member(team_member_id)

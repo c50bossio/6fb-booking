@@ -1,0 +1,80 @@
+{
+  "timestamp": "2025-06-22T08:36:32.181848",
+  "tests": {
+    "Authentication": {
+      "success": true,
+      "details": {
+        "token_received": true
+      },
+      "error": null,
+      "timestamp": "2025-06-22T08:36:32.389791"
+    },
+    "Payment Intent Creation": {
+      "success": false,
+      "details": null,
+      "error": "Could not fetch locations",
+      "timestamp": "2025-06-22T08:36:32.401572"
+    },
+    "Stripe Connect OAuth Initiation": {
+      "success": false,
+      "details": null,
+      "error": "Status 400: {\"error\":\"Stripe account already connected\",\"message\":\"Stripe account already connected\",\"request_id\":\"09d142b1-c972-49c1-9966-5a8822ff4c96\",\"exception_type\":\"HTTPException\",\"traceback\":[\"Traceback (most recent call last):\",\"  File \\\"/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/middleware/exceptions.py\\\", line 68, in __call__\",\"    await self.app(scope, receive, sender)\",\"  File \\\"/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py\\\", line 20, in __call__\",\"    raise e\",\"  File \\\"/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py\\\", line 17, in __call__\",\"    await self.app(scope, receive, send)\",\"  File \\\"/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/routing.py\\\", line 718, in __call__\",\"    await route.handle(scope, receive, send)\",\"  File \\\"/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/routing.py\\\", line 276, in handle\",\"    await self.app(scope, receive, send)\",\"  File \\\"/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/starlette/routing.py\\\", line 66, in app\",\"    response = await func(request)\",\"               ^^^^^^^^^^^^^^^^^^^\",\"  File \\\"/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/fastapi/routing.py\\\", line 274, in app\",\"    raw_response = await run_endpoint_function(\",\"                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\",\"  File \\\"/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/fastapi/routing.py\\\", line 191, in run_endpoint_function\",\"    return await dependant.call(**values)\",\"           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\",\"  File \\\"/Users/bossio/6fb-booking/backend/api/v1/endpoints/barber_stripe_connect.py\\\", line 80, in start_stripe_connect\",\"    raise HTTPException(\",\"fastapi.exceptions.HTTPException\",\"\"]}",
+      "timestamp": "2025-06-22T08:36:32.454856"
+    },
+    "Stripe Connect OAuth Callback": {
+      "success": true,
+      "details": {
+        "endpoint_exists": true,
+        "status": 400
+      },
+      "error": null,
+      "timestamp": "2025-06-22T08:36:32.458529"
+    },
+    "Webhook Security - Missing Signature": {
+      "success": false,
+      "details": null,
+      "error": "Accepted unsigned webhook: 500",
+      "timestamp": "2025-06-22T08:36:32.461423"
+    },
+    "Webhook Security - Invalid Signature": {
+      "success": false,
+      "details": null,
+      "error": "Accepted invalid signature: 500",
+      "timestamp": "2025-06-22T08:36:32.464223"
+    },
+    "Payout Calculations": {
+      "success": true,
+      "details": {
+        "barber_payout": null,
+        "shop_payout": null,
+        "total_amount": null,
+        "calculation_method": null
+      },
+      "error": null,
+      "timestamp": "2025-06-22T08:36:32.506542"
+    },
+    "Payment Security - Amount Limit": {
+      "success": false,
+      "details": null,
+      "error": "Accepted payment over limit: 422",
+      "timestamp": "2025-06-22T08:36:32.510799"
+    },
+    "Payment Security - Negative Amount": {
+      "success": false,
+      "details": null,
+      "error": "Accepted negative payment: 422",
+      "timestamp": "2025-06-22T08:36:32.515095"
+    },
+    "Stripe Connection Status": {
+      "success": false,
+      "details": null,
+      "error": "Could not fetch locations",
+      "timestamp": "2025-06-22T08:36:32.523402"
+    }
+  },
+  "summary": {
+    "total": 10,
+    "passed": 3,
+    "failed": 7
+  }
+}

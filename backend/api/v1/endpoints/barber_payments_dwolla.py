@@ -69,9 +69,9 @@ class BarberPaymentModelResponse(BaseModel):
 
 
 class BankAccountCreate(BaseModel):
-    routing_number: str = Field(..., regex="^[0-9]{9}$")
+    routing_number: str = Field(..., pattern="^[0-9]{9}$")
     account_number: str = Field(..., min_length=4, max_length=17)
-    account_type: str = Field(default="checking", regex="^(checking|savings)$")
+    account_type: str = Field(default="checking", pattern="^(checking|savings)$")
     account_name: str
 
 

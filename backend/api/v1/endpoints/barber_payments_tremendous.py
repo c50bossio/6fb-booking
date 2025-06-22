@@ -49,7 +49,7 @@ class BarberPaymentModelCreate(BaseModel):
 
 
 class PayoutMethodUpdate(BaseModel):
-    payout_method: str = Field(..., regex="^(BANK_TRANSFER|PAYPAL|VENMO|GIFT_CARD)$")
+    payout_method: str = Field(..., pattern="^(BANK_TRANSFER|PAYPAL|VENMO|GIFT_CARD)$")
     payout_email: Optional[str] = None  # Required for PayPal/Venmo
 
 

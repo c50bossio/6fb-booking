@@ -35,6 +35,18 @@ from .compensation_plan import (
     CompensationType,
     PaymentFrequency,
 )
+from .revenue_share import RevenueShare, Commission
+from .booking import (
+    ServiceCategory,
+    Service,
+    DayOfWeek,
+    BarberAvailability,
+    BookingRule,
+    ReviewRating,
+    Review,
+    BookingSlot,
+    WaitList,
+)
 
 # Export all models for easy importing
 __all__ = [
@@ -77,4 +89,16 @@ __all__ = [
     "PaymentHistory",
     "CompensationType",
     "PaymentFrequency",
+    "RevenueShare",
+    "Commission",
+    # Booking models
+    "ServiceCategory",
+    "Service",
+    "DayOfWeek",
+    "BarberAvailability",
+    "BookingRule",
+    "ReviewRating",
+    "Review",
+    "BookingSlot",
+    "WaitList",
 ]

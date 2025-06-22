@@ -106,7 +106,10 @@ async def start_account_connection(
 
 @router.get("/oauth-callback")
 async def handle_oauth_callback(
-    code: str, state: Optional[str] = None, platform: Optional[str] = None, db: Session = Depends(get_db)
+    code: str,
+    state: Optional[str] = None,
+    platform: Optional[str] = None,
+    db: Session = Depends(get_db),
 ):
     """
     Handle OAuth callback from Square or Stripe
@@ -119,7 +122,8 @@ async def handle_oauth_callback(
             barber_id = int(barber_id)
         except:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid state parameter"
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid state parameter",
             )
     else:
         # Default to barber_id 1 for testing
@@ -174,9 +178,10 @@ async def handle_oauth_callback(
 
         # Redirect to success page instead of returning JSON
         from fastapi.responses import RedirectResponse
+
         return RedirectResponse(
             url=f"http://localhost:3000/oauth-success.html?platform={platform}&success=true",
-            status_code=302
+            status_code=302,
         )
 
     except Exception as e:

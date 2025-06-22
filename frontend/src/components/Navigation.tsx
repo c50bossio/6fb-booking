@@ -1,11 +1,11 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/components/AuthProvider'
 import { NotificationCenter } from '@/components/NotificationCenter'
 import { 
   BarChart3, 
@@ -81,10 +81,15 @@ const navigationItems = [
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
   const pathname = usePathname()
   const { user, logout, hasRole } = useAuth()
   
-  if (!user) return null
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+  
+  if (!isMounted || !user) return null
 
   const hasAccess = (item: any) => {
     if (!item.roles) return true
@@ -134,7 +139,7 @@ export default function Navigation() {
             <div className="flex items-center space-x-2">
               <div className="hidden sm:block text-right">
                 <div className="text-sm font-medium text-gray-900">
-                  {user.first_name} {user.last_name}
+                  {user.full_name}
                 </div>
                 <Badge variant="secondary" className="text-xs">
                   {user.role.replace('_', ' ')}

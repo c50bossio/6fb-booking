@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
-import { useAuth } from './useAuth'
+import { useAuth } from '@/components/AuthProvider'
 
 interface WebSocketMessage {
   type: string
@@ -16,23 +16,25 @@ interface WebSocketHook {
 }
 
 export function useWebSocket(): WebSocketHook {
-  const { user, token } = useAuth()
+  const { user } = useAuth()
   const ws = useRef<WebSocket | null>(null)
   const [isConnected, setIsConnected] = useState(false)
   const [connectionStatus, setConnectionStatus] = useState<WebSocketHook['connectionStatus']>('disconnected')
   const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null)
+  const [isClient, setIsClient] = useState(false)
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>()
   const reconnectAttemptsRef = useRef(0)
 
   const connect = useCallback(() => {
-    if (!user || !token || ws.current?.readyState === WebSocket.OPEN) {
+    if (!user || !isClient || ws.current?.readyState === WebSocket.OPEN) {
       return
     }
 
     setConnectionStatus('connecting')
     
     const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000'
-    const url = `${wsUrl}/api/v1/ws?token=${encodeURIComponent(token)}`
+    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
+    const url = token ? `${wsUrl}/api/v1/ws?token=${encodeURIComponent(token)}` : `${wsUrl}/api/v1/ws`
     
     try {
       ws.current = new WebSocket(url)
@@ -93,7 +95,7 @@ export function useWebSocket(): WebSocketHook {
       console.error('Error creating WebSocket:', error)
       setConnectionStatus('error')
     }
-  }, [user, token])
+  }, [user, isClient])
 
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
@@ -138,7 +140,7 @@ export function useWebSocket(): WebSocketHook {
 
   const handleNotification = (message: WebSocketMessage) => {
     // Show notification using browser API or toast library
-    if ('Notification' in window && Notification.permission === 'granted') {
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
       new Notification(message.data?.title || 'New Notification', {
         body: message.data?.message || '',
         icon: '/logo.png',
@@ -167,13 +169,18 @@ export function useWebSocket(): WebSocketHook {
     }
   }
 
+  // Set client flag
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
   // Connect when component mounts and user is authenticated
   useEffect(() => {
-    if (user && token) {
+    if (user && isClient) {
       connect()
       
       // Request notification permission
-      if ('Notification' in window && Notification.permission === 'default') {
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
         Notification.requestPermission()
       }
     }
@@ -181,7 +188,7 @@ export function useWebSocket(): WebSocketHook {
     return () => {
       disconnect()
     }
-  }, [user, token, connect, disconnect])
+  }, [user, isClient, connect, disconnect])
 
   return {
     isConnected,

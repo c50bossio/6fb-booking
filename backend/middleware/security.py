@@ -26,6 +26,52 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        
+        # Content Security Policy to prevent extension injection attempts
+        # This policy allows the app to function while preventing extensions from injecting content
+        csp_directives = [
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdn.jsdelivr.net",
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+            "font-src 'self' https://fonts.gstatic.com",
+            "img-src 'self' data: https: blob:",
+            "connect-src 'self' https://api.stripe.com https://m.stripe.network https://*.sentry.io http://localhost:* ws://localhost:*",
+            "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
+            "object-src 'none'",
+            "base-uri 'self'",
+            "form-action 'self'",
+            "upgrade-insecure-requests"
+        ]
+        
+        # In development, be more permissive
+        if request.app.state.settings.ENVIRONMENT == "development":
+            csp_directives = [
+                "default-src 'self'",
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: http://localhost:*",
+                "style-src 'self' 'unsafe-inline' https: http://localhost:*",
+                "font-src 'self' https: http://localhost:* data:",
+                "img-src 'self' data: https: http://localhost:* blob:",
+                "connect-src 'self' https: http://localhost:* ws://localhost:* wss://localhost:*",
+                "frame-src 'self' https: http://localhost:*",
+                "object-src 'none'",
+                "base-uri 'self'",
+                "form-action 'self'"
+            ]
+        
+        response.headers["Content-Security-Policy"] = "; ".join(csp_directives)
+        
+        # Permissions Policy (formerly Feature Policy) to control browser features
+        permissions_policy = [
+            "accelerometer=()",
+            "camera=()",
+            "geolocation=()",
+            "gyroscope=()",
+            "magnetometer=()",
+            "microphone=()",
+            "payment=(self)",
+            "usb=()"
+        ]
+        response.headers["Permissions-Policy"] = ", ".join(permissions_policy)
 
         # Only add HSTS in production
         if request.app.state.settings.ENVIRONMENT == "production":

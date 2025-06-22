@@ -73,6 +73,10 @@ async def create_compensation_plan(
             performance_bonuses=plan_data.get("performance_bonuses"),
             deductions=plan_data.get("deductions"),
             special_conditions=plan_data.get("special_conditions"),
+            time_based_rates=plan_data.get("time_based_rates"),
+            client_type_rates=plan_data.get("client_type_rates"),
+            escalation_rules=plan_data.get("escalation_rules"),
+            payout_settings=plan_data.get("payout_settings"),
             created_by=current_user.id,
             is_active=True,
             effective_date=datetime.utcnow(),
@@ -167,6 +171,10 @@ async def get_barber_compensation_plan(
                     "performance_bonuses": plan.performance_bonuses,
                     "deductions": plan.deductions,
                     "special_conditions": plan.special_conditions,
+                    "time_based_rates": plan.time_based_rates,
+                    "client_type_rates": plan.client_type_rates,
+                    "escalation_rules": plan.escalation_rules,
+                    "payout_settings": plan.payout_settings,
                 }
             )
 

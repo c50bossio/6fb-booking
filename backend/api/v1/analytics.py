@@ -67,7 +67,7 @@ class NetworkInsightsResponse(BaseModel):
 @router.get("/sixfb-score/{barber_id}", response_model=SixFBScoreResponse)
 async def get_barber_sixfb_score(
     barber_id: int,
-    period: str = Query("weekly", regex="^(weekly|monthly|quarterly|yearly)$"),
+    period: str = Query("weekly", pattern="^(weekly|monthly|quarterly|yearly)$"),
     start_date: Optional[date] = None,
     end_date: Optional[date] = None,
     current_user: User = Depends(get_current_user),
@@ -815,7 +815,7 @@ def get_barber_comparison(
 
 @router.get("/export")
 def export_analytics(
-    format: str = Query(..., regex="^(csv|pdf|excel)$"),
+    format: str = Query(..., pattern="^(csv|pdf|excel)$"),
     start_date: date = Query(...),
     end_date: date = Query(...),
     location_id: Optional[int] = None,

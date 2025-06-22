@@ -6,7 +6,8 @@ from datetime import date, timedelta
 from pydantic import BaseModel
 
 from database import get_db
-from models import Client, Appointment, Barber
+from models import Client, Appointment, Barber, User
+from utils.auth_decorators import get_current_user
 
 router = APIRouter()
 
@@ -32,16 +33,22 @@ class ClientUpdate(BaseModel):
 
 @router.get("/")
 async def get_clients(
-    barber_id: int = Query(1, description="Barber ID - will be from auth in production"),
     search: Optional[str] = Query(None, description="Search by name, email, or phone"),
     customer_type: Optional[str] = Query(None, description="new, returning, vip, or at_risk"),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get client list with optional search and filtering"""
     try:
-        query = db.query(Client).filter(Client.barber_id == barber_id)
+        # SECURITY FIX: Use authenticated user's barber_id instead of hardcoded value
+        # Get barber_id from authenticated user
+        barber = db.query(Barber).filter(Barber.user_id == current_user.id).first()
+        if not barber:
+            raise HTTPException(status_code=403, detail="User is not authorized as a barber")
+        
+        query = db.query(Client).filter(Client.barber_id == barber.id)
         
         # Apply search filter
         if search:

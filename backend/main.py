@@ -159,7 +159,7 @@ app.add_middleware(
         "Content-Type",
         "Authorization",
         "X-Requested-With",
-        "Cache-Control"
+        "Cache-Control",
     ],
 )
 
@@ -189,8 +189,14 @@ app.include_router(calendar.router, prefix="/api/v1/calendar", tags=["Calendar"]
 app.include_router(payments.router, prefix="/api/v1/payments", tags=["Payments"])
 app.include_router(webhooks.router, prefix="/api/v1/webhooks", tags=["Webhooks"])
 app.include_router(communications.router, prefix="/api/v1", tags=["Communications"])
-app.include_router(compensation_plans.router, prefix="/api/v1/compensation-plans", tags=["Compensation Plans"])
-app.include_router(test_payout.router, prefix="/api/v1/test-payout", tags=["Test Payout"])
+app.include_router(
+    compensation_plans.router,
+    prefix="/api/v1/compensation-plans",
+    tags=["Compensation Plans"],
+)
+app.include_router(
+    test_payout.router, prefix="/api/v1/test-payout", tags=["Test Payout"]
+)
 app.include_router(
     public_status.router, prefix="/api/v1/public", tags=["Public Status"]
 )
@@ -290,19 +296,20 @@ async def startup_event():
         logger.info("Square sync scheduler started successfully")
     except Exception as e:
         logger.error(f"Failed to start Square sync scheduler: {str(e)}")
-    
+
     # Start payout scheduler
     try:
         from services.payout_scheduler import payout_scheduler
+
         payout_scheduler.start()
-        
+
         # Schedule all active compensation plans
         db = SessionLocal()
         try:
             payout_scheduler.schedule_all_payouts(db)
         finally:
             db.close()
-            
+
         logger.info("Payout scheduler started successfully")
     except Exception as e:
         logger.error(f"Failed to start payout scheduler: {str(e)}")
@@ -316,9 +323,10 @@ async def shutdown_event():
         logger.info("Square sync scheduler stopped successfully")
     except Exception as e:
         logger.error(f"Failed to stop Square sync scheduler: {str(e)}")
-    
+
     try:
         from services.payout_scheduler import payout_scheduler
+
         payout_scheduler.stop()
         logger.info("Payout scheduler stopped successfully")
     except Exception as e:
@@ -427,11 +435,8 @@ def trigger_error():
     """Sentry debug endpoint - triggers a test error"""
     # Only allow in development environment
     if settings.ENVIRONMENT.lower() != "development":
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Not found"
-        )
-    
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+
     logger.info("Sentry debug endpoint called - triggering test error")
     # This will be captured by Sentry
     division_by_zero = 1 / 0

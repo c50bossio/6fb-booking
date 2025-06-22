@@ -1,0 +1,7 @@
+export { default as BaseModal } from './BaseModal'
+export { default as CreateAppointmentModal } from './CreateAppointmentModal'
+export { default as AppointmentDetailsModal } from './AppointmentDetailsModal'
+export { default as ClientSelectionModal } from './ClientSelectionModal'
+export { default as ServiceSelectionModal } from './ServiceSelectionModal'
+export { default as TimeSlotPickerModal } from './TimeSlotPickerModal'
+export { default as ConfirmationModal } from './ConfirmationModal'

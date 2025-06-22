@@ -62,7 +62,7 @@ async def start_stripe_connect(
 
     if barber.user_id != current_user.id:
         rbac = RBACService(db)
-        if not rbac.has_permission(current_user, Permission.MANAGE_BARBERS):
+        if not rbac.has_permission(current_user, Permission.MANAGE_USERS):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied"
             )
@@ -189,7 +189,7 @@ async def get_connection_status(
 
     if barber.user_id != current_user.id:
         rbac = RBACService(db)
-        if not rbac.has_permission(current_user, Permission.MANAGE_BARBERS):
+        if not rbac.has_permission(current_user, Permission.MANAGE_USERS):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied"
             )
@@ -244,7 +244,7 @@ async def disconnect_stripe_account(
 
     if barber.user_id != current_user.id:
         rbac = RBACService(db)
-        if not rbac.has_permission(current_user, Permission.MANAGE_BARBERS):
+        if not rbac.has_permission(current_user, Permission.MANAGE_USERS):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied"
             )

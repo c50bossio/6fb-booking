@@ -20,12 +20,6 @@ class Barber(BaseModel):
     is_verified = Column(Boolean, default=False)
     subscription_tier = Column(String(50), default="basic")  # basic, premium, elite
 
-    # Trafft Integration
-    trafft_api_key = Column(String(500))
-    trafft_subdomain = Column(String(100))
-    trafft_employee_id = Column(String(100), index=True)  # Employee ID from Trafft
-    trafft_employee_email = Column(String(255), index=True)  # Email used in Trafft
-    trafft_last_sync = Column(String(50))  # ISO timestamp of last successful sync
 
     # Business Settings (for 6FB calculations)
     target_booking_capacity = Column(Integer, default=40)  # Weekly target appointments
@@ -42,6 +36,9 @@ class Barber(BaseModel):
 
     # User Account Link
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    
+    # Stripe Connect Integration
+    stripe_account_id = Column(String(255), nullable=True)  # Stripe Express account ID
 
     # Relationships (temporarily simplified for Trafft integration)
     appointments = relationship("Appointment", back_populates="barber")
@@ -57,6 +54,7 @@ class Barber(BaseModel):
     compensation_plan = relationship(
         "CompensationPlan", back_populates="barber", uselist=False
     )
+    reviews = relationship("Review", back_populates="barber")
 
     def __repr__(self):
         return f"<Barber(email={self.email}, business_name={self.business_name})>"

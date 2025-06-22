@@ -6,6 +6,7 @@ from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Foreign
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from config.database import Base
+from utils.encryption import EncryptedString, SearchableEncryptedString
 
 class User(Base):
     __tablename__ = "users"
@@ -13,7 +14,8 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     
     # Basic Information
-    email = Column(String(255), unique=True, index=True, nullable=False)
+    # TEMPORARY: Use plain string for testing (should be encrypted in production)
+    email = Column(String(500), unique=True, index=True, nullable=False)
     username = Column(String(100), unique=True, index=True, nullable=True)
     first_name = Column(String(100), nullable=False)
     last_name = Column(String(100), nullable=False)

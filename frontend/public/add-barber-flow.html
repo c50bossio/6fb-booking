@@ -194,7 +194,7 @@
 <body>
     <div class="container">
         <h1>Add New Barber</h1>
-        
+
         <!-- Progress Steps -->
         <div class="steps">
             <div class="step active" id="step1">
@@ -263,7 +263,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div id="commissionSettings" style="display:none;">
                     <div class="form-group">
                         <label>Commission Rate</label>
@@ -273,7 +273,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div id="boothRentSettings" style="display:none;">
                     <div class="form-group">
                         <label>Booth Rent Amount</label>
@@ -287,7 +287,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="button-group">
                     <button type="button" class="button button-secondary" onclick="goToStep(1)">Back</button>
                     <button type="submit" class="button button-primary">Next: Connect Accounts</button>
@@ -299,7 +299,7 @@
         <div class="form-section" id="section3">
             <h2>Step 3: Connect Payment Accounts</h2>
             <p>Connect payment processing accounts so the barber can receive instant payouts:</p>
-            
+
             <div class="payment-options" style="margin-top: 30px;">
                 <div class="payment-option" id="stripeConnect">
                     <h3>💳 Stripe</h3>
@@ -316,7 +316,7 @@
                     </button>
                 </div>
             </div>
-            
+
             <div class="button-group">
                 <button type="button" class="button button-secondary" onclick="goToStep(2)">Back</button>
                 <button type="button" class="button button-primary" onclick="finishSetup()">Finish Setup</button>
@@ -342,7 +342,7 @@
         let currentStep = 1;
         let barberData = {};
         let createdBarberId = null;
-        
+
         // Payment option selection
         document.querySelectorAll('.payment-option').forEach(option => {
             option.addEventListener('click', function() {
@@ -352,7 +352,7 @@
                 });
                 // Add selected class to clicked option
                 this.classList.add('selected');
-                
+
                 // Show/hide relevant settings
                 const model = this.dataset.model;
                 if (model === 'commission') {
@@ -364,11 +364,11 @@
                 }
             });
         });
-        
+
         // Step 1 Form
         document.getElementById('basicInfoForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            
+
             barberData = {
                 firstName: document.getElementById('firstName').value,
                 lastName: document.getElementById('lastName').value,
@@ -376,36 +376,36 @@
                 phone: document.getElementById('phone').value,
                 location: document.getElementById('location').value
             };
-            
+
             goToStep(2);
         });
-        
+
         // Step 2 Form
         document.getElementById('paymentSetupForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            
+
             const selectedModel = document.querySelector('.payment-option.selected');
             if (!selectedModel) {
                 alert('Please select a payment model');
                 return;
             }
-            
+
             barberData.paymentModel = selectedModel.dataset.model;
-            
+
             if (barberData.paymentModel === 'commission') {
                 barberData.commissionRate = document.getElementById('commissionRate').value;
             } else {
                 barberData.rentAmount = document.getElementById('rentAmount').value;
                 barberData.rentFrequency = document.getElementById('rentFrequency').value;
             }
-            
+
             // Simulate creating barber (in real app, this would call the API)
             createdBarberId = Math.floor(Math.random() * 1000) + 1;
             barberData.id = createdBarberId;
-            
+
             goToStep(3);
         });
-        
+
         function goToStep(step) {
             // Update progress indicators
             document.querySelectorAll('.step').forEach((s, index) => {
@@ -419,16 +419,16 @@
                     s.classList.remove('active', 'completed');
                 }
             });
-            
+
             // Show correct section
             document.querySelectorAll('.form-section').forEach(section => {
                 section.classList.remove('active');
             });
             document.getElementById(`section${step}`).classList.add('active');
-            
+
             currentStep = step;
         }
-        
+
         async function connectStripe() {
             try {
                 // Request OAuth URL
@@ -443,16 +443,16 @@
                         platform: 'stripe'
                     })
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.oauth_url) {
                     // Store barber data for return
                     localStorage.setItem('creating_barber', JSON.stringify(barberData));
-                    
+
                     // Mark Stripe as connecting
                     document.getElementById('stripeConnect').style.opacity = '0.5';
-                    
+
                     // Redirect to Stripe
                     window.location.href = data.oauth_url;
                 }
@@ -460,26 +460,26 @@
                 alert('Failed to connect Stripe: ' + error.message);
             }
         }
-        
+
         function connectSquare() {
             alert('Square integration coming soon! For now, use Stripe.');
         }
-        
+
         function finishSetup() {
             // Hide form sections
             document.querySelectorAll('.form-section').forEach(section => {
                 section.style.display = 'none';
             });
             document.querySelector('.steps').style.display = 'none';
-            
+
             // Show result
             document.getElementById('resultSection').style.display = 'block';
             document.getElementById('resultDetails').innerHTML = `
                 <p><strong>Name:</strong> ${barberData.firstName} ${barberData.lastName}</p>
                 <p><strong>Email:</strong> ${barberData.email}</p>
                 <p><strong>Phone:</strong> ${barberData.phone}</p>
-                <p><strong>Payment Model:</strong> ${barberData.paymentModel === 'commission' ? 
-                    `Commission (${barberData.commissionRate}%)` : 
+                <p><strong>Payment Model:</strong> ${barberData.paymentModel === 'commission' ?
+                    `Commission (${barberData.commissionRate}%)` :
                     `Booth Rent ($${barberData.rentAmount}/${barberData.rentFrequency})`}</p>
                 <p><strong>Stripe Connected:</strong> ${localStorage.getItem('stripe_connected') === 'true' ? '✅ Yes' : '❌ No'}</p>
                 <p style="margin-top: 20px;">
@@ -489,7 +489,7 @@
                 </p>
             `;
         }
-        
+
         // Check if returning from OAuth
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('oauth_return')) {
@@ -497,13 +497,13 @@
             if (storedData) {
                 barberData = JSON.parse(storedData);
                 createdBarberId = barberData.id;
-                
+
                 // Mark Stripe as connected
                 localStorage.setItem('stripe_connected', 'true');
-                
+
                 // Go directly to step 3
                 goToStep(3);
-                
+
                 // Update UI to show Stripe is connected
                 document.getElementById('stripeConnect').innerHTML = `
                     <h3>💳 Stripe</h3>

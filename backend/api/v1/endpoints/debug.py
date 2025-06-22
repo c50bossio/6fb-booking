@@ -1,19 +1,30 @@
 """
-Debug endpoints for troubleshooting
+Debug endpoints for troubleshooting - DEVELOPMENT ONLY
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import Dict, Any
 import logging
+import os
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+def require_development():
+    """Ensure endpoint is only accessible in development"""
+    environment = os.getenv("ENVIRONMENT", "development").lower()
+    if environment != "development":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Not found"
+        )
 
 
 @router.get("/database-test")
 async def test_database_connection():
     """Test database connection and table creation"""
+    require_development()
     try:
         from config.database import SessionLocal, engine, Base
 
@@ -48,46 +59,3 @@ async def test_database_connection():
         }
 
 
-@router.get("/trafft-webhook-test")
-async def test_trafft_webhook_processing():
-    """Test if Trafft webhook processing components are working"""
-    try:
-        # Test imports
-        from services.trafft_sync_service import TrafftSyncService
-        from models.appointment import Appointment
-        from models.location import Location
-        from models.barber import Barber
-        from models.client import Client
-
-        # Test database connection for webhook processing
-        from config.database import SessionLocal
-
-        db = SessionLocal()
-
-        # Test table queries
-        locations_count = db.query(Location).count()
-        barbers_count = db.query(Barber).count()
-        clients_count = db.query(Client).count()
-        appointments_count = db.query(Appointment).count()
-
-        db.close()
-
-        return {
-            "status": "success",
-            "webhook_components": "all_imported",
-            "database_counts": {
-                "locations": locations_count,
-                "barbers": barbers_count,
-                "clients": clients_count,
-                "appointments": appointments_count,
-            },
-            "message": "Trafft webhook processing is ready",
-        }
-
-    except Exception as e:
-        logger.error(f"Trafft webhook test failed: {e}")
-        return {
-            "status": "error",
-            "error": str(e),
-            "message": "Trafft webhook processing has issues",
-        }

@@ -20,8 +20,9 @@ from models.notification import Notification
 # Analytics models are Pydantic models, not SQLAlchemy
 from models.revenue_share import RevenueShare
 from models.automation import AutomationRule, WorkflowLog
-from models.training import TrainingModule, TrainingProgress
+from models.training import TrainingModule
 from models.payment import Payment, PaymentMethod, Refund, PaymentWebhookEvent, StripeCustomer, PaymentReport
+from models.booking import ServiceCategory, Service, BarberAvailability, BookingRule, Review, BookingSlot, WaitList
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
