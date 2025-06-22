@@ -36,9 +36,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       if (theme === 'dark') {
         document.documentElement.classList.add('dark')
         document.documentElement.classList.remove('light')
+        document.body.classList.add('dark', 'bg-slate-900', 'text-white')
+        document.body.classList.remove('light', 'bg-gray-50', 'text-gray-900')
       } else {
         document.documentElement.classList.add('light')
         document.documentElement.classList.remove('dark')
+        document.body.classList.add('light', 'bg-gray-50', 'text-gray-900')
+        document.body.classList.remove('dark', 'bg-slate-900', 'text-white')
       }
     }
   }, [theme, mounted])

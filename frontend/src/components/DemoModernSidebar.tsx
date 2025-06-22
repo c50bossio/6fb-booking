@@ -213,13 +213,13 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
 
       {/* Bottom Section */}
       <div className={`px-4 py-4 border-t space-y-2 ${theme === 'dark' ? 'border-white/10' : 'border-gray-200'}`}>
-        {/* Theme Toggle */}
+        {/* Theme Toggle - Prominent styling */}
         <button
           onClick={toggleTheme}
-          className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 w-full ${
+          className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 w-full border-2 ${
             theme === 'dark'
-              ? 'text-gray-300 hover:text-white hover:bg-white/5'
-              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              ? 'text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/10 border-yellow-500/30 hover:border-yellow-400/50'
+              : 'text-purple-600 hover:text-purple-700 hover:bg-purple-50 border-purple-200 hover:border-purple-300'
           }`}
           title={isCollapsed ? 'Toggle Theme' : undefined}
         >
@@ -230,10 +230,10 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
           )}
           {!isCollapsed && (
             <div className="flex-1 min-w-0 text-left">
-              <p className="font-medium">
+              <p className="font-semibold">
                 {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
               </p>
-              <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+              <p className={`text-xs ${theme === 'dark' ? 'text-yellow-300' : 'text-purple-500'}`}>
                 Switch theme
               </p>
             </div>
