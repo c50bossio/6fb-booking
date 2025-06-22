@@ -264,6 +264,13 @@ async def create_payment_intent(
             detail="Appointment not found"
         )
     
+    # CRITICAL SECURITY FIX: Verify user owns the appointment
+    if appointment.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to pay for this appointment"
+        )
+    
     # Check if appointment already has a successful payment
     existing_payment = db.query(Payment).filter(
         Payment.appointment_id == appointment.id,
@@ -274,6 +281,31 @@ async def create_payment_intent(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Appointment already paid"
+        )
+    
+    # SECURITY FIX: Validate payment amount matches appointment cost
+    expected_amount = appointment.total_cost or 0
+    if payment_intent.amount != expected_amount:
+        logger.warning(
+            f"Payment amount mismatch for user {current_user.id}, appointment {appointment.id}: "
+            f"requested={payment_intent.amount}, expected={expected_amount}"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Payment amount must be ${expected_amount/100:.2f}"
+        )
+    
+    # Additional validation: Ensure amount is positive and reasonable
+    if payment_intent.amount <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Payment amount must be greater than zero"
+        )
+    
+    if payment_intent.amount > 100000:  # $1000 maximum
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Payment amount exceeds maximum allowed"
         )
     
     try:
@@ -294,9 +326,14 @@ async def create_payment_intent(
             requires_action=payment.status == PaymentStatus.REQUIRES_ACTION
         )
     except Exception as e:
+        # Log the actual error for debugging (but don't expose to user)
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Payment intent creation failed for user {current_user.id}: {str(e)}")
+        
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
+            detail="Unable to create payment intent. Please try again."
         )
 
 

@@ -25,6 +25,7 @@ module.exports = {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          light: "hsl(var(--primary-light))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -49,6 +50,19 @@ module.exports = {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        // Enhanced theme colors
+        charcoal: {
+          dark: "hsl(var(--charcoal-dark))",
+          medium: "hsl(var(--charcoal-medium))",
+          light: "hsl(var(--charcoal-light))",
+        },
+        appointment: {
+          primary: "hsl(var(--appointment-primary))",
+          secondary: "hsl(var(--appointment-secondary))",
+          success: "hsl(var(--appointment-success))",
+          warning: "hsl(var(--appointment-warning))",
+          danger: "hsl(var(--appointment-danger))",
         },
       },
       borderRadius: {

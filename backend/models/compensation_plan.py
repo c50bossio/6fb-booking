@@ -36,6 +36,14 @@ class PaymentFrequency(enum.Enum):
     QUARTERLY = "quarterly"
 
 
+class PayoutMethod(enum.Enum):
+    STRIPE_INSTANT = "stripe_instant"
+    STRIPE_STANDARD = "stripe_standard"
+    BANK_TRANSFER = "bank_transfer"
+    CHECK = "check"
+    CASH = "cash"
+
+
 class CompensationPlan(Base):
     __tablename__ = "compensation_plans"
 
@@ -112,6 +120,84 @@ class CompensationPlan(Base):
     #   "master_barber_bonus": {"years_experience": 5, "bonus_rate": 10},
     #   "weekend_premium": {"saturday": 5, "sunday": 10},
     #   "holiday_premium": 15
+    # }
+    
+    # Automated payout settings
+    payout_settings = Column(JSON, nullable=True)
+    # Example structure:
+    # {
+    #   "enabled": true,
+    #   "method": "stripe_instant",
+    #   "frequency": "weekly",
+    #   "day_of_week": 5,  # Friday
+    #   "day_of_month": 15,  # For monthly payouts
+    #   "time": "17:00",  # 5 PM
+    #   "minimum_payout": 50,  # Don't process payouts under $50
+    #   "hold_days": 2,  # Hold funds for 2 days before payout
+    #   "auto_deduct_fees": true,
+    #   "notification_settings": {
+    #     "send_payout_notification": true,
+    #     "send_summary_report": true,
+    #     "send_failure_alerts": true
+    #   }
+    # }
+    
+    # Time-based variations
+    time_based_rates = Column(JSON, nullable=True)
+    # Example structure:
+    # {
+    #   "peak_hours": {
+    #     "enabled": true,
+    #     "hours": [
+    #       {"day": "weekday", "start": "17:00", "end": "20:00", "rate_adjustment": 5},
+    #       {"day": "saturday", "start": "10:00", "end": "16:00", "rate_adjustment": 10}
+    #     ]
+    #   },
+    #   "off_peak_discount": {
+    #     "enabled": true,
+    #     "hours": [
+    #       {"day": "weekday", "start": "09:00", "end": "12:00", "rate_adjustment": -5}
+    #     ]
+    #   },
+    #   "last_minute_booking": {"hours_before": 2, "rate_adjustment": 15},
+    #   "advance_booking": {"days_ahead": 7, "rate_adjustment": -5}
+    # }
+    
+    # Client-type based rates
+    client_type_rates = Column(JSON, nullable=True)
+    # Example structure:
+    # {
+    #   "new_client": {"rate_adjustment": 10, "first_visits": 3},
+    #   "vip_client": {"min_visits": 20, "min_spend": 1000, "rate_adjustment": 15},
+    #   "loyalty_tiers": [
+    #     {"name": "bronze", "min_visits": 5, "rate_adjustment": 0},
+    #     {"name": "silver", "min_visits": 10, "rate_adjustment": 5},
+    #     {"name": "gold", "min_visits": 20, "rate_adjustment": 10},
+    #     {"name": "platinum", "min_visits": 50, "rate_adjustment": 15}
+    #   ],
+    #   "referral_bonus": {"referrer_bonus": 25, "referee_discount": 10}
+    # }
+    
+    # Automatic escalation
+    escalation_rules = Column(JSON, nullable=True)
+    # Example structure:
+    # {
+    #   "tenure_based": [
+    #     {"months": 6, "rate_increase": 5},
+    #     {"months": 12, "rate_increase": 10},
+    #     {"months": 24, "rate_increase": 15}
+    #   ],
+    #   "performance_based": {
+    #     "revenue_threshold": 15000,
+    #     "months_consecutive": 3,
+    #     "rate_increase": 5
+    #   },
+    #   "skill_based": {
+    #     "certifications": [
+    #       {"name": "Advanced Color", "rate_increase": 5},
+    #       {"name": "Master Barber", "rate_increase": 10}
+    #     ]
+    #   }
     # }
 
     created_at = Column(DateTime, default=datetime.utcnow)

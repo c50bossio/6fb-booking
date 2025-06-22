@@ -1,0 +1,45 @@
+{
+  "summary": {
+    "total_tests": 5,
+    "passed": 3,
+    "failed": 2,
+    "success_rate": 60.0
+  },
+  "test_results": [
+    {
+      "test": "Database Connection",
+      "success": true,
+      "message": "Successfully connected to database",
+      "details": {},
+      "timestamp": "2025-06-21T17:30:19.891491"
+    },
+    {
+      "test": "Environment Variables",
+      "success": true,
+      "message": "All required variables configured",
+      "details": {},
+      "timestamp": "2025-06-21T17:30:19.891498"
+    },
+    {
+      "test": "Stripe API Connection",
+      "success": true,
+      "message": "Stripe API accessible",
+      "details": {},
+      "timestamp": "2025-06-21T17:30:22.599798"
+    },
+    {
+      "test": "Email Sending",
+      "success": false,
+      "message": "Failed to send test email",
+      "details": {},
+      "timestamp": "2025-06-21T17:30:30.153119"
+    },
+    {
+      "test": "Create Test Barber",
+      "success": false,
+      "message": "Failed to create barber: (sqlite3.OperationalError) no such column: barbers.stripe_account_id\n[SQL: SELECT barbers.email AS barbers_email, barbers.first_name AS barbers_first_name, barbers.last_name AS barbers_last_name, barbers.business_name AS barbers_business_name, barbers.phone AS barbers_phone, barbers.is_active AS barbers_is_active, barbers.is_verified AS barbers_is_verified, barbers.subscription_tier AS barbers_subscription_tier, barbers.trafft_api_key AS barbers_trafft_api_key, barbers.trafft_subdomain AS barbers_trafft_subdomain, barbers.trafft_employee_id AS barbers_trafft_employee_id, barbers.trafft_employee_email AS barbers_trafft_employee_email, barbers.trafft_last_sync AS barbers_trafft_last_sync, barbers.target_booking_capacity AS barbers_target_booking_capacity, barbers.hourly_rate AS barbers_hourly_rate, barbers.average_service_duration AS barbers_average_service_duration, barbers.monthly_revenue_goal AS barbers_monthly_revenue_goal, barbers.weekly_appointment_goal AS barbers_weekly_appointment_goal, barbers.average_ticket_goal AS barbers_average_ticket_goal, barbers.location_id AS barbers_location_id, barbers.user_id AS barbers_user_id, barbers.stripe_account_id AS barbers_stripe_account_id, barbers.id AS barbers_id, barbers.created_at AS barbers_created_at, barbers.updated_at AS barbers_updated_at \nFROM barbers \nWHERE barbers.email = ?\n LIMIT ? OFFSET ?]\n[parameters: ('testbarber@example.com', 1, 0)]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)",
+      "details": {},
+      "timestamp": "2025-06-21T17:30:30.210379"
+    }
+  ]
+}

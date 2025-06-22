@@ -112,13 +112,13 @@
                 <path d="M14 27 L22 35 L38 16" />
             </svg>
         </div>
-        
+
         <h1>Payment Account Connected!</h1>
-        
+
         <p class="message">
             Your Stripe account has been successfully connected. You're all set to receive instant payouts!
         </p>
-        
+
         <div class="details">
             <p><strong>What happens now?</strong></p>
             <p>✓ You'll receive 70% of each service instantly</p>
@@ -126,9 +126,9 @@
             <p>✓ Track all earnings in your Stripe dashboard</p>
             <p>✓ Download reports for tax purposes</p>
         </div>
-        
+
         <a href="/barbers" class="button">Return to Barbers</a>
-        
+
         <p class="countdown">Redirecting in <span id="countdown">10</span> seconds...</p>
     </div>
 
@@ -136,21 +136,21 @@
         // Parse URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const platform = urlParams.get('platform') || 'Stripe';
-        
+
         // Auto-redirect countdown
         let seconds = 10;
         const countdownEl = document.getElementById('countdown');
-        
+
         const countdown = setInterval(() => {
             seconds--;
             countdownEl.textContent = seconds;
-            
+
             if (seconds <= 0) {
                 clearInterval(countdown);
                 window.location.href = '/barbers';
             }
         }, 1000);
-        
+
         // Allow manual click to cancel countdown
         document.querySelector('.button').addEventListener('click', () => {
             clearInterval(countdown);

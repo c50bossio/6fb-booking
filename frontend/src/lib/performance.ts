@@ -1,6 +1,8 @@
 /**
- * Performance monitoring utilities
+ * Performance monitoring utilities with Core Web Vitals
  */
+
+import { getCLS, getFID, getFCP, getLCP, getTTFB } from 'web-vitals'
 
 interface PerformanceMetric {
   name: string
@@ -16,7 +18,68 @@ class PerformanceMonitor {
   constructor() {
     if (typeof window !== 'undefined') {
       this.initializeObservers()
+      this.initializeWebVitals()
     }
+  }
+
+  private initializeWebVitals() {
+    // Use web-vitals library for accurate Core Web Vitals
+    getCLS((metric) => {
+      this.recordMetric('CLS', metric.value, {
+        id: metric.id,
+        delta: metric.delta,
+        rating: this.getVitalRating('CLS', metric.value)
+      })
+    })
+
+    getFID((metric) => {
+      this.recordMetric('FID', metric.value, {
+        id: metric.id,
+        delta: metric.delta,
+        rating: this.getVitalRating('FID', metric.value)
+      })
+    })
+
+    getFCP((metric) => {
+      this.recordMetric('FCP', metric.value, {
+        id: metric.id,
+        delta: metric.delta,
+        rating: this.getVitalRating('FCP', metric.value)
+      })
+    })
+
+    getLCP((metric) => {
+      this.recordMetric('LCP', metric.value, {
+        id: metric.id,
+        delta: metric.delta,
+        rating: this.getVitalRating('LCP', metric.value)
+      })
+    })
+
+    getTTFB((metric) => {
+      this.recordMetric('TTFB', metric.value, {
+        id: metric.id,
+        delta: metric.delta,
+        rating: this.getVitalRating('TTFB', metric.value)
+      })
+    })
+  }
+
+  private getVitalRating(vital: string, value: number): 'good' | 'needs-improvement' | 'poor' {
+    const thresholds = {
+      'CLS': { good: 0.1, poor: 0.25 },
+      'FID': { good: 100, poor: 300 },
+      'FCP': { good: 1800, poor: 3000 },
+      'LCP': { good: 2500, poor: 4000 },
+      'TTFB': { good: 800, poor: 1800 }
+    }
+
+    const threshold = thresholds[vital as keyof typeof thresholds]
+    if (!threshold) return 'good'
+
+    if (value <= threshold.good) return 'good'
+    if (value <= threshold.poor) return 'needs-improvement'
+    return 'poor'
   }
 
   private initializeObservers() {

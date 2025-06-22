@@ -99,7 +99,7 @@
 <body>
     <div class="container">
         <h1>💈 Test Payment Split - Production</h1>
-        
+
         <div class="info">
             <h3>How it works:</h3>
             <ul>
@@ -150,36 +150,36 @@
 
     <script>
         const API_URL = 'https://be47-65-50-128-213.ngrok-free.app';
-        
+
         // Update split preview
         document.getElementById('amount').addEventListener('input', updateSplit);
-        
+
         function updateSplit() {
             const amount = parseFloat(document.getElementById('amount').value) || 0;
             const commission = parseFloat(document.getElementById('commission').value) || 0;
-            
+
             const shopAmount = (amount * commission / 100).toFixed(2);
             const barberAmount = (amount - shopAmount).toFixed(2);
-            
+
             document.getElementById('shop-amount').textContent = `$${shopAmount}`;
             document.getElementById('barber-amount').textContent = `$${barberAmount}`;
         }
 
         document.getElementById('payment-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const amount = parseFloat(document.getElementById('amount').value);
             const resultDiv = document.getElementById('result');
             const errorDiv = document.getElementById('error');
-            
+
             resultDiv.style.display = 'none';
             errorDiv.style.display = 'none';
-            
+
             try {
                 // First, let's test the split calculation
                 const testResponse = await fetch(`${API_URL}/api/v1/payment-splits/test-split-calculation`);
                 const testData = await testResponse.json();
-                
+
                 if (testData.ready_for_payments) {
                     resultDiv.innerHTML = `
                         <h3>✅ Payment Split Test Results</h3>
@@ -203,7 +203,7 @@
                     `;
                     errorDiv.style.display = 'block';
                 }
-                
+
             } catch (error) {
                 errorDiv.innerHTML = `
                     <h3>Error</h3>

@@ -1,66 +1,62 @@
-#!/usr/bin/env python3
-"""
-Test authentication endpoints
-"""
+#\!/usr/bin/env python3
 import requests
 import json
 
-# Base URL
-BASE_URL = "http://localhost:8000"
+# Test registration
+def test_register():
+    url = "http://localhost:8000/api/v1/auth/register"
+    data = {
+        "email": "test@example.com",
+        "password": "TestPass123\!",
+        "first_name": "Test",
+        "last_name": "User",
+        "role": "barber"
+    }
+    
+    response = requests.post(url, json=data)
+    print("Registration Response:")
+    print(f"Status: {response.status_code}")
+    print(f"Response: {response.text}")
+    return response
 
+# Test login
 def test_login():
-    """Test login endpoint"""
-    print("Testing login endpoint...")
+    url = "http://localhost:8000/api/v1/auth/token"
+    data = {
+        "username": "test@example.com",
+        "password": "TestPass123\!"
+    }
     
-    # Test with admin credentials
-    response = requests.post(
-        f"{BASE_URL}/api/v1/auth/token",
-        data={
-            "username": "admin@6fb.com",
-            "password": "password123"
-        }
-    )
-    
-    print(f"Status Code: {response.status_code}")
+    response = requests.post(url, data=data)
+    print("\nLogin Response:")
+    print(f"Status: {response.status_code}")
+    print(f"Response: {response.text}")
     
     if response.status_code == 200:
-        data = response.json()
-        print(f"Success! Token: {data['access_token'][:20]}...")
-        return data['access_token']
-    else:
-        print(f"Error: {response.text}")
-        return None
+        token_data = response.json()
+        return token_data["access_token"]
+    return None
 
-def test_current_user(token):
-    """Test getting current user"""
-    print("\nTesting current user endpoint...")
+# Test getting current user
+def test_get_me(token):
+    url = "http://localhost:8000/api/v1/auth/me"
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
     
-    response = requests.get(
-        f"{BASE_URL}/api/v1/auth/me",
-        headers={
-            "Authorization": f"Bearer {token}"
-        }
-    )
-    
-    print(f"Status Code: {response.status_code}")
-    
-    if response.status_code == 200:
-        data = response.json()
-        print(f"Current User: {json.dumps(data, indent=2)}")
-    else:
-        print(f"Error: {response.text}")
-
-def main():
-    """Run tests"""
-    print("6FB Booking Platform - Authentication Test")
-    print("=" * 50)
-    
-    # Test login
-    token = test_login()
-    
-    # Test current user if login succeeded
-    if token:
-        test_current_user(token)
+    response = requests.get(url, headers=headers)
+    print("\nGet Current User Response:")
+    print(f"Status: {response.status_code}")
+    print(f"Response: {response.text}")
 
 if __name__ == "__main__":
-    main()
+    # First try to register
+    test_register()
+    
+    # Then try to login
+    token = test_login()
+    
+    # If login successful, get user info
+    if token:
+        test_get_me(token)
+EOF < /dev/null

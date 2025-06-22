@@ -60,7 +60,7 @@
 <body>
     <div class="container">
         <h1>🔗 Test Stripe Connect OAuth</h1>
-        
+
         <div class="info">
             <p><strong>This page will directly test the Stripe OAuth flow.</strong></p>
             <p>When you click the button below, you'll be redirected to Stripe to connect an account.</p>
@@ -90,7 +90,7 @@
         // Your Stripe configuration
         const STRIPE_CLIENT_ID = 'ca_SXTsbj5r0TeoXG4WieYUb3ZcgX4jVWLz';
         const REDIRECT_URI = 'https://be47-65-50-128-213.ngrok-free.app/api/v1/payment-splits/oauth-callback';
-        
+
         // Display configuration
         document.getElementById('config').innerHTML = `
 Client ID: ${STRIPE_CLIENT_ID}
@@ -110,9 +110,9 @@ Redirect URI: ${REDIRECT_URI}
             });
 
             const oauthUrl = `https://connect.stripe.com/oauth/authorize?${params.toString()}`;
-            
+
             console.log('Redirecting to:', oauthUrl);
-            
+
             // Redirect to Stripe
             window.location.href = oauthUrl;
         }

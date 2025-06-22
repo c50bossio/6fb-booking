@@ -1,0 +1,57 @@
+{
+  "timestamp": "2025-06-22T13:16:16.495Z",
+  "environment": {
+    "nodeVersion": "v22.16.0",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "recommendations": {
+    "safeExtensions": [
+      "React Developer Tools",
+      "Redux DevTools",
+      "1Password",
+      "Bitwarden",
+      "Grammarly (with form injection disabled)"
+    ],
+    "problematicExtensions": [
+      "uBlock Origin (configure to whitelist localhost)",
+      "AdBlock Plus (disable for localhost)",
+      "Privacy Badger (add localhost to whitelist)",
+      "Ghostery (disable for development)",
+      "CORS Everywhere (disable for localhost)",
+      "ModHeader (clear CSP rules)",
+      "Requestly (remove CSP modifications)"
+    ],
+    "testingSteps": [
+      "1. Test in incognito/private mode",
+      "2. Disable all extensions",
+      "3. Re-enable extensions one by one",
+      "4. Configure problematic extensions",
+      "5. Clear browser cache completely"
+    ]
+  },
+  "browserSpecificIssues": {
+    "chrome": [
+      "React DevTools interference with hooks",
+      "Manifest V3 extension compatibility",
+      "Performance monitoring extensions"
+    ],
+    "firefox": [
+      "Enhanced Tracking Protection",
+      "Strict security settings",
+      "Add-on compatibility issues"
+    ],
+    "safari": [
+      "Intelligent Tracking Prevention",
+      "Website tracking settings",
+      "Extension sandboxing"
+    ]
+  },
+  "developmentTips": [
+    "Create a separate browser profile for development",
+    "Use incognito mode for testing",
+    "Keep a list of working extension configurations",
+    "Test across multiple browsers",
+    "Use browser developer tools for debugging"
+  ]
+}

@@ -70,9 +70,6 @@ class Location(Base):
     # 6FB Mentor Assignment
     mentor_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
-    # Trafft Integration
-    trafft_location_id = Column(String(100), nullable=True)
-    trafft_api_key = Column(String(500), nullable=True)
 
     # Payment Configuration
     payment_processor = Column(String(50), default="stripe")  # stripe, square, paypal
@@ -144,6 +141,12 @@ class Location(Base):
     barber_payment_models = relationship(
         "BarberPaymentModel", back_populates="location"
     )
+    
+    # Booking relationships
+    services = relationship("Service", back_populates="location")
+    booking_rules = relationship("BookingRule", back_populates="location")
+    reviews = relationship("Review", back_populates="location")
+    barber_availability = relationship("BarberAvailability", back_populates="location")
 
     def __repr__(self):
         return (

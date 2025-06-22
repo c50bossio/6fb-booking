@@ -1,0 +1,100 @@
+{
+  "stripe": {
+    "Environment Variable STRIPE_SECRET_KEY": {
+      "success": false,
+      "details": "Value: Missing",
+      "timestamp": "2025-06-22T02:32:52.570153"
+    },
+    "Environment Variable STRIPE_PUBLISHABLE_KEY": {
+      "success": false,
+      "details": "Value: Missing",
+      "timestamp": "2025-06-22T02:32:52.570162"
+    },
+    "Environment Variable STRIPE_WEBHOOK_SECRET": {
+      "success": false,
+      "details": "Value: Missing",
+      "timestamp": "2025-06-22T02:32:52.570165"
+    },
+    "API Connection": {
+      "success": false,
+      "details": "Connection failed: You did not provide an API key. You need to provide your API key in the Authorization header, using Bearer auth (e.g. 'Authorization: Bearer YOUR_SECRET_KEY'). See https://stripe.com/docs/api#authentication for details, or we can help at https://support.stripe.com/.",
+      "timestamp": "2025-06-22T02:32:52.790445"
+    },
+    "OAuth URL Generation": {
+      "success": true,
+      "details": "URL: https://connect.stripe.com/oauth/authorize?response_type=code&scope=read_write&state=test_state_123&...",
+      "timestamp": "2025-06-22T02:32:52.792703"
+    },
+    "Endpoint /api/v1/stripe-connect/status/1": {
+      "success": true,
+      "details": "Status: 401",
+      "timestamp": "2025-06-22T02:32:52.843417"
+    },
+    "Endpoint /api/v1/webhooks/stripe": {
+      "success": true,
+      "details": "Status: 405",
+      "timestamp": "2025-06-22T02:32:52.880437"
+    },
+    "Webhook Signature Validation": {
+      "success": false,
+      "details": "Webhook secret not configured",
+      "timestamp": "2025-06-22T02:32:52.880535"
+    },
+    "Payment Models Import": {
+      "success": true,
+      "details": "All payment models imported successfully",
+      "timestamp": "2025-06-22T02:32:53.042710"
+    }
+  },
+  "square": {
+    "Environment Variable SQUARE_APPLICATION_ID": {
+      "success": false,
+      "details": "Value: Missing",
+      "timestamp": "2025-06-22T02:32:52.570171"
+    },
+    "Environment Variable SQUARE_ACCESS_TOKEN": {
+      "success": false,
+      "details": "Value: Missing",
+      "timestamp": "2025-06-22T02:32:52.570174"
+    },
+    "Environment Variable SQUARE_ENVIRONMENT": {
+      "success": true,
+      "details": "Value: Set",
+      "timestamp": "2025-06-22T02:32:52.570179"
+    },
+    "API Connection": {
+      "success": false,
+      "details": "Connection failed",
+      "timestamp": "2025-06-22T02:32:52.793124"
+    },
+    "Endpoint /api/v1/payments/payment-methods": {
+      "success": true,
+      "details": "Status: 401",
+      "timestamp": "2025-06-22T02:32:52.854385"
+    },
+    "Endpoint /api/v1/square/locations": {
+      "success": true,
+      "details": "Status: 401",
+      "timestamp": "2025-06-22T02:32:52.864599"
+    },
+    "Endpoint /api/v1/barber-payments/commissions/summary": {
+      "success": true,
+      "details": "Status: 401",
+      "timestamp": "2025-06-22T02:32:52.874507"
+    }
+  },
+  "overall": {
+    "passed": 8,
+    "failed": 8,
+    "errors": [
+      "stripe: Environment Variable STRIPE_SECRET_KEY - Value: Missing",
+      "stripe: Environment Variable STRIPE_PUBLISHABLE_KEY - Value: Missing",
+      "stripe: Environment Variable STRIPE_WEBHOOK_SECRET - Value: Missing",
+      "square: Environment Variable SQUARE_APPLICATION_ID - Value: Missing",
+      "square: Environment Variable SQUARE_ACCESS_TOKEN - Value: Missing",
+      "stripe: API Connection - Connection failed: You did not provide an API key. You need to provide your API key in the Authorization header, using Bearer auth (e.g. 'Authorization: Bearer YOUR_SECRET_KEY'). See https://stripe.com/docs/api#authentication for details, or we can help at https://support.stripe.com/.",
+      "square: API Connection - Connection failed",
+      "stripe: Webhook Signature Validation - Webhook secret not configured"
+    ]
+  }
+}

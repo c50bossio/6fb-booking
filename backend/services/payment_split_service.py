@@ -9,7 +9,13 @@ from typing import Dict, Optional, List
 from datetime import datetime
 from decimal import Decimal
 import stripe
-from square.client import Client as SquareClient
+# Square SDK is optional
+try:
+    from square.client import Client as SquareClient
+    SQUARE_AVAILABLE = True
+except ImportError:
+    SquareClient = None
+    SQUARE_AVAILABLE = False
 
 from config.settings import Settings
 
@@ -31,11 +37,17 @@ class PaymentSplitService:
         stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
         self.stripe = stripe
 
-        # Initialize Square
-        self.square_client = SquareClient(
-            access_token=os.getenv("SQUARE_ACCESS_TOKEN"),
-            environment=os.getenv("SQUARE_ENVIRONMENT", "sandbox"),
-        )
+        # Initialize Square (if available)
+        self.square_client = None
+        if SQUARE_AVAILABLE and os.getenv("SQUARE_ACCESS_TOKEN"):
+            try:
+                self.square_client = SquareClient(
+                    access_token=os.getenv("SQUARE_ACCESS_TOKEN"),
+                    environment=os.getenv("SQUARE_ENVIRONMENT", "sandbox")
+                )
+            except Exception as e:
+                print(f"Warning: Failed to initialize Square client: {e}")
+                self.square_client = None
 
     # ===== STRIPE SPLIT PAYMENTS =====
 
@@ -132,6 +144,9 @@ class PaymentSplitService:
         Note: Square doesn't have automatic splits like Stripe,
         so we process payment then transfer
         """
+        if not self.square_client:
+            raise Exception("Square integration is not available. Please use Stripe instead.")
+        
         try:
             # First, process the full payment
             result = self.square_client.payments.create_payment(
@@ -196,6 +211,9 @@ class PaymentSplitService:
         """
         Complete Square OAuth connection
         """
+        if not self.square_client:
+            raise Exception("Square integration is not available. Please use Stripe instead.")
+        
         try:
             result = self.square_client.o_auth.obtain_token(
                 body={

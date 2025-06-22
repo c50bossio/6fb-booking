@@ -1,10 +1,14 @@
 """
-Notification service for real-time updates
+Notification service for real-time updates and email notifications
 """
 from typing import Dict, List, Optional
 from sqlalchemy.orm import Session
 from datetime import datetime
 import asyncio
+import smtplib
+import os
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 from models.user import User
 from models.notification import Notification, NotificationType
@@ -15,7 +19,50 @@ logger = get_logger(__name__)
 
 
 class NotificationService:
-    """Service for managing notifications"""
+    """Service for managing notifications and email"""
+    
+    def __init__(self):
+        # Email configuration
+        self.smtp_server = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+        self.smtp_port = int(os.getenv("SMTP_PORT", "587"))
+        self.smtp_username = os.getenv("SMTP_USERNAME")
+        self.smtp_password = os.getenv("SMTP_PASSWORD")
+        self.from_email = os.getenv("FROM_EMAIL", "noreply@6fb.com")
+    
+    def send_email(self, to_email: str, subject: str, message: str, html_message: str = None) -> bool:
+        """Send email notification"""
+        try:
+            if not self.smtp_username or not self.smtp_password:
+                logger.warning("SMTP credentials not configured, skipping email")
+                return False
+            
+            # Create message
+            msg = MIMEMultipart('alternative')
+            msg['From'] = self.from_email
+            msg['To'] = to_email
+            msg['Subject'] = subject
+            
+            # Add text part
+            text_part = MIMEText(message, 'plain')
+            msg.attach(text_part)
+            
+            # Add HTML part if provided
+            if html_message:
+                html_part = MIMEText(html_message, 'html')
+                msg.attach(html_part)
+            
+            # Send email
+            with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
+                server.starttls()
+                server.login(self.smtp_username, self.smtp_password)
+                server.send_message(msg)
+            
+            logger.info(f"Email sent successfully to {to_email}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to send email to {to_email}: {str(e)}")
+            return False
     
     @staticmethod
     async def send_appointment_notification(

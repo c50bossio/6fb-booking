@@ -139,7 +139,7 @@
                 <label>Your Name</label>
                 <input type="text" id="barberName" placeholder="John Doe" required>
             </div>
-            
+
             <div class="form-group">
                 <label>Barber ID (provided by your shop)</label>
                 <input type="number" id="barberId" placeholder="Enter your barber ID" required>
@@ -176,24 +176,24 @@
 
     <script>
         const API_URL = 'https://be47-65-50-128-213.ngrok-free.app';
-        
+
         document.getElementById('barber-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const barberId = document.getElementById('barberId').value;
             const barberName = document.getElementById('barberName').value;
             const connectButton = document.getElementById('connectButton');
             const successStatus = document.getElementById('successStatus');
             const errorStatus = document.getElementById('errorStatus');
-            
+
             // Hide status messages
             successStatus.style.display = 'none';
             errorStatus.style.display = 'none';
-            
+
             // Disable button
             connectButton.disabled = true;
             connectButton.textContent = 'Connecting...';
-            
+
             try {
                 // Request OAuth URL from backend
                 const response = await fetch(`${API_URL}/api/v1/payment-splits/connect-account`, {
@@ -207,24 +207,24 @@
                         platform: 'stripe'
                     })
                 });
-                
+
                 if (!response.ok) {
                     throw new Error(`Failed to get OAuth URL: ${response.status}`);
                 }
-                
+
                 const data = await response.json();
-                
+
                 if (data.oauth_url) {
                     // Store barber info for later
                     localStorage.setItem('connecting_barber', JSON.stringify({
                         id: barberId,
                         name: barberName
                     }));
-                    
+
                     // Show success message briefly
                     successStatus.textContent = `Great, ${barberName}! Redirecting to Stripe...`;
                     successStatus.style.display = 'block';
-                    
+
                     // Redirect to Stripe OAuth
                     setTimeout(() => {
                         window.location.href = data.oauth_url;
@@ -232,31 +232,31 @@
                 } else {
                     throw new Error('No OAuth URL received');
                 }
-                
+
             } catch (error) {
                 console.error('Error:', error);
                 errorStatus.textContent = `Error: ${error.message}`;
                 errorStatus.style.display = 'block';
-                
+
                 // Re-enable button
                 connectButton.disabled = false;
                 connectButton.textContent = 'Connect Your Stripe Account';
             }
         });
-        
+
         // Check if returning from OAuth
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('success')) {
             const successStatus = document.getElementById('successStatus');
             const barberInfo = JSON.parse(localStorage.getItem('connecting_barber') || '{}');
-            
+
             successStatus.innerHTML = `
                 <h3>✅ Success!</h3>
                 <p>${barberInfo.name || 'Your'} Stripe account has been connected.</p>
                 <p>You'll now receive instant payouts for all your services!</p>
             `;
             successStatus.style.display = 'block';
-            
+
             // Clear stored info
             localStorage.removeItem('connecting_barber');
         }

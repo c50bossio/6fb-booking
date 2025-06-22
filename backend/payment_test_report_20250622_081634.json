@@ -1,0 +1,154 @@
+{
+  "timestamp": "2025-06-22T08:16:34.339978",
+  "tests": [
+    {
+      "name": "Stripe API Connection",
+      "status": "skipped",
+      "details": {
+        "reason": "Stripe not configured"
+      },
+      "error": null,
+      "timestamp": "2025-06-22T08:16:34.343209"
+    },
+    {
+      "name": "Payment Intent Creation",
+      "status": "skipped",
+      "details": {
+        "reason": "Stripe not configured"
+      },
+      "error": null,
+      "timestamp": "2025-06-22T08:16:34.343215"
+    },
+    {
+      "name": "Payment Split Calculation",
+      "status": "skipped",
+      "details": {
+        "reason": "Square SDK not installed"
+      },
+      "error": null,
+      "timestamp": "2025-06-22T08:16:34.343218"
+    },
+    {
+      "name": "Stripe Connect OAuth",
+      "status": "skipped",
+      "details": {
+        "reason": "Stripe Connect not configured"
+      },
+      "error": null,
+      "timestamp": "2025-06-22T08:16:34.343226"
+    },
+    {
+      "name": "Webhook Signature Verification",
+      "status": "skipped",
+      "details": {
+        "reason": "Webhook secret not configured"
+      },
+      "error": null,
+      "timestamp": "2025-06-22T08:16:34.343228"
+    },
+    {
+      "name": "Compensation Plan - Daily Metrics",
+      "status": "passed",
+      "details": {
+        "total_revenue": "$0.00",
+        "completed_appointments": 0,
+        "average_ticket": "$0.00",
+        "booking_rate": "0.0%"
+      },
+      "error": null,
+      "timestamp": "2025-06-22T08:16:34.401946"
+    },
+    {
+      "name": "Compensation Plan - 6FB Score",
+      "status": "passed",
+      "details": {
+        "overall_score": 10.0,
+        "grade": "F",
+        "booking_utilization": "0.0%",
+        "service_quality": "0.0%"
+      },
+      "error": null,
+      "timestamp": "2025-06-22T08:16:34.402689"
+    },
+    {
+      "name": "Barber Payout - Stripe Connect",
+      "status": "skipped",
+      "details": {
+        "reason": "Not configured"
+      },
+      "error": null,
+      "timestamp": "2025-06-22T08:16:34.402703"
+    },
+    {
+      "name": "Barber Payout - Square",
+      "status": "skipped",
+      "details": {
+        "reason": "Not configured"
+      },
+      "error": null,
+      "timestamp": "2025-06-22T08:16:34.402707"
+    },
+    {
+      "name": "Barber Payout - Tremendous",
+      "status": "skipped",
+      "details": {
+        "reason": "Not configured"
+      },
+      "error": null,
+      "timestamp": "2025-06-22T08:16:34.402710"
+    },
+    {
+      "name": "Security - Amount Validation",
+      "status": "passed",
+      "details": {
+        "max_amount": "$1000",
+        "min_amount": ">$0",
+        "validation": "Enforced in payment endpoints"
+      },
+      "error": null,
+      "timestamp": "2025-06-22T08:16:34.402712"
+    },
+    {
+      "name": "Security - Authorization Checks",
+      "status": "passed",
+      "details": {
+        "user_verification": "User must own appointment",
+        "role_based_access": "Admin/mentor for refunds",
+        "payment_ownership": "Verified before actions"
+      },
+      "error": null,
+      "timestamp": "2025-06-22T08:16:34.402715"
+    },
+    {
+      "name": "Security - Webhook Verification",
+      "status": "failed",
+      "details": {},
+      "error": "Webhook secret not configured",
+      "timestamp": "2025-06-22T08:16:34.402718"
+    },
+    {
+      "name": "Security - PCI Compliance",
+      "status": "passed",
+      "details": {
+        "card_data_handling": "Never stored, only Stripe tokens",
+        "secure_transmission": "HTTPS required",
+        "logging": "Sanitized payment data in logs"
+      },
+      "error": null,
+      "timestamp": "2025-06-22T08:16:34.402720"
+    }
+  ],
+  "summary": {
+    "total": 14,
+    "passed": 5,
+    "failed": 1,
+    "skipped": 8
+  },
+  "configuration": {
+    "stripe_configured": false,
+    "webhook_secret_configured": false,
+    "connect_client_id_configured": false,
+    "square_configured": false,
+    "tremendous_configured": false
+  }
+}

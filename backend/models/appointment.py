@@ -15,14 +15,6 @@ class Appointment(BaseModel):
     appointment_time = Column(DateTime)
     duration_minutes = Column(Integer, default=60)
     
-    # Trafft Integration
-    trafft_appointment_id = Column(String(100), unique=True, index=True)
-    trafft_booking_uuid = Column(String(100), unique=True, index=True)
-    trafft_service_id = Column(String(100))
-    trafft_employee_id = Column(String(100))
-    trafft_location_name = Column(String(200))
-    trafft_sync_status = Column(String(50), default="synced")  # synced, pending, error
-    trafft_last_sync = Column(DateTime)
     
     # Relationships
     barber_id = Column(Integer, ForeignKey("barbers.id"), nullable=False)
@@ -33,6 +25,9 @@ class Appointment(BaseModel):
     
     # Payment relationship
     payments = relationship("Payment", back_populates="appointment")
+    
+    # Review relationship
+    review = relationship("Review", back_populates="appointment", uselist=False)
     
     # 6FB Core Tracking Fields (matching current spreadsheet)
     service_revenue = Column(Float, default=0.0, nullable=False)  # "Service Revenue" column
@@ -67,6 +62,9 @@ class Appointment(BaseModel):
     booking_source = Column(String(50))  # website, phone, walk_in, referral, social
     booking_device = Column(String(50))  # mobile, desktop, tablet
     booking_time = Column(DateTime)  # When the appointment was booked
+    
+    # Google Calendar Integration
+    google_calendar_event_id = Column(String(255))  # Store Google Calendar event ID
     
     # Quality Metrics
     client_satisfaction = Column(Integer)  # 1-5 rating

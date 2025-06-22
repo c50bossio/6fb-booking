@@ -15,10 +15,10 @@
 <body>
     <h1>Test OAuth Flow</h1>
     <p>Click the buttons below to test OAuth popup windows:</p>
-    
+
     <button class="stripe" onclick="testStripeOAuth()">Test Stripe OAuth</button>
     <button class="square" onclick="testSquareOAuth()">Test Square OAuth</button>
-    
+
     <div id="result" class="result" style="display: none;"></div>
 
     <script>
@@ -26,7 +26,7 @@
             try {
                 const response = await fetch('http://localhost:8001/test-oauth/stripe');
                 const data = await response.json();
-                
+
                 if (data.success && data.oauth_url) {
                     // Open OAuth popup
                     const popup = window.open(data.oauth_url, 'stripe_oauth', 'width=600,height=700');
@@ -43,7 +43,7 @@
             try {
                 const response = await fetch('http://localhost:8001/test-oauth/square');
                 const data = await response.json();
-                
+
                 if (data.success && data.oauth_url) {
                     // Open OAuth popup
                     const popup = window.open(data.oauth_url, 'square_oauth', 'width=600,height=700');

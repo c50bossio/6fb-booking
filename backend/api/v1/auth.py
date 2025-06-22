@@ -11,6 +11,7 @@ import jwt
 from passlib.context import CryptContext
 import secrets
 import smtplib
+import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -27,6 +28,7 @@ from utils.security import (
 from utils.logging import log_user_action
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 # Security
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -128,13 +130,25 @@ def create_reset_token(email: str, expires_minutes: int = 30):
 
 def send_email(to_email: str, subject: str, body: str):
     """Send email (simplified implementation - in production use proper email service)"""
+    import logging
+    import os
+    from utils.encryption import mask_email
+    
+    logger = logging.getLogger(__name__)
+    
     try:
-        # For development, just log the email content
-        print(f"\n--- EMAIL ---")
-        print(f"To: {to_email}")
-        print(f"Subject: {subject}")
-        print(f"Body: {body}")
-        print(f"--- END EMAIL ---\n")
+        # SECURITY FIX: Only log email delivery in development, never log content
+        environment = os.getenv("ENVIRONMENT", "development").lower()
+        
+        if environment == "development":
+            # In development, log sanitized information only
+            masked_email = mask_email(to_email)
+            logger.info(f"Dev email sent to {masked_email} with subject: {subject}")
+            print(f"[DEV] Email would be sent to {masked_email}")
+        else:
+            # In production, log only successful delivery (no content)
+            masked_email = mask_email(to_email)
+            logger.info(f"Email sent to {masked_email}")
 
         # In production, implement actual email sending:
         # smtp_server = settings.SMTP_SERVER
@@ -170,17 +184,39 @@ async def get_current_user(
     )
 
     try:
+        # Validate token format first
+        if not token or token == "null" or token == "undefined":
+            logger.warning(f"Invalid token format received: {token}")
+            raise credentials_exception
+            
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("sub")
         if email is None:
+            logger.warning(f"Token missing email subject: {payload}")
             raise credentials_exception
         token_data = TokenData(email=email)
-    except jwt.PyJWTError:
+    except jwt.ExpiredSignatureError:
+        logger.warning(f"Token expired for user: {payload.get('sub', 'unknown') if 'payload' in locals() else 'unknown'}")
+        raise credentials_exception
+    except jwt.InvalidTokenError as e:
+        logger.warning(f"Invalid JWT token: {str(e)}")
+        raise credentials_exception
+    except Exception as e:
+        logger.error(f"Unexpected error validating JWT: {str(e)}")
         raise credentials_exception
 
     user = db.query(User).filter(User.email == token_data.email).first()
     if user is None:
+        logger.warning(f"User not found for email: {token_data.email}")
         raise credentials_exception
+    
+    if not user.is_active:
+        logger.warning(f"Inactive user attempted access: {user.email}")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User account is disabled"
+        )
+    
     return user
 
 

@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String, Date, Integer, ForeignKey, Float, Text, Boolean
 from sqlalchemy.orm import relationship
 from .base import BaseModel
+from utils.encryption import EncryptedString, EncryptedText, SearchableEncryptedString
 
 
 class Client(BaseModel):
@@ -10,12 +11,11 @@ class Client(BaseModel):
     # Basic Info
     first_name = Column(String(100), nullable=False)
     last_name = Column(String(100), nullable=False)
-    email = Column(String(255), index=True)
-    phone = Column(String(20), index=True)
-    date_of_birth = Column(Date)
+    # SECURITY ENHANCEMENT: Encrypt sensitive PII fields
+    email = Column(SearchableEncryptedString(500), index=True)  # Encrypted but searchable
+    phone = Column(SearchableEncryptedString(100), index=True)  # Encrypted but searchable  
+    date_of_birth = Column(Date)  # Consider encrypting if not needed for age calculations
     
-    # Trafft Integration
-    trafft_customer_id = Column(String(100), index=True)  # ID from Trafft system
     
     # Relationship
     barber_id = Column(Integer, ForeignKey("barbers.id"), nullable=False)
@@ -39,7 +39,8 @@ class Client(BaseModel):
     
     # Preferences and Notes
     preferred_services = Column(Text)  # JSON string of preferred services
-    notes = Column(Text)
+    # SECURITY ENHANCEMENT: Encrypt sensitive notes
+    notes = Column(EncryptedText)  # Contains private customer information
     tags = Column(String(500))  # Comma-separated tags
     
     # Communication Preferences
@@ -49,6 +50,7 @@ class Client(BaseModel):
     
     # Relationships
     appointments = relationship("Appointment", back_populates="client")
+    reviews = relationship("Review", back_populates="client")
     
     def __repr__(self):
         return f"<Client(name={self.first_name} {self.last_name}, type={self.customer_type})>"

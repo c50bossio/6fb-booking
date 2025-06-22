@@ -1,0 +1,153 @@
+{
+  "developmentBrowserSettings": {
+    "chrome": {
+      "recommendedFlags": [
+        "--disable-web-security",
+        "--disable-features=VizDisplayCompositor",
+        "--allow-running-insecure-content",
+        "--disable-backgrounding-occluded-windows"
+      ],
+      "safeExtensions": [
+        "React Developer Tools",
+        "Redux DevTools",
+        "1Password",
+        "Bitwarden"
+      ],
+      "problematicExtensions": [
+        "uBlock Origin",
+        "AdBlock Plus",
+        "Privacy Badger",
+        "Ghostery",
+        "CORS Everywhere",
+        "ModHeader",
+        "Requestly"
+      ],
+      "configuration": {
+        "reactDevTools": {
+          "disable": false,
+          "settings": {
+            "hideConsoleLogsInStrictMode": true,
+            "breakOnConsoleErrors": false
+          }
+        },
+        "uBlockOrigin": {
+          "whitelist": [
+            "localhost:3000",
+            "localhost:8000",
+            "127.0.0.1:3000",
+            "127.0.0.1:8000"
+          ]
+        }
+      }
+    },
+    "firefox": {
+      "aboutConfigSettings": {
+        "dom.security.https_only_mode": false,
+        "security.tls.insecure_fallback_hosts": "localhost,127.0.0.1",
+        "network.stricttransportsecurity.preloadlist": false
+      },
+      "safeExtensions": [
+        "React Developer Tools",
+        "Redux DevTools",
+        "1Password",
+        "Bitwarden"
+      ]
+    },
+    "safari": {
+      "settings": {
+        "disableIntelligentTrackingPrevention": true,
+        "allowAllCookies": true,
+        "disablePopupBlocking": true
+      }
+    }
+  },
+  "cspConfiguration": {
+    "allowedSources": {
+      "scripts": [
+        "'self'",
+        "'unsafe-inline'",
+        "'unsafe-eval'",
+        "https://js.stripe.com",
+        "https://cdn.tailwindcss.com"
+      ],
+      "styles": [
+        "'self'",
+        "'unsafe-inline'",
+        "https://fonts.googleapis.com"
+      ],
+      "fonts": [
+        "'self'",
+        "https://fonts.gstatic.com"
+      ],
+      "images": [
+        "'self'",
+        "data:",
+        "https:",
+        "blob:"
+      ],
+      "connect": [
+        "'self'",
+        "http://localhost:8000",
+        "ws://localhost:8000",
+        "wss://localhost:8000",
+        "https://api.stripe.com",
+        "https://api.tremendous.com"
+      ],
+      "frames": [
+        "'self'",
+        "https://js.stripe.com",
+        "https://hooks.stripe.com"
+      ]
+    }
+  },
+  "troubleshootingSteps": [
+    {
+      "step": 1,
+      "action": "Test in incognito/private mode",
+      "expected": "App should work normally if extensions are the issue"
+    },
+    {
+      "step": 2,
+      "action": "Disable all extensions",
+      "expected": "Isolate extension conflicts"
+    },
+    {
+      "step": 3,
+      "action": "Re-enable extensions one by one",
+      "expected": "Identify specific problematic extension"
+    },
+    {
+      "step": 4,
+      "action": "Configure or replace problematic extension",
+      "expected": "Resolve the conflict while maintaining functionality"
+    }
+  ],
+  "commonErrors": {
+    "cspViolation": {
+      "error": "Content Security Policy violation",
+      "solution": "Check middleware.ts CSP configuration",
+      "code": "Update CSP headers to allow required resources"
+    },
+    "blockedRequest": {
+      "error": "Request blocked by extension",
+      "solution": "Add localhost to extension whitelist",
+      "extensions": ["uBlock Origin", "AdBlock Plus", "Privacy Badger"]
+    },
+    "reactDevToolsConflict": {
+      "error": "React state issues with DevTools",
+      "solution": "Disable React DevTools hooks temporarily",
+      "code": "window.__REACT_DEVTOOLS_GLOBAL_HOOK__.isDisabled = true;"
+    },
+    "corsBlocked": {
+      "error": "CORS policy blocks API requests",
+      "solution": "Disable CORS-modifying extensions for localhost",
+      "extensions": ["CORS Everywhere", "CORS Unblock"]
+    }
+  },
+  "testingCommands": {
+    "apiHealth": "curl -X GET 'http://localhost:8000/api/v1/auth/health'",
+    "frontendBuild": "cd frontend && npm run build",
+    "typeCheck": "cd frontend && npx tsc --noEmit",
+    "devServer": "cd frontend && npm run dev"
+  }
+}

@@ -5,7 +5,9 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from './AuthProvider'
+import { Permission, Role } from '@/lib/api/auth'
+import { PermissionGate, AdminOnly, MentorOnly } from './PermissionGate'
 import { 
   BarChart3, 
   Users, 
@@ -24,37 +26,37 @@ import {
 const navigationItems = [
   {
     name: 'Dashboard',
-    href: '/',
+    href: '/dashboard',
     icon: BarChart3,
     description: 'Main analytics dashboard'
   },
   {
-    name: 'Admin Portal',
-    href: '/admin',
-    icon: Shield,
-    description: 'System administration',
-    roles: ['super_admin', 'admin']
-  },
-  {
-    name: 'Mentor Dashboard',
-    href: '/mentor',
-    icon: GraduationCap,
-    description: 'Mentorship oversight',
-    roles: ['super_admin', 'admin', 'mentor']
-  },
-  {
-    name: 'Location Manager',
-    href: '/location',
-    icon: Building,
-    description: 'Location management',
-    roles: ['super_admin', 'admin', 'mentor']
-  },
-  {
-    name: 'Team Analytics',
-    href: '/team',
+    name: 'Clients',
+    href: '/clients',
     icon: Users,
-    description: 'Team performance analytics',
-    roles: ['super_admin', 'admin', 'mentor']
+    description: 'Client management',
+    permission: Permission.VIEW_OWN_CLIENTS
+  },
+  {
+    name: 'Appointments',
+    href: '/dashboard/appointments',
+    icon: Building,
+    description: 'Appointment scheduling',
+    permission: Permission.VIEW_OWN_APPOINTMENTS
+  },
+  {
+    name: 'Analytics',
+    href: '/analytics',
+    icon: BarChart3,
+    description: 'Performance analytics',
+    permission: Permission.VIEW_OWN_ANALYTICS
+  },
+  {
+    name: 'Payments',
+    href: '/payments',
+    icon: BarChart3,
+    description: 'Payment management',
+    permission: Permission.VIEW_OWN_PAYMENTS
   },
   {
     name: 'Training Hub',
@@ -63,24 +65,47 @@ const navigationItems = [
     description: 'Training and certification'
   },
   {
-    name: 'Revenue Center',
-    href: '/revenue',
-    icon: BarChart3,
-    description: 'Revenue and commissions',
-    roles: ['super_admin', 'admin', 'mentor']
+    name: 'Admin Portal',
+    href: '/admin',
+    icon: Shield,
+    description: 'System administration',
+    roles: [Role.SUPER_ADMIN, Role.ADMIN]
+  },
+  {
+    name: 'Mentor Dashboard',
+    href: '/mentor',
+    icon: GraduationCap,
+    description: 'Mentorship oversight',
+    roles: [Role.SUPER_ADMIN, Role.ADMIN, Role.MENTOR]
+  },
+  {
+    name: 'Barbers',
+    href: '/barbers',
+    icon: Users,
+    description: 'Barber management',
+    permission: Permission.VIEW_USERS
   }
 ]
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
-  const { user, logout, hasRole } = useAuth()
+  const { user, logout, hasRole, hasPermission, getRoleDisplayName } = useAuth()
   
   if (!user) return null
 
   const hasAccess = (item: any) => {
-    if (!item.roles) return true
-    return hasRole(item.roles)
+    // Check role-based access
+    if (item.roles && !hasRole(item.roles)) {
+      return false
+    }
+    
+    // Check permission-based access
+    if (item.permission && !hasPermission(item.permission)) {
+      return false
+    }
+    
+    return true
   }
 
   const filteredItems = navigationItems.filter(hasAccess)
@@ -131,7 +156,7 @@ export default function Navigation() {
                   {user.first_name} {user.last_name}
                 </div>
                 <Badge variant="secondary" className="text-xs">
-                  {user.role.replace('_', ' ')}
+                  {getRoleDisplayName(user.role)}
                 </Badge>
               </div>
               <Button variant="ghost" size="sm" onClick={logout}>
