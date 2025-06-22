@@ -91,7 +91,7 @@ export default function BarbersPage() {
   const fetchBarbers = async () => {
     try {
       const token = localStorage.getItem('access_token')
-      
+
       // Try authenticated endpoint first
       if (token) {
         try {
@@ -111,7 +111,7 @@ export default function BarbersPage() {
       const demoResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/dashboard/demo/barbers`
       )
-      
+
       // Transform demo data to match expected format
       const transformedBarbers = demoResponse.data.map((barber: any) => ({
         ...barber,
@@ -132,7 +132,7 @@ export default function BarbersPage() {
           square_account_verified: false
         }
       }))
-      
+
       setBarbers(transformedBarbers)
     } catch (error) {
       console.error('Failed to fetch barbers:', error)
@@ -150,7 +150,7 @@ export default function BarbersPage() {
     try {
       const token = localStorage.getItem('access_token')
       const headers = { Authorization: `Bearer ${token}` }
-      
+
       await axios.delete(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/barbers/${barberId}`,
         { headers }
@@ -169,10 +169,10 @@ export default function BarbersPage() {
     try {
       console.log('🚀 Starting barber creation...')
       console.log('📋 Form data:', JSON.stringify(formData, null, 2))
-      
+
       const token = localStorage.getItem('access_token')
       console.log('🔑 Token exists:', !!token)
-      
+
       if (!token) {
         router.push('/login')
         return
@@ -187,13 +187,13 @@ export default function BarbersPage() {
         phone: formData.phone.trim(),
         location_id: 1
       }
-      
+
       console.log('🏗️ Prepared barber data:', JSON.stringify(barberData, null, 2))
 
       // Skip OAuth testing for now to focus on barber creation
       console.log('⏭️ Skipping OAuth test, creating barber directly...')
 
-      // Now create the barber  
+      // Now create the barber
       console.log('🌐 API URL:', process.env.NEXT_PUBLIC_API_URL)
       console.log('📤 Sending barber data:', JSON.stringify(barberData, null, 2))
       const response = await axios.post(
@@ -266,7 +266,7 @@ export default function BarbersPage() {
       setNewBarberConnections({ stripe: false, square: false })
       setAddBarberStep(1)
       setShowAddBarber(false)
-      
+
       // Refresh barbers list
       fetchBarbers()
 
@@ -276,7 +276,7 @@ export default function BarbersPage() {
       console.error('Error details:', JSON.stringify(error.response?.data, null, 2))
       console.error('Request URL:', error.config?.url)
       console.error('Request data:', JSON.stringify(error.config?.data, null, 2))
-      
+
       let errorMsg = 'Unknown error'
       if (error.response?.data?.detail) {
         errorMsg = error.response.data.detail
@@ -285,7 +285,7 @@ export default function BarbersPage() {
       } else if (error.message) {
         errorMsg = error.message
       }
-      
+
       alert(`Failed to add barber: ${errorMsg}`)
     }
   }
@@ -311,7 +311,7 @@ export default function BarbersPage() {
                 className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                 onChange={(e) => {
                   const search = e.target.value.toLowerCase()
-                  const filtered = barbers.filter(b => 
+                  const filtered = barbers.filter(b =>
                     b.first_name.toLowerCase().includes(search) ||
                     b.last_name.toLowerCase().includes(search) ||
                     b.email.toLowerCase().includes(search) ||
@@ -327,7 +327,7 @@ export default function BarbersPage() {
               <option value="not-connected">Not Connected</option>
             </select>
           </div>
-          
+
           <div className="flex items-center space-x-3">
             <button
               onClick={() => {
@@ -343,7 +343,7 @@ export default function BarbersPage() {
                     b.payment_model?.stripe_connect_account_id ? 'Yes' : 'No'
                   ])
                 ].map(row => row.join(',')).join('\n')
-                
+
                 const blob = new Blob([csv], { type: 'text/csv' })
                 const url = window.URL.createObjectURL(blob)
                 const a = document.createElement('a')
@@ -383,7 +383,7 @@ export default function BarbersPage() {
             <p className="text-sm font-medium text-gray-600">Total Barbers</p>
             <p className="text-2xl font-bold text-gray-900 mt-1">{barbers.length}</p>
           </div>
-          
+
           <div className="premium-card-modern p-6 hover-lift">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl">
@@ -395,7 +395,7 @@ export default function BarbersPage() {
               ${barbers.reduce((sum, b) => sum + (b.total_revenue || 0), 0).toLocaleString()}
             </p>
           </div>
-          
+
           <div className="premium-card-modern p-6 hover-lift">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl">
@@ -407,7 +407,7 @@ export default function BarbersPage() {
               {barbers.length > 0 ? Math.round(barbers.reduce((sum, b) => sum + (b.sixfb_score || 0), 0) / barbers.length) : 0}
             </p>
           </div>
-          
+
           <div className="premium-card-modern p-6 hover-lift">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl">
@@ -455,13 +455,13 @@ export default function BarbersPage() {
                 </h4>
                 <div className="bg-white/70 px-3 py-2 rounded-md mb-3">
                   <p className="text-sm text-gray-700">
-                    {barber.payment_model?.payment_type === 'commission' 
+                    {barber.payment_model?.payment_type === 'commission'
                       ? `Commission Rate: ${barber.payment_model?.service_commission_rate ? (barber.payment_model.service_commission_rate * 100).toFixed(0) : '30'}%`
                       : `Booth Rent: $${barber.payment_model?.booth_rent_amount || '0'}/${barber.payment_model?.booth_rent_frequency || 'weekly'}`
                     }
                   </p>
                 </div>
-                  
+
                 <div className="space-y-2">
                   {/* Stripe Connection */}
                   <div className="flex items-center justify-between p-3 bg-gray-800/50 rounded-md border border-gray-700 hover:border-gray-600 transition-colors">
@@ -527,7 +527,7 @@ export default function BarbersPage() {
                             `${process.env.NEXT_PUBLIC_API_URL}/api/v1/stripe-connect/status/${barber.id}`,
                             { headers: { Authorization: `Bearer ${token}` } }
                           )
-                          
+
                           if (response.data.dashboard_url) {
                             window.open(response.data.dashboard_url, '_blank')
                           } else {
@@ -558,7 +558,7 @@ export default function BarbersPage() {
                             },
                             { headers: { Authorization: `Bearer ${token}` } }
                           )
-                          
+
                           if (response.data.oauth_url) {
                             window.location.href = response.data.oauth_url
                           }
@@ -573,7 +573,7 @@ export default function BarbersPage() {
                       Connect Stripe
                     </button>
                   )}
-                  
+
                   {!barber.payment_model?.square_merchant_id && (
                     <button
                       onClick={() => alert('Square integration coming soon!')}
@@ -620,9 +620,9 @@ export default function BarbersPage() {
                     <p className="text-xl font-bold text-white">
                       {barber.sixfb_score || 10}<span className="text-sm text-gray-400">/100</span>
                     </p>
-                    
+
                     {/* 6FB Score Explanation Popover */}
-                    <div 
+                    <div
                       id={`score-info-${barber.id}`}
                       className="hidden absolute top-full left-0 right-0 mt-2 p-4 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 max-h-[400px] overflow-y-auto"
                       style={{ minWidth: '320px' }}
@@ -692,7 +692,7 @@ export default function BarbersPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 rounded-lg p-3 border border-blue-500/20">
                     <div className="flex items-center space-x-2 mb-1">
@@ -712,9 +712,9 @@ export default function BarbersPage() {
                       <p className="text-xl font-bold text-white">{barber.rating || '4.8'}</p>
                       <div className="flex space-x-0.5">
                         {[...Array(5)].map((_, i) => (
-                          <StarIcon 
-                            key={i} 
-                            className={`h-3 w-3 ${i < Math.floor(barber.rating || 4.8) ? 'text-yellow-400 fill-current' : 'text-gray-600'}`} 
+                          <StarIcon
+                            key={i}
+                            className={`h-3 w-3 ${i < Math.floor(barber.rating || 4.8) ? 'text-yellow-400 fill-current' : 'text-gray-600'}`}
                           />
                         ))}
                       </div>
@@ -743,14 +743,14 @@ export default function BarbersPage() {
 
               {/* Action Buttons */}
               <div className="mt-4 pt-4 border-t border-gray-700 flex space-x-2">
-                <button 
+                <button
                   onClick={() => router.push(`/dashboard/appointments?barber=${barber.id}`)}
                   className="flex-1 text-sm bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded-md transition-colors flex items-center justify-center"
                 >
                   <CalendarIcon className="h-4 w-4 mr-2" />
                   Schedule
                 </button>
-                <button 
+                <button
                   onClick={() => {
                     // Show inline edit form
                     const editForm = document.getElementById(`edit-form-${barber.id}`)
@@ -783,11 +783,11 @@ export default function BarbersPage() {
                         const commissionFields = document.getElementById(`commission-fields-${barber.id}`)
                         const boothFields = document.getElementById(`booth-fields-${barber.id}`)
                         const hybridFields = document.getElementById(`hybrid-fields-${barber.id}`)
-                        
+
                         commissionFields?.classList.add('hidden')
                         boothFields?.classList.add('hidden')
                         hybridFields?.classList.add('hidden')
-                        
+
                         if (value === 'commission') commissionFields?.classList.remove('hidden')
                         else if (value === 'booth_rent') boothFields?.classList.remove('hidden')
                         else if (value === 'hybrid') hybridFields?.classList.remove('hidden')
@@ -856,7 +856,7 @@ export default function BarbersPage() {
                         </div>
                         <div>
                           <label className="text-xs text-gray-400">Frequency</label>
-                          <select 
+                          <select
                             defaultValue={barber.payment_model?.booth_rent_frequency || 'weekly'}
                             className="w-full mt-1 bg-gray-800 border border-gray-600 rounded px-3 py-1.5 text-sm text-white"
                           >
@@ -889,7 +889,7 @@ export default function BarbersPage() {
                     <div className="space-y-3 p-3 bg-gray-800/50 rounded-lg">
                       <h5 className="text-xs font-semibold text-green-400">Hybrid Model Settings</h5>
                       <p className="text-xs text-gray-400">Combine booth rent with commission on services</p>
-                      
+
                       {/* Base Rent */}
                       <div className="grid grid-cols-2 gap-3">
                         <div>
@@ -909,7 +909,7 @@ export default function BarbersPage() {
                           </select>
                         </div>
                       </div>
-                      
+
                       {/* Reduced Commission */}
                       <div className="grid grid-cols-2 gap-3">
                         <div>
@@ -939,7 +939,7 @@ export default function BarbersPage() {
                   {/* Additional Creative Options */}
                   <div className="space-y-3 p-3 bg-gray-800/50 rounded-lg">
                     <h5 className="text-xs font-semibold text-yellow-400">Creative Compensation Options</h5>
-                    
+
                     {/* Sliding Scale */}
                     <div className="flex items-center space-x-2">
                       <input type="checkbox" id={`sliding-scale-${barber.id}`} className="rounded" />
@@ -947,7 +947,7 @@ export default function BarbersPage() {
                         Sliding scale commission (lower % as revenue increases)
                       </label>
                     </div>
-                    
+
                     {/* Performance Bonuses */}
                     <div className="flex items-center space-x-2">
                       <input type="checkbox" id={`bonuses-${barber.id}`} className="rounded" />
@@ -955,7 +955,7 @@ export default function BarbersPage() {
                         Performance bonuses (based on 6FB score)
                       </label>
                     </div>
-                    
+
                     {/* New Client Incentive */}
                     <div className="flex items-center space-x-2">
                       <input type="checkbox" id={`new-client-${barber.id}`} className="rounded" />
@@ -963,7 +963,7 @@ export default function BarbersPage() {
                         New client bonus ($10 per new client)
                       </label>
                     </div>
-                    
+
                     {/* Product Sales Bonus */}
                     <div className="flex items-center space-x-2">
                       <input type="checkbox" id={`product-bonus-${barber.id}`} className="rounded" />
@@ -997,7 +997,7 @@ export default function BarbersPage() {
 
                   {/* Action Buttons */}
                   <div className="flex space-x-2 mt-4 pt-4 border-t border-gray-600">
-                    <button 
+                    <button
                       onClick={() => {
                         const editForm = document.getElementById(`edit-form-${barber.id}`)
                         if (editForm) {
@@ -1008,7 +1008,7 @@ export default function BarbersPage() {
                     >
                       Cancel
                     </button>
-                    <button 
+                    <button
                       onClick={() => {
                         // Preview the compensation structure
                         const paymentType = (document.getElementById(`payment-type-${barber.id}`) as HTMLSelectElement)?.value
@@ -1018,7 +1018,7 @@ export default function BarbersPage() {
                     >
                       Preview
                     </button>
-                    <button 
+                    <button
                       onClick={() => alert('Compensation update API coming soon!')}
                       className="flex-1 text-sm bg-purple-600 hover:bg-purple-700 text-white py-2 px-3 rounded transition-colors"
                     >
@@ -1068,7 +1068,7 @@ export default function BarbersPage() {
                         className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
                       />
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-1">
                         Last Name
@@ -1081,7 +1081,7 @@ export default function BarbersPage() {
                         className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
                       />
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-1">
                         Email
@@ -1094,7 +1094,7 @@ export default function BarbersPage() {
                         className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
                       />
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-1">
                         Phone
@@ -1161,7 +1161,7 @@ export default function BarbersPage() {
                   <h3 className="text-lg font-medium text-white mb-4">
                     Connect Payment Accounts
                   </h3>
-                  
+
                   <div className="space-y-3">
                     <label className="flex items-center space-x-3 cursor-pointer">
                       <input
@@ -1175,7 +1175,7 @@ export default function BarbersPage() {
                       />
                       <span className="text-white">Connect Stripe (instant payouts)</span>
                     </label>
-                    
+
                     <label className="flex items-center space-x-3 cursor-pointer">
                       <input
                         type="checkbox"

@@ -2,6 +2,7 @@
 Test endpoint for email configuration
 This file can be removed after testing
 """
+
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from pydantic import BaseModel, EmailStr
 from typing import Optional
@@ -24,12 +25,11 @@ class TestEmailRequest(BaseModel):
 
 @router.post("/email-config")
 async def test_email_configuration(
-    request: TestEmailRequest,
-    background_tasks: BackgroundTasks
+    request: TestEmailRequest, background_tasks: BackgroundTasks
 ):
     """
     Test email configuration without authentication
-    
+
     This endpoint is for testing purposes only and should be removed in production.
     """
     try:
@@ -42,11 +42,11 @@ async def test_email_configuration(
                     "smtp_username_set": bool(settings.SMTP_USERNAME),
                     "smtp_password_set": bool(settings.SMTP_PASSWORD),
                     "smtp_server": settings.SMTP_HOST,
-                    "smtp_port": settings.SMTP_PORT
+                    "smtp_port": settings.SMTP_PORT,
                 },
-                "instructions": "Please configure email settings in your .env file. See .env.template for examples."
+                "instructions": "Please configure email settings in your .env file. See .env.template for examples.",
             }
-        
+
         # Prepare test context based on test type
         if request.test_type == "appointment":
             subject = "Test Appointment Confirmation"
@@ -84,36 +84,48 @@ async def test_email_configuration(
             <p><strong>SMTP Server:</strong> {settings.SMTP_HOST}:{settings.SMTP_PORT}</p>
             <p><strong>From Email:</strong> {settings.EMAIL_FROM_ADDRESS or settings.SMTP_USERNAME}</p>
             """
-        
+
         # Try to send email
         try:
             # Create a mock database session (email service expects it)
             class MockDB:
-                def add(self, obj): pass
-                def commit(self): pass
-                def query(self, model): return self
-                def filter(self, *args): return self
-                def first(self): return None
-            
+                def add(self, obj):
+                    pass
+
+                def commit(self):
+                    pass
+
+                def query(self, model):
+                    return self
+
+                def filter(self, *args):
+                    return self
+
+                def first(self):
+                    return None
+
             mock_db = MockDB()
-            
+
             # Use direct SMTP for testing
             from services.email_service import EmailService
+
             test_service = EmailService()
-            
+
             # Send simple email
             import smtplib
             from email.mime.text import MIMEText
             from email.mime.multipart import MIMEMultipart
-            
-            msg = MIMEMultipart('alternative')
-            msg['Subject'] = subject
-            msg['From'] = f"{settings.EMAIL_FROM_NAME} <{settings.EMAIL_FROM_ADDRESS or settings.SMTP_USERNAME}>"
-            msg['To'] = request.to_email
-            
-            html_part = MIMEText(html_content, 'html')
+
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = subject
+            msg["From"] = (
+                f"{settings.EMAIL_FROM_NAME} <{settings.EMAIL_FROM_ADDRESS or settings.SMTP_USERNAME}>"
+            )
+            msg["To"] = request.to_email
+
+            html_part = MIMEText(html_content, "html")
             msg.attach(html_part)
-            
+
             # Connect and send
             if settings.SMTP_PORT == 587:
                 server = smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT)
@@ -122,11 +134,11 @@ async def test_email_configuration(
                 server = smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT)
             else:
                 server = smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT)
-            
+
             server.login(settings.SMTP_USERNAME, settings.SMTP_PASSWORD)
             server.send_message(msg)
             server.quit()
-            
+
             return {
                 "status": "success",
                 "message": f"Test email sent successfully to {request.to_email}",
@@ -134,10 +146,10 @@ async def test_email_configuration(
                     "subject": subject,
                     "test_type": request.test_type,
                     "smtp_server": f"{settings.SMTP_HOST}:{settings.SMTP_PORT}",
-                    "from_email": settings.EMAIL_FROM_ADDRESS or settings.SMTP_USERNAME
-                }
+                    "from_email": settings.EMAIL_FROM_ADDRESS or settings.SMTP_USERNAME,
+                },
             }
-            
+
         except smtplib.SMTPAuthenticationError as e:
             return {
                 "status": "auth_error",
@@ -146,8 +158,8 @@ async def test_email_configuration(
                 "troubleshooting": [
                     "For Gmail: Make sure you're using an App Password, not your regular password",
                     "For Gmail: Enable 2-factor authentication and generate an App Password",
-                    "For other providers: Check your SMTP credentials"
-                ]
+                    "For other providers: Check your SMTP credentials",
+                ],
             }
         except smtplib.SMTPConnectError as e:
             return {
@@ -157,23 +169,20 @@ async def test_email_configuration(
                 "troubleshooting": [
                     "Check SMTP_SERVER and SMTP_PORT settings",
                     "Ensure your firewall allows outbound connections on the SMTP port",
-                    "Verify the SMTP server address is correct"
-                ]
+                    "Verify the SMTP server address is correct",
+                ],
             }
         except Exception as e:
             return {
                 "status": "error",
                 "message": "Failed to send test email",
                 "error": str(e),
-                "error_type": type(e).__name__
+                "error_type": type(e).__name__,
             }
-            
+
     except Exception as e:
         logger.error(f"Error in test email endpoint: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Test failed: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Test failed: {str(e)}")
 
 
 @router.get("/email-status")
@@ -187,13 +196,13 @@ async def check_email_status():
             "username_set": bool(settings.SMTP_USERNAME),
             "password_set": bool(settings.SMTP_PASSWORD),
             "from_email": settings.EMAIL_FROM_ADDRESS or settings.SMTP_USERNAME,
-            "from_name": settings.EMAIL_FROM_NAME
+            "from_name": settings.EMAIL_FROM_NAME,
         },
         "sendgrid_configured": bool(settings.SENDGRID_API_KEY),
         "environment": settings.ENVIRONMENT,
         "instructions": {
             "gmail": "Use App Password from https://myaccount.google.com/apppasswords",
             "sendgrid": "Get API key from https://sendgrid.com",
-            "config_file": ".env (copy from .env.template)"
-        }
+            "config_file": ".env (copy from .env.template)",
+        },
     }

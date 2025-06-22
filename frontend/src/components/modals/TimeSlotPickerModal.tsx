@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import BaseModal from './BaseModal'
-import { 
+import {
   ClockIcon,
   CalendarDaysIcon,
   CheckCircleIcon,
@@ -43,10 +43,10 @@ const generateTimeSlots = (date: string, barberId?: number): TimeSlot[] => {
   for (let hour = startHour; hour < endHour; hour++) {
     for (let minutes = 0; minutes < 60; minutes += slotDuration) {
       const timeString = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
-      
+
       // Mock availability logic
       const isAvailable = Math.random() > 0.3 // 70% availability
-      
+
       slots.push({
         time: timeString,
         available: isAvailable,
@@ -54,7 +54,7 @@ const generateTimeSlots = (date: string, barberId?: number): TimeSlot[] => {
       })
     }
   }
-  
+
   return slots
 }
 
@@ -83,25 +83,25 @@ export default function TimeSlotPickerModal({
   const availableDates = useMemo(() => {
     const dates = []
     const today = new Date()
-    
+
     for (let i = 0; i < 30; i++) {
       const date = new Date(today)
       date.setDate(today.getDate() + i)
-      
+
       // Skip Sundays for this example
       if (date.getDay() !== 0) {
         dates.push({
           date: date.toISOString().split('T')[0],
-          display: date.toLocaleDateString('en-US', { 
-            weekday: 'short', 
-            month: 'short', 
-            day: 'numeric' 
+          display: date.toLocaleDateString('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric'
           }),
           isToday: i === 0
         })
       }
     }
-    
+
     return dates
   }, [])
 
@@ -201,7 +201,7 @@ export default function TimeSlotPickerModal({
                   <CheckCircleIcon className="h-4 w-4 mx-auto mt-1" />
                 )}
               </div>
-              
+
               {!slot.available && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-8 h-0.5 bg-gray-400 transform rotate-45"></div>
@@ -240,7 +240,7 @@ export default function TimeSlotPickerModal({
             <CalendarDaysIcon className="h-5 w-5 text-gray-600" />
             <h3 className="text-lg font-semibold text-gray-900">Select Date</h3>
           </div>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
             {availableDates.slice(0, 14).map((dateInfo) => (
               <button
@@ -345,7 +345,7 @@ export default function TimeSlotPickerModal({
               <span>Selected: {formatDate(currentDate)} at {selectedTimeSlot}</span>
             )}
           </div>
-          
+
           <div className="flex items-center space-x-3">
             <button
               onClick={onClose}

@@ -6,10 +6,10 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import BaseModal from './BaseModal'
 import ConfirmationModal from './ConfirmationModal'
-import { 
-  UserIcon, 
-  CalendarDaysIcon, 
-  ClockIcon, 
+import {
+  UserIcon,
+  CalendarDaysIcon,
+  ClockIcon,
   CurrencyDollarIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
@@ -271,7 +271,7 @@ export default function AppointmentDetailsModal({
                 {appointment.clientEmail && (
                   <div className="flex items-center space-x-2">
                     <EnvelopeIcon className="h-4 w-4 text-gray-500" />
-                    <a 
+                    <a
                       href={`mailto:${appointment.clientEmail}`}
                       className="text-violet-600 hover:text-violet-700 underline"
                     >
@@ -282,7 +282,7 @@ export default function AppointmentDetailsModal({
                 {appointment.clientPhone && (
                   <div className="flex items-center space-x-2">
                     <PhoneIcon className="h-4 w-4 text-gray-500" />
-                    <a 
+                    <a
                       href={`tel:${appointment.clientPhone}`}
                       className="text-violet-600 hover:text-violet-700 underline"
                     >
@@ -328,7 +328,7 @@ export default function AppointmentDetailsModal({
                 <UserIcon className="h-5 w-5 text-violet-600" />
                 <h4 className="text-lg font-semibold text-gray-900">Client Information</h4>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">

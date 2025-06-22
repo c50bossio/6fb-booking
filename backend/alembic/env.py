@@ -17,12 +17,28 @@ from models.appointment import Appointment
 from models.barber import Barber
 from models.location import Location
 from models.notification import Notification
+
 # Analytics models are Pydantic models, not SQLAlchemy
 from models.revenue_share import RevenueShare
 from models.automation import AutomationRule, WorkflowLog
 from models.training import TrainingModule
-from models.payment import Payment, PaymentMethod, Refund, PaymentWebhookEvent, StripeCustomer, PaymentReport
-from models.booking import ServiceCategory, Service, BarberAvailability, BookingRule, Review, BookingSlot, WaitList
+from models.payment import (
+    Payment,
+    PaymentMethod,
+    Refund,
+    PaymentWebhookEvent,
+    StripeCustomer,
+    PaymentReport,
+)
+from models.booking import (
+    ServiceCategory,
+    Service,
+    BarberAvailability,
+    BookingRule,
+    Review,
+    BookingSlot,
+    WaitList,
+)
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -30,6 +46,7 @@ config = context.config
 
 # Load database URL from environment or use default
 from core.config import settings
+
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
 # Interpret the config file for Python logging.
@@ -85,9 +102,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

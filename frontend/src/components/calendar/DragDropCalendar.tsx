@@ -71,12 +71,12 @@ export default function DragDropCalendar({
         // Find the drop target element
         const elementBelow = document.elementFromPoint(e.clientX, e.clientY)
         const timeSlot = elementBelow?.closest('[data-time-slot]')
-        
+
         if (timeSlot && dragState.draggedAppointment && onAppointmentMove) {
           const newDate = timeSlot.getAttribute('data-date')
           const newTime = timeSlot.getAttribute('data-time')
-          
-          if (newDate && newTime && 
+
+          if (newDate && newTime &&
               (newDate !== dragState.draggedAppointment.date || newTime !== dragState.draggedAppointment.startTime)) {
             try {
               await onAppointmentMove(
@@ -152,7 +152,7 @@ export default function DragDropCalendar({
   )
 
   return (
-    <div 
+    <div
       ref={calendarRef}
       className={`relative ${dragState.isDragging ? 'select-none' : ''}`}
       style={{ cursor: dragState.isDragging ? 'grabbing' : 'default' }}
@@ -195,42 +195,42 @@ export default function DragDropCalendar({
         .calendar-container [data-time-slot] {
           transition: all 0.2s ease;
         }
-        
+
         .calendar-container [data-time-slot]:hover {
           background-color: rgba(139, 92, 246, 0.1);
         }
-        
+
         .calendar-container [data-time-slot].drop-target {
           background-color: rgba(139, 92, 246, 0.2);
           border-color: rgb(139, 92, 246);
           box-shadow: inset 0 0 0 2px rgba(139, 92, 246, 0.5);
         }
-        
+
         .calendar-container .appointment-block {
           transition: all 0.2s ease;
           cursor: ${enableDragDrop ? 'grab' : 'pointer'};
         }
-        
+
         .calendar-container .appointment-block:hover {
           transform: ${enableDragDrop ? 'scale(1.02)' : 'scale(1.05)'};
           box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
         }
-        
+
         .calendar-container .appointment-block:active {
           cursor: ${enableDragDrop ? 'grabbing' : 'pointer'};
           transform: scale(0.98);
         }
-        
+
         .calendar-container .appointment-block.dragging {
           opacity: 0.5;
           transform: scale(0.95);
         }
-        
+
         .calendar-container .time-slot.drag-over {
           background-color: rgba(139, 92, 246, 0.15);
           border: 2px dashed rgb(139, 92, 246);
         }
-        
+
         /* Smooth drag animations */
         .calendar-container * {
           transition-property: background-color, border-color, transform, box-shadow;

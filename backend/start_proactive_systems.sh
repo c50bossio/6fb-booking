@@ -92,7 +92,7 @@ try:
 except:
     print('')
 ")
-    
+
     if [ ! -z "$NGROK_URL" ]; then
         echo -e "\n🌐 Webhook URL: ${GREEN}$NGROK_URL/sentry/webhook${NC}"
     fi

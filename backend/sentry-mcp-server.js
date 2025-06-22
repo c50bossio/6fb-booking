@@ -129,7 +129,7 @@ class SentryMCPServer {
   async listIssues({ project, limit = 10 }) {
     const projectSlug = project === 'python' ? SENTRY_PYTHON_PROJECT : SENTRY_NODE_PROJECT;
     const projectName = project === 'python' ? '6FB Booking Backend' : 'Bossio Investing Machine';
-    
+
     try {
       const response = await axios.get(
         `https://sentry.io/api/0/projects/${SENTRY_ORG}/${projectSlug}/issues/`,
@@ -240,7 +240,7 @@ class SentryMCPServer {
       const events = response.data.map((event) => {
         const stacktrace = event.entries?.find((e) => e.type === 'exception')?.data?.values?.[0]?.stacktrace;
         const frames = stacktrace?.frames?.slice(-3) || []; // Last 3 frames
-        
+
         return {
           id: event.id,
           timestamp: event.dateCreated,

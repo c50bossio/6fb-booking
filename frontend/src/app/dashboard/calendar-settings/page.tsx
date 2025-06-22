@@ -30,9 +30,9 @@ export default function CalendarSettingsPage() {
           <h1 className="text-4xl font-bold text-white mb-2">Calendar Settings Demo</h1>
           <p className="text-gray-400">Experience the most customizable booking calendar for your business</p>
         </div>
-        
+
         <DarkCalendarWithSettings />
-        
+
         <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-gray-900/50 backdrop-blur rounded-xl p-6 border border-gray-700">
             <h3 className="text-xl font-semibold text-white mb-3">🎨 Try These Features</h3>
@@ -45,7 +45,7 @@ export default function CalendarSettingsPage() {
               <li>• Enable/disable color by status</li>
             </ul>
           </div>
-          
+
           <div className="bg-gray-900/50 backdrop-blur rounded-xl p-6 border border-gray-700">
             <h3 className="text-xl font-semibold text-white mb-3">🚀 Production Ready</h3>
             <ul className="space-y-2 text-gray-300">

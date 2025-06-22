@@ -15,7 +15,7 @@ async function testSentryAPI() {
       headers: { Authorization: `Bearer ${SENTRY_AUTH_TOKEN}` }
     });
     console.log('✅ Organizations accessible:', orgResponse.data.length, 'found');
-    
+
     const sixfbOrg = orgResponse.data.find(org => org.slug === 'sixfb');
     if (sixfbOrg) {
       console.log('✅ Found sixfb organization:', sixfbOrg.name);
@@ -39,7 +39,7 @@ async function testSentryAPI() {
       headers: { Authorization: `Bearer ${SENTRY_AUTH_TOKEN}` }
     });
     console.log('✅ Projects accessible:', projectsResponse.data.length, 'found');
-    
+
     projectsResponse.data.forEach(project => {
       console.log(`   - ${project.name} (slug: ${project.slug}, id: ${project.id})`);
     });
@@ -59,11 +59,11 @@ async function testSentryAPI() {
     const projectsResponse = await axios.get(`https://sentry.io/api/0/organizations/${SENTRY_ORG}/projects/`, {
       headers: { Authorization: `Bearer ${SENTRY_AUTH_TOKEN}` }
     });
-    
+
     if (projectsResponse.data.length > 0) {
       const firstProject = projectsResponse.data[0];
       console.log(`   Using project: ${firstProject.name} (${firstProject.slug})`);
-      
+
       const issuesResponse = await axios.get(
         `https://sentry.io/api/0/projects/${SENTRY_ORG}/${firstProject.slug}/issues/`,
         {
@@ -71,9 +71,9 @@ async function testSentryAPI() {
           params: { limit: 5, statsPeriod: '24h' }
         }
       );
-      
+
       console.log('✅ Issues accessible:', issuesResponse.data.length, 'found in last 24h');
-      
+
       issuesResponse.data.forEach((issue, index) => {
         console.log(`   ${index + 1}. ${issue.title} (${issue.level})`);
       });

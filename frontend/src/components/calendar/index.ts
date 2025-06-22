@@ -14,11 +14,11 @@ export type { CalendarAppointment, CalendarProps } from './PremiumCalendar'
 export type { AppointmentFormData, Service, Barber } from './AppointmentCreateModal'
 
 // Hooks and Utilities
-export { 
-  useResponsiveCalendar, 
-  BREAKPOINTS, 
-  mediaQueries, 
-  responsiveStyles 
+export {
+  useResponsiveCalendar,
+  BREAKPOINTS,
+  mediaQueries,
+  responsiveStyles
 } from './ResponsiveCalendar'
 export { useDragDrop } from './DragDropCalendar'
 

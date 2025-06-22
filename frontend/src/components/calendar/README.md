@@ -44,7 +44,7 @@ import { ResponsiveCalendar, useResponsiveCalendar } from '@/components/calendar
 
 function ResponsiveExample() {
   const { isMobile, getOptimalProps } = useResponsiveCalendar()
-  
+
   return (
     <ResponsiveCalendar
       {...getOptimalProps()}
@@ -196,7 +196,7 @@ useEffect(() => {
   const interval = setInterval(() => {
     loadAppointments()
   }, 30000)
-  
+
   return () => clearInterval(interval)
 }, [])
 ```
@@ -317,7 +317,7 @@ import { useResponsiveCalendar, useDragDrop } from '@/components/calendar'
 function MyComponent() {
   const { isMobile, getOptimalProps } = useResponsiveCalendar()
   const { dragState, startDrag, endDrag } = useDragDrop(appointments, handleMove)
-  
+
   // Your component logic
 }
 ```

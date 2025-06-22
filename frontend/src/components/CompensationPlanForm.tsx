@@ -238,20 +238,20 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
   const [selectedTemplate, setSelectedTemplate] = useState('')
   const [planName, setPlanName] = useState(existingPlan?.plan_name || '')
   const [compensationType, setCompensationType] = useState(existingPlan?.compensation_type || 'commission_only')
-  
+
   // Base compensation
   const [baseSalary, setBaseSalary] = useState(existingPlan?.base_salary || 0)
   const [salaryFrequency, setSalaryFrequency] = useState(existingPlan?.salary_frequency || 'biweekly')
-  
+
   // Booth rent
   const [boothRentAmount, setBoothRentAmount] = useState(existingPlan?.booth_rent_amount || 1500)
   const [boothRentFrequency, setBoothRentFrequency] = useState(existingPlan?.booth_rent_frequency || 'monthly')
   const [includesUtilities, setIncludesUtilities] = useState(existingPlan?.includes_utilities ?? true)
   const [includesProducts, setIncludesProducts] = useState(existingPlan?.includes_products ?? false)
   const [includesMarketing, setIncludesMarketing] = useState(existingPlan?.includes_marketing ?? true)
-  
+
   // Commission structure
-  const defaultServices: ServiceCommission[] = existingPlan?.commission_structure?.services ? 
+  const defaultServices: ServiceCommission[] = existingPlan?.commission_structure?.services ?
     Object.entries(existingPlan.commission_structure.services).map(([name, data]: [string, any]) => ({
       name,
       rate: data.rate,
@@ -263,11 +263,11 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
       { name: 'Color Service', rate: 50, premiumRate: 55 },
       { name: 'Chemical Treatment', rate: 45 }
     ]
-  
+
   const [serviceCommissions, setServiceCommissions] = useState<ServiceCommission[]>(defaultServices)
   const [productCommission, setProductCommission] = useState(existingPlan?.commission_structure?.products?.default || 15)
   const [premiumProductCommission, setPremiumProductCommission] = useState(existingPlan?.commission_structure?.products?.premium || 20)
-  
+
   // Tiered commission
   const defaultTiers: Tier[] = existingPlan?.commission_structure?.tiers || [
     { min: 0, max: 5000, rate: 50 },
@@ -275,7 +275,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
     { min: 10001, max: null, rate: 70 }
   ]
   const [commissionTiers, setCommissionTiers] = useState<Tier[]>(defaultTiers)
-  
+
   // Performance bonuses
   const defaultMilestones: Milestone[] = existingPlan?.performance_bonuses?.revenue_milestones || [
     { target: 10000, bonus: 500 },
@@ -285,21 +285,21 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
   const [newClientBonus, setNewClientBonus] = useState(existingPlan?.performance_bonuses?.new_clients?.per_client || 25)
   const [retentionBonus, setRetentionBonus] = useState(existingPlan?.performance_bonuses?.client_retention?.bonus || 200)
   const [reviewBonus, setReviewBonus] = useState(existingPlan?.performance_bonuses?.review_rating?.bonus || 100)
-  
+
   // Deductions
   const [productUsageFee, setProductUsageFee] = useState(existingPlan?.deductions?.product_usage?.value || 5)
   const [processingFee, setProcessingFee] = useState(existingPlan?.deductions?.processing_fees?.value || 2.9)
   const [marketingContribution, setMarketingContribution] = useState(existingPlan?.deductions?.marketing_contribution?.value || 50)
   const [supplyFee, setSupplyFee] = useState(existingPlan?.deductions?.supply_fee?.value || 25)
   const [noShowPenalty, setNoShowPenalty] = useState(existingPlan?.deductions?.no_show_penalty?.value || 15)
-  
+
   // Special conditions
   const [hasApprenticePeriod, setHasApprenticePeriod] = useState(!!existingPlan?.special_conditions?.apprentice_period)
   const [apprenticeMonths, setApprenticeMonths] = useState(existingPlan?.special_conditions?.apprentice_period?.months || 6)
   const [apprenticeRate, setApprenticeRate] = useState(existingPlan?.special_conditions?.apprentice_period?.reduced_rate || 40)
   const [weekendPremium, setWeekendPremium] = useState(existingPlan?.special_conditions?.weekend_premium?.saturday || 5)
   const [holidayPremium, setHolidayPremium] = useState(existingPlan?.special_conditions?.holiday_premium || 15)
-  
+
   // Time-based variations
   const [enablePeakHours, setEnablePeakHours] = useState(existingPlan?.time_based_rates?.peak_hours?.enabled || false)
   const [peakHours, setPeakHours] = useState<TimeSlot[]>(existingPlan?.time_based_rates?.peak_hours?.hours || [
@@ -314,7 +314,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
   const [lastMinuteRate, setLastMinuteRate] = useState(existingPlan?.time_based_rates?.last_minute_booking?.rate_adjustment || 15)
   const [advanceBookingDays, setAdvanceBookingDays] = useState(existingPlan?.time_based_rates?.advance_booking?.days_ahead || 7)
   const [advanceBookingDiscount, setAdvanceBookingDiscount] = useState(existingPlan?.time_based_rates?.advance_booking?.rate_adjustment || -5)
-  
+
   // Client-type based rates
   const [newClientRate, setNewClientRate] = useState(existingPlan?.client_type_rates?.new_client?.rate_adjustment || 10)
   const [newClientVisits, setNewClientVisits] = useState(existingPlan?.client_type_rates?.new_client?.first_visits || 3)
@@ -327,7 +327,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
     { name: 'Gold', minVisits: 20, rateAdjustment: 10 },
     { name: 'Platinum', minVisits: 50, rateAdjustment: 15 }
   ])
-  
+
   // Automatic escalation
   const [enableTenureEscalation, setEnableTenureEscalation] = useState(!!existingPlan?.escalation_rules?.tenure_based)
   const [tenureRules, setTenureRules] = useState<TenureRule[]>(existingPlan?.escalation_rules?.tenure_based || [
@@ -338,7 +338,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
   const [performanceThreshold, setPerformanceThreshold] = useState(existingPlan?.escalation_rules?.performance_based?.revenue_threshold || 15000)
   const [performanceMonths, setPerformanceMonths] = useState(existingPlan?.escalation_rules?.performance_based?.months_consecutive || 3)
   const [performanceIncrease, setPerformanceIncrease] = useState(existingPlan?.escalation_rules?.performance_based?.rate_increase || 5)
-  
+
   // Automated payout settings
   const [enableAutoPayout, setEnableAutoPayout] = useState(existingPlan?.payout_settings?.enabled || false)
   const [payoutMethod, setPayoutMethod] = useState(existingPlan?.payout_settings?.method || 'stripe_instant')
@@ -358,18 +358,18 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
 
     setPlanName(template.name)
     setCompensationType(template.compensation_type)
-    
+
     // Apply base compensation settings
     if (template.base_salary !== undefined) setBaseSalary(template.base_salary)
     if (template.salary_frequency) setSalaryFrequency(template.salary_frequency)
-    
+
     // Apply booth rent settings
     if (template.booth_rent_amount !== undefined) setBoothRentAmount(template.booth_rent_amount)
     if (template.booth_rent_frequency) setBoothRentFrequency(template.booth_rent_frequency)
     if (template.includes_utilities !== undefined) setIncludesUtilities(template.includes_utilities)
     if (template.includes_products !== undefined) setIncludesProducts(template.includes_products)
     if (template.includes_marketing !== undefined) setIncludesMarketing(template.includes_marketing)
-    
+
     // Apply commission structure
     if (template.commission_structure) {
       if (template.commission_structure.services) {
@@ -389,7 +389,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
         setCommissionTiers(template.commission_structure.tiers)
       }
     }
-    
+
     // Apply performance bonuses
     if (template.performance_bonuses) {
       if (template.performance_bonuses.revenue_milestones) {
@@ -405,7 +405,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
         setReviewBonus(template.performance_bonuses.review_rating.bonus)
       }
     }
-    
+
     // Apply deductions
     if (template.deductions) {
       setProductUsageFee(template.deductions.product_usage?.value || 0)
@@ -414,7 +414,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
       setSupplyFee(template.deductions.supply_fee?.value || 0)
       setNoShowPenalty(template.deductions.no_show_penalty?.value || 0)
     }
-    
+
     // Apply special conditions
     if (template.special_conditions) {
       if (template.special_conditions.apprentice_period) {
@@ -435,7 +435,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     const plan = {
       plan_name: planName,
       compensation_type: compensationType,
@@ -556,7 +556,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
         }
       } : { enabled: false }
     }
-    
+
     onSubmit(plan)
   }
 
@@ -579,15 +579,15 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
               applyTemplate('starter')
             }}
             className={`p-4 rounded-lg border-2 transition-all text-left ${
-              selectedTemplate === 'starter' 
-                ? 'border-purple-500 bg-purple-500/20' 
+              selectedTemplate === 'starter'
+                ? 'border-purple-500 bg-purple-500/20'
                 : 'border-gray-600 bg-gray-700 hover:border-gray-500'
             }`}
           >
             <h4 className="font-medium text-white mb-1">Starter Plan</h4>
             <p className="text-xs text-gray-400">New barbers, 50% commission base</p>
           </button>
-          
+
           <button
             type="button"
             onClick={() => {
@@ -595,15 +595,15 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
               applyTemplate('experienced')
             }}
             className={`p-4 rounded-lg border-2 transition-all text-left ${
-              selectedTemplate === 'experienced' 
-                ? 'border-purple-500 bg-purple-500/20' 
+              selectedTemplate === 'experienced'
+                ? 'border-purple-500 bg-purple-500/20'
                 : 'border-gray-600 bg-gray-700 hover:border-gray-500'
             }`}
           >
             <h4 className="font-medium text-white mb-1">Experienced Barber</h4>
             <p className="text-xs text-gray-400">60% commission, performance bonuses</p>
           </button>
-          
+
           <button
             type="button"
             onClick={() => {
@@ -611,15 +611,15 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
               applyTemplate('master')
             }}
             className={`p-4 rounded-lg border-2 transition-all text-left ${
-              selectedTemplate === 'master' 
-                ? 'border-purple-500 bg-purple-500/20' 
+              selectedTemplate === 'master'
+                ? 'border-purple-500 bg-purple-500/20'
                 : 'border-gray-600 bg-gray-700 hover:border-gray-500'
             }`}
           >
             <h4 className="font-medium text-white mb-1">Master Barber Elite</h4>
             <p className="text-xs text-gray-400">Sliding scale 60-80%, top bonuses</p>
           </button>
-          
+
           <button
             type="button"
             onClick={() => {
@@ -627,15 +627,15 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
               applyTemplate('booth_rental')
             }}
             className={`p-4 rounded-lg border-2 transition-all text-left ${
-              selectedTemplate === 'booth_rental' 
-                ? 'border-purple-500 bg-purple-500/20' 
+              selectedTemplate === 'booth_rental'
+                ? 'border-purple-500 bg-purple-500/20'
                 : 'border-gray-600 bg-gray-700 hover:border-gray-500'
             }`}
           >
             <h4 className="font-medium text-white mb-1">Traditional Booth</h4>
             <p className="text-xs text-gray-400">$1,500/mo booth rent only</p>
           </button>
-          
+
           <button
             type="button"
             onClick={() => {
@@ -643,15 +643,15 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
               applyTemplate('hybrid_modern')
             }}
             className={`p-4 rounded-lg border-2 transition-all text-left ${
-              selectedTemplate === 'hybrid_modern' 
-                ? 'border-purple-500 bg-purple-500/20' 
+              selectedTemplate === 'hybrid_modern'
+                ? 'border-purple-500 bg-purple-500/20'
                 : 'border-gray-600 bg-gray-700 hover:border-gray-500'
             }`}
           >
             <h4 className="font-medium text-white mb-1">Modern Hybrid</h4>
             <p className="text-xs text-gray-400">$800 rent + 40% commission</p>
           </button>
-          
+
           <button
             type="button"
             onClick={() => {
@@ -659,8 +659,8 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
               // Reset to default values
             }}
             className={`p-4 rounded-lg border-2 transition-all text-left ${
-              selectedTemplate === '' 
-                ? 'border-purple-500 bg-purple-500/20' 
+              selectedTemplate === ''
+                ? 'border-purple-500 bg-purple-500/20'
                 : 'border-gray-600 bg-gray-700 hover:border-gray-500'
             }`}
           >
@@ -877,16 +877,16 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
             <ChartBarIcon className="h-5 w-5 mr-2 text-purple-400" />
             Commission Structure
           </h3>
-          
+
           {/* Commission Clarity Info */}
           <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4 mb-6">
             <p className="text-sm text-purple-300 font-medium mb-2">💰 Commission = Barbershop Revenue</p>
             <p className="text-xs text-gray-400">
-              All commission percentages below represent <strong>your barbershop's share</strong> of revenue. 
+              All commission percentages below represent <strong>your barbershop's share</strong> of revenue.
               The barber receives the remaining percentage. Example: 60% commission means your shop keeps $60 and the barber gets $40 from a $100 service.
             </p>
           </div>
-          
+
           {/* Service Commissions */}
           <div>
             <h4 className="text-sm font-medium text-gray-300 mb-3">Service Commissions</h4>
@@ -1034,10 +1034,10 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                   type="button"
                   onClick={() => {
                     const lastTier = commissionTiers[commissionTiers.length - 1]
-                    setCommissionTiers([...commissionTiers, { 
-                      min: lastTier.max || 0, 
-                      max: null, 
-                      rate: lastTier.rate + 5 
+                    setCommissionTiers([...commissionTiers, {
+                      min: lastTier.max || 0,
+                      max: null,
+                      rate: lastTier.rate + 5
                     }])
                   }}
                   className="flex items-center text-purple-400 hover:text-purple-300 text-sm"
@@ -1057,7 +1057,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
           <StarIcon className="h-5 w-5 mr-2 text-purple-400" />
           Performance Bonuses
         </h3>
-        
+
         {/* Revenue Milestones */}
         <div>
           <h4 className="text-sm font-medium text-gray-300 mb-3">Revenue Milestones</h4>
@@ -1214,7 +1214,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
           <AcademicCapIcon className="h-5 w-5 mr-2 text-purple-400" />
           Special Conditions
         </h3>
-        
+
         {/* Apprentice Period */}
         <div>
           <label className="flex items-center mb-3">
@@ -1291,7 +1291,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
           <ClockIcon className="h-5 w-5 mr-2 text-purple-400" />
           Time-Based Rate Variations
         </h3>
-        
+
         {/* Peak Hours */}
         <div>
           <label className="flex items-center mb-3">
@@ -1439,7 +1439,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
           <UserGroupIcon className="h-5 w-5 mr-2 text-purple-400" />
           Client-Type Based Rates
         </h3>
-        
+
         {/* New Client Settings */}
         <div>
           <h4 className="text-sm font-medium text-gray-300 mb-3">New Client Premium</h4>
@@ -1578,7 +1578,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
           <TrendingUpIcon className="h-5 w-5 mr-2 text-purple-400" />
           Automatic Rate Escalation
         </h3>
-        
+
         {/* Tenure-Based Escalation */}
         <div>
           <label className="flex items-center mb-3">
@@ -1688,7 +1688,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
           <BanknotesIcon className="h-5 w-5 mr-2 text-purple-400" />
           Automated Payout Settings
         </h3>
-        
+
         <label className="flex items-center mb-4">
           <input
             type="checkbox"

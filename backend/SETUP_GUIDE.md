@@ -102,7 +102,7 @@ nano .env  # or use your preferred editor
 
 In Stripe Connect settings, configure:
 - **Branding**: Add your logo and colors
-- **OAuth settings**: 
+- **OAuth settings**:
   - Redirect URI: `https://yourdomain.com/api/v1/stripe/oauth/callback`
 - **Application details**: Fill in your business information
 
@@ -201,7 +201,7 @@ STRIPE_PUBLISHABLE_KEY=pk_live_...
 server {
     listen 80;
     server_name yourdomain.com;
-    
+
     location / {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host $host;

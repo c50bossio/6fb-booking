@@ -10,13 +10,8 @@ router = APIRouter()
 
 # Include public endpoints
 router.include_router(
-    booking_public.router,
-    prefix="/public",
-    tags=["Booking - Public"]
+    booking_public.router, prefix="/public", tags=["Booking - Public"]
 )
 
 # Include authenticated endpoints
-router.include_router(
-    booking_authenticated.router,
-    tags=["Booking - Authenticated"]
-)
+router.include_router(booking_authenticated.router, tags=["Booking - Authenticated"])

@@ -40,7 +40,7 @@ const useScreenSize = (breakpoint: number = 768) => {
     }
 
     window.addEventListener('resize', handleResize)
-    
+
     return () => window.removeEventListener('resize', handleResize)
   }, [breakpoint])
 
@@ -74,7 +74,7 @@ export default function ResponsiveCalendar({
           </div>
           <div className="w-24 h-8 bg-gray-700 rounded"></div>
         </div>
-        
+
         <div className="space-y-4">
           <div className="h-48 bg-gray-800 rounded-lg"></div>
           <div className="h-48 bg-gray-800 rounded-lg"></div>
@@ -123,7 +123,7 @@ export default function ResponsiveCalendar({
 // Export additional responsive utilities
 export const useResponsiveCalendar = (breakpoint: number = 768) => {
   const { isMobile, isLoading } = useScreenSize(breakpoint)
-  
+
   const getOptimalView = () => {
     if (isMobile) {
       return 'day' // Mobile works best with day view
@@ -139,7 +139,7 @@ export const useResponsiveCalendar = (breakpoint: number = 768) => {
         timeSlotDuration: 60 // Larger time slots for mobile
       }
     }
-    
+
     return {
       enableDragDrop: true,
       initialView: 'week' as const,

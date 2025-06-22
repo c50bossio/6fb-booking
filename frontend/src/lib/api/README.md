@@ -185,11 +185,11 @@ const specialHours = await locationsService.addSpecialHours(locationId, {
 ### Date/Time Utilities
 
 ```typescript
-import { 
-  TimezoneHelper, 
-  DateHelper, 
-  TimeHelper, 
-  BusinessHoursHelper 
+import {
+  TimezoneHelper,
+  DateHelper,
+  TimeHelper,
+  BusinessHoursHelper
 } from '@/lib/utils/datetime'
 
 // Timezone conversion
@@ -373,12 +373,12 @@ setAppointments(prev => [...prev, optimisticAppointment])
 try {
   const realAppointment = await appointmentsService.createAppointment(data)
   // Replace optimistic with real data
-  setAppointments(prev => 
+  setAppointments(prev =>
     prev.map(apt => apt.id === optimisticAppointment.id ? realAppointment : apt)
   )
 } catch (error) {
   // Remove optimistic update on error
-  setAppointments(prev => 
+  setAppointments(prev =>
     prev.filter(apt => apt.id !== optimisticAppointment.id)
   )
 }
@@ -411,7 +411,7 @@ function CalendarView() {
         setLoading(false)
       }
     }
-    
+
     loadEvents()
   }, [startDate, endDate, filters])
 
@@ -422,8 +422,8 @@ function CalendarView() {
         // Update or add appointment
         const existing = prev.find(e => e.id === `appointment_${data.appointment_id}`)
         if (existing) {
-          return prev.map(e => 
-            e.id === existing.id 
+          return prev.map(e =>
+            e.id === existing.id
               ? { ...e, appointment: data.appointment }
               : e
           )
@@ -452,7 +452,7 @@ function CalendarView() {
 async function bookAppointment(data: CreateAppointmentRequest) {
   // 1. Check for conflicts
   const conflicts = await appointmentsService.checkConflicts(data)
-  
+
   if (conflicts.data.has_conflicts) {
     // Show conflict resolution options
     return handleConflicts(conflicts.data)
@@ -461,7 +461,7 @@ async function bookAppointment(data: CreateAppointmentRequest) {
   // 2. Create appointment
   try {
     const appointment = await appointmentsService.createAppointment(data)
-    
+
     // 3. Send confirmation
     if (data.sendConfirmation) {
       await appointmentsService.sendReminder(
@@ -469,7 +469,7 @@ async function bookAppointment(data: CreateAppointmentRequest) {
         'email'
       )
     }
-    
+
     return appointment.data
   } catch (error) {
     // Handle booking errors
@@ -560,10 +560,10 @@ test('should load calendar events', async () => {
   mockCalendarService.getCalendarEvents.mockResolvedValue({
     data: [mockEvent1, mockEvent2]
   })
-  
+
   // Test component
   render(<CalendarView />)
-  
+
   await waitFor(() => {
     expect(screen.getByText('Event 1')).toBeInTheDocument()
   })

@@ -8,7 +8,7 @@
 - Added token validation and proper error handling
 - Implemented secure token expiration
 
-✅ **Authentication Bypass Fixes** 
+✅ **Authentication Bypass Fixes**
 - Fixed client endpoint authentication (`api/clients.py:15-20`)
 - Added proper user authentication for all sensitive operations
 - Implemented request validation and user context
@@ -92,7 +92,7 @@
 ```python
 # All sensitive customer data is now encrypted
 email = Column(SearchableEncryptedString(500), index=True)
-phone = Column(SearchableEncryptedString(100), index=True)  
+phone = Column(SearchableEncryptedString(100), index=True)
 notes = Column(EncryptedText)
 ```
 

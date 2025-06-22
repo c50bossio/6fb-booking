@@ -9,22 +9,23 @@ from models.notification import Notification, NotificationType, NotificationPrio
 from models.user import User
 import json
 
+
 def create_sample_notifications():
     """Create sample notifications for testing"""
     db = SessionLocal()
-    
+
     try:
         # Get the first user (demo user should exist)
         user = db.query(User).first()
         if not user:
             print("No users found. Please create a user first.")
             return
-        
+
         print(f"Creating sample notifications for user: {user.email}")
-        
+
         # Clear existing notifications
         db.query(Notification).filter(Notification.user_id == user.id).delete()
-        
+
         # Sample notifications
         notifications = [
             {
@@ -36,9 +37,9 @@ def create_sample_notifications():
                     "appointment_id": 1,
                     "client_name": "John Smith",
                     "service": "Haircut & Beard Trim",
-                    "time": "10:00 AM"
+                    "time": "10:00 AM",
                 },
-                "action_url": "/dashboard/appointments/1"
+                "action_url": "/dashboard/appointments/1",
             },
             {
                 "type": NotificationType.PERFORMANCE_ALERT,
@@ -49,9 +50,9 @@ def create_sample_notifications():
                     "metric_type": "6fb_score",
                     "current_value": 85,
                     "previous_value": 70,
-                    "trend": "increasing"
+                    "trend": "increasing",
                 },
-                "action_url": "/analytics"
+                "action_url": "/analytics",
             },
             {
                 "type": NotificationType.ACHIEVEMENT,
@@ -61,9 +62,9 @@ def create_sample_notifications():
                 "data": {
                     "milestone_type": "monthly_revenue",
                     "amount": 3000,
-                    "period": "this month"
+                    "period": "this month",
                 },
-                "action_url": "/analytics"
+                "action_url": "/analytics",
             },
             {
                 "type": NotificationType.TEAM_UPDATE,
@@ -73,9 +74,9 @@ def create_sample_notifications():
                 "data": {
                     "barber_name": "Sarah Mitchell",
                     "start_date": "2024-06-24",
-                    "specialty": "Modern cuts and styling"
+                    "specialty": "Modern cuts and styling",
                 },
-                "action_url": "/barbers"
+                "action_url": "/barbers",
             },
             {
                 "type": NotificationType.REVENUE,
@@ -85,9 +86,9 @@ def create_sample_notifications():
                 "data": {
                     "amount": 1200,
                     "payout_date": "2024-06-21",
-                    "method": "Stripe"
+                    "method": "Stripe",
                 },
-                "action_url": "/barber-payments"
+                "action_url": "/barber-payments",
             },
             {
                 "type": NotificationType.TRAINING,
@@ -97,9 +98,9 @@ def create_sample_notifications():
                 "data": {
                     "module_name": "Advanced Fading Techniques",
                     "points": 10,
-                    "duration": "45 minutes"
+                    "duration": "45 minutes",
                 },
-                "action_url": "/training"
+                "action_url": "/training",
             },
             {
                 "type": NotificationType.CLIENT,
@@ -109,9 +110,9 @@ def create_sample_notifications():
                 "data": {
                     "client_name": "Marcus Thompson",
                     "rating": 5,
-                    "review": "Excellent haircut as always!"
+                    "review": "Excellent haircut as always!",
                 },
-                "action_url": "/clients"
+                "action_url": "/clients",
             },
             {
                 "type": NotificationType.SYSTEM,
@@ -121,16 +122,16 @@ def create_sample_notifications():
                 "data": {
                     "maintenance_type": "routine",
                     "start_time": "2024-06-23T02:00:00Z",
-                    "end_time": "2024-06-23T04:00:00Z"
-                }
-            }
+                    "end_time": "2024-06-23T04:00:00Z",
+                },
+            },
         ]
-        
+
         # Create notifications with varying timestamps
         for i, notif_data in enumerate(notifications):
             # Spread notifications over the last few days
             created_time = datetime.utcnow() - timedelta(hours=i * 3)
-            
+
             notification = Notification(
                 user_id=user.id,
                 type=notif_data["type"],
@@ -141,26 +142,28 @@ def create_sample_notifications():
                 action_url=notif_data.get("action_url"),
                 is_read=i > 3,  # Mark first few as unread
                 read_at=created_time + timedelta(hours=1) if i > 3 else None,
-                created_at=created_time
+                created_at=created_time,
             )
-            
+
             db.add(notification)
-        
+
         db.commit()
         print(f"Created {len(notifications)} sample notifications")
-        
+
         # Show unread count
-        unread_count = db.query(Notification).filter(
-            Notification.user_id == user.id,
-            Notification.is_read == False
-        ).count()
+        unread_count = (
+            db.query(Notification)
+            .filter(Notification.user_id == user.id, Notification.is_read == False)
+            .count()
+        )
         print(f"Unread notifications: {unread_count}")
-        
+
     except Exception as e:
         print(f"Error creating notifications: {e}")
         db.rollback()
     finally:
         db.close()
+
 
 if __name__ == "__main__":
     print("Seeding sample notifications...")

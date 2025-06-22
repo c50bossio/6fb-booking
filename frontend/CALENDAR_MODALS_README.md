@@ -106,7 +106,7 @@ The modal system is fully integrated into the ModernCalendar component:
 ```tsx
 import ModernCalendar from '@/components/ModernCalendar'
 
-<ModernCalendar 
+<ModernCalendar
   appointments={appointments}
   onAppointmentClick={handleAppointmentClick}
   onTimeSlotClick={handleTimeSlotClick}
@@ -154,18 +154,18 @@ import { CreateAppointmentModal } from '@/components/modals'
 
 function MyComponent() {
   const [showModal, setShowModal] = useState(false)
-  
+
   const handleSuccess = (booking) => {
     console.log('Appointment created:', booking)
     setShowModal(false)
   }
-  
+
   return (
     <>
       <button onClick={() => setShowModal(true)}>
         Create Appointment
       </button>
-      
+
       <CreateAppointmentModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}

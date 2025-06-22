@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { 
+import {
   PlusIcon,
   CalendarIcon,
   ChartBarIcon,
@@ -194,7 +194,7 @@ export default function ExampleDashboardPage() {
               ].map((action, index) => {
                 const Icon = action.icon
                 return (
-                  <button 
+                  <button
                     key={index}
                     className="p-4 rounded-lg hover:bg-white/10 transition-all duration-200 text-left group"
                   >

@@ -72,7 +72,7 @@ const calculateEndTime = (startTime: string, duration: number): string => {
   const [hours, minutes] = startTime.split(':').map(Number)
   const startDate = new Date()
   startDate.setHours(hours, minutes, 0, 0)
-  
+
   const endDate = new Date(startDate.getTime() + duration * 60000)
   return endDate.toTimeString().slice(0, 5)
 }
@@ -107,14 +107,14 @@ export default function CalendarSystem({
   // Load initial data
   useEffect(() => {
     loadInitialData()
-    
+
     // Set up auto-refresh every 30 seconds for real-time updates
     const interval = setInterval(() => {
       loadAppointments()
     }, 30000)
-    
+
     setRefreshInterval(interval)
-    
+
     return () => {
       if (interval) clearInterval(interval)
     }
@@ -123,7 +123,7 @@ export default function CalendarSystem({
   const loadInitialData = async () => {
     setIsLoading(true)
     setError(null)
-    
+
     try {
       await Promise.all([
         loadAppointments(),
@@ -155,7 +155,7 @@ export default function CalendarSystem({
 
       const apiAppointments = await appointmentsService.getAppointments(filters)
       const calendarAppointments = apiAppointments.map(convertToCalendarAppointment)
-      
+
       setAppointments(calendarAppointments)
     } catch (err) {
       console.error('Error loading appointments:', err)
@@ -193,11 +193,11 @@ export default function CalendarSystem({
 
   const loadServices = async () => {
     try {
-      const response = await bookingService.getServices({ 
+      const response = await bookingService.getServices({
         ...(barberId && { barber_id: barberId }),
-        active_only: true 
+        active_only: true
       })
-      
+
       const servicesData = response.data.map((service: any) => ({
         id: service.id,
         name: service.name,
@@ -205,7 +205,7 @@ export default function CalendarSystem({
         price: service.price,
         description: service.description
       }))
-      
+
       setServices(servicesData)
     } catch (err) {
       console.error('Error loading services:', err)
@@ -247,10 +247,10 @@ export default function CalendarSystem({
 
       const newAppointment = await appointmentsService.createAppointment(appointmentData)
       const calendarAppointment = convertToCalendarAppointment(newAppointment)
-      
+
       setAppointments(prev => [...prev, calendarAppointment])
       onAppointmentCreate?.(calendarAppointment)
-      
+
       toast.success('Appointment created successfully!')
       setShowCreateModal(false)
     } catch (err) {
@@ -270,11 +270,11 @@ export default function CalendarSystem({
       }
 
       await appointmentsService.updateAppointment(parseInt(updatedAppointment.id), updateData)
-      
-      setAppointments(prev => 
+
+      setAppointments(prev =>
         prev.map(apt => apt.id === updatedAppointment.id ? updatedAppointment : apt)
       )
-      
+
       onAppointmentUpdate?.(updatedAppointment)
       toast.success('Appointment updated successfully!')
       setShowDetailsModal(false)
@@ -288,10 +288,10 @@ export default function CalendarSystem({
   const handleDeleteAppointment = useCallback(async (appointmentId: string) => {
     try {
       await appointmentsService.cancelAppointment(parseInt(appointmentId))
-      
+
       setAppointments(prev => prev.filter(apt => apt.id !== appointmentId))
       onAppointmentDelete?.(appointmentId)
-      
+
       toast.success('Appointment deleted successfully!')
       setShowDetailsModal(false)
     } catch (err) {
@@ -304,11 +304,11 @@ export default function CalendarSystem({
   const handleStatusChange = useCallback(async (appointmentId: string, newStatus: CalendarAppointment['status']) => {
     try {
       await appointmentsService.updateAppointment(parseInt(appointmentId), { status: newStatus })
-      
-      setAppointments(prev => 
+
+      setAppointments(prev =>
         prev.map(apt => apt.id === appointmentId ? { ...apt, status: newStatus } : apt)
       )
-      
+
       toast.success(`Appointment status updated to ${newStatus}`)
     } catch (err) {
       console.error('Error updating appointment status:', err)
@@ -331,8 +331,8 @@ export default function CalendarSystem({
       }
 
       await appointmentsService.updateAppointment(parseInt(appointmentId), updateData)
-      
-      setAppointments(prev => 
+
+      setAppointments(prev =>
         prev.map(apt => {
           if (apt.id === appointmentId) {
             return {
@@ -345,7 +345,7 @@ export default function CalendarSystem({
           return apt
         })
       )
-      
+
       toast.success('Appointment moved successfully!')
     } catch (err) {
       console.error('Error moving appointment:', err)

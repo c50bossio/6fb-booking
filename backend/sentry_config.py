@@ -18,18 +18,18 @@ def init_sentry():
     # Get Sentry DSN from environment
     sentry_dsn = os.getenv("SENTRY_DSN")
     environment = os.getenv("ENVIRONMENT", "development")
-    
+
     if not sentry_dsn:
         logger.info("Sentry DSN not configured, skipping Sentry initialization")
         return
-    
+
     try:
         # Configure logging integration
         logging_integration = LoggingIntegration(
-            level=logging.INFO,        # Capture info and above as breadcrumbs
-            event_level=logging.ERROR   # Send errors as events
+            level=logging.INFO,  # Capture info and above as breadcrumbs
+            event_level=logging.ERROR,  # Send errors as events
         )
-        
+
         # Initialize Sentry
         sentry_sdk.init(
             dsn=sentry_dsn,
@@ -60,9 +60,9 @@ def init_sentry():
             # Set user context
             before_send_transaction=before_send_transaction_filter,
         )
-        
+
         logger.info(f"Sentry initialized successfully for {environment} environment")
-        
+
     except Exception as e:
         logger.error(f"Failed to initialize Sentry: {str(e)}")
 
@@ -73,23 +73,31 @@ def before_send_filter(event, hint):
     if os.getenv("ENVIRONMENT", "development") == "development":
         if not os.getenv("SENTRY_FORCE_ENABLE", "").lower() == "true":
             return None
-    
+
     # Filter out sensitive data from request data
     if "request" in event and "data" in event["request"]:
-        sensitive_fields = ["password", "token", "secret", "api_key", "access_token", 
-                          "stripe_secret", "jwt_secret", "webhook_secret"]
+        sensitive_fields = [
+            "password",
+            "token",
+            "secret",
+            "api_key",
+            "access_token",
+            "stripe_secret",
+            "jwt_secret",
+            "webhook_secret",
+        ]
         request_data = event["request"]["data"]
-        
+
         if isinstance(request_data, dict):
             for field in sensitive_fields:
                 if field in request_data:
                     request_data[field] = "[FILTERED]"
-    
+
     # Add custom tags
     event.setdefault("tags", {})
     event["tags"]["component"] = "backend"
     event["tags"]["service"] = "6fb-booking"
-    
+
     return event
 
 
@@ -98,9 +106,12 @@ def before_send_transaction_filter(event, hint):
     # Skip transactions for health checks and static files
     if "transaction" in event:
         transaction_name = event["transaction"]
-        if any(skip in transaction_name.lower() for skip in ["/health", "/favicon", "/static"]):
+        if any(
+            skip in transaction_name.lower()
+            for skip in ["/health", "/favicon", "/static"]
+        ):
             return None
-    
+
     return event
 
 
@@ -108,12 +119,15 @@ def capture_payment_error(error: Exception, payment_context: dict):
     """Capture payment-related errors with additional context"""
     with sentry_sdk.push_scope() as scope:
         scope.set_tag("error_type", "payment")
-        scope.set_context("payment", {
-            "amount": payment_context.get("amount"),
-            "payment_method": payment_context.get("payment_method"),
-            "barber_id": payment_context.get("barber_id"),
-            "appointment_id": payment_context.get("appointment_id"),
-        })
+        scope.set_context(
+            "payment",
+            {
+                "amount": payment_context.get("amount"),
+                "payment_method": payment_context.get("payment_method"),
+                "barber_id": payment_context.get("barber_id"),
+                "appointment_id": payment_context.get("appointment_id"),
+            },
+        )
         sentry_sdk.capture_exception(error)
 
 
@@ -121,10 +135,13 @@ def capture_booking_error(error: Exception, booking_context: dict):
     """Capture booking-related errors with additional context"""
     with sentry_sdk.push_scope() as scope:
         scope.set_tag("error_type", "booking")
-        scope.set_context("booking", {
-            "service_id": booking_context.get("service_id"),
-            "barber_id": booking_context.get("barber_id"),
-            "client_id": booking_context.get("client_id"),
-            "requested_time": booking_context.get("requested_time"),
-        })
+        scope.set_context(
+            "booking",
+            {
+                "service_id": booking_context.get("service_id"),
+                "barber_id": booking_context.get("barber_id"),
+                "client_id": booking_context.get("client_id"),
+                "requested_time": booking_context.get("requested_time"),
+            },
+        )
         sentry_sdk.capture_exception(error)

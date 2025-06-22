@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
-import { 
-  CalendarIcon, 
-  ChartBarIcon, 
+import {
+  CalendarIcon,
+  ChartBarIcon,
   ChatBubbleLeftRightIcon,
   CreditCardIcon,
   DocumentTextIcon,
@@ -71,52 +71,18 @@ export default function AppPage() {
   if (!mounted) return null
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navigation Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">6FB Platform</h1>
-              <nav className="ml-10 flex space-x-4">
-                <a href="/app" className="text-gray-900 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
-                  Dashboard
-                </a>
-                <a href="/app/calendar" className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
-                  Calendar
-                </a>
-                <a href="/app/analytics" className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
-                  Analytics
-                </a>
-                <a href="/app/barbers" className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
-                  Barbers
-                </a>
-                <a href="/app/payments" className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
-                  Payments
-                </a>
-              </nav>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-500">Demo Mode</span>
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
-                D
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
+    <div className="min-h-screen bg-theme-card">
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="p-8">
         <div className="space-y-8">
           {/* Welcome Section */}
           <div className="mb-8">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                  Welcome to 6FB Platform!
+                <h2 className="text-3xl font-bold text-theme-primary mb-2">
+                  Welcome to BookBarber Platform!
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-theme-secondary">
                   Explore the complete barbershop management system - all features enabled.
                 </p>
               </div>
@@ -133,7 +99,7 @@ export default function AppPage() {
 
           {/* Key Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-lg transition-shadow">
+            <div className="bg-theme-card rounded-xl shadow-sm p-6 hover:shadow-lg transition-shadow border">
               <div className="flex items-center justify-between mb-4">
                 <div className="p-3 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl shadow-lg">
                   <CurrencyDollarIcon className="h-6 w-6 text-white" />
@@ -145,8 +111,8 @@ export default function AppPage() {
                 </div>
               </div>
               <div>
-                <p className="text-gray-600 text-sm font-medium mb-1">Today's Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-theme-secondary text-sm font-medium mb-1">Today's Revenue</p>
+                <p className="text-2xl font-bold text-theme-primary">
                   {formatCurrency(todayStats.today_revenue)}
                 </p>
                 <div className="mt-3 w-full h-1 bg-gray-200 rounded-full overflow-hidden">
@@ -154,8 +120,8 @@ export default function AppPage() {
                 </div>
               </div>
             </div>
-            
-            <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-lg transition-shadow">
+
+            <div className="bg-theme-card rounded-xl shadow-sm p-6 hover:shadow-lg transition-shadow border">
               <div className="flex items-center justify-between mb-4">
                 <div className="p-3 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl shadow-lg">
                   <CalendarIcon className="h-6 w-6 text-white" />
@@ -167,15 +133,15 @@ export default function AppPage() {
                 </div>
               </div>
               <div>
-                <p className="text-gray-600 text-sm font-medium mb-1">Appointments</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-theme-secondary text-sm font-medium mb-1">Appointments</p>
+                <p className="text-2xl font-bold text-theme-primary">
                   {todayStats.total_appointments}
                 </p>
                 <p className="text-xs text-violet-600 mt-1">{todayStats.completed_appointments} completed, {todayStats.upcoming_appointments} upcoming</p>
               </div>
             </div>
-            
-            <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-lg transition-shadow">
+
+            <div className="bg-theme-card rounded-xl shadow-sm p-6 hover:shadow-lg transition-shadow border">
               <div className="flex items-center justify-between mb-4">
                 <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
                   <UserGroupIcon className="h-6 w-6 text-white" />
@@ -187,15 +153,15 @@ export default function AppPage() {
                 </div>
               </div>
               <div>
-                <p className="text-gray-600 text-sm font-medium mb-1">Active Barbers</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-theme-secondary text-sm font-medium mb-1">Active Barbers</p>
+                <p className="text-2xl font-bold text-theme-primary">
                   {activeBarbers}
                 </p>
                 <p className="text-xs text-blue-600 mt-1">All team members active</p>
               </div>
             </div>
-            
-            <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-lg transition-shadow">
+
+            <div className="bg-theme-card rounded-xl shadow-sm p-6 hover:shadow-lg transition-shadow border">
               <div className="flex items-center justify-between mb-4">
                 <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg">
                   <BanknotesIcon className="h-6 w-6 text-white" />
@@ -207,8 +173,8 @@ export default function AppPage() {
                 </div>
               </div>
               <div>
-                <p className="text-gray-600 text-sm font-medium mb-1">Weekly Payout</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-theme-secondary text-sm font-medium mb-1">Weekly Payout</p>
+                <p className="text-2xl font-bold text-theme-primary">
                   $3,240
                 </p>
                 <p className="text-xs text-amber-600 mt-1">Auto-payout enabled</p>
@@ -221,7 +187,7 @@ export default function AppPage() {
             <h3 className="text-xl font-semibold text-gray-900 mb-6">Today's Schedule</h3>
             <ModernCalendar />
           </div>
-          
+
           {/* Quick Actions */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <a

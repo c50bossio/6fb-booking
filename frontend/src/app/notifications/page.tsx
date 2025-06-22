@@ -55,12 +55,12 @@ export default function NotificationsPage() {
     try {
       setLoading(true)
       const token = localStorage.getItem('access_token')
-      
+
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/notifications`,
         { headers: { Authorization: `Bearer ${token}` } }
       )
-      
+
       setNotifications(response.data.notifications || [])
       setStats(response.data.stats || {
         total: 0,
@@ -124,7 +124,7 @@ export default function NotificationsPage() {
           category: 'System'
         }
       ]
-      
+
       setNotifications(mockNotifications)
       setStats({
         total: 5,
@@ -145,12 +145,12 @@ export default function NotificationsPage() {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       )
-      
+
       // Update local state
-      setNotifications(prev => 
+      setNotifications(prev =>
         prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
       )
-      
+
       // Update stats
       if (stats) {
         setStats(prev => prev ? { ...prev, unread: prev.unread - 1 } : null)
@@ -168,7 +168,7 @@ export default function NotificationsPage() {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       )
-      
+
       // Update local state
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
       setStats(prev => prev ? { ...prev, unread: 0 } : null)
@@ -184,7 +184,7 @@ export default function NotificationsPage() {
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/notifications/${notificationId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       )
-      
+
       // Update local state
       setNotifications(prev => prev.filter(n => n.id !== notificationId))
       if (stats) {
@@ -199,7 +199,7 @@ export default function NotificationsPage() {
     const iconClass = priority === 'urgent' ? 'text-red-600' :
                      priority === 'high' ? 'text-amber-600' :
                      priority === 'medium' ? 'text-blue-600' : 'text-gray-600'
-    
+
     switch (type) {
       case 'appointment':
         return <CalendarIcon className={`h-5 w-5 ${iconClass}`} />
@@ -235,7 +235,7 @@ export default function NotificationsPage() {
     const date = new Date(timestamp)
     const now = new Date()
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
-    
+
     if (diffInMinutes < 60) {
       return `${diffInMinutes}m ago`
     } else if (diffInMinutes < 1440) {
@@ -248,12 +248,12 @@ export default function NotificationsPage() {
   const filteredNotifications = notifications.filter(notification => {
     const matchesSearch = notification.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          notification.message.toLowerCase().includes(searchTerm.toLowerCase())
-    
+
     const matchesType = filterType === 'all' || notification.type === filterType
-    const matchesRead = filterRead === 'all' || 
+    const matchesRead = filterRead === 'all' ||
                        (filterRead === 'unread' && !notification.is_read) ||
                        (filterRead === 'read' && notification.is_read)
-    
+
     return matchesSearch && matchesType && matchesRead
   })
 
@@ -305,16 +305,16 @@ export default function NotificationsPage() {
               <option value="read">Read Only</option>
             </select>
           </div>
-          
+
           <div className="flex items-center space-x-3">
-            <button 
+            <button
               onClick={markAllAsRead}
               className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2"
             >
               <CheckIcon className="h-5 w-5" />
               <span>Mark All Read</span>
             </button>
-            
+
             <button className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg font-medium hover:from-violet-700 hover:to-purple-700 transition-all flex items-center space-x-2">
               <BellIcon className="h-5 w-5" />
               <span>Settings</span>
@@ -372,7 +372,7 @@ export default function NotificationsPage() {
               Notifications ({filteredNotifications.length})
             </h3>
           </div>
-          
+
           {filteredNotifications.length === 0 ? (
             <div className="p-12 text-center">
               <BellIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -381,8 +381,8 @@ export default function NotificationsPage() {
           ) : (
             <div className="divide-y divide-gray-200/50">
               {filteredNotifications.map((notification) => (
-                <div 
-                  key={notification.id} 
+                <div
+                  key={notification.id}
                   className={`p-6 hover:bg-gray-50/50 transition-colors ${!notification.is_read ? 'bg-blue-50/30' : ''}`}
                 >
                   <div className="flex items-start justify-between">
@@ -414,10 +414,10 @@ export default function NotificationsPage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center space-x-2 ml-4">
                       {!notification.is_read && (
-                        <button 
+                        <button
                           onClick={() => markAsRead(notification.id)}
                           className="text-blue-600 hover:text-blue-700 p-1 rounded-md hover:bg-blue-50 transition-colors"
                           title="Mark as read"
@@ -425,8 +425,8 @@ export default function NotificationsPage() {
                           <CheckCircleIcon className="h-4 w-4" />
                         </button>
                       )}
-                      
-                      <button 
+
+                      <button
                         onClick={() => deleteNotification(notification.id)}
                         className="text-red-600 hover:text-red-700 p-1 rounded-md hover:bg-red-50 transition-colors"
                         title="Delete"

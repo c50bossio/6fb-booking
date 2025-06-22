@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
-import { 
-  ChevronLeftIcon, 
+import {
+  ChevronLeftIcon,
   ChevronRightIcon,
   CalendarDaysIcon,
   ClockIcon,
@@ -41,7 +41,7 @@ export default function MobileCalendar({
     const day = start.getDay()
     const diff = start.getDate() - day + (day === 0 ? -6 : 1)
     start.setDate(diff)
-    
+
     const dates = []
     for (let i = 0; i < 7; i++) {
       const date = new Date(start)
@@ -57,7 +57,7 @@ export default function MobileCalendar({
   }
 
   const getTodayAppointments = () => {
-    return getAppointmentsForDate(selectedDate).sort((a, b) => 
+    return getAppointmentsForDate(selectedDate).sort((a, b) =>
       a.startTime.localeCompare(b.startTime)
     )
   }
@@ -65,7 +65,7 @@ export default function MobileCalendar({
   const getUpcomingAppointments = () => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    
+
     return appointments
       .filter(apt => new Date(apt.date) >= today)
       .sort((a, b) => {
@@ -121,17 +121,17 @@ export default function MobileCalendar({
   }
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      month: 'short', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric'
     })
   }
 
   const formatFullDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      month: 'long', 
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
       day: 'numeric',
       year: 'numeric'
     })
@@ -148,7 +148,7 @@ export default function MobileCalendar({
             </div>
             <h1 className="text-lg font-bold">Calendar</h1>
           </div>
-          
+
           <button
             onClick={() => onCreateAppointment?.(selectedDate.toISOString().split('T')[0], '09:00')}
             className="p-2 bg-violet-600 hover:bg-violet-700 rounded-lg transition-colors"
@@ -193,12 +193,12 @@ export default function MobileCalendar({
             >
               <ChevronLeftIcon className="h-5 w-5" />
             </button>
-            
+
             <span className="text-sm font-medium text-gray-300">
               {weekDates[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {' '}
               {weekDates[6].toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
             </span>
-            
+
             <button
               onClick={() => navigateWeek('next')}
               className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
@@ -213,13 +213,13 @@ export default function MobileCalendar({
               const dayAppointments = getAppointmentsForDate(date)
               const isSelectedDate = date.toDateString() === selectedDate.toDateString()
               const isTodayDate = isToday(date)
-              
+
               return (
                 <div
                   key={index}
                   onClick={() => setSelectedDate(date)}
                   className={`p-2 rounded-lg text-center cursor-pointer transition-colors ${
-                    isSelectedDate 
+                    isSelectedDate
                       ? 'bg-violet-600 text-white'
                       : isTodayDate
                         ? 'bg-violet-900/30 text-violet-400'
@@ -271,24 +271,24 @@ export default function MobileCalendar({
                         <div className={`w-3 h-3 rounded-full ${getStatusColor(appointment.status)}`}></div>
                         <span className="font-medium text-white">{appointment.service}</span>
                       </div>
-                      
+
                       <div className="flex items-center space-x-4 text-sm text-gray-400">
                         <div className="flex items-center space-x-1">
                           <ClockIcon className="h-4 w-4" />
                           <span>{formatTime(appointment.startTime)} - {formatTime(appointment.endTime)}</span>
                         </div>
-                        
+
                         <div className="flex items-center space-x-1">
                           <UserIcon className="h-4 w-4" />
                           <span>{appointment.client}</span>
                         </div>
                       </div>
-                      
+
                       <div className="mt-2 text-sm text-gray-300">
                         {appointment.barber} • ${appointment.price}
                       </div>
                     </div>
-                    
+
                     <EllipsisVerticalIcon className="h-5 w-5 text-gray-400" />
                   </div>
                 </div>
@@ -315,12 +315,12 @@ export default function MobileCalendar({
       {viewMode === 'agenda' && (
         <div className="p-4">
           <h2 className="text-lg font-semibold mb-4">Upcoming Appointments</h2>
-          
+
           <div className="space-y-3">
             {getUpcomingAppointments().map((appointment) => {
               const appointmentDate = new Date(appointment.date)
               const isAppointmentToday = isToday(appointmentDate)
-              
+
               return (
                 <div
                   key={appointment.id}
@@ -338,25 +338,25 @@ export default function MobileCalendar({
                           </span>
                         )}
                       </div>
-                      
+
                       <div className="text-sm text-gray-400 mb-2">
                         {formatDate(appointmentDate)} • {formatTime(appointment.startTime)} - {formatTime(appointment.endTime)}
                       </div>
-                      
+
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4 text-sm text-gray-300">
                           <div className="flex items-center space-x-1">
                             <UserIcon className="h-4 w-4" />
                             <span>{appointment.client}</span>
                           </div>
-                          
+
                           <span>{appointment.barber}</span>
                         </div>
-                        
+
                         <span className="text-sm font-medium text-emerald-400">${appointment.price}</span>
                       </div>
                     </div>
-                    
+
                     <EllipsisVerticalIcon className="h-5 w-5 text-gray-400" />
                   </div>
                 </div>

@@ -22,22 +22,22 @@ import {
 interface SettingsState {
   // User preferences
   userPreferences: UserPreferences | null
-  
+
   // Location settings (if applicable)
   locationSettings: LocationSettings | null
-  
+
   // Notification settings
   notificationSettings: NotificationSettings | null
-  
+
   // Accessibility settings
   accessibilitySettings: AccessibilitySettings | null
-  
+
   // Integration settings
   integrationSettings: IntegrationSettings | null
-  
+
   // General settings config
   settingsConfig: Record<string, SettingsConfig[]>
-  
+
   // State management
   isLoading: boolean
   error: string | null
@@ -46,7 +46,7 @@ interface SettingsState {
   currentScopeId?: number
 }
 
-type SettingsAction = 
+type SettingsAction =
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'SET_SCOPE'; payload: { scope: SettingsScope; scopeId?: number } }
@@ -66,7 +66,7 @@ type SettingsAction =
 
 interface SettingsContextValue {
   state: SettingsState
-  
+
   // Actions
   setScope: (scope: SettingsScope, scopeId?: number) => void
   loadUserPreferences: () => Promise<void>
@@ -84,7 +84,7 @@ interface SettingsContextValue {
   exportSettings: (scope: SettingsScope, scopeId?: number) => Promise<any>
   importSettings: (data: any, overwrite?: boolean) => Promise<void>
   resetSettings: () => void
-  
+
   // Computed values
   getCurrentTheme: () => 'light' | 'dark' | 'auto' | 'high_contrast'
   getCurrentLocale: () => string
@@ -111,67 +111,67 @@ function settingsReducer(state: SettingsState, action: SettingsAction): Settings
   switch (action.type) {
     case 'SET_LOADING':
       return { ...state, isLoading: action.payload }
-      
+
     case 'SET_ERROR':
       return { ...state, error: action.payload, isLoading: false }
-      
+
     case 'SET_SCOPE':
-      return { 
-        ...state, 
+      return {
+        ...state,
         currentScope: action.payload.scope,
         currentScopeId: action.payload.scopeId
       }
-      
+
     case 'SET_USER_PREFERENCES':
       return { ...state, userPreferences: action.payload, hasUnsavedChanges: false }
-      
+
     case 'UPDATE_USER_PREFERENCES':
       return {
         ...state,
         userPreferences: state.userPreferences ? { ...state.userPreferences, ...action.payload } : null,
         hasUnsavedChanges: true
       }
-      
+
     case 'SET_LOCATION_SETTINGS':
       return { ...state, locationSettings: action.payload, hasUnsavedChanges: false }
-      
+
     case 'UPDATE_LOCATION_SETTINGS':
       return {
         ...state,
         locationSettings: state.locationSettings ? { ...state.locationSettings, ...action.payload } : null,
         hasUnsavedChanges: true
       }
-      
+
     case 'SET_NOTIFICATION_SETTINGS':
       return { ...state, notificationSettings: action.payload, hasUnsavedChanges: false }
-      
+
     case 'UPDATE_NOTIFICATION_SETTINGS':
       return {
         ...state,
         notificationSettings: state.notificationSettings ? { ...state.notificationSettings, ...action.payload } : null,
         hasUnsavedChanges: true
       }
-      
+
     case 'SET_ACCESSIBILITY_SETTINGS':
       return { ...state, accessibilitySettings: action.payload, hasUnsavedChanges: false }
-      
+
     case 'UPDATE_ACCESSIBILITY_SETTINGS':
       return {
         ...state,
         accessibilitySettings: state.accessibilitySettings ? { ...state.accessibilitySettings, ...action.payload } : null,
         hasUnsavedChanges: true
       }
-      
+
     case 'SET_INTEGRATION_SETTINGS':
       return { ...state, integrationSettings: action.payload, hasUnsavedChanges: false }
-      
+
     case 'UPDATE_INTEGRATION_SETTINGS':
       return {
         ...state,
         integrationSettings: state.integrationSettings ? { ...state.integrationSettings, ...action.payload } : null,
         hasUnsavedChanges: true
       }
-      
+
     case 'SET_SETTINGS_CONFIG':
       return {
         ...state,
@@ -180,13 +180,13 @@ function settingsReducer(state: SettingsState, action: SettingsAction): Settings
           [action.payload.category]: action.payload.settings
         }
       }
-      
+
     case 'SET_UNSAVED_CHANGES':
       return { ...state, hasUnsavedChanges: action.payload }
-      
+
     case 'RESET_SETTINGS':
       return { ...initialState, currentScope: state.currentScope, currentScopeId: state.currentScopeId }
-      
+
     default:
       return state
   }
@@ -202,10 +202,10 @@ interface SettingsProviderProps {
   initialScopeId?: number
 }
 
-export function SettingsProvider({ 
-  children, 
+export function SettingsProvider({
+  children,
   initialScope = SettingsScope.USER,
-  initialScopeId 
+  initialScopeId
 }: SettingsProviderProps) {
   const [state, dispatch] = useReducer(settingsReducer, {
     ...initialState,
@@ -286,8 +286,8 @@ export function SettingsProvider({
 
   // Update notification settings
   const updateNotificationSettings = useCallback(async (
-    scope: SettingsScope, 
-    updates: Partial<NotificationSettings>, 
+    scope: SettingsScope,
+    updates: Partial<NotificationSettings>,
     scopeId?: number
   ) => {
     try {
@@ -380,7 +380,7 @@ export function SettingsProvider({
     try {
       dispatch({ type: 'SET_LOADING', payload: true })
       await settingsApi.applyTemplate(templateId, scope, scopeId)
-      
+
       // Reload relevant settings after applying template
       if (scope === SettingsScope.USER) {
         await loadUserPreferences()
@@ -411,11 +411,11 @@ export function SettingsProvider({
     try {
       dispatch({ type: 'SET_LOADING', payload: true })
       await settingsApi.importSettings(data, overwrite)
-      
+
       // Reload settings after import
       const scope = data.scope as SettingsScope
       const scopeId = data.scope_id
-      
+
       if (scope === SettingsScope.USER) {
         await loadUserPreferences()
       } else if (scope === SettingsScope.LOCATION && scopeId) {
@@ -437,7 +437,7 @@ export function SettingsProvider({
   // Computed values
   const getCurrentTheme = useCallback((): 'light' | 'dark' | 'auto' | 'high_contrast' => {
     if (!state.userPreferences) return 'dark'
-    
+
     switch (state.userPreferences.theme_mode) {
       case ThemeMode.LIGHT:
         return 'light'
@@ -454,11 +454,11 @@ export function SettingsProvider({
 
   const getCurrentLocale = useCallback((): string => {
     if (!state.userPreferences) return 'en-US'
-    
+
     // Build locale from date format and timezone
     const dateFormat = state.userPreferences.date_format
     const region = state.userPreferences.timezone.split('/')[1] || 'US'
-    
+
     switch (dateFormat) {
       case DateFormat.EUROPEAN:
         return 'en-GB'
@@ -492,21 +492,21 @@ export function SettingsProvider({
     if (state.userPreferences) {
       const theme = getCurrentTheme()
       const root = document.documentElement
-      
+
       // Apply theme class
       root.className = root.className.replace(/\btheme-\w+\b/g, '')
       root.classList.add(`theme-${theme}`)
-      
+
       // Apply custom CSS variables
       root.style.setProperty('--primary-color', state.userPreferences.theme_color)
       root.style.setProperty('--font-size-base', state.userPreferences.font_size)
-      
+
       // Apply accessibility settings
       if (state.accessibilitySettings) {
         if (state.accessibilitySettings.cognitive_settings.reduce_motion) {
           root.style.setProperty('--animation-duration', '0s')
         }
-        
+
         if (state.accessibilitySettings.contrast_settings.high_contrast) {
           root.classList.add('high-contrast')
         }
@@ -556,7 +556,7 @@ export function useSettings() {
 // Specialized hooks for specific settings
 export function useUserPreferences() {
   const { state, loadUserPreferences, updateUserPreferences } = useSettings()
-  
+
   return {
     preferences: state.userPreferences,
     isLoading: state.isLoading,
@@ -568,7 +568,7 @@ export function useUserPreferences() {
 
 export function useTheme() {
   const { state, getCurrentTheme } = useSettings()
-  
+
   return {
     theme: getCurrentTheme(),
     themeColor: state.userPreferences?.theme_color || '#8b5cf6',
@@ -579,7 +579,7 @@ export function useTheme() {
 
 export function useCalendarPreferences() {
   const { state } = useSettings()
-  
+
   return {
     defaultView: state.userPreferences?.default_view || CalendarView.WEEK,
     showWeekends: state.userPreferences?.show_weekends ?? true,
@@ -592,7 +592,7 @@ export function useCalendarPreferences() {
 
 export function useAccessibilitySettings() {
   const { state, loadAccessibilitySettings, updateAccessibilitySettings } = useSettings()
-  
+
   return {
     settings: state.accessibilitySettings,
     isLoading: state.isLoading,

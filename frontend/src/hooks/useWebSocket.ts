@@ -31,61 +31,61 @@ export function useWebSocket(): WebSocketHook {
     }
 
     setConnectionStatus('connecting')
-    
+
     const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000'
     const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
     const url = token ? `${wsUrl}/api/v1/ws?token=${encodeURIComponent(token)}` : `${wsUrl}/api/v1/ws`
-    
+
     try {
       ws.current = new WebSocket(url)
-      
+
       ws.current.onopen = () => {
         console.log('WebSocket connected')
         setIsConnected(true)
         setConnectionStatus('connected')
         reconnectAttemptsRef.current = 0
-        
+
         // Send ping every 30 seconds to keep connection alive
         const pingInterval = setInterval(() => {
           if (ws.current?.readyState === WebSocket.OPEN) {
             ws.current.send(JSON.stringify({ type: 'ping' }))
           }
         }, 30000)
-        
+
         // Store interval ID for cleanup
         ws.current.addEventListener('close', () => {
           clearInterval(pingInterval)
         })
       }
-      
+
       ws.current.onmessage = (event) => {
         try {
           const message = JSON.parse(event.data)
           console.log('WebSocket message received:', message)
           setLastMessage(message)
-          
+
           // Handle different message types
           handleMessage(message)
         } catch (error) {
           console.error('Error parsing WebSocket message:', error)
         }
       }
-      
+
       ws.current.onerror = (error) => {
         console.error('WebSocket error:', error)
         setConnectionStatus('error')
       }
-      
+
       ws.current.onclose = (event) => {
         console.log('WebSocket disconnected:', event.code, event.reason)
         setIsConnected(false)
         setConnectionStatus('disconnected')
-        
+
         // Attempt to reconnect with exponential backoff
         if (reconnectAttemptsRef.current < 5) {
           const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000)
           reconnectAttemptsRef.current++
-          
+
           reconnectTimeoutRef.current = setTimeout(() => {
             connect()
           }, delay)
@@ -101,12 +101,12 @@ export function useWebSocket(): WebSocketHook {
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current)
     }
-    
+
     if (ws.current) {
       ws.current.close()
       ws.current = null
     }
-    
+
     setIsConnected(false)
     setConnectionStatus('disconnected')
   }, [])
@@ -162,7 +162,7 @@ export function useWebSocket(): WebSocketHook {
   const handleAchievement = (message: WebSocketMessage) => {
     // Handle achievements with celebration
     console.log('Achievement unlocked!', message.data)
-    
+
     if (message.data?.celebration) {
       // Trigger celebration animation
       // This could dispatch to a global celebration component
@@ -178,13 +178,13 @@ export function useWebSocket(): WebSocketHook {
   useEffect(() => {
     if (user && isClient) {
       connect()
-      
+
       // Request notification permission
       if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
         Notification.requestPermission()
       }
     }
-    
+
     return () => {
       disconnect()
     }

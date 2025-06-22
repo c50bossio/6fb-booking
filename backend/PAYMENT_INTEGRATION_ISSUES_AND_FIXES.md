@@ -16,7 +16,7 @@ The comprehensive payment integration test revealed the current state of both St
 
 #### 1. Missing Payment Credentials
 - **Stripe Secret Key**: Not configured
-- **Stripe Publishable Key**: Not configured  
+- **Stripe Publishable Key**: Not configured
 - **Stripe Webhook Secret**: Not configured
 - **Square Access Token**: Not configured
 - **Square Application ID**: Not configured
@@ -284,7 +284,7 @@ Track these metrics:
 - [Payment Intents API](https://stripe.com/docs/api/payment_intents)
 - [Webhooks](https://stripe.com/docs/webhooks)
 
-### Square Documentation  
+### Square Documentation
 - [Square API Reference](https://developer.squareup.com/reference/square)
 - [OAuth Flow](https://developer.squareup.com/docs/oauth-api/overview)
 - [Payments API](https://developer.squareup.com/docs/payments-api/overview)

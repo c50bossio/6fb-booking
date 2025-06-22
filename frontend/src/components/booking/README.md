@@ -88,7 +88,7 @@ An interactive calendar component for selecting appointment dates and times.
 <AvailabilityCalendar
   service={selectedService}
   locationId={1}
-  onDateTimeSelect={(date, time, barber) => 
+  onDateTimeSelect={(date, time, barber) =>
     console.log('Selected:', { date, time, barber })
   }
 />
@@ -179,12 +179,12 @@ A demo page is available at `/demo/booking` that showcases all the components wi
 The components are already included in the project. To use them in your code:
 
 ```tsx
-import { 
-  BookingWidget, 
-  ServiceSelector, 
+import {
+  BookingWidget,
+  ServiceSelector,
   AvailabilityCalendar,
   BarberProfile,
-  BookingConfirmation 
+  BookingConfirmation
 } from '@/components/booking'
 ```
 

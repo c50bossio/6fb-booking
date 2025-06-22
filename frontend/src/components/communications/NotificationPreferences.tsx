@@ -143,7 +143,7 @@ export const NotificationPreferences: React.FC = () => {
           <Mail className="w-6 h-6 mr-2 text-blue-600" />
           <h3 className="text-xl font-semibold">Email Notifications</h3>
         </div>
-        
+
         <div className="space-y-3">
           <label className="flex items-center justify-between">
             <span>Appointment Confirmations</span>
@@ -154,7 +154,7 @@ export const NotificationPreferences: React.FC = () => {
               className="toggle"
             />
           </label>
-          
+
           <label className="flex items-center justify-between">
             <span>Appointment Reminders</span>
             <input
@@ -164,7 +164,7 @@ export const NotificationPreferences: React.FC = () => {
               className="toggle"
             />
           </label>
-          
+
           <label className="flex items-center justify-between">
             <span>Cancellations</span>
             <input
@@ -174,7 +174,7 @@ export const NotificationPreferences: React.FC = () => {
               className="toggle"
             />
           </label>
-          
+
           <label className="flex items-center justify-between">
             <span>Payment Receipts</span>
             <input
@@ -184,7 +184,7 @@ export const NotificationPreferences: React.FC = () => {
               className="toggle"
             />
           </label>
-          
+
           {user?.role !== 'client' && (
             <>
               <label className="flex items-center justify-between">
@@ -196,7 +196,7 @@ export const NotificationPreferences: React.FC = () => {
                   className="toggle"
                 />
               </label>
-              
+
               <label className="flex items-center justify-between">
                 <span>Team Updates</span>
                 <input
@@ -208,7 +208,7 @@ export const NotificationPreferences: React.FC = () => {
               </label>
             </>
           )}
-          
+
           <label className="flex items-center justify-between">
             <span>Marketing & Promotions</span>
             <input
@@ -227,7 +227,7 @@ export const NotificationPreferences: React.FC = () => {
           <MessageSquare className="w-6 h-6 mr-2 text-green-600" />
           <h3 className="text-xl font-semibold">SMS Notifications</h3>
         </div>
-        
+
         <div className="space-y-3">
           <label className="flex items-center justify-between">
             <span>Appointment Confirmations</span>
@@ -238,7 +238,7 @@ export const NotificationPreferences: React.FC = () => {
               className="toggle"
             />
           </label>
-          
+
           <label className="flex items-center justify-between">
             <span>Appointment Reminders</span>
             <input
@@ -248,7 +248,7 @@ export const NotificationPreferences: React.FC = () => {
               className="toggle"
             />
           </label>
-          
+
           <label className="flex items-center justify-between">
             <span>Cancellations</span>
             <input
@@ -258,7 +258,7 @@ export const NotificationPreferences: React.FC = () => {
               className="toggle"
             />
           </label>
-          
+
           <label className="flex items-center justify-between">
             <span>Payment Confirmations</span>
             <input
@@ -268,7 +268,7 @@ export const NotificationPreferences: React.FC = () => {
               className="toggle"
             />
           </label>
-          
+
           <label className="flex items-center justify-between">
             <span>Marketing & Promotions</span>
             <input
@@ -287,7 +287,7 @@ export const NotificationPreferences: React.FC = () => {
           <Bell className="w-6 h-6 mr-2 text-purple-600" />
           <h3 className="text-xl font-semibold">Push Notifications</h3>
         </div>
-        
+
         <div className="space-y-3">
           <label className="flex items-center justify-between">
             <span>Enable Push Notifications</span>
@@ -298,7 +298,7 @@ export const NotificationPreferences: React.FC = () => {
               className="toggle"
             />
           </label>
-          
+
           {preferences.push.enabled && (
             <>
               <label className="flex items-center justify-between">
@@ -310,7 +310,7 @@ export const NotificationPreferences: React.FC = () => {
                   className="toggle"
                 />
               </label>
-              
+
               {user?.role !== 'client' && (
                 <>
                   <label className="flex items-center justify-between">
@@ -322,7 +322,7 @@ export const NotificationPreferences: React.FC = () => {
                       className="toggle"
                     />
                   </label>
-                  
+
                   <label className="flex items-center justify-between">
                     <span>Team Updates</span>
                     <input
@@ -345,7 +345,7 @@ export const NotificationPreferences: React.FC = () => {
           <Clock className="w-6 h-6 mr-2 text-orange-600" />
           <h3 className="text-xl font-semibold">Reminder Timing</h3>
         </div>
-        
+
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">
@@ -361,7 +361,7 @@ export const NotificationPreferences: React.FC = () => {
               <option value={48}>48 hours</option>
             </select>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">
               Second reminder (hours before appointment)
@@ -385,7 +385,7 @@ export const NotificationPreferences: React.FC = () => {
           <Moon className="w-6 h-6 mr-2 text-indigo-600" />
           <h3 className="text-xl font-semibold">Quiet Hours</h3>
         </div>
-        
+
         <div className="space-y-4">
           <label className="flex items-center justify-between">
             <span>Enable Quiet Hours</span>
@@ -396,7 +396,7 @@ export const NotificationPreferences: React.FC = () => {
               className="toggle"
             />
           </label>
-          
+
           {preferences.quiet_hours.enabled && (
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -415,7 +415,7 @@ export const NotificationPreferences: React.FC = () => {
                   ))}
                 </select>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium mb-1">
                   End Time

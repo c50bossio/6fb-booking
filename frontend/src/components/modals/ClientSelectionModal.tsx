@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import BaseModal from './BaseModal'
-import { 
+import {
   MagnifyingGlassIcon,
   UserIcon,
   PlusIcon,
@@ -131,7 +131,7 @@ export default function ClientSelectionModal({
   const recentClients = useMemo(() => {
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-    
+
     return clients
       .filter(client => client.lastVisit && new Date(client.lastVisit) >= thirtyDaysAgo)
       .sort((a, b) => new Date(b.lastVisit!).getTime() - new Date(a.lastVisit!).getTime())
@@ -151,7 +151,7 @@ export default function ClientSelectionModal({
     const now = new Date()
     const diffTime = Math.abs(now.getTime() - date.getTime())
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    
+
     if (diffDays === 1) return 'Yesterday'
     if (diffDays < 7) return `${diffDays} days ago`
     if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`
@@ -177,8 +177,8 @@ export default function ClientSelectionModal({
       onClick={() => handleClientSelect(client)}
       className={`
         relative p-4 border-2 rounded-xl cursor-pointer transition-all duration-200
-        ${isSelected 
-          ? 'border-violet-500 bg-violet-50' 
+        ${isSelected
+          ? 'border-violet-500 bg-violet-50'
           : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
         }
       `}
@@ -207,13 +207,13 @@ export default function ClientSelectionModal({
               <CheckCircleIcon className="h-5 w-5 text-violet-600 flex-shrink-0" />
             )}
           </div>
-          
+
           <div className="mt-1 space-y-1">
             <div className="flex items-center text-sm text-gray-600">
               <EnvelopeIcon className="h-3 w-3 mr-1 flex-shrink-0" />
               <span className="truncate">{client.email}</span>
             </div>
-            
+
             {client.phone && (
               <div className="flex items-center text-sm text-gray-600">
                 <PhoneIcon className="h-3 w-3 mr-1 flex-shrink-0" />
@@ -355,7 +355,7 @@ export default function ClientSelectionModal({
                 </h3>
                 <div className="space-y-3">
                   {clients
-                    .filter(client => 
+                    .filter(client =>
                       !recentClients.some(rc => rc.id === client.id) &&
                       !frequentClients.some(fc => fc.id === client.id)
                     )

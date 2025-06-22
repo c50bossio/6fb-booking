@@ -55,7 +55,7 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
       setError(null)
       setSelectedTime(null)
       setSelectedBarber(null)
-      
+
       const params = {
         date: date.toISOString().split('T')[0],
         service_id: service.id,
@@ -63,10 +63,10 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
         barber_id: barberId,
         location_id: locationId
       }
-      
+
       const response = await bookingService.getAvailability(params)
       setAvailability(response.data)
-      
+
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to load availability')
     } finally {
@@ -96,19 +96,19 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
     const lastDay = new Date(year, month + 1, 0)
     const daysInMonth = lastDay.getDate()
     const startingDayOfWeek = firstDay.getDay()
-    
+
     const days: (Date | null)[] = []
-    
+
     // Add empty days for the beginning of the week
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push(null)
     }
-    
+
     // Add all days of the month
     for (let i = 1; i <= daysInMonth; i++) {
       days.push(new Date(year, month, i))
     }
-    
+
     return days
   }
 
@@ -131,9 +131,9 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
     return `${formattedHour}:${minutes} ${ampm}`
   }
 
-  const monthYearString = currentMonth.toLocaleDateString('en-US', { 
-    month: 'long', 
-    year: 'numeric' 
+  const monthYearString = currentMonth.toLocaleDateString('en-US', {
+    month: 'long',
+    year: 'numeric'
   })
 
   const handlePreviousMonth = () => {
@@ -156,7 +156,7 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={handlePreviousMonth}
-                disabled={currentMonth.getMonth() === new Date().getMonth() && 
+                disabled={currentMonth.getMonth() === new Date().getMonth() &&
                          currentMonth.getFullYear() === new Date().getFullYear()}
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -173,7 +173,7 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
               </Button>
             </div>
           </div>
-          
+
           {/* Calendar Grid */}
           <div className="grid grid-cols-7 gap-1">
             {/* Day headers */}
@@ -182,7 +182,7 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
                 {day}
               </div>
             ))}
-            
+
             {/* Calendar days */}
             {getDaysInMonth(currentMonth).map((date, index) => (
               <div key={index} className="aspect-square p-1">
@@ -195,10 +195,10 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
                       'hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500',
                       isPastDate(date) && 'text-gray-300 cursor-not-allowed hover:bg-transparent',
                       isToday(date) && 'bg-blue-100 text-blue-600',
-                      selectedDate?.toDateString() === date.toDateString() && 
+                      selectedDate?.toDateString() === date.toDateString() &&
                         'bg-blue-600 text-white hover:bg-blue-700',
-                      !isPastDate(date) && !isToday(date) && 
-                        selectedDate?.toDateString() !== date.toDateString() && 
+                      !isPastDate(date) && !isToday(date) &&
+                        selectedDate?.toDateString() !== date.toDateString() &&
                         'text-gray-700'
                     )}
                   >
@@ -256,13 +256,13 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
                         </Badge>
                       )}
                     </div>
-                    
+
                     <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
                       {barberAvail.timeSlots.map((slot) => (
                         <Button
                           key={slot.time}
-                          variant={selectedTime === slot.time && 
-                                  selectedBarber?.id === barberAvail.barber.id ? 
+                          variant={selectedTime === slot.time &&
+                                  selectedBarber?.id === barberAvail.barber.id ?
                                   'default' : 'outline'}
                           size="sm"
                           disabled={!slot.available}
@@ -299,8 +299,8 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
                     {service.duration} min
                   </div>
                 </div>
-                
-                <Button 
+
+                <Button
                   onClick={handleConfirm}
                   className="w-full"
                 >

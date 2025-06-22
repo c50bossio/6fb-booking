@@ -12,7 +12,7 @@ All required booking tables are present and properly structured:
 
 - **service_categories** - 8 active categories (Haircuts, Beard Care, Styling, etc.)
 - **services** - 14 active services with proper pricing and duration
-- **barber_availability** - Weekly schedules configured 
+- **barber_availability** - Weekly schedules configured
 - **booking_rules** - 5 active business rules
 - **reviews** - Review system ready
 - **booking_slots** - Slot optimization table ready
@@ -22,7 +22,7 @@ All required booking tables are present and properly structured:
 
 **Service Categories Found:**
 1. Haircuts (2 services)
-2. Beard Care (0 services) 
+2. Beard Care (0 services)
 3. Styling (0 services)
 4. Haircut (3 services)
 5. Beard & Shave (3 services)

@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
-import { 
-  ChevronLeftIcon, 
+import {
+  ChevronLeftIcon,
   ChevronRightIcon,
   CalendarDaysIcon,
   ClockIcon,
@@ -13,7 +13,7 @@ import {
   PencilIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
-import { 
+import {
   CalendarIcon,
   ViewColumnsIcon,
   Squares2X2Icon
@@ -66,13 +66,13 @@ const generateTimeSlots = (start: string, end: string, duration: number = 30): s
   const slots: string[] = []
   const startTime = new Date(`2024-01-01 ${start}`)
   const endTime = new Date(`2024-01-01 ${end}`)
-  
+
   let current = new Date(startTime)
   while (current < endTime) {
     slots.push(current.toTimeString().slice(0, 5))
     current.setMinutes(current.getMinutes() + duration)
   }
-  
+
   return slots
 }
 
@@ -173,7 +173,7 @@ export default function PremiumCalendar({
   const [hoveredTimeSlot, setHoveredTimeSlot] = useState<{ date: string; time: string } | null>(null)
 
   // Generate time slots based on working hours
-  const timeSlots = useMemo(() => 
+  const timeSlots = useMemo(() =>
     generateTimeSlots(workingHours.start, workingHours.end, timeSlotDuration),
     [workingHours, timeSlotDuration]
   )
@@ -184,7 +184,7 @@ export default function PremiumCalendar({
     const day = start.getDay()
     const diff = start.getDate() - day + (day === 0 ? -6 : 1) // Start from Monday
     start.setDate(diff)
-    
+
     const dates = []
     for (let i = 0; i < 7; i++) {
       const date = new Date(start)
@@ -201,21 +201,21 @@ export default function PremiumCalendar({
     const firstDay = new Date(year, month, 1)
     const lastDay = new Date(year, month + 1, 0)
     const startDate = new Date(firstDay)
-    
+
     // Start from Monday of the week containing the first day
     const startDayOfWeek = firstDay.getDay()
     const mondayOffset = startDayOfWeek === 0 ? -6 : 1 - startDayOfWeek
     startDate.setDate(firstDay.getDate() + mondayOffset)
-    
+
     const dates = []
     const current = new Date(startDate)
-    
+
     // Generate 6 weeks (42 days) to fill the calendar grid
     for (let i = 0; i < 42; i++) {
       dates.push(new Date(current))
       current.setDate(current.getDate() + 1)
     }
-    
+
     return dates
   }, [currentDate])
 
@@ -228,11 +228,11 @@ export default function PremiumCalendar({
         const lastDay = weekDates[6]
         return `${firstDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${lastDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
       case 'day':
-        return currentDate.toLocaleDateString('en-US', { 
-          weekday: 'long', 
-          month: 'long', 
-          day: 'numeric', 
-          year: 'numeric' 
+        return currentDate.toLocaleDateString('en-US', {
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric'
         })
       default:
         return ''
@@ -247,7 +247,7 @@ export default function PremiumCalendar({
   const getAppointmentStyle = (status: string, barberId?: number) => {
     const barber = barbers.find(b => b.id === barberId)
     const baseClasses = 'appointment-block transition-all duration-200 hover:scale-105 hover:shadow-lg'
-    
+
     switch (status) {
       case 'confirmed':
         return `${baseClasses} bg-gradient-to-br from-violet-600 to-purple-700 text-white shadow-lg shadow-violet-500/25`
@@ -277,7 +277,7 @@ export default function PremiumCalendar({
 
   const navigatePeriod = (direction: 'prev' | 'next') => {
     const newDate = new Date(currentDate)
-    
+
     switch (selectedView) {
       case 'month':
         newDate.setMonth(currentDate.getMonth() + (direction === 'next' ? 1 : -1))
@@ -289,7 +289,7 @@ export default function PremiumCalendar({
         newDate.setDate(currentDate.getDate() + (direction === 'next' ? 1 : -1))
         break
     }
-    
+
     setCurrentDate(newDate)
   }
 
@@ -325,13 +325,13 @@ export default function PremiumCalendar({
           <div className="text-sm font-semibold text-gray-300">{day}</div>
         </div>
       ))}
-      
+
       {/* Month Days */}
       {monthDates.map((date, index) => {
         const dayAppointments = getAppointmentsForDate(date)
         const isCurrentMonthDate = isCurrentMonth(date)
         const isTodayDate = isToday(date)
-        
+
         return (
           <div
             key={index}
@@ -348,7 +348,7 @@ export default function PremiumCalendar({
                 <div className="w-2 h-2 bg-violet-500 rounded-full mt-1"></div>
               )}
             </div>
-            
+
             <div className="space-y-1">
               {dayAppointments.slice(0, 3).map((appointment) => (
                 <div
@@ -364,7 +364,7 @@ export default function PremiumCalendar({
                   <div className="opacity-75">{appointment.startTime}</div>
                 </div>
               ))}
-              
+
               {dayAppointments.length > 3 && (
                 <div className="text-xs text-gray-400 font-medium">
                   +{dayAppointments.length - 3} more
@@ -380,7 +380,7 @@ export default function PremiumCalendar({
   // Week/Day View Component
   const WeekDayView = () => {
     const displayDates = selectedView === 'week' ? weekDates : [currentDate]
-    
+
     return (
       <div className="border border-gray-700 rounded-xl overflow-hidden bg-gray-900/95 backdrop-blur-sm">
         {/* Day Headers */}
@@ -389,8 +389,8 @@ export default function PremiumCalendar({
             Time
           </div>
           {displayDates.map((date, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className={`p-4 text-center border-r border-gray-700 last:border-r-0 ${
                 isToday(date) ? 'bg-violet-900/30' : ''
               }`}
@@ -418,14 +418,14 @@ export default function PremiumCalendar({
               <div className="p-3 text-sm font-medium text-gray-400 border-r border-gray-700 bg-gray-800/40 flex items-center">
                 {time}
               </div>
-              
+
               {/* Day Columns */}
               {displayDates.map((date, dateIndex) => {
                 const dayAppointments = getAppointmentsForDate(date)
                 const appointmentForTime = dayAppointments.find(apt => apt.startTime === time)
                 const dateStr = date.toISOString().split('T')[0]
                 const isHovered = hoveredTimeSlot?.date === dateStr && hoveredTimeSlot?.time === time
-                
+
                 return (
                   <div
                     key={dateIndex}
@@ -442,7 +442,7 @@ export default function PremiumCalendar({
                         <PlusIcon className="h-6 w-6 text-violet-400" />
                       </div>
                     )}
-                    
+
                     {appointmentForTime && (
                       <div
                         className={`${getAppointmentStyle(appointmentForTime.status, appointmentForTime.barberId)} p-3 rounded-lg h-full`}
@@ -459,20 +459,20 @@ export default function PremiumCalendar({
                             {appointmentForTime.status}
                           </span>
                         </div>
-                        
+
                         <div className="space-y-1">
                           <div className="flex items-center space-x-1">
                             <UserIcon className="h-3 w-3 opacity-80" />
                             <span className="text-xs truncate font-medium">{appointmentForTime.client}</span>
                           </div>
-                          
+
                           <div className="flex items-center space-x-1">
                             <ClockIcon className="h-3 w-3 opacity-80" />
                             <span className="text-xs">
                               {appointmentForTime.startTime} - {appointmentForTime.endTime}
                             </span>
                           </div>
-                          
+
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-1">
                               <CurrencyDollarIcon className="h-3 w-3 opacity-80" />
@@ -508,7 +508,7 @@ export default function PremiumCalendar({
               Premium Calendar
             </h2>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <button
               onClick={() => navigatePeriod('prev')}
@@ -516,11 +516,11 @@ export default function PremiumCalendar({
             >
               <ChevronLeftIcon className="h-5 w-5" />
             </button>
-            
+
             <span className="text-lg font-semibold text-gray-200 min-w-max px-4">
               {getCurrentPeriodText()}
             </span>
-            
+
             <button
               onClick={() => navigatePeriod('next')}
               className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-all duration-200 hover:scale-110"
@@ -568,7 +568,7 @@ export default function PremiumCalendar({
             </button>
           </div>
 
-          <button 
+          <button
             className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center space-x-2"
             onClick={() => onCreateAppointment?.(new Date().toISOString().split('T')[0], '09:00')}
           >

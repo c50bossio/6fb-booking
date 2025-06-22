@@ -47,7 +47,7 @@ appointments = query.options(
 @cache_result(ttl_seconds=900, key_prefix="daily_metrics")  # 15 min cache
 def calculate_daily_metrics(self, barber_id: int, target_date: date)
 
-@cache_result(ttl_seconds=1800, key_prefix="weekly_metrics")  # 30 min cache  
+@cache_result(ttl_seconds=1800, key_prefix="weekly_metrics")  # 30 min cache
 def calculate_weekly_metrics(self, barber_id: int, week_start: date)
 
 @cache_result(ttl_seconds=600, key_prefix="sixfb_score")  # 10 min cache
@@ -78,7 +78,7 @@ def calculate_sixfb_score(self, barber_id: int, period_type: str)
 engine = create_engine(
     DATABASE_URL,
     pool_size=20,          # Increased from default
-    max_overflow=10,       # Handle traffic spikes  
+    max_overflow=10,       # Handle traffic spikes
     pool_pre_ping=True,    # Validate connections
     pool_recycle=3600      # Refresh connections hourly
 )
@@ -143,12 +143,12 @@ CREATE INDEX idx_barbers_location_active ON barbers(location_id, is_active);
 ### **Monitoring & Alerting**
 - **Performance metrics dashboards** available
 - **Slow query detection** and logging
-- **Cache performance tracking** 
+- **Cache performance tracking**
 - **System resource monitoring**
 
 ### **Maintenance Features**
 - **Automated cache cleanup** of expired entries
-- **Database statistics** and health monitoring  
+- **Database statistics** and health monitoring
 - **Performance benchmarking** tools
 - **Cache invalidation** strategies
 
@@ -166,7 +166,7 @@ CREATE INDEX idx_barbers_location_active ON barbers(location_id, is_active);
 
 ### **Frontend Performance**
 - **API response compression**
-- **Bundle size optimization** 
+- **Bundle size optimization**
 - **Lazy loading** implementation
 - **CDN integration** for static assets
 
@@ -176,7 +176,7 @@ CREATE INDEX idx_barbers_location_active ON barbers(location_id, is_active);
 
 **Before Optimization:**
 - Appointments endpoint: ~800ms average
-- Analytics dashboard: ~3-5s load time  
+- Analytics dashboard: ~3-5s load time
 - 6FB score calculation: ~2-3s per barber
 - Database queries: Multiple N+1 patterns
 
@@ -198,5 +198,5 @@ The 6FB Booking Platform now has **enterprise-grade performance** with:
 **Performance Status**: ✅ **Production Ready & Optimized**
 
 ---
-**Performance Optimization Completed**: June 21, 2025  
+**Performance Optimization Completed**: June 21, 2025
 **Platform Status**: High-Performance, Scalable, Enterprise-Ready

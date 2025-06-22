@@ -133,13 +133,13 @@ def send_email(to_email: str, subject: str, body: str):
     import logging
     import os
     from utils.encryption import mask_email
-    
+
     logger = logging.getLogger(__name__)
-    
+
     try:
         # SECURITY FIX: Only log email delivery in development, never log content
         environment = os.getenv("ENVIRONMENT", "development").lower()
-        
+
         if environment == "development":
             # In development, log sanitized information only
             masked_email = mask_email(to_email)
@@ -188,7 +188,7 @@ async def get_current_user(
         if not token or token == "null" or token == "undefined":
             logger.warning(f"Invalid token format received: {token}")
             raise credentials_exception
-            
+
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("sub")
         if email is None:
@@ -196,7 +196,9 @@ async def get_current_user(
             raise credentials_exception
         token_data = TokenData(email=email)
     except jwt.ExpiredSignatureError:
-        logger.warning(f"Token expired for user: {payload.get('sub', 'unknown') if 'payload' in locals() else 'unknown'}")
+        logger.warning(
+            f"Token expired for user: {payload.get('sub', 'unknown') if 'payload' in locals() else 'unknown'}"
+        )
         raise credentials_exception
     except jwt.InvalidTokenError as e:
         logger.warning(f"Invalid JWT token: {str(e)}")
@@ -209,14 +211,13 @@ async def get_current_user(
     if user is None:
         logger.warning(f"User not found for email: {token_data.email}")
         raise credentials_exception
-    
+
     if not user.is_active:
         logger.warning(f"Inactive user attempted access: {user.email}")
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User account is disabled"
+            status_code=status.HTTP_403_FORBIDDEN, detail="User account is disabled"
         )
-    
+
     return user
 
 

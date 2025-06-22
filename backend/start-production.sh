@@ -53,7 +53,7 @@ if [ ! -f ssl/cert.pem ] || [ ! -f ssl/key.pem ]; then
     if [ "$continue_without_ssl" != "y" ]; then
         exit 1
     fi
-    
+
     # Create self-signed certificates for testing
     mkdir -p ssl
     openssl req -x509 -nodes -days 365 -newkey rsa:2048 \

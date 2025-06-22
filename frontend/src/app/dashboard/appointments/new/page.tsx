@@ -80,10 +80,10 @@ export default function NewAppointmentPage() {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500))
-      
+
       // Here you would make the actual API call
       // await appointmentsService.create(form)
-      
+
       // Show success and redirect
       alert('Appointment created successfully!')
       router.push('/dashboard/appointments')
@@ -280,7 +280,7 @@ export default function NewAppointmentPage() {
                   <div className="flex items-end">
                     <div className="text-sm text-gray-600">
                       <ClockIcon className="h-4 w-4 inline mr-1" />
-                      End time: {form.time && form.duration ? 
+                      End time: {form.time && form.duration ?
                         new Date(new Date(`2000-01-01T${form.time}`).getTime() + form.duration * 60000).toLocaleTimeString('en-US', {
                           hour: '2-digit',
                           minute: '2-digit',

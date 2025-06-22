@@ -142,7 +142,7 @@ export const appointmentsService = {
     if (filters?.search) params.append('search', filters.search)
     if (filters?.start_date) params.append('start_date', filters.start_date)
     if (filters?.end_date) params.append('end_date', filters.end_date)
-    
+
     if (Array.isArray(filters?.status)) {
       filters.status.forEach(status => params.append('status', status))
     } else if (filters?.status) {
@@ -420,7 +420,7 @@ export const appointmentsService = {
   ): Promise<Appointment[]> {
     const today = new Date()
     const futureDate = new Date(today.getTime() + days * 24 * 60 * 60 * 1000)
-    
+
     const response = await this.getAppointmentsByDateRange(
       today.toISOString().split('T')[0],
       futureDate.toISOString().split('T')[0],
@@ -429,7 +429,7 @@ export const appointmentsService = {
         status: ['scheduled', 'confirmed']
       }
     )
-    
+
     return response
   },
 

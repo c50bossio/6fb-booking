@@ -20,7 +20,6 @@ class Barber(BaseModel):
     is_verified = Column(Boolean, default=False)
     subscription_tier = Column(String(50), default="basic")  # basic, premium, elite
 
-
     # Business Settings (for 6FB calculations)
     target_booking_capacity = Column(Integer, default=40)  # Weekly target appointments
     hourly_rate = Column(Float, default=45.0)  # Base service rate
@@ -36,7 +35,7 @@ class Barber(BaseModel):
 
     # User Account Link
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    
+
     # Stripe Connect Integration
     stripe_account_id = Column(String(255), nullable=True)  # Stripe Express account ID
 

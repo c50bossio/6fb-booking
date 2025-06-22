@@ -70,7 +70,6 @@ class Location(Base):
     # 6FB Mentor Assignment
     mentor_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
-
     # Payment Configuration
     payment_processor = Column(String(50), default="stripe")  # stripe, square, paypal
     payment_api_key = Column(
@@ -141,7 +140,7 @@ class Location(Base):
     barber_payment_models = relationship(
         "BarberPaymentModel", back_populates="location"
     )
-    
+
     # Booking relationships
     services = relationship("Service", back_populates="location")
     booking_rules = relationship("BookingRule", back_populates="location")

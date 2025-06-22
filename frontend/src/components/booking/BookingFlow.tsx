@@ -219,11 +219,11 @@ export default function BookingFlow({
     if (bookingData.barber) {
       const slots: { [date: string]: TimeSlot[] } = {}
       const dates = getNext7Days()
-      
+
       dates.forEach(date => {
         const dateStr = date.toISOString().split('T')[0]
         const barberAvailability = bookingData.barber!.availability[dateStr] || []
-        
+
         slots[dateStr] = generateTimeSlots().map(time => ({
           time,
           available: barberAvailability.includes(time),
@@ -231,7 +231,7 @@ export default function BookingFlow({
           price: bookingData.service?.price
         }))
       })
-      
+
       setAvailableSlots(slots)
     }
   }, [bookingData.barber, bookingData.service])
@@ -250,19 +250,19 @@ export default function BookingFlow({
     const slots = []
     const start = new Date(`2024-01-01T${workingHours.start}:00`)
     const end = new Date(`2024-01-01T${workingHours.end}:00`)
-    
+
     let current = new Date(start)
     while (current < end) {
       slots.push(current.toTimeString().slice(0, 5))
       current = new Date(current.getTime() + timeSlotDuration * 60000)
     }
-    
+
     return slots
   }
 
   const validateStep = (step: number): boolean => {
     const newErrors: { [key: string]: string } = {}
-    
+
     switch (step) {
       case 0: // Service
         if (!bookingData.service) {
@@ -296,7 +296,7 @@ export default function BookingFlow({
         }
         break
     }
-    
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -326,10 +326,10 @@ export default function BookingFlow({
         ...bookingData,
         totalPrice
       }
-      
+
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000))
-      
+
       onComplete(completeBookingData)
       onClose()
     } catch (error) {
@@ -350,7 +350,7 @@ export default function BookingFlow({
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      
+
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
         <div className={`relative w-full max-w-4xl rounded-2xl shadow-2xl ${
@@ -364,8 +364,8 @@ export default function BookingFlow({
               </h2>
               <button
                 onClick={onClose}
-                className={`p-2 rounded-lg transition-colors ${theme === 'dark' 
-                  ? 'text-gray-400 hover:text-white hover:bg-gray-800' 
+                className={`p-2 rounded-lg transition-colors ${theme === 'dark'
+                  ? 'text-gray-400 hover:text-white hover:bg-gray-800'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
@@ -374,7 +374,7 @@ export default function BookingFlow({
                 </svg>
               </button>
             </div>
-            
+
             {/* Progress Steps */}
             <div className="mt-6 flex items-center justify-between">
               {STEPS.map((step, index) => (
@@ -425,7 +425,7 @@ export default function BookingFlow({
                 error={errors.service}
               />
             )}
-            
+
             {currentStep === 1 && (
               <BarberSelection
                 theme={theme}
@@ -436,7 +436,7 @@ export default function BookingFlow({
                 selectedService={bookingData.service}
               />
             )}
-            
+
             {currentStep === 2 && (
               <DateTimeSelection
                 theme={theme}
@@ -448,7 +448,7 @@ export default function BookingFlow({
                 errors={{ date: errors.date, time: errors.time }}
               />
             )}
-            
+
             {currentStep === 3 && (
               <ClientDetails
                 theme={theme}
@@ -457,7 +457,7 @@ export default function BookingFlow({
                 errors={errors}
               />
             )}
-            
+
             {currentStep === 4 && (
               <BookingConfirmation
                 theme={theme}
@@ -484,11 +484,11 @@ export default function BookingFlow({
                 <ChevronLeftIcon className="w-4 h-4" />
                 <span>Previous</span>
               </button>
-              
+
               <div className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                 Step {currentStep + 1} of {STEPS.length}
               </div>
-              
+
               <button
                 onClick={handleNext}
                 disabled={isLoading}
@@ -534,7 +534,7 @@ interface ServiceSelectionProps {
 
 function ServiceSelection({ theme, services, selectedService, onServiceSelect, error }: ServiceSelectionProps) {
   const categories = Array.from(new Set(services.map(s => s.category)))
-  
+
   return (
     <div className="space-y-6">
       <div>
@@ -545,11 +545,11 @@ function ServiceSelection({ theme, services, selectedService, onServiceSelect, e
           Select the service you'd like to book
         </p>
       </div>
-      
+
       {error && (
         <div className="text-red-500 text-sm">{error}</div>
       )}
-      
+
       {categories.map(category => (
         <div key={category}>
           <h4 className={`text-md font-medium mb-3 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
@@ -573,7 +573,7 @@ function ServiceSelection({ theme, services, selectedService, onServiceSelect, e
                     Popular
                   </div>
                 )}
-                
+
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-1">
@@ -585,7 +585,7 @@ function ServiceSelection({ theme, services, selectedService, onServiceSelect, e
                     <p className={`text-sm mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                       {service.description}
                     </p>
-                    
+
                     <div className="flex items-center space-x-4 text-sm">
                       <div className="flex items-center space-x-1">
                         <ClockIcon className="w-4 h-4 text-gray-500" />
@@ -600,7 +600,7 @@ function ServiceSelection({ theme, services, selectedService, onServiceSelect, e
                         </span>
                       </div>
                     </div>
-                    
+
                     {service.requirements && service.requirements.length > 0 && (
                       <div className="mt-2">
                         <div className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -610,7 +610,7 @@ function ServiceSelection({ theme, services, selectedService, onServiceSelect, e
                     )}
                   </div>
                 </div>
-                
+
                 {selectedService?.id === service.id && (
                   <div className="absolute top-2 right-2 w-6 h-6 bg-violet-600 text-white rounded-full flex items-center justify-center">
                     <CheckIcon className="w-4 h-4" />
@@ -637,9 +637,9 @@ interface BarberSelectionProps {
 
 function BarberSelection({ theme, barbers, selectedBarber, onBarberSelect, error, selectedService }: BarberSelectionProps) {
   // Filter barbers based on service specialties
-  const relevantBarbers = selectedService 
-    ? barbers.filter(barber => 
-        barber.specialties.some(specialty => 
+  const relevantBarbers = selectedService
+    ? barbers.filter(barber =>
+        barber.specialties.some(specialty =>
           selectedService.category === 'Premium' ? specialty.includes('Premium') :
           selectedService.category === 'Grooming' ? specialty.includes('Beard') || specialty.includes('Shave') :
           true
@@ -663,11 +663,11 @@ function BarberSelection({ theme, barbers, selectedBarber, onBarberSelect, error
           Select your preferred barber for {selectedService?.name}
         </p>
       </div>
-      
+
       {error && (
         <div className="text-red-500 text-sm">{error}</div>
       )}
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {sortedBarbers.map(barber => (
           <div
@@ -687,17 +687,17 @@ function BarberSelection({ theme, barbers, selectedBarber, onBarberSelect, error
                 <span>Recommended</span>
               </div>
             )}
-            
+
             <div className="flex items-start space-x-4">
               <div className="w-16 h-16 bg-gradient-to-br from-violet-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
                 {barber.name.split(' ').map(n => n[0]).join('')}
               </div>
-              
+
               <div className="flex-1">
                 <h5 className={`font-semibold text-lg mb-1 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
                   {barber.name}
                 </h5>
-                
+
                 <div className="flex items-center space-x-2 mb-2">
                   <div className="flex items-center space-x-1">
                     <StarIcon className="w-4 h-4 text-yellow-500 fill-current" />
@@ -709,11 +709,11 @@ function BarberSelection({ theme, barbers, selectedBarber, onBarberSelect, error
                     </span>
                   </div>
                 </div>
-                
+
                 <p className={`text-sm mb-3 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                   {barber.experience} experience
                 </p>
-                
+
                 <div className="flex flex-wrap gap-1 mb-3">
                   {barber.specialties.slice(0, 3).map(specialty => (
                     <span
@@ -728,7 +728,7 @@ function BarberSelection({ theme, barbers, selectedBarber, onBarberSelect, error
                 </div>
               </div>
             </div>
-            
+
             {selectedBarber?.id === barber.id && (
               <div className="absolute top-4 right-4 w-6 h-6 bg-violet-600 text-white rounded-full flex items-center justify-center">
                 <CheckIcon className="w-4 h-4" />
@@ -752,14 +752,14 @@ interface DateTimeSelectionProps {
   errors: { date?: string; time?: string }
 }
 
-function DateTimeSelection({ 
-  theme, 
-  selectedDate, 
-  selectedTime, 
-  availableSlots, 
-  onDateSelect, 
-  onTimeSelect, 
-  errors 
+function DateTimeSelection({
+  theme,
+  selectedDate,
+  selectedTime,
+  availableSlots,
+  onDateSelect,
+  onTimeSelect,
+  errors
 }: DateTimeSelectionProps) {
   const getNext7Days = () => {
     const dates = []
@@ -785,21 +785,21 @@ function DateTimeSelection({
           Choose your preferred appointment date and time
         </p>
       </div>
-      
+
       {/* Date Selection */}
       <div>
         <h4 className={`text-md font-medium mb-3 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
           Available Dates
         </h4>
         {errors.date && <div className="text-red-500 text-sm mb-2">{errors.date}</div>}
-        
+
         <div className="grid grid-cols-7 gap-2">
           {dates.map(date => {
             const dateStr = date.toISOString().split('T')[0]
             const hasAvailableSlots = availableSlots[dateStr]?.some(slot => slot.available)
             const isSelected = selectedDate === dateStr
             const isToday = date.toDateString() === new Date().toDateString()
-            
+
             return (
               <button
                 key={dateStr}
@@ -837,7 +837,7 @@ function DateTimeSelection({
           })}
         </div>
       </div>
-      
+
       {/* Time Selection */}
       {selectedDate && (
         <div>
@@ -845,7 +845,7 @@ function DateTimeSelection({
             Available Times
           </h4>
           {errors.time && <div className="text-red-500 text-sm mb-2">{errors.time}</div>}
-          
+
           {availableTimeSlots.length === 0 ? (
             <div className={`text-center py-8 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
               No available time slots for this date
@@ -906,7 +906,7 @@ function ClientDetails({ theme, clientInfo, onClientInfoUpdate, errors }: Client
           Please provide your details for appointment confirmation
         </p>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
@@ -930,7 +930,7 @@ function ClientDetails({ theme, clientInfo, onClientInfoUpdate, errors }: Client
           </div>
           {errors.name && <div className="text-red-500 text-sm mt-1">{errors.name}</div>}
         </div>
-        
+
         <div>
           <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
             Email Address *
@@ -953,7 +953,7 @@ function ClientDetails({ theme, clientInfo, onClientInfoUpdate, errors }: Client
           </div>
           {errors.email && <div className="text-red-500 text-sm mt-1">{errors.email}</div>}
         </div>
-        
+
         <div>
           <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
             Phone Number *
@@ -976,7 +976,7 @@ function ClientDetails({ theme, clientInfo, onClientInfoUpdate, errors }: Client
           </div>
           {errors.phone && <div className="text-red-500 text-sm mt-1">{errors.phone}</div>}
         </div>
-        
+
         <div>
           <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
             Special Requests
@@ -1026,7 +1026,7 @@ function BookingConfirmation({ theme, bookingData, isLoading }: BookingConfirmat
           Please review your appointment details before confirming
         </p>
       </div>
-      
+
       <div className={`rounded-lg border p-6 ${theme === 'dark' ? 'border-gray-700 bg-gray-800/30' : 'border-gray-200 bg-gray-50'}`}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Service Details */}
@@ -1055,7 +1055,7 @@ function BookingConfirmation({ theme, bookingData, isLoading }: BookingConfirmat
               </div>
             </div>
           </div>
-          
+
           {/* Barber Details */}
           <div>
             <h4 className={`text-md font-semibold mb-3 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
@@ -1078,7 +1078,7 @@ function BookingConfirmation({ theme, bookingData, isLoading }: BookingConfirmat
               </div>
             </div>
           </div>
-          
+
           {/* Date & Time */}
           <div>
             <h4 className={`text-md font-semibold mb-3 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
@@ -1099,7 +1099,7 @@ function BookingConfirmation({ theme, bookingData, isLoading }: BookingConfirmat
               </div>
             </div>
           </div>
-          
+
           {/* Client Details */}
           <div>
             <h4 className={`text-md font-semibold mb-3 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
@@ -1127,7 +1127,7 @@ function BookingConfirmation({ theme, bookingData, isLoading }: BookingConfirmat
             </div>
           </div>
         </div>
-        
+
         {bookingData.clientInfo?.notes && (
           <div className="mt-6 pt-6 border-t border-gray-300 dark:border-gray-600">
             <h4 className={`text-md font-semibold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
@@ -1139,7 +1139,7 @@ function BookingConfirmation({ theme, bookingData, isLoading }: BookingConfirmat
           </div>
         )}
       </div>
-      
+
       {/* Security Notice */}
       <div className={`flex items-start space-x-3 p-4 rounded-lg ${theme === 'dark' ? 'bg-green-900/20 border border-green-800' : 'bg-green-50 border border-green-200'}`}>
         <ShieldCheckIcon className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
@@ -1152,7 +1152,7 @@ function BookingConfirmation({ theme, bookingData, isLoading }: BookingConfirmat
           </p>
         </div>
       </div>
-      
+
       {isLoading && (
         <div className="text-center py-4">
           <div className="inline-flex items-center space-x-2">

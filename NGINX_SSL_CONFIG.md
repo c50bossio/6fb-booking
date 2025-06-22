@@ -67,29 +67,29 @@ server {
 server {
     listen 443 ssl http2;
     server_name app.bookbarber.com;
-    
+
     # Rate limiting
     limit_req zone=app burst=50 nodelay;
-    
+
     # Root directory for static files
     root /var/www/bookbarber/frontend/dist;
     index index.html;
-    
+
     # Security headers specific to frontend
     add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.bookbarber.com https://api.stripe.com; frame-src https://js.stripe.com;" always;
-    
+
     # Static file caching
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2)$ {
         expires 1y;
         add_header Cache-Control "public, immutable";
         add_header Vary "Accept-Encoding";
     }
-    
+
     # Next.js frontend (port 3000)
     location / {
         try_files $uri $uri/ @nextjs;
     }
-    
+
     location @nextjs {
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
@@ -102,7 +102,7 @@ server {
         proxy_cache_bypass $http_upgrade;
         proxy_read_timeout 86400;
     }
-    
+
     # WebSocket support for real-time features
     location /ws {
         proxy_pass http://127.0.0.1:3000;
@@ -114,11 +114,11 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
-    
+
     # Error pages
     error_page 404 /404.html;
     error_page 500 502 503 504 /50x.html;
-    
+
     location = /50x.html {
         root /usr/share/nginx/html;
     }
@@ -134,13 +134,13 @@ server {
 server {
     listen 443 ssl http2;
     server_name api.bookbarber.com;
-    
+
     # Rate limiting for API
     limit_req zone=api burst=20 nodelay;
-    
+
     # API-specific security headers
     add_header Content-Security-Policy "default-src 'none'; frame-ancestors 'none';" always;
-    
+
     # CORS handling (adjust origins as needed)
     location / {
         # Handle preflight requests
@@ -153,13 +153,13 @@ server {
             add_header 'Content-Length' 0 always;
             return 204;
         }
-        
+
         # Add CORS headers to all responses
         add_header 'Access-Control-Allow-Origin' 'https://app.bookbarber.com' always;
         add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
         add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization' always;
         add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range' always;
-        
+
         # Proxy to FastAPI backend (port 8000)
         proxy_pass http://127.0.0.1:8000;
         proxy_http_version 1.1;
@@ -174,7 +174,7 @@ server {
         proxy_connect_timeout 300;
         proxy_send_timeout 300;
     }
-    
+
     # Health check endpoint (no rate limiting)
     location /health {
         access_log off;
@@ -184,7 +184,7 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
-    
+
     # Webhook endpoints (higher limits for payment providers)
     location /api/v1/webhooks/ {
         limit_req zone=api burst=100 nodelay;
@@ -207,15 +207,15 @@ server {
 server {
     listen 443 ssl http2;
     server_name admin.bookbarber.com;
-    
+
     # Admin-specific security (stricter)
     add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://api.bookbarber.com;" always;
-    
+
     # IP-based access control (uncomment and adjust if needed)
     # allow 192.168.1.0/24;  # Your office network
     # allow 10.0.0.0/8;      # Your VPN range
     # deny all;
-    
+
     # Proxy to admin interface (could be same as app or separate service)
     location / {
         proxy_pass http://127.0.0.1:3001;  # Separate admin port
@@ -234,7 +234,7 @@ server {
 server {
     listen 80;
     server_name bookbarber.com www.bookbarber.com;
-    
+
     # Temporary redirect to app subdomain
     return 301 https://app.bookbarber.com$request_uri;
 }
@@ -242,7 +242,7 @@ server {
 server {
     listen 443 ssl http2;
     server_name bookbarber.com www.bookbarber.com;
-    
+
     # Temporary redirect to app subdomain
     return 301 https://app.bookbarber.com$request_uri;
 }
@@ -328,11 +328,11 @@ sudo nginx -t
 
 if [ $? -eq 0 ]; then
     echo "✅ Configuration test passed"
-    
+
     # Reload Nginx
     echo "🔄 Reloading Nginx..."
     sudo systemctl reload nginx
-    
+
     # Check status
     if sudo systemctl is-active --quiet nginx; then
         echo "✅ Nginx is running successfully"

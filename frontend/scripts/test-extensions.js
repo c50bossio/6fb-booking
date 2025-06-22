@@ -2,7 +2,7 @@
 
 /**
  * Browser Extension Conflict Testing Script
- * 
+ *
  * This script helps identify and resolve browser extension conflicts
  * with the 6FB Booking Platform.
  */
@@ -85,7 +85,7 @@ const tests = {
 
   generateExtensionReport() {
     console.log('\n📊 Generating Extension Conflict Report...');
-    
+
     const report = {
       timestamp: new Date().toISOString(),
       environment: {
@@ -147,7 +147,7 @@ const tests = {
     const reportPath = path.join(process.cwd(), 'extension-conflict-report.json');
     fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
     console.log(`✅ Report saved to: ${reportPath}`);
-    
+
     return report;
   }
 };
@@ -155,39 +155,39 @@ const tests = {
 // Main execution
 async function main() {
   const results = {};
-  
+
   // Run all tests
   results.apiConnectivity = await tests.testApiConnectivity();
   results.frontendBuild = tests.testFrontendBuild();
   results.typeScript = tests.testTypeScript();
   results.cspConfiguration = tests.checkCSPConfiguration();
-  
+
   // Generate report
   const report = tests.generateExtensionReport();
-  
+
   // Summary
   console.log('\n📋 Test Summary:');
   console.log('='.repeat(30));
-  
+
   Object.entries(results).forEach(([test, passed]) => {
     console.log(`${passed ? '✅' : '❌'} ${test}: ${passed ? 'PASSED' : 'FAILED'}`);
   });
-  
+
   const allPassed = Object.values(results).every(result => result);
-  
+
   if (allPassed) {
     console.log('\n🎉 All tests passed! The app should work correctly.');
     console.log('If you\'re still experiencing issues, they\'re likely browser extension related.');
   } else {
     console.log('\n⚠️  Some tests failed. Address these issues first before troubleshooting extensions.');
   }
-  
+
   console.log('\n🔧 Next Steps:');
   console.log('1. Read the full troubleshooting guide: BROWSER_EXTENSION_TROUBLESHOOTING.md');
   console.log('2. Test in incognito/private mode');
   console.log('3. Check the generated report: extension-conflict-report.json');
   console.log('4. Configure problematic extensions using dev-extension-config.json');
-  
+
   console.log('\n💡 Quick Commands:');
   console.log('• Test API: curl -X GET "http://localhost:8000/api/v1/health"');
   console.log('• Start frontend: npm run dev');

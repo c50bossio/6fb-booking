@@ -30,9 +30,9 @@ import { IntegrationSettings } from './IntegrationSettings'
 import { SecuritySettings } from './SecuritySettings'
 import { SettingsTemplates } from './SettingsTemplates'
 
-import { 
-  SettingsScope, 
-  SettingsCategory, 
+import {
+  SettingsScope,
+  SettingsCategory,
   settingsApi,
   type UserPreferences,
   type LocationSettings,
@@ -165,15 +165,15 @@ export function SettingsPanel({
     try {
       setIsLoading(true)
       await settingsApi.applyTemplate(templateId, scope, scopeId)
-      
+
       setNotification({
         type: 'success',
         message: 'Settings template applied successfully'
       })
-      
+
       // Reset notification after 3 seconds
       setTimeout(() => setNotification(null), 3000)
-      
+
     } catch (error) {
       setNotification({
         type: 'error',
@@ -190,10 +190,10 @@ export function SettingsPanel({
     try {
       setIsLoading(true)
       const exportData = await settingsApi.exportSettings(scope, scopeId)
-      
+
       // Create and download file
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], { 
-        type: 'application/json' 
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+        type: 'application/json'
       })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -203,13 +203,13 @@ export function SettingsPanel({
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
-      
+
       setNotification({
         type: 'success',
         message: 'Settings exported successfully'
       })
       setTimeout(() => setNotification(null), 3000)
-      
+
     } catch (error) {
       setNotification({
         type: 'error',
@@ -226,15 +226,15 @@ export function SettingsPanel({
       setIsLoading(true)
       const fileContent = await file.text()
       const importData = JSON.parse(fileContent)
-      
+
       const result = await settingsApi.importSettings(importData, false)
-      
+
       setNotification({
         type: result.errors.length > 0 ? 'info' : 'success',
         message: `Imported ${result.imported_count} settings${result.errors.length > 0 ? ` with ${result.errors.length} errors` : ''}`
       })
       setTimeout(() => setNotification(null), 3000)
-      
+
     } catch (error) {
       setNotification({
         type: 'error',
@@ -262,18 +262,18 @@ export function SettingsPanel({
   return (
     <div className={`fixed inset-0 z-50 overflow-hidden ${className}`}>
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
-      
+
       {/* Panel */}
       <div className={`absolute right-0 top-0 h-full w-full max-w-6xl flex ${
-        theme === 'dark' 
-          ? 'bg-gray-900 border-gray-700' 
+        theme === 'dark'
+          ? 'bg-gray-900 border-gray-700'
           : 'bg-white border-gray-200'
       } border-l shadow-2xl`}>
-        
+
         {/* Sidebar */}
         <div className={`w-80 flex-shrink-0 border-r ${
           theme === 'dark' ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'
@@ -304,7 +304,7 @@ export function SettingsPanel({
                 <XMarkIcon className="h-5 w-5" />
               </button>
             </div>
-            
+
             {/* Search */}
             <div className="relative">
               <input
@@ -323,7 +323,7 @@ export function SettingsPanel({
               }`} />
             </div>
           </div>
-          
+
           {/* Quick Actions */}
           {scope !== SettingsScope.USER && (
             <div className={`p-4 border-b ${
@@ -370,14 +370,14 @@ export function SettingsPanel({
               </div>
             </div>
           )}
-          
+
           {/* Settings Sections */}
           <div className="flex-1 overflow-y-auto">
             <div className="p-4 space-y-2">
               {filteredSections.map((section) => {
                 const Icon = section.icon
                 const isActive = activeSection === section.id
-                
+
                 return (
                   <button
                     key={section.id}
@@ -401,10 +401,10 @@ export function SettingsPanel({
                           {section.title}
                         </div>
                         <div className={`text-xs truncate ${
-                          isActive 
-                            ? 'text-violet-100' 
-                            : theme === 'dark' 
-                              ? 'text-gray-400' 
+                          isActive
+                            ? 'text-violet-100'
+                            : theme === 'dark'
+                              ? 'text-gray-400'
                               : 'text-gray-500'
                         }`}>
                           {section.description}
@@ -418,7 +418,7 @@ export function SettingsPanel({
                 )
               })}
             </div>
-            
+
             {/* Advanced Toggle */}
             <div className={`p-4 border-t ${
               theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
@@ -439,7 +439,7 @@ export function SettingsPanel({
             </div>
           </div>
         </div>
-        
+
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Content Header */}
@@ -459,10 +459,10 @@ export function SettingsPanel({
                   {SETTINGS_SECTIONS.find(s => s.id === activeSection)?.description}
                 </p>
               </div>
-              
+
               {hasUnsavedChanges && (
                 <div className={`flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium ${
-                  theme === 'dark' 
+                  theme === 'dark'
                     ? 'bg-amber-900/20 text-amber-400'
                     : 'bg-amber-50 text-amber-700'
                 }`}>
@@ -472,12 +472,12 @@ export function SettingsPanel({
               )}
             </div>
           </div>
-          
+
           {/* Notification */}
           {notification && (
             <div className={`mx-6 mt-4 p-4 rounded-lg flex items-center space-x-3 ${
-              notification.type === 'success' 
-                ? theme === 'dark' 
+              notification.type === 'success'
+                ? theme === 'dark'
                   ? 'bg-emerald-900/20 text-emerald-400 border border-emerald-800'
                   : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                 : notification.type === 'error'
@@ -492,7 +492,7 @@ export function SettingsPanel({
               <span className="text-sm">{notification.message}</span>
             </div>
           )}
-          
+
           {/* Settings Content */}
           <div className="flex-1 overflow-y-auto p-6">
             {ActiveComponent && (
@@ -506,7 +506,7 @@ export function SettingsPanel({
           </div>
         </div>
       </div>
-      
+
       {/* Templates Modal */}
       {showTemplates && (
         <SettingsTemplates

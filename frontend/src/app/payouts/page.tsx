@@ -61,12 +61,12 @@ export default function PayoutsPage() {
     try {
       setLoading(true)
       const token = localStorage.getItem('access_token')
-      
+
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payouts`,
         { headers: { Authorization: `Bearer ${token}` } }
       )
-      
+
       setPayouts(response.data.payouts || [])
       setStats(response.data.stats || {
         total_pending: 0,
@@ -210,10 +210,10 @@ export default function PayoutsPage() {
   const filteredPayouts = payouts.filter(payout => {
     const matchesSearch = payout.barber_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          payout.transaction_id?.toLowerCase().includes(searchTerm.toLowerCase())
-    
+
     const matchesStatus = filterStatus === 'all' || payout.status === filterStatus
     const matchesMethod = filterMethod === 'all' || payout.payment_method === filterMethod
-    
+
     return matchesSearch && matchesStatus && matchesMethod
   })
 
@@ -267,13 +267,13 @@ export default function PayoutsPage() {
               <option value="manual">Manual</option>
             </select>
           </div>
-          
+
           <div className="flex items-center space-x-3">
             <button className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2">
               <ArrowDownTrayIcon className="h-5 w-5" />
               <span>Export</span>
             </button>
-            
+
             <button className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg font-medium hover:from-violet-700 hover:to-purple-700 transition-all flex items-center space-x-2">
               <PlayIcon className="h-5 w-5" />
               <span>Process Pending</span>
@@ -343,7 +343,7 @@ export default function PayoutsPage() {
           <div className="px-6 py-4 border-b border-gray-200/50">
             <h3 className="text-lg font-semibold text-gray-900">Payout History</h3>
           </div>
-          
+
           {filteredPayouts.length === 0 ? (
             <div className="p-12 text-center">
               <BanknotesIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -393,7 +393,7 @@ export default function PayoutsPage() {
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center space-x-4 ml-4">
                       <div className="text-right">
                         <p className="text-lg font-semibold text-gray-900">{formatCurrency(payout.amount)}</p>
@@ -401,16 +401,16 @@ export default function PayoutsPage() {
                           {payout.status}
                         </span>
                       </div>
-                      
+
                       {payout.status === 'pending' && (
                         <div className="flex items-center space-x-2">
-                          <button 
+                          <button
                             onClick={() => handleProcessPayout(payout.id)}
                             className="text-emerald-600 hover:text-emerald-700 font-medium text-sm hover:bg-emerald-50 px-3 py-1 rounded-lg transition-colors"
                           >
                             Process
                           </button>
-                          <button 
+                          <button
                             onClick={() => handleCancelPayout(payout.id)}
                             className="text-red-600 hover:text-red-700 font-medium text-sm hover:bg-red-50 px-3 py-1 rounded-lg transition-colors"
                           >

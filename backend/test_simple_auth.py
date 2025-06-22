@@ -3,7 +3,8 @@
 Simple test to create a user and verify login works
 """
 import sys
-sys.path.append('/Users/bossio/6fb-booking/backend')
+
+sys.path.append("/Users/bossio/6fb-booking/backend")
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -40,7 +41,7 @@ new_user = User(
     first_name="Demo",
     last_name="User",
     role="barber",
-    is_active=True
+    is_active=True,
 )
 
 db.add(new_user)

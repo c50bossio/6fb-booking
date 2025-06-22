@@ -6,16 +6,16 @@
     <title>6FB Frontend Test</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .test-card { 
+        .test-card {
             @apply bg-white shadow rounded-lg p-6 mb-4 border-l-4;
         }
-        .test-pass { 
+        .test-pass {
             @apply border-green-500;
         }
-        .test-fail { 
+        .test-fail {
             @apply border-red-500;
         }
-        .test-pending { 
+        .test-pending {
             @apply border-yellow-500;
         }
     </style>
@@ -26,11 +26,11 @@
             <h1 class="text-3xl font-bold text-gray-900 mb-8">
                 🧪 6FB Frontend Functionality Test
             </h1>
-            
+
             <div id="test-results" class="space-y-4">
                 <!-- Test results will be populated here -->
             </div>
-            
+
             <div class="mt-8 bg-white shadow rounded-lg p-6">
                 <h2 class="text-xl font-semibold mb-4">Manual Test Actions</h2>
                 <div class="space-y-4">
@@ -50,11 +50,11 @@
 
     <script>
         const testResults = document.getElementById('test-results');
-        
+
         function addTestResult(name, status, message, details = '') {
             const statusClass = status === 'pass' ? 'test-pass' : status === 'fail' ? 'test-fail' : 'test-pending';
             const statusIcon = status === 'pass' ? '✅' : status === 'fail' ? '❌' : '⏳';
-            
+
             const testCard = document.createElement('div');
             testCard.className = `test-card ${statusClass}`;
             testCard.innerHTML = `
@@ -69,44 +69,44 @@
             `;
             testResults.appendChild(testCard);
         }
-        
+
         // Run tests on page load
         window.onload = function() {
             runAllTests();
         };
-        
+
         function runAllTests() {
             testResults.innerHTML = '<div class="text-center text-gray-500">Running tests...</div>';
             setTimeout(() => {
                 testResults.innerHTML = '';
-                
+
                 // Test 1: Check if Next.js is running
                 testNextJSConnection();
-                
+
                 // Test 2: Check critical frontend components
                 testFrontendComponents();
-                
+
                 // Test 3: Check if build was successful
                 testBuildStatus();
-                
+
                 // Test 4: Test critical pages accessibility
                 testPageAccessibility();
-                
+
                 // Test 5: Check for JavaScript errors
                 testJavaScriptErrors();
-                
+
                 // Test 6: Verify Tailwind CSS
                 testTailwindCSS();
             }, 500);
         }
-        
+
         function testNextJSConnection() {
             fetch('http://localhost:3000/')
                 .then(response => {
                     if (response.ok) {
                         addTestResult(
-                            'Next.js Development Server', 
-                            'pass', 
+                            'Next.js Development Server',
+                            'pass',
                             'Frontend development server is running and accessible',
                             'Server responding on http://localhost:3000'
                         );
@@ -116,29 +116,29 @@
                 })
                 .catch(error => {
                     addTestResult(
-                        'Next.js Development Server', 
-                        'fail', 
+                        'Next.js Development Server',
+                        'fail',
                         'Frontend development server is not accessible',
                         `Error: ${error.message}`
                     );
                 });
         }
-        
+
         function testFrontendComponents() {
             const components = [
                 'http://localhost:3000/barbers',
                 'http://localhost:3000/dashboard',
                 'http://localhost:3000/login'
             ];
-            
+
             components.forEach((url, index) => {
                 setTimeout(() => {
                     fetch(url)
                         .then(response => {
                             if (response.ok) {
                                 addTestResult(
-                                    `Page: ${url.split('/').pop()}`, 
-                                    'pass', 
+                                    `Page: ${url.split('/').pop()}`,
+                                    'pass',
                                     'Page loads successfully',
                                     `HTTP ${response.status} - ${response.statusText}`
                                 );
@@ -148,8 +148,8 @@
                         })
                         .catch(error => {
                             addTestResult(
-                                `Page: ${url.split('/').pop()}`, 
-                                'fail', 
+                                `Page: ${url.split('/').pop()}`,
+                                'fail',
                                 'Page failed to load',
                                 `Error: ${error.message}`
                             );
@@ -157,100 +157,100 @@
                 }, index * 1000);
             });
         }
-        
+
         function testBuildStatus() {
             // Simulate build test based on our previous successful build
             addTestResult(
-                'Frontend Build Status', 
-                'pass', 
+                'Frontend Build Status',
+                'pass',
                 'Frontend builds successfully without errors',
                 'Build completed with 0 errors, 18 pages generated'
             );
         }
-        
+
         function testPageAccessibility() {
             addTestResult(
-                'Page Accessibility', 
-                'pass', 
+                'Page Accessibility',
+                'pass',
                 'Core pages are accessible and render correctly',
                 'Barbers, Dashboard, Login, Analytics pages all accessible'
             );
         }
-        
+
         function testJavaScriptErrors() {
             const errorCount = window.onerror ? 1 : 0;
             addTestResult(
-                'JavaScript Errors', 
-                errorCount === 0 ? 'pass' : 'fail', 
+                'JavaScript Errors',
+                errorCount === 0 ? 'pass' : 'fail',
                 errorCount === 0 ? 'No critical JavaScript errors detected' : `${errorCount} JavaScript errors found`,
                 errorCount === 0 ? 'All scripts loading successfully' : 'Check console for details'
             );
         }
-        
+
         function testTailwindCSS() {
             // Test if Tailwind classes are working
             const testElement = document.createElement('div');
             testElement.className = 'bg-blue-500 text-white p-4';
             document.body.appendChild(testElement);
-            
+
             const styles = window.getComputedStyle(testElement);
             const isWorking = styles.backgroundColor.includes('rgb') && styles.color.includes('rgb');
-            
+
             document.body.removeChild(testElement);
-            
+
             addTestResult(
-                'Tailwind CSS Framework', 
-                isWorking ? 'pass' : 'fail', 
+                'Tailwind CSS Framework',
+                isWorking ? 'pass' : 'fail',
                 isWorking ? 'Tailwind CSS is loaded and working' : 'Tailwind CSS not working properly',
                 isWorking ? 'CSS classes applied successfully' : 'CSS classes not applied'
             );
         }
-        
+
         function testApiConnection() {
             addTestResult('API Connection Test', 'pending', 'Testing backend API connection...');
-            
+
             fetch('http://localhost:8000/health')
                 .then(response => response.json())
                 .then(data => {
                     addTestResult(
-                        'Backend API Connection', 
-                        'pass', 
+                        'Backend API Connection',
+                        'pass',
                         'Backend API is accessible and responding',
                         `Health check: ${JSON.stringify(data, null, 2)}`
                     );
                 })
                 .catch(error => {
                     addTestResult(
-                        'Backend API Connection', 
-                        'fail', 
+                        'Backend API Connection',
+                        'fail',
                         'Backend API is not accessible',
                         `Error: ${error.message}\\nMake sure backend is running on http://localhost:8000`
                     );
                 });
         }
-        
+
         function testLocalStorage() {
             try {
                 localStorage.setItem('test', 'working');
                 const result = localStorage.getItem('test');
                 localStorage.removeItem('test');
-                
+
                 addTestResult(
-                    'Local Storage Test', 
-                    result === 'working' ? 'pass' : 'fail', 
+                    'Local Storage Test',
+                    result === 'working' ? 'pass' : 'fail',
                     result === 'working' ? 'Local storage is working correctly' : 'Local storage failed',
                     'Authentication tokens and user data can be stored'
                 );
             } catch (error) {
                 addTestResult(
-                    'Local Storage Test', 
-                    'fail', 
+                    'Local Storage Test',
+                    'fail',
                     'Local storage is not available',
                     `Error: ${error.message}`
                 );
             }
         }
-        
+
         function testNavigationLinks() {
             const links = [
                 { name: 'Barbers', url: '/barbers' },
@@ -258,20 +258,20 @@
                 { name: 'Analytics', url: '/analytics' },
                 { name: 'Login', url: '/login' }
             ];
-            
+
             addTestResult('Navigation Test', 'pending', 'Testing navigation links...');
-            
+
             let passedLinks = 0;
             links.forEach((link, index) => {
                 setTimeout(() => {
                     fetch(`http://localhost:3000${link.url}`)
                         .then(response => {
                             if (response.ok) passedLinks++;
-                            
+
                             if (index === links.length - 1) {
                                 addTestResult(
-                                    'Navigation Links', 
-                                    passedLinks === links.length ? 'pass' : 'fail', 
+                                    'Navigation Links',
+                                    passedLinks === links.length ? 'pass' : 'fail',
                                     `${passedLinks}/${links.length} navigation links working`,
                                     links.map(l => `${l.name}: ${l.url}`).join('\\n')
                                 );
@@ -280,8 +280,8 @@
                         .catch(() => {
                             if (index === links.length - 1) {
                                 addTestResult(
-                                    'Navigation Links', 
-                                    passedLinks === links.length ? 'pass' : 'fail', 
+                                    'Navigation Links',
+                                    passedLinks === links.length ? 'pass' : 'fail',
                                     `${passedLinks}/${links.length} navigation links working`,
                                     'Some links may not be accessible'
                                 );

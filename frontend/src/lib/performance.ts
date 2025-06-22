@@ -161,9 +161,9 @@ class PerformanceMonitor {
       timestamp: Date.now(),
       metadata
     }
-    
+
     this.metrics.push(metric)
-    
+
     // Log to console in development
     if (process.env.NODE_ENV === 'development') {
       console.log(`[Performance] ${name}: ${value.toFixed(2)}ms`, metadata)
@@ -185,7 +185,7 @@ class PerformanceMonitor {
 
   measureAsync<T>(name: string, fn: () => Promise<T>): Promise<T> {
     const start = performance.now()
-    
+
     return fn()
       .then(result => {
         const duration = performance.now() - start
@@ -201,7 +201,7 @@ class PerformanceMonitor {
 
   measure<T>(name: string, fn: () => T): T {
     const start = performance.now()
-    
+
     try {
       const result = fn()
       const duration = performance.now() - start
@@ -236,7 +236,7 @@ class PerformanceMonitor {
     const lcp = this.metrics.find(m => m.name === 'LCP')
     const fid = this.metrics.find(m => m.name === 'FID')
     const cls = this.metrics.find(m => m.name === 'CLS')
-    
+
     return {
       LCP: lcp?.value,
       FID: fid?.value,
@@ -248,7 +248,7 @@ class PerformanceMonitor {
   // Component render timing
   startComponentTimer(componentName: string): () => void {
     const start = performance.now()
-    
+
     return () => {
       const duration = performance.now() - start
       this.recordMetric(`COMPONENT_RENDER`, duration, { component: componentName })
@@ -263,7 +263,7 @@ export const performanceMonitor = new PerformanceMonitor()
 export function usePerformanceMonitor(componentName: string) {
   if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
     const endTimer = performanceMonitor.startComponentTimer(componentName)
-    
+
     // Use useEffect to measure after render
     if ('useEffect' in require('react')) {
       const { useEffect } = require('react')

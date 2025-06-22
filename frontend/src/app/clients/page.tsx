@@ -65,7 +65,7 @@ export default function ClientsPage() {
     try {
       setLoading(true)
       const token = localStorage.getItem('access_token')
-      
+
       const headers = { Authorization: `Bearer ${token}` }
       const params: any = {
         page: currentPage,
@@ -145,7 +145,7 @@ export default function ClientsPage() {
           cancellation_count: 0
         }
       ]
-      
+
       setClients(mockClients)
       setStats({
         total_clients: 156,
@@ -249,13 +249,13 @@ export default function ClientsPage() {
               <option value="at_risk">At Risk</option>
             </select>
           </div>
-          
+
           <div className="flex items-center space-x-3">
             <button className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2">
               <ArrowDownTrayIcon className="h-5 w-5" />
               <span>Export</span>
             </button>
-            
+
             <button className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg font-medium hover:from-violet-700 hover:to-purple-700 transition-all flex items-center space-x-2">
               <PlusIcon className="h-5 w-5" />
               <span>Add Client</span>
@@ -329,8 +329,8 @@ export default function ClientsPage() {
               <UserGroupIcon className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-gray-900">No clients found</h3>
               <p className="mt-1 text-sm text-gray-500">
-                {searchTerm || filterType !== 'all' 
-                  ? 'Try adjusting your search or filters' 
+                {searchTerm || filterType !== 'all'
+                  ? 'Try adjusting your search or filters'
                   : 'Start building your client base by adding your first client.'}
               </p>
             </div>
@@ -422,7 +422,7 @@ export default function ClientsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-2">
-                          <button 
+                          <button
                             onClick={() => router.push(`/clients/${client.id}`)}
                             className="text-blue-600 hover:text-blue-700 p-1 rounded-md hover:bg-blue-50 transition-colors"
                             title="View Profile"

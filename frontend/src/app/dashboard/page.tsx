@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { 
-  CalendarIcon, 
-  ChartBarIcon, 
+import {
+  CalendarIcon,
+  ChartBarIcon,
   ChatBubbleLeftRightIcon,
   CreditCardIcon,
   UserGroupIcon,
@@ -75,7 +75,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!mounted) return
-    
+
     // DEMO MODE: Skip authentication checks
     const demoUser = {
       id: '1',
@@ -84,7 +84,7 @@ export default function DashboardPage() {
       last_name: 'User',
       role: 'admin'
     }
-    
+
     setUser(demoUser)
     fetchDashboardData('demo-token')
     setLoading(false)
@@ -106,7 +106,7 @@ export default function DashboardPage() {
           headers: { Authorization: `Bearer ${token}` }
         }
       )
-      
+
       if (appointmentsResponse.data.stats) {
         // Map backend stats to frontend format
         const stats = appointmentsResponse.data.stats
@@ -126,7 +126,7 @@ export default function DashboardPage() {
           headers: { Authorization: `Bearer ${token}` }
         }
       )
-      
+
       const activeBarbersCount = barbersResponse.data.filter(
         (barber: BarberInfo) => barber.is_active
       ).length
@@ -142,13 +142,13 @@ export default function DashboardPage() {
 
     } catch (error) {
       console.error('Failed to fetch authenticated data, trying demo endpoints...')
-      
+
       // Use demo endpoints when authentication fails
       try {
         const demoAppointmentsResponse = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL}/api/v1/dashboard/demo/appointments/today`
         )
-        
+
         if (demoAppointmentsResponse.data.stats) {
           const stats = demoAppointmentsResponse.data.stats
           setTodayStats({
@@ -163,12 +163,12 @@ export default function DashboardPage() {
         const demoBarbersResponse = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL}/api/v1/dashboard/demo/barbers`
         )
-        
+
         const activeBarbersCount = demoBarbersResponse.data.filter(
           (barber: BarberInfo) => barber.is_active
         ).length
         setActiveBarbers(activeBarbersCount)
-        
+
       } catch (demoError) {
         console.error('Demo endpoints also failed, using fallback data:', demoError)
         // Use fallback mock data when everything fails
@@ -210,10 +210,10 @@ export default function DashboardPage() {
   // Remove the dashboard cards array as we're using a new layout
 
   // Show dashboard immediately with mock data if not loaded
-  const currentUser = user || { 
-    first_name: 'Admin', 
-    last_name: 'User', 
-    role: 'admin' 
+  const currentUser = user || {
+    first_name: 'Admin',
+    last_name: 'User',
+    role: 'admin'
   }
 
   return (
@@ -266,7 +266,7 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-          
+
           {/* Appointments */}
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-purple-500/50 transition-all duration-200 cursor-pointer group">
             <div className="flex items-center justify-between mb-4">
@@ -292,7 +292,7 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-          
+
           {/* Active Barbers */}
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-blue-500/50 transition-all duration-200 cursor-pointer group">
             <div className="flex items-center justify-between mb-4">
@@ -313,7 +313,7 @@ export default function DashboardPage() {
               <p className="text-xs text-blue-400 mt-1">All team members active</p>
             </div>
           </div>
-          
+
           {/* Weekly Payout */}
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-orange-500/50 transition-all duration-200 cursor-pointer group">
             <div className="flex items-center justify-between mb-4">
@@ -489,7 +489,7 @@ export default function DashboardPage() {
               <span className="text-sm font-medium text-gray-300 group-hover:text-emerald-400 transition-colors">Payments</span>
             </div>
           </a>
-          
+
           <a
             href="/dashboard/calendar"
             className="group bg-gray-900 border border-gray-800 rounded-lg p-4 hover:border-blue-500/50 transition-all duration-200"
@@ -501,7 +501,7 @@ export default function DashboardPage() {
               <span className="text-sm font-medium text-gray-300 group-hover:text-blue-400 transition-colors">Calendar</span>
             </div>
           </a>
-          
+
           <a
             href="/barber-payments"
             className="group bg-gray-900 border border-gray-800 rounded-lg p-4 hover:border-orange-500/50 transition-all duration-200"

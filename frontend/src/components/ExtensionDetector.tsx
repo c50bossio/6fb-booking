@@ -48,7 +48,7 @@ export default function ExtensionDetector() {
       testElement.style.position = 'absolute';
       testElement.style.left = '-9999px';
       document.body.appendChild(testElement);
-      
+
       setTimeout(() => {
         if (testElement.offsetHeight === 0 || testElement.style.display === 'none') {
           detectedExtensions.push({
@@ -142,7 +142,7 @@ export default function ExtensionDetector() {
           ✕
         </button>
       </div>
-      
+
       <div className="space-y-2">
         {extensions.map((ext, index) => (
           <div key={index} className="text-xs">

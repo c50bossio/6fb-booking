@@ -3,10 +3,10 @@
 import { ReactNode, useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import ModernSidebar from './ModernSidebar'
-import { 
-  CalendarIcon, 
-  UserGroupIcon, 
-  ChartBarIcon, 
+import {
+  CalendarIcon,
+  UserGroupIcon,
+  ChartBarIcon,
   CreditCardIcon,
   PlusIcon,
   ChevronDownIcon
@@ -25,10 +25,10 @@ interface User {
   role: string
 }
 
-export default function ModernLayout({ 
-  children, 
-  requireAuth = true, 
-  showSidebar = true 
+export default function ModernLayout({
+  children,
+  requireAuth = true,
+  showSidebar = true
 }: LayoutProps) {
   const [mounted, setMounted] = useState(false)
   const [user, setUser] = useState<User | null>(null)
@@ -103,7 +103,7 @@ export default function ModernLayout({
     <div className="min-h-screen bg-slate-50 flex">
       {/* Sidebar */}
       <ModernSidebar user={user} onLogout={handleLogout} />
-      
+
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-h-screen">
         {/* Top Header Bar */}
@@ -117,24 +117,24 @@ export default function ModernLayout({
                 {getPageDescription(pathname)}
               </p>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               {/* Quick Actions */}
               <div className="hidden md:flex items-center space-x-2 relative">
                 <div className="relative">
-                  <button 
+                  <button
                     onClick={() => setShowQuickActions(!showQuickActions)}
                     className="px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors flex items-center space-x-2"
                   >
                     <span>Quick Actions</span>
                     <ChevronDownIcon className="h-4 w-4" />
                   </button>
-                  
+
                   {/* Quick Actions Dropdown */}
                   {showQuickActions && (
                     <>
-                      <div 
-                        className="fixed inset-0 z-10" 
+                      <div
+                        className="fixed inset-0 z-10"
                         onClick={() => setShowQuickActions(false)}
                       />
                       <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
@@ -184,8 +184,8 @@ export default function ModernLayout({
                     </>
                   )}
                 </div>
-                
-                <button 
+
+                <button
                   onClick={() => router.push('/dashboard/appointments/new')}
                   className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-violet-600 to-purple-600 rounded-lg hover:from-violet-700 hover:to-purple-700 transition-all flex items-center space-x-2"
                 >
@@ -193,20 +193,20 @@ export default function ModernLayout({
                   <span>New Appointment</span>
                 </button>
               </div>
-              
+
               {/* Current Time */}
               <div className="text-right">
                 <p className="text-sm font-medium text-gray-900">
-                  {new Date().toLocaleDateString('en-US', { 
-                    weekday: 'short', 
-                    month: 'short', 
-                    day: 'numeric' 
+                  {new Date().toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric'
                   })}
                 </p>
                 <p className="text-xs text-gray-500">
-                  {new Date().toLocaleTimeString('en-US', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
+                  {new Date().toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit'
                   })}
                 </p>
               </div>
@@ -241,7 +241,7 @@ function getPageTitle(pathname: string): string {
     '/locations': 'Location Management',
     '/settings': 'Settings'
   }
-  
+
   return titles[pathname] || 'Dashboard'
 }
 
@@ -262,6 +262,6 @@ function getPageDescription(pathname: string): string {
     '/locations': 'Manage multiple shop locations and settings',
     '/settings': 'System configuration and preferences'
   }
-  
+
   return descriptions[pathname] || 'Manage your barbershop business efficiently'
 }

@@ -14,7 +14,7 @@ async function testMCPServer() {
   console.log('🧪 Testing Sentry MCP Server...\n');
 
   const serverPath = join(__dirname, 'sentry-mcp-server.js');
-  
+
   // Start the MCP server
   const serverProcess = spawn('node', [serverPath], {
     stdio: ['pipe', 'pipe', 'pipe'],
@@ -87,10 +87,10 @@ async function testMCPServer() {
   // Wait for responses
   setTimeout(() => {
     serverProcess.kill();
-    
+
     console.log('📊 Test Results:');
     console.log('================\n');
-    
+
     if (errorOutput.includes('Sentry MCP Server running')) {
       console.log('✅ Server started successfully');
     } else {

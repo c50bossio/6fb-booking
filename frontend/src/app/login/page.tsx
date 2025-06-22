@@ -10,7 +10,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  
+
   const { login, user } = useAuth()
   const router = useRouter()
 
@@ -51,7 +51,7 @@ export default function LoginPage() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8 lg:p-16 relative">
         {/* Subtle gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-transparent via-violet-900/5 to-purple-900/10 pointer-events-none"></div>
-        
+
         <div className="w-full max-w-md relative z-10">
           {/* Logo */}
           <div className="mb-12">
@@ -61,7 +61,7 @@ export default function LoginPage() {
               </div>
               <span className="text-2xl font-bold text-white">6FB Platform</span>
             </div>
-            
+
             <h1 className="text-4xl font-bold text-white mb-2">
               Welcome back
             </h1>

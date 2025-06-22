@@ -119,7 +119,7 @@ export default function BarbersPage() {
                 <p className="text-sm text-gray-400">Manage your team and their accounts</p>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => window.location.href = '/add-barber-flow.html'}
@@ -159,12 +159,12 @@ export default function BarbersPage() {
                 <div className="mb-4 p-3 bg-gray-700/50 rounded-lg">
                   <h4 className="text-sm font-medium text-white mb-2">Payment Model</h4>
                   <p className="text-xs text-gray-300">
-                    {barber.payment_model.payment_type === 'commission' 
+                    {barber.payment_model.payment_type === 'commission'
                       ? `Commission: ${barber.payment_model.commission_rate}%`
                       : `Booth Rent: $${barber.payment_model.booth_rent_amount}/${barber.payment_model.booth_rent_frequency}`
                     }
                   </p>
-                  
+
                   <div className="flex space-x-2 mt-2">
                     <div className="flex items-center justify-between p-2 bg-gray-700/50 rounded">
                       <span className="text-xs text-gray-400">Stripe</span>

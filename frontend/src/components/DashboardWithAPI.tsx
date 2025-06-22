@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { analyticsService } from '@/lib/api/analytics'
 import { useAuth } from '@/components/AuthProvider'
-import { 
-  TrendingUp, 
-  Users, 
-  DollarSign, 
+import {
+  TrendingUp,
+  Users,
+  DollarSign,
   Calendar,
   BarChart3,
   Clock,
@@ -103,7 +103,7 @@ export default function DashboardWithAPI() {
     return (
       <>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card 
+          <Card
             className="cursor-pointer hover:shadow-lg transition-shadow group"
             onClick={() => router.push('/locations')}
           >
@@ -119,7 +119,7 @@ export default function DashboardWithAPI() {
               <p className="text-xs text-muted-foreground">Active barbershops</p>
             </CardContent>
           </Card>
-          <Card 
+          <Card
             className="cursor-pointer hover:shadow-lg transition-shadow group"
             onClick={() => router.push('/barbers')}
           >
@@ -135,7 +135,7 @@ export default function DashboardWithAPI() {
               <p className="text-xs text-muted-foreground">Network professionals</p>
             </CardContent>
           </Card>
-          <Card 
+          <Card
             className="cursor-pointer hover:shadow-lg transition-shadow group"
             onClick={() => router.push('/analytics')}
           >
@@ -153,7 +153,7 @@ export default function DashboardWithAPI() {
               <p className="text-xs text-muted-foreground">Last 30 days</p>
             </CardContent>
           </Card>
-          <Card 
+          <Card
             className="cursor-pointer hover:shadow-lg transition-shadow group"
             onClick={() => router.push('/dashboard/appointments')}
           >
@@ -330,16 +330,16 @@ export default function DashboardWithAPI() {
             <div className="grid grid-cols-2 gap-3">
               {hasRole(['super_admin', 'admin']) && (
                 <>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="justify-start"
                     onClick={() => router.push('/barbers')}
                   >
                     <Users className="w-4 h-4 mr-2" />
                     Manage Users
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="justify-start"
                     onClick={() => router.push('/analytics')}
                   >
@@ -350,16 +350,16 @@ export default function DashboardWithAPI() {
               )}
               {hasRole(['mentor']) && (
                 <>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="justify-start"
                     onClick={() => router.push('/barbers')}
                   >
                     <Users className="w-4 h-4 mr-2" />
                     View Mentees
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="justify-start"
                     onClick={() => router.push('/dashboard/appointments')}
                   >
@@ -370,16 +370,16 @@ export default function DashboardWithAPI() {
               )}
               {hasRole(['barber']) && (
                 <>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="justify-start"
                     onClick={() => router.push('/dashboard/calendar')}
                   >
                     <Calendar className="w-4 h-4 mr-2" />
                     My Schedule
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="justify-start"
                     onClick={() => router.push('/analytics')}
                   >

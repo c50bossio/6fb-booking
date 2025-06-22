@@ -8,13 +8,13 @@ import { Badge } from "@/components/ui/badge"
 import { useAuth } from './AuthProvider'
 import { Permission, Role } from '@/lib/api/auth'
 import { PermissionGate, AdminOnly, MentorOnly } from './PermissionGate'
-import { 
-  BarChart3, 
-  Users, 
-  MapPin, 
-  GraduationCap, 
-  Settings, 
-  Menu, 
+import {
+  BarChart3,
+  Users,
+  MapPin,
+  GraduationCap,
+  Settings,
+  Menu,
   X,
   Building,
   Shield,
@@ -91,7 +91,7 @@ export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
   const { user, logout, hasRole, hasPermission, getRoleDisplayName } = useAuth()
-  
+
   if (!user) return null
 
   const hasAccess = (item: any) => {
@@ -99,12 +99,12 @@ export default function Navigation() {
     if (item.roles && !hasRole(item.roles)) {
       return false
     }
-    
+
     // Check permission-based access
     if (item.permission && !hasPermission(item.permission)) {
       return false
     }
-    
+
     return true
   }
 
@@ -126,7 +126,7 @@ export default function Navigation() {
             {filteredItems.map((item) => {
               const Icon = item.icon
               const isActive = pathname === item.href
-              
+
               return (
                 <Link
                   key={item.name}
@@ -149,7 +149,7 @@ export default function Navigation() {
             <Button variant="ghost" size="sm">
               <Bell className="h-4 w-4" />
             </Button>
-            
+
             <div className="flex items-center space-x-2">
               <div className="hidden sm:block text-right">
                 <div className="text-sm font-medium text-gray-900">
@@ -185,7 +185,7 @@ export default function Navigation() {
             {filteredItems.map((item) => {
               const Icon = item.icon
               const isActive = pathname === item.href
-              
+
               return (
                 <Link
                   key={item.name}

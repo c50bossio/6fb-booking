@@ -3,9 +3,9 @@
  * Handles calendar events, appointment changes, and live notifications
  */
 
-type WebSocketEventType = 
+type WebSocketEventType =
   | 'appointment_created'
-  | 'appointment_updated' 
+  | 'appointment_updated'
   | 'appointment_cancelled'
   | 'appointment_confirmed'
   | 'appointment_completed'
@@ -46,16 +46,16 @@ export class WebSocketService {
   private heartbeatTimer: NodeJS.Timeout | null = null
   private messageQueue: WebSocketMessage[] = []
   private isConnecting = false
-  
+
   // Event listeners
   private eventListeners = new Map<WebSocketEventType, EventCallback[]>()
   private connectionListeners: ConnectionCallback[] = []
   private disconnectionListeners: ConnectionCallback[] = []
   private errorListeners: ErrorCallback[] = []
-  
+
   // Configuration
   private config: Required<WebSocketConfig>
-  
+
   constructor(config: WebSocketConfig = {}) {
     this.config = {
       url: config.url || this.getWebSocketUrl(),
@@ -72,7 +72,7 @@ export class WebSocketService {
   private getWebSocketUrl(): string {
     const wsUrl = process.env.NEXT_PUBLIC_WS_URL
     if (wsUrl) return wsUrl
-    
+
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
     return apiUrl.replace(/^https?/, 'ws') + '/ws'
   }
@@ -96,7 +96,7 @@ export class WebSocketService {
         this.isConnecting = true
         const token = this.getAuthToken()
         const wsUrl = token ? `${this.config.url}?token=${token}` : this.config.url
-        
+
         this.log(`Connecting to ${wsUrl}`)
         this.ws = new WebSocket(wsUrl)
 
@@ -122,7 +122,7 @@ export class WebSocketService {
           this.isConnecting = false
           this.stopHeartbeat()
           this.notifyDisconnectionListeners()
-          
+
           if (!event.wasClean && this.reconnectAttempts < this.config.reconnectAttempts) {
             this.scheduleReconnect()
           }
@@ -151,19 +151,19 @@ export class WebSocketService {
    */
   disconnect(): void {
     this.log('Disconnecting WebSocket')
-    
+
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer)
       this.reconnectTimer = null
     }
-    
+
     this.stopHeartbeat()
-    
+
     if (this.ws) {
       this.ws.close(1000, 'Client disconnecting')
       this.ws = null
     }
-    
+
     this.reconnectAttempts = this.config.reconnectAttempts
   }
 
@@ -194,7 +194,7 @@ export class WebSocketService {
     if (!this.eventListeners.has(eventType)) {
       this.eventListeners.set(eventType, [])
     }
-    
+
     this.eventListeners.get(eventType)!.push(callback)
     this.log(`Subscribed to ${eventType}`)
 
@@ -254,7 +254,7 @@ export class WebSocketService {
   getStatus(): 'connecting' | 'connected' | 'disconnected' | 'error' {
     if (this.isConnecting) return 'connecting'
     if (!this.ws) return 'disconnected'
-    
+
     switch (this.ws.readyState) {
       case WebSocket.CONNECTING:
         return 'connecting'
@@ -298,12 +298,12 @@ export class WebSocketService {
     try {
       const message: WebSocketMessage = JSON.parse(data)
       this.log('Received message:', message)
-      
+
       // Handle heartbeat responses
       if (message.type === 'heartbeat' as WebSocketEventType) {
         return
       }
-      
+
       // Notify event listeners
       const listeners = this.eventListeners.get(message.type) || []
       listeners.forEach(callback => {
@@ -313,7 +313,7 @@ export class WebSocketService {
           this.log('Error in event callback:', error)
         }
       })
-      
+
     } catch (error) {
       this.log('Failed to parse WebSocket message:', error)
     }
@@ -321,12 +321,12 @@ export class WebSocketService {
 
   private scheduleReconnect(): void {
     if (this.reconnectTimer) return
-    
+
     this.reconnectAttempts++
     const delay = this.config.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1)
-    
+
     this.log(`Scheduling reconnection attempt ${this.reconnectAttempts} in ${delay}ms`)
-    
+
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null
       this.connect().catch(error => {
@@ -337,7 +337,7 @@ export class WebSocketService {
 
   private startHeartbeat(): void {
     if (this.heartbeatTimer) return
-    
+
     this.heartbeatTimer = setInterval(() => {
       if (this.ws?.readyState === WebSocket.OPEN) {
         this.send('heartbeat' as WebSocketEventType, { timestamp: Date.now() })
@@ -543,7 +543,7 @@ export function getCalendarWebSocketService(): CalendarWebSocketService {
 export function initWebSocketServices(): Promise<void[]> {
   const globalWS = getWebSocketService()
   const calendarWS = getCalendarWebSocketService()
-  
+
   return Promise.all([
     globalWS.connect(),
     calendarWS.connect()
@@ -558,7 +558,7 @@ export function cleanupWebSocketServices(): void {
     globalWebSocketService.disconnect()
     globalWebSocketService = null
   }
-  
+
   if (calendarWebSocketService) {
     calendarWebSocketService.disconnect()
     calendarWebSocketService = null
@@ -583,7 +583,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 
   const connect = useCallback(async () => {
     if (!enabled) return
-    
+
     try {
       const ws = getWebSocketService()
       wsRef.current = ws
@@ -631,10 +631,10 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     if (!wsRef.current) return
 
     const ws = wsRef.current
-    
+
     const updateStatus = () => setStatus(ws.getStatus())
     const handleError = (error: Error | Event) => setError(error as Error)
-    
+
     const unsubscribeConnect = ws.onConnect(updateStatus)
     const unsubscribeDisconnect = ws.onDisconnect(updateStatus)
     const unsubscribeError = ws.onError(handleError)
@@ -666,7 +666,7 @@ export function useCalendarWebSocket(options: UseWebSocketOptions = {}) {
 
   const connect = useCallback(async () => {
     if (!enabled) return
-    
+
     try {
       const ws = getCalendarWebSocketService()
       wsRef.current = ws

@@ -37,7 +37,7 @@ export function middleware(request: NextRequest) {
   // Use appropriate CSP based on environment
   const cspHeader = isDevelopment ? developmentCSP : productionCSP;
   response.headers.set('Content-Security-Policy', cspHeader);
-  
+
   // Additional security headers
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('X-Frame-Options', isDevelopment ? 'SAMEORIGIN' : 'DENY');

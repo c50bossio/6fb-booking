@@ -22,13 +22,13 @@ export interface CalendarEvent {
   backgroundColor?: string
   borderColor?: string
   textColor?: string
-  
+
   // Appointment-specific data
   appointment?: CalendarAppointment
-  
+
   // Availability-specific data
   availability?: CalendarAvailability
-  
+
   // UI properties
   editable?: boolean
   deletable?: boolean
@@ -268,7 +268,7 @@ class CalendarWebSocket {
   connect(): void {
     // Check if we're in a browser environment first
     if (typeof window === 'undefined') return
-    
+
     // Don't connect if manually disconnected
     if (this.isManuallyDisconnected) return
 
@@ -285,7 +285,7 @@ class CalendarWebSocket {
     }
 
     const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000/ws'
-    
+
     try {
       this.ws = new WebSocket(`${wsUrl}/calendar?token=${token}`)
 
@@ -300,13 +300,13 @@ class CalendarWebSocket {
       this.ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data)
-          
+
           // Handle heartbeat/ping messages
           if (data.type === 'ping') {
             this.send('pong', { timestamp: Date.now() })
             return
           }
-          
+
           this.handleMessage(data)
         } catch (error) {
           console.error('Failed to parse WebSocket message:', error)
@@ -316,7 +316,7 @@ class CalendarWebSocket {
       this.ws.onclose = (event) => {
         console.log('Calendar WebSocket disconnected', { code: event.code, reason: event.reason })
         this.stopHeartbeat()
-        
+
         if (!this.isManuallyDisconnected) {
           this.setConnectionStatus('disconnected', `Connection closed: ${event.reason || 'Unknown reason'}`)
           this.attemptReconnect()
@@ -337,12 +337,12 @@ class CalendarWebSocket {
     this.isManuallyDisconnected = true
     this.clearReconnectTimeout()
     this.stopHeartbeat()
-    
+
     if (this.ws) {
       this.ws.close(1000, 'Manual disconnect')
       this.ws = null
     }
-    
+
     this.setConnectionStatus('disconnected', 'Manually disconnected')
   }
 
@@ -395,9 +395,9 @@ class CalendarWebSocket {
 
   private attemptReconnect(): void {
     if (this.isManuallyDisconnected) return
-    
+
     this.clearReconnectTimeout()
-    
+
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
       console.error('Max WebSocket reconnection attempts reached')
       this.setConnectionStatus('error', 'Max reconnection attempts reached')
@@ -406,9 +406,9 @@ class CalendarWebSocket {
 
     this.reconnectAttempts++
     const delay = Math.min(this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1), this.maxReconnectDelay)
-    
+
     this.setConnectionStatus('reconnecting', `Reconnecting in ${delay/1000}s (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`)
-    
+
     this.reconnectTimeout = setTimeout(() => {
       console.log(`Attempting WebSocket reconnection (${this.reconnectAttempts}/${this.maxReconnectAttempts})`)
       this.connect()
@@ -485,7 +485,7 @@ class CalendarService {
 
   private initialize(): void {
     if (this.isInitialized) return
-    
+
     // Auto-connect WebSocket
     this.websocket.connect()
 
@@ -626,10 +626,10 @@ class CalendarService {
     }
 
     const response = await apiClient.get(`/calendar/events?${params}`)
-    
+
     // The response should already be in CalendarEvent format from the backend
     const events = response.data
-    
+
     this.cache.set(cacheKey, events)
     return { data: events }
   }

@@ -110,7 +110,7 @@ button:hover::before {
     --primary-light: 262 83% 78%;   /* Lighter violet variant */
     --primary-gradient-start: 262 83% 58%;
     --primary-gradient-end: 285 85% 65%;  /* Purple gradient end */
-    
+
     /* Dark theme colors for sidebar and backgrounds */
     --charcoal-dark: 222 84% 5%;    /* Very dark charcoal */
     --charcoal-medium: 215 28% 17%; /* Medium charcoal */
@@ -120,7 +120,7 @@ button:hover::before {
     --success: 142 71% 45%;         /* Professional emerald */
     --success-foreground: 0 0% 98%;
     --success-light: 142 71% 85%;
-    
+
     /* Calendar and appointment colors */
     --appointment-primary: 262 83% 58%;   /* Primary appointments */
     --appointment-secondary: 285 85% 65%; /* Secondary appointments */
@@ -526,6 +526,12 @@ button:hover::before {
     @apply transform hover:-translate-y-0.5 transition-all duration-200;
   }
 
+  .premium-button-sm {
+    @apply bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700;
+    @apply text-white font-medium py-2 px-4 rounded-lg shadow-md hover:shadow-lg;
+    @apply transform hover:-translate-y-0.5 transition-all duration-200 text-sm;
+  }
+
   /* Modern text styles */
   .text-gradient {
     @apply bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent;
@@ -675,7 +681,7 @@ button:hover::before {
   }
 
   .appointment-block.danger {
-    background: linear-gradient(135deg, hsl(var(--appointment-danger)) 0%, #f87171 100%); 
+    background: linear-gradient(135deg, hsl(var(--appointment-danger)) 0%, #f87171 100%);
     @apply text-white;
   }
 
@@ -900,5 +906,50 @@ button:hover::before {
   .backdrop-blur-enhanced {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* Theme-specific sidebar styles */
+  .sidebar-dark {
+    @apply bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900;
+  }
+
+  .sidebar-light {
+    @apply bg-white shadow-lg;
+  }
+
+  /* Theme body backgrounds */
+  .dark body,
+  .dark {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  }
+
+  .light body,
+  .light {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  }
+
+  /* Theme-specific component backgrounds */
+  .dark .bg-theme-card {
+    @apply bg-slate-800/50 border-slate-700;
+  }
+
+  .light .bg-theme-card {
+    @apply bg-white border-gray-200;
+  }
+
+  .dark .text-theme-primary {
+    @apply text-white;
+  }
+
+  .light .text-theme-primary {
+    @apply text-gray-900;
+  }
+
+  .dark .text-theme-secondary {
+    @apply text-gray-400;
+  }
+
+  .light .text-theme-secondary {
+    @apply text-gray-600;
   }
 }

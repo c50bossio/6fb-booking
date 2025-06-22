@@ -37,7 +37,7 @@ export default function CompensationCalculator({
   const [productSales, setProductSales] = useState(500)
   const [clientRetentionRate, setClientRetentionRate] = useState(85)
   const [averageRating, setAverageRating] = useState(4.8)
-  
+
   const [earnings, setEarnings] = useState({
     baseCompensation: 0,
     commissionEarnings: 0,
@@ -76,14 +76,14 @@ export default function CompensationCalculator({
     if (compensationType !== 'booth_rent_only' && compensationType !== 'salary' && commissionStructure) {
       // For sliding scale, find the appropriate tier
       if (compensationType === 'sliding_scale' && commissionStructure.tiers) {
-        const tier = commissionStructure.tiers.find((t: any) => 
+        const tier = commissionStructure.tiers.find((t: any) =>
           monthlyRevenue >= t.min && (t.max === null || monthlyRevenue <= t.max)
         )
         const rate = tier ? tier.rate : 50
         commissionEarnings = (monthlyRevenue * rate) / 100
       } else {
         // Simple average of service commissions
-        const serviceRates = commissionStructure.services ? 
+        const serviceRates = commissionStructure.services ?
           Object.values(commissionStructure.services).map((s: any) => s.rate) : [50]
         const avgRate = serviceRates.reduce((a: number, b: number) => a + b, 0) / serviceRates.length
         commissionEarnings = (monthlyRevenue * avgRate) / 100
@@ -116,13 +116,13 @@ export default function CompensationCalculator({
       }
 
       // Retention bonus
-      if (performanceBonuses.client_retention && 
+      if (performanceBonuses.client_retention &&
           clientRetentionRate >= (performanceBonuses.client_retention.rate || 80)) {
         bonuses += performanceBonuses.client_retention.bonus || 0
       }
 
       // Review rating bonus
-      if (performanceBonuses.review_rating && 
+      if (performanceBonuses.review_rating &&
           averageRating >= (performanceBonuses.review_rating.min_rating || 4.5)) {
         bonuses += performanceBonuses.review_rating.bonus || 0
       }
@@ -137,7 +137,7 @@ export default function CompensationCalculator({
       if (deductions.processing_fees?.type === 'percentage') {
         totalDeductions += (commissionEarnings * deductions.processing_fees.value) / 100
       }
-      
+
       // Fixed deductions
       if (deductions.marketing_contribution?.type === 'fixed') {
         totalDeductions += deductions.marketing_contribution.value || 0
@@ -177,7 +177,7 @@ export default function CompensationCalculator({
         <CalculatorIcon className="h-5 w-5 mr-2 text-purple-400" />
         Earnings Calculator Preview
       </h3>
-      
+
       {/* Input Controls */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
         <div>
@@ -244,7 +244,7 @@ export default function CompensationCalculator({
             {formatCurrency(earnings.baseCompensation)}
           </span>
         </div>
-        
+
         {compensationType !== 'booth_rent_only' && compensationType !== 'salary' && (
           <div className="flex justify-between items-center py-2 border-b border-gray-700">
             <span className="text-sm text-gray-400">Commission Earnings</span>
@@ -253,7 +253,7 @@ export default function CompensationCalculator({
             </span>
           </div>
         )}
-        
+
         {earnings.performanceBonuses > 0 && (
           <div className="flex justify-between items-center py-2 border-b border-gray-700">
             <span className="text-sm text-gray-400">Performance Bonuses</span>
@@ -262,7 +262,7 @@ export default function CompensationCalculator({
             </span>
           </div>
         )}
-        
+
         {earnings.totalDeductions > 0 && (
           <div className="flex justify-between items-center py-2 border-b border-gray-700">
             <span className="text-sm text-gray-400">Deductions & Fees</span>
@@ -271,7 +271,7 @@ export default function CompensationCalculator({
             </span>
           </div>
         )}
-        
+
         <div className="flex justify-between items-center py-3 bg-purple-500/10 px-3 rounded-lg">
           <span className="text-base font-medium text-white">Net Monthly Earnings</span>
           <div className="text-right">

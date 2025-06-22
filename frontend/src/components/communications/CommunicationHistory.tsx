@@ -235,8 +235,8 @@ export const CommunicationHistory: React.FC = () => {
     );
   }
 
-  const totalPages = activeTab === 'email' 
-    ? Math.ceil(totalEmail / limit) 
+  const totalPages = activeTab === 'email'
+    ? Math.ceil(totalEmail / limit)
     : Math.ceil(totalSMS / limit);
 
   return (
@@ -259,11 +259,11 @@ export const CommunicationHistory: React.FC = () => {
           >
             Previous
           </button>
-          
+
           <span className="px-3 py-1">
             Page {page + 1} of {totalPages}
           </span>
-          
+
           <button
             onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
             disabled={page === totalPages - 1}

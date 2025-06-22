@@ -12,7 +12,7 @@ def test_register():
         "last_name": "User",
         "role": "barber"
     }
-    
+
     response = requests.post(url, json=data)
     print("Registration Response:")
     print(f"Status: {response.status_code}")
@@ -26,12 +26,12 @@ def test_login():
         "username": "test@example.com",
         "password": "TestPass123\!"
     }
-    
+
     response = requests.post(url, data=data)
     print("\nLogin Response:")
     print(f"Status: {response.status_code}")
     print(f"Response: {response.text}")
-    
+
     if response.status_code == 200:
         token_data = response.json()
         return token_data["access_token"]
@@ -43,7 +43,7 @@ def test_get_me(token):
     headers = {
         "Authorization": f"Bearer {token}"
     }
-    
+
     response = requests.get(url, headers=headers)
     print("\nGet Current User Response:")
     print(f"Status: {response.status_code}")
@@ -52,10 +52,10 @@ def test_get_me(token):
 if __name__ == "__main__":
     # First try to register
     test_register()
-    
+
     # Then try to login
     token = test_login()
-    
+
     # If login successful, get user info
     if token:
         test_get_me(token)

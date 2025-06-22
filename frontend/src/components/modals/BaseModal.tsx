@@ -67,9 +67,9 @@ export default function BaseModal({
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog 
-        as="div" 
-        className="relative z-50" 
+      <Dialog
+        as="div"
+        className="relative z-50"
         onClose={onClose}
         initialFocus={initialFocusRef}
       >
@@ -83,7 +83,7 @@ export default function BaseModal({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div 
+          <div
             className={`fixed inset-0 bg-black/40 backdrop-blur-sm ${overlayClassName}`}
             onClick={handleOverlayClick}
           />
@@ -101,7 +101,7 @@ export default function BaseModal({
               leaveFrom="opacity-100 scale-100 translate-y-0"
               leaveTo="opacity-0 scale-95 translate-y-4"
             >
-              <Dialog.Panel 
+              <Dialog.Panel
                 className={`
                   w-full ${sizeClasses[size]} transform overflow-hidden
                   rounded-2xl text-left align-middle transition-all
@@ -127,7 +127,7 @@ export default function BaseModal({
                         {title}
                       </Dialog.Title>
                     )}
-                    
+
                     {showCloseButton && (
                       <button
                         type="button"

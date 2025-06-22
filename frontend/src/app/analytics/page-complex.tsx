@@ -103,18 +103,18 @@ export default function AnalyticsDashboard() {
         const days = parseInt(timeRange)
         const generatedRevenueData = []
         const today = new Date()
-        
+
         for (let i = days - 1; i >= 0; i--) {
           const date = new Date(today)
           date.setDate(date.getDate() - i)
           const dayOfWeek = date.getDay()
-          
+
           // Generate realistic revenue based on day of week
           const baseRevenue = dayOfWeek === 0 ? 0 : // Sunday closed
                             dayOfWeek === 6 ? 1200 : // Saturday busy
                             dayOfWeek === 5 ? 1100 : // Friday busy
                             800 + Math.random() * 400 // Weekdays
-          
+
           generatedRevenueData.push({
             date: date.toISOString().split('T')[0],
             revenue: Math.round(baseRevenue + Math.random() * 200),
@@ -123,9 +123,9 @@ export default function AnalyticsDashboard() {
             tips: Math.round(baseRevenue * 0.15)
           })
         }
-        
+
         setRevenueData(generatedRevenueData)
-        
+
         // Transform demo data to match expected format
         setMetrics({
           total_revenue: generatedRevenueData.reduce((sum, d) => sum + d.revenue, 0),
@@ -137,12 +137,12 @@ export default function AnalyticsDashboard() {
           avg_booking_value: 69.11,
           satisfaction_score: 0.94
         })
-        
+
         // Use barbers from demo endpoint
         const barbersResponse = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL}/api/v1/dashboard/demo/barbers`
         )
-        
+
         setBarberPerformance(barbersResponse.data.map((barber: any) => ({
           barber_id: barber.id.toString(),
           name: `${barber.first_name} ${barber.last_name}`,
@@ -151,14 +151,14 @@ export default function AnalyticsDashboard() {
           rating: (Math.random() * 0.4 + 4.6).toFixed(1),
           sixfb_score: Math.floor(Math.random() * 20) + 80
         })))
-        
+
         setPeakHours([
           { hour: 10, day_of_week: 'Saturday', bookings: 8 },
           { hour: 14, day_of_week: 'Saturday', bookings: 12 },
           { hour: 16, day_of_week: 'Friday', bookings: 10 },
           { hour: 18, day_of_week: 'Friday', bookings: 9 }
         ])
-        
+
         return
       }
 
@@ -175,7 +175,7 @@ export default function AnalyticsDashboard() {
         { date: '2024-12-19', revenue: 1050, bookings: 15, services: 19, tips: 155 },
         { date: '2024-12-20', revenue: 890, bookings: 13, services: 16, tips: 125 }
       ])
-      
+
       setMetrics({
         total_revenue: 7740,
         revenue_growth: 15.2,
@@ -186,14 +186,14 @@ export default function AnalyticsDashboard() {
         avg_booking_value: 69.11,
         satisfaction_score: 0.94
       })
-      
+
       setBarberPerformance([
         { barber_id: '1', name: 'DJ Williams', revenue: 2100, bookings: 32, rating: 4.9, sixfb_score: 92 },
         { barber_id: '2', name: 'Carlos Rodriguez', revenue: 1950, bookings: 28, rating: 4.8, sixfb_score: 88 },
         { barber_id: '3', name: 'Mike Thompson', revenue: 1850, bookings: 26, rating: 4.7, sixfb_score: 85 },
         { barber_id: '4', name: 'Tony Jackson', revenue: 1840, bookings: 26, rating: 4.6, sixfb_score: 83 }
       ])
-      
+
       setPeakHours([
         { hour: 10, day_of_week: 'Saturday', bookings: 8 },
         { hour: 14, day_of_week: 'Saturday', bookings: 12 },
@@ -244,13 +244,13 @@ export default function AnalyticsDashboard() {
               <option value="365">Last Year</option>
             </select>
           </div>
-          
+
           <div className="flex items-center space-x-3">
             <button className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2">
               <ArrowDownTrayIcon className="h-5 w-5" />
               <span>Export</span>
             </button>
-            
+
             <a
               href="/payouts"
               className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg font-medium hover:from-violet-700 hover:to-purple-700 transition-all flex items-center space-x-2"

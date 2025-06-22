@@ -219,19 +219,21 @@ async def delete_barber(
     # Delete related records first to avoid foreign key constraints
     try:
         # Delete payment models
-        db.query(BarberPaymentModel).filter(BarberPaymentModel.barber_id == barber_id).delete()
-        
+        db.query(BarberPaymentModel).filter(
+            BarberPaymentModel.barber_id == barber_id
+        ).delete()
+
         # Delete any other related records here if needed
         # db.query(OtherModel).filter(OtherModel.barber_id == barber_id).delete()
-        
+
         # Now delete the barber
         db.delete(barber)
         db.commit()
     except Exception as e:
         db.rollback()
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, 
-            detail=f"Cannot delete barber due to existing relationships: {str(e)}"
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Cannot delete barber due to existing relationships: {str(e)}",
         )
 
     return {"message": "Barber deleted successfully"}
@@ -254,9 +256,9 @@ async def create_barber(
 
     # Create barber (exclude fields that don't exist in Barber model)
     barber_dict = barber_data.dict()
-    payment_model_data = barber_dict.pop('payment_model', None)
-    barber_dict.pop('commission_rate', None)  # Remove if exists
-    
+    payment_model_data = barber_dict.pop("payment_model", None)
+    barber_dict.pop("commission_rate", None)  # Remove if exists
+
     new_barber = Barber(**barber_dict)
     db.add(new_barber)
     db.commit()
@@ -272,7 +274,7 @@ async def create_barber(
         "is_active": new_barber.is_active,
         "is_verified": new_barber.is_verified,
         "user_id": new_barber.user_id,
-        "message": "Barber created successfully"
+        "message": "Barber created successfully",
     }
 
 

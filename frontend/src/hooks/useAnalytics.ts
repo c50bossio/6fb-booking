@@ -146,7 +146,7 @@ export const useAnalytics = () => {
   // Timing utilities for performance tracking
   const createTimer = useCallback((name: string) => {
     const start = performance.now()
-    
+
     return {
       end: () => {
         const duration = performance.now() - start
@@ -162,7 +162,7 @@ export const useAnalytics = () => {
     endpoint: string
   ): Promise<T> => {
     const timer = createTimer('api_response')
-    
+
     try {
       const result = await apiCall()
       timer.end()
@@ -178,13 +178,13 @@ export const useAnalytics = () => {
     // Core tracking
     trackPage,
     track,
-    
+
     // Specific flows
     booking: trackBookingFlow,
     payment: trackPaymentFlow,
     user: trackUser,
     onboarding: trackOnboarding,
-    
+
     // Individual events
     trackSearch: trackSearchQuery,
     trackEngagement: trackEngagementEvent,
@@ -192,7 +192,7 @@ export const useAnalytics = () => {
     trackPerformance: trackPerformanceMetric,
     trackConversion: trackConversionEvent,
     trackPurchase: trackBookingPurchase,
-    
+
     // Utilities
     createTimer,
     trackApiCall,

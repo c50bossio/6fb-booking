@@ -11,14 +11,14 @@ This document defines performance budgets, thresholds, and monitoring alerts for
   "core_web_vitals": {
     "LCP": {
       "good": "< 2.5s",
-      "needs_improvement": "2.5s - 4.0s", 
+      "needs_improvement": "2.5s - 4.0s",
       "poor": "> 4.0s",
       "target": "< 2.0s"
     },
     "FID": {
       "good": "< 100ms",
       "needs_improvement": "100ms - 300ms",
-      "poor": "> 300ms", 
+      "poor": "> 300ms",
       "target": "< 80ms"
     },
     "CLS": {
@@ -37,7 +37,7 @@ This document defines performance budgets, thresholds, and monitoring alerts for
   "frontend_budgets": {
     "bundle_size": {
       "main_js": "150 KB",
-      "main_css": "50 KB", 
+      "main_css": "50 KB",
       "total_assets": "500 KB",
       "images": "1 MB per page"
     },
@@ -111,7 +111,7 @@ This document defines performance budgets, thresholds, and monitoring alerts for
     "collect": {
       "url": [
         "https://your-domain.com",
-        "https://your-domain.com/dashboard", 
+        "https://your-domain.com/dashboard",
         "https://your-domain.com/booking"
       ],
       "settings": {
@@ -144,7 +144,7 @@ This document defines performance budgets, thresholds, and monitoring alerts for
         "maxSize": "150kb"
       },
       {
-        "path": "./dist/main.css", 
+        "path": "./dist/main.css",
         "maxSize": "50kb"
       },
       {
@@ -166,11 +166,11 @@ alert_routing:
     - email: "admin@6fb-booking.com"
     - sms: "+1234567890"
     - pagerduty: "critical-incidents"
-  
+
   warning:
-    - slack: "#alerts-warning" 
+    - slack: "#alerts-warning"
     - email: "dev-team@6fb-booking.com"
-    
+
   info:
     - slack: "#monitoring"
     - email: "monitoring@6fb-booking.com"
@@ -208,12 +208,12 @@ performance_check:
       run: |
         npm install -g @lhci/cli
         lhci autorun
-        
+
     - name: Bundle Size Check
       run: |
         npm install -g bundlewatch
         bundlewatch
-        
+
     - name: Performance Budget Validation
       run: |
         npm run performance:validate

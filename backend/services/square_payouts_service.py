@@ -7,6 +7,7 @@ import os
 from typing import Dict, List, Optional
 from datetime import datetime
 from decimal import Decimal
+
 # Square SDK is optional
 try:
     from square.client import Client
@@ -19,6 +20,7 @@ try:
         ListPayoutsRequest,
         GetPayoutRequest,
     )
+
     SQUARE_AVAILABLE = True
 except ImportError:
     Client = None
@@ -52,12 +54,12 @@ class SquarePayoutsService:
         # Initialize Square client (if available)
         self.client = None
         self.enabled = False
-        
+
         if SQUARE_AVAILABLE and os.getenv("SQUARE_ACCESS_TOKEN"):
             try:
                 self.client = Client(
                     access_token=os.getenv("SQUARE_ACCESS_TOKEN"),
-                    environment=os.getenv("SQUARE_ENVIRONMENT", "sandbox")
+                    environment=os.getenv("SQUARE_ENVIRONMENT", "sandbox"),
                 )
                 self.enabled = True
             except Exception as e:
@@ -81,8 +83,10 @@ class SquarePayoutsService:
         This is required before they can receive payouts
         """
         if not self.enabled or not self.team_api:
-            raise Exception("Square integration is not available. Please configure Square or use an alternative payment method.")
-        
+            raise Exception(
+                "Square integration is not available. Please configure Square or use an alternative payment method."
+            )
+
         try:
             # Create team member
             request = CreateTeamMemberRequest(
@@ -136,8 +140,10 @@ class SquarePayoutsService:
         - note: Optional note for the payout
         """
         if not self.enabled or not self.payouts_api:
-            raise Exception("Square integration is not available. Please configure Square or use an alternative payment method.")
-        
+            raise Exception(
+                "Square integration is not available. Please configure Square or use an alternative payment method."
+            )
+
         try:
             # Convert amount to cents
             amount_cents = int(payout_data["amount"] * 100)
@@ -204,7 +210,7 @@ class SquarePayoutsService:
         """
         if not self.enabled or not self.payouts_api:
             raise Exception("Square integration is not available.")
-        
+
         try:
             result = self.payouts_api.get_payout(payout_id)
 
@@ -234,7 +240,7 @@ class SquarePayoutsService:
         """
         if not self.enabled or not self.payouts_api:
             raise Exception("Square integration is not available.")
-        
+
         try:
             request_params = {"location_id": location_id, "limit": limit}
 
@@ -316,7 +322,7 @@ class SquarePayoutsService:
         """
         if not self.enabled or not self.team_api:
             return False
-        
+
         try:
             # Get team member details
             result = self.team_api.retrieve_team_member(team_member_id)

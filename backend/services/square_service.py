@@ -16,14 +16,15 @@ class SquareService:
         # Square SDK is optional - only initialize if token is provided
         self.client = None
         self.enabled = False
-        
+
         access_token = os.getenv("SQUARE_ACCESS_TOKEN")
         if access_token:
             try:
                 from square.client import Client
+
                 self.client = Client(
                     access_token=access_token,
-                    environment=os.getenv("SQUARE_ENVIRONMENT", "sandbox")
+                    environment=os.getenv("SQUARE_ENVIRONMENT", "sandbox"),
                 )
                 self.enabled = True
                 logger.info("Square service initialized successfully")
@@ -36,7 +37,7 @@ class SquareService:
         """Test if Square connection works"""
         if not self.enabled or not self.client:
             return False
-            
+
         try:
             # Try to get locations as a simple test
             result = self.client.locations.list_locations()
@@ -48,7 +49,7 @@ class SquareService:
         """Get basic merchant info"""
         if not self.enabled or not self.client:
             return None
-            
+
         try:
             result = self.client.merchants.retrieve_merchant("me")
             if result.is_success():

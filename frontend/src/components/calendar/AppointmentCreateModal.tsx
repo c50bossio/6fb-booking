@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { 
+import {
   XMarkIcon,
   CalendarDaysIcon,
   ClockIcon,
@@ -147,7 +147,7 @@ export default function AppointmentCreateModal({
       const selectedDate = new Date(formData.date)
       const today = new Date()
       today.setHours(0, 0, 0, 0)
-      
+
       if (selectedDate < today) {
         newErrors.date = 'Please select a future date'
       }
@@ -164,16 +164,16 @@ export default function AppointmentCreateModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!validateForm()) {
       return
     }
 
     setIsSubmitting(true)
-    
+
     try {
       await onSubmit(formData)
-      
+
       // Reset form on successful submission
       setFormData({
         clientName: '',
@@ -187,7 +187,7 @@ export default function AppointmentCreateModal({
         price: services[0]?.price || 35,
         notes: ''
       })
-      
+
       onClose()
     } catch (error) {
       console.error('Error creating appointment:', error)
@@ -199,7 +199,7 @@ export default function AppointmentCreateModal({
 
   const handleInputChange = (field: keyof AppointmentFormData, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }))
-    
+
     // Clear error for this field when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }))
@@ -214,7 +214,7 @@ export default function AppointmentCreateModal({
     const [hours, minutes] = startTime.split(':').map(Number)
     const startDate = new Date()
     startDate.setHours(hours, minutes, 0, 0)
-    
+
     const endDate = new Date(startDate.getTime() + duration * 60000)
     return endDate.toTimeString().slice(0, 5)
   }
@@ -250,7 +250,7 @@ export default function AppointmentCreateModal({
               <UserIcon className="h-5 w-5 mr-2 text-violet-400" />
               Client Information
             </h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Client Name */}
               <div>
@@ -323,7 +323,7 @@ export default function AppointmentCreateModal({
               <ScissorsIcon className="h-5 w-5 mr-2 text-violet-400" />
               Appointment Details
             </h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Barber Selection */}
               <div>

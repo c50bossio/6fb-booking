@@ -130,7 +130,7 @@ raise HTTPException(status_code=400, detail="Unable to create payment intent. Pl
 - Removed insecure temporary storage
 - Environment-based security controls
 
-### Authorization Strengthened  
+### Authorization Strengthened
 - User ownership verification for all payment operations
 - Proper error handling without information disclosure
 - Mandatory webhook signature verification
