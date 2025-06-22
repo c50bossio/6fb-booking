@@ -31,7 +31,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (mounted) {
       localStorage.setItem('bookbarber-theme', theme)
-      
+
       // Update document class for global theme
       if (theme === 'dark') {
         document.documentElement.classList.add('dark')

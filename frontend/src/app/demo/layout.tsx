@@ -19,7 +19,7 @@ export default function DemoLayout({
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       {/* Sidebar */}
       <DemoSidebar onNavigate={handleNavigation} />
-      
+
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Content Area */}

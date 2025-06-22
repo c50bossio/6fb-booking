@@ -1,13 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTheme } from '@/contexts/ThemeContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import { format, subDays, startOfMonth, endOfMonth } from 'date-fns'
-import { 
-  TrendingUp, 
-  Calendar, 
-  DollarSign, 
-  Users, 
+import {
+  TrendingUp,
+  Calendar,
+  DollarSign,
+  Users,
   Activity,
   Download,
   Filter,
@@ -109,7 +110,7 @@ export default function AnalyticsPage() {
         const targetValue = realtimeData[key as keyof typeof realtimeData]
         const startValue = animatedMetrics[key as keyof typeof animatedMetrics]
         const increment = (targetValue - startValue) / steps
-        
+
         let currentStep = 0
         const timer = setInterval(() => {
           currentStep++
@@ -117,7 +118,7 @@ export default function AnalyticsPage() {
             ...prev,
             [key]: Math.round(startValue + (increment * currentStep))
           }))
-          
+
           if (currentStep >= steps) {
             clearInterval(timer)
           }
@@ -158,19 +159,21 @@ export default function AnalyticsPage() {
     setTimeout(() => setShowExportSuccess(false), 3000)
   }
 
-  const MetricCard = ({ 
-    icon: Icon, 
-    title, 
-    value, 
-    growth, 
-    color, 
-    onClick, 
+  const MetricCard = ({
+    icon: Icon,
+    title,
+    value,
+    growth,
+    color,
+    onClick,
     isSelected,
     format = (v: number) => v.toLocaleString()
   }: any) => (
     <motion.div
-      className={`bg-white rounded-xl p-6 shadow-sm border-2 cursor-pointer transition-all hover:shadow-md ${
-        isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-100 hover:border-gray-200'
+      className={`rounded-xl p-6 shadow-sm border-2 cursor-pointer transition-all hover:shadow-md ${
+        theme === 'dark'
+          ? (isSelected ? 'bg-gray-800 border-blue-500' : 'bg-gray-800 border-gray-700 hover:border-gray-600')
+          : (isSelected ? 'bg-blue-50 border-blue-500' : 'bg-white border-gray-100 hover:border-gray-200')
       }`}
       onClick={() => onClick?.(title)}
       whileHover={{ scale: 1.02 }}
@@ -221,68 +224,44 @@ export default function AnalyticsPage() {
     </div>
   )
 
+  const { theme } = useTheme();
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navigation Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+    <div className={`min-h-screen transition-colors ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      {/* Top Controls Bar */}
+      <div className={`sticky top-0 z-50 backdrop-blur border-b transition-colors ${theme === 'dark' ? 'bg-gray-900/80 border-gray-700' : 'bg-white/80 border-gray-200'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">6FB Platform</h1>
-              <nav className="ml-10 flex space-x-4">
-                <a href="/app" className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                  Dashboard
-                </a>
-                <a href="/app/calendar" className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                  Calendar
-                </a>
-                <a href="/app/analytics" className="text-blue-600 hover:text-blue-700 px-3 py-2 rounded-md text-sm font-medium bg-blue-50">
-                  Analytics
-                </a>
-                <a href="/app/barbers" className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                  Barbers
-                </a>
-                <a href="/app/payments" className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                  Payments
-                </a>
-              </nav>
-            </div>
-            <div className="flex items-center space-x-4">
-              <motion.button
-                onClick={() => setIsRealTimeEnabled(!isRealTimeEnabled)}
-                className={`flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                  isRealTimeEnabled 
-                    ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-                whileTap={{ scale: 0.95 }}
-              >
-                <div className={`w-2 h-2 rounded-full ${isRealTimeEnabled ? 'bg-green-500' : 'bg-gray-400'}`} />
-                {isRealTimeEnabled ? 'Live' : 'Paused'}
-              </motion.button>
-              <span className="text-sm text-gray-500">Demo Mode</span>
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
-                D
-              </div>
-            </div>
+          <div className="flex justify-end items-center h-16 space-x-4">
+            <motion.button
+              onClick={() => setIsRealTimeEnabled(!isRealTimeEnabled)}
+              className={`flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                isRealTimeEnabled
+                  ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/50 dark:text-green-400'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400'
+              }`}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className={`w-2 h-2 rounded-full ${isRealTimeEnabled ? 'bg-green-500' : 'bg-gray-400'}`} />
+              {isRealTimeEnabled ? 'Live' : 'Paused'}
+            </motion.button>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header with Interactive Filters */}
-        <motion.div 
+        <motion.div
           className="mb-8"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900">Interactive Analytics</h2>
-              <p className="text-gray-600 mt-1">Professional analytics platform with real-time insights</p>
+              <h2 className={`text-3xl font-bold transition-colors ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Interactive Analytics</h2>
+              <p className={`mt-1 transition-colors ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Professional analytics platform with real-time insights</p>
             </div>
-            
+
             {/* Interactive Filters */}
             <div className="flex flex-wrap items-center gap-3">
               <FilterButton
@@ -296,14 +275,14 @@ export default function AnalyticsPage() {
                   { id: 'year', name: 'This Year' }
                 ]}
               />
-              
+
               <FilterButton
                 label="Barber"
                 selectedValue={selectedBarber}
                 onChange={setSelectedBarber}
                 options={barberData}
               />
-              
+
               <FilterButton
                 label="Service"
                 selectedValue={selectedService}
@@ -322,7 +301,7 @@ export default function AnalyticsPage() {
               </motion.button>
             </div>
           </div>
-          
+
           {/* Export Success Message */}
           <AnimatePresence>
             {showExportSuccess && (
@@ -340,7 +319,7 @@ export default function AnalyticsPage() {
         </motion.div>
 
         {/* Interactive Key Metrics */}
-        <motion.div 
+        <motion.div
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -448,7 +427,7 @@ export default function AnalyticsPage() {
                   whileHover={{ scale: 1.02 }}
                 >
                   <div className="flex items-center space-x-3">
-                    <div 
+                    <div
                       className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: `hsl(${index * 70}, 60%, 50%)` }}
                     />
@@ -580,7 +559,7 @@ export default function AnalyticsPage() {
                   <div className="p-4 bg-gray-50 rounded-lg">
                     <h4 className="font-semibold text-gray-900 mb-2">Drill-down Analysis</h4>
                     <p className="text-gray-600">
-                      This metric shows strong performance with consistent growth trends. 
+                      This metric shows strong performance with consistent growth trends.
                       Consider expanding successful strategies to maintain momentum.
                     </p>
                   </div>

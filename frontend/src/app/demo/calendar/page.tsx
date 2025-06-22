@@ -55,7 +55,7 @@ export default function StandaloneCalendarDemo() {
         {/* Instructions */}
         <div className="bg-white/50 dark:bg-gray-900/50 backdrop-blur rounded-2xl p-8 border border-gray-200 dark:border-gray-700">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">🚀 Interactive Features</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
               <h3 className="text-lg font-semibold text-violet-600 dark:text-violet-400 mb-4">Settings Panel</h3>
@@ -78,7 +78,7 @@ export default function StandaloneCalendarDemo() {
                 </li>
               </ul>
             </div>
-            
+
             <div>
               <h3 className="text-lg font-semibold text-emerald-600 dark:text-emerald-400 mb-4">Calendar Options</h3>
               <ul className="space-y-3 text-gray-700 dark:text-gray-300">
