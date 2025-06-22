@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import AppLayout from './AppLayout'
 
 interface ClientOnlyProps {
   children: React.ReactNode
@@ -19,9 +18,5 @@ export default function ClientOnly({ children, fallback = null }: ClientOnlyProp
     return <>{fallback}</>
   }
 
-  return (
-    <AppLayout>
-      {children}
-    </AppLayout>
-  )
+  return <>{children}</>
 }
