@@ -121,7 +121,7 @@ class CompensationPlan(Base):
     #   "weekend_premium": {"saturday": 5, "sunday": 10},
     #   "holiday_premium": 15
     # }
-    
+
     # Automated payout settings
     payout_settings = Column(JSON, nullable=True)
     # Example structure:
@@ -141,7 +141,7 @@ class CompensationPlan(Base):
     #     "send_failure_alerts": true
     #   }
     # }
-    
+
     # Time-based variations
     time_based_rates = Column(JSON, nullable=True)
     # Example structure:
@@ -162,7 +162,7 @@ class CompensationPlan(Base):
     #   "last_minute_booking": {"hours_before": 2, "rate_adjustment": 15},
     #   "advance_booking": {"days_ahead": 7, "rate_adjustment": -5}
     # }
-    
+
     # Client-type based rates
     client_type_rates = Column(JSON, nullable=True)
     # Example structure:
@@ -177,7 +177,7 @@ class CompensationPlan(Base):
     #   ],
     #   "referral_bonus": {"referrer_bonus": 25, "referee_discount": 10}
     # }
-    
+
     # Automatic escalation
     escalation_rules = Column(JSON, nullable=True)
     # Example structure:

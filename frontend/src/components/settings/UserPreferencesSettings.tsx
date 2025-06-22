@@ -155,7 +155,7 @@ export function UserPreferencesSettings({
   }, [])
 
   useEffect(() => {
-    const hasChanges = preferences && originalPreferences && 
+    const hasChanges = preferences && originalPreferences &&
       JSON.stringify(preferences) !== JSON.stringify(originalPreferences)
     onSettingsChange?.(!!hasChanges)
   }, [preferences, originalPreferences, onSettingsChange])
@@ -179,7 +179,7 @@ export function UserPreferencesSettings({
     value: UserPreferences[K]
   ) => {
     if (!preferences) return
-    
+
     setPreferences({
       ...preferences,
       [key]: value
@@ -191,7 +191,7 @@ export function UserPreferencesSettings({
 
     try {
       setIsSaving(true)
-      
+
       // Calculate what changed
       const updates: UserPreferencesUpdateRequest = {}
       Object.keys(preferences).forEach((key) => {
@@ -204,7 +204,7 @@ export function UserPreferencesSettings({
 
       await settingsApi.updateUserPreferences(updates)
       setOriginalPreferences(preferences)
-      
+
     } catch (error) {
       console.error('Failed to save preferences:', error)
     } finally {
@@ -250,7 +250,7 @@ export function UserPreferencesSettings({
                 {THEME_OPTIONS.map((option) => {
                   const Icon = option.icon
                   const isSelected = preferences.theme_mode === option.value
-                  
+
                   return (
                     <button
                       key={option.value}
@@ -296,7 +296,7 @@ export function UserPreferencesSettings({
               <div className="flex flex-wrap gap-2">
                 {THEME_COLORS.map((color) => {
                   const isSelected = preferences.theme_color === color.value
-                  
+
                   return (
                     <button
                       key={color.value}
@@ -610,7 +610,7 @@ export function UserPreferencesSettings({
               <div className="space-y-2">
                 {Object.entries({
                   left: 'Left Panel',
-                  right: 'Right Panel', 
+                  right: 'Right Panel',
                   bottom: 'Bottom Panel'
                 }).map(([key, label]) => (
                   <label key={key} className="flex items-center space-x-3 cursor-pointer">
@@ -751,7 +751,7 @@ export function UserPreferencesSettings({
                     </button>
                   </div>
                 ))}
-                
+
                 {Object.keys(customShortcuts).length === 0 && (
                   <div className={`text-sm text-center py-8 ${
                     theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
@@ -802,7 +802,7 @@ export function UserPreferencesSettings({
         {SETTINGS_GROUPS.map((group) => {
           const Icon = group.icon
           const isActive = activeGroup === group.id
-          
+
           return (
             <button
               key={group.id}
@@ -828,8 +828,8 @@ export function UserPreferencesSettings({
 
       {/* Active Settings Group */}
       <div className={`p-6 rounded-lg border ${
-        theme === 'dark' 
-          ? 'border-gray-700 bg-gray-800/50' 
+        theme === 'dark'
+          ? 'border-gray-700 bg-gray-800/50'
           : 'border-gray-200 bg-gray-50/50'
       }`}>
         <div className="mb-4">
@@ -844,7 +844,7 @@ export function UserPreferencesSettings({
             {SETTINGS_GROUPS.find(g => g.id === activeGroup)?.description}
           </p>
         </div>
-        
+
         {renderSettingsGroup()}
       </div>
 
@@ -862,7 +862,7 @@ export function UserPreferencesSettings({
           <ArrowPathIcon className="h-4 w-4 mr-2 inline" />
           Reset Changes
         </button>
-        
+
         <button
           onClick={handleSave}
           disabled={isSaving || !preferences || JSON.stringify(preferences) === JSON.stringify(originalPreferences)}

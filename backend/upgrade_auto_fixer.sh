@@ -59,7 +59,7 @@ try:
 except:
     print('')
 ")
-    
+
     if [ ! -z "$NGROK_URL" ]; then
         echo ""
         echo "🌐 Webhook URL: $NGROK_URL/sentry/webhook"
@@ -121,24 +121,24 @@ cat > /Users/bossio/6fb-booking/backend/auto_fixer_dashboard.html << 'EOF'
 <body>
     <div class="container">
         <h1>🤖 Enhanced Auto-Fixer Dashboard</h1>
-        
+
         <div class="card">
             <h2>System Status</h2>
             <div id="system-status">Loading...</div>
         </div>
-        
+
         <div class="card">
             <h2>Statistics</h2>
             <div class="stats" id="stats">Loading...</div>
         </div>
-        
+
         <div class="card">
             <h2>Fix Success Rate</h2>
             <div class="chart-container">
                 <canvas id="successChart"></canvas>
             </div>
         </div>
-        
+
         <div class="card">
             <h2>Recent Fixes</h2>
             <table id="recent-fixes">
@@ -156,7 +156,7 @@ cat > /Users/bossio/6fb-booking/backend/auto_fixer_dashboard.html << 'EOF'
                 </tbody>
             </table>
         </div>
-        
+
         <div class="card">
             <h2>Learned Patterns</h2>
             <table id="patterns">
@@ -175,23 +175,23 @@ cat > /Users/bossio/6fb-booking/backend/auto_fixer_dashboard.html << 'EOF'
             </table>
         </div>
     </div>
-    
+
     <script>
         const API_BASE = 'http://localhost:8003';
-        
+
         async function fetchData() {
             try {
                 // Fetch status
                 const statusRes = await fetch(`${API_BASE}/status`);
                 const status = await statusRes.json();
-                
+
                 // Update system status
                 document.getElementById('system-status').innerHTML = `
                     <span class="status ${status.status}">${status.status.toUpperCase()}</span>
                     <span style="margin-left: 20px;">Version: ${status.version}</span>
                     <span style="margin-left: 20px;">Circuit Breaker: ${status.features.circuit_breaker}</span>
                 `;
-                
+
                 // Update stats
                 document.getElementById('stats').innerHTML = `
                     <div class="stat">
@@ -211,7 +211,7 @@ cat > /Users/bossio/6fb-booking/backend/auto_fixer_dashboard.html << 'EOF'
                         <div class="stat-label">Avg Confidence</div>
                     </div>
                 `;
-                
+
                 // Update recent fixes
                 const fixesHtml = status.recent_fixes.map(fix => `
                     <tr>
@@ -223,11 +223,11 @@ cat > /Users/bossio/6fb-booking/backend/auto_fixer_dashboard.html << 'EOF'
                     </tr>
                 `).join('');
                 document.querySelector('#recent-fixes tbody').innerHTML = fixesHtml || '<tr><td colspan="5">No recent fixes</td></tr>';
-                
+
                 // Fetch patterns
                 const patternsRes = await fetch(`${API_BASE}/patterns`);
                 const patternsData = await patternsRes.json();
-                
+
                 const patternsHtml = patternsData.patterns.map(pattern => `
                     <tr>
                         <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis;">${pattern.pattern}</td>
@@ -238,12 +238,12 @@ cat > /Users/bossio/6fb-booking/backend/auto_fixer_dashboard.html << 'EOF'
                     </tr>
                 `).join('');
                 document.querySelector('#patterns tbody').innerHTML = patternsHtml || '<tr><td colspan="5">No patterns learned yet</td></tr>';
-                
+
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
         }
-        
+
         // Initialize chart
         const ctx = document.getElementById('successChart').getContext('2d');
         const successChart = new Chart(ctx, {
@@ -268,7 +268,7 @@ cat > /Users/bossio/6fb-booking/backend/auto_fixer_dashboard.html << 'EOF'
                 }
             }
         });
-        
+
         // Update data every 5 seconds
         fetchData();
         setInterval(fetchData, 5000);

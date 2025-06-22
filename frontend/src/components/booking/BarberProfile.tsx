@@ -172,7 +172,7 @@ const BarberProfile: React.FC<BarberProfileProps> = ({
             <div className="w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center">
               <Scissors className="h-12 w-12 text-gray-400" />
             </div>
-            
+
             {/* Barber Info */}
             <div className="flex-1 space-y-3">
               <div>
@@ -186,7 +186,7 @@ const BarberProfile: React.FC<BarberProfileProps> = ({
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex flex-wrap gap-2">
                 {barber.years_experience && (
                   <Badge variant="secondary">
@@ -199,11 +199,11 @@ const BarberProfile: React.FC<BarberProfileProps> = ({
                   {barber.location.name}
                 </Badge>
               </div>
-              
+
               {barber.bio && (
                 <p className="text-gray-600">{barber.bio}</p>
               )}
-              
+
               {barber.specialties && barber.specialties.length > 0 && (
                 <div>
                   <p className="text-sm font-medium text-gray-700 mb-1">Specialties:</p>

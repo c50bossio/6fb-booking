@@ -331,10 +331,10 @@ sudo systemctl start 6fb-frontend
 server {
     listen 443 ssl http2;
     server_name yourdomain.com;
-    
+
     ssl_certificate /path/to/cert.pem;
     ssl_certificate_key /path/to/key.pem;
-    
+
     location /api {
         proxy_pass http://localhost:8000;
         proxy_set_header Host $host;
@@ -342,7 +342,7 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
-    
+
     location / {
         root /var/www/6fb-frontend;
         try_files $uri $uri/ /index.html;
@@ -484,6 +484,6 @@ Once the configuration items above are completed, the platform is fully ready fo
 
 ---
 
-**Report Generated**: June 22, 2025  
-**Platform Version**: 2.0.0  
+**Report Generated**: June 22, 2025
+**Platform Version**: 2.0.0
 **Status**: PRODUCTION READY (Pending Configuration)

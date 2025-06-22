@@ -7,7 +7,7 @@
 
 export class TimezoneHelper {
   private static readonly DEFAULT_TIMEZONE = 'America/New_York'
-  
+
   /**
    * Get user's current timezone
    */
@@ -27,7 +27,7 @@ export class TimezoneHelper {
     const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }))
     const sourceDate = new Date(date.toLocaleString('en-US', { timeZone: fromTz }))
     const targetDate = new Date(date.toLocaleString('en-US', { timeZone: toTz }))
-    
+
     // Calculate the difference and apply it
     const offset = sourceDate.getTime() - targetDate.getTime()
     return new Date(utcDate.getTime() + offset)
@@ -56,21 +56,21 @@ export class TimezoneHelper {
   ): string {
     const { hour12 = true, includeSeconds = false } = options
     const [hours, minutes, seconds = '00'] = time.split(':').map(Number)
-    
+
     const date = new Date()
     date.setHours(hours, minutes, includeSeconds ? parseInt(seconds.toString()) : 0, 0)
-    
+
     const formatOptions: Intl.DateTimeFormatOptions = {
       timeZone: timezone,
       hour12,
       hour: 'numeric',
       minute: '2-digit'
     }
-    
+
     if (includeSeconds) {
       formatOptions.second = '2-digit'
     }
-    
+
     return date.toLocaleTimeString('en-US', formatOptions)
   }
 
@@ -81,11 +81,11 @@ export class TimezoneHelper {
     const targetDate = date || new Date()
     const january = new Date(targetDate.getFullYear(), 0, 1)
     const july = new Date(targetDate.getFullYear(), 6, 1)
-    
+
     const janOffset = this.getTimezoneOffset(timezone, january)
     const julyOffset = this.getTimezoneOffset(timezone, july)
     const currentOffset = this.getTimezoneOffset(timezone, targetDate)
-    
+
     return currentOffset !== Math.max(janOffset, julyOffset)
   }
 
@@ -114,7 +114,7 @@ export class TimezoneHelper {
       const hours = Math.floor(Math.abs(offset))
       const minutes = Math.round((Math.abs(offset) - hours) * 60)
       const offsetString = `UTC${sign}${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
-      
+
       return {
         value: tz,
         label: tz.replace('_', ' ').replace('/', ' - '),
@@ -136,7 +136,7 @@ export class DateHelper {
     timezone?: string
   ): string {
     const targetDate = typeof date === 'string' ? new Date(date) : date
-    
+
     const options: Intl.DateTimeFormatOptions = {
       timeZone: timezone || TimezoneHelper.getUserTimezone()
     }
@@ -190,7 +190,7 @@ export class DateHelper {
     const targetDate = typeof date === 'string' ? new Date(date) : date
     const dateStr = this.formatDate(targetDate, dateFormat, timezone)
     const timeStr = this.formatTime(targetDate, timeFormat, timezone)
-    
+
     return `${dateStr}${separator}${timeStr}`
   }
 
@@ -203,7 +203,7 @@ export class DateHelper {
     timezone?: string
   ): string {
     const targetDate = typeof date === 'string' ? new Date(date) : date
-    
+
     const options: Intl.DateTimeFormatOptions = {
       timeZone: timezone || TimezoneHelper.getUserTimezone(),
       hour12: true,
@@ -258,7 +258,7 @@ export class DateHelper {
   static isToday(date: Date | string): boolean {
     const targetDate = typeof date === 'string' ? new Date(date) : date
     const today = new Date()
-    
+
     return (
       targetDate.getDate() === today.getDate() &&
       targetDate.getMonth() === today.getMonth() &&
@@ -273,7 +273,7 @@ export class DateHelper {
     const targetDate = typeof date === 'string' ? new Date(date) : date
     const tomorrow = new Date()
     tomorrow.setDate(tomorrow.getDate() + 1)
-    
+
     return (
       targetDate.getDate() === tomorrow.getDate() &&
       targetDate.getMonth() === tomorrow.getMonth() &&
@@ -288,7 +288,7 @@ export class DateHelper {
     const targetDate = typeof date === 'string' ? new Date(date) : date
     const yesterday = new Date()
     yesterday.setDate(yesterday.getDate() - 1)
-    
+
     return (
       targetDate.getDate() === yesterday.getDate() &&
       targetDate.getMonth() === yesterday.getMonth() &&
@@ -304,7 +304,7 @@ export class DateHelper {
     format: 'long' | 'short' | 'narrow' = 'long'
   ): string {
     let targetDate: Date
-    
+
     if (typeof date === 'number') {
       // Day of week (0-6)
       targetDate = new Date()
@@ -324,7 +324,7 @@ export class DateHelper {
     format: 'long' | 'short' | 'narrow' = 'long'
   ): string {
     let targetDate: Date
-    
+
     if (typeof month === 'number') {
       targetDate = new Date()
       targetDate.setMonth(month)
@@ -395,7 +395,7 @@ export class DateHelper {
     unit: 'seconds' | 'minutes' | 'hours' | 'days' | 'weeks' | 'months' | 'years'
   ): Date {
     const targetDate = typeof date === 'string' ? new Date(date) : new Date(date)
-    
+
     switch (unit) {
       case 'seconds':
         return new Date(targetDate.getTime() + amount * 1000)
@@ -431,7 +431,7 @@ export class DateHelper {
     const d1 = typeof date1 === 'string' ? new Date(date1) : date1
     const d2 = typeof date2 === 'string' ? new Date(date2) : date2
     const diffMs = d2.getTime() - d1.getTime()
-    
+
     switch (unit) {
       case 'seconds':
         return Math.floor(diffMs / 1000)
@@ -494,16 +494,16 @@ export class TimeHelper {
   static to24Hour(timeStr: string): string {
     const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
     if (!match) return timeStr
-    
+
     let [, hours, minutes, period] = match
     let h = parseInt(hours)
-    
+
     if (period.toUpperCase() === 'PM' && h !== 12) {
       h += 12
     } else if (period.toUpperCase() === 'AM' && h === 12) {
       h = 0
     }
-    
+
     return this.formatTimeString(h, parseInt(minutes))
   }
 
@@ -524,15 +524,15 @@ export class TimeHelper {
   static getTimeDifference(startTime: string, endTime: string): number {
     const start = this.parseTime(startTime)
     const end = this.parseTime(endTime)
-    
+
     const startMinutes = start.hours * 60 + start.minutes
     const endMinutes = end.hours * 60 + end.minutes
-    
+
     // Handle overnight times
     if (endMinutes < startMinutes) {
       return (24 * 60) - startMinutes + endMinutes
     }
-    
+
     return endMinutes - startMinutes
   }
 
@@ -543,16 +543,16 @@ export class TimeHelper {
     const check = this.parseTime(checkTime)
     const start = this.parseTime(startTime)
     const end = this.parseTime(endTime)
-    
+
     const checkMinutes = check.hours * 60 + check.minutes
     const startMinutes = start.hours * 60 + start.minutes
     const endMinutes = end.hours * 60 + end.minutes
-    
+
     // Handle overnight ranges
     if (endMinutes < startMinutes) {
       return checkMinutes >= startMinutes || checkMinutes <= endMinutes
     }
-    
+
     return checkMinutes >= startMinutes && checkMinutes <= endMinutes
   }
 
@@ -567,19 +567,19 @@ export class TimeHelper {
   ): string[] {
     const slots: string[] = []
     let current = startTime
-    
+
     while (this.getTimeDifference(current, endTime) > 0) {
       slots.push(current)
       current = this.addMinutes(current, intervalMinutes)
-      
+
       // Prevent infinite loop
       if (slots.length > 200) break
     }
-    
+
     if (includeEndTime && current === endTime) {
       slots.push(endTime)
     }
-    
+
     return slots
   }
 
@@ -617,19 +617,19 @@ export class BusinessHoursHelper {
     const checkDate = date || new Date()
     const dayOfWeek = checkDate.getDay()
     const currentTime = DateHelper.formatTime(checkDate, 'short', timezone)
-    
+
     const dayHours = businessHours.find(h => h.day_of_week === dayOfWeek)
     if (!dayHours || !dayHours.is_open || !dayHours.open_time || !dayHours.close_time) {
       return false
     }
-    
+
     // Check if current time is within business hours
     const isWithinHours = TimeHelper.isTimeBetween(
       TimeHelper.to24Hour(currentTime),
       dayHours.open_time,
       dayHours.close_time
     )
-    
+
     // Check if current time is during break
     if (isWithinHours && dayHours.break_start && dayHours.break_end) {
       const isDuringBreak = TimeHelper.isTimeBetween(
@@ -639,7 +639,7 @@ export class BusinessHoursHelper {
       )
       return !isDuringBreak
     }
-    
+
     return isWithinHours
   }
 
@@ -658,17 +658,17 @@ export class BusinessHoursHelper {
     const checkDate = fromDate || new Date()
     let currentDay = checkDate.getDay()
     let daysChecked = 0
-    
+
     while (daysChecked < 7) {
       const dayHours = businessHours.find(h => h.day_of_week === currentDay)
-      
+
       if (dayHours?.is_open && dayHours.open_time) {
         const openingDate = new Date(checkDate)
         openingDate.setDate(openingDate.getDate() + daysChecked)
-        
+
         const { hours, minutes } = TimeHelper.parseTime(dayHours.open_time)
         openingDate.setHours(hours, minutes, 0, 0)
-        
+
         // If it's today, check if opening time hasn't passed
         if (daysChecked === 0 && openingDate <= checkDate) {
           // Opening time has passed, check next day
@@ -676,11 +676,11 @@ export class BusinessHoursHelper {
           return openingDate
         }
       }
-      
+
       currentDay = (currentDay + 1) % 7
       daysChecked++
     }
-    
+
     return null // No opening hours found
   }
 
@@ -699,25 +699,25 @@ export class BusinessHoursHelper {
   ): Record<string, string> {
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
     const formatted: Record<string, string> = {}
-    
+
     businessHours.forEach(hours => {
       const dayName = dayNames[hours.day_of_week]
-      
+
       if (!hours.is_open) {
         formatted[dayName] = 'Closed'
       } else if (hours.open_time && hours.close_time) {
         let timeStr = `${TimeHelper.to12Hour(hours.open_time)} - ${TimeHelper.to12Hour(hours.close_time)}`
-        
+
         if (hours.break_start && hours.break_end) {
           timeStr += ` (Break: ${TimeHelper.to12Hour(hours.break_start)} - ${TimeHelper.to12Hour(hours.break_end)})`
         }
-        
+
         formatted[dayName] = timeStr
       } else {
         formatted[dayName] = 'Hours vary'
       }
     })
-    
+
     return formatted
   }
 }
@@ -763,21 +763,21 @@ export class AppointmentTimeHelper {
     intervalMinutes = 15
   ): string | null {
     const slots = TimeHelper.generateTimeSlots(startTime, endTime, intervalMinutes)
-    
+
     for (const slot of slots) {
       const slotEnd = this.calculateEndTime(slot, durationMinutes)
-      
+
       // Check if slot fits within business hours
       if (TimeHelper.getTimeDifference(slotEnd, endTime) < 0) {
         continue
       }
-      
+
       // Check for conflicts
       if (!this.hasTimeConflict(slot, slotEnd, existingAppointments)) {
         return slot
       }
     }
-    
+
     return null
   }
 

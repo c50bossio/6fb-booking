@@ -100,7 +100,7 @@ export default function AppointmentsPage() {
       // Here you would make actual API call
       // const response = await appointmentsService.getAll()
       // setAppointments(response.data)
-      
+
       // For now, using mock data
       await new Promise(resolve => setTimeout(resolve, 500))
       setAppointments(mockAppointments)
@@ -112,17 +112,17 @@ export default function AppointmentsPage() {
   }
 
   const filteredAppointments = appointments.filter(appointment => {
-    const matchesSearch = 
+    const matchesSearch =
       appointment.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       appointment.barber_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       appointment.service.toLowerCase().includes(searchTerm.toLowerCase())
-    
+
     const matchesStatus = statusFilter === 'all' || appointment.status === statusFilter
-    
+
     const today = new Date().toISOString().split('T')[0]
     const appointmentDate = appointment.date
     let matchesDate = true
-    
+
     if (dateFilter === 'today') {
       matchesDate = appointmentDate === today
     } else if (dateFilter === 'tomorrow') {
@@ -134,7 +134,7 @@ export default function AppointmentsPage() {
       weekFromNow.setDate(weekFromNow.getDate() + 7)
       matchesDate = appointmentDate >= today && appointmentDate <= weekFromNow.toISOString().split('T')[0]
     }
-    
+
     return matchesSearch && matchesStatus && matchesDate
   })
 
@@ -150,10 +150,10 @@ export default function AppointmentsPage() {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      month: 'short', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric'
     })
   }
 
@@ -161,10 +161,10 @@ export default function AppointmentsPage() {
     const [hours, minutes] = timeStr.split(':')
     const date = new Date()
     date.setHours(parseInt(hours), parseInt(minutes))
-    return date.toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
       minute: '2-digit',
-      hour12: true 
+      hour12: true
     })
   }
 
@@ -173,10 +173,10 @@ export default function AppointmentsPage() {
     const startDate = new Date()
     startDate.setHours(parseInt(hours), parseInt(minutes))
     const endDate = new Date(startDate.getTime() + duration * 60000)
-    return endDate.toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
+    return endDate.toLocaleTimeString('en-US', {
+      hour: 'numeric',
       minute: '2-digit',
-      hour12: true 
+      hour12: true
     })
   }
 
@@ -261,7 +261,7 @@ export default function AppointmentsPage() {
               <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No appointments found</h3>
               <p className="text-gray-600 mb-4">
-                {searchTerm || statusFilter !== 'all' || dateFilter !== 'all' 
+                {searchTerm || statusFilter !== 'all' || dateFilter !== 'all'
                   ? 'Try adjusting your filters to see more appointments.'
                   : 'Get started by creating your first appointment.'
                 }

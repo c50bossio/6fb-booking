@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { 
-  ChevronLeftIcon, 
+import {
+  ChevronLeftIcon,
   ChevronRightIcon,
   CalendarDaysIcon,
   ClockIcon,
@@ -112,12 +112,12 @@ export default function DarkCalendarWithSettings() {
 
   const timeSlots = Array.from({ length: 13 }, (_, i) => {
     const hour = i + 8
-    return settings.timeFormat === '12h' 
+    return settings.timeFormat === '12h'
       ? `${hour > 12 ? hour - 12 : hour}:00 ${hour >= 12 ? 'PM' : 'AM'}`
       : `${hour.toString().padStart(2, '0')}:00`
   })
 
-  const weekDays = settings.weekStart === 'sunday' 
+  const weekDays = settings.weekStart === 'sunday'
     ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
     : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
@@ -131,7 +131,7 @@ export default function DarkCalendarWithSettings() {
     if (!settings.colorByStatus) {
       return `bg-gradient-to-r ${getAccentColor().gradient}`
     }
-    
+
     const styles = {
       confirmed: 'bg-gradient-to-r from-emerald-600 to-teal-600',
       pending: 'bg-gradient-to-r from-amber-600 to-orange-600',
@@ -156,7 +156,7 @@ export default function DarkCalendarWithSettings() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-white">Schedule</h2>
-          
+
           <div className="flex items-center gap-3">
             {/* View Toggle */}
             <div className="bg-gray-800/50 backdrop-blur rounded-lg p-1 flex">

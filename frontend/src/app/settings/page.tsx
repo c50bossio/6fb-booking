@@ -62,7 +62,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('business')
   const [showPassword, setShowPassword] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
-  
+
   const [businessSettings, setBusinessSettings] = useState<BusinessSettings>({
     name: '',
     address: '',
@@ -112,17 +112,17 @@ export default function SettingsPage() {
     try {
       setLoading(true)
       const token = localStorage.getItem('access_token')
-      
+
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings`,
         { headers: { Authorization: `Bearer ${token}` } }
       )
-      
+
       if (response.data.business) setBusinessSettings(response.data.business)
       if (response.data.notifications) setNotificationSettings(response.data.notifications)
       if (response.data.payments) setPaymentSettings(response.data.payments)
       if (response.data.security) setSecuritySettings(response.data.security)
-      
+
     } catch (error) {
       console.error('Failed to fetch settings:', error)
       // Use demo data if API fails
@@ -145,16 +145,16 @@ export default function SettingsPage() {
     try {
       setSaving(true)
       const token = localStorage.getItem('access_token')
-      
+
       await axios.patch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings/${settingsType}`,
         data,
         { headers: { Authorization: `Bearer ${token}` } }
       )
-      
+
       setMessage({ type: 'success', text: 'Settings saved successfully!' })
       setTimeout(() => setMessage(null), 3000)
-      
+
     } catch (error) {
       console.error('Failed to save settings:', error)
       setMessage({ type: 'error', text: 'Failed to save settings. Please try again.' })
@@ -173,7 +173,7 @@ export default function SettingsPage() {
     try {
       setSaving(true)
       const token = localStorage.getItem('access_token')
-      
+
       await axios.patch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/change-password`,
         {
@@ -182,10 +182,10 @@ export default function SettingsPage() {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       )
-      
+
       setPasswordForm({ current_password: '', new_password: '', confirm_password: '' })
       setMessage({ type: 'success', text: 'Password changed successfully!' })
-      
+
     } catch (error) {
       console.error('Failed to change password:', error)
       setMessage({ type: 'error', text: 'Failed to change password. Please check your current password.' })
@@ -217,7 +217,7 @@ export default function SettingsPage() {
         {/* Message Banner */}
         {message && (
           <div className={`p-4 rounded-lg flex items-center justify-between ${
-            message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 
+            message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' :
             'bg-red-50 text-red-800 border border-red-200'
           }`}>
             <div className="flex items-center">
@@ -228,7 +228,7 @@ export default function SettingsPage() {
               )}
               {message.text}
             </div>
-            <button 
+            <button
               onClick={() => setMessage(null)}
               className="text-gray-600 hover:text-gray-800"
             >
@@ -266,7 +266,7 @@ export default function SettingsPage() {
             {activeTab === 'business' && (
               <div className="space-y-6">
                 <h3 className="text-lg font-medium text-gray-900">Business Information</h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -372,7 +372,7 @@ export default function SettingsPage() {
             {activeTab === 'notifications' && (
               <div className="space-y-6">
                 <h3 className="text-lg font-medium text-gray-900">Notification Preferences</h3>
-                
+
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
@@ -469,7 +469,7 @@ export default function SettingsPage() {
             {activeTab === 'payments' && (
               <div className="space-y-6">
                 <h3 className="text-lg font-medium text-gray-900">Payment Configuration</h3>
-                
+
                 <div className="space-y-6">
                   <div className="border border-gray-200 rounded-lg p-4">
                     <h4 className="text-sm font-medium text-gray-900 mb-3">Connected Payment Methods</h4>
@@ -562,7 +562,7 @@ export default function SettingsPage() {
             {activeTab === 'security' && (
               <div className="space-y-6">
                 <h3 className="text-lg font-medium text-gray-900">Security & Privacy</h3>
-                
+
                 <div className="space-y-6">
                   {/* Change Password */}
                   <div className="border border-gray-200 rounded-lg p-4">

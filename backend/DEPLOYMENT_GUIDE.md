@@ -344,9 +344,9 @@ free -m
 
 # Database performance
 docker-compose -f docker-compose.prod.yml exec db psql -U bookbarber_user -d 6fb_booking_prod -c "
-SELECT query, calls, total_time, mean_time 
-FROM pg_stat_statements 
-ORDER BY total_time DESC 
+SELECT query, calls, total_time, mean_time
+FROM pg_stat_statements
+ORDER BY total_time DESC
 LIMIT 10;
 "
 ```

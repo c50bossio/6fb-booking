@@ -5,10 +5,10 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import BaseModal from './BaseModal'
-import { 
-  UserIcon, 
-  CalendarDaysIcon, 
-  ClockIcon, 
+import {
+  UserIcon,
+  CalendarDaysIcon,
+  ClockIcon,
   CurrencyDollarIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
@@ -151,7 +151,7 @@ export default function CreateAppointmentModal({
 
       // In a real app, this would call the API
       // const response = await bookingService.createBooking(bookingRequest)
-      
+
       // Mock successful response
       const mockBooking: Booking = {
         id: Math.random().toString(36).substr(2, 9),
@@ -183,7 +183,7 @@ export default function CreateAppointmentModal({
 
       setShowSuccess(true)
       onSuccess?.(mockBooking)
-      
+
       // Auto-close after showing success
       setTimeout(() => {
         handleClose()
@@ -241,7 +241,7 @@ export default function CreateAppointmentModal({
             <UserIcon className="h-5 w-5 text-violet-600" />
             <h4 className="text-lg font-semibold text-gray-900">Client Information</h4>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -306,8 +306,8 @@ export default function CreateAppointmentModal({
                 key={service.id}
                 className={`
                   relative flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200
-                  ${watchedServiceId === service.id 
-                    ? 'border-violet-500 bg-violet-50' 
+                  ${watchedServiceId === service.id
+                    ? 'border-violet-500 bg-violet-50'
                     : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                   }
                 `}
@@ -360,8 +360,8 @@ export default function CreateAppointmentModal({
                 key={barber.id}
                 className={`
                   relative flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200
-                  ${watch('barber_id') === barber.id 
-                    ? 'border-violet-500 bg-violet-50' 
+                  ${watch('barber_id') === barber.id
+                    ? 'border-violet-500 bg-violet-50'
                     : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                   }
                 `}

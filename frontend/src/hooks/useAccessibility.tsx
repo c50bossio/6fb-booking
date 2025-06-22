@@ -14,12 +14,12 @@ export function useAccessibility() {
         main.scrollIntoView({ behavior: 'smooth' })
       }
     }
-    
+
     // Toggle high contrast mode with Alt+C
     if (event.altKey && event.key === 'c') {
       document.body.classList.toggle('high-contrast')
       localStorage.setItem(
-        'highContrast', 
+        'highContrast',
         document.body.classList.contains('high-contrast') ? 'true' : 'false'
       )
     }
@@ -33,9 +33,9 @@ export function useAccessibility() {
     liveRegion.setAttribute('aria-atomic', 'true')
     liveRegion.className = 'sr-only'
     liveRegion.textContent = message
-    
+
     document.body.appendChild(liveRegion)
-    
+
     // Remove after announcement
     setTimeout(() => {
       document.body.removeChild(liveRegion)
@@ -50,7 +50,7 @@ export function useAccessibility() {
     const focusableElements = container.querySelectorAll(
       'a[href], button, textarea, input[type="text"], input[type="radio"], input[type="checkbox"], select, [tabindex]:not([tabindex="-1"])'
     )
-    
+
     const firstElement = focusableElements[0] as HTMLElement
     const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement
 
@@ -71,7 +71,7 @@ export function useAccessibility() {
     }
 
     container.addEventListener('keydown', handleTabKey)
-    
+
     return () => {
       container.removeEventListener('keydown', handleTabKey)
     }
@@ -81,19 +81,19 @@ export function useAccessibility() {
   useEffect(() => {
     // Add keyboard navigation
     document.addEventListener('keydown', handleKeyboardNavigation)
-    
+
     // Check for saved preferences
     const highContrast = localStorage.getItem('highContrast')
     if (highContrast === 'true') {
       document.body.classList.add('high-contrast')
     }
-    
+
     // Check for reduced motion preference
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
     if (prefersReducedMotion.matches) {
       document.body.classList.add('reduce-motion')
     }
-    
+
     // Listen for changes in motion preference
     const handleMotionPreference = (e: MediaQueryListEvent) => {
       if (e.matches) {
@@ -102,9 +102,9 @@ export function useAccessibility() {
         document.body.classList.remove('reduce-motion')
       }
     }
-    
+
     prefersReducedMotion.addEventListener('change', handleMotionPreference)
-    
+
     return () => {
       document.removeEventListener('keydown', handleKeyboardNavigation)
       prefersReducedMotion.removeEventListener('change', handleMotionPreference)

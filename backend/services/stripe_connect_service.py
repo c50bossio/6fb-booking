@@ -133,19 +133,21 @@ class StripeConnectService:
                 "business_type": getattr(account, "business_type", None),
                 "capabilities": getattr(account, "capabilities", {}),
             }
-            
+
             # Handle requirements separately
             if hasattr(account, "requirements") and account.requirements:
                 account_dict["requirements"] = {
                     "currently_due": getattr(account.requirements, "currently_due", []),
-                    "eventually_due": getattr(account.requirements, "eventually_due", []),
+                    "eventually_due": getattr(
+                        account.requirements, "eventually_due", []
+                    ),
                 }
             else:
                 account_dict["requirements"] = {
                     "currently_due": [],
                     "eventually_due": [],
                 }
-                
+
             return account_dict
 
         except stripe.error.StripeError as e:
@@ -347,8 +349,10 @@ class StripeConnectService:
 
         except Exception as e:
             raise Exception(f"Webhook error: {str(e)}")
-    
-    def transfer_to_barber(self, barber_id: int, amount: float, instant: bool = False) -> bool:
+
+    def transfer_to_barber(
+        self, barber_id: int, amount: float, instant: bool = False
+    ) -> bool:
         """
         Transfer funds to barber using their preferred method
         Used by the automated payout scheduler
@@ -356,40 +360,40 @@ class StripeConnectService:
         try:
             from models.barber import Barber
             from config.database import get_db
-            
+
             db = next(get_db())
             barber = db.query(Barber).filter(Barber.id == barber_id).first()
-            
+
             if not barber:
                 raise Exception(f"Barber {barber_id} not found")
-                
+
             if not barber.stripe_account_id:
                 raise Exception(f"Barber {barber_id} has no Stripe account connected")
-            
+
             metadata = {
                 "barber_id": str(barber_id),
                 "barber_name": barber.name,
-                "payout_type": "automated_commission"
+                "payout_type": "automated_commission",
             }
-            
+
             if instant:
                 # Create instant payout
                 result = self.create_instant_payout(
                     account_id=barber.stripe_account_id,
                     amount=Decimal(str(amount)),
-                    metadata=metadata
+                    metadata=metadata,
                 )
             else:
                 # Create standard transfer (goes to their Stripe balance)
                 result = self.create_direct_transfer(
                     account_id=barber.stripe_account_id,
                     amount=Decimal(str(amount)),
-                    metadata=metadata
+                    metadata=metadata,
                 )
-            
+
             db.close()
             return True
-            
+
         except Exception as e:
             print(f"Error transferring to barber {barber_id}: {str(e)}")
             return False

@@ -78,7 +78,7 @@ const BookingDemoPage: React.FC = () => {
       if (barbersResponse.data && barbersResponse.data.length > 0) {
         const firstBarber = barbersResponse.data[0]
         setSelectedBarber(firstBarber)
-        
+
         const servicesResponse = await bookingService.getServices({ barber_id: firstBarber.id })
         setServices(servicesResponse.data || [])
       }
@@ -93,7 +93,7 @@ const BookingDemoPage: React.FC = () => {
 
   const handleStepComplete = (stepId: string) => {
     setCompletedSteps(prev => new Set([...prev, stepId]))
-    
+
     // Move to next step
     const currentIndex = demoSteps.findIndex(step => step.id === stepId)
     if (currentIndex < demoSteps.length - 1) {
@@ -121,8 +121,8 @@ const BookingDemoPage: React.FC = () => {
             ) : barbers.length > 0 ? (
               <div className="grid gap-4 md:grid-cols-2">
                 {barbers.map((barber) => (
-                  <Card 
-                    key={barber.id} 
+                  <Card
+                    key={barber.id}
                     className={`cursor-pointer transition-all hover:shadow-md ${
                       selectedBarber?.id === barber.id ? 'ring-2 ring-blue-500' : ''
                     }`}
@@ -185,7 +185,7 @@ const BookingDemoPage: React.FC = () => {
             {services.length > 0 ? (
               <div className="grid gap-4">
                 {services.map((service) => (
-                  <Card 
+                  <Card
                     key={service.id}
                     className={`cursor-pointer transition-all hover:shadow-md ${
                       selectedService?.id === service.id ? 'ring-2 ring-blue-500' : ''
@@ -303,12 +303,12 @@ const BookingDemoPage: React.FC = () => {
           <div className="flex items-center justify-between">
             {demoSteps.map((step, index) => (
               <div key={step.id} className="flex items-center">
-                <div 
+                <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                    completedSteps.has(step.id) 
-                      ? 'bg-green-500 text-white' 
-                      : index === currentStep 
-                        ? 'bg-blue-500 text-white' 
+                    completedSteps.has(step.id)
+                      ? 'bg-green-500 text-white'
+                      : index === currentStep
+                        ? 'bg-blue-500 text-white'
                         : 'bg-gray-200 text-gray-600'
                   }`}
                 >

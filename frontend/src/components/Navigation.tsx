@@ -7,13 +7,13 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from '@/components/AuthProvider'
 import { NotificationCenter } from '@/components/NotificationCenter'
-import { 
-  BarChart3, 
-  Users, 
-  MapPin, 
-  GraduationCap, 
-  Settings, 
-  Menu, 
+import {
+  BarChart3,
+  Users,
+  MapPin,
+  GraduationCap,
+  Settings,
+  Menu,
   X,
   Building,
   Shield,
@@ -84,11 +84,11 @@ export default function Navigation() {
   const [isMounted, setIsMounted] = useState(false)
   const pathname = usePathname()
   const { user, logout, hasRole } = useAuth()
-  
+
   useEffect(() => {
     setIsMounted(true)
   }, [])
-  
+
   if (!isMounted || !user) return null
 
   const hasAccess = (item: any) => {
@@ -114,7 +114,7 @@ export default function Navigation() {
             {filteredItems.map((item) => {
               const Icon = item.icon
               const isActive = pathname === item.href
-              
+
               return (
                 <Link
                   key={item.name}
@@ -135,7 +135,7 @@ export default function Navigation() {
           {/* User Menu */}
           <div className="flex items-center space-x-4">
             <NotificationCenter />
-            
+
             <div className="flex items-center space-x-2">
               <div className="hidden sm:block text-right">
                 <div className="text-sm font-medium text-gray-900">
@@ -171,7 +171,7 @@ export default function Navigation() {
             {filteredItems.map((item) => {
               const Icon = item.icon
               const isActive = pathname === item.href
-              
+
               return (
                 <Link
                   key={item.name}

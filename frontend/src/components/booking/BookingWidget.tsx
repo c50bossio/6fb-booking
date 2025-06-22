@@ -104,7 +104,7 @@ const BookingWidget: React.FC<BookingWidgetProps> = ({
       }
 
       const response = await bookingService.createBooking(bookingData)
-      
+
       if (onBookingComplete) {
         onBookingComplete(response.data)
       }
@@ -169,11 +169,11 @@ const BookingWidget: React.FC<BookingWidgetProps> = ({
                 Select Service
               </span>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <div className={cn(
                 'flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium',
-                bookingState.step === 'datetime' ? 'bg-blue-600 text-white' : 
+                bookingState.step === 'datetime' ? 'bg-blue-600 text-white' :
                 bookingState.selectedService ? 'bg-gray-300 text-gray-600' : 'bg-gray-200 text-gray-400'
               )}>
                 2
@@ -185,7 +185,7 @@ const BookingWidget: React.FC<BookingWidgetProps> = ({
                 Choose Date & Time
               </span>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <div className={cn(
                 'flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium',
@@ -233,7 +233,7 @@ const BookingWidget: React.FC<BookingWidgetProps> = ({
           {bookingState.step === 'confirm' && (
             <div className="space-y-6">
               <h3 className="text-lg font-semibold">Booking Summary</h3>
-              
+
               <div className="bg-gray-50 rounded-lg p-4 space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Service:</span>
@@ -284,7 +284,7 @@ const BookingWidget: React.FC<BookingWidgetProps> = ({
                 Back
               </Button>
             )}
-            
+
             {bookingState.step === 'confirm' && (
               <Button
                 type="button"

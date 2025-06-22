@@ -42,10 +42,10 @@ apiClient.interceptors.response.use(
     // DEMO MODE: Return mock data instead of failing
     if (error.response?.status === 401 || error.response?.status === 403 || !error.response) {
       console.log('Demo mode: Intercepting API error and returning mock data')
-      
+
       // Return mock data based on the request URL
       const url = error.config?.url || ''
-      
+
       // Dashboard stats
       if (url?.includes('/dashboard/appointments/today')) {
         return {
@@ -60,15 +60,15 @@ apiClient.interceptors.response.use(
           }
         }
       }
-      
+
       // Barbers
       if (url?.includes('/barbers')) {
         return {
           data: [
-            { 
-              id: 1, 
-              first_name: 'John', 
-              last_name: 'Doe', 
+            {
+              id: 1,
+              first_name: 'John',
+              last_name: 'Doe',
               email: 'john.doe@example.com',
               phone: '(555) 123-4567',
               is_active: true,
@@ -78,10 +78,10 @@ apiClient.interceptors.response.use(
               monthly_revenue: 12500,
               appointments_this_week: 24
             },
-            { 
-              id: 2, 
-              first_name: 'Jane', 
-              last_name: 'Smith', 
+            {
+              id: 2,
+              first_name: 'Jane',
+              last_name: 'Smith',
               email: 'jane.smith@example.com',
               phone: '(555) 234-5678',
               is_active: true,
@@ -91,10 +91,10 @@ apiClient.interceptors.response.use(
               monthly_revenue: 15200,
               appointments_this_week: 28
             },
-            { 
-              id: 3, 
-              first_name: 'Mike', 
-              last_name: 'Johnson', 
+            {
+              id: 3,
+              first_name: 'Mike',
+              last_name: 'Johnson',
               email: 'mike.johnson@example.com',
               phone: '(555) 345-6789',
               is_active: true,
@@ -104,10 +104,10 @@ apiClient.interceptors.response.use(
               monthly_revenue: 9800,
               appointments_this_week: 20
             },
-            { 
-              id: 4, 
-              first_name: 'Sarah', 
-              last_name: 'Williams', 
+            {
+              id: 4,
+              first_name: 'Sarah',
+              last_name: 'Williams',
               email: 'sarah.williams@example.com',
               phone: '(555) 456-7890',
               is_active: true,
@@ -120,7 +120,7 @@ apiClient.interceptors.response.use(
           ]
         }
       }
-      
+
       // Appointments
       if (url?.includes('/appointments')) {
         const today = new Date()
@@ -183,7 +183,7 @@ apiClient.interceptors.response.use(
           ]
         }
       }
-      
+
       // Analytics
       if (url?.includes('/analytics')) {
         return {
@@ -214,7 +214,7 @@ apiClient.interceptors.response.use(
           }
         }
       }
-      
+
       // Locations
       if (url?.includes('/locations')) {
         return {
@@ -268,7 +268,7 @@ apiClient.interceptors.response.use(
           ]
         }
       }
-      
+
       // Clients
       if (url?.includes('/clients')) {
         return {
@@ -312,7 +312,7 @@ apiClient.interceptors.response.use(
           ]
         }
       }
-      
+
       // Payments
       if (url?.includes('/payments')) {
         return {
@@ -349,7 +349,7 @@ apiClient.interceptors.response.use(
           }
         }
       }
-      
+
       // Booking endpoints
       if (url?.includes('/booking')) {
         return {
@@ -367,7 +367,7 @@ apiClient.interceptors.response.use(
           }
         }
       }
-      
+
       // For other endpoints, return empty success response
       return { data: { success: true, message: 'Demo mode - mock response' } }
     }

@@ -23,7 +23,7 @@
    - [ ] Choose Free plan (sufficient for initial setup)
 
 2. **Add Domain to Cloudflare**
-   - [ ] Click "Add Site" 
+   - [ ] Click "Add Site"
    - [ ] Enter: `bookbarber.com`
    - [ ] Click "Add Site"
    - [ ] Wait for DNS scan to complete
@@ -37,9 +37,9 @@
 4. **Add New Subdomain Records**
    ```
    Add these records in Cloudflare DNS tab:
-   
+
    Type: A    | Name: app   | Content: [FRONTEND_IP] | TTL: Auto | Proxy: ON
-   Type: A    | Name: api   | Content: [BACKEND_IP]  | TTL: Auto | Proxy: ON  
+   Type: A    | Name: api   | Content: [BACKEND_IP]  | TTL: Auto | Proxy: ON
    Type: A    | Name: admin | Content: [ADMIN_IP]    | TTL: Auto | Proxy: OFF
    Type: CNAME| Name: www   | Content: bookbarber.com| TTL: Auto | Proxy: ON
    ```
@@ -106,7 +106,7 @@
     - [ ] Set "Browser Cache TTL" to "1 month"
 
 13. **Caching Settings**
-    - [ ] Go to Caching tab  
+    - [ ] Go to Caching tab
     - [ ] Set "Caching Level" to "Standard"
     - [ ] Enable "Always Online"
 
@@ -234,7 +234,7 @@ Your setup is successful when:
 nslookup app.bookbarber.com
 nslookup api.bookbarber.com
 
-# Test HTTP response  
+# Test HTTP response
 curl -I https://app.bookbarber.com
 curl -I https://api.bookbarber.com
 

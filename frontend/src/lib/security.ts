@@ -13,7 +13,7 @@ export function generateNonce(): string {
     return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
   } else {
     // Server environment fallback
-    return Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => 
+    return Array.from(crypto.getRandomValues(new Uint8Array(16)), byte =>
       byte.toString(16).padStart(2, '0')
     ).join('');
   }
@@ -52,7 +52,7 @@ export function logSecurityEvent(event: string, details?: any): void {
   if (process.env.NODE_ENV === 'development') {
     console.log(`[Security Event] ${event}`, details);
   }
-  
+
   // In production, you might want to send this to your monitoring service
   // Example: send to backend security endpoint
 }
@@ -72,17 +72,17 @@ export function generateSecureToken(length: number = 32): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
   const randomArray = new Uint8Array(length);
-  
+
   if (typeof window !== 'undefined' && window.crypto) {
     window.crypto.getRandomValues(randomArray);
   } else {
     crypto.getRandomValues(randomArray);
   }
-  
+
   for (let i = 0; i < length; i++) {
     result += chars.charAt(randomArray[i] % chars.length);
   }
-  
+
   return result;
 }
 
@@ -98,7 +98,7 @@ export function containsMaliciousContent(input: string): boolean {
     /<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi,
     /<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi,
   ];
-  
+
   return dangerousPatterns.some(pattern => pattern.test(input));
 }
 
@@ -118,11 +118,11 @@ export class RateLimiter {
   canMakeCall(): boolean {
     const now = Date.now();
     this.calls = this.calls.filter(callTime => now - callTime < this.timeWindow);
-    
+
     if (this.calls.length >= this.maxCalls) {
       return false;
     }
-    
+
     this.calls.push(now);
     return true;
   }

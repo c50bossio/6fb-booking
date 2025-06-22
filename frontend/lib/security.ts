@@ -6,7 +6,7 @@
 // Input sanitization functions
 export const sanitizeHtml = (input: string): string => {
   if (typeof input !== 'string') return ''
-  
+
   // Remove potentially dangerous HTML tags and attributes
   return input
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
@@ -24,7 +24,7 @@ export const sanitizeHtml = (input: string): string => {
 // SQL injection prevention for search terms
 export const sanitizeSearchInput = (input: string): string => {
   if (typeof input !== 'string') return ''
-  
+
   return input
     .replace(/[';\"\\]/g, '') // Remove quotes and backslashes
     .replace(/(\-\-|\/\*|\*\/)/g, '') // Remove SQL comment syntax
@@ -134,7 +134,7 @@ export const validatePhone = (phone: string): { isValid: boolean; formatted?: st
 // XSS prevention for display
 export const escapeHtml = (text: string): string => {
   if (typeof text !== 'string') return ''
-  
+
   const map: { [key: string]: string } = {
     '&': '&amp;',
     '<': '&lt;',
@@ -176,14 +176,14 @@ export class RateLimiter {
   isAllowed(key: string, maxAttempts: number = 5, windowMs: number = 900000): boolean {
     const now = Date.now()
     const attempts = this.attempts.get(key) || []
-    
+
     // Remove old attempts outside the window
     const validAttempts = attempts.filter(time => now - time < windowMs)
-    
+
     if (validAttempts.length >= maxAttempts) {
       return false
     }
-    
+
     validAttempts.push(now)
     this.attempts.set(key, validAttempts)
     return true
@@ -228,7 +228,7 @@ export const secureStorage = {
 // Permission-based route protection
 export const checkRoutePermission = (userPermissions: string[], requiredPermissions: string[]): boolean => {
   if (!userPermissions || !requiredPermissions) return false
-  
+
   // Check if user has at least one of the required permissions
   return requiredPermissions.some(permission => userPermissions.includes(permission))
 }
@@ -238,7 +238,7 @@ export const logSecurityEvent = (event: string, details?: any): void => {
   if (process.env.NODE_ENV === 'development') {
     console.warn(`Security Event: ${event}`, details)
   }
-  
+
   // In production, this could send to a security monitoring service
   // fetch('/api/security/log', {
   //   method: 'POST',

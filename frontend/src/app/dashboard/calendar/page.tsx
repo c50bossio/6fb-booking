@@ -91,7 +91,7 @@ export default function CalendarPage() {
   const [viewMode, setViewMode] = useState<'week' | 'day'>('week')
   const [appointments, setAppointments] = useState(mockAppointments)
   const [barbers, setBarbers] = useState(mockBarbers)
-  
+
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
@@ -140,13 +140,13 @@ export default function CalendarPage() {
       notes: booking.notes,
       confirmationNumber: booking.confirmation_number
     }
-    
+
     setAppointments(prev => [...prev, newAppointment])
     setShowBookingFlow(false)
   }
 
   const handleAppointmentUpdated = (updatedAppointment: typeof mockAppointments[0]) => {
-    setAppointments(prev => 
+    setAppointments(prev =>
       prev.map(apt => apt.id === updatedAppointment.id ? updatedAppointment : apt)
     )
     setShowDetailsModal(false)
@@ -167,8 +167,8 @@ export default function CalendarPage() {
 
   if (!mounted) {
     return (
-      <div 
-        title="Calendar" 
+      <div
+        title="Calendar"
         description="Manage appointments and schedules"
       >
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
@@ -180,7 +180,7 @@ export default function CalendarPage() {
     )
   }
 
-  const todayAppointments = appointments.filter(apt => 
+  const todayAppointments = appointments.filter(apt =>
     apt.date === new Date().toISOString().split('T')[0]
   )
 
@@ -188,8 +188,8 @@ export default function CalendarPage() {
   const availableBarbers = barbers.filter(b => b.status === 'online').length
 
   return (
-    <div 
-      title="Calendar" 
+    <div
+      title="Calendar"
       description="Manage appointments and schedules"
     >
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
@@ -212,9 +212,9 @@ export default function CalendarPage() {
                   Manage your appointments and schedule
                 </p>
               </div>
-              
+
               <div className="flex flex-col sm:flex-row gap-3">
-                <button 
+                <button
                   onClick={handleNewAppointment}
                   className="px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold rounded-xl hover:from-violet-700 hover:to-purple-700 hover:shadow-lg hover:shadow-violet-500/25 transform hover:-translate-y-0.5 transition-all duration-200"
                 >
@@ -307,7 +307,7 @@ export default function CalendarPage() {
 
           {/* Enterprise Calendar */}
           <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 mb-8">
-            <EnterpriseCalendar 
+            <EnterpriseCalendar
               appointments={appointments}
               onAppointmentClick={handleAppointmentClick}
               onTimeSlotClick={handleTimeSlotClick}
@@ -326,9 +326,9 @@ export default function CalendarPage() {
                 setIsRefreshing(false)
               }}
               selectedBarbers={[]}
-              availableBarbers={mockBarbers.map(b => ({ 
-                id: b.name.toLowerCase().replace(' ', '-'), 
-                name: b.name, 
+              availableBarbers={mockBarbers.map(b => ({
+                id: b.name.toLowerCase().replace(' ', '-'),
+                name: b.name,
                 color: '#8b5cf6',
                 status: b.status as 'online' | 'busy' | 'offline'
               }))}

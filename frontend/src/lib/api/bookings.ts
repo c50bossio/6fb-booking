@@ -182,7 +182,7 @@ export const bookingService = {
 
   // Update booking
   async updateBooking(
-    confirmationNumber: string, 
+    confirmationNumber: string,
     updates: Partial<BookingRequest>
   ): Promise<ApiResponse<Booking>> {
     const response = await apiClient.patch(`/bookings/${confirmationNumber}`, updates)

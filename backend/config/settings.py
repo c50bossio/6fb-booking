@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     TWILIO_ACCOUNT_SID: Optional[str] = os.getenv("TWILIO_ACCOUNT_SID")
     TWILIO_AUTH_TOKEN: Optional[str] = os.getenv("TWILIO_AUTH_TOKEN")
     SENDGRID_API_KEY: Optional[str] = os.getenv("SENDGRID_API_KEY")
-    
+
     # Email Configuration
     SMTP_HOST: str = os.getenv("SMTP_SERVER", "smtp.gmail.com")
     SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: Optional[str] = os.getenv("SMTP_PASSWORD")
     EMAIL_FROM_ADDRESS: Optional[str] = os.getenv("FROM_EMAIL")
     EMAIL_FROM_NAME: str = os.getenv("EMAIL_FROM_NAME", "6FB Platform")
-    
+
     @property
     def email_enabled(self) -> bool:
         """Check if email service is properly configured"""
@@ -46,10 +46,12 @@ class Settings(BaseSettings):
 
     # Google Calendar Integration
     GOOGLE_CALENDAR_CLIENT_ID: Optional[str] = os.getenv("GOOGLE_CALENDAR_CLIENT_ID")
-    GOOGLE_CALENDAR_CLIENT_SECRET: Optional[str] = os.getenv("GOOGLE_CALENDAR_CLIENT_SECRET")
+    GOOGLE_CALENDAR_CLIENT_SECRET: Optional[str] = os.getenv(
+        "GOOGLE_CALENDAR_CLIENT_SECRET"
+    )
     GOOGLE_CALENDAR_REDIRECT_URI: str = os.getenv(
-        "GOOGLE_CALENDAR_REDIRECT_URI", 
-        "http://localhost:8000/api/v1/calendar/oauth/callback"
+        "GOOGLE_CALENDAR_REDIRECT_URI",
+        "http://localhost:8000/api/v1/calendar/oauth/callback",
     )
 
     # Authentication - REQUIRE secure secret keys
@@ -60,7 +62,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(
         os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440")
     )
-    
+
     def model_post_init(self, __context) -> None:
         """Validate required security settings"""
         if not self.SECRET_KEY or self.SECRET_KEY == "your-secret-key-change-this":
@@ -68,8 +70,11 @@ class Settings(BaseSettings):
                 "SECRET_KEY environment variable must be set to a secure random value. "
                 "Generate one with: python3 -c 'import secrets; print(secrets.token_urlsafe(64))'"
             )
-        
-        if not self.JWT_SECRET_KEY or self.JWT_SECRET_KEY == "your-secret-key-change-this":
+
+        if (
+            not self.JWT_SECRET_KEY
+            or self.JWT_SECRET_KEY == "your-secret-key-change-this"
+        ):
             raise ValueError(
                 "JWT_SECRET_KEY environment variable must be set to a secure random value"
             )
@@ -82,7 +87,7 @@ class Settings(BaseSettings):
 
     # Frontend URL
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:3000")
-    
+
     # CORS
     ALLOWED_ORIGINS: List[str] = [
         "http://localhost:3000",

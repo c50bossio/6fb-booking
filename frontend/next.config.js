@@ -35,7 +35,7 @@ const nextConfig = {
   webpack: (config, { dev }) => {
     // Don't override devtool in development - let Next.js handle it
     // This prevents the warning about reverting webpack devtool
-    
+
     return config;
   },
   async headers() {

@@ -88,11 +88,11 @@ export const authService = {
           ]
         }
       }
-      
+
       // Store mock data with safe storage
       smartStorage.setItem('access_token', mockResponse.access_token)
       smartStorage.setItem('user', JSON.stringify(mockResponse.user))
-      
+
       return mockResponse
     }
   },
@@ -132,7 +132,7 @@ export const authService = {
       if (storedUser) {
         return storedUser
       }
-      
+
       // Return default demo user
       return {
         id: 1,
@@ -187,7 +187,7 @@ export const authService = {
   getStoredUser(): User | null {
     const userStr = smartStorage.getItem('user')
     if (!userStr) return null
-    
+
     try {
       return JSON.parse(userStr)
     } catch {

@@ -43,7 +43,7 @@ The API client (`/src/lib/api/client.ts`) returns comprehensive mock data for al
 
 ## How to Access the Application
 
-1. **Direct Dashboard Access**: 
+1. **Direct Dashboard Access**:
    - Navigate to `/dashboard` directly
    - The demo user will be automatically set
 

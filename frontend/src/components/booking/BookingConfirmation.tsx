@@ -6,13 +6,13 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { SuccessAnimation } from '@/components/ui/success-animation'
 import { cn } from '@/lib/utils'
-import { 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  User, 
-  Mail, 
-  Phone, 
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  User,
+  Mail,
+  Phone,
   CreditCard,
   Download,
   Share2,
@@ -92,7 +92,7 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({
   const handleAddToCalendar = () => {
     const startDate = new Date(`${booking.appointmentDate} ${booking.appointmentTime}`)
     const endDate = new Date(startDate.getTime() + booking.service.duration * 60000)
-    
+
     const event = {
       title: `${booking.service.name} with ${booking.barber.name}`,
       start: startDate.toISOString(),
@@ -100,10 +100,10 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({
       location: `${booking.location.name}, ${booking.location.address}, ${booking.location.city}, ${booking.location.state} ${booking.location.zip}`,
       description: `Booking confirmation: ${booking.confirmationNumber}`
     }
-    
+
     // Create Google Calendar URL
     const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startDate.toISOString().replace(/-|:|\.\d\d\d/g, '')}/${endDate.toISOString().replace(/-|:|\.\d\d\d/g, '')}&location=${encodeURIComponent(event.location)}&details=${encodeURIComponent(event.description)}`
-    
+
     window.open(googleCalendarUrl, '_blank')
   }
 
@@ -234,7 +234,7 @@ Payment: ${booking.paymentStatus}
               <CreditCard className="h-5 w-5 text-gray-400 mt-0.5" />
               <div>
                 <p className="font-medium">Payment Status</p>
-                <Badge 
+                <Badge
                   variant={booking.paymentStatus === 'paid' ? 'default' : 'secondary'}
                   className="mt-1"
                 >
@@ -285,7 +285,7 @@ Payment: ${booking.paymentStatus}
                 <Share2 className="h-4 w-4 mr-2" />
                 Share Booking
               </Button>
-              
+
               {showShareOptions && (
                 <div className="absolute top-full mt-2 w-full bg-white border rounded-lg shadow-lg p-2 z-10">
                   <button

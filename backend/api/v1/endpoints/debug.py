@@ -11,14 +11,12 @@ import os
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
+
 def require_development():
     """Ensure endpoint is only accessible in development"""
     environment = os.getenv("ENVIRONMENT", "development").lower()
     if environment != "development":
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
 
 
 @router.get("/database-test")
@@ -57,5 +55,3 @@ async def test_database_connection():
             "error": str(e),
             "message": "Database connection failed",
         }
-
-

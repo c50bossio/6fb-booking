@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react'
-import { 
-  ChevronLeftIcon, 
+import {
+  ChevronLeftIcon,
   ChevronRightIcon,
   CalendarDaysIcon,
   ClockIcon,
@@ -201,28 +201,28 @@ const mockAppointments: Appointment[] = [
 ]
 
 const mockBarbers: Barber[] = [
-  { 
-    id: 'marcus', 
-    name: 'Marcus Johnson', 
-    color: '#8b5cf6', 
+  {
+    id: 'marcus',
+    name: 'Marcus Johnson',
+    color: '#8b5cf6',
     avatar: '/avatars/marcus.jpg',
     status: 'online',
     workingHours: { start: '09:00', end: '17:00' },
     services: ['Premium Cut', 'Classic Fade', 'Styling']
   },
-  { 
-    id: 'sarah', 
-    name: 'Sarah Mitchell', 
-    color: '#10b981', 
+  {
+    id: 'sarah',
+    name: 'Sarah Mitchell',
+    color: '#10b981',
     avatar: '/avatars/sarah.jpg',
     status: 'busy',
     workingHours: { start: '10:00', end: '18:00' },
     services: ['Beard Trim', 'Special Event', 'Color']
   },
-  { 
-    id: 'alex', 
-    name: 'Alex Rodriguez', 
-    color: '#f59e0b', 
+  {
+    id: 'alex',
+    name: 'Alex Rodriguez',
+    color: '#f59e0b',
     avatar: '/avatars/alex.jpg',
     status: 'offline',
     workingHours: { start: '08:00', end: '16:00' },
@@ -270,7 +270,7 @@ export default function EnterpriseCalendar({
   const [showFilterPanel, setShowFilterPanel] = useState(false)
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery)
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
-  
+
   // Refs
   const calendarRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -281,20 +281,20 @@ export default function EnterpriseCalendar({
     const slots = []
     const startTime = new Date(`2024-01-01T${workingHours.start}:00`)
     const endTime = new Date(`2024-01-01T${workingHours.end}:00`)
-    
+
     let currentTime = new Date(startTime)
     while (currentTime < endTime) {
       slots.push(currentTime.toTimeString().slice(0, 5))
       currentTime = new Date(currentTime.getTime() + timeSlotDuration * 60000)
     }
-    
+
     return slots
   }, [workingHours, timeSlotDuration])
 
   // Get current period dates based on view
   const currentPeriodDates = useMemo(() => {
     const dates = []
-    
+
     if (selectedView === 'day') {
       dates.push(new Date(currentDate))
     } else if (selectedView === 'week') {
@@ -302,7 +302,7 @@ export default function EnterpriseCalendar({
       const day = start.getDay()
       const diff = start.getDate() - day + (day === 0 ? -6 : 1) // Start from Monday
       start.setDate(diff)
-      
+
       const daysToShow = showWeekends ? 7 : 5
       for (let i = 0; i < daysToShow; i++) {
         const date = new Date(start)
@@ -311,12 +311,12 @@ export default function EnterpriseCalendar({
       }
     } else if (selectedView === 'month') {
       const start = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
-      
+
       // Start from the first Monday of the month view
       const firstDay = new Date(start)
       const dayOfWeek = firstDay.getDay()
       firstDay.setDate(firstDay.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
-      
+
       // Generate 42 days (6 weeks) for consistent month view
       for (let i = 0; i < 42; i++) {
         const date = new Date(firstDay)
@@ -324,7 +324,7 @@ export default function EnterpriseCalendar({
         dates.push(date)
       }
     }
-    
+
     return dates
   }, [currentDate, selectedView, showWeekends])
 
@@ -334,8 +334,8 @@ export default function EnterpriseCalendar({
 
     // Filter by selected barbers
     if (selectedBarberFilter.length > 0) {
-      filtered = filtered.filter(apt => 
-        selectedBarberFilter.some(barberId => 
+      filtered = filtered.filter(apt =>
+        selectedBarberFilter.some(barberId =>
           availableBarbers.find(b => b.id === barberId)?.name === apt.barber
         )
       )
@@ -378,11 +378,11 @@ export default function EnterpriseCalendar({
   // Get current period title
   const getCurrentPeriodTitle = () => {
     if (selectedView === 'day') {
-      return currentDate.toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        month: 'long', 
-        day: 'numeric', 
-        year: 'numeric' 
+      return currentDate.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
       })
     } else if (selectedView === 'week') {
       const firstDay = currentPeriodDates[0]
@@ -404,26 +404,26 @@ export default function EnterpriseCalendar({
     const dateStr = date.toISOString().split('T')[0]
     return filteredAppointments.filter(apt => {
       if (apt.date !== dateStr) return false
-      
+
       const aptStartTime = apt.startTime
       const aptEndTime = apt.endTime
-      
+
       // Check if the time slot overlaps with the appointment
       const slotStart = new Date(`2024-01-01T${time}:00`)
       const slotEnd = new Date(slotStart.getTime() + timeSlotDuration * 60000)
       const appointmentStart = new Date(`2024-01-01T${aptStartTime}:00`)
       const appointmentEnd = new Date(`2024-01-01T${aptEndTime}:00`)
-      
+
       return slotStart < appointmentEnd && slotEnd > appointmentStart
     })
   }
 
   const getAppointmentStyle = (appointment: Appointment) => {
     const baseClasses = 'appointment-block rounded-lg p-3 shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer relative overflow-hidden group'
-    
+
     let statusClasses = ''
     let glowClasses = ''
-    
+
     switch (appointment.status) {
       case 'confirmed':
         statusClasses = 'bg-gradient-to-br from-violet-500 to-purple-600 text-white'
@@ -445,12 +445,12 @@ export default function EnterpriseCalendar({
         statusClasses = 'bg-gradient-to-br from-violet-500 to-purple-600 text-white'
         glowClasses = 'hover:shadow-violet-500/25'
     }
-    
+
     const priorityClasses = appointment.priority === 'high' ? 'ring-2 ring-yellow-400 ring-opacity-50' : ''
-    const dragClasses = draggedAppointment === appointment.id 
-      ? 'opacity-50 transform rotate-1 scale-105 z-50' 
+    const dragClasses = draggedAppointment === appointment.id
+      ? 'opacity-50 transform rotate-1 scale-105 z-50'
       : 'hover:scale-102 hover:z-10'
-    
+
     return `${baseClasses} ${statusClasses} ${glowClasses} ${priorityClasses} ${dragClasses}`
   }
 
@@ -462,7 +462,7 @@ export default function EnterpriseCalendar({
   // Navigation handlers
   const navigatePeriod = (direction: 'prev' | 'next') => {
     const newDate = new Date(currentDate)
-    
+
     if (selectedView === 'day') {
       newDate.setDate(currentDate.getDate() + (direction === 'next' ? 1 : -1))
     } else if (selectedView === 'week') {
@@ -470,7 +470,7 @@ export default function EnterpriseCalendar({
     } else if (selectedView === 'month' || selectedView === 'agenda') {
       newDate.setMonth(currentDate.getMonth() + (direction === 'next' ? 1 : -1))
     }
-    
+
     setCurrentDate(newDate)
   }
 
@@ -485,7 +485,7 @@ export default function EnterpriseCalendar({
   // Drag and drop handlers
   const handleDragStart = useCallback((e: React.DragEvent, appointmentId: string) => {
     if (!enableDragDrop) return
-    
+
     e.dataTransfer.effectAllowed = 'move'
     e.dataTransfer.setData('text/plain', appointmentId)
     setDraggedAppointment(appointmentId)
@@ -504,7 +504,7 @@ export default function EnterpriseCalendar({
 
   const handleDrop = useCallback((e: React.DragEvent, date: string, time: string) => {
     if (!enableDragDrop) return
-    
+
     e.preventDefault()
     const appointmentId = e.dataTransfer.getData('text/plain')
     if (appointmentId && onAppointmentDrop) {
@@ -561,7 +561,7 @@ export default function EnterpriseCalendar({
     const newSelection = selectedBarberFilter.includes(barberId)
       ? selectedBarberFilter.filter(id => id !== barberId)
       : [...selectedBarberFilter, barberId]
-    
+
     setSelectedBarberFilter(newSelection)
     onBarberFilter?.(newSelection)
   }
@@ -651,7 +651,7 @@ export default function EnterpriseCalendar({
       const now = new Date()
       const currentTimeString = now.toTimeString().slice(0, 5)
       const currentTimeSlot = timeSlots.findIndex(slot => slot >= currentTimeString)
-      
+
       if (currentTimeSlot > -1) {
         const scrollTop = Math.max(0, (currentTimeSlot - 2) * 60) // 60px per time slot, show 2 slots before current time
         scrollContainerRef.current.scrollTop = scrollTop
@@ -714,7 +714,7 @@ export default function EnterpriseCalendar({
   }
 
   return (
-    <div 
+    <div
       ref={calendarRef}
       className={`${theme === 'dark' ? 'calendar-dark-theme' : 'premium-card-modern'} p-6 relative`}
     >
@@ -729,19 +729,19 @@ export default function EnterpriseCalendar({
                 Enterprise Calendar
               </h2>
             </div>
-            
+
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => navigatePeriod('prev')}
-                className={`p-2 rounded-lg transition-colors ${theme === 'dark' 
-                  ? 'text-gray-300 hover:text-white hover:bg-white/10' 
+                className={`p-2 rounded-lg transition-colors ${theme === 'dark'
+                  ? 'text-gray-300 hover:text-white hover:bg-white/10'
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                 }`}
                 title="Previous period (← arrow key)"
               >
                 <ChevronLeftIcon className="h-5 w-5" />
               </button>
-              
+
               <div className="flex items-center space-x-2">
                 <span className={`text-lg font-semibold min-w-max ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
                   {getCurrentPeriodTitle()}
@@ -757,11 +757,11 @@ export default function EnterpriseCalendar({
                   Today
                 </button>
               </div>
-              
+
               <button
                 onClick={() => navigatePeriod('next')}
-                className={`p-2 rounded-lg transition-colors ${theme === 'dark' 
-                  ? 'text-gray-300 hover:text-white hover:bg-white/10' 
+                className={`p-2 rounded-lg transition-colors ${theme === 'dark'
+                  ? 'text-gray-300 hover:text-white hover:bg-white/10'
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                 }`}
                 title="Next period (→ arrow key)"
@@ -860,7 +860,7 @@ export default function EnterpriseCalendar({
                     </span>
                   )}
                 </button>
-                
+
                 {showBarberPanel && (
                   <div className={`absolute right-0 top-full mt-2 w-64 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-lg border ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} shadow-lg z-50`}>
                     <div className="p-4">
@@ -891,7 +891,7 @@ export default function EnterpriseCalendar({
                               className="rounded border-gray-300 text-violet-600 focus:ring-violet-500"
                             />
                             <div className="flex items-center space-x-2">
-                              <div 
+                              <div
                                 className={`w-3 h-3 rounded-full status-dot ${
                                   barber.status === 'online' ? 'status-active' :
                                   barber.status === 'busy' ? 'status-warning' : 'status-inactive'
@@ -960,7 +960,7 @@ export default function EnterpriseCalendar({
               </div>
 
               {/* New Appointment */}
-              <button 
+              <button
                 onClick={() => handleTimeSlotClick('', '')}
                 className="premium-button text-sm flex items-center space-x-1"
               >
@@ -974,7 +974,7 @@ export default function EnterpriseCalendar({
 
       {/* Calendar Views */}
       {selectedView === 'month' ? (
-        <MonthView 
+        <MonthView
           theme={theme}
           dates={currentPeriodDates}
           appointments={filteredAppointments}
@@ -1122,33 +1122,33 @@ function MonthView({ theme, dates, appointments, onDateClick, onAppointmentClick
           const dayAppointments = getAppointmentsForDate(date)
           const isCurrentMonth = date.getMonth() === currentMonth.getMonth()
           const todayClass = isToday(date) ? (theme === 'dark' ? 'bg-violet-900/30 border-violet-500' : 'bg-violet-50 border-violet-200') : ''
-          
+
           return (
             <div
               key={index}
               className={`min-h-[120px] p-2 border-r border-b cursor-pointer transition-all duration-200 hover:scale-102 ${
-                theme === 'dark' 
-                  ? 'border-gray-700 hover:bg-gray-700/30' 
+                theme === 'dark'
+                  ? 'border-gray-700 hover:bg-gray-700/30'
                   : 'border-gray-200 hover:bg-gray-50'
               } ${todayClass} ${!isCurrentMonth ? 'opacity-50' : ''}`}
               onClick={() => onDateClick(date)}
             >
               <div className={`text-sm font-medium mb-2 ${
-                isToday(date) 
-                  ? 'text-violet-600' 
-                  : isCurrentMonth 
+                isToday(date)
+                  ? 'text-violet-600'
+                  : isCurrentMonth
                     ? (theme === 'dark' ? 'text-white' : 'text-gray-900')
                     : (theme === 'dark' ? 'text-gray-500' : 'text-gray-400')
               }`}>
                 {date.getDate()}
               </div>
-              
+
               <div className="space-y-1">
                 {dayAppointments.slice(0, 3).map(appointment => (
                   <div
                     key={appointment.id}
                     className="text-xs px-2 py-1 rounded-md truncate cursor-pointer transition-all duration-200 hover:scale-105"
-                    style={{ 
+                    style={{
                       backgroundColor: appointment.serviceColor || '#8b5cf6',
                       color: 'white'
                     }}
@@ -1187,7 +1187,7 @@ function AgendaView({ theme, appointments, currentDate, onAppointmentClick }: Ag
   // Group appointments by date
   const groupedAppointments = useMemo(() => {
     const groups: { [key: string]: Appointment[] } = {}
-    
+
     appointments.forEach(appointment => {
       const date = appointment.date
       if (!groups[date]) {
@@ -1195,12 +1195,12 @@ function AgendaView({ theme, appointments, currentDate, onAppointmentClick }: Ag
       }
       groups[date].push(appointment)
     })
-    
+
     // Sort appointments within each date by time
     Object.keys(groups).forEach(date => {
       groups[date].sort((a, b) => a.startTime.localeCompare(b.startTime))
     })
-    
+
     return groups
   }, [appointments])
 
@@ -1221,7 +1221,7 @@ function AgendaView({ theme, appointments, currentDate, onAppointmentClick }: Ag
             {sortedDates.map(dateStr => {
               const date = new Date(dateStr)
               const dayAppointments = groupedAppointments[dateStr]
-              
+
               return (
                 <div key={dateStr} className="space-y-3">
                   <div className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
@@ -1232,7 +1232,7 @@ function AgendaView({ theme, appointments, currentDate, onAppointmentClick }: Ag
                       day: 'numeric'
                     })}
                   </div>
-                  
+
                   <div className="space-y-2">
                     {dayAppointments.map(appointment => (
                       <div
@@ -1244,7 +1244,7 @@ function AgendaView({ theme, appointments, currentDate, onAppointmentClick }: Ag
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-3">
-                            <div 
+                            <div
                               className="w-4 h-4 rounded-full"
                               style={{ backgroundColor: appointment.serviceColor || '#8b5cf6' }}
                             ></div>
@@ -1257,7 +1257,7 @@ function AgendaView({ theme, appointments, currentDate, onAppointmentClick }: Ag
                               </div>
                             </div>
                           </div>
-                          
+
                           <div className="text-right">
                             <div className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
                               {appointment.startTime} - {appointment.endTime}
@@ -1267,15 +1267,15 @@ function AgendaView({ theme, appointments, currentDate, onAppointmentClick }: Ag
                             </div>
                           </div>
                         </div>
-                        
+
                         {appointment.notes && (
                           <div className={`mt-2 text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                             {appointment.notes}
                           </div>
                         )}
-                        
+
                         <div className="flex items-center justify-between mt-2">
-                          <span 
+                          <span
                             className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                               appointment.status === 'confirmed' ? 'bg-violet-100 text-violet-800' :
                               appointment.status === 'completed' ? 'bg-emerald-100 text-emerald-800' :
@@ -1285,11 +1285,11 @@ function AgendaView({ theme, appointments, currentDate, onAppointmentClick }: Ag
                           >
                             {appointment.status}
                           </span>
-                          
+
                           {appointment.tags && appointment.tags.length > 0 && (
                             <div className="flex space-x-1">
                               {appointment.tags.slice(0, 2).map(tag => (
-                                <span 
+                                <span
                                   key={tag}
                                   className={`inline-flex px-2 py-1 text-xs rounded-full ${
                                     theme === 'dark' ? 'bg-gray-600 text-gray-200' : 'bg-gray-200 text-gray-700'
@@ -1352,7 +1352,7 @@ function WeekDayView({
 }: WeekDayViewProps) {
   const gridCols = view === 'day' ? 'grid-cols-2' : `grid-cols-${dates.length + 1}`
   const timeSlotHeight = compactMode ? 'min-h-[50px]' : 'min-h-[60px]'
-  
+
   return (
     <div className={`border rounded-xl overflow-hidden ${theme === 'dark' ? 'border-gray-700 bg-gray-800/30' : 'border-gray-200 bg-white'}`}>
       {/* Day Headers */}
@@ -1361,10 +1361,10 @@ function WeekDayView({
           Time
         </div>
         {dates.map((date, index) => (
-          <div 
-            key={index} 
+          <div
+            key={index}
             className={`p-4 text-center border-r last:border-r-0 transition-colors ${
-              isToday(date) 
+              isToday(date)
                 ? (theme === 'dark' ? 'bg-violet-900/30' : 'bg-violet-50')
                 : (theme === 'dark' ? 'hover:bg-gray-700/30' : 'hover:bg-gray-100')
             } ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}
@@ -1373,7 +1373,7 @@ function WeekDayView({
               {date.toLocaleDateString('en-US', { weekday: view === 'day' ? 'long' : 'short' })}
             </div>
             <div className={`text-lg font-bold mt-1 ${
-              isToday(date) 
+              isToday(date)
                 ? (theme === 'dark' ? 'text-violet-400' : 'text-violet-600')
                 : (theme === 'dark' ? 'text-gray-100' : 'text-gray-700')
             }`}>
@@ -1387,7 +1387,7 @@ function WeekDayView({
       </div>
 
       {/* Time Slots */}
-      <div 
+      <div
         ref={scrollContainerRef}
         className={`max-h-[600px] overflow-y-auto ${theme === 'dark' ? 'dark-scrollbar' : ''}`}
       >
@@ -1397,19 +1397,19 @@ function WeekDayView({
             <div className={`p-3 text-sm font-medium border-r ${theme === 'dark' ? 'text-gray-300 border-gray-700 bg-gray-800/30' : 'text-gray-600 border-gray-200 bg-gray-50/50'}`}>
               {time}
             </div>
-            
+
             {/* Day Columns */}
             {dates.map((date, dateIndex) => {
               const dateStr = date.toISOString().split('T')[0]
               const slotAppointments = getAppointmentsForTimeSlot(date, time)
               const isHovered = hoveredTimeSlot?.date === dateStr && hoveredTimeSlot?.time === time
-              
+
               return (
                 <div
                   key={dateIndex}
                   className={`relative p-2 border-r last:border-r-0 ${timeSlotHeight} time-slot transition-all duration-200 cursor-pointer ${
-                    theme === 'dark' 
-                      ? 'border-gray-700 hover:bg-violet-900/20' 
+                    theme === 'dark'
+                      ? 'border-gray-700 hover:bg-violet-900/20'
                       : 'border-gray-200 hover:bg-violet-50'
                   } ${isHovered ? (theme === 'dark' ? 'bg-violet-900/30 border-violet-700' : 'bg-violet-100 border-violet-300') : ''}`}
                   onClick={() => onTimeSlotClick(dateStr, time)}
@@ -1434,7 +1434,7 @@ function WeekDayView({
                       {appointment.priority === 'high' && (
                         <div className="absolute top-1 left-1 w-2 h-2 bg-yellow-400 rounded-full"></div>
                       )}
-                      
+
                       {/* Appointment Content */}
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-semibold truncate">
@@ -1444,20 +1444,20 @@ function WeekDayView({
                           {appointment.status}
                         </span>
                       </div>
-                      
+
                       <div className="space-y-1">
                         <div className="flex items-center space-x-1">
                           <UserIcon className="h-3 w-3 opacity-80" />
                           <span className="text-xs truncate">{appointment.client}</span>
                         </div>
-                        
+
                         <div className="flex items-center space-x-1">
                           <ClockIcon className="h-3 w-3 opacity-80" />
                           <span className="text-xs">
                             {appointment.startTime} - {appointment.endTime}
                           </span>
                         </div>
-                        
+
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-1">
                             <CurrencyDollarIcon className="h-3 w-3 opacity-80" />
@@ -1468,7 +1468,7 @@ function WeekDayView({
                           </span>
                         </div>
                       </div>
-                      
+
                       {/* Tags */}
                       {appointment.tags && appointment.tags.length > 0 && (
                         <div className="mt-1 flex flex-wrap gap-1">
@@ -1479,7 +1479,7 @@ function WeekDayView({
                           ))}
                         </div>
                       )}
-                      
+
                       {/* Drag indicator */}
                       {enableDragDrop && (
                         <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -1488,7 +1488,7 @@ function WeekDayView({
                       )}
                     </div>
                   ))}
-                  
+
                   {/* Empty slot indicator */}
                   {slotAppointments.length === 0 && (
                     <div className={`absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity ${

@@ -108,7 +108,7 @@ src/components/settings/
 {
   "monday": {
     "open": "09:00",
-    "close": "18:00", 
+    "close": "18:00",
     "breaks": [{"start": "12:00", "end": "13:00"}]
   },
   "tuesday": { ... },
@@ -297,7 +297,7 @@ src/components/settings/
 **Enterprise Chain Template:**
 ```json
 {
-  "name": "Enterprise Chain", 
+  "name": "Enterprise Chain",
   "description": "Optimized for large chains",
   "settings": {
     "booking_window": {"min_advance_hours": 1, "max_advance_days": 90},
@@ -364,7 +364,7 @@ function MyApp() {
 function CalendarApp() {
   const { theme, themeColor } = useTheme()
   const { preferences } = useUserPreferences()
-  
+
   return (
     <div className={`theme-${theme}`} style={{ '--primary-color': themeColor }}>
       <EnterpriseCalendar
@@ -382,15 +382,15 @@ function CalendarApp() {
 ```tsx
 function CalendarWithSettings() {
   const [showSettings, setShowSettings] = useState(false)
-  
+
   return (
     <div>
       <button onClick={() => setShowSettings(true)}>
         Settings
       </button>
-      
+
       <EnterpriseCalendar />
-      
+
       <SettingsPanel
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}

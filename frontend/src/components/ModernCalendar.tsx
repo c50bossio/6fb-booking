@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { 
-  ChevronLeftIcon, 
+import {
+  ChevronLeftIcon,
   ChevronRightIcon,
   CalendarDaysIcon,
   ClockIcon,
@@ -89,8 +89,8 @@ const timeSlots = [
   '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30'
 ]
 
-export default function ModernCalendar({ 
-  appointments: propsAppointments, 
+export default function ModernCalendar({
+  appointments: propsAppointments,
   onAppointmentClick,
   onTimeSlotClick,
   view = 'week'
@@ -115,7 +115,7 @@ export default function ModernCalendar({
       const day = start.getDay()
       const diff = start.getDate() - day + (day === 0 ? -6 : 1)
       start.setDate(diff)
-      
+
       const end = new Date(start)
       end.setDate(start.getDate() + 6)
 
@@ -159,7 +159,7 @@ export default function ModernCalendar({
     const day = start.getDay()
     const diff = start.getDate() - day + (day === 0 ? -6 : 1) // Start from Monday
     start.setDate(diff)
-    
+
     const dates = []
     for (let i = 0; i < 7; i++) {
       const date = new Date(start)
@@ -234,7 +234,7 @@ export default function ModernCalendar({
             <CalendarDaysIcon className="h-6 w-6 text-violet-600" />
             <h2 className="text-2xl font-bold text-gray-900">Schedule</h2>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <button
               onClick={() => navigateWeek('prev')}
@@ -242,11 +242,11 @@ export default function ModernCalendar({
             >
               <ChevronLeftIcon className="h-5 w-5" />
             </button>
-            
+
             <span className="text-lg font-semibold text-gray-900 min-w-max">
               {getCurrentWeekRange()}
             </span>
-            
+
             <button
               onClick={() => navigateWeek('next')}
               className="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
@@ -281,7 +281,7 @@ export default function ModernCalendar({
             </button>
           </div>
 
-          <button 
+          <button
             onClick={() => handleTimeSlotClick('', '')}
             className="premium-button text-sm"
           >
@@ -298,8 +298,8 @@ export default function ModernCalendar({
             Time
           </div>
           {weekDates.map((date, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className={`p-4 text-center border-r border-gray-200 last:border-r-0 ${
                 isToday(date) ? 'bg-violet-50' : ''
               }`}
@@ -327,12 +327,12 @@ export default function ModernCalendar({
               <div className="p-3 text-sm font-medium text-gray-600 border-r border-gray-200 bg-gray-50/50">
                 {time}
               </div>
-              
+
               {/* Day Columns */}
               {weekDates.map((date, dateIndex) => {
                 const dayAppointments = getAppointmentsForDate(date)
                 const appointmentForTime = dayAppointments.find(apt => apt.startTime === time)
-                
+
                 return (
                   <div
                     key={dateIndex}
@@ -355,20 +355,20 @@ export default function ModernCalendar({
                             {appointmentForTime.status}
                           </span>
                         </div>
-                        
+
                         <div className="space-y-1">
                           <div className="flex items-center space-x-1">
                             <UserIcon className="h-3 w-3 opacity-80" />
                             <span className="text-xs truncate">{appointmentForTime.client}</span>
                           </div>
-                          
+
                           <div className="flex items-center space-x-1">
                             <ClockIcon className="h-3 w-3 opacity-80" />
                             <span className="text-xs">
                               {appointmentForTime.startTime} - {appointmentForTime.endTime}
                             </span>
                           </div>
-                          
+
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-1">
                               <CurrencyDollarIcon className="h-3 w-3 opacity-80" />

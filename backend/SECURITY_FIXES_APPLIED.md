@@ -106,7 +106,7 @@ python3 main.py
 - ✅ No default fallback credentials
 - ✅ Environment variable validation
 
-### API Security  
+### API Security
 - ✅ Restricted CORS configuration
 - ✅ Debug endpoints limited to development
 - ✅ Webhook token moved to environment
@@ -134,7 +134,7 @@ python3 main.py
 ## 📈 Next Security Steps
 
 1. **Implement Security Logging** (like Bossio platform)
-2. **Add Rate Limiting per IP** 
+2. **Add Rate Limiting per IP**
 3. **Implement Request Validation**
 4. **Add Security Headers Middleware**
 5. **Set up Security Monitoring Dashboard**

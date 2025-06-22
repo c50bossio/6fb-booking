@@ -57,22 +57,22 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({
     try {
       setLoading(true)
       setError(null)
-      
+
       const params: any = {}
       if (locationId) params.location_id = locationId
       if (barberId) params.barber_id = barberId
-      
+
       const response = await bookingService.getServices(params)
       const servicesData = response.data
-      
+
       setServices(servicesData)
-      
+
       // Extract unique categories
       const uniqueCategories = Array.from(
         new Set(servicesData.map((s: Service) => s.category))
       ).sort()
       setCategories(uniqueCategories)
-      
+
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to load services')
     } finally {
@@ -125,7 +125,7 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
-        
+
         {/* Category Tabs */}
         <div className="flex flex-wrap gap-2">
           <Button
@@ -201,7 +201,7 @@ interface ServiceCardProps {
 
 const ServiceCard: React.FC<ServiceCardProps> = ({ service, isSelected, onSelect }) => {
   return (
-    <Card 
+    <Card
       className={cn(
         'cursor-pointer transition-all duration-200 hover:shadow-lg',
         isSelected && 'ring-2 ring-blue-500 bg-blue-50'
@@ -223,11 +223,11 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, isSelected, onSelect
             <p className="text-sm text-gray-500">{service.duration} min</p>
           </div>
         </div>
-        
+
         {service.description && (
           <p className="text-sm text-gray-600 mt-2">{service.description}</p>
         )}
-        
+
         {service.available_addons && service.available_addons.length > 0 && (
           <div className="mt-3 pt-3 border-t">
             <p className="text-xs text-gray-500 mb-1">Available add-ons:</p>
@@ -240,7 +240,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, isSelected, onSelect
             </div>
           </div>
         )}
-        
+
         {isSelected && (
           <div className="mt-3 flex items-center justify-center">
             <Badge className="bg-blue-600">Selected</Badge>

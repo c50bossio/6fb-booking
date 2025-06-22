@@ -72,15 +72,25 @@ export default function BookingDemoPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Booking System Components Demo
-        </h1>
-        <p className="text-gray-600">
-          Interactive demonstration of the 6FB booking system components
-        </p>
+    <div className="relative min-h-full">
+      {/* Animated Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -inset-[10px] opacity-20">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
+          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-violet-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000" />
+          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000" />
+        </div>
       </div>
+
+      <div className="relative z-10 p-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Booking System Demo
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Interactive demonstration of the 6FB booking system components
+          </p>
+        </div>
 
       <Tabs value={activeDemo} onValueChange={setActiveDemo}>
         <TabsList className="grid w-full grid-cols-5">
@@ -282,6 +292,7 @@ export default function BookingDemoPage() {
             </div>
           </CardContent>
         </Card>
+      </div>
       </div>
     </div>
   )

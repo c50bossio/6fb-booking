@@ -9,9 +9,11 @@ from typing import Dict, Optional, List
 from datetime import datetime
 from decimal import Decimal
 import stripe
+
 # Square SDK is optional
 try:
     from square.client import Client as SquareClient
+
     SQUARE_AVAILABLE = True
 except ImportError:
     SquareClient = None
@@ -43,7 +45,7 @@ class PaymentSplitService:
             try:
                 self.square_client = SquareClient(
                     access_token=os.getenv("SQUARE_ACCESS_TOKEN"),
-                    environment=os.getenv("SQUARE_ENVIRONMENT", "sandbox")
+                    environment=os.getenv("SQUARE_ENVIRONMENT", "sandbox"),
                 )
             except Exception as e:
                 print(f"Warning: Failed to initialize Square client: {e}")
@@ -145,8 +147,10 @@ class PaymentSplitService:
         so we process payment then transfer
         """
         if not self.square_client:
-            raise Exception("Square integration is not available. Please use Stripe instead.")
-        
+            raise Exception(
+                "Square integration is not available. Please use Stripe instead."
+            )
+
         try:
             # First, process the full payment
             result = self.square_client.payments.create_payment(
@@ -212,8 +216,10 @@ class PaymentSplitService:
         Complete Square OAuth connection
         """
         if not self.square_client:
-            raise Exception("Square integration is not available. Please use Stripe instead.")
-        
+            raise Exception(
+                "Square integration is not available. Please use Stripe instead."
+            )
+
         try:
             result = self.square_client.o_auth.obtain_token(
                 body={

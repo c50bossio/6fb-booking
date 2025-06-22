@@ -28,47 +28,47 @@ export interface Service {
   category_id: number
   category_name?: string
   category?: ServiceCategory
-  
+
   // Pricing
   base_price: number
   min_price?: number
   max_price?: number
-  
+
   // Duration
   duration_minutes: number
   buffer_minutes?: number
-  
+
   // Deposit Settings
   requires_deposit: boolean
   deposit_type?: 'percentage' | 'fixed'
   deposit_amount?: number
-  
+
   // Service Settings
   is_addon: boolean
   can_overlap: boolean
   max_advance_days: number
   min_advance_hours: number
-  
+
   // Availability
   location_id?: number
   location_name?: string
   barber_id?: number
   barber_name?: string
-  
+
   // Display Settings
   display_order: number
   is_active: boolean
   is_featured: boolean
-  
+
   // SEO/Marketing
   tags?: string[]
   meta_description?: string
-  
+
   // Statistics
   booking_count?: number
   total_revenue?: number
   average_rating?: number
-  
+
   created_at: string
   updated_at: string
 }
@@ -109,11 +109,11 @@ export interface PricingRule {
     start_time?: string
     end_time?: string
     days_of_week?: number[]
-    
+
     // Volume-based: bulk booking discounts
     min_services?: number
     max_services?: number
-    
+
     // Client-based: loyalty discounts
     client_type?: 'new' | 'returning' | 'vip'
     min_visits?: number
@@ -239,7 +239,7 @@ export const servicesService = {
    */
   async getServices(filters?: ServiceFilter): Promise<PaginatedResponse<Service>> {
     const params = new URLSearchParams()
-    
+
     if (filters?.category_id) params.append('category_id', filters.category_id.toString())
     if (filters?.location_id) params.append('location_id', filters.location_id.toString())
     if (filters?.barber_id) params.append('barber_id', filters.barber_id.toString())
@@ -253,7 +253,7 @@ export const servicesService = {
     if (filters?.search) params.append('search', filters.search)
     if (filters?.skip) params.append('skip', filters.skip.toString())
     if (filters?.limit) params.append('limit', filters.limit.toString())
-    
+
     if (filters?.tags?.length) {
       filters.tags.forEach(tag => params.append('tags', tag))
     }
@@ -661,7 +661,7 @@ export const servicesService = {
   formatDuration(durationMinutes: number): string {
     const hours = Math.floor(durationMinutes / 60)
     const minutes = durationMinutes % 60
-    
+
     if (hours === 0) {
       return `${minutes}m`
     } else if (minutes === 0) {
@@ -690,12 +690,12 @@ export const servicesService = {
    */
   calculateDeposit(service: Service, totalPrice?: number): number {
     if (!service.requires_deposit || !service.deposit_amount) return 0
-    
+
     if (service.deposit_type === 'percentage') {
       const price = totalPrice || service.base_price
       return (price * service.deposit_amount) / 100
     }
-    
+
     return service.deposit_amount
   }
 }

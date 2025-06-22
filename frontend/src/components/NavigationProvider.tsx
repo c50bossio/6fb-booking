@@ -22,11 +22,11 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   }, [pathname])
 
   return (
-    <NavigationContext.Provider value={{ 
-      activePage, 
-      setActivePage, 
-      isCollapsed, 
-      setIsCollapsed 
+    <NavigationContext.Provider value={{
+      activePage,
+      setActivePage,
+      isCollapsed,
+      setIsCollapsed
     }}>
       {children}
     </NavigationContext.Provider>

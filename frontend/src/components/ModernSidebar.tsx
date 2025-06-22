@@ -134,7 +134,7 @@ export default function ModernSidebar({ user, onLogout }: SidebarProps) {
               </div>
             </div>
           )}
-          
+
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors focus-ring"
@@ -174,7 +174,7 @@ export default function ModernSidebar({ user, onLogout }: SidebarProps) {
         {navigationItems.map((item) => {
           const Icon = item.icon
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
-          
+
           return (
             <Link
               key={item.name}
@@ -214,7 +214,7 @@ export default function ModernSidebar({ user, onLogout }: SidebarProps) {
         {bottomItems.map((item) => {
           const Icon = item.icon
           const isActive = pathname === item.href
-          
+
           return (
             <Link
               key={item.name}

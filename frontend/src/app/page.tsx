@@ -205,8 +205,8 @@ export default function LandingPage() {
               <span className="ml-3 text-2xl font-bold text-gradient-violet">6FB Payouts</span>
             </div>
             <div className="flex items-center space-x-4">
-              <Link 
-                href="/app" 
+              <Link
+                href="/app"
                 className="text-violet-600 hover:text-violet-700 font-semibold transition-colors"
               >
                 Live Demo
@@ -214,8 +214,8 @@ export default function LandingPage() {
               <Link href="/login" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
                 Sign In
               </Link>
-              <Link 
-                href="#pricing" 
+              <Link
+                href="#pricing"
                 className="premium-button hover-lift"
               >
                 Get Started
@@ -252,21 +252,21 @@ export default function LandingPage() {
               <div className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-violet-500 to-purple-500 rounded-full opacity-30"></div>
             </span>
           </h1>
-          
+
           <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed">
-            Automate payouts, track earnings, and manage appointments with the most trusted platform in the industry. 
+            Automate payouts, track earnings, and manage appointments with the most trusted platform in the industry.
             <span className="text-emerald-600 font-semibold">Join the barbers earning $100K+</span>
           </p>
-          
+
           <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-16">
-            <Link 
+            <Link
               href="/app"
               className="premium-button text-lg px-10 py-4 hover-lift bg-gradient-to-r from-violet-600 to-purple-600"
             >
               <PlayIcon className="mr-2 h-5 w-5" />
               Try Full Demo Now
             </Link>
-            <Link 
+            <Link
               href="#pricing"
               className="premium-button-secondary text-lg px-10 py-4 hover-lift"
             >
@@ -303,7 +303,7 @@ export default function LandingPage() {
           {showDemo && (
             <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
               <div className="max-w-5xl w-full premium-card p-8 relative">
-                <button 
+                <button
                   onClick={() => setShowDemo(false)}
                   className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors"
                 >
@@ -311,7 +311,7 @@ export default function LandingPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
-                
+
                 <div className="aspect-video bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl flex items-center justify-center text-white relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>
                   <div className="text-center relative z-10">
@@ -320,7 +320,7 @@ export default function LandingPage() {
                     </div>
                     <p className="text-2xl font-bold mb-2">Demo: Automated Payout System</p>
                     <p className="text-blue-200 mb-6">See how barbers save 5+ hours per week and increase earnings by 40%</p>
-                    <Link 
+                    <Link
                       href="/app"
                       className="premium-button-success hover-lift"
                     >
@@ -342,7 +342,7 @@ export default function LandingPage() {
               ⚡ Powerful Features
             </div>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 tracking-tight">
-              Built for Barbers Who 
+              Built for Barbers Who
               <span className="text-gradient"> Mean Business</span>
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
@@ -352,26 +352,26 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {features.map((feature, index) => (
-              <div 
-                key={feature.name} 
+              <div
+                key={feature.name}
                 className="premium-card-modern p-8 hover-lift hover-glow-purple group relative overflow-hidden"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-violet-400/10 to-purple-400/10 rounded-bl-full transform translate-x-10 -translate-y-10 group-hover:scale-150 transition-transform duration-500"></div>
-                
+
                 <div className="relative">
                   <div className="bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl p-4 w-fit mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
                     <feature.icon className="h-7 w-7 text-white" />
                   </div>
-                  
+
                   <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-violet-600 transition-colors">
                     {feature.name}
                   </h3>
-                  
+
                   <p className="text-gray-600 leading-relaxed">
                     {feature.description}
                   </p>
-                  
+
                   <div className="mt-4 w-12 h-1 bg-gradient-to-r from-violet-400 to-purple-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
               </div>
@@ -466,8 +466,8 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {pricing.map((plan) => (
-              <div 
-                key={plan.name} 
+              <div
+                key={plan.name}
                 className={`bg-white rounded-lg shadow-lg p-8 relative ${
                   plan.popular ? 'ring-2 ring-blue-600' : ''
                 }`}
@@ -479,7 +479,7 @@ export default function LandingPage() {
                     </span>
                   </div>
                 )}
-                
+
                 <div className="text-center mb-8">
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
                   <p className="text-gray-600 mb-4">{plan.description}</p>
@@ -531,7 +531,7 @@ export default function LandingPage() {
               Get started in minutes and see immediate impact on your business
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-lg font-bold">
@@ -567,7 +567,7 @@ export default function LandingPage() {
           <p className="text-xl text-blue-100 mb-8">
             Join 1,200+ barbers using our platform to transform their business and income.
           </p>
-          
+
           <form onSubmit={handleEmailSubmit} className="max-w-md mx-auto">
             <div className="flex">
               <input
@@ -586,7 +586,7 @@ export default function LandingPage() {
               </button>
             </div>
           </form>
-          
+
           <p className="text-blue-100 text-sm mt-4">
             14-day free trial • No credit card required • Cancel anytime
           </p>
@@ -606,7 +606,7 @@ export default function LandingPage() {
                 Automated payout solutions for modern barbers.
               </p>
             </div>
-            
+
             <div>
               <h3 className="text-white font-semibold mb-4">Product</h3>
               <ul className="space-y-2 text-gray-400">
@@ -615,7 +615,7 @@ export default function LandingPage() {
                 <li><Link href="/app" className="hover:text-white">Live Demo</Link></li>
               </ul>
             </div>
-            
+
             <div>
               <h3 className="text-white font-semibold mb-4">Company</h3>
               <ul className="space-y-2 text-gray-400">
@@ -624,7 +624,7 @@ export default function LandingPage() {
                 <li><Link href="#" className="hover:text-white">Support</Link></li>
               </ul>
             </div>
-            
+
             <div>
               <h3 className="text-white font-semibold mb-4">Legal</h3>
               <ul className="space-y-2 text-gray-400">
@@ -634,7 +634,7 @@ export default function LandingPage() {
               </ul>
             </div>
           </div>
-          
+
           <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
             <p>&copy; 2024 6FB Payouts. All rights reserved.</p>
           </div>

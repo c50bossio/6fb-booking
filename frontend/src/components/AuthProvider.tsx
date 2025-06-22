@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Skip redirection in demo mode or during SSR
     if (DEMO_MODE || !isClient) return
-    
+
     // Redirect to login if not authenticated and not on a public route
     if (!loading && !user && !PUBLIC_ROUTES.includes(pathname)) {
       router.push('/login')
@@ -107,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.warn('Unable to access localStorage (possibly blocked by extension):', e)
         // Continue without token - app will work in demo mode
       }
-      
+
       if (!token) {
         setLoading(false)
         return
@@ -155,7 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       router.push('/login')
       return
     }
-    
+
     await authService.logout()
     setUser(null)
     router.push('/login')

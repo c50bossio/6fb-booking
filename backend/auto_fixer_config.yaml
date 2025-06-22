@@ -8,7 +8,7 @@ notifications:
     channels:
       errors: "#sentry-errors"
       fixes: "#auto-fixes"
-    
+
   email:
     enabled: true
     recipients:
@@ -25,7 +25,7 @@ rate_limits:
   fixes_per_minute: 10
   fixes_per_hour: 50
   fixes_per_day: 200
-  
+
   # Per error type limits
   by_type:
     database_schema: 5  # Max 5 DB fixes per hour
@@ -56,7 +56,7 @@ pattern_learning:
   min_samples_for_confidence: 10
   disable_threshold: 30  # Disable if confidence < 30%
   confidence_calculation: "bayesian"  # bayesian or frequency
-  
+
   # Confidence thresholds for auto-fix
   auto_fix_thresholds:
     safe: 85
@@ -68,7 +68,7 @@ performance:
   baseline_update_interval: 3600  # 1 hour
   alert_on_degradation: true
   degradation_threshold: 1.5  # 50% slower
-  
+
   endpoints_to_monitor:
     - "/api/v1/appointments"
     - "/api/v1/barbers"
@@ -82,7 +82,7 @@ migrations:
     - "add_column"
     - "add_index"
     - "create_table"
-  
+
   unsafe_operations:
     - "drop_column"
     - "drop_table"
@@ -94,12 +94,12 @@ approvals:
     - risk_level: "HIGH"
     - confidence_below: 70
     - error_types: ["database_schema", "authentication"]
-    
+
   approval_methods:
     - "slack_interactive"
     - "github_pr"
     - "email_link"
-  
+
   timeout_hours: 24
 
 # Integration Settings
@@ -110,12 +110,12 @@ integrations:
     auto_merge_confidence: 95
     reviewers:
       - "@dev-team"
-    
+
   jira:
     enabled: false
     create_tickets: true
     project: "AUTOFIX"
-    
+
   pagerduty:
     enabled: false
     integration_key: ${PAGERDUTY_KEY}
@@ -127,29 +127,29 @@ error_types:
     max_retries: 3
     notification_priority: "high"
     requires_migration: true
-    
+
   authentication:
     auto_fixable: true
     max_retries: 2
     notification_priority: "medium"
     requires_restart: false
-    
+
   api_rate_limit:
     auto_fixable: true
     max_retries: 5
     notification_priority: "low"
     backoff_strategy: "exponential"
-    
+
   import_error:
     auto_fixable: true
     max_retries: 2
     notification_priority: "medium"
-    
+
   timeout:
     auto_fixable: false
     max_retries: 1
     notification_priority: "high"
-    
+
   connection_error:
     auto_fixable: false
     max_retries: 3
@@ -162,7 +162,7 @@ reporting:
   recipients:
     - "team-lead@6fbmentorship.com"
     - "cto@6fbmentorship.com"
-  
+
   include:
     - total_fixes
     - success_rate

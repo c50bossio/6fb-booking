@@ -1,7 +1,7 @@
 # 6FB Booking Platform - Authentication Test Results
 
-**Test Date:** June 22, 2025  
-**Test Environment:** macOS Darwin 24.5.0  
+**Test Date:** June 22, 2025
+**Test Environment:** macOS Darwin 24.5.0
 **Python Version:** 3.13 (with venv)
 
 ## Summary

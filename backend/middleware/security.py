@@ -26,7 +26,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        
+
         # Content Security Policy to prevent extension injection attempts
         # This policy allows the app to function while preventing extensions from injecting content
         csp_directives = [
@@ -40,9 +40,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "object-src 'none'",
             "base-uri 'self'",
             "form-action 'self'",
-            "upgrade-insecure-requests"
+            "upgrade-insecure-requests",
         ]
-        
+
         # In development, be more permissive
         if request.app.state.settings.ENVIRONMENT == "development":
             csp_directives = [
@@ -55,11 +55,11 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
                 "frame-src 'self' https: http://localhost:*",
                 "object-src 'none'",
                 "base-uri 'self'",
-                "form-action 'self'"
+                "form-action 'self'",
             ]
-        
+
         response.headers["Content-Security-Policy"] = "; ".join(csp_directives)
-        
+
         # Permissions Policy (formerly Feature Policy) to control browser features
         permissions_policy = [
             "accelerometer=()",
@@ -69,7 +69,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "magnetometer=()",
             "microphone=()",
             "payment=(self)",
-            "usb=()"
+            "usb=()",
         ]
         response.headers["Permissions-Policy"] = ", ".join(permissions_policy)
 

@@ -8,21 +8,27 @@ from datetime import datetime, time, date
 from sqlalchemy.orm import Session
 
 # Set environment variables
-os.environ['DATA_ENCRYPTION_KEY'] = 'BcyOvTLRfOGPAUWZlxaeYHCMpwP9w391ZBFCMNy-TOQ='
+os.environ["DATA_ENCRYPTION_KEY"] = "BcyOvTLRfOGPAUWZlxaeYHCMpwP9w391ZBFCMNy-TOQ="
 
 from config.database import get_db, SessionLocal
 from models import (
-    ServiceCategory, Service, Location, Barber, BarberAvailability, 
-    DayOfWeek, User
+    ServiceCategory,
+    Service,
+    Location,
+    Barber,
+    BarberAvailability,
+    DayOfWeek,
+    User,
 )
+
 
 def create_test_data():
     """Create test data for booking system"""
     db = SessionLocal()
-    
+
     try:
         print("🌱 Seeding booking test data...")
-        
+
         # Create a test location if it doesn't exist
         location = db.query(Location).first()
         if not location:
@@ -46,14 +52,14 @@ def create_test_data():
                 credit_card_fee_percentage=2.9,
                 credit_card_fee_fixed=0.30,
                 payout_frequency="weekly",
-                payout_method="direct_deposit"
+                payout_method="direct_deposit",
             )
             db.add(location)
             db.commit()
             print(f"✅ Created location: {location.name}")
         else:
             print(f"✅ Using existing location: {location.name}")
-        
+
         # Create test user for barber if needed
         user = db.query(User).first()
         if not user:
@@ -64,14 +70,14 @@ def create_test_data():
                 first_name="Test",
                 last_name="Barber",
                 role="barber",
-                status="active"
+                status="active",
             )
             db.add(user)
             db.commit()
             print(f"✅ Created user: {user.email}")
         else:
             print(f"✅ Using existing user: {user.email}")
-        
+
         # Create a test barber if it doesn't exist
         barber = db.query(Barber).first()
         if not barber:
@@ -85,31 +91,49 @@ def create_test_data():
                 bio="Professional barber with 5+ years experience",
                 location_id=location.id,
                 status="active",
-                hire_date=date.today()
+                hire_date=date.today(),
             )
             db.add(barber)
             db.commit()
             print(f"✅ Created barber: {barber.first_name} {barber.last_name}")
         else:
             print(f"✅ Using existing barber: {barber.first_name} {barber.last_name}")
-        
+
         # Create service categories
         categories_data = [
-            {"name": "Haircuts", "slug": "haircuts", "description": "Professional haircuts and styling"},
-            {"name": "Beard Care", "slug": "beard-care", "description": "Beard trimming and grooming"},
-            {"name": "Styling", "slug": "styling", "description": "Hair styling and finishing"},
+            {
+                "name": "Haircuts",
+                "slug": "haircuts",
+                "description": "Professional haircuts and styling",
+            },
+            {
+                "name": "Beard Care",
+                "slug": "beard-care",
+                "description": "Beard trimming and grooming",
+            },
+            {
+                "name": "Styling",
+                "slug": "styling",
+                "description": "Hair styling and finishing",
+            },
         ]
-        
+
         for cat_data in categories_data:
-            category = db.query(ServiceCategory).filter(ServiceCategory.slug == cat_data["slug"]).first()
+            category = (
+                db.query(ServiceCategory)
+                .filter(ServiceCategory.slug == cat_data["slug"])
+                .first()
+            )
             if not category:
                 category = ServiceCategory(**cat_data, display_order=1, is_active=True)
                 db.add(category)
                 db.commit()
                 print(f"✅ Created category: {category.name}")
-        
+
         # Create services
-        haircut_category = db.query(ServiceCategory).filter(ServiceCategory.slug == "haircuts").first()
+        haircut_category = (
+            db.query(ServiceCategory).filter(ServiceCategory.slug == "haircuts").first()
+        )
         services_data = [
             {
                 "name": "Classic Cut",
@@ -119,65 +143,92 @@ def create_test_data():
                 "duration_minutes": 30,
                 "location_id": location.id,
                 "barber_id": barber.id,
-                "is_active": True
+                "is_active": True,
             },
             {
-                "name": "Fade Cut", 
+                "name": "Fade Cut",
                 "description": "Modern fade haircut with precise blending",
                 "category_id": haircut_category.id,
                 "base_price": 45.0,
                 "duration_minutes": 45,
                 "location_id": location.id,
                 "barber_id": barber.id,
-                "is_active": True
-            }
+                "is_active": True,
+            },
         ]
-        
+
         for service_data in services_data:
-            service = db.query(Service).filter(Service.name == service_data["name"]).first()
+            service = (
+                db.query(Service).filter(Service.name == service_data["name"]).first()
+            )
             if not service:
                 service = Service(**service_data)
                 db.add(service)
                 db.commit()
                 print(f"✅ Created service: {service.name}")
-        
+
         # Create barber availability
         availability_data = [
-            {"day_of_week": DayOfWeek.MONDAY, "start_time": time(9, 0), "end_time": time(17, 0)},
-            {"day_of_week": DayOfWeek.TUESDAY, "start_time": time(9, 0), "end_time": time(17, 0)},
-            {"day_of_week": DayOfWeek.WEDNESDAY, "start_time": time(9, 0), "end_time": time(17, 0)},
-            {"day_of_week": DayOfWeek.THURSDAY, "start_time": time(9, 0), "end_time": time(17, 0)},
-            {"day_of_week": DayOfWeek.FRIDAY, "start_time": time(9, 0), "end_time": time(17, 0)},
+            {
+                "day_of_week": DayOfWeek.MONDAY,
+                "start_time": time(9, 0),
+                "end_time": time(17, 0),
+            },
+            {
+                "day_of_week": DayOfWeek.TUESDAY,
+                "start_time": time(9, 0),
+                "end_time": time(17, 0),
+            },
+            {
+                "day_of_week": DayOfWeek.WEDNESDAY,
+                "start_time": time(9, 0),
+                "end_time": time(17, 0),
+            },
+            {
+                "day_of_week": DayOfWeek.THURSDAY,
+                "start_time": time(9, 0),
+                "end_time": time(17, 0),
+            },
+            {
+                "day_of_week": DayOfWeek.FRIDAY,
+                "start_time": time(9, 0),
+                "end_time": time(17, 0),
+            },
         ]
-        
+
         for avail_data in availability_data:
-            availability = db.query(BarberAvailability).filter(
-                BarberAvailability.barber_id == barber.id,
-                BarberAvailability.day_of_week == avail_data["day_of_week"]
-            ).first()
-            
+            availability = (
+                db.query(BarberAvailability)
+                .filter(
+                    BarberAvailability.barber_id == barber.id,
+                    BarberAvailability.day_of_week == avail_data["day_of_week"],
+                )
+                .first()
+            )
+
             if not availability:
                 availability = BarberAvailability(
                     barber_id=barber.id,
                     location_id=location.id,
                     is_available=True,
-                    **avail_data
+                    **avail_data,
                 )
                 db.add(availability)
                 db.commit()
                 print(f"✅ Created availability: {avail_data['day_of_week'].value}")
-        
+
         print("\n🎉 Test data seeding completed successfully!")
         print(f"Location ID: {location.id}")
         print(f"Barber ID: {barber.id}")
         print(f"Services created: {len(services_data)}")
-        
+
     except Exception as e:
         print(f"❌ Error seeding data: {e}")
         db.rollback()
         raise
     finally:
         db.close()
+
 
 if __name__ == "__main__":
     create_test_data()

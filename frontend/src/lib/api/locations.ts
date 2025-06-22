@@ -15,7 +15,7 @@ export interface ExtendedLocation extends Location {
   amenities?: string[]
   services_offered?: number[] // Service IDs
   staff_count?: number
-  
+
   // Contact information
   website?: string
   social_media?: {
@@ -23,18 +23,18 @@ export interface ExtendedLocation extends Location {
     instagram?: string
     google_business?: string
   }
-  
+
   // Business information
   business_license?: string
   tax_id?: string
   insurance_info?: string
-  
+
   // Booking settings
   booking_settings: LocationBookingSettings
-  
+
   // Performance metrics
   stats?: LocationStats
-  
+
   // Images and media
   images?: LocationImage[]
   virtual_tour_url?: string
@@ -68,43 +68,43 @@ export interface SpecialHours {
 export interface LocationBookingSettings {
   id: number
   location_id: number
-  
+
   // Booking windows
   advance_booking_days: number
   min_advance_hours: number
   same_day_booking_cutoff: string // HH:MM format
-  
+
   // Cancellation policies
   cancellation_window_hours: number
   cancellation_fee_type: 'none' | 'percentage' | 'fixed'
   cancellation_fee_amount?: number
-  
+
   // Reschedule policies
   reschedule_window_hours: number
   reschedule_fee_type: 'none' | 'percentage' | 'fixed'
   reschedule_fee_amount?: number
   max_reschedules: number
-  
+
   // Payment settings
   require_payment_method: boolean
   require_deposit: boolean
   default_deposit_type: 'percentage' | 'fixed'
   default_deposit_amount: number
   auto_charge_no_shows: boolean
-  
+
   // Communication settings
   send_confirmation_email: boolean
   send_confirmation_sms: boolean
   send_reminder_email: boolean
   send_reminder_sms: boolean
   reminder_hours_before: number[]
-  
+
   // Other settings
   allow_walk_ins: boolean
   buffer_time_minutes: number
   max_concurrent_bookings: number
   auto_confirm_bookings: boolean
-  
+
   created_at: string
   updated_at: string
 }
@@ -125,32 +125,32 @@ export interface LocationStats {
   location_id: number
   period_start: string
   period_end: string
-  
+
   // Appointment metrics
   total_appointments: number
   completed_appointments: number
   cancelled_appointments: number
   no_shows: number
-  
+
   // Revenue metrics
   total_revenue: number
   average_ticket: number
-  
+
   // Utilization metrics
   total_available_hours: number
   total_booked_hours: number
   utilization_rate: number
-  
+
   // Customer metrics
   unique_clients: number
   new_clients: number
   returning_clients: number
   client_retention_rate: number
-  
+
   // Staff metrics
   active_barbers: number
   average_barber_rating: number
-  
+
   // Popular times
   busiest_hours: Array<{
     hour: number
@@ -160,7 +160,7 @@ export interface LocationStats {
     day_of_week: number
     appointment_count: number
   }>
-  
+
   // Service breakdown
   popular_services: Array<{
     service_id: number
@@ -242,7 +242,7 @@ export const locationsService = {
    */
   async getLocations(filters?: LocationFilter): Promise<PaginatedResponse<ExtendedLocation>> {
     const params = new URLSearchParams()
-    
+
     if (filters?.is_active !== undefined) params.append('is_active', filters.is_active.toString())
     if (filters?.franchise_type) params.append('franchise_type', filters.franchise_type)
     if (filters?.city) params.append('city', filters.city)
@@ -253,7 +253,7 @@ export const locationsService = {
     if (filters?.search) params.append('search', filters.search)
     if (filters?.skip) params.append('skip', filters.skip.toString())
     if (filters?.limit) params.append('limit', filters.limit.toString())
-    
+
     if (filters?.within_radius) {
       params.append('latitude', filters.within_radius.latitude.toString())
       params.append('longitude', filters.within_radius.longitude.toString())
@@ -506,13 +506,13 @@ export const locationsService = {
   async getLocationAnalytics(locationId: number, periodDays: number = 30): Promise<LocationAnalytics> {
     const endDate = new Date()
     const startDate = new Date(endDate.getTime() - periodDays * 24 * 60 * 60 * 1000)
-    
+
     const response = await this.getStats(
       locationId,
       startDate.toISOString().split('T')[0],
       endDate.toISOString().split('T')[0]
     )
-    
+
     // Transform new stats format to legacy format
     const stats = response.data
     return {
@@ -595,29 +595,29 @@ export const locationsService = {
   ): boolean {
     const dayOfWeek = targetDate.getDay()
     const dayHours = location.business_hours?.find(h => h.day_of_week === dayOfWeek)
-    
+
     if (!dayHours || !dayHours.is_open) return false
-    
+
     // Check for special hours override
     const dateStr = targetDate.toISOString().split('T')[0]
     const specialHours = location.special_hours?.find(sh => sh.date === dateStr)
-    
+
     if (specialHours) {
       if (specialHours.is_closed) return false
       if (!targetTime) return true
-      
+
       // Check special hours time range
       if (specialHours.open_time && specialHours.close_time) {
         return targetTime >= specialHours.open_time && targetTime <= specialHours.close_time
       }
     }
-    
+
     if (!targetTime) return true
-    
+
     // Check regular business hours
     if (dayHours.is_24_hours) return true
     if (!dayHours.open_time || !dayHours.close_time) return false
-    
+
     return targetTime >= dayHours.open_time && targetTime <= dayHours.close_time
   },
 
@@ -640,9 +640,9 @@ export const locationsService = {
     const R = 3959 // Earth's radius in miles
     const dLat = (lat2 - lat1) * Math.PI / 180
     const dLon = (lon2 - lon1) * Math.PI / 180
-    const a = 
+    const a =
       Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
       Math.sin(dLon/2) * Math.sin(dLon/2)
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
     return R * c
@@ -654,7 +654,7 @@ export const locationsService = {
   formatBusinessHours(hours: LocationHours[]): Record<string, string> {
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
     const formatted: Record<string, string> = {}
-    
+
     hours.forEach(h => {
       const dayName = dayNames[h.day_of_week]
       if (!h.is_open) {
@@ -671,7 +671,7 @@ export const locationsService = {
         formatted[dayName] = 'Hours vary'
       }
     })
-    
+
     return formatted
   },
 

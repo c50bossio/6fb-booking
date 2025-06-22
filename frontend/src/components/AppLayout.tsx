@@ -36,17 +36,17 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname()
   const { user, logout, isLoading } = useAuth()
   const { isCollapsed } = useNavigation()
-  
+
   // Check if current route should show sidebar
-  const shouldShowSidebar = !noSidebarRoutes.some(route => 
+  const shouldShowSidebar = !noSidebarRoutes.some(route =>
     pathname.startsWith(route)
   )
-  
+
   // Check if current route requires authentication
-  const requiresAuth = !publicRoutes.some(route => 
+  const requiresAuth = !publicRoutes.some(route =>
     pathname === route || pathname.startsWith(route)
   )
-  
+
   // Show loading screen while checking authentication
   if (isLoading && requiresAuth) {
     return (
@@ -58,7 +58,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
       </div>
     )
   }
-  
+
   // If authentication is required but user is not logged in, the AuthProvider will handle redirect
   if (requiresAuth && !user && !isLoading) {
     return (
@@ -69,7 +69,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
       </div>
     )
   }
-  
+
   // Layout without sidebar (for public pages like login)
   if (!shouldShowSidebar) {
     return (
@@ -78,13 +78,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
       </div>
     )
   }
-  
+
   // Main dashboard layout with sidebar
   return (
     <div className="min-h-screen bg-slate-900 layout-transition flex">
       {/* Fixed Sidebar */}
       <ModernSidebar user={user} onLogout={logout} />
-      
+
       {/* Main Content Area */}
       <div className="min-h-screen flex flex-col flex-1 page-content">
         {/* Top Header Bar */}
@@ -98,7 +98,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 {getPageDescription(pathname)}
               </p>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               {/* Quick Actions */}
               <div className="hidden md:flex items-center space-x-2">
@@ -109,20 +109,20 @@ export default function AppLayout({ children }: AppLayoutProps) {
                   New Appointment
                 </button>
               </div>
-              
+
               {/* Current Time */}
               <div className="text-right">
                 <p className="text-sm font-medium text-white">
-                  {new Date().toLocaleDateString('en-US', { 
-                    weekday: 'short', 
-                    month: 'short', 
-                    day: 'numeric' 
+                  {new Date().toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric'
                   })}
                 </p>
                 <p className="text-xs text-gray-400">
-                  {new Date().toLocaleTimeString('en-US', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
+                  {new Date().toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit'
                   })}
                 </p>
               </div>
@@ -156,7 +156,7 @@ function getPageTitle(pathname: string): string {
     '/locations': 'Location Management',
     '/settings': 'Settings'
   }
-  
+
   return titles[pathname] || 'Dashboard'
 }
 
@@ -174,6 +174,6 @@ function getPageDescription(pathname: string): string {
     '/locations': 'Manage multiple shop locations and settings',
     '/settings': 'System configuration and preferences'
   }
-  
+
   return descriptions[pathname] || 'Manage your barbershop business efficiently'
 }

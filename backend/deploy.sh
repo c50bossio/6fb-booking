@@ -43,7 +43,7 @@ prompt_with_default() {
     local prompt="$1"
     local default="$2"
     local value
-    
+
     if [ -n "$default" ]; then
         read -p "$prompt [$default]: " value
         echo "${value:-$default}"
@@ -57,7 +57,7 @@ prompt_with_default() {
 prompt_secret() {
     local prompt="$1"
     local value
-    
+
     read -s -p "$prompt: " value
     echo ""
     echo "$value"
@@ -309,9 +309,9 @@ echo "------------------------"
 # Create systemd service file for production
 if command_exists systemctl && [ "$ENVIRONMENT" = "production" ]; then
     SERVICE_FILE="/etc/systemd/system/6fb-api.service"
-    
+
     echo "Creating systemd service..."
-    
+
     sudo tee $SERVICE_FILE > /dev/null << EOF
 [Unit]
 Description=6FB Automated Payout API
@@ -333,21 +333,21 @@ EOF
 
     sudo systemctl daemon-reload
     sudo systemctl enable 6fb-api
-    
+
     echo -e "${GREEN}✓ Systemd service created${NC}"
 fi
 
 # Create nginx configuration (if nginx is available)
 if command_exists nginx && [ "$ENVIRONMENT" = "production" ]; then
     NGINX_CONFIG="/etc/nginx/sites-available/6fb-api"
-    
+
     echo "Creating nginx configuration..."
-    
+
     sudo tee $NGINX_CONFIG > /dev/null << EOF
 server {
     listen 80;
     server_name $DOMAIN;
-    
+
     # Redirect HTTP to HTTPS
     return 301 https://\$server_name\$request_uri;
 }
@@ -355,24 +355,24 @@ server {
 server {
     listen 443 ssl http2;
     server_name $DOMAIN;
-    
+
     # SSL configuration (you'll need to add your certificates)
     # ssl_certificate /path/to/your/certificate.crt;
     # ssl_certificate_key /path/to/your/private.key;
-    
+
     location / {
         proxy_pass http://127.0.0.1:$APP_PORT;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
-        
+
         # WebSocket support
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection "upgrade";
     }
-    
+
     # Security headers
     add_header X-Frame-Options DENY;
     add_header X-Content-Type-Options nosniff;
@@ -382,7 +382,7 @@ EOF
 
     sudo ln -sf $NGINX_CONFIG /etc/nginx/sites-enabled/
     sudo nginx -t && sudo systemctl reload nginx
-    
+
     echo -e "${GREEN}✓ Nginx configuration created${NC}"
 fi
 
@@ -393,7 +393,7 @@ echo "--------------------------------"
 
 if command_exists certbot && [ "$ENVIRONMENT" = "production" ]; then
     read -p "Do you want to set up SSL certificate with Let's Encrypt? (y/n): " setup_ssl
-    
+
     if [ "$setup_ssl" = "y" ]; then
         echo "Setting up SSL certificate..."
         sudo certbot --nginx -d $DOMAIN

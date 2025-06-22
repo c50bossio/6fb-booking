@@ -15,7 +15,7 @@
 
 ### Current DNS Configuration
 - **Name Servers**: NS1.PERFECTDOMAIN.COM, NS2.PERFECTDOMAIN.COM
-- **A Records**: 
+- **A Records**:
   - 159.89.244.183
   - 164.90.244.158
 - **Current Status**: Domain redirects to perfectdomain.com (parked/inactive)
@@ -109,7 +109,7 @@ bookbarber.com.         3600   IN    MX    30 alt2.aspmx.l.google.com.
 #### Step 2: Update Name Servers at GoDaddy
 1. **Login to GoDaddy**: Access your GoDaddy account
 2. **Navigate to DNS**: Go to Domain Settings > DNS Management
-3. **Change Name Servers**: 
+3. **Change Name Servers**:
    - Remove: NS1.PERFECTDOMAIN.COM, NS2.PERFECTDOMAIN.COM
    - Add: Cloudflare provided name servers
 4. **Save Changes**: Allow 24-48 hours for propagation
@@ -175,7 +175,7 @@ admin.bookbarber.com.   IN    A    [ADMIN_SERVER_IP]
 #### Backend (FastAPI)
 ```bash
 # Custom Domain in Render:
-# 1. Add custom domain: api.bookbarber.com  
+# 1. Add custom domain: api.bookbarber.com
 # 2. Render provides CNAME: [api-name].onrender.com
 # 3. Create DNS record: api.bookbarber.com CNAME [api-name].onrender.com
 ```
@@ -252,7 +252,7 @@ add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsaf
 3. **No Main Site Impact**: Main domain remains unaffected
 
 #### If Main Domain Issues (High Risk - Future)
-1. **Immediate Rollback**: 
+1. **Immediate Rollback**:
    ```bash
    # Restore original A records:
    bookbarber.com. IN A 159.89.244.183
@@ -328,7 +328,7 @@ API responses: No cache or short cache (5 minutes)
 - **Cloudflare Support**: support@cloudflare.com
 - **GoDaddy Support**: 1-480-505-8877
 
-### SSL Providers  
+### SSL Providers
 - **Let's Encrypt**: Community support at community.letsencrypt.org
 - **Cloudflare SSL**: Included with Cloudflare service
 

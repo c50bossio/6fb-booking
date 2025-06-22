@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { 
+import {
   CalendarIcon,
   ClockIcon,
   UserIcon,
@@ -55,10 +55,10 @@ export default function AppointmentsPage() {
     try {
       setLoading(true)
       const token = localStorage.getItem('access_token')
-      
+
       // Format date for API
       const dateStr = format(selectedDate, 'yyyy-MM-dd')
-      
+
       // Fetch appointments
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/appointments`,
@@ -67,7 +67,7 @@ export default function AppointmentsPage() {
           params: { date: dateStr }
         }
       )
-      
+
       setAppointments(response.data.appointments || [])
       setStats(response.data.stats || {
         total: 0,
@@ -137,7 +137,7 @@ export default function AppointmentsPage() {
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       )
-      
+
       // Refresh appointments
       fetchAppointments()
     } catch (error) {
@@ -182,9 +182,9 @@ export default function AppointmentsPage() {
     const matchesSearch = apt.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          apt.service_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          apt.barber_name.toLowerCase().includes(searchTerm.toLowerCase())
-    
+
     const matchesFilter = filterStatus === 'all' || apt.status === filterStatus
-    
+
     return matchesSearch && matchesFilter
   })
 
@@ -221,7 +221,7 @@ export default function AppointmentsPage() {
               />
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-4">
             <select
               value={filterStatus}
@@ -235,7 +235,7 @@ export default function AppointmentsPage() {
               <option value="cancelled">Cancelled</option>
               <option value="no_show">No Show</option>
             </select>
-            
+
             <button className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg font-medium hover:from-violet-700 hover:to-purple-700 transition-all flex items-center space-x-2">
               <PlusIcon className="h-5 w-5" />
               <span>New Appointment</span>
@@ -301,7 +301,7 @@ export default function AppointmentsPage() {
           <div className="px-6 py-4 border-b border-gray-200/50">
             <h3 className="text-lg font-semibold text-gray-900">Appointment Schedule</h3>
           </div>
-          
+
           {filteredAppointments.length === 0 ? (
             <div className="p-12 text-center">
               <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -346,7 +346,7 @@ export default function AppointmentsPage() {
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center space-x-4 ml-4">
                       <div className="text-right">
                         <p className="text-lg font-semibold text-gray-900">{formatCurrency(appointment.price)}</p>
@@ -354,16 +354,16 @@ export default function AppointmentsPage() {
                           {appointment.status.replace('_', ' ')}
                         </span>
                       </div>
-                      
+
                       {(appointment.status === 'confirmed' || appointment.status === 'scheduled') && (
                         <div className="flex items-center space-x-2">
-                          <button 
+                          <button
                             onClick={() => handleStatusUpdate(appointment.id, 'completed')}
                             className="text-emerald-600 hover:text-emerald-700 font-medium text-sm hover:bg-emerald-50 px-3 py-1 rounded-lg transition-colors"
                           >
                             Check In
                           </button>
-                          <button 
+                          <button
                             onClick={() => handleStatusUpdate(appointment.id, 'cancelled')}
                             className="text-red-600 hover:text-red-700 font-medium text-sm hover:bg-red-50 px-3 py-1 rounded-lg transition-colors"
                           >

@@ -413,7 +413,7 @@ export const settingsApi = {
   async getTemplates(category?: string): Promise<SettingsTemplate[]> {
     const params = new URLSearchParams()
     if (category) params.append('category', category)
-    
+
     const response = await apiClient.get(`/settings/templates?${params}`)
     return response.data
   },
@@ -441,10 +441,10 @@ export const settingsApi = {
       scope,
       include_advanced: includeAdvanced.toString()
     })
-    
+
     if (scopeId !== undefined) params.append('scope_id', scopeId.toString())
     if (category) params.append('category', category)
-    
+
     const response = await apiClient.get(`/settings/config?${params}`)
     return response.data
   },
@@ -456,7 +456,7 @@ export const settingsApi = {
   ): Promise<{ updated_count: number; errors: string[] }> {
     const params = new URLSearchParams({ scope })
     if (scopeId !== undefined) params.append('scope_id', scopeId.toString())
-    
+
     const response = await apiClient.put(`/settings/config?${params}`, updates)
     return response.data
   },
@@ -495,7 +495,7 @@ export const settingsApi = {
   ): Promise<NotificationSettings> {
     const params = new URLSearchParams({ scope })
     if (scopeId !== undefined) params.append('scope_id', scopeId.toString())
-    
+
     const response = await apiClient.get(`/settings/notifications?${params}`)
     return response.data
   },
@@ -507,7 +507,7 @@ export const settingsApi = {
   ): Promise<{ message: string }> {
     const params = new URLSearchParams({ scope })
     if (scopeId !== undefined) params.append('scope_id', scopeId.toString())
-    
+
     const response = await apiClient.put(`/settings/notifications?${params}`, settings)
     return response.data
   },
@@ -531,12 +531,12 @@ export const settingsApi = {
     scopeId?: number,
     includeSensitive = false
   ): Promise<IntegrationSettings> {
-    const params = new URLSearchParams({ 
+    const params = new URLSearchParams({
       scope,
       include_sensitive: includeSensitive.toString()
     })
     if (scopeId !== undefined) params.append('scope_id', scopeId.toString())
-    
+
     const response = await apiClient.get(`/settings/integrations?${params}`)
     return response.data
   },
@@ -548,7 +548,7 @@ export const settingsApi = {
   ): Promise<{ message: string }> {
     const params = new URLSearchParams({ scope })
     if (scopeId !== undefined) params.append('scope_id', scopeId.toString())
-    
+
     const response = await apiClient.put(`/settings/integrations?${params}`, settings)
     return response.data
   },
@@ -561,11 +561,11 @@ export const settingsApi = {
     limit = 50
   ): Promise<any[]> {
     const params = new URLSearchParams({ limit: limit.toString() })
-    
+
     if (settingId) params.append('setting_id', settingId.toString())
     if (scope) params.append('scope', scope)
     if (scopeId !== undefined) params.append('scope_id', scopeId.toString())
-    
+
     const response = await apiClient.get(`/settings/history?${params}`)
     return response.data
   },
@@ -577,7 +577,7 @@ export const settingsApi = {
   ): Promise<any> {
     const params = new URLSearchParams({ scope })
     if (scopeId !== undefined) params.append('scope_id', scopeId.toString())
-    
+
     const response = await apiClient.get(`/settings/export?${params}`)
     return response.data
   },
@@ -589,7 +589,7 @@ export const settingsApi = {
     const params = new URLSearchParams({
       overwrite_existing: overwriteExisting.toString()
     })
-    
+
     const response = await apiClient.post(`/settings/import?${params}`, importData)
     return response.data
   },
@@ -601,7 +601,7 @@ export const settingsApi = {
   ): Promise<{ message: string }> {
     const params = new URLSearchParams({ scope })
     if (scopeId !== undefined) params.append('scope_id', scopeId.toString())
-    
+
     const response = await apiClient.post(`/settings/initialize?${params}`)
     return response.data
   }

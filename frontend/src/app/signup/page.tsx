@@ -72,7 +72,7 @@ export default function SignupPage() {
   })
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<any>({})
-  
+
   const router = useRouter()
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,7 +81,7 @@ export default function SignupPage() {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }))
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors((prev: any) => ({ ...prev, [name]: '' }))
@@ -90,7 +90,7 @@ export default function SignupPage() {
 
   const validateStep2 = () => {
     const newErrors: any = {}
-    
+
     if (!formData.firstName.trim()) newErrors.firstName = 'First name is required'
     if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required'
     if (!formData.email.trim()) newErrors.email = 'Email is required'
@@ -117,7 +117,7 @@ export default function SignupPage() {
 
   const handleCreateAccount = async () => {
     setLoading(true)
-    
+
     try {
       // Create account via API
       const response = await fetch('http://localhost:8000/api/v1/auth/register', {
@@ -302,7 +302,7 @@ export default function SignupPage() {
                       />
                       {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>}
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Last Name *
@@ -358,7 +358,7 @@ export default function SignupPage() {
                       />
                       {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Shop Name (Optional)
@@ -393,7 +393,7 @@ export default function SignupPage() {
                       />
                       {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Confirm Password *
@@ -427,7 +427,7 @@ export default function SignupPage() {
                       </label>
                     </div>
                     {errors.agreeToTerms && <p className="text-red-500 text-sm">{errors.agreeToTerms}</p>}
-                    
+
                     <div className="flex items-start">
                       <input
                         type="checkbox"
@@ -453,7 +453,7 @@ export default function SignupPage() {
                   <p className="text-gray-600 mb-6">
                     Your {selectedPlanData.name} plan is ready. You have 14 days to explore all features risk-free.
                   </p>
-                  
+
                   <div className="bg-white rounded-lg p-6 mb-6">
                     <h3 className="font-semibold text-gray-900 mb-4">What happens next?</h3>
                     <div className="space-y-3 text-left">
@@ -506,7 +506,7 @@ export default function SignupPage() {
           {/* Right Column - Plan Summary */}
           <div className="bg-white rounded-lg shadow-lg p-6 h-fit">
             <h3 className="text-xl font-bold text-gray-900 mb-4">Order Summary</h3>
-            
+
             <div className="border-b border-gray-200 pb-4 mb-4">
               <div className="flex justify-between items-center mb-2">
                 <span className="font-medium text-gray-900">{selectedPlanData.name} Plan</span>
@@ -533,7 +533,7 @@ export default function SignupPage() {
                 <span className="font-medium text-gray-900">Then</span>
                 <span className="font-bold text-gray-900">{selectedPlanData.price}/month</span>
               </div>
-              
+
               <div className="bg-blue-50 p-4 rounded-lg">
                 <div className="flex items-center">
                   <ShieldCheckIcon className="h-5 w-5 text-blue-600 mr-2" />

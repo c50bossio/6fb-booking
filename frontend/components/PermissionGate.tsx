@@ -43,7 +43,7 @@ export const PermissionGate: React.FC<PermissionGateProps> = ({
     const hasPermissions = requireAll
       ? permissions.every(p => hasPermission(p))
       : permissions.some(p => hasPermission(p))
-    
+
     if (!hasPermissions) {
       return <>{fallback}</>
     }
@@ -59,7 +59,7 @@ export const PermissionGate: React.FC<PermissionGateProps> = ({
     const hasRoles = requireAll
       ? roles.every(r => hasRole(r))
       : roles.some(r => hasRole(r))
-    
+
     if (!hasRoles) {
       return <>{fallback}</>
     }
@@ -74,45 +74,45 @@ export const PermissionGate: React.FC<PermissionGateProps> = ({
 }
 
 // Convenience components for common permission checks
-export const AdminOnly: React.FC<{ children: React.ReactNode; fallback?: React.ReactNode }> = ({ 
-  children, 
-  fallback = null 
+export const AdminOnly: React.FC<{ children: React.ReactNode; fallback?: React.ReactNode }> = ({
+  children,
+  fallback = null
 }) => (
   <PermissionGate roles={[Role.SUPER_ADMIN, Role.ADMIN]} fallback={fallback}>
     {children}
   </PermissionGate>
 )
 
-export const SuperAdminOnly: React.FC<{ children: React.ReactNode; fallback?: React.ReactNode }> = ({ 
-  children, 
-  fallback = null 
+export const SuperAdminOnly: React.FC<{ children: React.ReactNode; fallback?: React.ReactNode }> = ({
+  children,
+  fallback = null
 }) => (
   <PermissionGate role={Role.SUPER_ADMIN} fallback={fallback}>
     {children}
   </PermissionGate>
 )
 
-export const MentorOnly: React.FC<{ children: React.ReactNode; fallback?: React.ReactNode }> = ({ 
-  children, 
-  fallback = null 
+export const MentorOnly: React.FC<{ children: React.ReactNode; fallback?: React.ReactNode }> = ({
+  children,
+  fallback = null
 }) => (
   <PermissionGate roles={[Role.SUPER_ADMIN, Role.ADMIN, Role.MENTOR]} fallback={fallback}>
     {children}
   </PermissionGate>
 )
 
-export const BarberAccess: React.FC<{ children: React.ReactNode; fallback?: React.ReactNode }> = ({ 
-  children, 
-  fallback = null 
+export const BarberAccess: React.FC<{ children: React.ReactNode; fallback?: React.ReactNode }> = ({
+  children,
+  fallback = null
 }) => (
   <PermissionGate roles={[Role.SUPER_ADMIN, Role.ADMIN, Role.MENTOR, Role.BARBER]} fallback={fallback}>
     {children}
   </PermissionGate>
 )
 
-export const StaffAccess: React.FC<{ children: React.ReactNode; fallback?: React.ReactNode }> = ({ 
-  children, 
-  fallback = null 
+export const StaffAccess: React.FC<{ children: React.ReactNode; fallback?: React.ReactNode }> = ({
+  children,
+  fallback = null
 }) => (
   <PermissionGate roles={[Role.SUPER_ADMIN, Role.ADMIN, Role.MENTOR, Role.BARBER, Role.STAFF]} fallback={fallback}>
     {children}

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { 
+import {
   XMarkIcon,
   CalendarDaysIcon,
   ClockIcon,
@@ -209,14 +209,14 @@ export default function AppointmentDetailsModal({
     const [hours, minutes] = startTime.split(':').map(Number)
     const startDate = new Date()
     startDate.setHours(hours, minutes, 0, 0)
-    
+
     const endDate = new Date(startDate.getTime() + duration * 60000)
     return endDate.toTimeString().slice(0, 5)
   }
 
   const handleInputChange = (field: string, value: string | number) => {
     setEditData(prev => ({ ...prev, [field]: value }))
-    
+
     // Clear error for this field when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }))
@@ -257,7 +257,7 @@ export default function AppointmentDetailsModal({
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             {canEdit && !isEditing && (
               <button
@@ -268,7 +268,7 @@ export default function AppointmentDetailsModal({
                 <PencilIcon className="h-5 w-5" />
               </button>
             )}
-            
+
             {canDelete && !isEditing && (
               <button
                 onClick={() => setShowDeleteConfirm(true)}
@@ -278,7 +278,7 @@ export default function AppointmentDetailsModal({
                 <TrashIcon className="h-5 w-5" />
               </button>
             )}
-            
+
             <button
               onClick={onClose}
               className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
@@ -296,7 +296,7 @@ export default function AppointmentDetailsModal({
               <UserIcon className="h-5 w-5 mr-2 text-violet-400" />
               Client Information
             </h3>
-            
+
             {isEditing ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -311,7 +311,7 @@ export default function AppointmentDetailsModal({
                   />
                   {errors.clientName && <p className="text-red-400 text-sm mt-1">{errors.clientName}</p>}
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">Email *</label>
                   <input
@@ -324,7 +324,7 @@ export default function AppointmentDetailsModal({
                   />
                   {errors.clientEmail && <p className="text-red-400 text-sm mt-1">{errors.clientEmail}</p>}
                 </div>
-                
+
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-300 mb-2">Phone</label>
                   <input
@@ -344,14 +344,14 @@ export default function AppointmentDetailsModal({
                   <UserIcon className="h-5 w-5 text-gray-400" />
                   <span className="text-white font-medium">{appointment.client}</span>
                 </div>
-                
+
                 {appointment.clientEmail && (
                   <div className="flex items-center space-x-3">
                     <EnvelopeIcon className="h-5 w-5 text-gray-400" />
                     <span className="text-gray-300">{appointment.clientEmail}</span>
                   </div>
                 )}
-                
+
                 {appointment.clientPhone && (
                   <div className="flex items-center space-x-3">
                     <PhoneIcon className="h-5 w-5 text-gray-400" />
@@ -368,7 +368,7 @@ export default function AppointmentDetailsModal({
               <ScissorsIcon className="h-5 w-5 mr-2 text-violet-400" />
               Appointment Details
             </h3>
-            
+
             {isEditing ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -385,7 +385,7 @@ export default function AppointmentDetailsModal({
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">Service</label>
                   <select
@@ -400,7 +400,7 @@ export default function AppointmentDetailsModal({
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">Date *</label>
                   <input
@@ -413,7 +413,7 @@ export default function AppointmentDetailsModal({
                   />
                   {errors.date && <p className="text-red-400 text-sm mt-1">{errors.date}</p>}
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">Start Time *</label>
                   <input
@@ -437,7 +437,7 @@ export default function AppointmentDetailsModal({
                       <div className="text-white font-medium">{appointment.barber}</div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-3">
                     <ScissorsIcon className="h-5 w-5 text-gray-400" />
                     <div>
@@ -445,22 +445,22 @@ export default function AppointmentDetailsModal({
                       <div className="text-white font-medium">{appointment.service}</div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-3">
                     <CalendarDaysIcon className="h-5 w-5 text-gray-400" />
                     <div>
                       <span className="text-gray-400 text-sm">Date</span>
                       <div className="text-white font-medium">
-                        {new Date(appointment.date).toLocaleDateString('en-US', { 
-                          weekday: 'long', 
-                          year: 'numeric', 
-                          month: 'long', 
-                          day: 'numeric' 
+                        {new Date(appointment.date).toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
                         })}
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-3">
                     <ClockIcon className="h-5 w-5 text-gray-400" />
                     <div>
@@ -470,7 +470,7 @@ export default function AppointmentDetailsModal({
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-3 col-span-2">
                     <CurrencyDollarIcon className="h-5 w-5 text-gray-400" />
                     <div>
@@ -489,7 +489,7 @@ export default function AppointmentDetailsModal({
               <DocumentTextIcon className="h-5 w-5 mr-2 text-violet-400" />
               Notes
             </h3>
-            
+
             {isEditing ? (
               <textarea
                 value={editData.notes || ''}
@@ -574,11 +574,11 @@ export default function AppointmentDetailsModal({
               </div>
               <h3 className="text-lg font-semibold text-white">Delete Appointment</h3>
             </div>
-            
+
             <p className="text-gray-300 mb-6">
               Are you sure you want to delete this appointment with {appointment.client}? This action cannot be undone.
             </p>
-            
+
             <div className="flex space-x-4">
               <button
                 onClick={() => setShowDeleteConfirm(false)}

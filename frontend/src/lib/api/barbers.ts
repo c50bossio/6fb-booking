@@ -22,20 +22,20 @@ export interface BarberProfile extends Barber {
     tiktok?: string
     website?: string
   }
-  
+
   // Performance metrics
   average_rating?: number
   total_reviews?: number
   total_appointments?: number
   repeat_client_rate?: number
   on_time_rate?: number
-  
+
   // Business information
   business_name?: string
   business_license?: string
   insurance_info?: string
   tax_id?: string
-  
+
   // Preferences
   preferred_payment_methods?: string[]
   booking_preferences?: {
@@ -78,7 +78,7 @@ export interface BarberSchedule {
   is_working: boolean
   location_id: number
   location_name?: string
-  
+
   // Override settings for specific dates
   effective_from?: string
   effective_until?: string
@@ -121,26 +121,26 @@ export interface BarberStats {
   barber_id: number
   period_start: string
   period_end: string
-  
+
   // Appointment metrics
   total_appointments: number
   completed_appointments: number
   cancelled_appointments: number
   no_shows: number
-  
+
   // Revenue metrics
   total_revenue: number
   service_revenue: number
   tip_revenue: number
   product_revenue: number
   average_ticket: number
-  
+
   // Performance metrics
   utilization_rate: number // Percentage of available time booked
   on_time_rate: number
   client_satisfaction: number
   repeat_client_rate: number
-  
+
   // Popular services
   top_services: Array<{
     service_id: number
@@ -148,7 +148,7 @@ export interface BarberStats {
     count: number
     revenue: number
   }>
-  
+
   // Time analysis
   busiest_hours: Array<{
     hour: number
@@ -215,7 +215,7 @@ export const barbersService = {
    */
   async getBarbers(filters?: BarberFilter): Promise<PaginatedResponse<BarberProfile>> {
     const params = new URLSearchParams()
-    
+
     if (filters?.location_id) params.append('location_id', filters.location_id.toString())
     if (filters?.is_active !== undefined) params.append('is_active', filters.is_active.toString())
     if (filters?.min_rating) params.append('min_rating', filters.min_rating.toString())
@@ -227,7 +227,7 @@ export const barbersService = {
     if (filters?.sort_order) params.append('sort_order', filters.sort_order)
     if (filters?.skip) params.append('skip', filters.skip.toString())
     if (filters?.limit) params.append('limit', filters.limit.toString())
-    
+
     if (filters?.specialties?.length) {
       filters.specialties.forEach(specialty => params.append('specialties', specialty))
     }
@@ -611,7 +611,7 @@ export const barbersService = {
    */
   getBarberImage(barber: BarberProfile, size: 'sm' | 'md' | 'lg' = 'md'): string {
     if (barber.profile_image) return barber.profile_image
-    
+
     // Generate initials-based avatar URL (you'd implement this based on your avatar service)
     const initials = `${barber.first_name[0]}${barber.last_name[0]}`
     return `/api/avatars/${initials}?size=${size}`
@@ -629,48 +629,48 @@ export const barbersService = {
   ): boolean {
     const dayOfWeek = targetDate.getDay()
     const daySchedule = schedule.find(s => s.day_of_week === dayOfWeek && s.is_working)
-    
+
     if (!daySchedule) return false
-    
+
     // Check if time falls within working hours
     const [startHour, startMinute] = startTime.split(':').map(Number)
     const [scheduleStartHour, scheduleStartMinute] = daySchedule.start_time.split(':').map(Number)
     const [scheduleEndHour, scheduleEndMinute] = daySchedule.end_time.split(':').map(Number)
-    
+
     const startMinutes = startHour * 60 + startMinute
     const endMinutes = startMinutes + duration
     const scheduleStartMinutes = scheduleStartHour * 60 + scheduleStartMinute
     const scheduleEndMinutes = scheduleEndHour * 60 + scheduleEndMinute
-    
+
     if (startMinutes < scheduleStartMinutes || endMinutes > scheduleEndMinutes) {
       return false
     }
-    
+
     // Check for break time conflicts
     if (daySchedule.break_start && daySchedule.break_end) {
       const [breakStartHour, breakStartMinute] = daySchedule.break_start.split(':').map(Number)
       const [breakEndHour, breakEndMinute] = daySchedule.break_end.split(':').map(Number)
       const breakStartMinutes = breakStartHour * 60 + breakStartMinute
       const breakEndMinutes = breakEndHour * 60 + breakEndMinute
-      
+
       if (!(endMinutes <= breakStartMinutes || startMinutes >= breakEndMinutes)) {
         return false
       }
     }
-    
+
     // Check availability blocks
     const targetDateTime = targetDate.toISOString().split('T')[0]
     const conflictingBlocks = availabilityBlocks.filter(block => {
       if (block.status !== 'approved') return false
-      
+
       const blockStart = new Date(block.start_datetime)
       const blockEnd = new Date(block.end_datetime)
       const appointmentStart = new Date(`${targetDateTime}T${startTime}:00`)
       const appointmentEnd = new Date(appointmentStart.getTime() + duration * 60000)
-      
+
       return !(appointmentEnd <= blockStart || appointmentStart >= blockEnd)
     })
-    
+
     return conflictingBlocks.length === 0
   },
 

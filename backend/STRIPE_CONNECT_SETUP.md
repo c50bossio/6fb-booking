@@ -25,7 +25,7 @@ This guide walks you through setting up Stripe Connect for automated barber payo
    # For testing
    STRIPE_SECRET_KEY=sk_test_51ABC123...
    STRIPE_PUBLISHABLE_KEY=pk_test_51ABC123...
-   
+
    # For production (after going live)
    STRIPE_SECRET_KEY=sk_live_51ABC123...
    STRIPE_PUBLISHABLE_KEY=pk_live_51ABC123...
@@ -46,7 +46,7 @@ This guide walks you through setting up Stripe Connect for automated barber payo
    ```
    # Development
    http://localhost:3000/stripe/callback
-   
+
    # Production
    https://yourdomain.com/stripe/callback
    ```
@@ -72,7 +72,7 @@ This guide walks you through setting up Stripe Connect for automated barber payo
    ```
    # Development
    https://your-ngrok-url.ngrok.io/api/v1/webhooks/stripe
-   
+
    # Production
    https://yourdomain.com/api/v1/webhooks/stripe
    ```
@@ -127,7 +127,7 @@ const connectBarber = async (barberId) => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ barber_id: barberId })
   });
-  
+
   const { oauth_url } = await response.json();
   window.location.href = oauth_url;  // Redirect to Stripe
 };
@@ -142,7 +142,7 @@ const handleStripeCallback = async (code, state) => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ code, state })
   });
-  
+
   const result = await response.json();
   if (result.success) {
     // Show success message
@@ -234,11 +234,11 @@ def check_barber_payout_status(barber_id):
     barber = get_barber(barber_id)
     if not barber.stripe_account_id:
         return "No Stripe account connected"
-    
+
     account_status = stripe_service.check_account_status(barber.stripe_account_id)
     if not account_status["payouts_enabled"]:
         return "Payouts not enabled - needs to complete onboarding"
-    
+
     return "Ready for payouts"
 ```
 
@@ -293,7 +293,7 @@ def calculate_payout_amount(barber_id, period):
     commissions = get_unpaid_commissions(barber_id, period)
     bonuses = calculate_performance_bonuses(barber_id, period)
     deductions = calculate_deductions(barber_id, period)
-    
+
     return commissions + bonuses - deductions
 ```
 

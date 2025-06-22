@@ -43,7 +43,7 @@ Navigate to `http://localhost:3000` (or the port shown in terminal).
 ## 🔧 Step-by-Step Resolution
 
 ### Step 1: Disable All Extensions
-1. **Chrome**: 
+1. **Chrome**:
    - Go to `chrome://extensions/`
    - Turn off all extensions using the toggle switches
    - Refresh the 6FB app
@@ -122,7 +122,7 @@ If you have CSP-modifying extensions:
 ## 🧹 Complete Browser Reset
 
 ### Clear All Browser Data:
-1. **Chrome**: 
+1. **Chrome**:
    - Settings → Advanced → Reset and clean up → Clear browsing data
    - Select "All time" and check all boxes
 

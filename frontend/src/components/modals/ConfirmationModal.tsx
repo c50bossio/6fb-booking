@@ -31,7 +31,7 @@ export default function ConfirmationModal({
   icon,
   isLoading = false
 }: ConfirmationModalProps) {
-  
+
   const handleConfirm = () => {
     onConfirm()
   }
@@ -75,7 +75,7 @@ export default function ConfirmationModal({
             onClick={handleConfirm}
             disabled={isLoading}
             className={`
-              ${confirmButtonClass} 
+              ${confirmButtonClass}
               font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl
               transform hover:-translate-y-0.5 transition-all duration-200
               disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none

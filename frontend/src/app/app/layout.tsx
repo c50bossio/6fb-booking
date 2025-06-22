@@ -1,6 +1,10 @@
+'use client'
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import DemoModernSidebar from "@/components/DemoModernSidebar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,19 +16,21 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "6FB Platform - Full Access Demo",
-  description: "Explore the complete Six Figure Barber platform with all features enabled",
-};
-
-export default function AppLayout({
-  children,
-}: Readonly<{
+interface AppLayoutProps {
   children: React.ReactNode;
-}>) {
+}
+
+export default function AppLayout({ children }: AppLayoutProps) {
   return (
-    <div className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-      {children}
-    </div>
+    <ThemeProvider>
+      <div className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}>
+        <div className="flex min-h-screen">
+          <DemoModernSidebar />
+          <main className="flex-1 transition-all duration-300">
+            {children}
+          </main>
+        </div>
+      </div>
+    </ThemeProvider>
   );
 }

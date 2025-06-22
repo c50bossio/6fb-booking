@@ -68,10 +68,10 @@ export function NotificationCenter() {
         created_at: lastMessage.timestamp || new Date().toISOString(),
         action_url: lastMessage.data.action_url
       }
-      
+
       setNotifications(prev => [newNotification, ...prev])
       setUnreadCount(prev => prev + 1)
-      
+
       // Play notification sound
       playNotificationSound()
     }
@@ -216,16 +216,16 @@ export function NotificationCenter() {
     const date = new Date(dateString)
     const now = new Date()
     const diff = now.getTime() - date.getTime()
-    
+
     const minutes = Math.floor(diff / 60000)
     const hours = Math.floor(diff / 3600000)
     const days = Math.floor(diff / 86400000)
-    
+
     if (minutes < 1) return 'Just now'
     if (minutes < 60) return `${minutes}m ago`
     if (hours < 24) return `${hours}h ago`
     if (days < 7) return `${days}d ago`
-    
+
     return date.toLocaleDateString()
   }
 
@@ -255,7 +255,7 @@ export function NotificationCenter() {
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          
+
           {/* Dropdown */}
           <div className="absolute right-0 mt-2 w-96 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
             {/* Header */}

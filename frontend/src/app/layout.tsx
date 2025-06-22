@@ -40,7 +40,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_TRACKING_ID;
-  
+
   return (
     <html lang="en" suppressHydrationWarning className="dark">
       <head />

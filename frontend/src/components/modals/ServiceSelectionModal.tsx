@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import BaseModal from './BaseModal'
-import { 
+import {
   MagnifyingGlassIcon,
   ClockIcon,
   CurrencyDollarIcon,
@@ -184,14 +184,14 @@ export default function ServiceSelectionModal({
 
     // Filter by barber availability
     if (barberId) {
-      filtered = filtered.filter(service => 
+      filtered = filtered.filter(service =>
         !service.barber_ids || service.barber_ids.includes(barberId)
       )
     }
 
     // Filter by location availability
     if (locationId) {
-      filtered = filtered.filter(service => 
+      filtered = filtered.filter(service =>
         !service.location_ids || service.location_ids.includes(locationId)
       )
     }
@@ -267,14 +267,14 @@ export default function ServiceSelectionModal({
 
   const ServiceCard = ({ service, isSelected = false }: { service: Service; isSelected?: boolean }) => {
     const categoryColor = getCategoryColor(service.category)
-    
+
     return (
       <div
         onClick={() => handleServiceSelect(service)}
         className={`
           relative p-6 border-2 rounded-xl cursor-pointer transition-all duration-200 group
-          ${isSelected 
-            ? 'border-violet-500 bg-violet-50 shadow-lg' 
+          ${isSelected
+            ? 'border-violet-500 bg-violet-50 shadow-lg'
             : 'border-gray-200 hover:border-violet-300 hover:bg-violet-25 hover:shadow-md'
           }
         `}
@@ -340,7 +340,7 @@ export default function ServiceSelectionModal({
                   <span>{formatDuration(service.duration)}</span>
                 </div>
               </div>
-              
+
               <div className="text-right">
                 <div className="text-2xl font-bold text-gray-900">${service.price}</div>
               </div>
@@ -386,8 +386,8 @@ export default function ServiceSelectionModal({
             onClick={() => setSelectedCategoryId(null)}
             className={`
               px-4 py-2 rounded-lg text-sm font-medium transition-colors
-              ${!selectedCategoryId 
-                ? 'bg-violet-100 text-violet-700 border-2 border-violet-200' 
+              ${!selectedCategoryId
+                ? 'bg-violet-100 text-violet-700 border-2 border-violet-200'
                 : 'bg-gray-100 text-gray-700 border-2 border-transparent hover:bg-gray-200'
               }
             `}
@@ -400,8 +400,8 @@ export default function ServiceSelectionModal({
               onClick={() => setSelectedCategoryId(category.id)}
               className={`
                 flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border-2
-                ${selectedCategoryId === category.id 
-                  ? `bg-${category.color}-100 text-${category.color}-700 border-${category.color}-200` 
+                ${selectedCategoryId === category.id
+                  ? `bg-${category.color}-100 text-${category.color}-700 border-${category.color}-200`
                   : 'bg-gray-100 text-gray-700 border-transparent hover:bg-gray-200'
                 }
               `}
@@ -422,7 +422,7 @@ export default function ServiceSelectionModal({
                   <h3 className="text-lg font-semibold text-gray-900">{categoryName}</h3>
                   <span className="text-sm text-gray-500">({categoryServices.length})</span>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {categoryServices.map((service) => (
                     <ServiceCard
@@ -439,8 +439,8 @@ export default function ServiceSelectionModal({
               <ScissorsIcon className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-semibold text-gray-900">No services found</h3>
               <p className="mt-1 text-sm text-gray-500">
-                {searchTerm 
-                  ? 'No services match your search criteria.' 
+                {searchTerm
+                  ? 'No services match your search criteria.'
                   : 'No services available for the selected filters.'
                 }
               </p>

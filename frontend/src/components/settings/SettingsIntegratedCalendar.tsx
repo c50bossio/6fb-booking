@@ -18,7 +18,7 @@ interface SettingsIntegratedCalendarProps {
   error?: string | null
   onRefresh?: () => void
   availableBarbers?: any[]
-  
+
   // Settings integration props
   locationId?: number
   userRole?: string
@@ -40,7 +40,7 @@ function CalendarWithSettings({
   enableSettings = true
 }: SettingsIntegratedCalendarProps) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  
+
   // Use settings hooks
   const { preferences, isLoading: prefsLoading } = useUserPreferences()
   const { theme, themeColor, fontSize, highContrast } = useTheme()
@@ -64,22 +64,22 @@ function CalendarWithSettings({
   // Apply theme to document root when it changes
   useEffect(() => {
     const root = document.documentElement
-    
+
     // Theme class
     root.className = root.className.replace(/\btheme-\w+\b/g, '')
     root.classList.add(`theme-${theme}`)
-    
+
     // High contrast
     if (highContrast) {
       root.classList.add('high-contrast')
     } else {
       root.classList.remove('high-contrast')
     }
-    
+
     // Custom properties
     root.style.setProperty('--primary-color', themeColor)
     root.style.setProperty('--font-size-base', fontSize)
-    
+
   }, [theme, themeColor, fontSize, highContrast])
 
   // Generate working hours from preferences/settings
@@ -101,11 +101,11 @@ function CalendarWithSettings({
   // Format time based on user preferences
   const formatTime = (time: string) => {
     if (!preferences) return time
-    
+
     const [hours, minutes] = time.split(':').map(Number)
     const date = new Date()
     date.setHours(hours, minutes)
-    
+
     return date.toLocaleTimeString([], {
       hour12: timeFormat === '12h',
       hour: 'numeric',
@@ -116,11 +116,11 @@ function CalendarWithSettings({
   // Format date based on user preferences
   const formatDate = (date: Date) => {
     if (!preferences) return date.toLocaleDateString()
-    
+
     const options: Intl.DateTimeFormatOptions = {
       timeZone: timezone
     }
-    
+
     switch (dateFormat) {
       case 'MM/DD/YYYY':
         options.month = '2-digit'
@@ -129,7 +129,7 @@ function CalendarWithSettings({
         break
       case 'DD/MM/YYYY':
         options.day = '2-digit'
-        options.month = '2-digit' 
+        options.month = '2-digit'
         options.year = 'numeric'
         break
       case 'YYYY-MM-DD':
@@ -141,14 +141,14 @@ function CalendarWithSettings({
         const today = new Date()
         const diffTime = date.getTime() - today.getTime()
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-        
+
         if (diffDays === 0) return 'Today'
         if (diffDays === 1) return 'Tomorrow'
         if (diffDays === -1) return 'Yesterday'
         if (diffDays > 1 && diffDays <= 7) return date.toLocaleDateString([], { weekday: 'long' })
         break
     }
-    
+
     return date.toLocaleDateString([], options)
   }
 
@@ -187,29 +187,29 @@ function CalendarWithSettings({
         onAppointmentClick={onAppointmentClick}
         onTimeSlotClick={onTimeSlotClick}
         onAppointmentDrop={onAppointmentDrop}
-        
+
         // Settings-driven props
         view={defaultView}
         theme={theme === 'light' ? 'light' : 'dark'}
         loading={loading}
         error={error}
         onRefresh={onRefresh}
-        
+
         // Calendar behavior from settings
         workingHours={getWorkingHours()}
         timeSlotDuration={getTimeSlotDuration()}
         showWeekends={showWeekends}
-        
+
         // Performance settings
         enableDragDrop={preferences?.enable_animations ?? true}
         enableVirtualScroll={!preferences?.reduce_motion}
         compactMode={fontSize === 'small'}
-        
+
         // Data and state
         availableBarbers={availableBarbers}
         selectedBarbers={[]}
         onBarberFilter={() => {}}
-        
+
         // Features based on preferences
         showToolbar={true}
         cacheData={true}
