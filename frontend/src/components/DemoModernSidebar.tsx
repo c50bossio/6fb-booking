@@ -35,49 +35,49 @@ interface SidebarProps {
 const navigationItems = [
   {
     name: 'Dashboard',
-    href: '/app',
+    href: '/dashboard',
     icon: HomeIcon,
     description: 'Overview & Analytics'
   },
   {
     name: 'Calendar',
-    href: '/app/calendar',
+    href: '/dashboard/calendar',
     icon: CalendarDaysIcon,
     description: 'Schedule Management'
   },
   {
     name: 'Appointments',
-    href: '/app/appointments',
+    href: '/dashboard/appointments',
     icon: ClipboardDocumentListIcon,
     description: 'Booking Management'
   },
   {
     name: 'Barbers',
-    href: '/app/barbers',
+    href: '/barbers',
     icon: UserGroupIcon,
     description: 'Team Management'
   },
   {
     name: 'Analytics',
-    href: '/app/analytics',
+    href: '/analytics',
     icon: ChartBarIcon,
     description: 'Performance Insights'
   },
   {
     name: 'Payments',
-    href: '/app/payments',
+    href: '/payments',
     icon: CreditCardIcon,
     description: 'Payment Processing'
   },
   {
     name: 'Payouts',
-    href: '/app/payouts',
+    href: '/barber-payments',
     icon: BanknotesIcon,
     description: 'Revenue Distribution'
   },
   {
     name: 'Clients',
-    href: '/app/clients',
+    href: '/clients',
     icon: UsersIcon,
     description: 'Client Management'
   },
