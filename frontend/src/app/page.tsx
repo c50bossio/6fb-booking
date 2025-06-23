@@ -268,7 +268,7 @@ export default function LandingPage() {
           </div>
 
           {/* Social Proof Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto bg-yellow-200 p-8 rounded-lg">
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 text-center">
               <div className="text-3xl font-bold text-slate-700 mb-2">$2.5M+</div>
               <div className="text-sm text-black dark:text-gray-300 font-medium">Paid Out Monthly</div>
