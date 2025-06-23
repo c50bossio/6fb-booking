@@ -178,7 +178,17 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
+      <style jsx>{`
+        .stats-text {
+          color: #000000 !important;
+          font-weight: 500 !important;
+        }
+        .main-description {
+          color: #1F2937 !important;
+        }
+      `}</style>
+      <div className="min-h-screen bg-gray-50">
       {/* Demo Banner */}
       <div className="bg-gradient-to-r from-slate-700 to-slate-800 text-white py-3">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -245,9 +255,9 @@ export default function LandingPage() {
             </span>
           </h1>
 
-          <p className="text-xl md:text-2xl mb-12 max-w-4xl mx-auto leading-relaxed" style={{color: '#374151 !important'}}>
+          <p className="text-xl md:text-2xl mb-12 max-w-4xl mx-auto leading-relaxed main-description">
             Automate payouts, track earnings, and manage appointments with the most trusted platform in the industry.
-            <span className="text-gray-900 dark:text-white font-semibold"> Join the barbers earning $100K+</span>
+            <span className="font-semibold" style={{color: '#111827'}}> Join the barbers earning $100K+</span>
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-16">
@@ -271,19 +281,19 @@ export default function LandingPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 text-center">
               <div className="text-3xl font-bold text-slate-700 mb-2">$2.5M+</div>
-              <div className="text-sm font-medium" style={{color: '#000000 !important'}}>Paid Out Monthly</div>
+              <div className="text-sm font-medium stats-text">Paid Out Monthly</div>
             </div>
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 text-center">
               <div className="text-3xl font-bold text-slate-700 mb-2">45K+</div>
-              <div className="text-sm font-medium" style={{color: '#000000 !important'}}>Appointments Tracked</div>
+              <div className="text-sm font-medium stats-text">Appointments Tracked</div>
             </div>
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 text-center">
               <div className="text-3xl font-bold text-slate-700 mb-2">98%</div>
-              <div className="text-sm font-medium" style={{color: '#000000 !important'}}>On-Time Payouts</div>
+              <div className="text-sm font-medium stats-text">On-Time Payouts</div>
             </div>
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 text-center">
               <div className="text-3xl font-bold text-slate-700 mb-2">30 sec</div>
-              <div className="text-sm font-medium" style={{color: '#000000 !important'}}>Instant Transfers</div>
+              <div className="text-sm font-medium stats-text">Instant Transfers</div>
             </div>
           </div>
 
@@ -621,6 +631,7 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-    </div>
+      </div>
+    </>
   )
 }
