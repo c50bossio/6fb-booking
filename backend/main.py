@@ -1,6 +1,7 @@
 """
 Main FastAPI application for 6FB Booking Platform
 Force deployment trigger - Updated: 2025-06-23 14:30:00 UTC
+Build version: v1.0.0-2025-06-23-deploy-fix
 """
 
 from fastapi import FastAPI, Depends, HTTPException
@@ -308,6 +309,19 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 @app.get("/")
 async def serve_homepage():
     return FileResponse("static/index.html")
+
+
+# Version endpoint to track deployments
+@app.get("/version")
+async def get_version():
+    """Get deployment version information"""
+    return {
+        "version": os.getenv("RELEASE_VERSION", "v1.0.0-2025-06-23-deploy-fix"),
+        "build_date": "2025-06-23 14:30:00 UTC",
+        "environment": settings.ENVIRONMENT,
+        "timestamp": datetime.utcnow().isoformat(),
+        "commit": os.getenv("RENDER_GIT_COMMIT", "unknown"),
+    }
 
 
 # Dashboard route - Redirect to Next.js frontend
