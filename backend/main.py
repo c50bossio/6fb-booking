@@ -131,7 +131,11 @@ app.add_middleware(RateLimitMiddleware)
 
 # Configure CORS with Security Enhancements
 # Get allowed origins with production safety
-if settings.ENVIRONMENT == "production" and settings.CORS_STRICT_MODE:
+if (
+    settings.ENVIRONMENT == "production"
+    and hasattr(settings, "CORS_STRICT_MODE")
+    and settings.CORS_STRICT_MODE
+):
     # Production: Only allow specific domains
     cors_origins = settings.production_cors_origins
 else:

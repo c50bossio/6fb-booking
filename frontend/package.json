@@ -13,7 +13,14 @@
     "test:extensions": "node scripts/test-extensions.js",
     "debug:extensions": "node scripts/test-extensions.js && echo '\n📖 See BROWSER_EXTENSION_TROUBLESHOOTING.md for detailed solutions'",
     "validate:build": "node scripts/validate-build.js",
-    "predeploy": "npm run validate:build"
+    "validate:deployment": "node scripts/pre-deployment-validation.js",
+    "health:check": "node scripts/health-check-monitor.js",
+    "health:monitor": "node scripts/health-check-monitor.js --continuous",
+    "performance:baseline": "node scripts/performance-baseline.js",
+    "rollback:create": "node scripts/rollback-plan.js --create",
+    "rollback:checkpoint": "node scripts/rollback-plan.js --checkpoint",
+    "rollback:execute": "node scripts/rollback-plan.js --execute",
+    "predeploy": "npm run validate:deployment && npm run rollback:checkpoint"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",
