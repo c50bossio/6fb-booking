@@ -1,1 +1,38 @@
-# API v1 module initialization
+"""
+API v1 module initialization
+Exports all router modules for easy importing
+"""
+
+from . import (
+    analytics,
+    appointments,
+    auth,
+    automation,
+    barbers,
+    booking,
+    calendar,
+    locations,
+    notifications,
+    revenue,
+    services,
+    training,
+    users,
+    websocket,
+)
+
+__all__ = [
+    "analytics",
+    "appointments",
+    "auth",
+    "automation",
+    "barbers",
+    "booking",
+    "calendar",
+    "locations",
+    "notifications",
+    "revenue",
+    "services",
+    "training",
+    "users",
+    "websocket",
+]
