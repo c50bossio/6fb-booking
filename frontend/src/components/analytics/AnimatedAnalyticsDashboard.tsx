@@ -21,18 +21,18 @@ import { DateRangePicker } from './DateRangePicker'
 import { ExportButton } from './ExportButton'
 import { format, subDays, startOfMonth, endOfMonth } from 'date-fns'
 import { cache, cacheKeys, cacheUtils } from '@/lib/cache'
-import { 
-  animations, 
-  staggerContainer, 
+import {
+  animations,
+  staggerContainer,
   staggerItem,
   tabContentVariants,
   pageTransition
 } from '@/lib/animations'
-import { 
-  TrendingUp, 
-  Calendar, 
-  DollarSign, 
-  Users, 
+import {
+  TrendingUp,
+  Calendar,
+  DollarSign,
+  Users,
   Activity,
   RefreshCw,
   AlertCircle
@@ -76,7 +76,7 @@ export function AnimatedAnalyticsDashboard() {
   const fetchAnalytics = async () => {
     setIsLoading(true)
     setError(null)
-    
+
     try {
       const token = localStorage.getItem('token')
       if (!token) {
@@ -88,7 +88,7 @@ export function AnimatedAnalyticsDashboard() {
         end_date: format(dateRange.to, 'yyyy-MM-dd')
       })
 
-      const headers = { 
+      const headers = {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       }
@@ -110,7 +110,7 @@ export function AnimatedAnalyticsDashboard() {
             format(dateRange.from, 'yyyy-MM-dd'),
             format(dateRange.to, 'yyyy-MM-dd')
           )
-          
+
           return cacheUtils.fetchWithCache(
             cacheKey,
             () => fetch(endpoint.url, { headers })
@@ -139,7 +139,7 @@ export function AnimatedAnalyticsDashboard() {
       })
 
       setData(prev => ({ ...prev, ...newData }))
-      
+
       if (errors.length > 0) {
         setError(errors.join(', '))
       }
@@ -180,7 +180,7 @@ export function AnimatedAnalyticsDashboard() {
     <AnimatedCard className="p-6">
       <div className="flex items-center justify-between">
         <div>
-          <motion.p 
+          <motion.p
             className="text-sm text-gray-600"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -201,7 +201,7 @@ export function AnimatedAnalyticsDashboard() {
             )}
           </motion.div>
           {growth !== undefined && (
-            <motion.p 
+            <motion.p
               className={`text-sm flex items-center mt-1 ${color}`}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
@@ -245,7 +245,7 @@ export function AnimatedAnalyticsDashboard() {
 
   return (
     <ErrorBoundary>
-      <motion.div 
+      <motion.div
         className="space-y-6"
         variants={pageTransition}
         initial="initial"
@@ -253,21 +253,21 @@ export function AnimatedAnalyticsDashboard() {
         exit="exit"
       >
         {/* Header */}
-        <motion.div 
+        <motion.div
           className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
           variants={animations.slideDown}
           initial="initial"
           animate="animate"
         >
           <div>
-            <motion.h1 
+            <motion.h1
               className="text-3xl font-bold text-gray-900"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
             >
               Analytics Dashboard
             </motion.h1>
-            <motion.p 
+            <motion.p
               className="text-gray-600 mt-1"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -276,7 +276,7 @@ export function AnimatedAnalyticsDashboard() {
               Track performance and gain insights
             </motion.p>
           </div>
-          <motion.div 
+          <motion.div
             className="flex items-center gap-3"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -324,7 +324,7 @@ export function AnimatedAnalyticsDashboard() {
         </AnimatePresence>
 
         {/* Key Metrics */}
-        <motion.div 
+        <motion.div
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
           variants={staggerContainer}
           initial="initial"

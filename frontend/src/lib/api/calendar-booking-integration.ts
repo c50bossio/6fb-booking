@@ -1,6 +1,6 @@
 /**
  * Calendar-Booking System Integration Layer
- * 
+ *
  * This service bridges the calendar component with the existing booking system,
  * providing seamless integration between:
  * - Public booking API (availability, service selection)
@@ -14,17 +14,17 @@ import { bookingService } from './bookings'
 import { barbersService } from './barbers'
 import { servicesService } from './services'
 import type { ApiResponse } from './client'
-import type { 
-  Appointment, 
-  AppointmentCreate, 
+import type {
+  Appointment,
+  AppointmentCreate,
   AppointmentUpdate,
-  AppointmentFilter 
+  AppointmentFilter
 } from './appointments'
-import type { 
-  BookingRequest, 
-  AvailabilityRequest, 
+import type {
+  BookingRequest,
+  AvailabilityRequest,
   BarberAvailability,
-  Service 
+  Service
 } from './bookings'
 
 // Enhanced calendar appointment interface
@@ -157,7 +157,7 @@ export class CalendarBookingIntegration {
           }
 
           const availability = await bookingService.getAvailability(availabilityRequest)
-          
+
           // Transform booking availability to calendar slots
           if (availability.data && availability.data.length > 0) {
             const barberAvailability = availability.data[0]
@@ -217,7 +217,7 @@ export class CalendarBookingIntegration {
 
       // Get service details for pricing
       const service = await servicesService.getService(appointmentData.serviceId)
-      
+
       // Create appointment using the appointments API
       const createData: AppointmentCreate = {
         barber_id: appointmentData.barberId,
@@ -254,7 +254,7 @@ export class CalendarBookingIntegration {
       // If date/time is being changed, check for conflicts
       if (updates.date || updates.startTime) {
         const currentAppointment = await appointmentsService.getAppointment(parseInt(appointmentId))
-        
+
         const conflictCheckData = {
           barberId: updates.barberId || currentAppointment.data.barber_id,
           serviceId: updates.serviceId || currentAppointment.data.service_id || 1,
@@ -318,7 +318,7 @@ export class CalendarBookingIntegration {
     try {
       // Check if new slot is available
       const currentAppointment = await appointmentsService.getAppointment(parseInt(appointmentId))
-      
+
       const conflicts = await this.checkBookingConflicts({
         barberId: currentAppointment.data.barber_id,
         serviceId: currentAppointment.data.service_id || 1,
@@ -335,7 +335,7 @@ export class CalendarBookingIntegration {
           time: newTime,
           duration: currentAppointment.data.service_duration || 60
         })
-        
+
         const error = new Error(`Cannot reschedule to selected time: ${conflicts.conflicts.map(c => c.message).join(', ')}`)
         ;(error as any).suggestions = suggestions
         throw error
@@ -418,7 +418,7 @@ export class CalendarBookingIntegration {
     try {
       // Check conflicts which will return suggested alternatives
       const conflictResponse = await this.checkBookingConflicts(data)
-      
+
       if (conflictResponse.suggested_alternatives?.length > 0) {
         // Transform the suggested alternatives to AvailabilitySlot format
         return conflictResponse.suggested_alternatives.map((alt: any) => ({
@@ -433,26 +433,26 @@ export class CalendarBookingIntegration {
       // Fallback: Get availability for the same day and next few days
       const suggestions: AvailabilitySlot[] = []
       const startDate = new Date(data.date)
-      
+
       for (let i = 0; i < 7; i++) {
         const checkDate = new Date(startDate)
         checkDate.setDate(startDate.getDate() + i)
         const dateStr = checkDate.toISOString().split('T')[0]
-        
+
         const availability = await this.getAvailabilityForDate(
           dateStr,
           [data.barberId],
           data.serviceId,
           data.duration
         )
-        
+
         // Add available slots as suggestions
         suggestions.push(...availability.filter(slot => slot.available))
-        
+
         // Limit to 10 suggestions
         if (suggestions.length >= 10) break
       }
-      
+
       return suggestions.slice(0, 10)
     } catch (error) {
       console.warn('Failed to get alternative suggestions:', error)
@@ -521,13 +521,13 @@ export class CalendarBookingIntegration {
   private calculateDurationFromEndTime(startTime: string, endTime: string): number {
     const [startHours, startMinutes] = startTime.split(':').map(Number)
     const [endHours, endMinutes] = endTime.split(':').map(Number)
-    
+
     const startDate = new Date()
     startDate.setHours(startHours, startMinutes, 0, 0)
-    
+
     const endDate = new Date()
     endDate.setHours(endHours, endMinutes, 0, 0)
-    
+
     return Math.round((endDate.getTime() - startDate.getTime()) / 60000)
   }
 
@@ -609,13 +609,13 @@ export const CalendarHelpers = {
   getAppointmentDuration(appointment: CalendarAppointment): number {
     const [startHours, startMinutes] = appointment.startTime.split(':').map(Number)
     const [endHours, endMinutes] = appointment.endTime.split(':').map(Number)
-    
+
     const startDate = new Date()
     startDate.setHours(startHours, startMinutes, 0, 0)
-    
+
     const endDate = new Date()
     endDate.setHours(endHours, endMinutes, 0, 0)
-    
+
     return Math.round((endDate.getTime() - startDate.getTime()) / 60000)
   },
 

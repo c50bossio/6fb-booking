@@ -204,14 +204,14 @@ export default function CreateAppointmentModal({
       setValue('appointment_date', selectedDate || '')
       setValue('appointment_time', selectedTime || '')
       setShowSuccess(false)
-      
+
       // Fetch services when modal opens
       fetchServices()
-      
+
       // Check if date and time are pre-filled
       const hasPreFilledDateTime = !!(selectedDate && selectedTime)
       setIsPreFilled(hasPreFilledDateTime)
-      
+
       // Auto-focus client name field if date/time are pre-filled
       if (hasPreFilledDateTime) {
         setTimeout(() => {
@@ -225,7 +225,7 @@ export default function CreateAppointmentModal({
   useEffect(() => {
     if (selectedTime && services.length > 0) {
       const timeOfDay = getTimeOfDay(selectedTime)
-      const recommended = services.filter(service => 
+      const recommended = services.filter(service =>
         service.timeOfDay?.includes(timeOfDay)
       )
       setRecommendedServices(recommended.length > 0 ? recommended : services)
@@ -505,7 +505,7 @@ export default function CreateAppointmentModal({
                   </label>
                 ))}
               </div>
-              
+
               {services.filter(s => !recommendedServices.some(r => r.id === s.id)).length > 0 && (
                 <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Other available services:</div>
               )}
@@ -514,7 +514,7 @@ export default function CreateAppointmentModal({
 
           {/* All Services or Non-recommended Services */}
           <div className="grid grid-cols-1 gap-3">
-            {(recommendedServices.length > 0 
+            {(recommendedServices.length > 0
               ? services.filter(s => !recommendedServices.some(r => r.id === s.id))
               : services
             ).map((service) => (

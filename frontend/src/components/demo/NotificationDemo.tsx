@@ -4,12 +4,12 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { useWebSocket } from '@/hooks/useWebSocket'
-import { 
-  Bell, 
-  Trophy, 
-  AlertCircle, 
-  Calendar, 
-  Users, 
+import {
+  Bell,
+  Trophy,
+  AlertCircle,
+  Calendar,
+  Users,
   DollarSign,
   Zap,
   CheckCircle
@@ -36,7 +36,7 @@ export function NotificationDemo() {
         },
         body: JSON.stringify({ type })
       })
-      
+
       if (response.ok) {
         console.log(`Triggered ${type} notification`)
       }
@@ -125,7 +125,7 @@ export function NotificationDemo() {
       {/* Recent Notifications */}
       <Card className="p-6">
         <h3 className="text-lg font-semibold mb-4">Recent Notifications</h3>
-        
+
         {notifications.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <Bell className="h-12 w-12 mx-auto mb-2 opacity-50" />
@@ -139,7 +139,7 @@ export function NotificationDemo() {
                 t => t.type === notif.notification_type
               ) || notificationTypes[0]
               const Icon = notifType.icon
-              
+
               return (
                 <div
                   key={index}

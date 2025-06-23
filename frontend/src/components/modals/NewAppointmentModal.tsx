@@ -152,7 +152,7 @@ export default function NewAppointmentModal({
   const loadInitialData = async () => {
     setLoadingData(true)
     setError(null)
-    
+
     try {
       // Load services and barbers in parallel
       const [servicesResponse, barbersResponse] = await Promise.all([
@@ -190,7 +190,7 @@ export default function NewAppointmentModal({
       if (selectedTime) setValue('appointment_time', selectedTime)
       if (selectedBarberId) setValue('barber_id', selectedBarberId)
       if (initialData?.serviceId) setValue('service_id', initialData.serviceId)
-      
+
       setShowSuccess(false)
     } catch (err) {
       console.error('Error loading initial data:', err)
@@ -229,8 +229,8 @@ export default function NewAppointmentModal({
         { name: 'Jane Doe', email: 'jane.doe@example.com', phone: '(555) 987-6543' },
         { name: 'Mike Johnson', email: 'mike.johnson@example.com' }
       ]
-      
-      const filtered = mockClients.filter(client => 
+
+      const filtered = mockClients.filter(client =>
         client.name.toLowerCase().includes(searchTerm.toLowerCase())
       )
       setClientSuggestions(filtered)
@@ -244,7 +244,7 @@ export default function NewAppointmentModal({
   const onSubmit = async (data: AppointmentFormData) => {
     setIsLoading(true)
     setError(null)
-    
+
     try {
       // Create appointment via API
       const appointmentData = {
@@ -265,7 +265,7 @@ export default function NewAppointmentModal({
 
       // Show success state
       setShowSuccess(true)
-      
+
       // Call the onSuccess callback with the created appointment data
       // This will trigger the calendar refresh in the parent component
       if (onSuccess && response.data) {
@@ -381,7 +381,7 @@ export default function NewAppointmentModal({
                     </div>
                   )}
                 </div>
-                
+
                 {/* Client suggestions dropdown */}
                 {clientSuggestions.length > 0 && (
                   <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
@@ -401,7 +401,7 @@ export default function NewAppointmentModal({
                     ))}
                   </div>
                 )}
-                
+
                 {errors.client_name && (
                   <p className="mt-1 text-sm text-red-600 flex items-center">
                     <ExclamationTriangleIcon className="h-4 w-4 mr-1" />

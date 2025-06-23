@@ -80,10 +80,10 @@ export function getDevModeScript(): string {
     // Development mode extension conflict detection
     (function() {
       if (process.env.NODE_ENV !== 'development') return;
-      
+
       // Set flag for debugging extension errors
       window.__DEBUG_EXTENSION_ERRORS__ = localStorage.getItem('debug_extensions') === 'true';
-      
+
       // Add helper to toggle extension error debugging
       window.toggleExtensionDebug = function() {
         const current = window.__DEBUG_EXTENSION_ERRORS__;
@@ -91,7 +91,7 @@ export function getDevModeScript(): string {
         localStorage.setItem('debug_extensions', (!current).toString());
         console.log('Extension error debugging:', !current ? 'enabled' : 'disabled');
       };
-      
+
       console.log('%c🛠️ Development Mode', 'color: #4CAF50; font-weight: bold');
       console.log('Having extension issues? Try window.toggleExtensionDebug()');
     })();

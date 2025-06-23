@@ -25,14 +25,14 @@ class ResponsiveCSSAudit {
   // Scan all relevant files
   scanDirectory(dir, extensions = ['.tsx', '.ts', '.css']) {
     const files = [];
-    
+
     function traverse(currentDir) {
       const items = fs.readdirSync(currentDir);
-      
+
       for (const item of items) {
         const fullPath = path.join(currentDir, item);
         const stat = fs.statSync(fullPath);
-        
+
         if (stat.isDirectory() && !item.startsWith('.') && item !== 'node_modules') {
           traverse(fullPath);
         } else if (stat.isFile() && extensions.some(ext => item.endsWith(ext))) {
@@ -40,7 +40,7 @@ class ResponsiveCSSAudit {
         }
       }
     }
-    
+
     traverse(dir);
     return files;
   }
@@ -73,7 +73,7 @@ class ResponsiveCSSAudit {
 
     // Check for potential issues
     this.checkForIssues(content, analysis, fileName);
-    
+
     // Check for good practices
     this.checkForGoodPractices(content, analysis);
 
@@ -182,12 +182,12 @@ class ResponsiveCSSAudit {
 
     const srcDir = path.join(process.cwd(), 'src');
     const files = this.scanDirectory(srcDir);
-    
+
     this.results.summary.filesScanned = files.length;
 
     files.forEach(file => {
       const analysis = this.analyzeFile(file);
-      
+
       if (analysis.hasResponsiveClasses) {
         this.results.summary.componentsWithResponsive++;
       }
@@ -213,7 +213,7 @@ class ResponsiveCSSAudit {
 
   generateReport() {
     console.log('📊 Responsive Design Audit Results\n');
-    
+
     // Summary
     console.log('📈 Summary:');
     console.log(`   Files Scanned: ${this.results.summary.filesScanned}`);
@@ -289,7 +289,7 @@ class ResponsiveCSSAudit {
     console.log('   📋 Forms: Inputs should be full-width on mobile');
     console.log('   🗂️  Tables: Should have horizontal scroll or stack');
     console.log('   🎭 Modals: Should fit mobile viewport with proper padding');
-    
+
     // Save detailed report
     fs.writeFileSync('./responsive-audit-report.json', JSON.stringify(this.results, null, 2));
     console.log('\n📄 Detailed report saved to: responsive-audit-report.json');

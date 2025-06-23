@@ -65,13 +65,13 @@ apiClient.interceptors.response.use(
       if (url?.includes('/dashboard/demo/calendar/events') || url?.includes('/calendar/events')) {
         const today = new Date()
         const events = []
-        
+
         // Generate some demo events
         for (let i = 0; i < 5; i++) {
           const eventDate = new Date(today)
           eventDate.setDate(today.getDate() + Math.floor(Math.random() * 7))
           const hour = 9 + Math.floor(Math.random() * 10)
-          
+
           events.push({
             id: i + 1,
             title: ['Haircut', 'Beard Trim', 'Hair Color', 'Premium Cut'][Math.floor(Math.random() * 4)],
@@ -85,7 +85,7 @@ apiClient.interceptors.response.use(
             }
           })
         }
-        
+
         return {
           data: {
             events: events
@@ -153,7 +153,7 @@ apiClient.interceptors.response.use(
               created_at: new Date().toISOString()
             }
         ]
-        
+
         // Return as paginated response to match API structure
         return {
           data: {
@@ -234,7 +234,7 @@ apiClient.interceptors.response.use(
             created_at: today.toISOString()
           }
         ]
-        
+
         // Return proper paginated structure
         return {
           data: {
@@ -534,7 +534,7 @@ apiClient.interceptors.response.use(
 
       // Handle different HTTP methods for demo mode
       const method = error.config?.method?.toUpperCase()
-      
+
       // For POST requests (create operations)
       if (method === 'POST') {
         if (url?.includes('/compensation-plans')) {
@@ -550,12 +550,12 @@ apiClient.interceptors.response.use(
         // Default POST response
         return { data: { success: true, id: Date.now(), message: 'Demo mode - item created' } }
       }
-      
+
       // For PUT/PATCH requests (update operations)
       if (method === 'PUT' || method === 'PATCH') {
         return { data: { success: true, message: 'Demo mode - item updated' } }
       }
-      
+
       // For DELETE requests
       if (method === 'DELETE') {
         return { data: { success: true, message: 'Demo mode - item deleted' } }

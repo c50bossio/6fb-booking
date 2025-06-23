@@ -56,7 +56,7 @@ export default function DeleteAppointmentModal({
 
   const handleConfirm = async () => {
     const finalReason = reason === 'Other' ? customReason : reason
-    
+
     setIsDeleting(true)
     try {
       if (appointment) {
@@ -133,32 +133,32 @@ export default function DeleteAppointmentModal({
             <CalendarDaysIcon className="h-5 w-5 text-gray-600 dark:text-gray-400 mr-2" />
             Appointment Details
           </h4>
-          
+
           <div className="space-y-2 text-sm">
             <div className="flex items-center">
               <UserIcon className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
               <span className="text-gray-700 dark:text-gray-300">Client:</span>
               <span className="font-medium text-gray-900 dark:text-white ml-1">{appointment.client}</span>
             </div>
-            
+
             <div className="flex items-center">
               <TrashIcon className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
               <span className="text-gray-700 dark:text-gray-300">Service:</span>
               <span className="font-medium text-gray-900 dark:text-white ml-1">{appointment.service}</span>
             </div>
-            
+
             <div className="flex items-center">
               <CalendarDaysIcon className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
               <span className="text-gray-700 dark:text-gray-300">Date:</span>
               <span className="font-medium text-gray-900 dark:text-white ml-1">{formatDate(appointment.date)}</span>
             </div>
-            
+
             <div className="flex items-center">
               <ClockIcon className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
               <span className="text-gray-700 dark:text-gray-300">Time:</span>
               <span className="font-medium text-gray-900 dark:text-white ml-1">{formatTime(appointment.time)}</span>
             </div>
-            
+
             <div className="flex items-center">
               <UserIcon className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
               <span className="text-gray-700 dark:text-gray-300">Barber:</span>
@@ -259,7 +259,7 @@ export default function DeleteAppointmentModal({
         <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
           <p className="text-xs text-amber-800 dark:text-amber-300">
             <ExclamationTriangleIcon className="h-4 w-4 inline mr-1" />
-            This action will permanently cancel the appointment and cannot be undone. 
+            This action will permanently cancel the appointment and cannot be undone.
             {notifyClient && appointment.clientEmail && ' The client will be notified via email.'}
           </p>
         </div>

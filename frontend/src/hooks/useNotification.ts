@@ -19,9 +19,9 @@ export function useNotification() {
       ...notification,
       id
     }
-    
+
     setNotifications(prev => [...prev, newNotification])
-    
+
     return id
   }, [])
 

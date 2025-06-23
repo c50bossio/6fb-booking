@@ -85,7 +85,7 @@ class ResponsiveDesignTester {
 
   async init() {
     console.log('🚀 Starting Responsive Design Testing...\n');
-    
+
     // Create screenshots directory
     if (!fs.existsSync(this.screenshotDir)) {
       fs.mkdirSync(this.screenshotDir, { recursive: true });
@@ -106,20 +106,20 @@ class ResponsiveDesignTester {
     try {
       const page = await this.browser.newPage();
       await page.goto(`${this.baseUrl}/login`);
-      
+
       // Try to login with test credentials (if available)
       const emailInput = await page.$('input[type="email"]');
       const passwordInput = await page.$('input[type="password"]');
-      
+
       if (emailInput && passwordInput) {
         await emailInput.type('test@example.com');
         await passwordInput.type('testpassword');
-        
+
         const submitButton = await page.$('button[type="submit"]');
         if (submitButton) {
           await submitButton.click();
           await page.waitForTimeout(2000);
-          
+
           // Check if we have auth token in localStorage
           const token = await page.evaluate(() => localStorage.getItem('auth_token'));
           if (token) {
@@ -128,7 +128,7 @@ class ResponsiveDesignTester {
           }
         }
       }
-      
+
       await page.close();
     } catch (error) {
       console.log('⚠️  Could not obtain auth token - protected routes will be tested without authentication');
@@ -137,7 +137,7 @@ class ResponsiveDesignTester {
 
   async testDevice(deviceKey, deviceConfig) {
     console.log(`📱 Testing ${deviceConfig.name} (${deviceConfig.viewport.width}x${deviceConfig.viewport.height})`);
-    
+
     const page = await this.browser.newPage();
     await page.setViewport(deviceConfig.viewport);
     await page.setUserAgent(deviceConfig.userAgent);
@@ -158,15 +158,15 @@ class ResponsiveDesignTester {
 
     for (const testPage of TEST_PAGES) {
       console.log(`  📄 Testing ${testPage.name}...`);
-      
+
       try {
         const pageResult = await this.testPage(page, testPage, deviceConfig, deviceKey);
         deviceResults.pages[testPage.path] = pageResult;
-        
+
         if (pageResult.issues.length > 0) {
           deviceResults.issues.push(...pageResult.issues);
         }
-        
+
       } catch (error) {
         console.error(`    ❌ Error testing ${testPage.name}: ${error.message}`);
         deviceResults.pages[testPage.path] = {
@@ -196,16 +196,16 @@ class ResponsiveDesignTester {
 
     try {
       // Navigate to page
-      await page.goto(`${this.baseUrl}${testPage.path}`, { 
+      await page.goto(`${this.baseUrl}${testPage.path}`, {
         waitUntil: 'networkidle2',
-        timeout: 30000 
+        timeout: 30000
       });
 
       pageResult.loadTime = Date.now() - startTime;
 
       // Take screenshot
       const screenshotPath = path.join(
-        this.screenshotDir, 
+        this.screenshotDir,
         `${deviceKey}-${testPage.name.replace(/[^a-zA-Z0-9]/g, '-')}.png`
       );
       await page.screenshot({ path: screenshotPath, fullPage: true });
@@ -258,7 +258,7 @@ class ResponsiveDesignTester {
       // Check for proper responsive breakpoints
       const viewportWidth = deviceConfig.viewport.width;
       const expectedLayout = this.getExpectedLayout(viewportWidth);
-      
+
       // Test sidebar behavior based on viewport
       const sidebarVisible = await page.$('.sidebar-dark, .sidebar-light');
       const sidebarCollapsed = await page.evaluate(() => {
@@ -299,7 +299,7 @@ class ResponsiveDesignTester {
     try {
       // Test touch/tap events
       const buttons = await page.$$('button, a[role="button"], .clickable');
-      
+
       for (let button of buttons.slice(0, 5)) { // Test first 5 buttons
         try {
           // Simulate touch
@@ -332,9 +332,9 @@ class ResponsiveDesignTester {
         const initialWidth = await page.evaluate(el => el.offsetWidth, sidebar);
         await toggleButton.click();
         await page.waitForTimeout(500); // Wait for animation
-        
+
         const newWidth = await page.evaluate(el => el.offsetWidth, sidebar);
-        
+
         if (initialWidth === newWidth) {
           pageResult.issues.push('Sidebar toggle does not appear to change sidebar width');
         } else {
@@ -358,11 +358,11 @@ class ResponsiveDesignTester {
   async testFormLayouts(page, pageResult, deviceConfig) {
     try {
       const forms = await page.$$('form');
-      
+
       for (let form of forms) {
         // Test input spacing and sizing
         const inputs = await form.$$('input, textarea, select');
-        
+
         for (let input of inputs) {
           const inputSize = await page.evaluate(el => {
             const rect = el.getBoundingClientRect();
@@ -404,14 +404,14 @@ class ResponsiveDesignTester {
     try {
       // Test all clickable elements for proper touch target size
       const clickableElements = await page.$$('button, a, input, select, textarea, [onclick], [role="button"]');
-      
+
       let smallTargetCount = 0;
-      
+
       for (let element of clickableElements) {
         const targetSize = await page.evaluate(el => {
           const rect = el.getBoundingClientRect();
-          return { 
-            width: rect.width, 
+          return {
+            width: rect.width,
             height: rect.height,
             visible: rect.width > 0 && rect.height > 0
           };
@@ -443,30 +443,30 @@ class ResponsiveDesignTester {
       const colorContrastIssues = await page.evaluate(() => {
         const issues = [];
         const elements = document.querySelectorAll('*');
-        
+
         for (let i = 0; i < Math.min(elements.length, 50); i++) {
           const el = elements[i];
           const style = window.getComputedStyle(el);
           const color = style.color;
           const backgroundColor = style.backgroundColor;
-          
+
           // Basic check - if text is very light and background is very light
           if (color.includes('rgb(255') && backgroundColor.includes('rgb(255')) {
             issues.push('Potential color contrast issue detected');
             break;
           }
         }
-        
+
         return issues;
       });
 
       // Test for alt text on images
-      const imagesWithoutAlt = await page.$$eval('img', imgs => 
+      const imagesWithoutAlt = await page.$$eval('img', imgs =>
         imgs.filter(img => !img.alt || img.alt.trim() === '').length
       );
 
       // Test for proper heading structure
-      const headingStructure = await page.$$eval('h1, h2, h3, h4, h5, h6', headings => 
+      const headingStructure = await page.$$eval('h1, h2, h3, h4, h5, h6', headings =>
         headings.map(h => h.tagName.toLowerCase())
       );
 
@@ -597,7 +597,7 @@ class ResponsiveDesignTester {
   generateSummaryReport() {
     let report = `# Responsive Design Test Report\n\n`;
     report += `**Generated:** ${testResults.timestamp}\n\n`;
-    
+
     report += `## Summary\n\n`;
     report += `- **Total Tests:** ${testResults.summary.totalTests}\n`;
     report += `- **Passed:** ${testResults.summary.passed}\n`;
@@ -605,10 +605,10 @@ class ResponsiveDesignTester {
     report += `- **Total Issues:** ${testResults.summary.totalIssues}\n\n`;
 
     report += `## Issues by Device\n\n`;
-    
+
     for (const [deviceKey, deviceResult] of Object.entries(testResults.devices)) {
       report += `### ${deviceResult.device}\n\n`;
-      
+
       if (deviceResult.issues.length === 0) {
         report += `✅ No issues found\n\n`;
       } else {
@@ -620,22 +620,22 @@ class ResponsiveDesignTester {
     }
 
     report += `## Recommendations\n\n`;
-    
+
     const allIssues = Object.values(testResults.devices).flatMap(d => d.issues);
     const commonIssues = [...new Set(allIssues)];
-    
+
     if (commonIssues.some(issue => issue.includes('touch target'))) {
       report += `### Touch Targets\n`;
       report += `- Ensure all clickable elements are at least 44px in height for mobile devices\n`;
       report += `- Add padding to small buttons and links\n\n`;
     }
-    
+
     if (commonIssues.some(issue => issue.includes('too wide'))) {
       report += `### Layout Width Issues\n`;
       report += `- Implement proper responsive breakpoints\n`;
       report += `- Consider horizontal scrolling or collapsible layouts for wide content\n\n`;
     }
-    
+
     if (commonIssues.some(issue => issue.includes('sidebar'))) {
       report += `### Sidebar Responsiveness\n`;
       report += `- Ensure sidebar collapses properly on mobile devices\n`;
@@ -659,12 +659,12 @@ class ResponsiveDesignTester {
       for (const [deviceKey, deviceConfig] of Object.entries(DEVICE_CONFIGS)) {
         const deviceResult = await this.testDevice(deviceKey, deviceConfig);
         testResults.devices[deviceKey] = deviceResult;
-        
+
         console.log(`  ✅ Completed ${deviceConfig.name} (${deviceResult.issues.length} issues found)\n`);
       }
 
       await this.generateReport();
-      
+
     } catch (error) {
       console.error('❌ Test execution failed:', error.message);
       process.exit(1);

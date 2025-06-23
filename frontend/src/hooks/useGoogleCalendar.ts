@@ -143,12 +143,12 @@ export function useGoogleCalendar() {
       setLoading(true);
       const response = await apiCall('/google-calendar/connect');
       const data = await response.json();
-      
+
       // Redirect to Google OAuth
       if (data.authorization_url) {
         window.location.href = data.authorization_url;
       }
-      
+
       return data;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to connect';
@@ -169,10 +169,10 @@ export function useGoogleCalendar() {
         method: 'DELETE',
       });
       const data = await response.json();
-      
+
       // Reload status and settings
       await Promise.all([loadStatus(), loadSettings()]);
-      
+
       return data;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to disconnect';
@@ -193,10 +193,10 @@ export function useGoogleCalendar() {
         method: 'POST',
       });
       const data = await response.json();
-      
+
       // Reload status
       await loadStatus();
-      
+
       return data;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to sync';
@@ -218,10 +218,10 @@ export function useGoogleCalendar() {
         body: JSON.stringify(newSettings),
       });
       const data = await response.json();
-      
+
       // Update local settings
       setSettings(newSettings);
-      
+
       return data;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update settings';
@@ -238,16 +238,16 @@ export function useGoogleCalendar() {
     try {
       setError(null);
       setLoading(true);
-      
+
       const params = new URLSearchParams({
         start_date: startDate.toISOString(),
         end_date: endDate.toISOString(),
       });
-      
+
       const response = await apiCall(`/google-calendar/events?${params}`);
       const data = await response.json();
       setEvents(data);
-      
+
       return data;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load events';
@@ -267,11 +267,11 @@ export function useGoogleCalendar() {
         limit: limit.toString(),
         offset: offset.toString(),
       });
-      
+
       const response = await apiCall(`/google-calendar/sync-logs?${params}`);
       const data = await response.json();
       setSyncLogs(data.logs);
-      
+
       return data.logs;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load sync logs';
@@ -303,14 +303,14 @@ export function useGoogleCalendar() {
         // Refresh status and settings after successful connection
         loadStatus();
         loadSettings();
-        
+
         // Clean up URL
         const url = new URL(window.location.href);
         url.searchParams.delete('google_calendar_connected');
         window.history.replaceState({}, '', url.toString());
       } else if (error) {
         setError(`Connection failed: ${error}`);
-        
+
         // Clean up URL
         const url = new URL(window.location.href);
         url.searchParams.delete('google_calendar_error');
@@ -327,7 +327,7 @@ export function useGoogleCalendar() {
     syncLogs,
     loading,
     error,
-    
+
     // Actions
     connect,
     disconnect,
@@ -337,7 +337,7 @@ export function useGoogleCalendar() {
     loadSyncLogs,
     loadStatus,
     loadSettings,
-    
+
     // Computed values
     isConnected: status?.connected || false,
     canSync: status?.connected && status?.status === 'active',

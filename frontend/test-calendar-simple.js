@@ -23,7 +23,7 @@ function testViewButtons() {
   const monthBtn = buttons.find(btn => btn.textContent.includes('Month'));
   const weekBtn = buttons.find(btn => btn.textContent.includes('Week'));
   const dayBtn = buttons.find(btn => btn.textContent.includes('Day'));
-  
+
   if (monthBtn && weekBtn && dayBtn) {
     console.log('✅ All view buttons found (Month, Week, Day)');
     return true;
@@ -41,10 +41,10 @@ function testViewButtons() {
 function testNavigationButtons() {
   const prevBtn = document.querySelector('svg[class*="ChevronLeft"]');
   const nextBtn = document.querySelector('svg[class*="ChevronRight"]');
-  const todayBtn = Array.from(document.querySelectorAll('button')).find(btn => 
+  const todayBtn = Array.from(document.querySelectorAll('button')).find(btn =>
     btn.textContent.includes('Today')
   );
-  
+
   if (prevBtn && nextBtn) {
     console.log('✅ Navigation buttons found');
     return true;
@@ -69,17 +69,17 @@ function testAppointmentsDisplay() {
 function testClickFunctionality() {
   try {
     // Test week view click
-    const weekBtn = Array.from(document.querySelectorAll('button')).find(btn => 
+    const weekBtn = Array.from(document.querySelectorAll('button')).find(btn =>
       btn.textContent.includes('Week')
     );
     if (weekBtn) {
       weekBtn.click();
       console.log('✅ Week view click test passed');
     }
-    
+
     // Test month view click
     setTimeout(() => {
-      const monthBtn = Array.from(document.querySelectorAll('button')).find(btn => 
+      const monthBtn = Array.from(document.querySelectorAll('button')).find(btn =>
         btn.textContent.includes('Month')
       );
       if (monthBtn) {
@@ -87,7 +87,7 @@ function testClickFunctionality() {
         console.log('✅ Month view click test passed');
       }
     }, 500);
-    
+
     return true;
   } catch (error) {
     console.log('❌ Click test failed:', error.message);
@@ -111,7 +111,7 @@ function checkConsoleErrors() {
 // Run all tests
 function runAllTests() {
   console.log('\n📋 Running Calendar Tests...\n');
-  
+
   const results = {
     calendarExists: testCalendarExists(),
     viewButtons: testViewButtons(),
@@ -120,24 +120,24 @@ function runAllTests() {
     clickFunctionality: testClickFunctionality(),
     consoleErrors: checkConsoleErrors()
   };
-  
+
   const passed = Object.values(results).filter(Boolean).length;
   const total = Object.keys(results).length;
-  
+
   console.log('\n📊 Test Results:');
   console.log('================');
   Object.entries(results).forEach(([test, passed]) => {
     console.log(`${passed ? '✅' : '❌'} ${test}: ${passed ? 'PASSED' : 'FAILED'}`);
   });
-  
+
   console.log(`\n🎯 Overall: ${passed}/${total} tests passed`);
-  
+
   if (passed === total) {
     console.log('🎉 All tests passed! Calendar is working correctly.');
   } else {
     console.log('🚨 Some tests failed. Check the issues above.');
   }
-  
+
   return results;
 }
 

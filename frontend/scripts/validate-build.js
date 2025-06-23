@@ -17,7 +17,7 @@ let hasErrors = false;
 function checkNodeVersion() {
   const nodeVersion = process.version;
   const majorVersion = parseInt(nodeVersion.split('.')[0].substring(1));
-  
+
   if (majorVersion < 18) {
     console.error('❌ Node.js version 18 or higher is required');
     console.error(`   Current version: ${nodeVersion}`);
@@ -39,7 +39,7 @@ function checkRequiredFiles() {
   ];
 
   console.log('\n📋 Checking required files:');
-  
+
   requiredFiles.forEach(file => {
     const filePath = path.join(process.cwd(), file);
     if (fs.existsSync(filePath)) {
@@ -54,7 +54,7 @@ function checkRequiredFiles() {
 // Check environment variables
 function checkEnvironmentVariables() {
   console.log('\n🔐 Checking environment variables:');
-  
+
   const envExample = path.join(process.cwd(), '.env.production.example');
   if (!fs.existsSync(envExample)) {
     console.warn('⚠️  No .env.production.example found to validate against');
@@ -80,14 +80,14 @@ function checkEnvironmentVariables() {
 // Check dependencies
 function checkDependencies() {
   console.log('\n📦 Checking dependencies:');
-  
+
   try {
     // Check if node_modules exists
     if (!fs.existsSync(path.join(process.cwd(), 'node_modules'))) {
       console.log('📥 Installing dependencies...');
       execSync('npm install', { stdio: 'inherit' });
     }
-    
+
     // Run npm audit
     console.log('\n🔒 Running security audit:');
     try {
@@ -105,18 +105,18 @@ function checkDependencies() {
 // Test build
 function testBuild() {
   console.log('\n🏗️  Testing production build:');
-  
+
   try {
     console.log('Building application...');
     execSync('npm run build', { stdio: 'inherit' });
     console.log('✅ Build completed successfully');
-    
+
     // Check build output
     const buildDir = path.join(process.cwd(), '.next');
     if (fs.existsSync(buildDir)) {
       const stats = fs.statSync(buildDir);
       console.log(`✅ Build directory created: ${buildDir}`);
-      
+
       // Check standalone directory for Render deployment
       const standaloneDir = path.join(buildDir, 'standalone');
       if (fs.existsSync(standaloneDir)) {
@@ -135,7 +135,7 @@ function testBuild() {
 // Check for common issues
 function checkCommonIssues() {
   console.log('\n🔍 Checking for common issues:');
-  
+
   // Check for large files
   const publicDir = path.join(process.cwd(), 'public');
   if (fs.existsSync(publicDir)) {
@@ -150,7 +150,7 @@ function checkCommonIssues() {
       }
     });
   }
-  
+
   // Check package.json scripts
   const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
   if (!packageJson.scripts.build) {
@@ -159,7 +159,7 @@ function checkCommonIssues() {
   } else {
     console.log('✅ Build script configured');
   }
-  
+
   if (!packageJson.scripts.start) {
     console.error('❌ Missing "start" script in package.json');
     hasErrors = true;
@@ -176,9 +176,9 @@ function runValidation() {
   checkDependencies();
   testBuild();
   checkCommonIssues();
-  
+
   console.log('\n' + '='.repeat(50));
-  
+
   if (hasErrors) {
     console.error('\n❌ Validation failed. Please fix the errors above before deploying.');
     process.exit(1);
