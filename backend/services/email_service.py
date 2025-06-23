@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 
 from config.settings import settings
 from utils.logging import get_logger
+
 # from models.communication import EmailLog, EmailStatus
 
 logger = get_logger(__name__)
@@ -26,12 +27,14 @@ class EmailService:
     """Service for sending emails with templates and tracking"""
 
     def __init__(self):
-        self.smtp_host = getattr(settings, 'SMTP_HOST', None)
-        self.smtp_port = getattr(settings, 'SMTP_PORT', 587)
-        self.smtp_username = getattr(settings, 'SMTP_USERNAME', None)
-        self.smtp_password = getattr(settings, 'SMTP_PASSWORD', None)
-        self.from_email = getattr(settings, 'EMAIL_FROM_ADDRESS', None) or self.smtp_username
-        self.from_name = getattr(settings, 'EMAIL_FROM_NAME', '6FB Platform')
+        self.smtp_host = getattr(settings, "SMTP_HOST", None)
+        self.smtp_port = getattr(settings, "SMTP_PORT", 587)
+        self.smtp_username = getattr(settings, "SMTP_USERNAME", None)
+        self.smtp_password = getattr(settings, "SMTP_PASSWORD", None)
+        self.from_email = (
+            getattr(settings, "EMAIL_FROM_ADDRESS", None) or self.smtp_username
+        )
+        self.from_name = getattr(settings, "EMAIL_FROM_NAME", "6FB Platform")
 
         # Initialize Jinja2 for email templates
         template_dir = Path(__file__).parent.parent / "templates" / "email"
@@ -186,7 +189,7 @@ class EmailService:
         attachments: Optional[List[Dict[str, Any]]] = None,
     ) -> bool:
         """Send email using template"""
-        if not getattr(settings, 'email_enabled', True):
+        if not getattr(settings, "email_enabled", True):
             logger.warning("Email service is not configured")
             return False
 
@@ -387,13 +390,15 @@ class EmailService:
         # For now, just log in development
         logger.info(f"Sending welcome email to {email} for {first_name}")
         return True
-    
+
     async def send_vip_welcome_email(self, email: str, first_name: str) -> bool:
         """Send VIP welcome email to client (async wrapper)"""
         logger.info(f"Sending VIP welcome email to {email} for {first_name}")
         return True
-    
-    async def send_custom_email(self, email: str, subject: str, message: str, first_name: str) -> bool:
+
+    async def send_custom_email(
+        self, email: str, subject: str, message: str, first_name: str
+    ) -> bool:
         """Send custom email to client (async wrapper)"""
         logger.info(f"Sending custom email to {email}: {subject}")
         # In production, this would send actual email

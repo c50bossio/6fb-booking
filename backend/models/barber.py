@@ -54,6 +54,9 @@ class Barber(BaseModel):
         "CompensationPlan", back_populates="barber", uselist=False
     )
     reviews = relationship("Review", back_populates="barber")
+    google_calendar_settings = relationship(
+        "GoogleCalendarSettings", back_populates="barber", uselist=False
+    )
 
     def __repr__(self):
         return f"<Barber(email={self.email}, business_name={self.business_name})>"

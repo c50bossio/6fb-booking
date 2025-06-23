@@ -31,10 +31,12 @@ from models import (
     communication,
     barber_payment,
     booking,
+    google_calendar_settings,
 )
 
 # Import security middleware
 from middleware.security import SecurityHeadersMiddleware, RateLimitMiddleware
+# from middleware.advanced_security import AdvancedSecurityMiddleware, SecurityHeadersEnhancedMiddleware
 from middleware.request_logging import RequestLoggingMiddleware
 from middleware.error_handling import (
     ErrorHandlingMiddleware,
@@ -56,6 +58,7 @@ from api.v1 import (
     notifications,
     booking,
     calendar,
+    services,
 )
 from api.v1.endpoints import (
     payments,
@@ -79,6 +82,9 @@ from api.v1.endpoints import (
     public_dashboard,
     test_email,
     clients,
+    google_calendar,
+    security_admin,
+    health,
 )
 
 # Import logging setup
@@ -116,37 +122,44 @@ app.state.settings = settings
 # Add middleware (order matters - error handling should be outermost)
 app.add_middleware(ErrorHandlingMiddleware)
 app.add_middleware(RequestLoggingMiddleware)
+# app.add_middleware(AdvancedSecurityMiddleware, enable_monitoring=True)
 app.add_middleware(RateLimitMiddleware)
-app.add_middleware(SecurityHeadersMiddleware)
+# app.add_middleware(SecurityHeadersEnhancedMiddleware)
 
-# Configure CORS
-# Get allowed origins from environment
-env_origins = (
-    os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
-    if os.getenv("CORS_ALLOWED_ORIGINS")
-    else []
-)
-
-# Always include these origins
-default_origins = [
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://localhost:8081",  # 6FB Dashboard
-    "http://localhost:8082",  # Bossio Dashboard
-    "http://localhost:8083",  # Alternative dashboard
-    "https://sixfb-frontend.onrender.com",
-    "https://sixfb-frontend-paby.onrender.com",  # Your actual Render frontend URL
-    "https://bookbarber-dkbwc7iez-6fb.vercel.app",  # New Vercel deployment
-    "https://bookbarber.com",  # Production domain
-    "https://app.bookbarber.com",  # App subdomain
-    "https://*.bookbarber.com",  # All subdomains
-    "https://*.vercel.app",  # All Vercel preview deployments
-]
-
-# Combine environment and default origins
-cors_origins = list(set(env_origins + default_origins))
-# Remove empty strings
-cors_origins = [origin.strip() for origin in cors_origins if origin.strip()]
+# Configure CORS with Security Enhancements
+# Get allowed origins with production safety
+if settings.ENVIRONMENT == "production" and settings.CORS_STRICT_MODE:
+    # Production: Only allow specific domains
+    cors_origins = settings.production_cors_origins
+else:
+    # Development: Allow broader access
+    env_origins = (
+        os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
+        if os.getenv("CORS_ALLOWED_ORIGINS")
+        else []
+    )
+    
+    default_origins = [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:8081",  # 6FB Dashboard
+        "http://localhost:8082",  # Bossio Dashboard
+        "http://localhost:8083",  # Alternative dashboard
+        "https://sixfb-frontend.onrender.com",
+        "https://sixfb-frontend-paby.onrender.com",
+        "https://bookbarber.com",  # Production domain
+        "https://app.bookbarber.com",  # App subdomain
+    ]
+    
+    # Only allow wildcards in development
+    if settings.ENVIRONMENT == "development":
+        default_origins.extend([
+            "https://bookbarber-dkbwc7iez-6fb.vercel.app",
+            "https://*.vercel.app",  # Preview deployments (dev only)
+        ])
+    
+    cors_origins = list(set(env_origins + default_origins))
+    cors_origins = [origin.strip() for origin in cors_origins if origin.strip()]
 
 app.add_middleware(
     CORSMiddleware,
@@ -176,6 +189,7 @@ app.include_router(
     appointments.router, prefix="/api/v1/appointments", tags=["Appointments"]
 )
 app.include_router(analytics.router, prefix="/api/v1/analytics", tags=["Analytics"])
+app.include_router(services.router, prefix="/api/v1/services", tags=["Services"])
 app.include_router(training_router.router, prefix="/api/v1/training", tags=["Training"])
 app.include_router(revenue.router, prefix="/api/v1/revenue", tags=["Revenue"])
 app.include_router(
@@ -262,6 +276,21 @@ app.include_router(
     clients.router,
     prefix="/api/v1/clients",
     tags=["Clients"],
+)
+app.include_router(
+    google_calendar.router,
+    prefix="/api/v1",
+    tags=["Google Calendar"],
+)
+app.include_router(
+    security_admin.router,
+    prefix="/api/v1/security",
+    tags=["Security Administration"],
+)
+app.include_router(
+    health.router,
+    prefix="/api/v1",
+    tags=["Health Monitoring"],
 )
 
 # Add authentication system (disabled for now)

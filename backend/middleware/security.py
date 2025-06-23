@@ -27,24 +27,31 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
 
-        # Content Security Policy to prevent extension injection attempts
-        # This policy allows the app to function while preventing extensions from injecting content
-        csp_directives = [
-            "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdn.jsdelivr.net",
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-            "font-src 'self' https://fonts.gstatic.com",
-            "img-src 'self' data: https: blob:",
-            "connect-src 'self' https://api.stripe.com https://m.stripe.network https://*.sentry.io http://localhost:* ws://localhost:*",
-            "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
-            "object-src 'none'",
-            "base-uri 'self'",
-            "form-action 'self'",
-            "upgrade-insecure-requests",
-        ]
-
-        # In development, be more permissive
-        if request.app.state.settings.ENVIRONMENT == "development":
+        # Enhanced Content Security Policy
+        settings = request.app.state.settings
+        
+        if settings.ENVIRONMENT == "production" and settings.SECURITY_HEADERS_STRICT:
+            # Strict production CSP
+            csp_directives = [
+                "default-src 'self'",
+                "script-src 'self' https://js.stripe.com",
+                "style-src 'self' https://fonts.googleapis.com",
+                "font-src 'self' https://fonts.gstatic.com",
+                "img-src 'self' data: https://bookbarber.com https://app.bookbarber.com",
+                "connect-src 'self' https://api.stripe.com https://m.stripe.network https://*.sentry.io",
+                "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
+                "object-src 'none'",
+                "base-uri 'self'",
+                "form-action 'self'",
+                "upgrade-insecure-requests",
+            ]
+            
+            # Add CSP reporting if configured
+            if settings.CSP_REPORT_URI:
+                csp_directives.append(f"report-uri {settings.CSP_REPORT_URI}")
+                
+        elif settings.ENVIRONMENT == "development":
+            # Development CSP - more permissive
             csp_directives = [
                 "default-src 'self'",
                 "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: http://localhost:*",
@@ -56,6 +63,21 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
                 "object-src 'none'",
                 "base-uri 'self'",
                 "form-action 'self'",
+            ]
+        else:
+            # Standard production CSP
+            csp_directives = [
+                "default-src 'self'",
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdn.jsdelivr.net",
+                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+                "font-src 'self' https://fonts.gstatic.com",
+                "img-src 'self' data: https: blob:",
+                "connect-src 'self' https://api.stripe.com https://m.stripe.network https://*.sentry.io",
+                "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
+                "object-src 'none'",
+                "base-uri 'self'",
+                "form-action 'self'",
+                "upgrade-insecure-requests",
             ]
 
         response.headers["Content-Security-Policy"] = "; ".join(csp_directives)
@@ -101,9 +123,18 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             return "api"
 
     async def dispatch(self, request: Request, call_next: Callable):
-        # Skip rate limiting for docs endpoints only
-        if request.url.path in ["/docs", "/redoc", "/openapi.json", "/"]:
-            return await call_next(request)
+        # Enhanced security for documentation endpoints
+        settings = request.app.state.settings
+        
+        # In production, apply rate limiting to docs endpoints
+        if settings.ENVIRONMENT == "production" and settings.RATE_LIMIT_STRICT_MODE:
+            # Only skip rate limiting for root endpoint
+            if request.url.path == "/":
+                return await call_next(request)
+        else:
+            # In development, skip rate limiting for docs
+            if request.url.path in ["/docs", "/redoc", "/openapi.json", "/"]:
+                return await call_next(request)
 
         # Get client identifier and endpoint type
         client_ip = get_client_ip(request)

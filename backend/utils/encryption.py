@@ -158,7 +158,7 @@ class SearchableEncryptedString(TypeDecorator):
         """Decrypt value (ignore search hash)"""
         if value is not None and "|" in value:
             encrypted_value = value.split("|")[0]
-            return encryption_manager.decrypt(encrypted_value)
+            return get_encryption_manager().decrypt(encrypted_value)
         elif value is not None:
             # Handle legacy data without hash
             return get_encryption_manager().decrypt(value)

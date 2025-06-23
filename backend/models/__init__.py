@@ -47,6 +47,7 @@ from .booking import (
     BookingSlot,
     WaitList,
 )
+from .google_calendar_settings import GoogleCalendarSettings, GoogleCalendarSyncLog
 
 # Export all models for easy importing
 __all__ = [
@@ -101,4 +102,7 @@ __all__ = [
     "Review",
     "BookingSlot",
     "WaitList",
+    # Google Calendar models
+    "GoogleCalendarSettings",
+    "GoogleCalendarSyncLog",
 ]

@@ -15,8 +15,10 @@ from google.auth.exceptions import RefreshError
 import logging
 
 from config.settings import get_settings
+from config.database import get_db
 from models.appointment import Appointment
 from models.barber import Barber
+from models.google_calendar_settings import GoogleCalendarSettings, GoogleCalendarSyncLog
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
@@ -220,12 +222,13 @@ class GoogleCalendarService:
             )
 
             # Calculate end time
-            duration = appointment.service_duration or 60
+            duration = appointment.duration_minutes or 60
             end_datetime = start_datetime + timedelta(minutes=duration)
 
             # Create event
+            client_name = appointment.client.full_name if appointment.client else "Unknown Client"
             event = {
-                "summary": f"{appointment.service_name} - {appointment.client_name}",
+                "summary": f"{appointment.service_name} - {client_name}",
                 "description": self._format_appointment_description(appointment),
                 "start": {
                     "dateTime": start_datetime.isoformat(),
@@ -246,11 +249,11 @@ class GoogleCalendarService:
             }
 
             # Add client email if available
-            if appointment.client_email:
+            if appointment.client and appointment.client.email:
                 event["attendees"].append(
                     {
-                        "email": appointment.client_email,
-                        "displayName": appointment.client_name,
+                        "email": appointment.client.email,
+                        "displayName": appointment.client.full_name,
                     }
                 )
 
@@ -260,7 +263,7 @@ class GoogleCalendarService:
                 .insert(
                     calendarId="primary",
                     body=event,
-                    sendUpdates="all" if appointment.client_email else "none",
+                    sendUpdates="all" if (appointment.client and appointment.client.email) else "none",
                 )
                 .execute()
             )
@@ -304,12 +307,13 @@ class GoogleCalendarService:
                 ),
             )
 
-            duration = appointment.service_duration or 60
+            duration = appointment.duration_minutes or 60
             end_datetime = start_datetime + timedelta(minutes=duration)
 
+            client_name = appointment.client.full_name if appointment.client else "Unknown Client"
             existing_event.update(
                 {
-                    "summary": f"{appointment.service_name} - {appointment.client_name}",
+                    "summary": f"{appointment.service_name} - {client_name}",
                     "description": self._format_appointment_description(appointment),
                     "start": {
                         "dateTime": start_datetime.isoformat(),
@@ -324,11 +328,11 @@ class GoogleCalendarService:
 
             # Update attendees
             attendees = []
-            if appointment.client_email:
+            if appointment.client and appointment.client.email:
                 attendees.append(
                     {
-                        "email": appointment.client_email,
-                        "displayName": appointment.client_name,
+                        "email": appointment.client.email,
+                        "displayName": appointment.client.full_name,
                     }
                 )
             existing_event["attendees"] = attendees
@@ -338,7 +342,7 @@ class GoogleCalendarService:
                 calendarId="primary",
                 eventId=event_id,
                 body=existing_event,
-                sendUpdates="all" if appointment.client_email else "none",
+                sendUpdates="all" if (appointment.client and appointment.client.email) else "none",
             ).execute()
 
             logger.info(
@@ -419,22 +423,23 @@ class GoogleCalendarService:
 
     def _format_appointment_description(self, appointment: Appointment) -> str:
         """Format appointment description for Google Calendar"""
+        client_name = appointment.client.full_name if appointment.client else "Unknown Client"
         description_parts = [
-            f"Service: {appointment.service_name}",
-            f"Client: {appointment.client_name}",
+            f"Service: {appointment.service_name or 'Standard Service'}",
+            f"Client: {client_name}",
         ]
 
-        if appointment.client_phone:
-            description_parts.append(f"Phone: {appointment.client_phone}")
+        if appointment.client and appointment.client.phone:
+            description_parts.append(f"Phone: {appointment.client.phone}")
 
-        if appointment.client_email:
-            description_parts.append(f"Email: {appointment.client_email}")
+        if appointment.client and appointment.client.email:
+            description_parts.append(f"Email: {appointment.client.email}")
 
-        if appointment.service_price:
-            description_parts.append(f"Price: ${appointment.service_price}")
+        if appointment.service_revenue:
+            description_parts.append(f"Price: ${appointment.service_revenue}")
 
-        if appointment.notes:
-            description_parts.append(f"Notes: {appointment.notes}")
+        if appointment.barber_notes:
+            description_parts.append(f"Notes: {appointment.barber_notes}")
 
         description_parts.append(f"Booking ID: {appointment.id}")
 

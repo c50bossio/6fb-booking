@@ -14,25 +14,26 @@ import sys
 # Create all tables
 Base.metadata.create_all(bind=engine)
 
+
 def get_or_create_test_barber(db: Session):
     """Get or create a test barber"""
     # First check if we have any barber
     barber = db.query(Barber).first()
     if barber:
         return barber
-    
+
     # Create a test user for the barber
     user = User(
         username="testbarber",
         email="testbarber@example.com",
         full_name="Test Barber",
         role="barber",
-        is_active=True
+        is_active=True,
     )
     user.set_password("Test123!")
     db.add(user)
     db.commit()
-    
+
     # Create barber profile
     barber = Barber(
         user_id=user.id,
@@ -41,22 +42,23 @@ def get_or_create_test_barber(db: Session):
         specialties=["Fades", "Beard Styling", "Hair Design"],
         instagram_handle="@testbarber",
         chair_rental_fee=500.0,
-        commission_percentage=60.0
+        commission_percentage=60.0,
     )
     db.add(barber)
     db.commit()
-    
+
     return barber
+
 
 def seed_clients():
     """Seed test client data"""
     db = SessionLocal()
-    
+
     try:
         # Get or create a test barber
         barber = get_or_create_test_barber(db)
         print(f"Using barber: {barber.user.full_name} (ID: {barber.id})")
-        
+
         # Test client data
         clients_data = [
             {
@@ -75,7 +77,7 @@ def seed_clients():
                 "referral_count": 5,
                 "notes": "Prefers appointments before 10 AM. Always gets the premium fade with beard styling. Allergic to certain hair products.",
                 "tags": "VIP,Early Bird,Regular",
-                "favorite_service": "Premium Fade + Beard"
+                "favorite_service": "Premium Fade + Beard",
             },
             {
                 "first_name": "Michael",
@@ -93,7 +95,7 @@ def seed_clients():
                 "referral_count": 2,
                 "notes": "Works downtown, prefers lunch hour appointments.",
                 "tags": "Lunch Hour,Professional",
-                "favorite_service": "Business Cut"
+                "favorite_service": "Business Cut",
             },
             {
                 "first_name": "David",
@@ -111,7 +113,7 @@ def seed_clients():
                 "referral_count": 8,
                 "notes": "Great client, always on time. Tips generously. Referred his entire office.",
                 "tags": "VIP,Referrer,Generous Tipper",
-                "favorite_service": "Premium Fade"
+                "favorite_service": "Premium Fade",
             },
             {
                 "first_name": "Robert",
@@ -129,7 +131,7 @@ def seed_clients():
                 "referral_count": 0,
                 "notes": "Has missed several appointments. Send reminder texts.",
                 "tags": "At Risk,Needs Reminders",
-                "favorite_service": "Basic Cut"
+                "favorite_service": "Basic Cut",
             },
             {
                 "first_name": "James",
@@ -147,7 +149,7 @@ def seed_clients():
                 "referral_count": 0,
                 "notes": "New client, referred by David Williams. Interested in regular appointments.",
                 "tags": "New,Referral",
-                "favorite_service": "Premium Fade"
+                "favorite_service": "Premium Fade",
             },
             {
                 "first_name": "William",
@@ -165,7 +167,7 @@ def seed_clients():
                 "referral_count": 1,
                 "notes": "Likes trying new styles. Ask about latest trends.",
                 "tags": "Trendy,Experimental",
-                "favorite_service": "Designer Cut"
+                "favorite_service": "Designer Cut",
             },
             {
                 "first_name": "Daniel",
@@ -183,7 +185,7 @@ def seed_clients():
                 "referral_count": 4,
                 "notes": "Executive client. Books standing appointment every 2 weeks.",
                 "tags": "VIP,Standing Appointment,Executive",
-                "favorite_service": "Executive Package"
+                "favorite_service": "Executive Package",
             },
             {
                 "first_name": "Christopher",
@@ -201,7 +203,7 @@ def seed_clients():
                 "referral_count": 0,
                 "notes": "College student, appreciates student discount.",
                 "tags": "Student,Budget Conscious",
-                "favorite_service": "Student Special"
+                "favorite_service": "Student Special",
             },
             {
                 "first_name": "Matthew",
@@ -219,7 +221,7 @@ def seed_clients():
                 "referral_count": 3,
                 "notes": "Beard enthusiast. Always gets beard treatment.",
                 "tags": "Beard Care,Regular",
-                "favorite_service": "Beard Sculpting"
+                "favorite_service": "Beard Sculpting",
             },
             {
                 "first_name": "Anthony",
@@ -237,24 +239,28 @@ def seed_clients():
                 "referral_count": 0,
                 "notes": "New to the area. Looking for regular barber.",
                 "tags": "New,Potential Regular",
-                "favorite_service": "Classic Fade"
-            }
+                "favorite_service": "Classic Fade",
+            },
         ]
-        
+
         # Add clients
         for client_data in clients_data:
             # Check if client already exists
-            existing = db.query(Client).filter(Client.email == client_data["email"]).first()
+            existing = (
+                db.query(Client).filter(Client.email == client_data["email"]).first()
+            )
             if existing:
                 print(f"Client {client_data['email']} already exists, skipping...")
                 continue
-            
+
             # Calculate last visit date based on frequency
             if client_data["visit_frequency_days"] and client_data["total_visits"] > 0:
-                last_visit = datetime.now().date() - timedelta(days=random.randint(1, client_data["visit_frequency_days"]))
+                last_visit = datetime.now().date() - timedelta(
+                    days=random.randint(1, client_data["visit_frequency_days"])
+                )
             else:
                 last_visit = None
-            
+
             # Create client
             client = Client(
                 barber_id=barber.id,
@@ -277,32 +283,38 @@ def seed_clients():
                 preferred_services=client_data.get("favorite_service"),
                 sms_enabled=True,
                 email_enabled=True,
-                marketing_enabled=client_data["customer_type"] != "at_risk"
+                marketing_enabled=client_data["customer_type"] != "at_risk",
             )
-            
+
             db.add(client)
-            print(f"✓ Added client: {client.first_name} {client.last_name} ({client.customer_type})")
-        
+            print(
+                f"✓ Added client: {client.first_name} {client.last_name} ({client.customer_type})"
+            )
+
         db.commit()
         print(f"\n✅ Successfully seeded {len(clients_data)} clients!")
-        
+
         # Show summary
         total_clients = db.query(Client).count()
         vip_clients = db.query(Client).filter(Client.customer_type == "vip").count()
-        at_risk_clients = db.query(Client).filter(Client.customer_type == "at_risk").count()
-        
+        at_risk_clients = (
+            db.query(Client).filter(Client.customer_type == "at_risk").count()
+        )
+
         print(f"\n📊 Client Summary:")
         print(f"   Total Clients: {total_clients}")
         print(f"   VIP Clients: {vip_clients}")
         print(f"   At Risk Clients: {at_risk_clients}")
-        
+
     except Exception as e:
         print(f"❌ Error seeding data: {str(e)}")
         db.rollback()
         import traceback
+
         traceback.print_exc()
     finally:
         db.close()
+
 
 if __name__ == "__main__":
     print("🌱 Starting client data seeding...")
