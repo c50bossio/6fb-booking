@@ -7,12 +7,8 @@ services:
     name: 6fb-booking-backend
     runtime: python-3.11
     region: oregon
-    plan: starter
-    buildCommand: |
-      cd backend && \
-      pip install --upgrade pip setuptools wheel && \
-      pip install -r requirements.txt && \
-      alembic upgrade head
+    plan: starter # Options: starter ($7/month), standard ($25/month), pro ($85/month)
+    buildCommand: cd backend && ./render-build.sh
     startCommand: cd backend && gunicorn main:app -w 2 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT --timeout 120 --keep-alive 5 --log-level info
     envVars:
       - key: PYTHON_VERSION
@@ -55,23 +51,46 @@ services:
       - key: LOG_LEVEL
         value: info
       - key: CORS_ALLOWED_ORIGINS
-        value: https://sixfb-frontend.onrender.com
+        value: https://sixfb-frontend.onrender.com,http://localhost:3000
       - key: MAX_WORKERS
         value: "2"
       - key: WEB_CONCURRENCY
         value: "2"
-    healthCheckPath: /api/v1/health
+      # Performance optimization settings
+      - key: POOL_SIZE
+        value: "10"
+      - key: MAX_OVERFLOW
+        value: "20"
+      - key: POOL_PRE_PING
+        value: "true"
+      - key: POOL_RECYCLE
+        value: "3600"
+      # Security settings
+      - key: SECURE_COOKIES
+        value: "true"
+      - key: SESSION_COOKIE_SECURE
+        value: "true"
+      - key: SESSION_COOKIE_HTTPONLY
+        value: "true"
+      - key: SESSION_COOKIE_SAMESITE
+        value: "lax"
+    healthCheckPath: /health
     autoDeploy: false  # Enable after initial setup
+    # Performance configurations
+    numInstances: 1  # Increase for horizontal scaling
+    # Additional Render settings
+    dockerCommand: ""  # Use default
+    region: oregon  # oregon, ohio, virginia, frankfurt, singapore
 
   # Frontend Next.js Application
   - type: web
     name: 6fb-booking-frontend
     runtime: node
     region: oregon
-    plan: starter
+    plan: starter # Options: starter ($7/month), standard ($25/month)
     buildCommand: |
       cd frontend && \
-      npm ci --only=production && \
+      npm ci && \
       npm run build
     startCommand: cd frontend && npm run start
     envVars:
@@ -85,8 +104,16 @@ services:
         sync: false  # Set manually in Render dashboard
       - key: PORT
         value: 3000
+      # Next.js optimization
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+      # Build cache optimization
+      - key: NEXT_PUBLIC_DISABLE_SPEEDY
+        value: "false"
     healthCheckPath: /
-    autoDeploy: true
+    autoDeploy: false  # Enable after initial setup
+    # Performance configurations
+    numInstances: 1  # Increase for horizontal scaling
 
 # Database
 databases:
@@ -94,9 +121,16 @@ databases:
     databaseName: sixfb_booking
     user: sixfb_user
     region: oregon
-    plan: starter  # $7/month - upgrade to standard for production
+    plan: starter  # $7/month - upgrade to standard ($22/month) for production
     ipAllowList: []  # Allow connections from all IPs (Render services)
+    # Database optimizations
+    postgresMajorVersion: 15  # Latest stable version
 
-# Redis Cache (Optional)
+# Redis Cache (Optional but recommended for production)
+# Uncomment to enable Redis caching
 # - name: 6fb-booking-redis
+#   type: redis
+#   region: oregon
 #   plan: starter  # $7/month
+#   maxmemoryPolicy: allkeys-lru  # Least recently used eviction
+#   ipAllowList: []  # Allow connections from Render services

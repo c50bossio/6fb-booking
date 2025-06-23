@@ -17,7 +17,7 @@ environment_variables:
     NEXT_PUBLIC_GA_TRACKING_ID: "G-XXXXXXXXXX"
     NEXT_PUBLIC_GA_DEBUG_MODE: "false"
     GA_MEASUREMENT_PROTOCOL_API_SECRET: "your-api-secret"
-    
+
   development:
     NEXT_PUBLIC_GA_TRACKING_ID: "G-XXXXXXXXXX"
     NEXT_PUBLIC_GA_DEBUG_MODE: "true"
@@ -35,7 +35,7 @@ custom_events:
       - name: "user_type"
         type: "string"
         description: "barber, client, admin"
-        
+
   - event_name: "sign_up"
     description: "User registration completed"
     parameters:
@@ -56,7 +56,7 @@ custom_events:
       - name: "barber_id"
         type: "string"
         description: "Selected barber ID"
-        
+
   - event_name: "booking_completed"
     description: "Booking successfully completed"
     parameters:
@@ -75,7 +75,7 @@ custom_events:
       - name: "currency"
         type: "string"
         description: "USD"
-        
+
   - event_name: "booking_cancelled"
     description: "Booking cancelled by user"
     parameters:
@@ -99,7 +99,7 @@ custom_events:
       - name: "currency"
         type: "string"
         description: "USD"
-        
+
   - event_name: "purchase"
     description: "Payment successfully completed"
     parameters:
@@ -115,7 +115,7 @@ custom_events:
       - name: "payment_method"
         type: "string"
         description: "Payment method used"
-        
+
   - event_name: "payment_failed"
     description: "Payment failed"
     parameters:
@@ -160,7 +160,7 @@ custom_events:
       - name: "engagement_time"
         type: "number"
         description: "Time spent in seconds"
-        
+
   - event_name: "calendar_interaction"
     description: "User interacted with calendar"
     parameters:
@@ -176,27 +176,27 @@ custom_dimensions:
   - name: "user_type"
     scope: "USER"
     description: "Type of user (barber, client, admin)"
-    
+
   - name: "barber_location"
     scope: "EVENT"
     description: "Barber location/city"
-    
+
   - name: "service_category"
     scope: "EVENT"
     description: "Service category (haircut, beard, etc.)"
-    
+
   - name: "payment_method"
     scope: "EVENT"
     description: "Payment method used"
-    
+
   - name: "booking_source"
     scope: "EVENT"
     description: "How user found the booking (direct, search, referral)"
-    
+
   - name: "device_type"
     scope: "EVENT"
     description: "mobile, desktop, tablet"
-    
+
   - name: "user_tier"
     scope: "USER"
     description: "VIP, regular, new"
@@ -207,12 +207,12 @@ custom_metrics:
     measurement_unit: "CURRENCY"
     scope: "EVENT"
     description: "Value of booking in USD"
-    
+
   - name: "session_duration"
     measurement_unit: "SECONDS"
     scope: "EVENT"
     description: "Session duration in seconds"
-    
+
   - name: "booking_lead_time"
     measurement_unit: "HOURS"
     scope: "EVENT"
@@ -223,15 +223,15 @@ conversion_events:
   - event_name: "booking_completed"
     counting_method: "ONCE_PER_SESSION"
     description: "Primary conversion - booking completed"
-    
+
   - event_name: "purchase"
     counting_method: "ONCE_PER_EVENT"
     description: "Payment conversion"
-    
+
   - event_name: "sign_up"
     counting_method: "ONCE_PER_SESSION"
     description: "User registration conversion"
-    
+
   - event_name: "barber_onboarded"
     counting_method: "ONCE_PER_SESSION"
     description: "Barber onboarding conversion"
@@ -240,7 +240,7 @@ conversion_events:
 ecommerce_config:
   enable_enhanced_ecommerce: true
   currency: "USD"
-  
+
   # Item parameters for purchase events
   item_parameters:
     - item_id: "service_id"
@@ -263,7 +263,7 @@ audiences:
       - metric: "total_revenue"
         operator: "GREATER_THAN"
         value: 500
-        
+
   - name: "New Barbers"
     description: "Barbers who joined in last 30 days"
     criteria:
@@ -273,7 +273,7 @@ audiences:
       - condition: "first_seen_date"
         operator: "WITHIN_LAST"
         value: "30_DAYS"
-        
+
   - name: "Abandoned Bookings"
     description: "Users who started but didn't complete booking"
     criteria:
@@ -286,14 +286,14 @@ audiences:
 data_retention:
   user_data: "26_MONTHS"  # Maximum for GA4
   event_data: "14_MONTHS"  # Standard retention
-  
+
 # Data Export Configuration
 data_exports:
   bigquery:
     enable: true
     project_id: "your-gcp-project-id"
     dataset_id: "analytics_6fb_booking"
-    
+
   ga4_reporting_api:
     enable: true
     service_account: "ga4-reporting@your-project.iam.gserviceaccount.com"
@@ -305,7 +305,7 @@ privacy_settings:
   data_collection:
     collect_google_ads_data: false
     collect_search_console_data: true
-    
+
   consent_mode:
     default_consent_state:
       ad_storage: "denied"
@@ -326,7 +326,7 @@ reports:
         - "service_category"
         - "barber_location"
         - "user_type"
-        
+
     - name: "Payment Performance"
       metrics:
         - "payment_started"
@@ -337,7 +337,7 @@ reports:
         - "payment_method"
         - "device_type"
         - "user_tier"
-        
+
     - name: "Barber Performance"
       metrics:
         - "booking_completed"
@@ -358,7 +358,7 @@ alerts:
     notification_emails:
       - "admin@6fb-booking.com"
       - "analytics@6fb-booking.com"
-      
+
   - name: "Payment Failure Spike"
     metric: "payment_failed"
     condition: "INCREASE_MORE_THAN"
@@ -367,7 +367,7 @@ alerts:
     notification_emails:
       - "admin@6fb-booking.com"
       - "payments@6fb-booking.com"
-      
+
   - name: "High Revenue Day"
     metric: "purchase_revenue"
     condition: "INCREASE_MORE_THAN"
@@ -380,13 +380,13 @@ alerts:
 integrations:
   google_ads:
     enable: false  # Set to true if using Google Ads
-    
+
   google_optimize:
     enable: false  # Set to true for A/B testing
-    
+
   firebase:
     enable: false  # Set to true if using Firebase
-    
+
   search_console:
     enable: true
     website_url: "https://your-domain.com"
@@ -397,7 +397,7 @@ debug_settings:
     debug_mode: true
     gtag_debug: true
     measurement_protocol_validation: true
-    
+
   production:
     debug_mode: false
     gtag_debug: false

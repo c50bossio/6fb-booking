@@ -7,7 +7,7 @@ dashboard_config:
   refresh_interval: 30  # seconds
   auto_refresh: true
   theme: "dark"
-  
+
   # Layout configuration
   layout:
     columns: 12
@@ -31,7 +31,7 @@ panels:
     thresholds:
       - color: "green"
         value: 0.99
-      - color: "yellow" 
+      - color: "yellow"
         value: 0.95
       - color: "red"
         value: 0.90
@@ -154,7 +154,7 @@ alert_rules:
       description: "API error rate is above 10% for 2 minutes"
       runbook_url: "https://runbooks.6fb-booking.com/high-error-rate"
 
-  - alert: "PaymentSystemDown" 
+  - alert: "PaymentSystemDown"
     expr: "up{job='payment-processor'} == 0"
     for: "1m"
     labels:
@@ -214,25 +214,25 @@ web_vitals:
       good_threshold: 2500  # ms
       poor_threshold: 4000  # ms
       target: 2000  # ms
-      
+
     - name: "FID"
       description: "First Input Delay"
       good_threshold: 100   # ms
       poor_threshold: 300   # ms
       target: 80    # ms
-      
+
     - name: "CLS"
       description: "Cumulative Layout Shift"
       good_threshold: 0.1
       poor_threshold: 0.25
       target: 0.05
-      
+
     - name: "FCP"
       description: "First Contentful Paint"
       good_threshold: 1800  # ms
       poor_threshold: 3000  # ms
       target: 1500  # ms
-      
+
     - name: "TTFB"
       description: "Time to First Byte"
       good_threshold: 800   # ms
@@ -252,7 +252,7 @@ web_vitals:
           legend: "FID (ms)"
         - expr: "avg(web_vitals_cls_score)"
           legend: "CLS"
-        - expr: "avg(web_vitals_fcp_seconds)" 
+        - expr: "avg(web_vitals_fcp_seconds)"
           legend: "FCP (seconds)"
 
 # Custom Business Metrics
@@ -286,24 +286,24 @@ notification_channels:
     channel: "#alerts-critical"
     username: "Monitoring"
     title: "🚨 Critical Alert - 6FB Booking"
-    
+
   - name: "slack-warning"
     type: "slack"
     url: "https://hooks.slack.com/services/YOUR/WARNING/WEBHOOK"
     channel: "#alerts-warning"
     username: "Monitoring"
     title: "⚠️ Warning Alert - 6FB Booking"
-    
+
   - name: "email-admin"
     type: "email"
     addresses: ["admin@6fb-booking.com"]
     subject: "6FB Booking Platform Alert"
-    
+
   - name: "email-devops"
     type: "email"
     addresses: ["devops@6fb-booking.com"]
     subject: "6FB Booking System Alert"
-    
+
   - name: "pagerduty"
     type: "pagerduty"
     integration_key: "your-pagerduty-integration-key"
@@ -319,7 +319,7 @@ alert_routing:
       group_interval: "10s"
       repeat_interval: "5m"
       receiver: "critical-alerts"
-      
+
     - match:
         severity: "warning"
       group_by: ["component"]
@@ -339,7 +339,7 @@ alert_routing:
           subject: "CRITICAL: 6FB Booking Alert"
       pagerduty_configs:
         - routing_key: "your-pagerduty-key"
-          
+
     - name: "warning-alerts"
       slack_configs:
         - channel: "#alerts-warning"
@@ -356,12 +356,12 @@ data_sources:
     url: "http://localhost:9090"
     access: "proxy"
     is_default: true
-    
+
   - name: "application-metrics"
     type: "prometheus"
     url: "http://localhost:8000/metrics"
     access: "proxy"
-    
+
   - name: "google-analytics"
     type: "google-analytics"
     view_id: "your-ga-view-id"
@@ -373,13 +373,13 @@ performance_budgets:
     main_js: 150  # KB
     main_css: 50   # KB
     vendor_js: 200 # KB
-    
+
   lighthouse_scores:
     performance: 90
     accessibility: 95
     best_practices: 90
     seo: 85
-    
+
   response_times:
     api_endpoints: 500    # ms
     page_loads: 2000      # ms
@@ -395,7 +395,7 @@ scheduled_reports:
       - "error_rate_trends"
       - "performance_metrics"
       - "top_slow_endpoints"
-      
+
   - name: "weekly_business_metrics"
     schedule: "0 9 * * 1"  # 9 AM Monday
     recipients: ["admin@6fb-booking.com", "business@6fb-booking.com"]
@@ -411,7 +411,7 @@ export_config:
   include_data: false
   include_alerts: true
   include_datasources: true
-  
+
 import_config:
   overwrite_existing: false
   update_datasource_refs: true

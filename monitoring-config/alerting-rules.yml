@@ -368,7 +368,7 @@ route:
         - match:
             component: "payments"
           receiver: "payment-critical-alerts"
-          
+
         # System down alerts - multiple channels
         - match:
             component: "api"
@@ -380,7 +380,7 @@ route:
       receiver: "warning-alerts"
       group_wait: 30s
       repeat_interval: 30m
-      
+
     # Business alerts - business hours only
     - match:
         category: "business"
@@ -461,7 +461,7 @@ receivers:
           <p>{{ .Annotations.description }}</p>
           <p><strong>Impact:</strong> {{ .Annotations.impact }}</p>
           {{ end }}
-    
+
   - name: "warning-alerts"
     slack_configs:
       - api_url: "https://hooks.slack.com/services/YOUR/WARNING/WEBHOOK"
@@ -498,7 +498,7 @@ inhibit_rules:
     target_match:
       severity: "warning"
     equal: ["component"]
-    
+
   # Inhibit individual service alerts when system is down
   - source_match:
       alertname: "SystemDown"
@@ -517,7 +517,7 @@ silences:
       - name: "component"
         value: ".*"
         is_regex: true
-        
+
   deployment_window:
     comment: "Production deployment in progress"
     created_by: "devops@6fb-booking.com"
