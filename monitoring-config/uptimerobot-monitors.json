@@ -332,7 +332,7 @@
       "enabled": true,
       "locations": [
         "US-East",
-        "US-West", 
+        "US-West",
         "Europe-UK",
         "Asia-Japan"
       ]
@@ -366,7 +366,7 @@
       },
       {
         "name": "StatusCake",
-        "setup_priority": "medium", 
+        "setup_priority": "medium",
         "reason": "Free tier available, good for additional coverage"
       },
       {

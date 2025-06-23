@@ -37,56 +37,56 @@ warning() {
 # Check prerequisites
 check_prerequisites() {
     log "Checking prerequisites..." "$BLUE"
-    
+
     # Check if doctl is installed
     if ! command -v doctl &> /dev/null; then
         error "doctl (DigitalOcean CLI) is not installed!"
         echo "Install it from: https://docs.digitalocean.com/reference/doctl/how-to/install/"
         exit 1
     fi
-    
+
     # Check if user is authenticated
     if ! doctl account get &>/dev/null; then
         error "Not authenticated with DigitalOcean!"
         echo "Run: doctl auth init"
         exit 1
     fi
-    
+
     # Check if git is available and we're in a git repo
     if ! git rev-parse --git-dir &>/dev/null; then
         error "Not in a git repository!"
         exit 1
     fi
-    
+
     # Check if required files exist
     REQUIRED_FILES=(
         "$PROJECT_ROOT/backend/requirements.txt"
         "$PROJECT_ROOT/frontend/package.json"
         "$PROJECT_ROOT/.env.template"
     )
-    
+
     for file in "${REQUIRED_FILES[@]}"; do
         if [[ ! -f "$file" ]]; then
             error "Required file not found: $file"
             exit 1
         fi
     done
-    
+
     log "Prerequisites check passed"
 }
 
 # Create DigitalOcean App Spec
 create_app_spec() {
     log "Creating DigitalOcean App Platform specification..." "$BLUE"
-    
+
     # Get git repository URL
     GIT_URL=$(git config --get remote.origin.url | sed 's/\.git$//')
-    
+
     if [[ "$GIT_URL" =~ ^git@ ]]; then
         # Convert SSH URL to HTTPS
         GIT_URL=$(echo "$GIT_URL" | sed 's/git@github.com:/https:\/\/github.com\//')
     fi
-    
+
     cat > "$PROJECT_ROOT/digitalocean-app.yaml" << EOF
 name: $APP_NAME
 region: $REGION
@@ -110,7 +110,7 @@ services:
       timeout_seconds: 5
       success_threshold: 1
       failure_threshold: 3
-    
+
     envs:
       - key: ENVIRONMENT
         value: production
@@ -157,7 +157,7 @@ services:
     instance_count: 1
     instance_size_slug: basic-xxs
     http_port: 3000
-    
+
     envs:
       - key: NODE_ENV
         value: production
@@ -203,7 +203,7 @@ EOF
 # Create environment template for DigitalOcean
 create_env_template() {
     log "Creating environment variable template..." "$BLUE"
-    
+
     cat > "$PROJECT_ROOT/digitalocean-env.template" << EOF
 # DigitalOcean App Platform Environment Variables
 # Copy this template and fill in your actual values
@@ -229,14 +229,14 @@ SENTRY_DSN=https://your-sentry-dsn@sentry.io/project-id
 # Monitoring (Optional)
 UPTIME_ROBOT_API_KEY=your-uptimerobot-api-key
 EOF
-    
+
     log "Environment template created: $PROJECT_ROOT/digitalocean-env.template"
 }
 
 # Create production Dockerfile for backend
 create_backend_dockerfile() {
     log "Creating backend Dockerfile..." "$BLUE"
-    
+
     cat > "$PROJECT_ROOT/backend/Dockerfile" << 'EOF'
 # Backend Dockerfile for DigitalOcean App Platform
 FROM python:3.11-slim
@@ -274,14 +274,14 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
 # Run the application
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080", "--workers", "2"]
 EOF
-    
+
     log "Backend Dockerfile created"
 }
 
 # Create production Dockerfile for frontend
 create_frontend_dockerfile() {
     log "Creating frontend Dockerfile..." "$BLUE"
-    
+
     cat > "$PROJECT_ROOT/frontend/Dockerfile" << 'EOF'
 # Frontend Dockerfile for DigitalOcean App Platform
 FROM node:18-alpine AS base
@@ -328,30 +328,30 @@ ENV HOSTNAME "0.0.0.0"
 
 CMD ["node", "server.js"]
 EOF
-    
+
     log "Frontend Dockerfile created"
 }
 
 # Configure Next.js for standalone output
 configure_nextjs() {
     log "Configuring Next.js for production..." "$BLUE"
-    
+
     # Check if next.config.js exists
     if [[ -f "$PROJECT_ROOT/frontend/next.config.js" ]]; then
         # Backup existing config
         cp "$PROJECT_ROOT/frontend/next.config.js" "$PROJECT_ROOT/frontend/next.config.js.backup"
     fi
-    
+
     cat > "$PROJECT_ROOT/frontend/next.config.js" << 'EOF'
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Enable standalone output for Docker deployment
   output: 'standalone',
-  
+
   // Optimize for production
   compress: true,
   poweredByHeader: false,
-  
+
   // Security headers
   async headers() {
     return [
@@ -378,7 +378,7 @@ const nextConfig = {
       },
     ];
   },
-  
+
   // Environment variables
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
@@ -389,16 +389,16 @@ const nextConfig = {
 
 module.exports = nextConfig;
 EOF
-    
+
     log "Next.js configuration updated"
 }
 
 # Create deployment GitHub Actions workflow
 create_github_workflow() {
     log "Creating GitHub Actions workflow..." "$BLUE"
-    
+
     mkdir -p "$PROJECT_ROOT/.github/workflows"
-    
+
     cat > "$PROJECT_ROOT/.github/workflows/deploy-digitalocean.yml" << 'EOF'
 name: Deploy to DigitalOcean App Platform
 
@@ -410,33 +410,33 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
         with:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
-          
+
       - name: Update app
         run: |
           doctl apps update ${{ secrets.DIGITALOCEAN_APP_ID }} --spec digitalocean-app.yaml
-          
+
       - name: Wait for deployment
         run: |
           # Wait for deployment to complete
           sleep 60
-          
+
           # Check deployment status
           doctl apps get ${{ secrets.DIGITALOCEAN_APP_ID }}
-          
+
       - name: Run health checks
         run: |
           # Get app URL
           APP_URL=$(doctl apps get ${{ secrets.DIGITALOCEAN_APP_ID }} --format URL --no-header)
-          
+
           # Wait for app to be ready
           for i in {1..30}; do
             if curl -f -s "$APP_URL/api/v1/health" > /dev/null; then
@@ -446,18 +446,18 @@ jobs:
             echo "Waiting for app to be ready... ($i/30)"
             sleep 10
           done
-          
+
           # Final health check
           curl -f "$APP_URL/api/v1/health"
 EOF
-    
+
     log "GitHub Actions workflow created"
 }
 
 # Create production monitoring configuration
 create_monitoring_config() {
     log "Creating monitoring configuration..." "$BLUE"
-    
+
     cat > "$PROJECT_ROOT/monitoring-production.yaml" << EOF
 # Production Monitoring Configuration for DigitalOcean
 # Configure these services after deployment
@@ -468,11 +468,11 @@ uptime_monitoring:
     - name: "6FB Booking API Health"
       url: "https://your-app-url/api/v1/health"
       interval: 300  # 5 minutes
-      
+
     - name: "6FB Booking Frontend"
       url: "https://your-app-url"
       interval: 300  # 5 minutes
-      
+
     - name: "6FB Booking Auth"
       url: "https://your-app-url/api/v1/auth/status"
       interval: 600  # 10 minutes
@@ -501,11 +501,11 @@ performance_monitoring:
     - metric: "cpu_usage"
       threshold: 80
       duration: 300
-      
+
     - metric: "memory_usage"
       threshold: 85
       duration: 300
-      
+
     - metric: "disk_usage"
       threshold: 80
       duration: 600
@@ -515,36 +515,36 @@ database_monitoring:
     - connection_count_alert: 80
     - slow_query_threshold: 1000  # ms
     - disk_usage_alert: 80
-    
+
   redis:
     - memory_usage_alert: 80
     - connection_count_alert: 1000
 EOF
-    
+
     log "Monitoring configuration created"
 }
 
 # Deploy to DigitalOcean
 deploy_to_digitalocean() {
     log "Deploying to DigitalOcean App Platform..." "$BLUE"
-    
+
     # Check if app already exists
     if doctl apps list --format Name --no-header | grep -q "^$APP_NAME$"; then
         log "App '$APP_NAME' already exists. Updating..."
-        
+
         # Get app ID
         APP_ID=$(doctl apps list --format ID,Name --no-header | grep "$APP_NAME" | awk '{print $1}')
-        
+
         # Update the app
         doctl apps update "$APP_ID" --spec "$PROJECT_ROOT/digitalocean-app.yaml" >> "$DEPLOY_LOG" 2>&1
-        
+
         log "App updated successfully. App ID: $APP_ID"
     else
         log "Creating new app '$APP_NAME'..."
-        
+
         # Create the app
         APP_ID=$(doctl apps create --spec "$PROJECT_ROOT/digitalocean-app.yaml" --format ID --no-header 2>> "$DEPLOY_LOG")
-        
+
         if [[ -n "$APP_ID" ]]; then
             log "App created successfully. App ID: $APP_ID"
         else
@@ -552,14 +552,14 @@ deploy_to_digitalocean() {
             exit 1
         fi
     fi
-    
+
     # Wait for deployment
     log "Waiting for deployment to complete..."
-    
+
     # Monitor deployment progress
     for i in {1..30}; do
         DEPLOYMENT_STATUS=$(doctl apps get "$APP_ID" --format Phase --no-header 2>/dev/null || echo "UNKNOWN")
-        
+
         case "$DEPLOYMENT_STATUS" in
             "ACTIVE")
                 log "Deployment completed successfully!"
@@ -580,15 +580,15 @@ deploy_to_digitalocean() {
                 ;;
         esac
     done
-    
+
     # Get app URLs
     APP_URL=$(doctl apps get "$APP_ID" --format LiveURL --no-header)
-    
+
     if [[ -n "$APP_URL" ]]; then
         log "App deployed successfully!"
         log "App URL: $APP_URL"
         log "App ID: $APP_ID"
-        
+
         # Save deployment info
         cat > "$PROJECT_ROOT/deployment-info.txt" << EOF
 Deployment Information:
@@ -600,7 +600,7 @@ Deployment Information:
 - Git Branch: $BRANCH
 - Git Commit: $(git rev-parse HEAD)
 EOF
-        
+
     else
         error "Could not retrieve app URL"
         exit 1
@@ -610,26 +610,26 @@ EOF
 # Run post-deployment health checks
 run_post_deployment_checks() {
     log "Running post-deployment health checks..." "$BLUE"
-    
+
     if [[ -z "${APP_URL:-}" ]]; then
         APP_ID=$(doctl apps list --format ID,Name --no-header | grep "$APP_NAME" | awk '{print $1}')
         APP_URL=$(doctl apps get "$APP_ID" --format LiveURL --no-header)
     fi
-    
+
     if [[ -z "$APP_URL" ]]; then
         error "Could not determine app URL for health checks"
         return 1
     fi
-    
+
     # Wait for app to be fully ready
     log "Waiting for app to be fully ready..."
     sleep 60
-    
+
     # Test backend health
     log "Testing backend health endpoint..."
     if curl -f -s --max-time 30 "$APP_URL/api/v1/health" > /dev/null; then
         log "✅ Backend health check passed"
-        
+
         # Get health data
         HEALTH_DATA=$(curl -s --max-time 10 "$APP_URL/api/v1/health" | python3 -c "import sys, json; print(json.dumps(json.load(sys.stdin), indent=2))" 2>/dev/null || echo "Could not parse health data")
         log "Backend health data: $HEALTH_DATA"
@@ -637,7 +637,7 @@ run_post_deployment_checks() {
         error "❌ Backend health check failed"
         return 1
     fi
-    
+
     # Test frontend
     log "Testing frontend..."
     if curl -f -s --max-time 30 "$APP_URL" > /dev/null; then
@@ -646,10 +646,10 @@ run_post_deployment_checks() {
         error "❌ Frontend health check failed"
         return 1
     fi
-    
+
     # Test API endpoints
     log "Testing API endpoints..."
-    
+
     # Test auth status endpoint
     HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$APP_URL/api/v1/auth/status" || echo "000")
     if [[ "$HTTP_CODE" =~ ^[2-3][0-9][0-9]$ ]]; then
@@ -657,14 +657,14 @@ run_post_deployment_checks() {
     else
         warning "⚠️ Auth status endpoint: HTTP $HTTP_CODE"
     fi
-    
+
     log "Post-deployment health checks completed"
 }
 
 # Create deployment summary
 create_deployment_summary() {
     log "Creating deployment summary..." "$BLUE"
-    
+
     cat > "$PROJECT_ROOT/DEPLOYMENT_SUMMARY.md" << EOF
 # 6FB Booking Platform - DigitalOcean Deployment Summary
 
@@ -745,17 +745,17 @@ doctl apps update $APP_ID --spec digitalocean-app.yaml
 - App Platform Limits: https://docs.digitalocean.com/products/app-platform/details/limits/
 - Deployment Logs: $DEPLOY_LOG
 EOF
-    
+
     log "Deployment summary created: $PROJECT_ROOT/DEPLOYMENT_SUMMARY.md"
 }
 
 # Main deployment function
 main() {
     log "Starting DigitalOcean App Platform deployment..." "$GREEN"
-    
+
     # Check prerequisites
     check_prerequisites
-    
+
     # Create deployment files
     create_app_spec
     create_env_template
@@ -764,25 +764,25 @@ main() {
     configure_nextjs
     create_github_workflow
     create_monitoring_config
-    
+
     # Commit deployment files
     log "Committing deployment files..."
     git add . >> "$DEPLOY_LOG" 2>&1
     git commit -m "Add DigitalOcean App Platform deployment configuration" >> "$DEPLOY_LOG" 2>&1 || true
-    
+
     # Deploy to DigitalOcean
     deploy_to_digitalocean
-    
+
     # Run health checks
     if run_post_deployment_checks; then
         log "✅ Deployment completed successfully!" "$GREEN"
     else
         warning "⚠️ Deployment completed but health checks had issues"
     fi
-    
+
     # Create summary
     create_deployment_summary
-    
+
     # Display final information
     echo
     echo "============================================="

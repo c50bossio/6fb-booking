@@ -45,37 +45,37 @@ check_user() {
 # List available backups
 list_backups() {
     log "Available backups:" "$BLUE"
-    
+
     if [[ ! -d "$BACKUP_DIR" ]]; then
         error "Backup directory $BACKUP_DIR does not exist!"
         exit 1
     fi
-    
+
     BACKUPS=($(ls -t "$BACKUP_DIR"/deployment-* 2>/dev/null | head -10 || true))
-    
+
     if [[ ${#BACKUPS[@]} -eq 0 ]]; then
         error "No backups found in $BACKUP_DIR"
         exit 1
     fi
-    
+
     echo
     echo "Available backups (most recent first):"
     for i in "${!BACKUPS[@]}"; do
         BACKUP_BASE=$(basename "${BACKUPS[$i]}" | sed 's/-code\.tar\.gz$//' | sed 's/-database\.sql$//')
         BACKUP_DATE=$(echo "$BACKUP_BASE" | sed 's/deployment-//' | sed 's/-/ /' | sed 's/\(..\)\(..\)\(..\)-\(..\)\(..\)\(..\)/20\1-\2-\3 \4:\5:\6/')
-        
+
         # Check what files exist for this backup
         CODE_EXISTS=""
         DB_EXISTS=""
-        
+
         if [[ -f "$BACKUP_DIR/$BACKUP_BASE-code.tar.gz" ]]; then
             CODE_EXISTS="✓ Code"
         fi
-        
+
         if [[ -f "$BACKUP_DIR/$BACKUP_BASE-database.sql" ]]; then
             DB_EXISTS="✓ Database"
         fi
-        
+
         echo "  $((i+1)). $BACKUP_DATE - $CODE_EXISTS $DB_EXISTS"
     done
     echo
@@ -84,7 +84,7 @@ list_backups() {
 # Get backup selection from user
 get_backup_selection() {
     BACKUPS=($(ls -t "$BACKUP_DIR"/deployment-* 2>/dev/null | head -10 || true))
-    
+
     if [[ -n "${BACKUP_INDEX:-}" ]]; then
         # Use provided index
         if [[ $BACKUP_INDEX -ge 1 && $BACKUP_INDEX -le ${#BACKUPS[@]} ]]; then
@@ -98,12 +98,12 @@ get_backup_selection() {
         # Interactive selection
         echo "Enter backup number (1-${#BACKUPS[@]}) or 'q' to quit:"
         read -r SELECTION
-        
+
         if [[ "$SELECTION" == "q" ]]; then
             log "Rollback cancelled by user"
             exit 0
         fi
-        
+
         if [[ "$SELECTION" =~ ^[0-9]+$ ]] && [[ $SELECTION -ge 1 && $SELECTION -le ${#BACKUPS[@]} ]]; then
             SELECTED_BACKUP=$(basename "${BACKUPS[$((SELECTION-1))]}" | sed 's/-code\.tar\.gz$//' | sed 's/-database\.sql$//')
             log "Selected backup: $SELECTED_BACKUP"
@@ -112,7 +112,7 @@ get_backup_selection() {
             exit 1
         fi
     fi
-    
+
     BACKUP_PATH="$BACKUP_DIR/$SELECTED_BACKUP"
 }
 
@@ -122,7 +122,7 @@ confirm_rollback() {
         log "Force rollback enabled - skipping confirmation"
         return
     fi
-    
+
     echo
     warning "⚠️  WARNING: This will rollback your application to a previous state!"
     echo "Current deployment will be replaced with backup: $SELECTED_BACKUP"
@@ -135,7 +135,7 @@ confirm_rollback() {
     echo
     echo "Are you sure you want to continue? (yes/no)"
     read -r CONFIRM
-    
+
     if [[ "$CONFIRM" != "yes" ]]; then
         log "Rollback cancelled by user"
         exit 0
@@ -145,26 +145,26 @@ confirm_rollback() {
 # Create pre-rollback backup
 create_pre_rollback_backup() {
     log "Creating pre-rollback backup..." "$BLUE"
-    
+
     PRE_ROLLBACK_TIMESTAMP=$(date +%Y%m%d-%H%M%S)
     PRE_ROLLBACK_PATH="$BACKUP_DIR/pre-rollback-$PRE_ROLLBACK_TIMESTAMP"
-    
+
     # Backup current database
     if [[ -n "${DATABASE_URL:-}" ]]; then
         log "Backing up current database..."
-        
+
         if [[ "$DATABASE_URL" =~ postgresql://([^:]+):([^@]+)@([^:]+):([^/]+)/(.+) ]]; then
             DB_USER="${BASH_REMATCH[1]}"
             DB_PASS="${BASH_REMATCH[2]}"
             DB_HOST="${BASH_REMATCH[3]}"
             DB_PORT="${BASH_REMATCH[4]}"
             DB_NAME="${BASH_REMATCH[5]}"
-            
+
             PGPASSWORD="$DB_PASS" pg_dump -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" \
                 > "$PRE_ROLLBACK_PATH-database.sql" 2>> "$ROLLBACK_LOG"
         fi
     fi
-    
+
     # Backup current code
     log "Backing up current code..."
     cd "$PROJECT_ROOT"
@@ -174,17 +174,17 @@ create_pre_rollback_backup() {
         --exclude="__pycache__" \
         --exclude=".git" \
         . 2>> "$ROLLBACK_LOG"
-    
+
     # Save current git hash
     git rev-parse HEAD > "$PRE_ROLLBACK_PATH-git-hash.txt" 2>/dev/null || echo "unknown" > "$PRE_ROLLBACK_PATH-git-hash.txt"
-    
+
     log "Pre-rollback backup created: $PRE_ROLLBACK_PATH"
 }
 
 # Stop services
 stop_services() {
     log "Stopping services..." "$BLUE"
-    
+
     # Stop backend service
     if systemctl is-active --quiet 6fb-backend 2>/dev/null; then
         sudo systemctl stop 6fb-backend >> "$ROLLBACK_LOG" 2>&1
@@ -192,7 +192,7 @@ stop_services() {
     else
         log "Backend service was not running"
     fi
-    
+
     # Stop frontend service
     if systemctl is-active --quiet 6fb-frontend 2>/dev/null; then
         sudo systemctl stop 6fb-frontend >> "$ROLLBACK_LOG" 2>&1
@@ -200,7 +200,7 @@ stop_services() {
     else
         log "Frontend service was not running"
     fi
-    
+
     # Give services time to stop gracefully
     sleep 5
 }
@@ -208,13 +208,13 @@ stop_services() {
 # Restore code from backup
 restore_code() {
     log "Restoring code from backup..." "$BLUE"
-    
+
     if [[ -f "$BACKUP_PATH-code.tar.gz" ]]; then
         cd "$PROJECT_ROOT"
-        
+
         # Extract backup
         tar -xzf "$BACKUP_PATH-code.tar.gz" >> "$ROLLBACK_LOG" 2>&1
-        
+
         log "Code restored successfully"
     else
         error "Code backup not found: $BACKUP_PATH-code.tar.gz"
@@ -225,7 +225,7 @@ restore_code() {
 # Restore database from backup
 restore_database() {
     log "Restoring database from backup..." "$BLUE"
-    
+
     if [[ -f "$BACKUP_PATH-database.sql" ]]; then
         if [[ -n "${DATABASE_URL:-}" ]]; then
             if [[ "$DATABASE_URL" =~ postgresql://([^:]+):([^@]+)@([^:]+):([^/]+)/(.+) ]]; then
@@ -234,19 +234,19 @@ restore_database() {
                 DB_HOST="${BASH_REMATCH[3]}"
                 DB_PORT="${BASH_REMATCH[4]}"
                 DB_NAME="${BASH_REMATCH[5]}"
-                
+
                 log "Restoring database: $DB_NAME"
-                
+
                 # Drop and recreate database to ensure clean restore
                 PGPASSWORD="$DB_PASS" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d postgres \
                     -c "DROP DATABASE IF EXISTS \"$DB_NAME\";" >> "$ROLLBACK_LOG" 2>&1
-                
+
                 PGPASSWORD="$DB_PASS" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d postgres \
                     -c "CREATE DATABASE \"$DB_NAME\";" >> "$ROLLBACK_LOG" 2>&1
-                
+
                 PGPASSWORD="$DB_PASS" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" \
                     < "$BACKUP_PATH-database.sql" >> "$ROLLBACK_LOG" 2>&1
-                
+
                 log "Database restored successfully"
             else
                 error "Could not parse DATABASE_URL for database restore"
@@ -263,11 +263,11 @@ restore_database() {
 # Restore git state
 restore_git_state() {
     log "Restoring git state..." "$BLUE"
-    
+
     if [[ -f "$BACKUP_PATH-git-hash.txt" ]]; then
         cd "$PROJECT_ROOT"
         GIT_HASH=$(cat "$BACKUP_PATH-git-hash.txt")
-        
+
         if [[ "$GIT_HASH" != "unknown" ]]; then
             git checkout "$GIT_HASH" >> "$ROLLBACK_LOG" 2>&1
             log "Git state restored to: $GIT_HASH"
@@ -282,10 +282,10 @@ restore_git_state() {
 # Reinstall dependencies
 reinstall_dependencies() {
     log "Reinstalling dependencies..." "$BLUE"
-    
+
     # Backend dependencies
     cd "$PROJECT_ROOT/backend"
-    
+
     if [[ -f "venv/bin/activate" ]]; then
         source venv/bin/activate
         pip install -r requirements.txt >> "$ROLLBACK_LOG" 2>&1
@@ -293,10 +293,10 @@ reinstall_dependencies() {
     else
         warning "Backend virtual environment not found"
     fi
-    
+
     # Frontend dependencies
     cd "$PROJECT_ROOT/frontend"
-    
+
     if [[ -f "package.json" ]]; then
         npm ci >> "$ROLLBACK_LOG" 2>&1
         npm run build >> "$ROLLBACK_LOG" 2>&1
@@ -309,15 +309,15 @@ reinstall_dependencies() {
 # Start services
 start_services() {
     log "Starting services..." "$BLUE"
-    
+
     # Start backend service
     sudo systemctl start 6fb-backend >> "$ROLLBACK_LOG" 2>&1
     log "Backend service started"
-    
+
     # Start frontend service
     sudo systemctl start 6fb-frontend >> "$ROLLBACK_LOG" 2>&1
     log "Frontend service started"
-    
+
     # Give services time to start
     sleep 10
 }
@@ -325,12 +325,12 @@ start_services() {
 # Run health checks
 run_health_checks() {
     log "Running health checks..." "$BLUE"
-    
+
     # Check backend health
     BACKEND_URL="${BACKEND_URL:-http://localhost:8000}"
     MAX_RETRIES=5
     RETRY_COUNT=0
-    
+
     while [[ $RETRY_COUNT -lt $MAX_RETRIES ]]; do
         if curl -f -s "$BACKEND_URL/api/v1/health" > /dev/null 2>&1; then
             log "Backend health check passed"
@@ -346,7 +346,7 @@ run_health_checks() {
             fi
         fi
     done
-    
+
     # Check frontend health
     FRONTEND_URL="${FRONTEND_URL:-http://localhost:3000}"
     if curl -f -s "$FRONTEND_URL" > /dev/null 2>&1; then
@@ -355,12 +355,12 @@ run_health_checks() {
         error "Frontend health check failed"
         return 1
     fi
-    
+
     # Check database connectivity
     cd "$PROJECT_ROOT/backend"
     if [[ -f "venv/bin/activate" ]]; then
         source venv/bin/activate
-        
+
         if python -c "from config.database import engine; engine.connect().close(); print('Database connection successful')" >> "$ROLLBACK_LOG" 2>&1; then
             log "Database connectivity check passed"
         else
@@ -368,17 +368,17 @@ run_health_checks() {
             return 1
         fi
     fi
-    
+
     log "All health checks passed"
 }
 
 # Cleanup old backups
 cleanup_old_backups() {
     log "Cleaning up old backups..." "$BLUE"
-    
+
     # Keep last 10 backups
     OLD_BACKUPS=($(ls -t "$BACKUP_DIR"/deployment-* "$BACKUP_DIR"/pre-rollback-* 2>/dev/null | tail -n +11 || true))
-    
+
     if [[ ${#OLD_BACKUPS[@]} -gt 0 ]]; then
         for backup in "${OLD_BACKUPS[@]}"; do
             rm -f "$backup" 2>/dev/null || true
@@ -390,49 +390,49 @@ cleanup_old_backups() {
 # Main rollback function
 main() {
     log "Starting 6FB Booking Platform rollback..." "$GREEN"
-    
+
     # Check user
     check_user
-    
+
     # Load environment variables if available
     if [[ -f "$PROJECT_ROOT/backend/.env" ]]; then
         source "$PROJECT_ROOT/backend/.env"
     fi
-    
+
     # List available backups
     list_backups
-    
+
     # Get backup selection
     get_backup_selection
-    
+
     # Confirm rollback
     confirm_rollback
-    
+
     # Create pre-rollback backup
     create_pre_rollback_backup
-    
+
     # Stop services
     stop_services
-    
+
     # Restore from backup
     restore_code
     restore_database
     restore_git_state
-    
+
     # Reinstall dependencies
     reinstall_dependencies
-    
+
     # Start services
     start_services
-    
+
     # Run health checks
     if run_health_checks; then
         log "Rollback completed successfully!" "$GREEN"
         log "Rollback log: $ROLLBACK_LOG"
-        
+
         # Clean up old backups
         cleanup_old_backups
-        
+
         echo
         echo "✅ Rollback completed successfully!"
         echo "📋 Rolled back to: $SELECTED_BACKUP"

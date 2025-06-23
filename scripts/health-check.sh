@@ -60,7 +60,7 @@ fail_test() {
 # Check if running as root (should not be)
 check_user() {
     log "Checking user permissions..." "$BLUE"
-    
+
     if [[ $EUID -eq 0 ]]; then
         warning "Running as root - this is not recommended for production"
     else
@@ -71,18 +71,18 @@ check_user() {
 # Check system resources
 check_system_resources() {
     log "Checking system resources..." "$BLUE"
-    
+
     # Check memory
     TOTAL_MEM=$(free -m | awk '/^Mem:/{print $2}')
     USED_MEM=$(free -m | awk '/^Mem:/{print $3}')
     MEM_PERCENT=$((USED_MEM * 100 / TOTAL_MEM))
-    
+
     if [[ $MEM_PERCENT -lt 80 ]]; then
         pass_test "Memory usage: ${MEM_PERCENT}% (${USED_MEM}MB / ${TOTAL_MEM}MB)"
     else
         fail_test "High memory usage: ${MEM_PERCENT}% (${USED_MEM}MB / ${TOTAL_MEM}MB)"
     fi
-    
+
     # Check disk space
     DISK_USAGE=$(df / | tail -1 | awk '{print $5}' | sed 's/%//')
     if [[ $DISK_USAGE -lt 80 ]]; then
@@ -90,12 +90,12 @@ check_system_resources() {
     else
         fail_test "High disk usage: ${DISK_USAGE}%"
     fi
-    
+
     # Check load average
     LOAD_AVG=$(uptime | awk -F'load average:' '{print $2}' | awk '{print $1}' | sed 's/,//')
     LOAD_NUM=$(echo "$LOAD_AVG" | cut -d. -f1)
     CPU_COUNT=$(nproc)
-    
+
     if [[ $LOAD_NUM -lt $CPU_COUNT ]]; then
         pass_test "Load average: $LOAD_AVG (CPUs: $CPU_COUNT)"
     else
@@ -106,10 +106,10 @@ check_system_resources() {
 # Check required services
 check_services() {
     log "Checking system services..." "$BLUE"
-    
+
     REQUIRED_SERVICES=("nginx" "6fb-backend" "6fb-frontend")
     OPTIONAL_SERVICES=("redis-server" "fail2ban")
-    
+
     # Check required services
     for service in "${REQUIRED_SERVICES[@]}"; do
         if systemctl is-active --quiet "$service" 2>/dev/null; then
@@ -119,7 +119,7 @@ check_services() {
             fail_test "Service $service is not running"
         fi
     done
-    
+
     # Check optional services
     for service in "${OPTIONAL_SERVICES[@]}"; do
         if systemctl is-active --quiet "$service" 2>/dev/null; then
@@ -134,30 +134,30 @@ check_services() {
 # Check network connectivity
 check_network() {
     log "Checking network connectivity..." "$BLUE"
-    
+
     # Check if ports are listening
     BACKEND_PORT=8000
     FRONTEND_PORT=3000
     NGINX_PORT=80
-    
+
     if netstat -tuln 2>/dev/null | grep -q ":$BACKEND_PORT "; then
         pass_test "Backend port $BACKEND_PORT is listening"
     else
         fail_test "Backend port $BACKEND_PORT is not listening"
     fi
-    
+
     if netstat -tuln 2>/dev/null | grep -q ":$FRONTEND_PORT "; then
         pass_test "Frontend port $FRONTEND_PORT is listening"
     else
         fail_test "Frontend port $FRONTEND_PORT is not listening"
     fi
-    
+
     if netstat -tuln 2>/dev/null | grep -q ":$NGINX_PORT "; then
         pass_test "Nginx port $NGINX_PORT is listening"
     else
         fail_test "Nginx port $NGINX_PORT is not listening"
     fi
-    
+
     # Check external connectivity
     if curl -s --max-time 5 google.com > /dev/null; then
         pass_test "External internet connectivity is working"
@@ -169,7 +169,7 @@ check_network() {
 # Check application health endpoints
 check_application_health() {
     log "Checking application health endpoints..." "$BLUE"
-    
+
     # Check backend health
     if curl -f -s --max-time 10 "$BACKEND_URL/api/v1/health" > /dev/null 2>&1; then
         HEALTH_DATA=$(curl -s --max-time 10 "$BACKEND_URL/api/v1/health" | python3 -m json.tool 2>/dev/null || echo "Invalid JSON")
@@ -178,14 +178,14 @@ check_application_health() {
     else
         fail_test "Backend health endpoint is not responding at $BACKEND_URL/api/v1/health"
     fi
-    
+
     # Check frontend
     if curl -f -s --max-time 10 "$FRONTEND_URL" > /dev/null 2>&1; then
         pass_test "Frontend is responding at $FRONTEND_URL"
     else
         fail_test "Frontend is not responding at $FRONTEND_URL"
     fi
-    
+
     # Check through Nginx proxy
     if [[ "$DOMAIN" != "localhost" ]]; then
         if curl -f -s --max-time 10 "http://$DOMAIN" > /dev/null 2>&1; then
@@ -193,7 +193,7 @@ check_application_health() {
         else
             fail_test "Nginx proxy is not working for $DOMAIN"
         fi
-        
+
         # Check HTTPS if available
         if curl -f -s --max-time 10 "https://$DOMAIN" > /dev/null 2>&1; then
             pass_test "HTTPS is working for $DOMAIN"
@@ -206,15 +206,15 @@ check_application_health() {
 # Check database connectivity
 check_database() {
     log "Checking database connectivity..." "$BLUE"
-    
+
     if [[ -f "$PROJECT_ROOT/backend/.env" ]]; then
         cd "$PROJECT_ROOT/backend"
-        
+
         # Activate virtual environment if available
         if [[ -f "venv/bin/activate" ]]; then
             source venv/bin/activate
         fi
-        
+
         # Test database connection
         if python3 -c "
 from config.database import engine
@@ -230,7 +230,7 @@ except Exception as e:
         else
             fail_test "Database connectivity is not working"
         fi
-        
+
         # Check if migrations are up to date
         if alembic current 2>>"$HEALTH_LOG" | grep -q "head"; then
             pass_test "Database migrations are up to date"
@@ -245,7 +245,7 @@ except Exception as e:
 # Check file permissions
 check_permissions() {
     log "Checking file permissions..." "$BLUE"
-    
+
     if [[ -d "$PROJECT_ROOT" ]]; then
         # Check if application directories exist and have correct permissions
         DIRS_TO_CHECK=(
@@ -253,7 +253,7 @@ check_permissions() {
             "/var/lib/6fb-booking"
             "/var/backups/6fb-booking"
         )
-        
+
         for dir in "${DIRS_TO_CHECK[@]}"; do
             if [[ -d "$dir" ]]; then
                 OWNER=$(stat -c '%U:%G' "$dir" 2>/dev/null || echo "unknown")
@@ -262,7 +262,7 @@ check_permissions() {
                 warning "Directory $dir does not exist"
             fi
         done
-        
+
         # Check if log files are writable
         if [[ -w "/var/log/6fb-booking" ]]; then
             pass_test "Log directory is writable"
@@ -277,7 +277,7 @@ check_permissions() {
 # Check security configuration
 check_security() {
     log "Checking security configuration..." "$BLUE"
-    
+
     # Check firewall status
     if command -v ufw &> /dev/null; then
         if ufw status | grep -q "Status: active"; then
@@ -294,7 +294,7 @@ check_security() {
     else
         warning "No firewall detected"
     fi
-    
+
     # Check fail2ban
     if systemctl status fail2ban &>/dev/null; then
         if systemctl is-active --quiet fail2ban; then
@@ -306,7 +306,7 @@ check_security() {
     else
         warning "Fail2ban is not installed"
     fi
-    
+
     # Check SSL certificate if not localhost
     if [[ "$DOMAIN" != "localhost" ]]; then
         SSL_EXPIRY=$(echo | openssl s_client -servername "$DOMAIN" -connect "$DOMAIN:443" 2>/dev/null | openssl x509 -noout -dates 2>/dev/null | grep notAfter | cut -d= -f2 || echo "No SSL certificate")
@@ -321,16 +321,16 @@ check_security() {
 # Check API endpoints
 check_api_endpoints() {
     log "Checking API endpoints..." "$BLUE"
-    
+
     # Test critical API endpoints
     API_ENDPOINTS=(
         "/api/v1/health"
         "/api/v1/auth/status"
     )
-    
+
     for endpoint in "${API_ENDPOINTS[@]}"; do
         HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$BACKEND_URL$endpoint" 2>/dev/null || echo "000")
-        
+
         if [[ "$HTTP_CODE" =~ ^[2-3][0-9][0-9]$ ]]; then
             pass_test "API endpoint $endpoint responds with HTTP $HTTP_CODE"
         else
@@ -342,7 +342,7 @@ check_api_endpoints() {
 # Check environment configuration
 check_environment() {
     log "Checking environment configuration..." "$BLUE"
-    
+
     if [[ -f "$PROJECT_ROOT/backend/.env" ]]; then
         # Check critical environment variables without exposing values
         REQUIRED_VARS=(
@@ -350,9 +350,9 @@ check_environment() {
             "JWT_SECRET_KEY"
             "DATABASE_URL"
         )
-        
+
         source "$PROJECT_ROOT/backend/.env"
-        
+
         for var in "${REQUIRED_VARS[@]}"; do
             if [[ -n "${!var:-}" ]]; then
                 pass_test "Environment variable $var is set"
@@ -360,14 +360,14 @@ check_environment() {
                 fail_test "Environment variable $var is not set"
             fi
         done
-        
+
         # Check if using default/weak secrets
         if [[ "${SECRET_KEY:-}" == "your-secret-key-here" ]] || [[ ${#SECRET_KEY} -lt 32 ]]; then
             fail_test "SECRET_KEY appears to be default or too short"
         else
             pass_test "SECRET_KEY appears to be properly configured"
         fi
-        
+
     else
         fail_test "Backend .env file not found"
     fi
@@ -376,12 +376,12 @@ check_environment() {
 # Performance tests
 check_performance() {
     log "Running basic performance tests..." "$BLUE"
-    
+
     # Test API response time
     if command -v curl &> /dev/null; then
         RESPONSE_TIME=$(curl -o /dev/null -s -w "%{time_total}" --max-time 10 "$BACKEND_URL/api/v1/health" 2>/dev/null || echo "10.0")
         RESPONSE_MS=$(echo "$RESPONSE_TIME * 1000" | bc -l 2>/dev/null | cut -d. -f1 || echo "10000")
-        
+
         if [[ $RESPONSE_MS -lt 1000 ]]; then
             pass_test "API response time: ${RESPONSE_MS}ms"
         elif [[ $RESPONSE_MS -lt 3000 ]]; then
@@ -390,11 +390,11 @@ check_performance() {
             fail_test "API response time is very slow: ${RESPONSE_MS}ms"
         fi
     fi
-    
+
     # Test frontend response time
     FRONTEND_RESPONSE_TIME=$(curl -o /dev/null -s -w "%{time_total}" --max-time 10 "$FRONTEND_URL" 2>/dev/null || echo "10.0")
     FRONTEND_RESPONSE_MS=$(echo "$FRONTEND_RESPONSE_TIME * 1000" | bc -l 2>/dev/null | cut -d. -f1 || echo "10000")
-    
+
     if [[ $FRONTEND_RESPONSE_MS -lt 2000 ]]; then
         pass_test "Frontend response time: ${FRONTEND_RESPONSE_MS}ms"
     elif [[ $FRONTEND_RESPONSE_MS -lt 5000 ]]; then
@@ -407,7 +407,7 @@ check_performance() {
 # Check logs for errors
 check_logs() {
     log "Checking recent logs for errors..." "$BLUE"
-    
+
     # Check system logs
     if journalctl --since "1 hour ago" -p err --no-pager -q 2>/dev/null | head -5 | wc -l | grep -q "0"; then
         pass_test "No recent system errors in logs"
@@ -415,7 +415,7 @@ check_logs() {
         ERROR_COUNT=$(journalctl --since "1 hour ago" -p err --no-pager -q 2>/dev/null | wc -l)
         warning "Found $ERROR_COUNT system errors in the last hour"
     fi
-    
+
     # Check application logs
     if [[ -d "/var/log/6fb-booking" ]]; then
         RECENT_ERRORS=$(find /var/log/6fb-booking -name "*.log" -mtime -1 -exec grep -i "error\|exception\|fatal" {} \; 2>/dev/null | wc -l)
@@ -425,7 +425,7 @@ check_logs() {
             warning "Found $RECENT_ERRORS application errors in recent logs"
         fi
     fi
-    
+
     # Check Nginx logs
     if [[ -f "/var/log/nginx/error.log" ]]; then
         NGINX_ERRORS=$(tail -100 /var/log/nginx/error.log 2>/dev/null | grep "$(date '+%Y/%m/%d')" | wc -l)
@@ -440,10 +440,10 @@ check_logs() {
 # Generate health report
 generate_report() {
     log "Generating health check report..." "$BLUE"
-    
+
     TOTAL_TESTS=$((TESTS_PASSED + TESTS_FAILED))
     SUCCESS_RATE=$((TESTS_PASSED * 100 / TOTAL_TESTS))
-    
+
     echo
     echo "============================================="
     echo "6FB Booking Platform Health Check Report"
@@ -453,7 +453,7 @@ generate_report() {
     echo "Tests Failed: $TESTS_FAILED"
     echo "Success Rate: $SUCCESS_RATE%"
     echo
-    
+
     if [[ $TESTS_FAILED -eq 0 ]]; then
         echo -e "${GREEN}✅ All health checks passed!${NC}"
         echo -e "${GREEN}System is healthy and ready for production.${NC}"
@@ -465,7 +465,7 @@ generate_report() {
         echo
         echo -e "${YELLOW}Please review and fix the failed checks before proceeding.${NC}"
     fi
-    
+
     echo
     echo "Detailed log: $HEALTH_LOG"
     echo "============================================="
@@ -474,7 +474,7 @@ generate_report() {
 # Main health check function
 main() {
     log "Starting 6FB Booking Platform health check..." "$GREEN"
-    
+
     # Run all health checks
     check_user
     check_system_resources
@@ -488,10 +488,10 @@ main() {
     check_security
     check_performance
     check_logs
-    
+
     # Generate report
     generate_report
-    
+
     # Exit with appropriate code
     if [[ $TESTS_FAILED -eq 0 ]]; then
         exit 0
