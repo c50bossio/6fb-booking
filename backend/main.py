@@ -1,5 +1,6 @@
 """
 Main FastAPI application for 6FB Booking Platform
+Force deployment trigger - Updated: 2025-06-23 14:30:00 UTC
 """
 
 from fastapi import FastAPI, Depends, HTTPException
