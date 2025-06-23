@@ -127,7 +127,11 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         settings = request.app.state.settings
 
         # In production, apply rate limiting to docs endpoints
-        if settings.ENVIRONMENT == "production" and settings.RATE_LIMIT_STRICT_MODE:
+        if (
+            settings.ENVIRONMENT == "production"
+            and hasattr(settings, "RATE_LIMIT_STRICT_MODE")
+            and settings.RATE_LIMIT_STRICT_MODE
+        ):
             # Only skip rate limiting for root endpoint
             if request.url.path == "/":
                 return await call_next(request)
