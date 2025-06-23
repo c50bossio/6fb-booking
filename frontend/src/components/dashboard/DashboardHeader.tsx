@@ -22,7 +22,7 @@ export default function DashboardHeader() {
     setIsConnected(!isConnected)
     alert(isConnected ? 'Trafft disconnected (demo)' : 'Trafft connected (demo)')
   }
-  
+
   return (
     <header className="bg-white border-b border-gray-200 px-4 py-4">
       <div className="container mx-auto">
@@ -37,11 +37,11 @@ export default function DashboardHeader() {
               <p className="text-sm text-gray-600">Welcome back, {barberName}</p>
             </div>
           </div>
-          
+
           {/* Right side - Status and Actions */}
           <div className="flex items-center space-x-4">
-            <Badge 
-              variant="secondary" 
+            <Badge
+              variant="secondary"
               className={`cursor-pointer ${isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
               onClick={handleConnectionClick}
             >

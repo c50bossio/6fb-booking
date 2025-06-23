@@ -19,7 +19,7 @@ const mockWeeklyData = {
     bookingRate: 85.0
   },
   previousWeek: {
-    weekStart: "Dec 9, 2024", 
+    weekStart: "Dec 9, 2024",
     appointments: 31,
     revenue: 2025.40,
     serviceRevenue: 1680.30,
@@ -45,7 +45,7 @@ const ChangeIndicator = ({ current, previous, format = 'number', suffix = '' }: 
 }) => {
   const change = calculateChange(current, previous)
   const isPositive = change > 0
-  
+
   const formatValue = (value: number) => {
     switch (format) {
       case 'currency':
@@ -56,7 +56,7 @@ const ChangeIndicator = ({ current, previous, format = 'number', suffix = '' }: 
         return value.toString()
     }
   }
-  
+
   return (
     <div className="flex items-center justify-between">
       <div>
@@ -96,26 +96,26 @@ export default function WeeklyComparison() {
           </button>
         </CardHeader>
         <CardContent className="space-y-4">
-          <ChangeIndicator 
+          <ChangeIndicator
             current={mockWeeklyData.currentWeek.appointments}
             previous={mockWeeklyData.previousWeek.appointments}
             suffix=" appointments"
           />
-          
-          <ChangeIndicator 
+
+          <ChangeIndicator
             current={mockWeeklyData.currentWeek.revenue}
             previous={mockWeeklyData.previousWeek.revenue}
             format="currency"
           />
-          
-          <ChangeIndicator 
+
+          <ChangeIndicator
             current={mockWeeklyData.currentWeek.averageTicket}
             previous={mockWeeklyData.previousWeek.averageTicket}
             format="currency"
             suffix=" avg ticket"
           />
-          
-          <ChangeIndicator 
+
+          <ChangeIndicator
             current={mockWeeklyData.currentWeek.bookingRate}
             previous={mockWeeklyData.previousWeek.bookingRate}
             format="percentage"
@@ -137,8 +137,8 @@ export default function WeeklyComparison() {
               <span className="font-bold">${mockWeeklyData.currentWeek.serviceRevenue.toFixed(2)}</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-blue-600 h-2 rounded-full" 
+              <div
+                className="bg-blue-600 h-2 rounded-full"
                 style={{ width: `${(mockWeeklyData.currentWeek.serviceRevenue / mockWeeklyData.currentWeek.revenue) * 100}%` }}
               ></div>
             </div>
@@ -149,8 +149,8 @@ export default function WeeklyComparison() {
               <span className="font-bold">${mockWeeklyData.currentWeek.tips.toFixed(2)}</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-green-600 h-2 rounded-full" 
+              <div
+                className="bg-green-600 h-2 rounded-full"
                 style={{ width: `${(mockWeeklyData.currentWeek.tips / mockWeeklyData.currentWeek.revenue) * 100}%` }}
               ></div>
             </div>
@@ -161,8 +161,8 @@ export default function WeeklyComparison() {
               <span className="font-bold">${mockWeeklyData.currentWeek.products.toFixed(2)}</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-slate-600 h-2 rounded-full" 
+              <div
+                className="bg-slate-600 h-2 rounded-full"
                 style={{ width: `${(mockWeeklyData.currentWeek.products / mockWeeklyData.currentWeek.revenue) * 100}%` }}
               ></div>
             </div>

@@ -103,7 +103,7 @@ export default function CalendarPage() {
       const response = await barbersService.getBarbers({ is_active: true })
       // Handle both paginated response and direct array response (for mock data)
       const barbersData = Array.isArray(response) ? response : (response?.data || [])
-      
+
       // Ensure barbersData is an array before mapping
       if (Array.isArray(barbersData)) {
         const barberList = barbersData.map(barber => ({
@@ -181,19 +181,19 @@ export default function CalendarPage() {
       // If so, just refresh the appointments list
       if (appointmentData.id) {
         console.log('Appointment created successfully:', appointmentData)
-        
+
         // Refresh appointments list to show the new appointment
         await fetchAppointments()
-        
+
         // Close the modal
         setShowCreateModal(false)
-        
+
         // Clear any errors
         setError(null)
-        
+
         return
       }
-      
+
       // Otherwise, create appointment via the integration layer with enhanced validation
       // This path is used by BookingFlow
       const createData = {
@@ -223,7 +223,7 @@ export default function CalendarPage() {
       console.log('Appointment created successfully:', response)
     } catch (err: any) {
       console.error('Error creating appointment:', err)
-      
+
       // Handle conflict suggestions
       if (err.suggestions?.length > 0) {
         setError(`Failed to create appointment: ${err.message}. Suggested alternatives available.`)
@@ -245,11 +245,11 @@ export default function CalendarPage() {
       // Refresh appointments list
       await fetchAppointments()
       setShowDetailsModal(false)
-      
+
       console.log('Appointment updated successfully:', response)
     } catch (err: any) {
       console.error('Error updating appointment:', err)
-      
+
       // Handle conflict suggestions
       if (err.suggestions?.length > 0) {
         setError(`Failed to update appointment: ${err.message}. Suggested alternatives available.`)
@@ -267,7 +267,7 @@ export default function CalendarPage() {
       // Refresh appointments list
       await fetchAppointments()
       setShowDetailsModal(false)
-      
+
       console.log('Appointment cancelled successfully')
     } catch (err: any) {
       console.error('Error deleting appointment:', err)
@@ -287,11 +287,11 @@ export default function CalendarPage() {
 
       // Refresh appointments
       await fetchAppointments()
-      
+
       console.log('Appointment rescheduled successfully:', response)
     } catch (err: any) {
       console.error('Error rescheduling appointment:', err)
-      
+
       // Handle conflict suggestions
       if (err.suggestions?.length > 0) {
         setError(`Failed to reschedule appointment: ${err.message}. Suggested alternatives available.`)
@@ -594,7 +594,7 @@ export default function CalendarPage() {
           await handleAppointmentDeleted(id)
         }}
       />
-      
+
       {/* Error Modal for backwards compatibility */}
       {error && (
         <div className="fixed bottom-4 right-4 z-50 max-w-md">

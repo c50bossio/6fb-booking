@@ -215,7 +215,7 @@ export default function EditAppointmentModal({
 
     setIsLoading(true)
     setError(null)
-    
+
     try {
       const updateData = {
         appointment_date: data.appointment_date,

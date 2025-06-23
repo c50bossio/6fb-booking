@@ -254,14 +254,14 @@ export default function DashboardPage() {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
               {/* Quick Actions Dropdown */}
               <div className="relative quick-actions-dropdown">
-                <button 
+                <button
                   onClick={() => setShowQuickActions(!showQuickActions)}
                   className="flex items-center justify-center space-x-2 px-4 py-3 min-h-[44px] bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-lg font-medium hover:from-teal-700 hover:to-cyan-700 transition-all duration-200 shadow-lg"
                 >
                   <span>Quick Actions</span>
                   <ChevronDownIcon className={`h-4 w-4 transition-transform duration-200 ${showQuickActions ? 'rotate-180' : ''}`} />
                 </button>
-                
+
                 {showQuickActions && (
                   <div className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50">
                     <div className="p-2">
@@ -309,8 +309,8 @@ export default function DashboardPage() {
                   </div>
                 )}
               </div>
-              
-              <button 
+
+              <button
                 onClick={() => setShowAppointmentModal(true)}
                 className="flex items-center justify-center space-x-2 px-4 py-3 min-h-[44px] bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200">
                 <PlusIcon className="h-5 w-5" />
@@ -324,7 +324,7 @@ export default function DashboardPage() {
         {/* Key Metrics - Dark Theme Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
           {/* Today's Revenue */}
-          <div 
+          <div
             onClick={() => router.push('/analytics')}
             className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:border-green-500/50 transition-all duration-200 cursor-pointer group shadow-sm"
           >
@@ -350,7 +350,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Appointments */}
-          <div 
+          <div
             onClick={() => router.push('/dashboard/appointments')}
             className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:border-teal-500/50 transition-all duration-200 cursor-pointer group"
           >
@@ -379,7 +379,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Active Barbers */}
-          <div 
+          <div
             onClick={() => router.push('/barbers')}
             className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:border-slate-500/50 transition-all duration-200 cursor-pointer group"
           >
@@ -403,7 +403,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Weekly Payout */}
-          <div 
+          <div
             onClick={() => router.push('/payouts')}
             className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:border-orange-500/50 transition-all duration-200 cursor-pointer group"
           >
@@ -618,7 +618,7 @@ export default function DashboardPage() {
           </a>
         </div>
       </div>
-      
+
       {/* Create Appointment Modal */}
       <CreateAppointmentModal
         isOpen={showAppointmentModal}

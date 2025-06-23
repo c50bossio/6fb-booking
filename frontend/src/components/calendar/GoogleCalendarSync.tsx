@@ -47,7 +47,7 @@ export default function GoogleCalendarSync({
     try {
       setSyncing(true);
       const result = await sync();
-      
+
       if (result) {
         if (result.success) {
           setLastSyncResult(`Synced ${result.synced_count} appointments successfully`);

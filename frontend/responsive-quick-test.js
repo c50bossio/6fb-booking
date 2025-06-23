@@ -24,7 +24,7 @@ const PAGES_TO_TEST = [
 
 async function quickResponsiveTest() {
   console.log('🔧 Starting Quick Responsive Test...\n');
-  
+
   const browser = await puppeteer.launch({
     headless: false,
     defaultViewport: null,
@@ -34,16 +34,16 @@ async function quickResponsiveTest() {
   try {
     for (const [viewportKey, viewport] of Object.entries(VIEWPORTS)) {
       console.log(`📱 Testing ${viewport.name} (${viewport.width}x${viewport.height})`);
-      
+
       const page = await browser.newPage();
       await page.setViewport(viewport);
-      
+
       for (const pagePath of PAGES_TO_TEST) {
         try {
           console.log(`  📄 Loading ${pagePath}...`);
-          await page.goto(`http://localhost:3000${pagePath}`, { 
+          await page.goto(`http://localhost:3000${pagePath}`, {
             waitUntil: 'networkidle2',
-            timeout: 10000 
+            timeout: 10000
           });
 
           // Quick checks
@@ -62,7 +62,7 @@ async function quickResponsiveTest() {
           const sidebarElement = await page.$('.sidebar-dark, .sidebar-light');
           if (sidebarElement) {
             const sidebarWidth = await page.evaluate(el => el.offsetWidth, sidebarElement);
-            
+
             if (viewport.width < 768 && sidebarWidth > 80) {
               issues.push('❌ Sidebar should be collapsed on mobile');
             }
@@ -122,7 +122,7 @@ async function checkServer() {
 // Run the test
 async function main() {
   const serverRunning = await checkServer();
-  
+
   if (!serverRunning) {
     console.log('❌ Frontend server is not running on http://localhost:3000');
     console.log('💡 Start the server with: npm run dev');

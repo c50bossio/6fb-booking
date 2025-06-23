@@ -168,27 +168,27 @@ export default function ModernCalendar({
   const monthDates = useMemo(() => {
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth()
-    
+
     // First day of the month
     const firstDay = new Date(year, month, 1)
     // Last day of the month
     const lastDay = new Date(year, month + 1, 0)
-    
+
     // Calculate start date (may include days from previous month)
     const startDate = new Date(firstDay)
     const dayOfWeek = firstDay.getDay()
     const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1 // Monday = 0
     startDate.setDate(firstDay.getDate() - daysToSubtract)
-    
+
     // Generate all dates for the calendar grid (6 weeks)
     const dates = []
     const currentIterDate = new Date(startDate)
-    
+
     for (let i = 0; i < 42; i++) { // 6 weeks * 7 days
       dates.push(new Date(currentIterDate))
       currentIterDate.setDate(currentIterDate.getDate() + 1)
     }
-    
+
     return dates
   }, [currentDate])
 
@@ -229,11 +229,11 @@ export default function ModernCalendar({
 
   const getAppointmentStyle = (status: string, theme?: string) => {
     const baseClasses = 'p-2 rounded-lg shadow-sm border'
-    
+
     switch (status) {
       case 'confirmed':
-        return `${baseClasses} ${theme === 'dark' 
-          ? 'bg-slate-800/50 border-slate-700 text-slate-200' 
+        return `${baseClasses} ${theme === 'dark'
+          ? 'bg-slate-800/50 border-slate-700 text-slate-200'
           : 'bg-slate-50 border-slate-200 text-slate-900'}`
       case 'completed':
         return `${baseClasses} ${theme === 'dark'
@@ -332,8 +332,8 @@ export default function ModernCalendar({
   return (
     <>
       <div className={`rounded-xl shadow-sm border transition-all duration-200 ${
-        theme === 'dark' 
-          ? 'bg-gray-900 border-gray-800 text-white' 
+        theme === 'dark'
+          ? 'bg-gray-900 border-gray-800 text-white'
           : 'bg-white border-gray-200 text-gray-900'
       }`}>
         {/* Header */}
@@ -476,13 +476,13 @@ export default function ModernCalendar({
                   const dayAppointments = getAppointmentsForDate(date)
                   const isToday = new Date().toDateString() === date.toDateString()
                   const isCurrentMonthDate = isCurrentMonth(date)
-                  
+
                   return (
                     <div
                       key={index}
                       className={`min-h-[120px] p-2 cursor-pointer transition-all duration-200 group relative ${
-                        theme === 'dark' 
-                          ? 'bg-gray-900 hover:bg-gray-800 hover:ring-2 hover:ring-teal-600/50' 
+                        theme === 'dark'
+                          ? 'bg-gray-900 hover:bg-gray-800 hover:ring-2 hover:ring-teal-600/50'
                           : 'bg-white hover:bg-gray-50 hover:ring-2 hover:ring-teal-500/50'
                       } ${
                         isToday
@@ -551,8 +551,8 @@ export default function ModernCalendar({
                         ))}
                         {dayAppointments.length > 3 && (
                           <div className={`text-xs px-1.5 py-1 rounded text-center cursor-pointer transition-all duration-200 ${
-                            theme === 'dark' 
-                              ? 'text-gray-400 bg-gray-800 hover:bg-gray-700 hover:text-gray-200' 
+                            theme === 'dark'
+                              ? 'text-gray-400 bg-gray-800 hover:bg-gray-700 hover:text-gray-200'
                               : 'text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-800'
                           }`}
                           onClick={(e) => {
@@ -593,8 +593,8 @@ export default function ModernCalendar({
                         ? theme === 'dark' ? 'bg-teal-900/20' : 'bg-teal-50'
                         : ''
                     } ${
-                      theme === 'dark' 
-                        ? 'hover:bg-gray-800' 
+                      theme === 'dark'
+                        ? 'hover:bg-gray-800'
                         : 'hover:bg-gray-100'
                     }`}
                     onClick={() => handleDateClick(date.toISOString().split('T')[0])}
@@ -659,7 +659,7 @@ export default function ModernCalendar({
                               </div>
                             </div>
                           )}
-                          
+
                           {appointmentForTime && (
                             <div
                               className={`${getAppointmentStyle(appointmentForTime.status, theme)} cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-lg hover:z-10`}

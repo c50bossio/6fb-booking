@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Bell, 
-  Calendar, 
-  DollarSign, 
-  Trophy, 
-  AlertCircle, 
+import {
+  Bell,
+  Calendar,
+  DollarSign,
+  Trophy,
+  AlertCircle,
   Users,
   X,
   Check
@@ -60,12 +60,12 @@ export function AnimatedNotificationCenter() {
         read: false,
         priority: lastMessage.data.priority
       }
-      
+
       setNotifications(prev => [newNotification, ...prev])
-      
+
       // Play notification sound
       playNotificationSound()
-      
+
       // Show browser notification if permitted
       showBrowserNotification(newNotification)
     }
@@ -114,7 +114,7 @@ export function AnimatedNotificationCenter() {
         whileTap={{ scale: 0.95 }}
       >
         <Bell className="h-6 w-6" />
-        
+
         {/* Unread Badge */}
         <AnimatePresence>
           {unreadCount > 0 && (
@@ -179,7 +179,7 @@ export function AnimatedNotificationCenter() {
               </div>
 
               {/* Notifications List */}
-              <motion.div 
+              <motion.div
                 className="overflow-y-auto max-h-[500px]"
                 variants={staggerContainer}
                 initial="initial"
@@ -269,7 +269,7 @@ export function AnimatedNotificationCenter() {
 
               {/* Footer */}
               {notifications.length > 0 && (
-                <motion.div 
+                <motion.div
                   className="p-3 border-t bg-gray-50 text-center"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -297,15 +297,15 @@ function formatTimestamp(timestamp: string): string {
   const date = new Date(timestamp)
   const now = new Date()
   const diff = now.getTime() - date.getTime()
-  
+
   const minutes = Math.floor(diff / 60000)
   const hours = Math.floor(diff / 3600000)
   const days = Math.floor(diff / 86400000)
-  
+
   if (minutes < 1) return 'Just now'
   if (minutes < 60) return `${minutes}m ago`
   if (hours < 24) return `${hours}h ago`
   if (days < 7) return `${days}d ago`
-  
+
   return date.toLocaleDateString()
 }

@@ -100,17 +100,17 @@ export function ClientRetentionChart({ data }: ClientRetentionChartProps) {
             <YAxis tickFormatter={formatPercentage} stroke="#6b7280" fontSize={12} />
             <Tooltip formatter={formatPercentage} />
             <Legend />
-            <Line 
-              type="monotone" 
-              dataKey="retention" 
-              stroke="#3b82f6" 
+            <Line
+              type="monotone"
+              dataKey="retention"
+              stroke="#3b82f6"
               strokeWidth={2}
               name="Retention Rate"
             />
-            <Line 
-              type="monotone" 
-              dataKey="target" 
-              stroke="#10b981" 
+            <Line
+              type="monotone"
+              dataKey="target"
+              stroke="#10b981"
               strokeDasharray="5 5"
               strokeWidth={2}
               name="Target"
@@ -128,18 +128,18 @@ export function ClientRetentionChart({ data }: ClientRetentionChartProps) {
               <PolarGrid stroke="#e5e7eb" />
               <PolarAngleAxis dataKey="segment" fontSize={12} />
               <PolarRadiusAxis angle={90} domain={[0, 100]} fontSize={12} />
-              <Radar 
-                name="Retention %" 
-                dataKey="retention" 
-                stroke="#3b82f6" 
-                fill="#3b82f6" 
+              <Radar
+                name="Retention %"
+                dataKey="retention"
+                stroke="#3b82f6"
+                fill="#3b82f6"
                 fillOpacity={0.6}
               />
-              <Radar 
-                name="Avg Spend" 
-                dataKey="avgSpend" 
-                stroke="#10b981" 
-                fill="#10b981" 
+              <Radar
+                name="Avg Spend"
+                dataKey="avgSpend"
+                stroke="#10b981"
+                fill="#10b981"
                 fillOpacity={0.6}
               />
               <Legend />
@@ -152,7 +152,7 @@ export function ClientRetentionChart({ data }: ClientRetentionChartProps) {
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">Visit Frequency</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart 
+            <BarChart
               data={data.visitFrequency || []}
               margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
             >
@@ -187,13 +187,13 @@ export function ClientRetentionChart({ data }: ClientRetentionChartProps) {
                   <td className="py-3 font-medium">{cohort.name}</td>
                   {cohort.retention.map((rate: number, monthIndex: number) => {
                     const opacity = rate / 100
-                    const bgColor = rate >= 80 ? 'bg-green-500' : 
-                                   rate >= 60 ? 'bg-yellow-500' : 
-                                   rate >= 40 ? 'bg-orange-500' : 
+                    const bgColor = rate >= 80 ? 'bg-green-500' :
+                                   rate >= 60 ? 'bg-yellow-500' :
+                                   rate >= 40 ? 'bg-orange-500' :
                                    'bg-red-500'
                     return (
                       <td key={monthIndex} className="py-3 text-center">
-                        <div 
+                        <div
                           className={`inline-block px-3 py-1 rounded text-white font-medium ${bgColor}`}
                           style={{ opacity: Math.max(opacity, 0.4) }}
                         >

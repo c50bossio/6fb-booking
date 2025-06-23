@@ -33,7 +33,7 @@ export class ErrorBoundary extends Component<Props, State> {
     }
 
     console.error('Uncaught error:', error, errorInfo)
-    
+
     // Log to error reporting service
     if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
       // TODO: Send to error tracking service (Sentry, etc.)
@@ -70,7 +70,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 </div>
               </div>
             </div>
-            
+
             <div className="mt-4 flex justify-center">
               <button
                 onClick={this.handleReset}

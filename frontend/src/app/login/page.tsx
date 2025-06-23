@@ -173,7 +173,7 @@ export default function LoginPage() {
             </button>
 
             <div className="text-center">
-              <button 
+              <button
                 type="button"
                 onClick={() => setShowForgotPassword(true)}
                 className="text-sm text-teal-400 hover:text-teal-300 transition-colors"

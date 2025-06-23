@@ -66,8 +66,8 @@ export default function SixFBScore() {
                   key={period}
                   onClick={() => handlePeriodChange(period)}
                   className={`px-3 py-1 text-xs rounded-full capitalize ${
-                    selectedPeriod === period 
-                      ? 'bg-blue-600 text-white' 
+                    selectedPeriod === period
+                      ? 'bg-blue-600 text-white'
                       : 'bg-white text-gray-600 hover:bg-gray-100'
                   }`}
                 >
@@ -96,8 +96,8 @@ export default function SixFBScore() {
               {mockSixFBScore.components.bookingUtilization}
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-              <div 
-                className="bg-blue-600 h-2 rounded-full" 
+              <div
+                className="bg-blue-600 h-2 rounded-full"
                 style={{ width: `${mockSixFBScore.components.bookingUtilization}%` }}
               ></div>
             </div>
@@ -110,8 +110,8 @@ export default function SixFBScore() {
               {mockSixFBScore.components.revenueGrowth}
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-              <div 
-                className="bg-green-600 h-2 rounded-full" 
+              <div
+                className="bg-green-600 h-2 rounded-full"
                 style={{ width: `${mockSixFBScore.components.revenueGrowth}%` }}
               ></div>
             </div>
@@ -124,8 +124,8 @@ export default function SixFBScore() {
               {mockSixFBScore.components.customerRetention}
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-              <div 
-                className="bg-slate-600 h-2 rounded-full" 
+              <div
+                className="bg-slate-600 h-2 rounded-full"
                 style={{ width: `${mockSixFBScore.components.customerRetention}%` }}
               ></div>
             </div>
@@ -138,8 +138,8 @@ export default function SixFBScore() {
               {mockSixFBScore.components.averageTicket}
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-              <div 
-                className="bg-yellow-600 h-2 rounded-full" 
+              <div
+                className="bg-yellow-600 h-2 rounded-full"
                 style={{ width: `${mockSixFBScore.components.averageTicket}%` }}
               ></div>
             </div>
@@ -152,18 +152,18 @@ export default function SixFBScore() {
               {mockSixFBScore.components.serviceQuality}
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-              <div 
-                className="bg-red-600 h-2 rounded-full" 
+              <div
+                className="bg-red-600 h-2 rounded-full"
                 style={{ width: `${mockSixFBScore.components.serviceQuality}%` }}
               ></div>
             </div>
           </div>
         </div>
-        
+
         <div className="mt-4 flex items-center justify-center space-x-4 text-sm text-gray-600">
           <span>💡 Tip: Focus on customer retention to improve your overall score</span>
         </div>
-        
+
         {showDetails && (
           <div className="mt-4 p-4 bg-white rounded-lg border">
             <h4 className="font-semibold text-gray-900 mb-2">Score Breakdown Details</h4>

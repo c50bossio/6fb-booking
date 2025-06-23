@@ -2,11 +2,11 @@
 
 import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { 
-  Target, 
-  TrendingUp, 
-  TrendingDown, 
-  Clock, 
+import {
+  Target,
+  TrendingUp,
+  TrendingDown,
+  Clock,
   Star,
   Users,
   Calendar,
@@ -104,7 +104,7 @@ export function PerformanceMetrics({ data, dateRange }: PerformanceMetricsProps)
         {metrics.map((metric, index) => {
           const percentage = metric.target > 0 ? (metric.value / metric.target) * 100 : 0
           const isPositiveTrend = metric.value > (data[`${metric.title.toLowerCase()}_previous`] || 0)
-          
+
           return (
             <div key={index} className="space-y-3">
               <div className="flex items-center justify-between">
@@ -118,7 +118,7 @@ export function PerformanceMetrics({ data, dateRange }: PerformanceMetricsProps)
                   <TrendingDown className="h-4 w-4 text-red-500" />
                 )}
               </div>
-              
+
               <div>
                 <div className="flex items-baseline justify-between mb-1">
                   <span className="text-2xl font-bold">
@@ -128,13 +128,13 @@ export function PerformanceMetrics({ data, dateRange }: PerformanceMetricsProps)
                     / {formatValue(metric.target, metric.format)}
                   </span>
                 </div>
-                
-                <Progress 
-                  value={Math.min(percentage, 100)} 
+
+                <Progress
+                  value={Math.min(percentage, 100)}
                   className="h-2"
                   indicatorClassName={getProgressColor(metric.value, metric.target)}
                 />
-                
+
                 <p className="text-xs text-gray-500 mt-1">
                   {percentage.toFixed(0)}% of target
                 </p>
@@ -151,8 +151,8 @@ export function PerformanceMetrics({ data, dateRange }: PerformanceMetricsProps)
           {data.insights?.map((insight: any, index: number) => (
             <div key={index} className="flex items-start space-x-2">
               <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
-                insight.type === 'positive' ? 'bg-green-500' : 
-                insight.type === 'negative' ? 'bg-red-500' : 
+                insight.type === 'positive' ? 'bg-green-500' :
+                insight.type === 'negative' ? 'bg-red-500' :
                 'bg-yellow-500'
               }`} />
               <p className="text-sm text-gray-600">{insight.message}</p>

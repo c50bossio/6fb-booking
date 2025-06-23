@@ -18,11 +18,11 @@ import { DateRangePicker } from './DateRangePicker'
 import { ExportButton } from './ExportButton'
 import { format, subDays, startOfMonth, endOfMonth } from 'date-fns'
 import { cache, cacheKeys, cacheUtils } from '@/lib/cache'
-import { 
-  TrendingUp, 
-  Calendar, 
-  DollarSign, 
-  Users, 
+import {
+  TrendingUp,
+  Calendar,
+  DollarSign,
+  Users,
   Activity,
   Download,
   RefreshCw,
@@ -66,7 +66,7 @@ export function AnalyticsDashboard() {
   const fetchAnalytics = async () => {
     setIsLoading(true)
     setError(null)
-    
+
     try {
       const token = localStorage.getItem('token')
       if (!token) {
@@ -78,7 +78,7 @@ export function AnalyticsDashboard() {
         end_date: format(dateRange.to, 'yyyy-MM-dd')
       })
 
-      const headers = { 
+      const headers = {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       }
@@ -100,7 +100,7 @@ export function AnalyticsDashboard() {
             format(dateRange.from, 'yyyy-MM-dd'),
             format(dateRange.to, 'yyyy-MM-dd')
           )
-          
+
           return cacheUtils.fetchWithCache(
             cacheKey,
             () => fetch(endpoint.url, { headers })
@@ -129,7 +129,7 @@ export function AnalyticsDashboard() {
       })
 
       setData(prev => ({ ...prev, ...newData }))
-      
+
       if (errors.length > 0) {
         setError(errors.join(', '))
       }

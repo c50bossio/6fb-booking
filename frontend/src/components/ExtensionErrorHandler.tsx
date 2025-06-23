@@ -12,7 +12,7 @@ export default function ExtensionErrorHandler() {
     const originalError = console.error;
     console.error = (...args: any[]) => {
       const errorString = args.join(' ');
-      
+
       // Filter out common extension-related errors
       const extensionPatterns = [
         /chrome-extension:\/\//i,
@@ -29,7 +29,7 @@ export default function ExtensionErrorHandler() {
       ];
 
       const shouldFilter = extensionPatterns.some(pattern => pattern.test(errorString));
-      
+
       if (!shouldFilter) {
         originalError.apply(console, args);
       } else {
@@ -43,7 +43,7 @@ export default function ExtensionErrorHandler() {
     // Handle unhandled rejections from extensions
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       const errorString = event.reason?.toString() || '';
-      if (errorString.includes('chrome-extension') || 
+      if (errorString.includes('chrome-extension') ||
           errorString.includes('moz-extension') ||
           errorString.includes('Extension context')) {
         event.preventDefault();
@@ -55,7 +55,7 @@ export default function ExtensionErrorHandler() {
 
     // Handle global errors from extensions
     const handleGlobalError = (event: ErrorEvent) => {
-      if (event.filename?.includes('extension://') || 
+      if (event.filename?.includes('extension://') ||
           event.message?.includes('extension') ||
           event.source?.toString().includes('extension')) {
         event.preventDefault();

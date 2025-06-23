@@ -1,6 +1,6 @@
 /**
  * Calendar-Booking Integration Test Script
- * 
+ *
  * This script tests the full integration between the calendar and booking system
  * to ensure there are no data conflicts and all workflows function correctly.
  */
@@ -37,7 +37,7 @@ const apiRequest = async (endpoint, options = {}) => {
   }
 
   const response = await fetch(url, { ...defaultOptions, ...options })
-  
+
   if (!response.ok) {
     const errorText = await response.text()
     throw new Error(`API Error ${response.status}: ${errorText}`)
@@ -51,14 +51,14 @@ const apiRequest = async (endpoint, options = {}) => {
  */
 async function testCalendarAppointmentSync() {
   console.log('\n🔄 Test 1: Calendar-Appointment Data Consistency')
-  
+
   try {
     // Get appointments from appointments API
     const appointmentsResponse = await apiRequest('/appointments', {
       method: 'GET'
     })
-    
-    // Get calendar appointments 
+
+    // Get calendar appointments
     const calendarResponse = await apiRequest('/appointments/calendar', {
       method: 'GET'
     })
@@ -85,7 +85,7 @@ async function testCalendarAppointmentSync() {
  */
 async function testAvailabilityChecking() {
   console.log('\n🔍 Test 2: Availability Checking Integration')
-  
+
   try {
     const testDate = new Date()
     testDate.setDate(testDate.getDate() + 1) // Tomorrow
@@ -107,8 +107,8 @@ async function testAvailabilityChecking() {
     console.log('✅ Appointment slots retrieved')
     console.log(`   Available slots: ${appointmentSlots.available_slots}/${appointmentSlots.total_slots}`)
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       availableSlots: appointmentSlots.available_slots,
       totalSlots: appointmentSlots.total_slots
     }
@@ -123,7 +123,7 @@ async function testAvailabilityChecking() {
  */
 async function testConflictDetection() {
   console.log('\n⚡ Test 3: Conflict Detection System')
-  
+
   try {
     const testDate = new Date()
     testDate.setDate(testDate.getDate() + 1)
@@ -143,7 +143,7 @@ async function testConflictDetection() {
 
     console.log(`✅ Conflict detection completed`)
     console.log(`   Has conflicts: ${conflictCheck.has_conflicts}`)
-    
+
     if (conflictCheck.has_conflicts) {
       console.log(`   Conflicts found: ${conflictCheck.conflicts.length}`)
       conflictCheck.conflicts.forEach((conflict, index) => {
@@ -155,8 +155,8 @@ async function testConflictDetection() {
       console.log(`   Suggested alternatives: ${conflictCheck.suggested_alternatives.length}`)
     }
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       hasConflicts: conflictCheck.has_conflicts,
       conflictCount: conflictCheck.conflicts?.length || 0,
       alternativesCount: conflictCheck.suggested_alternatives?.length || 0
@@ -172,7 +172,7 @@ async function testConflictDetection() {
  */
 async function testAppointmentWorkflow() {
   console.log('\n🔄 Test 4: Complete Appointment Workflow')
-  
+
   let createdAppointmentId = null
 
   try {
@@ -207,7 +207,7 @@ async function testAppointmentWorkflow() {
     // Step 2: Verify it appears in calendar
     const calendarResponse = await apiRequest(`/appointments/calendar?start_date=${dateStr}&end_date=${dateStr}`)
     const calendarAppointment = calendarResponse.find(apt => apt.id === createdAppointmentId)
-    
+
     if (calendarAppointment) {
       console.log('✅ Appointment appears in calendar view')
     } else {
@@ -237,8 +237,8 @@ async function testAppointmentWorkflow() {
     })
     console.log('✅ Appointment rescheduled successfully')
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       appointmentId: createdAppointmentId,
       created: true,
       updated: true,
@@ -246,10 +246,10 @@ async function testAppointmentWorkflow() {
     }
   } catch (error) {
     console.error('❌ Appointment workflow test failed:', error.message)
-    return { 
-      success: false, 
+    return {
+      success: false,
       error: error.message,
-      appointmentId: createdAppointmentId 
+      appointmentId: createdAppointmentId
     }
   }
 }
@@ -259,7 +259,7 @@ async function testAppointmentWorkflow() {
  */
 async function testBookingSystemIntegration() {
   console.log('\n🔗 Test 5: Booking System Integration')
-  
+
   try {
     // Test 1: Get barbers list
     const barbersResponse = await apiRequest(`/booking-public/shops/${TEST_CONFIG.testLocationId}/barbers`)
@@ -292,9 +292,9 @@ async function testBookingSystemIntegration() {
       })
 
       console.log(`✅ Public booking created with confirmation: ${bookingResponse.booking_token}`)
-      
-      return { 
-        success: true, 
+
+      return {
+        success: true,
         barbersCount: barbersResponse.length,
         servicesCount: servicesResponse.length,
         publicBookingCreated: true,
@@ -302,9 +302,9 @@ async function testBookingSystemIntegration() {
       }
     } catch (bookingError) {
       console.warn('⚠️  Public booking creation failed (may be due to conflicts):', bookingError.message)
-      
-      return { 
-        success: true, 
+
+      return {
+        success: true,
         barbersCount: barbersResponse.length,
         servicesCount: servicesResponse.length,
         publicBookingCreated: false,
@@ -322,7 +322,7 @@ async function testBookingSystemIntegration() {
  */
 async function testDataConsistency() {
   console.log('\n🔍 Test 6: Data Consistency Validation')
-  
+
   try {
     const testDate = new Date().toISOString().split('T')[0]
     const endDate = new Date()
@@ -351,7 +351,7 @@ async function testDataConsistency() {
     // Check for orphaned appointments (appointments without valid barbers)
     const barberIds = new Set(barbersData.map(b => b.id))
     const orphanedAppointments = appointmentsData.filter(apt => !barberIds.has(apt.barber_id))
-    
+
     if (orphanedAppointments.length > 0) {
       consistencyIssues.push(`Found ${orphanedAppointments.length} appointments with invalid barber IDs`)
     }
@@ -363,8 +363,8 @@ async function testDataConsistency() {
       consistencyIssues.forEach(issue => console.warn(`   - ${issue}`))
     }
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       consistencyIssues,
       totalAppointments: appointmentsData.length,
       totalBarbers: barbersData.length
@@ -380,7 +380,7 @@ async function testDataConsistency() {
  */
 async function cleanup(testResults) {
   console.log('\n🧹 Cleanup: Removing test data...')
-  
+
   // Clean up any test appointments created
   for (const result of testResults) {
     if (result.appointmentId) {
@@ -425,7 +425,7 @@ async function runIntegrationTests() {
     const totalTests = results.length
 
     console.log(`✅ Passed: ${passedTests}/${totalTests} tests`)
-    
+
     if (passedTests === totalTests) {
       console.log('🎉 All integration tests passed!')
       console.log('\n✅ Calendar-Booking Integration Status: FULLY OPERATIONAL')
