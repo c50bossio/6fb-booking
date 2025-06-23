@@ -75,12 +75,11 @@ services:
       - key: SESSION_COOKIE_SAMESITE
         value: "lax"
     healthCheckPath: /health
-    autoDeploy: false  # Enable after initial setup
+    autoDeploy: true  # Auto-deploy enabled for continuous deployment
     # Performance configurations
     numInstances: 1  # Increase for horizontal scaling
     # Additional Render settings
     dockerCommand: ""  # Use default
-    region: oregon  # oregon, ohio, virginia, frankfurt, singapore
 
   # Frontend Next.js Application
   - type: web
@@ -111,7 +110,7 @@ services:
       - key: NEXT_PUBLIC_DISABLE_SPEEDY
         value: "false"
     healthCheckPath: /
-    autoDeploy: false  # Enable after initial setup
+    autoDeploy: true  # Auto-deploy enabled for continuous deployment
     # Performance configurations
     numInstances: 1  # Increase for horizontal scaling
 

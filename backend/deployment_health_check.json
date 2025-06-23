@@ -1,0 +1,34 @@
+{
+  "timestamp": "2025-06-23T17:39:49.204129",
+  "environment": "unknown",
+  "checks": {
+    "Environment Variables": {
+      "status": "fail",
+      "missing_required": [
+        "DATABASE_URL",
+        "SECRET_KEY",
+        "JWT_SECRET_KEY",
+        "ENVIRONMENT"
+      ],
+      "missing_optional": [
+        "STRIPE_SECRET_KEY",
+        "SENDGRID_API_KEY",
+        "GOOGLE_CLIENT_ID",
+        "ENCRYPTION_KEY"
+      ]
+    },
+    "Database Connection": {
+      "status": "fail",
+      "message": "No module named 'sqlalchemy'"
+    },
+    "Application Imports": {
+      "status": "fail",
+      "message": "Import error: No module named 'fastapi'"
+    },
+    "API Endpoints": {
+      "status": "fail",
+      "message": "No module named 'main'"
+    }
+  },
+  "overall_status": "unhealthy"
+}
