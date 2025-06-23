@@ -76,7 +76,7 @@ function log(message, type = 'info') {
     error: `${colors.red}❌ `,
     metric: `${colors.cyan}📊 `,
   }[type] || '';
-  
+
   console.log(`${prefix}${message}${colors.reset}`);
 }
 
@@ -88,10 +88,10 @@ function logSection(title) {
 
 function executeCommand(command, options = {}) {
   try {
-    const output = execSync(command, { 
+    const output = execSync(command, {
       encoding: 'utf8',
       stdio: options.silent ? 'pipe' : 'inherit',
-      ...options 
+      ...options
     });
     return { success: true, output };
   } catch (error) {
@@ -101,75 +101,75 @@ function executeCommand(command, options = {}) {
 
 async function analyzeBundleSize() {
   logSection('Bundle Size Analysis');
-  
+
   // Build the application
   log('Building application for analysis...', 'info');
   const build = executeCommand('npm run build', { silent: true });
-  
+
   if (!build.success) {
     log('Build failed', 'error');
     return false;
   }
-  
+
   // Analyze .next directory
   const nextDir = path.join(process.cwd(), '.next');
   if (!fs.existsSync(nextDir)) {
     log('.next directory not found', 'error');
     return false;
   }
-  
+
   // Calculate bundle sizes
   const getDirectorySize = (dir) => {
     let size = 0;
     const files = fs.readdirSync(dir);
-    
+
     files.forEach(file => {
       const filePath = path.join(dir, file);
       const stats = fs.statSync(filePath);
-      
+
       if (stats.isDirectory()) {
         size += getDirectorySize(filePath);
       } else {
         size += stats.size;
       }
     });
-    
+
     return size;
   };
-  
+
   // Analyze static files
   const staticDir = path.join(nextDir, 'static');
   const staticSize = fs.existsSync(staticDir) ? getDirectorySize(staticDir) : 0;
   const staticSizeKB = Math.round(staticSize / 1024);
-  
+
   log(`Static files size: ${staticSizeKB} KB`, 'metric');
-  
+
   // Analyze chunks
   const chunksDir = path.join(staticDir, 'chunks');
   if (fs.existsSync(chunksDir)) {
     const chunks = fs.readdirSync(chunksDir);
     const jsChunks = chunks.filter(f => f.endsWith('.js'));
-    
+
     log(`JavaScript chunks: ${jsChunks.length}`, 'metric');
-    
+
     // Find largest chunks
     const chunkSizes = jsChunks.map(chunk => ({
       name: chunk,
       size: fs.statSync(path.join(chunksDir, chunk)).size,
     })).sort((a, b) => b.size - a.size);
-    
+
     log('Largest chunks:', 'info');
     chunkSizes.slice(0, 5).forEach(chunk => {
       const sizeKB = Math.round(chunk.size / 1024);
       log(`  ${chunk.name}: ${sizeKB} KB`, 'metric');
     });
-    
+
     performanceResults.bundleAnalysis.chunks = chunkSizes.slice(0, 10);
   }
-  
+
   // Check against thresholds
   performanceResults.bundleAnalysis.totalSize = staticSizeKB;
-  
+
   if (staticSizeKB > config.metrics.maxBundleSize) {
     log(`Bundle size exceeds threshold (${config.metrics.maxBundleSize} KB)`, 'warning');
     performanceResults.recommendations.push({
@@ -186,46 +186,46 @@ async function analyzeBundleSize() {
   } else {
     log('Bundle size within acceptable limits', 'success');
   }
-  
+
   // Analyze CSS
   const cssFiles = fs.readdirSync(staticDir).filter(f => f.endsWith('.css'));
   const totalCssSize = cssFiles.reduce((sum, file) => {
     return sum + fs.statSync(path.join(staticDir, file)).size;
   }, 0);
-  
+
   log(`CSS size: ${Math.round(totalCssSize / 1024)} KB`, 'metric');
   performanceResults.bundleAnalysis.cssSize = Math.round(totalCssSize / 1024);
-  
+
   return true;
 }
 
 async function checkLighthouse(url) {
   logSection('Lighthouse Performance Audit');
-  
+
   // Check if lighthouse is installed
   const lighthouseCheck = executeCommand('which lighthouse', { silent: true });
-  
+
   if (!lighthouseCheck.success) {
     log('Lighthouse not installed', 'warning');
     log('Install with: npm install -g lighthouse', 'info');
     log('Skipping Lighthouse audit', 'warning');
     return true;
   }
-  
+
   // Run lighthouse for each critical page
   for (const page of config.pages.filter(p => p.critical)) {
     log(`Auditing ${page.name}...`, 'info');
-    
+
     const outputPath = path.join(process.cwd(), `lighthouse-${page.name.toLowerCase()}.json`);
     const command = `lighthouse ${url}${page.path} --output=json --output-path=${outputPath} --chrome-flags="--headless" --quiet`;
-    
+
     const result = executeCommand(command, { silent: true });
-    
+
     if (result.success && fs.existsSync(outputPath)) {
       try {
         const report = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
         const scores = {};
-        
+
         // Extract scores
         config.lighthouse.categories.forEach(category => {
           const categoryData = report.categories[category];
@@ -233,7 +233,7 @@ async function checkLighthouse(url) {
             scores[category] = Math.round(categoryData.score * 100);
           }
         });
-        
+
         // Log scores
         log(`${page.name} scores:`, 'metric');
         Object.entries(scores).forEach(([category, score]) => {
@@ -241,7 +241,7 @@ async function checkLighthouse(url) {
           const status = score >= minScore ? 'success' : 'warning';
           log(`  ${category}: ${score}/100 (min: ${minScore})`, status);
         });
-        
+
         // Extract performance metrics
         if (report.audits) {
           const metrics = {
@@ -251,7 +251,7 @@ async function checkLighthouse(url) {
             TBT: report.audits['total-blocking-time']?.numericValue,
             CLS: report.audits['cumulative-layout-shift']?.numericValue,
           };
-          
+
           log('Core Web Vitals:', 'metric');
           Object.entries(metrics).forEach(([metric, value]) => {
             if (value !== undefined) {
@@ -259,19 +259,19 @@ async function checkLighthouse(url) {
               log(`  ${metric}: ${displayValue}`, 'metric');
             }
           });
-          
+
           performanceResults.pageMetrics.push({
             page: page.name,
             path: page.path,
             metrics,
           });
         }
-        
+
         performanceResults.lighthouseScores.push({
           page: page.name,
           scores,
         });
-        
+
         // Clean up
         fs.unlinkSync(outputPath);
       } catch (error) {
@@ -281,29 +281,29 @@ async function checkLighthouse(url) {
       log(`Failed to audit ${page.name}`, 'warning');
     }
   }
-  
+
   return true;
 }
 
 async function measureLoadTime(url) {
   logSection('Page Load Time Measurement');
-  
+
   for (const page of config.pages) {
     const fullUrl = url + page.path;
     log(`Measuring ${page.name}: ${fullUrl}`, 'info');
-    
+
     const measurements = [];
     const iterations = 3;
-    
+
     // Take multiple measurements
     for (let i = 0; i < iterations; i++) {
       const start = performance.now();
-      
+
       try {
         await new Promise((resolve, reject) => {
           const urlObj = new URL(fullUrl);
           const client = urlObj.protocol === 'https:' ? https : http;
-          
+
           const req = client.get(fullUrl, (res) => {
             let data = '';
             res.on('data', (chunk) => { data += chunk; });
@@ -313,7 +313,7 @@ async function measureLoadTime(url) {
               resolve();
             });
           });
-          
+
           req.on('error', reject);
           req.setTimeout(30000, () => {
             req.destroy();
@@ -324,11 +324,11 @@ async function measureLoadTime(url) {
         log(`Failed to measure ${page.name}: ${error.message}`, 'error');
       }
     }
-    
+
     if (measurements.length > 0) {
       const avgLoadTime = Math.round(measurements.reduce((a, b) => a + b) / measurements.length);
       log(`Average load time: ${avgLoadTime}ms`, 'metric');
-      
+
       // Check against threshold
       if (avgLoadTime > 3000) {
         log('Load time exceeds 3 seconds', 'warning');
@@ -348,16 +348,16 @@ async function measureLoadTime(url) {
       }
     }
   }
-  
+
   return true;
 }
 
 function analyzePackageJson() {
   logSection('Package.json Analysis');
-  
+
   const packageJsonPath = path.join(process.cwd(), 'package.json');
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-  
+
   // Check for performance-related dependencies
   const performanceDeps = {
     '@next/bundle-analyzer': 'Bundle size analysis',
@@ -365,7 +365,7 @@ function analyzePackageJson() {
     'next-pwa': 'Progressive Web App support',
     'sharp': 'Image optimization',
   };
-  
+
   log('Performance optimizations:', 'info');
   Object.entries(performanceDeps).forEach(([dep, description]) => {
     const hasDep = packageJson.dependencies?.[dep] || packageJson.devDependencies?.[dep];
@@ -375,12 +375,12 @@ function analyzePackageJson() {
       log(`${dep}: Not installed (${description})`, 'warning');
     }
   });
-  
+
   // Check Next.js version
   const nextVersion = packageJson.dependencies?.next;
   if (nextVersion) {
     log(`Next.js version: ${nextVersion}`, 'metric');
-    
+
     // Check if using latest stable
     const versionMatch = nextVersion.match(/(\d+)\.(\d+)\.(\d+)/);
     if (versionMatch) {
@@ -399,23 +399,23 @@ function analyzePackageJson() {
       }
     }
   }
-  
+
   return true;
 }
 
 function generatePerformanceReport() {
   logSection('Performance Report');
-  
+
   // Calculate overall health
   let healthScore = 100;
   const issues = [];
-  
+
   // Check bundle size
   if (performanceResults.bundleAnalysis.totalSize > config.metrics.maxBundleSize) {
     healthScore -= 20;
     issues.push('Bundle size exceeds threshold');
   }
-  
+
   // Check Lighthouse scores
   performanceResults.lighthouseScores.forEach(result => {
     Object.entries(result.scores).forEach(([category, score]) => {
@@ -426,15 +426,15 @@ function generatePerformanceReport() {
       }
     });
   });
-  
+
   // Display summary
   console.log(`\n${colors.cyan}Performance Health Score: ${healthScore}/100${colors.reset}`);
-  
+
   if (issues.length > 0) {
     console.log(`\n${colors.yellow}Issues found:${colors.reset}`);
     issues.forEach(issue => console.log(`  - ${issue}`));
   }
-  
+
   if (performanceResults.recommendations.length > 0) {
     console.log(`\n${colors.cyan}Recommendations:${colors.reset}`);
     performanceResults.recommendations.forEach(rec => {
@@ -444,7 +444,7 @@ function generatePerformanceReport() {
       });
     });
   }
-  
+
   // Save detailed report
   const report = {
     ...performanceResults,
@@ -454,12 +454,12 @@ function generatePerformanceReport() {
       timestamp: new Date().toISOString(),
     },
   };
-  
+
   const reportPath = path.join(process.cwd(), 'performance-baseline.json');
   fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
-  
+
   log(`\nDetailed report saved to: ${reportPath}`, 'info');
-  
+
   return healthScore >= 70; // Pass if score is 70 or above
 }
 
@@ -467,10 +467,10 @@ function generatePerformanceReport() {
 async function main() {
   console.log(`${colors.magenta}🚀 6FB Booking Frontend Performance Baseline Test${colors.reset}`);
   console.log(`${colors.magenta}${'='.repeat(60)}${colors.reset}\n`);
-  
+
   const args = process.argv.slice(2);
   const url = args[0] || 'http://localhost:3000';
-  
+
   if (args.includes('--help')) {
     console.log('Usage: node performance-baseline.js [url]');
     console.log('\nExamples:');
@@ -478,9 +478,9 @@ async function main() {
     console.log('  node performance-baseline.js https://your-app.onrender.com');
     process.exit(0);
   }
-  
+
   log(`Testing URL: ${url}`, 'info');
-  
+
   // Run tests
   const tests = [
     analyzePackageJson,
@@ -488,7 +488,7 @@ async function main() {
     () => measureLoadTime(url),
     () => checkLighthouse(url),
   ];
-  
+
   for (const test of tests) {
     const result = await test();
     if (!result) {
@@ -496,10 +496,10 @@ async function main() {
       break;
     }
   }
-  
+
   // Generate report
   const passed = generatePerformanceReport();
-  
+
   if (passed) {
     console.log(`\n${colors.green}✅ Performance baseline established successfully!${colors.reset}`);
     process.exit(0);

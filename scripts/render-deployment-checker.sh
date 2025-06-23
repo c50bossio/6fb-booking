@@ -40,16 +40,16 @@ fi
 check_service() {
     local service_name=$1
     print_status "Checking service: $service_name"
-    
+
     # Get service details
     RESPONSE=$(curl -s -H "Authorization: Bearer $RENDER_API_KEY" \
         "https://api.render.com/v1/services?name=$service_name")
-    
+
     if [ -z "$RESPONSE" ] || [ "$RESPONSE" = "[]" ]; then
         print_warning "Service '$service_name' not found"
         return
     fi
-    
+
     # Parse response (with or without jq)
     if command -v jq &> /dev/null; then
         SERVICE_ID=$(echo "$RESPONSE" | jq -r '.[0].id')
@@ -60,15 +60,15 @@ check_service() {
         SERVICE_ID=$(echo "$RESPONSE" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
         SERVICE_STATUS=$(echo "$RESPONSE" | grep -o '"state":"[^"]*"' | head -1 | cut -d'"' -f4)
     fi
-    
+
     echo "  ID: $SERVICE_ID"
     echo "  URL: $SERVICE_URL"
     echo "  Status: $SERVICE_STATUS"
-    
+
     # Get latest deployment
     DEPLOY_RESPONSE=$(curl -s -H "Authorization: Bearer $RENDER_API_KEY" \
         "https://api.render.com/v1/services/$SERVICE_ID/deploys?limit=1")
-    
+
     if command -v jq &> /dev/null; then
         DEPLOY_STATUS=$(echo "$DEPLOY_RESPONSE" | jq -r '.[0].status')
         DEPLOY_CREATED=$(echo "$DEPLOY_RESPONSE" | jq -r '.[0].createdAt')
@@ -76,14 +76,14 @@ check_service() {
     else
         DEPLOY_STATUS=$(echo "$DEPLOY_RESPONSE" | grep -o '"status":"[^"]*"' | head -1 | cut -d'"' -f4)
     fi
-    
+
     echo "  Latest Deploy: $DEPLOY_STATUS (ID: $DEPLOY_ID)"
     echo "  Created: $DEPLOY_CREATED"
-    
+
     # Check if service is healthy
     if [ "$SERVICE_STATUS" = "available" ] && [ "$DEPLOY_STATUS" = "live" ]; then
         print_success "Service is healthy and running!"
-        
+
         # Try to ping the service
         if [ -n "$SERVICE_URL" ]; then
             print_status "Pinging service..."
@@ -97,7 +97,7 @@ check_service() {
     else
         print_warning "Service may have issues"
     fi
-    
+
     echo ""
 }
 

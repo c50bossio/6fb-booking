@@ -280,7 +280,7 @@ Configure alerts for critical issues:
    ```bash
    # Check Node version
    node --version
-   
+
    # Clear cache and reinstall
    rm -rf node_modules .next
    npm ci
@@ -291,7 +291,7 @@ Configure alerts for critical issues:
    ```bash
    # Validate environment setup
    node scripts/check-env.js
-   
+
    # Test with production variables
    NODE_ENV=production npm run build
    ```
@@ -300,7 +300,7 @@ Configure alerts for critical issues:
    ```bash
    # Analyze bundle
    npm run build -- --analyze
-   
+
    # Check for large dependencies
    npm list --depth=0
    ```
@@ -311,7 +311,7 @@ Configure alerts for critical issues:
    ```bash
    # Test specific endpoint
    curl -I https://your-app.onrender.com/api/health
-   
+
    # Check with full headers
    curl -v https://your-app.onrender.com/
    ```
@@ -332,7 +332,7 @@ Configure alerts for critical issues:
    ```bash
    # Immediate rollback
    npm run rollback:execute
-   
+
    # Choose option 1 (Platform rollback)
    ```
 
@@ -340,7 +340,7 @@ Configure alerts for critical issues:
    ```bash
    # Check specific services
    node scripts/service-check.js
-   
+
    # Deploy hotfix if needed
    git checkout -b hotfix/emergency
    # Make minimal fix
@@ -351,7 +351,7 @@ Configure alerts for critical issues:
    ```bash
    # Enable maintenance mode
    # (Configure in your deployment platform)
-   
+
    # Scale up resources
    # Deploy performance fix
    ```

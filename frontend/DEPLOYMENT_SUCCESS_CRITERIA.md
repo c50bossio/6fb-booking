@@ -241,7 +241,7 @@ node scripts/rollback-plan.js --verify https://your-app-url.com
 
 - **DevOps Lead**: [Contact info]
 - **Frontend Lead**: [Contact info]
-- **Platform Support**: 
+- **Platform Support**:
   - Render: support@render.com
   - Vercel: support@vercel.com
   - Railway: team@railway.app

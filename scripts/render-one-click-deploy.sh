@@ -58,22 +58,22 @@ show_progress() {
 # Check prerequisites
 check_prerequisites() {
     print_status "Checking prerequisites..."
-    
+
     local missing_tools=()
-    
+
     # Check for required tools
     command -v git &> /dev/null || missing_tools+=("git")
     command -v curl &> /dev/null || missing_tools+=("curl")
     command -v node &> /dev/null || missing_tools+=("node")
     command -v npm &> /dev/null || missing_tools+=("npm")
     command -v python3 &> /dev/null || missing_tools+=("python3")
-    
+
     if [ ${#missing_tools[@]} -ne 0 ]; then
         print_error "Missing required tools: ${missing_tools[*]}"
         echo "Please install them before continuing."
         exit 1
     fi
-    
+
     # Check for Render API key
     if [ -z "$RENDER_API_KEY" ]; then
         print_warning "RENDER_API_KEY not set"
@@ -86,54 +86,54 @@ check_prerequisites() {
         read -p "Enter your Render API key: " RENDER_API_KEY
         export RENDER_API_KEY
     fi
-    
+
     # Validate API key
     if ! curl -s -H "Authorization: Bearer $RENDER_API_KEY" https://api.render.com/v1/owners > /dev/null 2>&1; then
         print_error "Invalid Render API key"
         exit 1
     fi
-    
+
     print_success "Prerequisites check passed"
 }
 
 # Get repository URL
 get_repo_url() {
     REPO_URL=$(git config --get remote.origin.url 2>/dev/null || echo "")
-    
+
     if [ -z "$REPO_URL" ]; then
         print_warning "Could not detect repository URL"
         read -p "Enter your GitHub repository URL: " REPO_URL
     fi
-    
+
     # Convert SSH to HTTPS
     if [[ "$REPO_URL" == git@github.com:* ]]; then
         REPO_URL=$(echo "$REPO_URL" | sed 's/git@github.com:/https:\/\/github.com\//')
     fi
-    
+
     # Remove .git suffix
     REPO_URL=${REPO_URL%.git}
-    
+
     print_success "Repository: $REPO_URL"
 }
 
 # Get owner ID
 get_owner_id() {
     print_status "Getting Render account details..."
-    
+
     OWNER_RESPONSE=$(curl -s -H "Authorization: Bearer $RENDER_API_KEY" https://api.render.com/v1/owners)
-    
+
     if command -v jq &> /dev/null; then
         OWNER_ID=$(echo "$OWNER_RESPONSE" | jq -r '.[0].owner.id')
         OWNER_NAME=$(echo "$OWNER_RESPONSE" | jq -r '.[0].owner.name')
     else
         OWNER_ID=$(echo "$OWNER_RESPONSE" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
     fi
-    
+
     if [ -z "$OWNER_ID" ] || [ "$OWNER_ID" = "null" ]; then
         print_error "Failed to get owner ID"
         exit 1
     fi
-    
+
     print_success "Account: ${OWNER_NAME:-$OWNER_ID}"
 }
 
@@ -145,13 +145,13 @@ deploy_service() {
     local start_command=$4
     local env_vars=$5
     local health_check_path=$6
-    
+
     print_status "Deploying $service_name..."
-    
+
     # Check if service exists
     SERVICE_CHECK=$(curl -s -H "Authorization: Bearer $RENDER_API_KEY" \
         "https://api.render.com/v1/services?name=$service_name")
-    
+
     if [ "$SERVICE_CHECK" != "[]" ]; then
         print_warning "Service $service_name already exists"
         if command -v jq &> /dev/null; then
@@ -182,28 +182,28 @@ deploy_service() {
 }
 EOF
 )
-        
+
         CREATE_RESPONSE=$(curl -s -X POST \
             -H "Authorization: Bearer $RENDER_API_KEY" \
             -H "Content-Type: application/json" \
             -d "$SERVICE_PAYLOAD" \
             https://api.render.com/v1/services)
-        
+
         if command -v jq &> /dev/null; then
             SERVICE_ID=$(echo "$CREATE_RESPONSE" | jq -r '.id')
         else
             SERVICE_ID=$(echo "$CREATE_RESPONSE" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
         fi
-        
+
         if [ -z "$SERVICE_ID" ] || [ "$SERVICE_ID" = "null" ]; then
             print_error "Failed to create $service_name"
             echo "$CREATE_RESPONSE"
             return 1
         fi
-        
+
         print_success "Created service: $service_name (ID: $SERVICE_ID)"
     fi
-    
+
     # Set environment variables
     if [ -n "$env_vars" ]; then
         print_status "Setting environment variables..."
@@ -213,7 +213,7 @@ EOF
             -d "{\"envVars\":$env_vars}" \
             "https://api.render.com/v1/services/$SERVICE_ID/env-vars" > /dev/null
     fi
-    
+
     # Store service ID for later use
     if [ "$service_name" = "sixfb-backend" ]; then
         BACKEND_ID=$SERVICE_ID
@@ -222,42 +222,42 @@ EOF
         FRONTEND_ID=$SERVICE_ID
         FRONTEND_URL="https://sixfb-frontend.onrender.com"
     fi
-    
+
     print_success "Service $service_name configured"
 }
 
 # Generate secure keys
 generate_keys() {
     print_status "Generating secure keys..."
-    
+
     # Generate JWT secret if not exists
     if [ -z "$JWT_SECRET" ]; then
         JWT_SECRET=$(python3 -c 'import secrets; print(secrets.token_urlsafe(64))')
     fi
-    
+
     # Generate database encryption key if not exists
     if [ -z "$DATABASE_ENCRYPTION_KEY" ]; then
         DATABASE_ENCRYPTION_KEY=$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')
     fi
-    
+
     print_success "Security keys generated"
 }
 
 # Main deployment flow
 main() {
     print_banner
-    
+
     # Step 1: Check prerequisites
     check_prerequisites
     get_repo_url
     get_owner_id
-    
+
     # Step 2: Generate security keys
     generate_keys
-    
+
     # Step 3: Prepare environment variables
     print_status "Preparing environment configuration..."
-    
+
     # Backend environment variables
     BACKEND_ENV_VARS='[
         {"key": "DATABASE_URL", "value": ""},
@@ -269,13 +269,13 @@ main() {
         {"key": "ENVIRONMENT", "value": "production"},
         {"key": "PYTHON_VERSION", "value": "3.11"}
     ]'
-    
+
     # Frontend environment variables
     FRONTEND_ENV_VARS='[
         {"key": "NEXT_PUBLIC_API_URL", "value": "https://sixfb-backend.onrender.com"},
         {"key": "NEXT_PUBLIC_APP_URL", "value": "https://sixfb-frontend.onrender.com"}
     ]'
-    
+
     # Step 4: Deploy Backend
     echo ""
     deploy_service \
@@ -285,7 +285,7 @@ main() {
         "cd backend && uvicorn main:app --host 0.0.0.0 --port \$PORT" \
         "$BACKEND_ENV_VARS" \
         "/health"
-    
+
     # Step 5: Deploy Frontend
     echo ""
     deploy_service \
@@ -295,7 +295,7 @@ main() {
         "cd frontend && npm start" \
         "$FRONTEND_ENV_VARS" \
         "/"
-    
+
     # Step 6: Final Summary
     echo ""
     echo -e "${CYAN}═══════════════════════════════════════════════════${NC}"
