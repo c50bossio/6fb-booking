@@ -180,12 +180,89 @@ export default function LandingPage() {
   return (
     <>
       <style jsx>{`
+        /* High contrast text overrides to prevent light gray issues */
         .stats-text {
+          color: #000000 !important;
+          font-weight: 600 !important;
+        }
+        .main-description {
+          color: #111827 !important;
+          font-weight: 500 !important;
+        }
+        /* Trust badge text */
+        .trust-badge-text {
+          color: #000000 !important;
+          font-weight: 600 !important;
+        }
+        /* Features section descriptions */
+        .features-description {
+          color: #111827 !important;
+          font-weight: 500 !important;
+        }
+        .feature-description {
+          color: #111827 !important;
+          font-weight: 500 !important;
+        }
+        /* Pricing section text */
+        .pricing-description {
           color: #000000 !important;
           font-weight: 500 !important;
         }
-        .main-description {
-          color: #1F2937 !important;
+        .plan-description {
+          color: #000000 !important;
+          font-weight: 500 !important;
+        }
+        .plan-period {
+          color: #111827 !important;
+          font-weight: 600 !important;
+        }
+        .feature-item {
+          color: #111827 !important;
+          font-weight: 500 !important;
+        }
+        /* How it works section */
+        .how-it-works-description {
+          color: #111827 !important;
+          font-weight: 500 !important;
+        }
+        .step-description {
+          color: #111827 !important;
+          font-weight: 500 !important;
+        }
+        /* Contact text */
+        .contact-text {
+          color: #111827 !important;
+          font-weight: 500 !important;
+        }
+        /* Header navigation text fixes */
+        .header-nav-link {
+          color: #111827 !important;
+          font-weight: 600 !important;
+        }
+        .header-nav-link:hover {
+          color: #000000 !important;
+        }
+        /* Footer text fixes */
+        .footer-text {
+          color: #D1D5DB !important;
+          font-weight: 500 !important;
+        }
+        .footer-link {
+          color: #E5E7EB !important;
+          font-weight: 500 !important;
+        }
+        .footer-link:hover {
+          color: #FFFFFF !important;
+        }
+        /* Brand tagline fix */
+        .brand-tagline {
+          color: #D1D5DB !important;
+          font-weight: 500 !important;
+        }
+        /* Additional footer content fixes */
+        .footer-copyright {
+          color: #D1D5DB !important;
+          font-weight: 500 !important;
         }
       `}</style>
       <div className="min-h-screen bg-gray-50">
@@ -217,11 +294,11 @@ export default function LandingPage() {
             <div className="flex items-center space-x-4">
               <Link
                 href="/app"
-                className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-semibold transition-colors"
+                className="header-nav-link transition-colors"
               >
                 Live Demo
               </Link>
-              <Link href="/login" className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium transition-colors">
+              <Link href="/login" className="header-nav-link transition-colors">
                 Sign In
               </Link>
               <Link
@@ -242,7 +319,7 @@ export default function LandingPage() {
           {/* Trust Badge */}
           <div className="inline-flex items-center bg-white/90 backdrop-blur-sm border border-slate-200/50 rounded-full px-6 py-3 mb-8 shadow-lg hover:shadow-xl transition-all duration-300">
             <ShieldCheckIcon className="h-4 w-4 text-emerald-500 mr-2" />
-            <span className="text-sm font-medium" style={{color: '#374151 !important'}}>Trusted by 1,200+ barbers nationwide</span>
+            <span className="text-sm font-medium trust-badge-text">Trusted by 1,200+ barbers nationwide</span>
             <div className="ml-2 w-2 h-2 bg-slate-500 rounded-full animate-pulse"></div>
           </div>
 
@@ -317,7 +394,7 @@ export default function LandingPage() {
                       <PlayIcon className="h-16 w-16 text-white" />
                     </div>
                     <p className="text-2xl font-bold mb-2">Demo: Automated Payout System</p>
-                    <p className="text-slate-300 mb-6">See how barbers save 5+ hours per week and increase earnings by 40%</p>
+                    <p className="text-white mb-6 font-medium">See how barbers save 5+ hours per week and increase earnings by 40%</p>
                     <Link
                       href="/app"
                       className="premium-button-success hover-lift"
@@ -343,7 +420,7 @@ export default function LandingPage() {
               Built for Barbers Who
               <span className="text-gradient"> Mean Business</span>
             </h2>
-            <p className="text-xl max-w-3xl mx-auto leading-relaxed" style={{color: '#4B5563 !important'}}>
+            <p className="text-xl max-w-3xl mx-auto leading-relaxed features-description">
               Every feature is designed to help you save time, make more money, and build the six-figure career you deserve.
             </p>
           </div>
@@ -362,7 +439,7 @@ export default function LandingPage() {
                   {feature.name}
                 </h3>
 
-                <p className="text-sm leading-relaxed" style={{color: '#4B5563 !important'}}>
+                <p className="text-sm leading-relaxed feature-description">
                   {feature.description}
                 </p>
               </div>
@@ -388,7 +465,7 @@ export default function LandingPage() {
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 tracking-tight">
               Join 1,200+ Successful Barbers
             </h2>
-            <p className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-white max-w-3xl mx-auto leading-relaxed">
               See why top barbers across the country trust 6FB Payouts to manage their business and earnings.
             </p>
           </div>
@@ -401,7 +478,7 @@ export default function LandingPage() {
                     <StarIcon key={i} className="h-5 w-5 text-yellow-400 fill-current" />
                   ))}
                 </div>
-                <blockquote className="text-white/90 mb-6 text-lg leading-relaxed">
+                <blockquote className="text-white mb-6 text-lg leading-relaxed font-medium">
                   "{testimonial.quote}"
                 </blockquote>
                 <div className="flex items-center">
@@ -410,7 +487,7 @@ export default function LandingPage() {
                   </div>
                   <div>
                     <div className="font-semibold text-white">{testimonial.name}</div>
-                    <div className="text-slate-400 text-sm">{testimonial.title}</div>
+                    <div className="text-slate-200 text-sm font-semibold">{testimonial.title}</div>
                   </div>
                 </div>
               </div>
@@ -421,22 +498,22 @@ export default function LandingPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             <div className="text-center glass-card-enhanced p-6 hover-lift">
               <div className="text-4xl font-bold text-white mb-2">$2.5M+</div>
-              <div className="text-slate-300 font-medium">Paid Out Monthly</div>
+              <div className="text-white font-medium">Paid Out Monthly</div>
               <div className="mt-3 w-10 h-1 bg-gradient-to-r from-teal-500 to-teal-600 rounded-full mx-auto"></div>
             </div>
             <div className="text-center glass-card-enhanced p-6 hover-lift">
               <div className="text-4xl font-bold text-white mb-2">45K+</div>
-              <div className="text-slate-300 font-medium">Appointments Tracked</div>
+              <div className="text-white font-medium">Appointments Tracked</div>
               <div className="mt-3 w-10 h-1 bg-gradient-to-r from-slate-400 to-slate-500 rounded-full mx-auto"></div>
             </div>
             <div className="text-center glass-card-enhanced p-6 hover-lift">
               <div className="text-4xl font-bold text-white mb-2">98%</div>
-              <div className="text-slate-300 font-medium">On-Time Payouts</div>
+              <div className="text-white font-medium">On-Time Payouts</div>
               <div className="mt-3 w-10 h-1 bg-gradient-to-r from-teal-500 to-teal-600 rounded-full mx-auto"></div>
             </div>
             <div className="text-center glass-card-enhanced p-6 hover-lift">
               <div className="text-4xl font-bold text-white mb-2">30 sec</div>
-              <div className="text-slate-300 font-medium">Instant Transfers</div>
+              <div className="text-white font-medium">Instant Transfers</div>
               <div className="mt-3 w-10 h-1 bg-gradient-to-r from-slate-400 to-slate-500 rounded-full mx-auto"></div>
             </div>
           </div>
@@ -450,7 +527,7 @@ export default function LandingPage() {
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Choose Your Plan
             </h2>
-            <p className="text-xl" style={{color: '#374151 !important'}}>
+            <p className="text-xl pricing-description">
               Start with a 14-day free trial. No credit card required.
             </p>
           </div>
@@ -473,10 +550,10 @@ export default function LandingPage() {
 
                 <div className="text-center mb-8">
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                  <p className="mb-4" style={{color: '#374151 !important'}}>{plan.description}</p>
+                  <p className="mb-4 plan-description">{plan.description}</p>
                   <div className="flex items-baseline justify-center">
                     <span className="text-4xl font-bold text-gray-900">{plan.price}</span>
-                    <span className="ml-1" style={{color: '#4B5563 !important'}}>{plan.period}</span>
+                    <span className="ml-1 plan-period">{plan.period}</span>
                   </div>
                 </div>
 
@@ -484,7 +561,7 @@ export default function LandingPage() {
                   {plan.features.map((feature, index) => (
                     <li key={index} className="flex items-start">
                       <CheckIcon className="h-5 w-5 text-teal-600 dark:text-teal-400 mt-1 mr-3 flex-shrink-0" />
-                      <span style={{color: '#4B5563 !important'}}>{feature}</span>
+                      <span className="feature-item">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -504,8 +581,8 @@ export default function LandingPage() {
           </div>
 
           <div className="text-center mt-12">
-            <p className="text-gray-700 dark:text-gray-300">
-              Questions? <Link href="#contact" className="text-slate-700 dark:text-slate-400 hover:underline">Contact our sales team</Link>
+            <p className="contact-text">
+              Questions? <Link href="#contact" className="header-nav-link hover:underline">Contact our sales team</Link>
             </p>
           </div>
         </div>
@@ -518,7 +595,7 @@ export default function LandingPage() {
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Simple Setup, Powerful Results
             </h2>
-            <p className="text-xl max-w-2xl mx-auto" style={{color: '#4B5563 !important'}}>
+            <p className="text-xl max-w-2xl mx-auto how-it-works-description">
               Get started in minutes and see immediate impact on your business
             </p>
           </div>
@@ -529,21 +606,21 @@ export default function LandingPage() {
                 1
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Create Your Account</h3>
-              <p style={{color: '#4B5563 !important'}}>Sign up and connect your bank account with Stripe Express in under 5 minutes</p>
+              <p className="step-description">Sign up and connect your bank account with Stripe Express in under 5 minutes</p>
             </div>
             <div className="text-center">
               <div className="bg-slate-700 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-lg font-bold">
                 2
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Set Your Rates</h3>
-              <p style={{color: '#4B5563 !important'}}>Choose your compensation model and customize rates for different services and clients</p>
+              <p className="step-description">Choose your compensation model and customize rates for different services and clients</p>
             </div>
             <div className="text-center">
               <div className="bg-slate-700 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-lg font-bold">
                 3
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Start Earning</h3>
-              <p style={{color: '#4B5563 !important'}}>Track appointments, see real-time earnings, and get paid automatically on your schedule</p>
+              <p className="step-description">Track appointments, see real-time earnings, and get paid automatically on your schedule</p>
             </div>
           </div>
         </div>
@@ -555,7 +632,7 @@ export default function LandingPage() {
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             Ready to Build Your Six-Figure Career?
           </h2>
-          <p className="text-xl text-slate-300 mb-8">
+          <p className="text-xl text-white mb-8">
             Join 1,200+ barbers using our platform to transform their business and income.
           </p>
 
@@ -578,7 +655,7 @@ export default function LandingPage() {
             </div>
           </form>
 
-          <p className="text-slate-400 text-sm mt-4">
+          <p className="text-slate-200 text-sm mt-4 font-medium">
             14-day free trial • No credit card required • Cancel anytime
           </p>
         </div>
@@ -593,41 +670,41 @@ export default function LandingPage() {
                 <CurrencyDollarIcon className="h-6 w-6 text-teal-500" />
                 <span className="ml-2 text-xl font-bold text-white">6FB Payouts</span>
               </div>
-              <p className="text-gray-500 dark:text-gray-400">
+              <p className="brand-tagline">
                 Automated payout solutions for modern barbers.
               </p>
             </div>
 
             <div>
               <h3 className="text-white font-semibold mb-4">Product</h3>
-              <ul className="space-y-2 text-gray-500 dark:text-gray-400">
-                <li><Link href="#features" className="hover:text-gray-300 dark:hover:text-white transition-colors">Features</Link></li>
-                <li><Link href="#pricing" className="hover:text-gray-300 dark:hover:text-white transition-colors">Pricing</Link></li>
-                <li><Link href="/app" className="hover:text-gray-300 dark:hover:text-white transition-colors">Live Demo</Link></li>
+              <ul className="space-y-2">
+                <li><Link href="#features" className="footer-link transition-colors">Features</Link></li>
+                <li><Link href="#pricing" className="footer-link transition-colors">Pricing</Link></li>
+                <li><Link href="/app" className="footer-link transition-colors">Live Demo</Link></li>
               </ul>
             </div>
 
             <div>
               <h3 className="text-white font-semibold mb-4">Company</h3>
-              <ul className="space-y-2 text-gray-500 dark:text-gray-400">
-                <li><Link href="/about" className="hover:text-gray-300 dark:hover:text-white transition-colors">About</Link></li>
-                <li><Link href="/contact" className="hover:text-gray-300 dark:hover:text-white transition-colors">Contact</Link></li>
-                <li><Link href="/support" className="hover:text-gray-300 dark:hover:text-white transition-colors">Support</Link></li>
+              <ul className="space-y-2">
+                <li><Link href="/about" className="footer-link transition-colors">About</Link></li>
+                <li><Link href="/contact" className="footer-link transition-colors">Contact</Link></li>
+                <li><Link href="/support" className="footer-link transition-colors">Support</Link></li>
               </ul>
             </div>
 
             <div>
               <h3 className="text-white font-semibold mb-4">Legal</h3>
-              <ul className="space-y-2 text-gray-500 dark:text-gray-400">
-                <li><Link href="/privacy" className="hover:text-gray-300 dark:hover:text-white transition-colors">Privacy</Link></li>
-                <li><Link href="/terms" className="hover:text-gray-300 dark:hover:text-white transition-colors">Terms</Link></li>
-                <li><Link href="/security" className="hover:text-gray-300 dark:hover:text-white transition-colors">Security</Link></li>
+              <ul className="space-y-2">
+                <li><Link href="/privacy" className="footer-link transition-colors">Privacy</Link></li>
+                <li><Link href="/terms" className="footer-link transition-colors">Terms</Link></li>
+                <li><Link href="/security" className="footer-link transition-colors">Security</Link></li>
               </ul>
             </div>
           </div>
 
-          <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-500 dark:text-gray-400">
-            <p>&copy; 2024 6FB Payouts. All rights reserved.</p>
+          <div className="border-t border-gray-800 mt-12 pt-8 text-center">
+            <p className="footer-copyright">&copy; 2024 6FB Payouts. All rights reserved.</p>
           </div>
         </div>
       </footer>
