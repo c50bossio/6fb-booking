@@ -338,6 +338,54 @@ async def get_current_user_info(current_user: User = Depends(get_current_user)):
     return current_user
 
 
+@router.post("/login", response_model=Token)
+async def login_endpoint(
+    request: Request,
+    credentials: UserLogin,
+    db: Session = Depends(get_db),
+):
+    """Login endpoint - alternative to /token for better API consistency"""
+    # Convert to OAuth2 format and call the token endpoint
+    form_data = OAuth2PasswordRequestForm(
+        username=credentials.email,
+        password=credentials.password,
+        scope="",
+        client_id=None,
+        client_secret=None,
+    )
+    return await login(request, form_data, db)
+
+
+@router.post("/refresh", response_model=Token)
+async def refresh_token(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Refresh access token"""
+    # Create new access token
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": current_user.email}, expires_delta=access_token_expires
+    )
+
+    # Get user permissions
+    rbac = RBACService(db)
+    permissions = rbac.get_user_permissions(current_user)
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": current_user.id,
+            "email": current_user.email,
+            "full_name": f"{current_user.first_name} {current_user.last_name}",
+            "role": current_user.role,
+            "permissions": permissions,
+            "primary_location_id": current_user.primary_location_id,
+        },
+    }
+
+
 @router.post("/logout")
 async def logout(
     current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
