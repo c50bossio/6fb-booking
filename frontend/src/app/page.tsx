@@ -295,10 +295,11 @@ export default function LandingPage() {
               <Link
                 href="/app"
                 className="header-nav-link transition-colors"
+                style={{color: '#111827 !important', fontWeight: '600 !important'}}
               >
                 Live Demo
               </Link>
-              <Link href="/login" className="header-nav-link transition-colors">
+              <Link href="/login" className="header-nav-link transition-colors" style={{color: '#111827 !important', fontWeight: '600 !important'}}>
                 Sign In
               </Link>
               <Link
@@ -439,7 +440,7 @@ export default function LandingPage() {
                   {feature.name}
                 </h3>
 
-                <p className="text-sm leading-relaxed feature-description">
+                <p className="feature-description" style={{color: '#111827 !important', fontWeight: '500 !important'}}>
                   {feature.description}
                 </p>
               </div>
@@ -561,7 +562,7 @@ export default function LandingPage() {
                   {plan.features.map((feature, index) => (
                     <li key={index} className="flex items-start">
                       <CheckIcon className="h-5 w-5 text-teal-600 dark:text-teal-400 mt-1 mr-3 flex-shrink-0" />
-                      <span className="feature-item">{feature}</span>
+                      <span className="feature-item" style={{color: '#111827 !important', fontWeight: '500 !important'}}>{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -606,21 +607,21 @@ export default function LandingPage() {
                 1
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Create Your Account</h3>
-              <p className="step-description">Sign up and connect your bank account with Stripe Express in under 5 minutes</p>
+              <p className="step-description" style={{color: '#111827 !important', fontWeight: '500 !important'}}>Sign up and connect your bank account with Stripe Express in under 5 minutes</p>
             </div>
             <div className="text-center">
               <div className="bg-slate-700 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-lg font-bold">
                 2
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Set Your Rates</h3>
-              <p className="step-description">Choose your compensation model and customize rates for different services and clients</p>
+              <p className="step-description" style={{color: '#111827 !important', fontWeight: '500 !important'}}>Choose your compensation model and customize rates for different services and clients</p>
             </div>
             <div className="text-center">
               <div className="bg-slate-700 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-lg font-bold">
                 3
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Start Earning</h3>
-              <p className="step-description">Track appointments, see real-time earnings, and get paid automatically on your schedule</p>
+              <p className="step-description" style={{color: '#111827 !important', fontWeight: '500 !important'}}>Track appointments, see real-time earnings, and get paid automatically on your schedule</p>
             </div>
           </div>
         </div>
