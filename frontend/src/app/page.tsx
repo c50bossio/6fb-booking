@@ -180,7 +180,7 @@ export default function LandingPage() {
   return (
     <>
       <style jsx>{`
-        /* High contrast text overrides to prevent light gray issues */
+        /* High contrast text overrides to prevent light gray issues - v2 */
         .stats-text {
           color: #000000 !important;
           font-weight: 600 !important;
