@@ -77,3 +77,5 @@ httptools==0.6.4  # HTTP parsing for uvicorn
 uvloop==0.21.0  # High-performance event loop
 websockets==14.1  # WebSocket support
 watchfiles==1.0.3  # File watching for development
+
+# Deployment trigger - Updated: 2025-06-23 14:30:00 UTC
