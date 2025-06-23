@@ -1,0 +1,86 @@
+[
+  {
+    "endpoint": "/docs",
+    "description": "API Documentation",
+    "status": 200,
+    "success": true
+  },
+  {
+    "endpoint": "/openapi.json",
+    "description": "OpenAPI Schema",
+    "status": 200,
+    "success": true
+  },
+  {
+    "endpoint": "/health",
+    "description": "Health Check",
+    "status": 200,
+    "success": true
+  },
+  {
+    "endpoint": "/api/v1/health",
+    "description": "Health Check v1",
+    "status": 404,
+    "success": false
+  },
+  {
+    "endpoint": "/api/health",
+    "description": "Health Check (alt)",
+    "status": 404,
+    "success": false
+  },
+  {
+    "endpoint": "/api/v1/services",
+    "description": "Services List",
+    "status": 404,
+    "success": false
+  },
+  {
+    "endpoint": "/api/v1/services/categories",
+    "description": "Service Categories",
+    "status": 404,
+    "success": false
+  },
+  {
+    "endpoint": "/api/v1/booking-public/shops/1/barbers",
+    "description": "Barbers for Shop",
+    "status": 404,
+    "success": false
+  },
+  {
+    "endpoint": "/api/v1/booking-public/barbers/1/services",
+    "description": "Services for Barber",
+    "status": 404,
+    "success": false
+  },
+  {
+    "endpoint": "/api/v1/booking/public/shops/1/barbers",
+    "description": "Booking Public (alt)",
+    "status": 404,
+    "success": false
+  },
+  {
+    "endpoint": "/api/v1/bookings/public/shops/1/barbers",
+    "description": "Bookings Public",
+    "status": 404,
+    "success": false
+  },
+  {
+    "endpoint": "/",
+    "description": "Root",
+    "status": 200,
+    "success": true
+  },
+  {
+    "endpoint": "/api",
+    "description": "API Root",
+    "status": 404,
+    "success": false
+  },
+  {
+    "endpoint": "/api/v1",
+    "description": "API v1 Root",
+    "status": 404,
+    "success": false
+  }
+]

@@ -120,7 +120,7 @@ async def get_demo_todays_appointments(db: Session = Depends(get_db)):
         appointments.append(
             {
                 "id": 1000 + i,
-                "trafft_id": f"tfr_app_{12345 + i}",
+                #                 "trafft_id": f"tfr_app_{12345 + i}",
                 "date": today.isoformat(),
                 "time": time_slot,
                 "status": status,
