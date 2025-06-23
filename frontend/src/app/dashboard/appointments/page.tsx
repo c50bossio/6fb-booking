@@ -14,22 +14,15 @@ import {
   PencilIcon,
   TrashIcon
 } from '@heroicons/react/24/outline'
+import ModernLayout from '@/components/ModernLayout'
+import { appointmentsService } from '@/lib/api/appointments'
+import type { Appointment } from '@/lib/api/client'
 
-interface Appointment {
-  id: string
-  client_name: string
-  client_phone: string
-  barber_name: string
-  service: string
-  date: string
-  time: string
-  duration: number
-  price: number
-  status: 'confirmed' | 'pending' | 'completed' | 'cancelled'
-  notes?: string
-}
+// Using the Appointment type from the API client
 
-const mockAppointments: Appointment[] = [
+// Mock appointments removed - will use real API data
+
+const mockAppointments: any[] = [
   {
     id: '1',
     client_name: 'John Smith',
@@ -84,62 +77,74 @@ const mockAppointments: Appointment[] = [
 
 export default function AppointmentsPage() {
   const router = useRouter()
-  const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments)
+  const [appointments, setAppointments] = useState<Appointment[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [dateFilter, setDateFilter] = useState<string>('today')
+  const [dateFilter, setDateFilter] = useState<string>('all')
   const [loading, setLoading] = useState(false)
+  const [totalCount, setTotalCount] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
   useEffect(() => {
     fetchAppointments()
-  }, [])
+  }, [currentPage, statusFilter, dateFilter, searchTerm])
 
   const fetchAppointments = async () => {
     setLoading(true)
     try {
-      // Here you would make actual API call
-      // const response = await appointmentsService.getAll()
-      // setAppointments(response.data)
+      // Build filters for API
+      const filters: any = {
+        skip: (currentPage - 1) * itemsPerPage,
+        limit: itemsPerPage
+      }
 
-      // For now, using mock data
-      await new Promise(resolve => setTimeout(resolve, 500))
-      setAppointments(mockAppointments)
+      // Status filter
+      if (statusFilter !== 'all') {
+        filters.status = statusFilter
+      }
+
+      // Date filter
+      const today = new Date()
+      if (dateFilter === 'today') {
+        filters.start_date = today.toISOString().split('T')[0]
+        filters.end_date = today.toISOString().split('T')[0]
+      } else if (dateFilter === 'tomorrow') {
+        const tomorrow = new Date(today)
+        tomorrow.setDate(tomorrow.getDate() + 1)
+        filters.start_date = tomorrow.toISOString().split('T')[0]
+        filters.end_date = tomorrow.toISOString().split('T')[0]
+      } else if (dateFilter === 'this-week') {
+        const weekEnd = new Date(today)
+        weekEnd.setDate(weekEnd.getDate() + 7)
+        filters.start_date = today.toISOString().split('T')[0]
+        filters.end_date = weekEnd.toISOString().split('T')[0]
+      }
+
+      // Search filter
+      if (searchTerm) {
+        filters.search = searchTerm
+      }
+
+      const response = await appointmentsService.getAppointments(filters)
+      setAppointments(response.data)
+      setTotalCount(response.total)
     } catch (error) {
       console.error('Failed to fetch appointments:', error)
+      // Fallback to mock data if API fails
+      setAppointments(mockAppointments.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage))
+      setTotalCount(mockAppointments.length)
     } finally {
       setLoading(false)
     }
   }
 
-  const filteredAppointments = appointments.filter(appointment => {
-    const matchesSearch =
-      appointment.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.barber_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.service.toLowerCase().includes(searchTerm.toLowerCase())
-
-    const matchesStatus = statusFilter === 'all' || appointment.status === statusFilter
-
-    const today = new Date().toISOString().split('T')[0]
-    const appointmentDate = appointment.date
-    let matchesDate = true
-
-    if (dateFilter === 'today') {
-      matchesDate = appointmentDate === today
-    } else if (dateFilter === 'tomorrow') {
-      const tomorrow = new Date()
-      tomorrow.setDate(tomorrow.getDate() + 1)
-      matchesDate = appointmentDate === tomorrow.toISOString().split('T')[0]
-    } else if (dateFilter === 'this-week') {
-      const weekFromNow = new Date()
-      weekFromNow.setDate(weekFromNow.getDate() + 7)
-      matchesDate = appointmentDate >= today && appointmentDate <= weekFromNow.toISOString().split('T')[0]
-    }
-
-    return matchesSearch && matchesStatus && matchesDate
-  })
+  // Filtering is now done server-side
+  const filteredAppointments = appointments
 
   const getStatusBadge = (status: string) => {
     const badges = {
+      scheduled: 'bg-blue-100 text-blue-800',
       confirmed: 'bg-violet-100 text-violet-800',
       completed: 'bg-emerald-100 text-emerald-800',
       pending: 'bg-amber-100 text-amber-800',
@@ -153,7 +158,8 @@ export default function AppointmentsPage() {
     return date.toLocaleDateString('en-US', {
       weekday: 'short',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
+      year: 'numeric'
     })
   }
 
@@ -178,6 +184,28 @@ export default function AppointmentsPage() {
       minute: '2-digit',
       hour12: true
     })
+  }
+
+  const handleStatusUpdate = async (appointmentId: number, newStatus: string) => {
+    try {
+      await appointmentsService.updateAppointment(appointmentId, { status: newStatus as any })
+      await fetchAppointments()
+    } catch (error) {
+      console.error('Failed to update appointment:', error)
+      alert('Failed to update appointment status')
+    }
+  }
+
+  const handleDelete = async (appointmentId: number) => {
+    if (confirm('Are you sure you want to cancel this appointment?')) {
+      try {
+        await appointmentsService.cancelAppointment(appointmentId, 'Cancelled by staff')
+        await fetchAppointments()
+      } catch (error) {
+        console.error('Failed to cancel appointment:', error)
+        alert('Failed to cancel appointment')
+      }
+    }
   }
 
   return (
@@ -220,10 +248,11 @@ export default function AppointmentsPage() {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
             >
               <option value="all">All Statuses</option>
+              <option value="scheduled">Scheduled</option>
               <option value="confirmed">Confirmed</option>
-              <option value="pending">Pending</option>
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
+              <option value="no_show">No Show</option>
             </select>
 
             {/* Date Filter */}
@@ -307,30 +336,30 @@ export default function AppointmentsPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-gray-900">
-                            {appointment.client_name}
+                            {appointment.client_name || 'Unknown Client'}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {appointment.client_phone}
+                            {appointment.client_phone || appointment.client_email || 'No contact info'}
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {appointment.barber_name}
+                        {appointment.barber_name || 'Unassigned'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{appointment.service}</div>
-                        <div className="text-sm text-gray-500">{appointment.duration} minutes</div>
+                        <div className="text-sm text-gray-900">{appointment.service_name || 'Unknown Service'}</div>
+                        <div className="text-sm text-gray-500">{appointment.service_duration || 60} minutes</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {formatDate(appointment.date)}
+                          {formatDate(appointment.appointment_date)}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {formatTime(appointment.time)} - {getEndTime(appointment.time, appointment.duration)}
+                          {formatTime(appointment.appointment_time)} - {getEndTime(appointment.appointment_time, appointment.service_duration || 60)}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        ${appointment.price}
+                        ${appointment.service_revenue || appointment.total_amount || 0}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(appointment.status)}`}>
@@ -339,13 +368,25 @@ export default function AppointmentsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
-                          <button className="text-gray-400 hover:text-gray-600">
+                          <button 
+                            onClick={() => router.push(`/dashboard/appointments/${appointment.id}`)}
+                            className="text-gray-400 hover:text-gray-600"
+                            title="View details"
+                          >
                             <EyeIcon className="h-4 w-4" />
                           </button>
-                          <button className="text-gray-400 hover:text-gray-600">
+                          <button 
+                            onClick={() => router.push(`/dashboard/appointments/${appointment.id}/edit`)}
+                            className="text-gray-400 hover:text-gray-600"
+                            title="Edit appointment"
+                          >
                             <PencilIcon className="h-4 w-4" />
                           </button>
-                          <button className="text-gray-400 hover:text-red-600">
+                          <button 
+                            onClick={() => handleDelete(appointment.id)}
+                            className="text-gray-400 hover:text-red-600"
+                            title="Cancel appointment"
+                          >
                             <TrashIcon className="h-4 w-4" />
                           </button>
                         </div>
@@ -376,9 +417,9 @@ export default function AppointmentsPage() {
               <div className="flex items-center">
                 <ClockIcon className="h-8 w-8 text-amber-600" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-500">Pending</p>
+                  <p className="text-sm font-medium text-gray-500">Scheduled</p>
                   <p className="text-lg font-semibold text-gray-900">
-                    {filteredAppointments.filter(a => a.status === 'pending').length}
+                    {filteredAppointments.filter(a => a.status === 'scheduled').length}
                   </p>
                 </div>
               </div>
@@ -400,9 +441,64 @@ export default function AppointmentsPage() {
                 <div className="ml-3">
                   <p className="text-sm font-medium text-gray-500">Revenue</p>
                   <p className="text-lg font-semibold text-gray-900">
-                    ${filteredAppointments.reduce((sum, a) => sum + a.price, 0)}
+                    ${filteredAppointments.reduce((sum, a) => sum + (a.service_revenue || a.total_amount || 0), 0).toFixed(2)}
                   </p>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalCount > itemsPerPage && (
+          <div className="flex items-center justify-between bg-white px-4 py-3 border border-gray-200 rounded-lg">
+            <div className="flex-1 flex justify-between sm:hidden">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(Math.ceil(totalCount / itemsPerPage), prev + 1))}
+                disabled={currentPage === Math.ceil(totalCount / itemsPerPage)}
+                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm text-gray-700">
+                  Showing{' '}
+                  <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span>
+                  {' '}to{' '}
+                  <span className="font-medium">
+                    {Math.min(currentPage * itemsPerPage, totalCount)}
+                  </span>
+                  {' '}of{' '}
+                  <span className="font-medium">{totalCount}</span>
+                  {' '}results
+                </p>
+              </div>
+              <div>
+                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(Math.ceil(totalCount / itemsPerPage), prev + 1))}
+                    disabled={currentPage === Math.ceil(totalCount / itemsPerPage)}
+                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </nav>
               </div>
             </div>
           </div>

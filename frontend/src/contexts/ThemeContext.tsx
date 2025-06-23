@@ -51,12 +51,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setTheme(prev => prev === 'light' ? 'dark' : 'light')
   }
 
-  if (!mounted) {
-    return null
-  }
+  // Always render children, but use a default theme during SSR
+  const value = mounted ? { theme, toggleTheme, setTheme } : { theme: 'dark' as Theme, toggleTheme: () => {}, setTheme: () => {} }
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   )
@@ -65,7 +64,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 export function useTheme() {
   const context = useContext(ThemeContext)
   if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider')
+    // Return a default value during SSR instead of throwing
+    return { theme: 'dark' as Theme, toggleTheme: () => {}, setTheme: () => {} }
   }
   return context
 }

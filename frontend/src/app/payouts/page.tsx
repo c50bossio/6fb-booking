@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   BanknotesIcon,
   CurrencyDollarIcon,
@@ -16,9 +16,12 @@ import {
   UserIcon,
   MagnifyingGlassIcon,
   FunnelIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  ArrowPathIcon,
+  PlusIcon
 } from '@heroicons/react/24/outline'
-import axios from 'axios'
+import apiClient from '@/lib/api/client'
+import { barbersService } from '@/lib/api/barbers'
 
 interface Payout {
   id: string
@@ -47,26 +50,34 @@ interface PayoutStats {
 
 export default function PayoutsPage() {
   const [payouts, setPayouts] = useState<Payout[]>([])
+  const [barbers, setBarbers] = useState<any[]>([])
   const [stats, setStats] = useState<PayoutStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [filterMethod, setFilterMethod] = useState<string>('all')
+  const [showCreatePayout, setShowCreatePayout] = useState(false)
+  const [payoutForm, setPayoutForm] = useState({
+    barber_id: '',
+    amount: '',
+    method: 'stripe',
+    description: ''
+  })
 
   useEffect(() => {
-    fetchPayouts()
+    fetchData()
   }, [])
 
-  const fetchPayouts = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true)
-      const token = localStorage.getItem('access_token')
+      
+      // Fetch barbers
+      const barbersResponse = await barbersService.getBarbers()
+      setBarbers(barbersResponse.data || [])
 
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payouts`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-
+      // Fetch payouts
+      const response = await apiClient.get('/payouts')
       setPayouts(response.data.payouts || [])
       setStats(response.data.stats || {
         total_pending: 0,
@@ -135,13 +146,9 @@ export default function PayoutsPage() {
 
   const handleProcessPayout = async (payoutId: string) => {
     try {
-      const token = localStorage.getItem('access_token')
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payouts/${payoutId}/process`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
+      await apiClient.post(`/payouts/${payoutId}/process`
       )
-      fetchPayouts()
+      fetchData()
     } catch (error) {
       console.error('Failed to process payout:', error)
     }
@@ -149,15 +156,39 @@ export default function PayoutsPage() {
 
   const handleCancelPayout = async (payoutId: string) => {
     try {
-      const token = localStorage.getItem('access_token')
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payouts/${payoutId}/cancel`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      fetchPayouts()
+      await apiClient.post(`/payouts/${payoutId}/cancel`)
+      fetchData()
     } catch (error) {
       console.error('Failed to cancel payout:', error)
+    }
+  }
+
+  const handleCreatePayout = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      await apiClient.post('/barbers/payout', {
+        barber_id: parseInt(payoutForm.barber_id),
+        amount: parseFloat(payoutForm.amount),
+        method: payoutForm.method,
+        description: payoutForm.description
+      })
+
+      // Reset form
+      setPayoutForm({
+        barber_id: '',
+        amount: '',
+        method: 'stripe',
+        description: ''
+      })
+      setShowCreatePayout(false)
+      
+      // Refresh data
+      fetchData()
+      
+      alert(`Payout of $${payoutForm.amount} initiated successfully!`)
+    } catch (error: any) {
+      console.error('Failed to create payout:', error)
+      alert(`Failed to create payout: ${error.response?.data?.detail || error.message}`)
     }
   }
 
@@ -274,9 +305,12 @@ export default function PayoutsPage() {
               <span>Export</span>
             </button>
 
-            <button className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg font-medium hover:from-violet-700 hover:to-purple-700 transition-all flex items-center space-x-2">
-              <PlayIcon className="h-5 w-5" />
-              <span>Process Pending</span>
+            <button
+              onClick={() => setShowCreatePayout(true)}
+              className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg font-medium hover:from-violet-700 hover:to-purple-700 transition-all flex items-center space-x-2"
+            >
+              <PlusIcon className="h-5 w-5" />
+              <span>Create Payout</span>
             </button>
           </div>
         </div>
@@ -425,6 +459,109 @@ export default function PayoutsPage() {
             </div>
           )}
         </div>
+
+        {/* Create Payout Modal */}
+        {showCreatePayout && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-md w-full">
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-gray-900">Create Manual Payout</h2>
+                  <button
+                    onClick={() => setShowCreatePayout(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <XCircleIcon className="h-6 w-6" />
+                  </button>
+                </div>
+              </div>
+
+              <form onSubmit={handleCreatePayout} className="p-6">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Barber
+                    </label>
+                    <select
+                      required
+                      value={payoutForm.barber_id}
+                      onChange={(e) => setPayoutForm({...payoutForm, barber_id: e.target.value})}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                    >
+                      <option value="">Select a barber</option>
+                      {barbers.filter(b => b.payment_model?.stripe_connect_account_id).map(barber => (
+                        <option key={barber.id} value={barber.id}>
+                          {barber.first_name} {barber.last_name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Amount ($)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      required
+                      value={payoutForm.amount}
+                      onChange={(e) => setPayoutForm({...payoutForm, amount: e.target.value})}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Method
+                    </label>
+                    <select
+                      value={payoutForm.method}
+                      onChange={(e) => setPayoutForm({...payoutForm, method: e.target.value})}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                    >
+                      <option value="stripe">Stripe</option>
+                      <option value="square">Square</option>
+                      <option value="tremendous">Tremendous</option>
+                      <option value="manual">Manual</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description (Optional)
+                    </label>
+                    <textarea
+                      value={payoutForm.description}
+                      onChange={(e) => setPayoutForm({...payoutForm, description: e.target.value})}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                      rows={3}
+                      placeholder="Add any notes..."
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                  <button
+                    type="button"
+                    onClick={() => setShowCreatePayout(false)}
+                    className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg hover:from-violet-700 hover:to-purple-700"
+                  >
+                    Create Payout
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
