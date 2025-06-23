@@ -12,12 +12,14 @@ from passlib.context import CryptContext
 import secrets
 import smtplib
 import logging
+import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 from config.database import get_db
 from models.user import User
 from services.rbac_service import RBACService
+from services.email_service import email_service
 from config.settings import settings
 from pydantic import BaseModel, EmailStr
 from utils.security import (
@@ -26,16 +28,17 @@ from utils.security import (
     get_client_ip,
 )
 from utils.logging import log_user_action
+from utils.secure_logging import get_secure_logger, log_security_event
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+logger = get_secure_logger(__name__)
 
 # Security
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
 
 # JWT settings
-SECRET_KEY = settings.JWT_SECRET_KEY
+SECRET_KEY = settings.JWT_SECRET_KEY.get_secret_value()
 ALGORITHM = settings.JWT_ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
@@ -71,6 +74,11 @@ class UserCreate(BaseModel):
     last_name: str
     role: str = "barber"
     primary_location_id: Optional[int] = None
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
 
 
 class UserResponse(BaseModel):
@@ -393,31 +401,17 @@ async def forgot_password(
     # Create reset token
     reset_token = create_reset_token(user.email)
 
-    # Create reset URL (in production, use proper frontend URL)
-    reset_url = f"http://localhost:3000/reset-password?token={reset_token}"
+    # Send password reset email using proper email service
+    email_sent = email_service.send_password_reset(
+        db=db,
+        to_email=user.email,
+        reset_token=reset_token,
+        user_name=user.first_name
+    )
 
-    # Email content
-    subject = "6FB Platform - Password Reset Request"
-    body = f"""
-    <html>
-    <body>
-        <h2>Password Reset Request</h2>
-        <p>Hello {user.first_name},</p>
-        <p>You have requested to reset your password for your 6FB Platform account.</p>
-        <p>Click the link below to reset your password:</p>
-        <p><a href="{reset_url}" style="background-color: #4F46E5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reset Password</a></p>
-        <p>This link will expire in 30 minutes.</p>
-        <p>If you did not request this password reset, please ignore this email.</p>
-        <br>
-        <p>Best regards,<br>The 6FB Platform Team</p>
-    </body>
-    </html>
-    """
-
-    # Send email
-    email_sent = send_email(user.email, subject, body)
-
-    if not email_sent:
+    # In development, we always return success even if email fails
+    environment = os.getenv("ENVIRONMENT", "development").lower()
+    if not email_sent and environment == "production":
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to send password reset email",
@@ -558,4 +552,62 @@ async def verify_magic_token(token: str, db: Session = Depends(get_db)):
     except jwt.PyJWTError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid magic link"
+        )
+
+
+@router.post("/reset-password")
+async def reset_password(
+    request: ResetPasswordRequest, db: Session = Depends(get_db)
+):
+    """Reset password using token"""
+    try:
+        # Decode and validate the reset token
+        payload = jwt.decode(request.token, SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload.get("sub")
+        token_type = payload.get("type")
+
+        if not email or token_type != "password_reset":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid or expired reset token",
+            )
+
+        user = db.query(User).filter(User.email == email).first()
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+            )
+
+        if not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="User account is disabled"
+            )
+
+        # Validate new password strength
+        is_valid, error_msg = validate_password_strength(request.new_password)
+        if not is_valid:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error_msg)
+
+        # Update password
+        user.hashed_password = get_password_hash(request.new_password)
+        user.updated_at = datetime.utcnow()
+        db.commit()
+
+        # Log password reset
+        log_user_action(
+            action="password_reset_completed",
+            user_id=user.id,
+            details={"email": user.email},
+        )
+
+        return {"message": "Password has been reset successfully"}
+
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password reset token has expired. Please request a new reset link.",
+        )
+    except jwt.PyJWTError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid reset token"
         )

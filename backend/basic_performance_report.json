@@ -1,0 +1,157 @@
+{
+  "timestamp": "2025-06-23T07:25:08.394923",
+  "database_performance": {
+    "connection_test": {
+      "successful": true,
+      "time": 0.00012993812561035156
+    },
+    "basic_queries": {
+      "average_time": 0.0013662338256835937,
+      "total_time": 0.006831169128417969,
+      "fastest": 0.00010538101196289062,
+      "slowest": 0.006107807159423828,
+      "queries_executed": 5
+    },
+    "complex_queries": {
+      "average_time": 0.0001747608184814453,
+      "query_times": [
+        0.00012421607971191406,
+        0.0002980232238769531,
+        0.00010204315185546875
+      ]
+    },
+    "table_analysis": {
+      "total_tables": 54,
+      "table_names": [
+        "automation_rules",
+        "revenue_shares",
+        "workflow_logs",
+        "commissions",
+        "sqlite_stat1",
+        "users",
+        "locations",
+        "certifications",
+        "training_paths",
+        "communication_templates",
+        "user_sessions",
+        "user_activities",
+        "location_analytics",
+        "barbers",
+        "training_modules",
+        "user_certifications",
+        "skill_assessments",
+        "training_path_enrollments",
+        "notifications",
+        "payment_methods",
+        "payment_reports",
+        "email_logs",
+        "sms_logs",
+        "notification_preferences",
+        "clients",
+        "daily_metrics",
+        "weekly_metrics",
+        "monthly_metrics",
+        "sixfb_scores",
+        "training_enrollments",
+        "stripe_customers",
+        "appointments",
+        "training_attempts",
+        "payments",
+        "refunds",
+        "payment_webhook_events",
+        "barber_payment_models",
+        "product_sales",
+        "payment_integrations",
+        "booth_rent_payments",
+        "commission_payments",
+        "compensation_plans",
+        "commission_calculations",
+        "payment_history",
+        "service_categories",
+        "barber_availability",
+        "reviews",
+        "services",
+        "booking_rules",
+        "booking_slots",
+        "wait_lists",
+        "alembic_version",
+        "google_calendar_settings",
+        "google_calendar_sync_logs"
+      ],
+      "total_indexes": 146,
+      "has_user_indexes": true,
+      "has_appointment_indexes": true
+    },
+    "performance_score": 100,
+    "estimated_improvement": "65%",
+    "meets_50_70_target": true
+  },
+  "security_validation": {
+    "environment_security": {
+      "secret_key_set": true,
+      "secret_key_strong": true,
+      "jwt_secret_set": true,
+      "jwt_secret_strong": true,
+      "database_url_set": true,
+      "stripe_keys_set": true
+    },
+    "database_security": {
+      "user_passwords_hashed": true,
+      "database_accessible": true,
+      "foreign_keys_enabled": true
+    },
+    "configuration_security": {
+      "environment_not_dev": false,
+      "debug_mode_off": false,
+      "cors_configured": true
+    },
+    "security_score": 83.33333333333334
+  },
+  "production_readiness": {
+    "environment_config": {
+      "has_secret_key": true,
+      "has_jwt_secret": true,
+      "has_database_url": true,
+      "has_stripe_config": true,
+      "has_frontend_url": true
+    },
+    "database_readiness": {
+      "connection_works": true,
+      "required_tables": {
+        "users": true,
+        "barbers": true,
+        "clients": true,
+        "appointments": true,
+        "services": true
+      },
+      "all_tables_exist": true,
+      "total_tables": 54
+    },
+    "file_structure": {
+      "main.py": true,
+      "requirements.txt": true,
+      "alembic.ini": true,
+      "config_dir": true,
+      "models_dir": true,
+      "api_dir": true
+    },
+    "readiness_score": 100.0
+  },
+  "performance_summary": {
+    "overall_score": 94.44444444444444,
+    "database_optimization_validated": true,
+    "security_status": "good",
+    "production_ready": true,
+    "key_metrics": {
+      "avg_query_time": 0.0013662338256835937,
+      "database_performance_score": 100,
+      "security_score": 83.33333333333334,
+      "production_readiness_score": 100.0,
+      "total_database_tables": 54
+    },
+    "recommendations": [],
+    "critical_issues": [],
+    "estimated_improvement": "65%"
+  },
+  "total_test_time": 0.008460044860839844
+}

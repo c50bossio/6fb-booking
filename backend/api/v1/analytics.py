@@ -82,8 +82,16 @@ async def get_barber_sixfb_score(
     """Get 6FB score for a barber"""
     rbac = RBACService(db)
 
-    # Get barber
-    barber = db.query(Barber).filter(Barber.id == barber_id).first()
+    # Get barber with eager loading
+    barber = (
+        db.query(Barber)
+        .options(
+            joinedload(Barber.user),
+            joinedload(Barber.location)
+        )
+        .filter(Barber.id == barber_id)
+        .first()
+    )
     if not barber:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Barber not found"
@@ -135,8 +143,16 @@ async def get_barber_detailed_analytics(
     """Get detailed analytics for a barber"""
     rbac = RBACService(db)
 
-    # Get barber
-    barber = db.query(Barber).filter(Barber.id == barber_id).first()
+    # Get barber with eager loading
+    barber = (
+        db.query(Barber)
+        .options(
+            joinedload(Barber.user),
+            joinedload(Barber.location)
+        )
+        .filter(Barber.id == barber_id)
+        .first()
+    )
     if not barber:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Barber not found"
@@ -223,36 +239,45 @@ async def get_dashboard_summary(
     if rbac.has_permission(current_user, Permission.VIEW_ALL_ANALYTICS):
         # Admin/Super Admin - show network summary
 
-        # Get all locations
+        # Get all locations with optimized query
         locations = db.query(Location).filter(Location.is_active == True).all()
-        total_barbers = db.query(Barber).count()
+        total_barbers = db.query(func.count(Barber.id)).scalar()
 
         # Calculate network metrics directly
         start_date = date.today() - timedelta(days=30)
         end_date = date.today()
-        
-        revenue_result = db.query(
-            func.sum(
-                func.coalesce(Appointment.service_revenue, 0) + 
-                func.coalesce(Appointment.tip_amount, 0) + 
-                func.coalesce(Appointment.product_revenue, 0)
+
+        revenue_result = (
+            db.query(
+                func.sum(
+                    func.coalesce(Appointment.service_revenue, 0)
+                    + func.coalesce(Appointment.tip_amount, 0)
+                    + func.coalesce(Appointment.product_revenue, 0)
+                )
             )
-        ).filter(
-            and_(
-                Appointment.status == "completed",
-                func.date(Appointment.appointment_time) >= start_date,
-                func.date(Appointment.appointment_time) <= end_date,
+            .filter(
+                and_(
+                    Appointment.status == "completed",
+                    func.date(Appointment.appointment_time) >= start_date,
+                    func.date(Appointment.appointment_time) <= end_date,
+                )
             )
-        ).scalar() or 0
-        
+            .scalar()
+            or 0
+        )
+
         total_revenue = float(revenue_result)
-        
-        total_appointments = db.query(Appointment).filter(
-            and_(
-                func.date(Appointment.appointment_time) >= start_date,
-                func.date(Appointment.appointment_time) <= end_date,
+
+        total_appointments = (
+            db.query(Appointment)
+            .filter(
+                and_(
+                    func.date(Appointment.appointment_time) >= start_date,
+                    func.date(Appointment.appointment_time) <= end_date,
+                )
             )
-        ).count()
+            .count()
+        )
 
         return {
             "type": "network",
@@ -268,8 +293,16 @@ async def get_dashboard_summary(
         }
 
     elif current_user.role == "barber":
-        # Barber - show personal metrics
-        barber = db.query(Barber).filter(Barber.user_id == current_user.id).first()
+        # Barber - show personal metrics with eager loading
+        barber = (
+            db.query(Barber)
+            .options(
+                joinedload(Barber.user),
+                joinedload(Barber.location)
+            )
+            .filter(Barber.user_id == current_user.id)
+            .first()
+        )
         if not barber:
             return {"type": "barber", "metrics": {}}
 
@@ -296,43 +329,53 @@ async def get_dashboard_summary(
 
         # Get first accessible location
         location_id = accessible_locations[0]
-        
+
         # Calculate location metrics directly
         start_date = date.today() - timedelta(days=30)
         end_date = date.today()
-        
+
         # Revenue for location
-        revenue_result = db.query(
-            func.sum(
-                func.coalesce(Appointment.service_revenue, 0) + 
-                func.coalesce(Appointment.tip_amount, 0) + 
-                func.coalesce(Appointment.product_revenue, 0)
+        revenue_result = (
+            db.query(
+                func.sum(
+                    func.coalesce(Appointment.service_revenue, 0)
+                    + func.coalesce(Appointment.tip_amount, 0)
+                    + func.coalesce(Appointment.product_revenue, 0)
+                )
             )
-        ).join(Barber).filter(
-            and_(
-                Appointment.status == "completed",
-                func.date(Appointment.appointment_time) >= start_date,
-                func.date(Appointment.appointment_time) <= end_date,
-                Barber.location_id == location_id
+            .join(Barber)
+            .filter(
+                and_(
+                    Appointment.status == "completed",
+                    func.date(Appointment.appointment_time) >= start_date,
+                    func.date(Appointment.appointment_time) <= end_date,
+                    Barber.location_id == location_id,
+                )
             )
-        ).scalar() or 0
-        
+            .scalar()
+            or 0
+        )
+
         # Appointments for location
-        total_appointments = db.query(Appointment).join(Barber).filter(
-            and_(
-                func.date(Appointment.appointment_time) >= start_date,
-                func.date(Appointment.appointment_time) <= end_date,
-                Barber.location_id == location_id
+        total_appointments = (
+            db.query(Appointment)
+            .join(Barber)
+            .filter(
+                and_(
+                    func.date(Appointment.appointment_time) >= start_date,
+                    func.date(Appointment.appointment_time) <= end_date,
+                    Barber.location_id == location_id,
+                )
             )
-        ).count()
-        
+            .count()
+        )
+
         # Barber count
-        barber_count = db.query(Barber).filter(
-            and_(
-                Barber.location_id == location_id,
-                Barber.is_active == True
-            )
-        ).count()
+        barber_count = (
+            db.query(Barber)
+            .filter(and_(Barber.location_id == location_id, Barber.is_active == True))
+            .count()
+        )
 
         return {
             "type": "location",
@@ -373,7 +416,15 @@ async def get_metric_trends(
 
     # Check permissions based on scope
     if barber_id:
-        barber = db.query(Barber).filter(Barber.id == barber_id).first()
+        barber = (
+            db.query(Barber)
+            .options(
+                joinedload(Barber.user),
+                joinedload(Barber.location)
+            )
+            .filter(Barber.id == barber_id)
+            .first()
+        )
         if not barber:
             raise HTTPException(status_code=404, detail="Barber not found")
 
@@ -433,14 +484,14 @@ def get_revenue_analytics(
     # Validate inputs
     validate_date_range(start_date, end_date)
     location_id = validate_location_id(location_id)
-    
+
     # Build query
     query = db.query(
         func.date(Appointment.appointment_time).label("date"),
         func.sum(
-            func.coalesce(Appointment.service_revenue, 0) + 
-            func.coalesce(Appointment.tip_amount, 0) + 
-            func.coalesce(Appointment.product_revenue, 0)
+            func.coalesce(Appointment.service_revenue, 0)
+            + func.coalesce(Appointment.tip_amount, 0)
+            + func.coalesce(Appointment.product_revenue, 0)
         ).label("revenue"),
         func.sum(func.coalesce(Appointment.service_revenue, 0)).label("services"),
         func.sum(func.coalesce(Appointment.product_revenue, 0)).label("products"),
@@ -501,10 +552,16 @@ def get_booking_analytics(
     query = db.query(
         func.date(Appointment.appointment_time).label("date"),
         func.count(Appointment.id).label("total"),
-        func.sum(case((Appointment.status == "completed", 1), else_=0)).label("completed"),
-        func.sum(case((Appointment.status == "cancelled", 1), else_=0)).label("cancelled"),
+        func.sum(case((Appointment.status == "completed", 1), else_=0)).label(
+            "completed"
+        ),
+        func.sum(case((Appointment.status == "cancelled", 1), else_=0)).label(
+            "cancelled"
+        ),
         func.sum(case((Appointment.status == "no_show", 1), else_=0)).label("no_show"),
-        func.sum(case((Appointment.status == "scheduled", 1), else_=0)).label("pending"),
+        func.sum(case((Appointment.status == "scheduled", 1), else_=0)).label(
+            "pending"
+        ),
     ).filter(
         and_(
             func.date(Appointment.appointment_time) >= start_date,
@@ -559,31 +616,30 @@ def get_performance_metrics(
     ).count()
 
     # Revenue metrics
-    revenue_data = (
-        db.query(
-            func.sum(
-                func.coalesce(Appointment.service_revenue, 0) + 
-                func.coalesce(Appointment.tip_amount, 0) + 
-                func.coalesce(Appointment.product_revenue, 0)
-            ).label("total"),
-            func.avg(
-                func.coalesce(Appointment.service_revenue, 0) + 
-                func.coalesce(Appointment.tip_amount, 0) + 
-                func.coalesce(Appointment.product_revenue, 0)
-            ).label("average"),
-        )
-        .filter(
-            and_(
-                Appointment.status == "completed",
-                func.date(Appointment.appointment_time) >= start_date,
-                func.date(Appointment.appointment_time) <= end_date,
-            )
+    revenue_data = db.query(
+        func.sum(
+            func.coalesce(Appointment.service_revenue, 0)
+            + func.coalesce(Appointment.tip_amount, 0)
+            + func.coalesce(Appointment.product_revenue, 0)
+        ).label("total"),
+        func.avg(
+            func.coalesce(Appointment.service_revenue, 0)
+            + func.coalesce(Appointment.tip_amount, 0)
+            + func.coalesce(Appointment.product_revenue, 0)
+        ).label("average"),
+    ).filter(
+        and_(
+            Appointment.status == "completed",
+            func.date(Appointment.appointment_time) >= start_date,
+            func.date(Appointment.appointment_time) <= end_date,
         )
     )
-    
+
     if location_id:
-        revenue_data = revenue_data.join(Barber).filter(Barber.location_id == location_id)
-        
+        revenue_data = revenue_data.join(Barber).filter(
+            Barber.location_id == location_id
+        )
+
     revenue_data = revenue_data.first()
 
     # Client metrics
@@ -603,26 +659,25 @@ def get_performance_metrics(
     prev_start = start_date - timedelta(days=period_days)
     prev_end = start_date - timedelta(days=1)
 
-    prev_revenue_query = (
-        db.query(func.sum(
-            func.coalesce(Appointment.service_revenue, 0) + 
-            func.coalesce(Appointment.tip_amount, 0) + 
-            func.coalesce(Appointment.product_revenue, 0)
-        ))
-        .filter(
-            and_(
-                Appointment.status == "completed",
-                func.date(Appointment.appointment_time) >= prev_start,
-                func.date(Appointment.appointment_time) <= prev_end,
-            )
+    prev_revenue_query = db.query(
+        func.sum(
+            func.coalesce(Appointment.service_revenue, 0)
+            + func.coalesce(Appointment.tip_amount, 0)
+            + func.coalesce(Appointment.product_revenue, 0)
+        )
+    ).filter(
+        and_(
+            Appointment.status == "completed",
+            func.date(Appointment.appointment_time) >= prev_start,
+            func.date(Appointment.appointment_time) <= prev_end,
         )
     )
-    
+
     if location_id:
         prev_revenue_query = prev_revenue_query.join(Barber).filter(
             Barber.location_id == location_id
         )
-        
+
     prev_revenue = prev_revenue_query.scalar() or 0
 
     current_revenue = revenue_data.total or 0
@@ -633,11 +688,11 @@ def get_performance_metrics(
     )
 
     # Utilization rate (assuming 8 hours per day, 30 min per appointment)
-    barber_count = db.query(Barber).filter(Barber.is_active == True)
+    barber_count_query = db.query(func.count(Barber.id)).filter(Barber.is_active == True)
     if location_id:
-        barber_count = barber_count.filter(Barber.location_id == location_id)
-    barber_count = barber_count.count() or 1
-    
+        barber_count_query = barber_count_query.filter(Barber.location_id == location_id)
+    barber_count = barber_count_query.scalar() or 1
+
     total_hours = period_days * 8 * barber_count
     booked_hours = completed_appointments * 0.5  # 30 minutes per appointment
     utilization_rate = (booked_hours / total_hours * 100) if total_hours > 0 else 0
@@ -689,9 +744,9 @@ def get_service_analytics(
         Appointment.service_name,
         func.count(Appointment.id).label("bookings"),
         func.sum(
-            func.coalesce(Appointment.service_revenue, 0) + 
-            func.coalesce(Appointment.tip_amount, 0) + 
-            func.coalesce(Appointment.product_revenue, 0)
+            func.coalesce(Appointment.service_revenue, 0)
+            + func.coalesce(Appointment.tip_amount, 0)
+            + func.coalesce(Appointment.product_revenue, 0)
         ).label("revenue"),
         func.avg(func.coalesce(Appointment.duration_minutes, 30)).label("avg_duration"),
     ).filter(
@@ -889,19 +944,22 @@ def get_barber_comparison(
     current_user: User = Depends(get_current_user),
 ):
     """Get barber performance comparison"""
-    # Query barber stats
+    # Query barber stats with optimized joins
     query = (
         db.query(
             Barber.id,
             (User.first_name + " " + User.last_name).label("name"),
             func.count(Appointment.id).label("bookings"),
             func.sum(
-                func.coalesce(Appointment.service_revenue, 0) + 
-                func.coalesce(Appointment.tip_amount, 0) + 
-                func.coalesce(Appointment.product_revenue, 0)
+                func.coalesce(Appointment.service_revenue, 0)
+                + func.coalesce(Appointment.tip_amount, 0)
+                + func.coalesce(Appointment.product_revenue, 0)
             ).label("revenue"),
-            func.avg(func.coalesce(Appointment.client_satisfaction, 4.5)).label("rating"),
+            func.avg(func.coalesce(Appointment.client_satisfaction, 4.5)).label(
+                "rating"
+            ),
         )
+        .select_from(Barber)
         .join(User, Barber.user_id == User.id)
         .join(Appointment, Appointment.barber_id == Barber.id)
         .filter(
@@ -914,7 +972,7 @@ def get_barber_comparison(
     )
 
     if location_id:
-        query = query.join(Barber).filter(Barber.location_id == location_id)
+        query = query.filter(Barber.location_id == location_id)
 
     results = query.group_by(Barber.id, User.first_name, User.last_name).all()
 

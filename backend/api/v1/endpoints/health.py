@@ -11,11 +11,13 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 import httpx
 import os
+import logging
 
 from config.database import get_db
 from config.settings import settings
-from services.monitoring_service import get_monitoring_service, monitoring_service
+from services.monitoring_service import monitoring_service
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
