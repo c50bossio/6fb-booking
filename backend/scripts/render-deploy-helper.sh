@@ -36,7 +36,7 @@ check_render_env() {
 run_migrations() {
     print_status "info" "Running database migrations..."
     cd /opt/render/project/src/backend
-    
+
     if alembic upgrade head; then
         print_status "success" "Database migrations completed"
     else
@@ -49,12 +49,12 @@ run_migrations() {
 create_admin() {
     print_status "info" "Creating admin user..."
     cd /opt/render/project/src/backend
-    
+
     if [ -z "$ADMIN_EMAIL" ] || [ -z "$ADMIN_PASSWORD" ]; then
         print_status "error" "ADMIN_EMAIL and ADMIN_PASSWORD environment variables required"
         exit 1
     fi
-    
+
     python scripts/admin/create_admin_user.py \
         --email "$ADMIN_EMAIL" \
         --password "$ADMIN_PASSWORD" \
@@ -65,24 +65,24 @@ create_admin() {
 populate_data() {
     print_status "info" "Populating test data..."
     cd /opt/render/project/src/backend
-    
+
     python scripts/admin/populate_test_data.py --type all
 }
 
 # Function to run health check
 health_check() {
     print_status "info" "Running health check..."
-    
+
     # Wait for service to be ready
     sleep 5
-    
+
     # Use internal URL on Render
     if [ -n "$RENDER_INTERNAL_HOSTNAME" ]; then
         URL="http://${RENDER_INTERNAL_HOSTNAME}:10000"
     else
         URL="${HEALTH_CHECK_URL:-http://localhost:8000}"
     fi
-    
+
     cd /opt/render/project/src/backend
     python scripts/health-check.py --url "$URL"
 }
@@ -90,17 +90,17 @@ health_check() {
 # Function to setup cron jobs on Render
 setup_cron() {
     print_status "info" "Setting up cron jobs..."
-    
+
     # Create cron directory
     mkdir -p /opt/render/project/src/cron
-    
+
     # Create health check cron
     cat > /opt/render/project/src/cron/health-check.sh << 'EOF'
 #!/bin/bash
 cd /opt/render/project/src/backend
 python scripts/health-check.py --url "$HEALTH_CHECK_URL" --save --output "/tmp/health-check-$(date +%Y%m%d-%H%M%S).json"
 EOF
-    
+
     chmod +x /opt/render/project/src/cron/health-check.sh
     print_status "success" "Cron jobs configured"
 }
@@ -145,7 +145,7 @@ else
     while true; do
         show_menu
         read -p "Select an option: " choice
-        
+
         case $choice in
             1) run_migrations ;;
             2) create_admin ;;
@@ -167,7 +167,7 @@ else
                 print_status "error" "Invalid option"
                 ;;
         esac
-        
+
         echo ""
         read -p "Press Enter to continue..."
     done
