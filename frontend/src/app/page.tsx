@@ -240,7 +240,7 @@ export default function LandingPage() {
             The Complete Platform for
             <br />
             <span className="text-teal-600 relative">
-              Six-Figure Barbers.
+              Six-Figure Barbers. {/* UPDATED 2025-06-23 22:50 */}
               <div className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-teal-500 to-teal-600 rounded-full opacity-30"></div>
             </span>
           </h1>
