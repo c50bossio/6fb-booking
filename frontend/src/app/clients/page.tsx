@@ -16,26 +16,35 @@ import {
   ExclamationTriangleIcon,
   EyeIcon,
   PencilIcon,
-  ArrowDownTrayIcon
+  ArrowDownTrayIcon,
+  ChatBubbleLeftIcon
 } from '@heroicons/react/24/outline'
 import ModernLayout from '@/components/ModernLayout'
+import ClientModal from '@/components/modals/ClientModal'
+import ClientMessageModal from '@/components/modals/ClientMessageModal'
 
 interface Client {
   id: string
-  name: string
+  first_name: string
+  last_name: string
   email: string
   phone: string
   total_visits: number
   total_spent: number
-  last_visit: string
+  last_visit_date: string | null
   customer_type: string
   favorite_service?: string
   average_ticket: number
-  visit_frequency: number
+  visit_frequency_days: number | null
   notes?: string
   tags?: string[]
   no_show_count: number
   cancellation_count: number
+  referral_count: number
+  sms_enabled: boolean
+  email_enabled: boolean
+  marketing_enabled: boolean
+  created_at: string
 }
 
 interface ClientStats {
@@ -55,6 +64,10 @@ export default function ClientsPage() {
   const [filterType, setFilterType] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [isClientModalOpen, setIsClientModalOpen] = useState(false)
+  const [isMessageModalOpen, setIsMessageModalOpen] = useState(false)
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null)
+  const [editingClient, setEditingClient] = useState<Client | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -76,18 +89,21 @@ export default function ClientsPage() {
       if (filterType !== 'all') params.customer_type = filterType
 
       // Try authenticated endpoints first
-      const [clientsRes] = await Promise.all([
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/clients`, { headers, params })
-      ])
+      const clientsRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/clients`, { headers, params })
 
       setClients(clientsRes.data.clients || [])
       setTotalPages(clientsRes.data.total_pages || 1)
 
-      // Calculate stats from client data
+      // Calculate stats from response data
       const clientsData = clientsRes.data.clients || []
       const stats: ClientStats = {
         total_clients: clientsRes.data.total_clients || clientsData.length,
-        new_clients_this_month: clientsData.filter((c: Client) => c.customer_type === 'new').length,
+        new_clients_this_month: clientsData.filter((c: Client) => {
+          const createdDate = new Date(c.created_at)
+          const thisMonth = new Date()
+          return createdDate.getMonth() === thisMonth.getMonth() && 
+                 createdDate.getFullYear() === thisMonth.getFullYear()
+        }).length,
         vip_clients: clientsData.filter((c: Client) => c.customer_type === 'vip').length,
         at_risk_clients: clientsData.filter((c: Client) => c.customer_type === 'at_risk').length,
         average_lifetime_value: clientsData.reduce((sum: number, c: Client) => sum + c.total_spent, 0) / clientsData.length || 0,
@@ -98,51 +114,73 @@ export default function ClientsPage() {
     } catch (error) {
       console.error('Failed to fetch clients data:', error)
       // Use mock data
-      const mockClients = [
+      const mockClients: Client[] = [
         {
           id: '1',
-          name: 'John Smith',
+          first_name: 'John',
+          last_name: 'Smith',
           email: 'john@example.com',
           phone: '(555) 123-4567',
           total_visits: 15,
           total_spent: 1200,
-          last_visit: '2024-06-20',
+          last_visit_date: '2024-06-20',
           customer_type: 'vip',
           favorite_service: 'Premium Fade',
           average_ticket: 80,
-          visit_frequency: 3,
+          visit_frequency_days: 14,
           no_show_count: 0,
-          cancellation_count: 1
+          cancellation_count: 1,
+          referral_count: 3,
+          tags: ['VIP', 'Regular'],
+          notes: 'Prefers early morning appointments',
+          sms_enabled: true,
+          email_enabled: true,
+          marketing_enabled: true,
+          created_at: '2023-01-15T10:00:00Z'
         },
         {
           id: '2',
-          name: 'Mike Johnson',
+          first_name: 'Mike',
+          last_name: 'Johnson',
           email: 'mike@example.com',
           phone: '(555) 234-5678',
           total_visits: 8,
           total_spent: 560,
-          last_visit: '2024-06-18',
+          last_visit_date: '2024-06-18',
           customer_type: 'returning',
           favorite_service: 'Classic Cut',
           average_ticket: 70,
-          visit_frequency: 2,
+          visit_frequency_days: 21,
           no_show_count: 1,
-          cancellation_count: 0
+          cancellation_count: 0,
+          referral_count: 1,
+          tags: ['Weekend'],
+          sms_enabled: true,
+          email_enabled: false,
+          marketing_enabled: false,
+          created_at: '2023-03-20T14:30:00Z'
         },
         {
           id: '3',
-          name: 'David Wilson',
+          first_name: 'David',
+          last_name: 'Wilson',
           email: 'david@example.com',
           phone: '(555) 345-6789',
           total_visits: 1,
           total_spent: 45,
-          last_visit: '2024-06-22',
+          last_visit_date: '2024-06-22',
           customer_type: 'new',
           favorite_service: 'Beard Trim',
           average_ticket: 45,
-          visit_frequency: 1,
+          visit_frequency_days: null,
           no_show_count: 0,
-          cancellation_count: 0
+          cancellation_count: 0,
+          referral_count: 0,
+          tags: [],
+          sms_enabled: true,
+          email_enabled: true,
+          marketing_enabled: true,
+          created_at: '2024-06-22T09:00:00Z'
         }
       ]
 
@@ -169,13 +207,56 @@ export default function ClientsPage() {
     }).format(amount)
   }
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Never'
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
     })
+  }
+
+  const handleAddClient = () => {
+    setEditingClient(null)
+    setIsClientModalOpen(true)
+  }
+
+  const handleEditClient = (client: Client) => {
+    setEditingClient(client)
+    setIsClientModalOpen(true)
+  }
+
+  const handleMessageClient = (client: Client) => {
+    setSelectedClient(client)
+    setIsMessageModalOpen(true)
+  }
+
+  const handleExportClients = async () => {
+    try {
+      const token = localStorage.getItem('access_token')
+      const headers = { Authorization: `Bearer ${token}` }
+      const params: any = { format: 'csv' }
+      
+      if (filterType !== 'all') params.customer_type = filterType
+      
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/clients/export`,
+        {},
+        { headers, params, responseType: 'blob' }
+      )
+      
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `clients_export_${new Date().toISOString().split('T')[0]}.csv`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+    } catch (error) {
+      console.error('Failed to export clients:', error)
+      alert('Failed to export clients. Please try again.')
+    }
   }
 
   const getCustomerTypeBadge = (type: string) => {
@@ -251,12 +332,18 @@ export default function ClientsPage() {
           </div>
 
           <div className="flex items-center space-x-3">
-            <button className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2">
+            <button 
+              onClick={handleExportClients}
+              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2"
+            >
               <ArrowDownTrayIcon className="h-5 w-5" />
               <span>Export</span>
             </button>
 
-            <button className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg font-medium hover:from-violet-700 hover:to-purple-700 transition-all flex items-center space-x-2">
+            <button 
+              onClick={handleAddClient}
+              className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg font-medium hover:from-violet-700 hover:to-purple-700 transition-all flex items-center space-x-2"
+            >
               <PlusIcon className="h-5 w-5" />
               <span>Add Client</span>
             </button>
@@ -370,12 +457,12 @@ export default function ClientsPage() {
                           <div className="flex-shrink-0 h-10 w-10">
                             <div className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
                               <span className="text-sm font-medium text-white">
-                                {client.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                {client.first_name[0]}{client.last_name[0]}
                               </span>
                             </div>
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{client.name}</div>
+                            <div className="text-sm font-medium text-gray-900">{client.first_name} {client.last_name}</div>
                             <div className="text-xs text-gray-500 flex items-center space-x-2">
                               <span className="flex items-center">
                                 <EnvelopeIcon className="h-3 w-3 mr-1" />
@@ -398,7 +485,7 @@ export default function ClientsPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{client.total_visits}</div>
                         <div className="text-xs text-gray-500">
-                          {client.visit_frequency}x per month
+                          {client.visit_frequency_days ? `Every ${client.visit_frequency_days} days` : 'First visit'}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -410,7 +497,7 @@ export default function ClientsPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{formatDate(client.last_visit)}</div>
+                        <div className="text-sm text-gray-900">{formatDate(client.last_visit_date)}</div>
                         {client.no_show_count > 0 && (
                           <div className="text-xs text-red-600">
                             {client.no_show_count} no-shows
@@ -429,8 +516,19 @@ export default function ClientsPage() {
                           >
                             <EyeIcon className="h-4 w-4" />
                           </button>
-                          <button className="text-gray-600 hover:text-gray-700 p-1 rounded-md hover:bg-gray-50 transition-colors" title="Edit">
+                          <button 
+                            onClick={() => handleEditClient(client)}
+                            className="text-gray-600 hover:text-gray-700 p-1 rounded-md hover:bg-gray-50 transition-colors" 
+                            title="Edit"
+                          >
                             <PencilIcon className="h-4 w-4" />
+                          </button>
+                          <button 
+                            onClick={() => handleMessageClient(client)}
+                            className="text-green-600 hover:text-green-700 p-1 rounded-md hover:bg-green-50 transition-colors" 
+                            title="Send Message"
+                          >
+                            <ChatBubbleLeftIcon className="h-4 w-4" />
                           </button>
                         </div>
                       </td>
@@ -467,6 +565,31 @@ export default function ClientsPage() {
           )}
         </div>
       </div>
+
+      {/* Client Modal */}
+      <ClientModal
+        isOpen={isClientModalOpen}
+        onClose={() => {
+          setIsClientModalOpen(false)
+          setEditingClient(null)
+        }}
+        onSuccess={() => {
+          fetchClientsData()
+          setIsClientModalOpen(false)
+          setEditingClient(null)
+        }}
+        client={editingClient}
+      />
+
+      {/* Message Modal */}
+      <ClientMessageModal
+        isOpen={isMessageModalOpen}
+        onClose={() => {
+          setIsMessageModalOpen(false)
+          setSelectedClient(null)
+        }}
+        client={selectedClient}
+      />
     </ModernLayout>
   )
 }

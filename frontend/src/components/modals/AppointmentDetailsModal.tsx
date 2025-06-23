@@ -46,7 +46,10 @@ const editAppointmentSchema = z.object({
   appointment_date: z.string().min(1, 'Please select a date'),
   appointment_time: z.string().min(1, 'Please select a time'),
   notes: z.string().optional(),
-  status: z.enum(['confirmed', 'pending', 'completed', 'cancelled'])
+  status: z.enum(['scheduled', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show']),
+  service_revenue: z.number().optional(),
+  tip_amount: z.number().optional(),
+  product_revenue: z.number().optional()
 })
 
 type EditAppointmentFormData = z.infer<typeof editAppointmentSchema>

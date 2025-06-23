@@ -78,6 +78,7 @@ from api.v1.endpoints import (
     booking_authenticated,
     public_dashboard,
     test_email,
+    clients,
 )
 
 # Import logging setup
@@ -256,6 +257,11 @@ app.include_router(
     test_email.router,
     prefix="/api/v1",
     tags=["Test"],
+)
+app.include_router(
+    clients.router,
+    prefix="/api/v1/clients",
+    tags=["Clients"],
 )
 
 # Add authentication system (disabled for now)

@@ -1,254 +1,147 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { LoadingSpinner } from '@/components/ui/loading-spinner'
-import { Badge } from '@/components/ui/badge'
-import { bookingService } from '@/lib/api/bookings'
-import { cn } from '@/lib/utils'
+import { RadioGroup } from '@headlessui/react'
+import { CheckIcon, ClockIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline'
+import type { Service } from '@/lib/api/services'
 
-export interface Service {
-  id: number
-  name: string
-  description?: string
-  category: string
-  duration: number
-  price: number
-  is_active: boolean
-  popular?: boolean
-  available_addons?: ServiceAddon[]
-}
-
-export interface ServiceAddon {
-  id: number
-  name: string
-  price: number
-  duration?: number
-}
-
-export interface ServiceSelectorProps {
-  locationId?: number
-  barberId?: number
-  onServiceSelect: (service: Service) => void
+interface ServiceSelectorProps {
+  services: Service[]
   selectedService: Service | null
-  className?: string
+  onServiceSelect: (service: Service) => void
+  loading?: boolean
+  disabled?: boolean
 }
 
-const ServiceSelector: React.FC<ServiceSelectorProps> = ({
-  locationId,
-  barberId,
-  onServiceSelect,
+export default function ServiceSelector({
+  services,
   selectedService,
-  className
-}) => {
-  const [services, setServices] = useState<Service[]>([])
-  const [categories, setCategories] = useState<string[]>([])
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [searchTerm, setSearchTerm] = useState('')
-
-  useEffect(() => {
-    loadServices()
-  }, [locationId, barberId])
-
-  const loadServices = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      const params: any = {}
-      if (locationId) params.location_id = locationId
-      if (barberId) params.barber_id = barberId
-
-      const response = await bookingService.getServices(params)
-      const servicesData = response.data
-
-      setServices(servicesData)
-
-      // Extract unique categories
-      const uniqueCategories = Array.from(
-        new Set(servicesData.map((s: Service) => s.category))
-      ).sort()
-      setCategories(uniqueCategories)
-
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to load services')
-    } finally {
-      setLoading(false)
-    }
+  onServiceSelect,
+  loading = false,
+  disabled = false
+}: ServiceSelectorProps) {
+  const formatDuration = (minutes: number) => {
+    const hours = Math.floor(minutes / 60)
+    const mins = minutes % 60
+    if (hours === 0) return `${mins}m`
+    if (mins === 0) return `${hours}h`
+    return `${hours}h ${mins}m`
   }
 
-  const filteredServices = services.filter(service => {
-    const matchesCategory = selectedCategory === 'all' || service.category === selectedCategory
-    const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         service.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesCategory && matchesSearch && service.is_active
-  })
-
-  const groupedServices = filteredServices.reduce((acc, service) => {
-    if (!acc[service.category]) {
-      acc[service.category] = []
-    }
-    acc[service.category].push(service)
-    return acc
-  }, {} as Record<string, Service[]>)
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(price)
+  }
 
   if (loading) {
     return (
-      <div className={cn('flex items-center justify-center p-8', className)}>
-        <LoadingSpinner />
+      <div className="space-y-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="animate-pulse">
+            <div className="h-24 bg-gray-200 rounded-lg"></div>
+          </div>
+        ))}
       </div>
     )
   }
 
-  if (error) {
-    return (
-      <div className={cn('text-center p-8', className)}>
-        <p className="text-red-600 mb-4">{error}</p>
-        <Button onClick={loadServices} variant="outline">
-          Try Again
-        </Button>
-      </div>
-    )
-  }
+  // Group services by category
+  const servicesByCategory = services.reduce((acc, service) => {
+    const category = service.category_name || 'Other'
+    if (!acc[category]) {
+      acc[category] = []
+    }
+    acc[category].push(service)
+    return acc
+  }, {} as Record<string, Service[]>)
 
   return (
-    <div className={cn('space-y-6', className)}>
-      {/* Search and Filter */}
-      <div className="space-y-4">
-        <input
-          type="text"
-          placeholder="Search services..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
-
-        {/* Category Tabs */}
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant={selectedCategory === 'all' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSelectedCategory('all')}
-          >
-            All Services
-          </Button>
-          {categories.map(category => (
-            <Button
-              key={category}
-              variant={selectedCategory === category ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setSelectedCategory(category)}
-            >
-              {category}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      {/* Services Grid */}
-      {selectedCategory === 'all' ? (
-        // Show grouped by category
-        <div className="space-y-8">
-          {Object.entries(groupedServices).map(([category, categoryServices]) => (
-            <div key={category}>
-              <h3 className="text-lg font-semibold mb-4 text-gray-900">
-                {category}
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {categoryServices.map(service => (
-                  <ServiceCard
-                    key={service.id}
-                    service={service}
-                    isSelected={selectedService?.id === service.id}
-                    onSelect={() => onServiceSelect(service)}
-                  />
-                ))}
-              </div>
+    <div className="space-y-6">
+      {Object.entries(servicesByCategory).map(([category, categoryServices]) => (
+        <div key={category}>
+          <h3 className="text-sm font-medium text-gray-700 mb-3">{category}</h3>
+          <RadioGroup value={selectedService} onChange={onServiceSelect} disabled={disabled}>
+            <div className="space-y-2">
+              {categoryServices.map((service) => (
+                <RadioGroup.Option
+                  key={service.id}
+                  value={service}
+                  className={({ active, checked }) =>
+                    `${active ? 'ring-2 ring-violet-600 ring-offset-2' : ''}
+                    ${checked ? 'bg-violet-50 border-violet-600' : 'bg-white border-gray-300'}
+                    relative flex cursor-pointer rounded-lg border px-4 py-4 shadow-sm focus:outline-none
+                    ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'}`
+                  }
+                >
+                  {({ active, checked }) => (
+                    <>
+                      <div className="flex flex-1 items-start">
+                        <div className="flex-1">
+                          <RadioGroup.Label
+                            as="p"
+                            className={`font-medium ${checked ? 'text-violet-900' : 'text-gray-900'}`}
+                          >
+                            {service.name}
+                          </RadioGroup.Label>
+                          {service.description && (
+                            <RadioGroup.Description
+                              as="p"
+                              className={`mt-1 text-sm ${checked ? 'text-violet-700' : 'text-gray-500'}`}
+                            >
+                              {service.description}
+                            </RadioGroup.Description>
+                          )}
+                          <div className="mt-2 flex items-center space-x-4 text-sm">
+                            <div className="flex items-center text-gray-500">
+                              <ClockIcon className="h-4 w-4 mr-1" />
+                              {formatDuration(service.duration_minutes)}
+                            </div>
+                            {service.is_featured && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                                Popular
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="ml-4 flex items-center">
+                          <div className="text-right">
+                            <p className={`text-lg font-semibold ${checked ? 'text-violet-900' : 'text-gray-900'}`}>
+                              {formatPrice(service.base_price)}
+                            </p>
+                            {service.requires_deposit && (
+                              <p className="text-xs text-gray-500">
+                                Deposit required
+                              </p>
+                            )}
+                          </div>
+                          {checked && (
+                            <div className="ml-3 flex h-5 w-5 items-center justify-center">
+                              <CheckIcon className="h-5 w-5 text-violet-600" />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </RadioGroup.Option>
+              ))}
             </div>
-          ))}
+          </RadioGroup>
         </div>
-      ) : (
-        // Show filtered services
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredServices.map(service => (
-            <ServiceCard
-              key={service.id}
-              service={service}
-              isSelected={selectedService?.id === service.id}
-              onSelect={() => onServiceSelect(service)}
-            />
-          ))}
-        </div>
-      )}
+      ))}
 
-      {filteredServices.length === 0 && (
-        <div className="text-center py-8">
-          <p className="text-gray-500">No services found matching your criteria.</p>
+      {selectedService && selectedService.requires_deposit && (
+        <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <p className="text-sm text-amber-800">
+            <strong>Note:</strong> This service requires a{' '}
+            {selectedService.deposit_type === 'percentage'
+              ? `${selectedService.deposit_amount}%`
+              : formatPrice(selectedService.deposit_amount || 0)}{' '}
+            deposit to confirm your booking.
+          </p>
         </div>
       )}
     </div>
   )
 }
-
-interface ServiceCardProps {
-  service: Service
-  isSelected: boolean
-  onSelect: () => void
-}
-
-const ServiceCard: React.FC<ServiceCardProps> = ({ service, isSelected, onSelect }) => {
-  return (
-    <Card
-      className={cn(
-        'cursor-pointer transition-all duration-200 hover:shadow-lg',
-        isSelected && 'ring-2 ring-blue-500 bg-blue-50'
-      )}
-      onClick={onSelect}
-    >
-      <CardContent className="p-4">
-        <div className="flex justify-between items-start mb-2">
-          <div className="flex-1">
-            <h4 className="font-semibold text-gray-900">{service.name}</h4>
-            {service.popular && (
-              <Badge variant="secondary" className="mt-1">
-                Popular
-              </Badge>
-            )}
-          </div>
-          <div className="text-right">
-            <p className="text-lg font-bold text-gray-900">${service.price}</p>
-            <p className="text-sm text-gray-500">{service.duration} min</p>
-          </div>
-        </div>
-
-        {service.description && (
-          <p className="text-sm text-gray-600 mt-2">{service.description}</p>
-        )}
-
-        {service.available_addons && service.available_addons.length > 0 && (
-          <div className="mt-3 pt-3 border-t">
-            <p className="text-xs text-gray-500 mb-1">Available add-ons:</p>
-            <div className="flex flex-wrap gap-1">
-              {service.available_addons.map(addon => (
-                <Badge key={addon.id} variant="outline" className="text-xs">
-                  {addon.name} +${addon.price}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {isSelected && (
-          <div className="mt-3 flex items-center justify-center">
-            <Badge className="bg-blue-600">Selected</Badge>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  )
-}
-
-export default ServiceSelector

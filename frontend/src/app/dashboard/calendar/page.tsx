@@ -1,96 +1,65 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import EnterpriseCalendar from '@/components/calendar/EnterpriseCalendar'
 import BookingFlow from '@/components/booking/BookingFlow'
 import { CreateAppointmentModal, AppointmentDetailsModal } from '@/components/modals'
-import { useState as useResponsiveState } from 'react'
+import { appointmentsService } from '@/lib/api/appointments'
+import { barbersService } from '@/lib/api/barbers'
+import { servicesService } from '@/lib/api/services'
 import type { Booking } from '@/lib/api/bookings'
+import type { Service } from '@/lib/api/services'
+import type { BarberProfile } from '@/lib/api/barbers'
 
-// Unified appointment interface
+// Unified appointment interface for calendar
 interface CalendarAppointment {
   id: string
   title: string
   client: string
+  clientId?: number
   barber: string
+  barberId: number
   startTime: string
   endTime: string
   service: string
+  serviceId?: number
   price: number
-  status: 'confirmed' | 'pending' | 'completed' | 'cancelled'
+  status: 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show'
   date: string
   clientEmail?: string
   clientPhone?: string
   notes?: string
   confirmationNumber?: string
+  serviceRevenue?: number
+  tipAmount?: number
+  productRevenue?: number
 }
 
-// Mock appointment data matching the calendar interface
-const mockAppointments: CalendarAppointment[] = [
-  {
-    id: '1',
-    title: 'John Doe - Haircut',
-    client: 'John Doe',
-    barber: 'Mike Johnson',
-    startTime: '09:00',
-    endTime: '10:00',
-    service: 'Classic Haircut',
-    price: 35,
-    status: 'confirmed' as const,
-    date: new Date().toISOString().split('T')[0],
-    clientEmail: 'john.doe@email.com',
-    clientPhone: '(555) 123-4567',
-    notes: 'Regular customer, prefers shorter cut',
-    confirmationNumber: 'BK123456'
-  },
-  {
-    id: '2',
-    title: 'Sarah Wilson - Fade Cut',
-    client: 'Sarah Wilson',
-    barber: 'Sarah Wilson',
-    startTime: '14:30',
-    endTime: '15:30',
-    service: 'Fade Cut',
-    price: 45,
-    status: 'pending' as const,
-    date: new Date().toISOString().split('T')[0],
-    clientEmail: 'sarah.wilson@email.com',
-    clientPhone: '(555) 987-6543',
-    notes: 'First time client',
-    confirmationNumber: 'BK123457'
-  },
-  {
-    id: '3',
-    title: 'Chris Brown - Beard Trim',
-    client: 'Chris Brown',
-    barber: 'Chris Brown',
-    startTime: '16:00',
-    endTime: '16:30',
-    service: 'Beard Trim',
-    price: 25,
-    status: 'completed' as const,
-    date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Yesterday
-    clientEmail: 'chris.brown@email.com',
-    clientPhone: '(555) 456-7890',
-    notes: 'Allergic to certain products',
-    confirmationNumber: 'BK123458'
+// Map appointment status to display status
+const mapAppointmentStatus = (status: string): CalendarAppointment['status'] => {
+  const statusMap: Record<string, CalendarAppointment['status']> = {
+    'scheduled': 'scheduled',
+    'confirmed': 'confirmed',
+    'in_progress': 'in_progress',
+    'completed': 'completed',
+    'cancelled': 'cancelled',
+    'no_show': 'no_show',
+    'pending': 'scheduled' // Map pending to scheduled
   }
-]
-
-const mockBarbers = [
-  { id: 1, name: 'Marcus Johnson', status: 'online' as const },
-  { id: 2, name: 'Sarah Mitchell', status: 'busy' as const },
-  { id: 3, name: 'Alex Rodriguez', status: 'offline' as const }
-]
+  return statusMap[status] || 'scheduled'
+}
 
 export default function CalendarPage() {
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [viewMode, setViewMode] = useState<'week' | 'day'>('week')
-  const [appointments, setAppointments] = useState(mockAppointments)
-  const [barbers, setBarbers] = useState(mockBarbers)
+  const [appointments, setAppointments] = useState<CalendarAppointment[]>([])
+  const [barbers, setBarbers] = useState<Array<{ id: number; name: string; status: string }>>([]) 
+  const [services, setServices] = useState<Service[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -102,9 +71,110 @@ export default function CalendarPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [isRefreshing, setIsRefreshing] = useState(false)
 
+  // Date range for fetching appointments
+  const [dateRange, setDateRange] = useState(() => {
+    const today = new Date()
+    const startOfWeek = new Date(today)
+    startOfWeek.setDate(today.getDate() - today.getDay())
+    const endOfWeek = new Date(startOfWeek)
+    endOfWeek.setDate(startOfWeek.getDate() + 6)
+    return {
+      start: startOfWeek.toISOString().split('T')[0],
+      end: endOfWeek.toISOString().split('T')[0]
+    }
+  })
+
+  // Fetch appointments from API
+  const fetchAppointments = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const response = await appointmentsService.getAppointmentsByDateRange(
+        dateRange.start,
+        dateRange.end
+      )
+      
+      // Transform API appointments to calendar format
+      const calendarAppointments: CalendarAppointment[] = response.map(apt => {
+        // Calculate end time based on duration
+        const [hours, minutes] = (apt.appointment_time || '09:00').split(':').map(Number)
+        const startDate = new Date(apt.appointment_date)
+        startDate.setHours(hours, minutes)
+        const endDate = new Date(startDate.getTime() + (apt.service_duration || 60) * 60000)
+        
+        return {
+          id: apt.id.toString(),
+          title: `${apt.client_name} - ${apt.service_name}`,
+          client: apt.client_name,
+          clientId: apt.client_id,
+          barber: apt.barber_name || 'Unknown',
+          barberId: apt.barber_id,
+          startTime: apt.appointment_time || '09:00',
+          endTime: `${endDate.getHours().toString().padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}`,
+          service: apt.service_name,
+          serviceId: apt.service_id,
+          price: apt.service_price || 0,
+          status: mapAppointmentStatus(apt.status),
+          date: apt.appointment_date,
+          clientEmail: apt.client_email,
+          clientPhone: apt.client_phone,
+          notes: apt.notes,
+          confirmationNumber: `BK${apt.id.toString().padStart(6, '0')}`,
+          serviceRevenue: apt.service_revenue,
+          tipAmount: apt.tip_amount,
+          productRevenue: apt.product_revenue
+        }
+      })
+      
+      setAppointments(calendarAppointments)
+    } catch (err) {
+      console.error('Error fetching appointments:', err)
+      setError('Failed to load appointments')
+    } finally {
+      setLoading(false)
+    }
+  }, [dateRange])
+
+  // Fetch barbers from API
+  const fetchBarbers = useCallback(async () => {
+    try {
+      const response = await barbersService.getBarbers({ is_active: true })
+      const barberList = response.data.map(barber => ({
+        id: barber.id,
+        name: `${barber.first_name} ${barber.last_name}`,
+        status: barber.is_active ? 'online' : 'offline'
+      }))
+      setBarbers(barberList)
+    } catch (err) {
+      console.error('Error fetching barbers:', err)
+    }
+  }, [])
+
+  // Fetch services from API
+  const fetchServices = useCallback(async () => {
+    try {
+      const response = await servicesService.getServices({ is_active: true })
+      setServices(response.data)
+    } catch (err) {
+      console.error('Error fetching services:', err)
+    }
+  }, [])
+
+  // Initial data load
   useEffect(() => {
     setMounted(true)
+    fetchAppointments()
+    fetchBarbers()
+    fetchServices()
   }, [])
+
+  // Refresh appointments when date range changes
+  useEffect(() => {
+    if (mounted) {
+      fetchAppointments()
+    }
+  }, [dateRange, fetchAppointments, mounted])
 
   // Handler functions for modal interactions
   const handleNewAppointment = () => {
@@ -112,7 +182,7 @@ export default function CalendarPage() {
     setShowBookingFlow(true)
   }
 
-  const handleAppointmentClick = (appointment: typeof mockAppointments[0]) => {
+  const handleAppointmentClick = (appointment: CalendarAppointment) => {
     setSelectedAppointment(appointment)
     setShowDetailsModal(true)
   }
@@ -122,39 +192,93 @@ export default function CalendarPage() {
     setShowBookingFlow(true)
   }
 
-  const handleAppointmentCreated = (booking: Booking) => {
-    // Convert booking to appointment format and add to list
-    const newAppointment = {
-      id: booking.id,
-      title: `${booking.client_info.name} - ${booking.service.name}`,
-      client: booking.client_info.name,
-      barber: booking.barber.name,
-      startTime: booking.appointment_time,
-      endTime: calculateEndTime(booking.appointment_time, booking.service.duration),
-      service: booking.service.name,
-      price: booking.service.price,
-      status: booking.status as 'confirmed' | 'pending' | 'completed' | 'cancelled',
-      date: booking.appointment_date,
-      clientEmail: booking.client_info.email,
-      clientPhone: booking.client_info.phone,
-      notes: booking.notes,
-      confirmationNumber: booking.confirmation_number
+  const handleAppointmentCreated = async (appointmentData: any) => {
+    try {
+      // Create appointment via API
+      const createData = {
+        barber_id: appointmentData.barber?.id || appointmentData.barberId,
+        client_name: appointmentData.clientInfo?.name || appointmentData.client_name,
+        client_email: appointmentData.clientInfo?.email || appointmentData.client_email,
+        client_phone: appointmentData.clientInfo?.phone || appointmentData.client_phone,
+        appointment_date: appointmentData.date || appointmentData.appointment_date,
+        appointment_time: appointmentData.time || appointmentData.appointment_time,
+        service_id: appointmentData.service?.id || appointmentData.service_id,
+        service_name: appointmentData.service?.name || appointmentData.service_name,
+        service_duration: appointmentData.service?.duration || appointmentData.service_duration || 60,
+        service_price: appointmentData.service?.price || appointmentData.service_price || 0,
+        notes: appointmentData.clientInfo?.notes || appointmentData.notes
+      }
+      
+      const response = await appointmentsService.createAppointment(createData)
+      
+      // Refresh appointments list
+      await fetchAppointments()
+      setShowBookingFlow(false)
+      
+      // Show success message (you could add a toast notification here)
+      console.log('Appointment created successfully:', response.data)
+    } catch (err) {
+      console.error('Error creating appointment:', err)
+      setError('Failed to create appointment')
     }
-
-    setAppointments(prev => [...prev, newAppointment])
-    setShowBookingFlow(false)
   }
 
-  const handleAppointmentUpdated = (updatedAppointment: typeof mockAppointments[0]) => {
-    setAppointments(prev =>
-      prev.map(apt => apt.id === updatedAppointment.id ? updatedAppointment : apt)
-    )
-    setShowDetailsModal(false)
+  const handleAppointmentUpdated = async (updatedAppointment: CalendarAppointment) => {
+    try {
+      // Update via API
+      const updateData = {
+        appointment_date: updatedAppointment.date,
+        appointment_time: updatedAppointment.startTime,
+        status: updatedAppointment.status as any,
+        service_name: updatedAppointment.service,
+        service_price: updatedAppointment.price,
+        service_revenue: updatedAppointment.serviceRevenue,
+        tip_amount: updatedAppointment.tipAmount,
+        product_revenue: updatedAppointment.productRevenue,
+        notes: updatedAppointment.notes,
+        barber_id: updatedAppointment.barberId
+      }
+      
+      await appointmentsService.updateAppointment(parseInt(updatedAppointment.id), updateData)
+      
+      // Refresh appointments list
+      await fetchAppointments()
+      setShowDetailsModal(false)
+    } catch (err) {
+      console.error('Error updating appointment:', err)
+      setError('Failed to update appointment')
+    }
   }
 
-  const handleAppointmentDeleted = (appointmentId: string) => {
-    setAppointments(prev => prev.filter(apt => apt.id !== appointmentId))
-    setShowDetailsModal(false)
+  const handleAppointmentDeleted = async (appointmentId: string) => {
+    try {
+      await appointmentsService.cancelAppointment(parseInt(appointmentId))
+      
+      // Refresh appointments list
+      await fetchAppointments()
+      setShowDetailsModal(false)
+    } catch (err) {
+      console.error('Error deleting appointment:', err)
+      setError('Failed to delete appointment')
+    }
+  }
+
+  const handleAppointmentDrop = async (appointmentId: string, newDate: string, newTime: string) => {
+    try {
+      // Reschedule appointment via API
+      await appointmentsService.rescheduleAppointment(
+        parseInt(appointmentId),
+        newDate,
+        newTime,
+        'Rescheduled via calendar drag and drop'
+      )
+      
+      // Refresh appointments
+      await fetchAppointments()
+    } catch (err) {
+      console.error('Error rescheduling appointment:', err)
+      setError('Failed to reschedule appointment')
+    }
   }
 
   const calculateEndTime = (startTime: string, duration: number): string => {
@@ -163,6 +287,37 @@ export default function CalendarPage() {
     startDate.setHours(hours, minutes, 0, 0)
     const endDate = new Date(startDate.getTime() + duration * 60000)
     return endDate.toTimeString().slice(0, 5)
+  }
+
+  // Update date range when view changes
+  const updateDateRange = (date: Date, view: 'week' | 'day' | 'month') => {
+    let start: Date, end: Date
+    
+    if (view === 'day') {
+      start = new Date(date)
+      end = new Date(date)
+    } else if (view === 'week') {
+      start = new Date(date)
+      start.setDate(date.getDate() - date.getDay())
+      end = new Date(start)
+      end.setDate(start.getDate() + 6)
+    } else {
+      // Month view
+      start = new Date(date.getFullYear(), date.getMonth(), 1)
+      end = new Date(date.getFullYear(), date.getMonth() + 1, 0)
+    }
+    
+    setDateRange({
+      start: start.toISOString().split('T')[0],
+      end: end.toISOString().split('T')[0]
+    })
+  }
+
+  // Handle refresh
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    await fetchAppointments()
+    setIsRefreshing(false)
   }
 
   if (!mounted) {
@@ -184,7 +339,13 @@ export default function CalendarPage() {
     apt.date === new Date().toISOString().split('T')[0]
   )
 
-  const weekRevenue = appointments.reduce((sum, apt) => sum + apt.price, 0)
+  const weekRevenue = appointments.reduce((sum, apt) => {
+    const serviceRevenue = apt.serviceRevenue || apt.price || 0
+    const tipAmount = apt.tipAmount || 0
+    const productRevenue = apt.productRevenue || 0
+    return sum + serviceRevenue + tipAmount + productRevenue
+  }, 0)
+  
   const availableBarbers = barbers.filter(b => b.status === 'online').length
 
   return (
@@ -311,29 +472,29 @@ export default function CalendarPage() {
               appointments={appointments}
               onAppointmentClick={handleAppointmentClick}
               onTimeSlotClick={handleTimeSlotClick}
-              onAppointmentDrop={(id, date, time) => {
-                console.log('Appointment dropped:', { id, date, time })
-                // Handle appointment rescheduling
-              }}
+              onAppointmentDrop={handleAppointmentDrop}
               view={calendarView}
               theme='dark'
-              loading={false}
-              error={null}
-              onRefresh={async () => {
-                setIsRefreshing(true)
-                // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 1000))
-                setIsRefreshing(false)
-              }}
+              loading={loading}
+              error={error}
+              onRefresh={handleRefresh}
               selectedBarbers={[]}
-              availableBarbers={mockBarbers.map(b => ({
-                id: b.name.toLowerCase().replace(' ', '-'),
+              availableBarbers={barbers.map(b => ({
+                id: b.id.toString(),
                 name: b.name,
-                color: '#8b5cf6',
+                color: `#${Math.floor(Math.random()*16777215).toString(16)}`, // Generate random color
                 status: b.status as 'online' | 'busy' | 'offline'
               }))}
               onBarberFilter={(barberIds) => {
-                console.log('Filter by barbers:', barberIds)
+                // Filter appointments by selected barbers
+                if (barberIds.length > 0) {
+                  const filtered = appointments.filter(apt => 
+                    barberIds.includes(apt.barberId.toString())
+                  )
+                  setAppointments(filtered)
+                } else {
+                  fetchAppointments() // Reset to all appointments
+                }
               }}
               enableDragDrop={true}
               showToolbar={true}
@@ -341,7 +502,31 @@ export default function CalendarPage() {
               cacheData={true}
               realTimeUpdates={true}
               onExport={(format) => {
-                console.log('Export calendar as:', format)
+                // Export functionality
+                const data = appointments.map(apt => ({
+                  Date: apt.date,
+                  Time: apt.startTime,
+                  Client: apt.client,
+                  Service: apt.service,
+                  Barber: apt.barber,
+                  Status: apt.status,
+                  Price: apt.price
+                }))
+                
+                if (format === 'csv') {
+                  // Convert to CSV
+                  const csv = [
+                    Object.keys(data[0]).join(','),
+                    ...data.map(row => Object.values(row).join(','))
+                  ].join('\n')
+                  
+                  const blob = new Blob([csv], { type: 'text/csv' })
+                  const url = URL.createObjectURL(blob)
+                  const a = document.createElement('a')
+                  a.href = url
+                  a.download = `appointments-${new Date().toISOString().split('T')[0]}.csv`
+                  a.click()
+                }
               }}
               onPrint={() => {
                 window.print()
@@ -349,6 +534,16 @@ export default function CalendarPage() {
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
               filterOptions={{}}
+              onDateChange={(date) => {
+                setSelectedDate(date)
+                updateDateRange(date, viewMode)
+              }}
+              onViewChange={(view) => {
+                setCalendarView(view)
+                if (view === 'day' || view === 'week') {
+                  updateDateRange(selectedDate, view)
+                }
+              }}
             />
           </div>
 
@@ -384,31 +579,16 @@ export default function CalendarPage() {
         onClose={() => setShowBookingFlow(false)}
         selectedDate={selectedSlot?.date}
         selectedTime={selectedSlot?.time}
-        onComplete={(bookingData) => {
-          console.log('Booking completed:', bookingData)
-          handleAppointmentCreated({
-            id: Math.random().toString(),
-            client_info: {
-              name: bookingData.clientInfo?.name || '',
-              email: bookingData.clientInfo?.email || '',
-              phone: bookingData.clientInfo?.phone || ''
-            },
-            service: {
-              name: bookingData.service?.name || '',
-              duration: bookingData.service?.duration || 60,
-              price: bookingData.service?.price || 0
-            },
-            barber: {
-              name: bookingData.barber?.name || ''
-            },
-            appointment_time: bookingData.time || '',
-            appointment_date: bookingData.date || '',
-            status: 'confirmed',
-            notes: bookingData.clientInfo?.notes || '',
-            confirmation_number: 'BK' + Math.random().toString().substr(2, 6)
-          })
-        }}
+        onComplete={handleAppointmentCreated}
         theme='dark'
+        services={services}
+        barbers={barbers.map(b => ({
+          id: b.id,
+          name: b.name,
+          first_name: b.name.split(' ')[0],
+          last_name: b.name.split(' ')[1] || '',
+          is_active: b.status === 'online'
+        }))}
       />
 
       <AppointmentDetailsModal
@@ -417,6 +597,22 @@ export default function CalendarPage() {
         appointment={selectedAppointment}
         onUpdate={handleAppointmentUpdated}
         onDelete={handleAppointmentDeleted}
+        onReschedule={async (id, newDate, newTime) => {
+          await handleAppointmentDrop(id, newDate, newTime)
+          setShowDetailsModal(false)
+        }}
+        onComplete={async (id) => {
+          const appointment = appointments.find(apt => apt.id === id)
+          if (appointment) {
+            await handleAppointmentUpdated({
+              ...appointment,
+              status: 'completed'
+            })
+          }
+        }}
+        onCancel={async (id) => {
+          await handleAppointmentDeleted(id)
+        }}
       />
     </div>
   )

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTheme } from '@/contexts/ThemeContext'
@@ -87,6 +87,11 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
   const pathname = usePathname()
   const { theme, toggleTheme } = useTheme()
   const [isCollapsed, setIsCollapsed] = useState(false)
+  
+  // Debug: Log when component mounts
+  useEffect(() => {
+    console.log('DemoModernSidebar mounted, theme:', theme)
+  }, [theme])
 
   const demoUser = user || {
     first_name: 'Demo',
@@ -110,9 +115,17 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
   }
 
   return (
-    <div className={`h-screen flex flex-col transition-all duration-300 flex-shrink-0 ${
-      isCollapsed ? 'w-20' : 'w-72'
-    } ${theme === 'dark' ? 'sidebar-dark' : 'sidebar-light'}`}>
+    <aside 
+      className={`h-screen flex flex-col transition-all duration-300 flex-shrink-0 sticky top-0 left-0 ${
+        isCollapsed ? 'w-20' : 'w-72'
+      } ${theme === 'dark' ? 'sidebar-dark' : 'sidebar-light'}`}
+      style={{ 
+        minHeight: '100vh', 
+        zIndex: 10,
+        backgroundColor: theme === 'dark' ? '#0f172a' : '#ffffff',
+        borderRight: theme === 'dark' ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
+        width: isCollapsed ? '5rem' : '18rem'
+      }}>
       {/* Header */}
       <div className={`p-6 border-b ${theme === 'dark' ? 'border-white/10' : 'border-gray-200'}`}>
         <div className="flex items-center justify-between">
@@ -134,10 +147,10 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
 
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className={`p-2 rounded-lg transition-colors focus-ring ${
+            className={`p-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 ${
               theme === 'dark'
-                ? 'text-gray-400 hover:text-white hover:bg-white/5'
-                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+                ? 'text-gray-400 hover:text-white hover:bg-white/5 focus:ring-offset-slate-900'
+                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 focus:ring-offset-white'
             }`}
           >
             {isCollapsed ? (
@@ -308,6 +321,6 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
           )}
         </button>
       </div>
-    </div>
+    </aside>
   )
 }

@@ -29,6 +29,12 @@ class NotificationService:
         self.smtp_username = os.getenv("SMTP_USERNAME")
         self.smtp_password = os.getenv("SMTP_PASSWORD")
         self.from_email = os.getenv("FROM_EMAIL", "noreply@6fb.com")
+        
+        # SMS configuration (Twilio or similar)
+        self.sms_enabled = os.getenv("SMS_ENABLED", "false").lower() == "true"
+        self.twilio_account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+        self.twilio_auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+        self.twilio_from_number = os.getenv("TWILIO_FROM_NUMBER")
 
     def send_email(
         self, to_email: str, subject: str, message: str, html_message: str = None
@@ -65,6 +71,21 @@ class NotificationService:
 
         except Exception as e:
             logger.error(f"Failed to send email to {to_email}: {str(e)}")
+            return False
+    
+    async def send_sms(self, phone_number: str, message: str) -> bool:
+        """Send SMS notification"""
+        try:
+            if not self.sms_enabled:
+                logger.info(f"SMS disabled, would send to {phone_number}: {message}")
+                return True
+            
+            # In production, this would use Twilio or another SMS service
+            logger.info(f"Sending SMS to {phone_number}: {message}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to send SMS: {str(e)}")
             return False
 
     @staticmethod
