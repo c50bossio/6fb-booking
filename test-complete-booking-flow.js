@@ -5,7 +5,7 @@
 
 async function testCompleteBookingFlow() {
   console.log('🧪 Starting comprehensive booking flow test...');
-  
+
   const tests = {
     passed: 0,
     failed: 0,
@@ -24,7 +24,7 @@ async function testCompleteBookingFlow() {
   try {
     // Test 1: API Connectivity
     console.log('\n📡 Testing API connectivity...');
-    
+
     // Test backend health
     try {
       const response = await fetch('http://localhost:8000/api/v1/dashboard/demo/appointments/today');
@@ -43,11 +43,11 @@ async function testCompleteBookingFlow() {
 
     // Test 2: Service API Endpoints
     console.log('\n🛎️ Testing service endpoints...');
-    
+
     try {
       const servicesResponse = await fetch('http://localhost:8000/api/v1/booking/public/barbers/1/services');
       const servicesData = await servicesResponse.json();
-      logTest('Services API working', servicesResponse.ok && Array.isArray(servicesData), 
+      logTest('Services API working', servicesResponse.ok && Array.isArray(servicesData),
         `Found ${servicesData.length || 0} services`);
     } catch (error) {
       logTest('Services API working', false, error.message);
@@ -55,11 +55,11 @@ async function testCompleteBookingFlow() {
 
     // Test 3: Barber Endpoints
     console.log('\n👨‍💼 Testing barber endpoints...');
-    
+
     try {
       const barbersResponse = await fetch('http://localhost:8000/api/v1/booking/public/shops/1/barbers');
       const barbersData = await barbersResponse.json();
-      logTest('Barbers API working', barbersResponse.ok && Array.isArray(barbersData), 
+      logTest('Barbers API working', barbersResponse.ok && Array.isArray(barbersData),
         `Found ${barbersData.length || 0} barbers`);
     } catch (error) {
       logTest('Barbers API working', false, error.message);
@@ -67,14 +67,14 @@ async function testCompleteBookingFlow() {
 
     // Test 4: Availability Endpoints
     console.log('\n📅 Testing availability endpoints...');
-    
+
     try {
       const today = new Date().toISOString().split('T')[0];
       const availabilityResponse = await fetch(
         `http://localhost:8000/api/v1/booking/public/barbers/1/availability?date=${today}&service_id=1&duration=30`
       );
       const availabilityData = await availabilityResponse.json();
-      logTest('Availability API working', availabilityResponse.ok, 
+      logTest('Availability API working', availabilityResponse.ok,
         `Status: ${availabilityResponse.status}`);
     } catch (error) {
       logTest('Availability API working', false, error.message);
@@ -82,11 +82,11 @@ async function testCompleteBookingFlow() {
 
     // Test 5: Dashboard Demo Data
     console.log('\n📊 Testing dashboard data...');
-    
+
     try {
       const dashboardResponse = await fetch('http://localhost:8000/api/v1/dashboard/demo/appointments/today');
       const dashboardData = await dashboardResponse.json();
-      logTest('Dashboard demo data', dashboardResponse.ok && dashboardData.stats, 
+      logTest('Dashboard demo data', dashboardResponse.ok && dashboardData.stats,
         `Revenue: $${dashboardData.stats?.revenue || 0}`);
     } catch (error) {
       logTest('Dashboard demo data', false, error.message);
@@ -94,16 +94,16 @@ async function testCompleteBookingFlow() {
 
     // Test 6: Environment Configuration
     console.log('\n⚙️ Testing environment configuration...');
-    
+
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
     logTest('API URL configured', apiUrl.includes('8000'), `URL: ${apiUrl}`);
-    
+
     // Test CORS headers
     try {
       const corsResponse = await fetch('http://localhost:8000/api/v1/dashboard/demo/appointments/today', {
         method: 'OPTIONS'
       });
-      logTest('CORS configured', corsResponse.ok || corsResponse.status === 200, 
+      logTest('CORS configured', corsResponse.ok || corsResponse.status === 200,
         `Status: ${corsResponse.status}`);
     } catch (error) {
       logTest('CORS configured', false, error.message);
