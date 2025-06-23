@@ -271,19 +271,19 @@ export default function LandingPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto bg-yellow-200 p-8 rounded-lg">
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 text-center">
               <div className="text-3xl font-bold text-slate-700 mb-2">$2.5M+</div>
-              <div className="text-sm font-medium" style={{color: '#000000'}}>Paid Out Monthly</div>
+              <div className="text-sm font-medium" style={{color: '#000000 !important'}}>Paid Out Monthly</div>
             </div>
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 text-center">
               <div className="text-3xl font-bold text-slate-700 mb-2">45K+</div>
-              <div className="text-sm font-medium" style={{color: '#000000'}}>Appointments Tracked</div>
+              <div className="text-sm font-medium" style={{color: '#000000 !important'}}>Appointments Tracked</div>
             </div>
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 text-center">
               <div className="text-3xl font-bold text-slate-700 mb-2">98%</div>
-              <div className="text-sm font-medium" style={{color: '#000000'}}>On-Time Payouts</div>
+              <div className="text-sm font-medium" style={{color: '#000000 !important'}}>On-Time Payouts</div>
             </div>
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 text-center">
               <div className="text-3xl font-bold text-slate-700 mb-2">30 sec</div>
-              <div className="text-sm font-medium" style={{color: '#000000'}}>Instant Transfers</div>
+              <div className="text-sm font-medium" style={{color: '#000000 !important'}}>Instant Transfers</div>
             </div>
           </div>
 
