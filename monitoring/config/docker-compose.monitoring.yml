@@ -1,0 +1,182 @@
+version: '3.8'
+
+services:
+  # Uptime Monitor
+  uptime-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile.monitoring
+    container_name: 6fb-uptime-monitor
+    restart: unless-stopped
+    volumes:
+      - ./logs:/var/log/6fb-monitoring
+      - ./config:/app/config
+    environment:
+      - PYTHONPATH=/app/scripts
+    command: python3 /app/scripts/uptime-monitor.py
+    env_file:
+      - ./config/.env.monitoring
+    depends_on:
+      - redis
+    networks:
+      - monitoring
+
+  # Performance Monitor
+  performance-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile.monitoring
+    container_name: 6fb-performance-monitor
+    restart: unless-stopped
+    volumes:
+      - ./logs:/var/log/6fb-monitoring
+      - ./config:/app/config
+    environment:
+      - PYTHONPATH=/app/scripts
+    command: python3 /app/scripts/performance-monitor.py
+    env_file:
+      - ./config/.env.monitoring
+    depends_on:
+      - redis
+    networks:
+      - monitoring
+
+  # Deployment Monitor
+  deployment-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile.monitoring
+    container_name: 6fb-deployment-monitor
+    restart: unless-stopped
+    volumes:
+      - ./logs:/var/log/6fb-monitoring
+      - ./config:/app/config
+    environment:
+      - PYTHONPATH=/app/scripts
+    command: python3 /app/scripts/deployment-monitor.py
+    env_file:
+      - ./config/.env.monitoring
+    networks:
+      - monitoring
+
+  # Error Aggregator
+  error-aggregator:
+    build:
+      context: .
+      dockerfile: Dockerfile.monitoring
+    container_name: 6fb-error-aggregator
+    restart: unless-stopped
+    volumes:
+      - ./logs:/var/log/6fb-monitoring
+      - ./config:/app/config
+    environment:
+      - PYTHONPATH=/app/scripts
+    command: python3 /app/scripts/error-aggregator.py
+    env_file:
+      - ./config/.env.monitoring
+    depends_on:
+      - redis
+    networks:
+      - monitoring
+
+  # Status Page
+  status-page:
+    build:
+      context: .
+      dockerfile: Dockerfile.monitoring
+    container_name: 6fb-status-page
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./logs:/var/log/6fb-monitoring
+      - ./config:/app/config
+      - ./status-page:/app/status-page
+    environment:
+      - STATUS_PAGE_PORT=8080
+      - PYTHONPATH=/app/status-page
+    command: python3 /app/status-page/api.py
+    env_file:
+      - ./config/.env.monitoring
+    depends_on:
+      - redis
+    networks:
+      - monitoring
+
+  # Daily Health Report (runs as cron job)
+  health-reporter:
+    build:
+      context: .
+      dockerfile: Dockerfile.monitoring
+    container_name: 6fb-health-reporter
+    restart: unless-stopped
+    volumes:
+      - ./logs:/var/log/6fb-monitoring
+      - ./config:/app/config
+    environment:
+      - PYTHONPATH=/app/scripts
+    command: >
+      sh -c "
+        echo '0 6 * * * cd /app/scripts && python3 daily-health-report.py' | crontab - &&
+        crond -f
+      "
+    env_file:
+      - ./config/.env.monitoring
+    depends_on:
+      - redis
+    networks:
+      - monitoring
+
+  # Redis for caching and data sharing
+  redis:
+    image: redis:7-alpine
+    container_name: 6fb-monitoring-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - monitoring
+
+  # Prometheus (optional)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: 6fb-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=30d'
+    networks:
+      - monitoring
+
+  # Grafana (optional)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: 6fb-grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/grafana:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+    networks:
+      - monitoring
+
+volumes:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  monitoring:
+    driver: bridge
