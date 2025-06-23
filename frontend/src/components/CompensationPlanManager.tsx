@@ -68,7 +68,7 @@ export default function CompensationPlanManager() {
       } else {
         await apiClient.post('/compensation-plans', formData)
       }
-      
+
       // Reset form
       setFormData({
         name: '',
@@ -83,7 +83,7 @@ export default function CompensationPlanManager() {
       })
       setShowAddPlan(false)
       setEditingPlan(null)
-      
+
       // Refresh plans
       fetchPlans()
     } catch (error: any) {
@@ -137,7 +137,7 @@ export default function CompensationPlanManager() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
       </div>
     )
   }
@@ -151,7 +151,7 @@ export default function CompensationPlanManager() {
             setEditingPlan(null)
             setShowAddPlan(true)
           }}
-          className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg font-medium hover:from-violet-700 hover:to-purple-700 transition-all flex items-center space-x-2"
+          className="px-4 py-2 bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-lg font-medium hover:from-teal-700 hover:to-teal-800 transition-all flex items-center space-x-2"
         >
           <PlusIcon className="h-5 w-5" />
           <span>Add Plan</span>
@@ -403,7 +403,7 @@ export default function CompensationPlanManager() {
                     id="is_active"
                     checked={formData.is_active}
                     onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
-                    className="w-4 h-4 text-purple-600 bg-slate-700 border-slate-600 rounded"
+                    className="w-4 h-4 text-teal-600 bg-slate-700 border-slate-600 rounded"
                   />
                   <label htmlFor="is_active" className="text-sm text-gray-300">
                     Active (Available for assignment to barbers)
@@ -424,7 +424,7 @@ export default function CompensationPlanManager() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                  className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
                 >
                   {editingPlan ? 'Update Plan' : 'Create Plan'}
                 </button>

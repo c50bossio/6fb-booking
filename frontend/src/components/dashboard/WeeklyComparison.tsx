@@ -162,7 +162,7 @@ export default function WeeklyComparison() {
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
-                className="bg-purple-600 h-2 rounded-full" 
+                className="bg-slate-600 h-2 rounded-full" 
                 style={{ width: `${(mockWeeklyData.currentWeek.products / mockWeeklyData.currentWeek.revenue) * 100}%` }}
               ></div>
             </div>

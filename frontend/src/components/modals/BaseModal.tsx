@@ -19,14 +19,14 @@ interface BaseModalProps {
 }
 
 const sizeClasses = {
-  sm: 'max-w-sm',
-  md: 'max-w-md',
-  lg: 'max-w-lg',
-  xl: 'max-w-xl',
-  '2xl': 'max-w-2xl',
-  '3xl': 'max-w-3xl',
-  '4xl': 'max-w-4xl',
-  full: 'max-w-full m-4'
+  sm: 'max-w-sm mx-4 sm:mx-auto',
+  md: 'max-w-md mx-4 sm:mx-auto',
+  lg: 'max-w-lg mx-4 sm:mx-auto',
+  xl: 'max-w-xl mx-4 sm:mx-auto',
+  '2xl': 'max-w-2xl mx-4 sm:mx-auto',
+  '3xl': 'max-w-3xl mx-4 sm:mx-auto',
+  '4xl': 'max-w-4xl mx-4 sm:mx-auto',
+  full: 'max-w-full mx-4'
 }
 
 export default function BaseModal({
@@ -91,7 +91,7 @@ export default function BaseModal({
 
         {/* Modal container */}
         <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
+          <div className="flex min-h-full items-center justify-center p-2 sm:p-4 text-center">
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
@@ -104,25 +104,21 @@ export default function BaseModal({
               <Dialog.Panel
                 className={`
                   w-full ${sizeClasses[size]} transform overflow-hidden
-                  rounded-2xl text-left align-middle transition-all
+                  rounded-2xl bg-white dark:bg-gray-900 text-left align-middle transition-all
+                  border border-gray-200 dark:border-gray-700
+                  shadow-2xl dark:shadow-2xl
                   ${panelClassName}
                   ${className}
                 `}
-                style={{
-                  background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%)',
-                  backdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)'
-                }}
                 ref={initialFocusRef}
               >
                 {/* Header */}
                 {(title || showCloseButton) && (
-                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200/50">
+                  <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                     {title && (
                       <Dialog.Title
                         as="h3"
-                        className="text-xl font-semibold leading-6 text-gray-900"
+                        className="text-xl font-semibold leading-6 text-gray-900 dark:text-white"
                       >
                         {title}
                       </Dialog.Title>
@@ -131,7 +127,7 @@ export default function BaseModal({
                     {showCloseButton && (
                       <button
                         type="button"
-                        className="rounded-lg p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100/50 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+                        className="rounded-lg p-2 min-h-[44px] min-w-[44px] text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
                         onClick={onClose}
                       >
                         <span className="sr-only">Close</span>
@@ -142,7 +138,7 @@ export default function BaseModal({
                 )}
 
                 {/* Content */}
-                <div className="px-6 py-4">
+                <div className="px-4 sm:px-6 py-4">
                   {children}
                 </div>
               </Dialog.Panel>

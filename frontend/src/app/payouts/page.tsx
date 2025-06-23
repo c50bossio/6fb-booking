@@ -71,10 +71,12 @@ export default function PayoutsPage() {
   const fetchData = async () => {
     try {
       setLoading(true)
-      
+
       // Fetch barbers
       const barbersResponse = await barbersService.getBarbers()
-      setBarbers(barbersResponse.data || [])
+      // Handle both paginated response and direct array response (for mock data)
+      const barbersData = Array.isArray(barbersResponse) ? barbersResponse : (barbersResponse?.data || [])
+      setBarbers(Array.isArray(barbersData) ? barbersData : [])
 
       // Fetch payouts
       const response = await apiClient.get('/payouts')
@@ -181,10 +183,10 @@ export default function PayoutsPage() {
         description: ''
       })
       setShowCreatePayout(false)
-      
+
       // Refresh data
       fetchData()
-      
+
       alert(`Payout of $${payoutForm.amount} initiated successfully!`)
     } catch (error: any) {
       console.error('Failed to create payout:', error)

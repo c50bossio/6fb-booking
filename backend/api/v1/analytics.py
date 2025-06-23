@@ -85,10 +85,7 @@ async def get_barber_sixfb_score(
     # Get barber with eager loading
     barber = (
         db.query(Barber)
-        .options(
-            joinedload(Barber.user),
-            joinedload(Barber.location)
-        )
+        .options(joinedload(Barber.user), joinedload(Barber.location))
         .filter(Barber.id == barber_id)
         .first()
     )
@@ -146,10 +143,7 @@ async def get_barber_detailed_analytics(
     # Get barber with eager loading
     barber = (
         db.query(Barber)
-        .options(
-            joinedload(Barber.user),
-            joinedload(Barber.location)
-        )
+        .options(joinedload(Barber.user), joinedload(Barber.location))
         .filter(Barber.id == barber_id)
         .first()
     )
@@ -296,10 +290,7 @@ async def get_dashboard_summary(
         # Barber - show personal metrics with eager loading
         barber = (
             db.query(Barber)
-            .options(
-                joinedload(Barber.user),
-                joinedload(Barber.location)
-            )
+            .options(joinedload(Barber.user), joinedload(Barber.location))
             .filter(Barber.user_id == current_user.id)
             .first()
         )
@@ -418,10 +409,7 @@ async def get_metric_trends(
     if barber_id:
         barber = (
             db.query(Barber)
-            .options(
-                joinedload(Barber.user),
-                joinedload(Barber.location)
-            )
+            .options(joinedload(Barber.user), joinedload(Barber.location))
             .filter(Barber.id == barber_id)
             .first()
         )
@@ -688,9 +676,13 @@ def get_performance_metrics(
     )
 
     # Utilization rate (assuming 8 hours per day, 30 min per appointment)
-    barber_count_query = db.query(func.count(Barber.id)).filter(Barber.is_active == True)
+    barber_count_query = db.query(func.count(Barber.id)).filter(
+        Barber.is_active == True
+    )
     if location_id:
-        barber_count_query = barber_count_query.filter(Barber.location_id == location_id)
+        barber_count_query = barber_count_query.filter(
+            Barber.location_id == location_id
+        )
     barber_count = barber_count_query.scalar() or 1
 
     total_hours = period_days * 8 * barber_count

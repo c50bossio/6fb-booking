@@ -188,7 +188,7 @@ export default function AppointmentDetailsModal({
                   {statusInfo.label}
                 </span>
                 {appointment.confirmationNumber && (
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
                     #{appointment.confirmationNumber}
                   </span>
                 )}
@@ -196,14 +196,14 @@ export default function AppointmentDetailsModal({
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="p-2 text-gray-500 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-colors"
+                  className="p-2 text-gray-500 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-lg transition-colors"
                   title="Edit appointment"
                 >
                   <PencilIcon className="h-5 w-5" />
                 </button>
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                   title="Cancel appointment"
                 >
                   <TrashIcon className="h-5 w-5" />
@@ -212,71 +212,71 @@ export default function AppointmentDetailsModal({
             </div>
 
             {/* Service Information */}
-            <div className="bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-200 rounded-xl p-6">
+            <div className="bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-900/20 dark:to-emerald-900/20 border border-teal-200 dark:border-teal-800 rounded-xl p-6">
               <div className="flex items-center space-x-2 mb-4">
-                <CurrencyDollarIcon className="h-5 w-5 text-violet-600" />
-                <h3 className="text-lg font-semibold text-violet-900">Service Details</h3>
+                <CurrencyDollarIcon className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+                <h3 className="text-lg font-semibold text-teal-900 dark:text-teal-100">Service Details</h3>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-violet-700">Service</p>
-                  <p className="font-semibold text-violet-900">{appointment.service}</p>
+                  <p className="text-sm text-teal-700 dark:text-teal-300">Service</p>
+                  <p className="font-semibold text-teal-900 dark:text-teal-100">{appointment.service}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-violet-700">Price</p>
-                  <p className="font-semibold text-violet-900">${appointment.price}</p>
+                  <p className="text-sm text-teal-700 dark:text-teal-300">Price</p>
+                  <p className="font-semibold text-teal-900 dark:text-teal-100">${appointment.price}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-violet-700">Duration</p>
-                  <p className="font-semibold text-violet-900">
+                  <p className="text-sm text-teal-700 dark:text-teal-300">Duration</p>
+                  <p className="font-semibold text-teal-900 dark:text-teal-100">
                     {appointment.startTime} - {appointment.endTime}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-violet-700">Barber</p>
-                  <p className="font-semibold text-violet-900">{appointment.barber}</p>
+                  <p className="text-sm text-teal-700 dark:text-teal-300">Barber</p>
+                  <p className="font-semibold text-teal-900 dark:text-teal-100">{appointment.barber}</p>
                 </div>
               </div>
             </div>
 
             {/* Date & Time */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-gray-50 rounded-xl p-4">
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
                 <div className="flex items-center space-x-2 mb-2">
-                  <CalendarDaysIcon className="h-5 w-5 text-gray-600" />
-                  <h4 className="font-semibold text-gray-900">Date</h4>
+                  <CalendarDaysIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                  <h4 className="font-semibold text-gray-900 dark:text-white">Date</h4>
                 </div>
-                <p className="text-gray-700">{formatDate(appointment.date)}</p>
+                <p className="text-gray-700 dark:text-gray-300">{formatDate(appointment.date)}</p>
               </div>
 
-              <div className="bg-gray-50 rounded-xl p-4">
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
                 <div className="flex items-center space-x-2 mb-2">
-                  <ClockIcon className="h-5 w-5 text-gray-600" />
-                  <h4 className="font-semibold text-gray-900">Time</h4>
+                  <ClockIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                  <h4 className="font-semibold text-gray-900 dark:text-white">Time</h4>
                 </div>
-                <p className="text-gray-700">
+                <p className="text-gray-700 dark:text-gray-300">
                   {appointment.startTime} - {appointment.endTime}
                 </p>
               </div>
             </div>
 
             {/* Client Information */}
-            <div className="bg-gray-50 rounded-xl p-6">
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-6">
               <div className="flex items-center space-x-2 mb-4">
-                <UserIcon className="h-5 w-5 text-gray-600" />
-                <h3 className="text-lg font-semibold text-gray-900">Client Information</h3>
+                <UserIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Client Information</h3>
               </div>
               <div className="space-y-3">
                 <div>
-                  <p className="text-sm text-gray-600">Name</p>
-                  <p className="font-medium text-gray-900">{appointment.client}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Name</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{appointment.client}</p>
                 </div>
                 {appointment.clientEmail && (
                   <div className="flex items-center space-x-2">
-                    <EnvelopeIcon className="h-4 w-4 text-gray-500" />
+                    <EnvelopeIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                     <a
                       href={`mailto:${appointment.clientEmail}`}
-                      className="text-violet-600 hover:text-violet-700 underline"
+                      className="text-teal-600 hover:text-teal-700 underline"
                     >
                       {appointment.clientEmail}
                     </a>
@@ -284,10 +284,10 @@ export default function AppointmentDetailsModal({
                 )}
                 {appointment.clientPhone && (
                   <div className="flex items-center space-x-2">
-                    <PhoneIcon className="h-4 w-4 text-gray-500" />
+                    <PhoneIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                     <a
                       href={`tel:${appointment.clientPhone}`}
-                      className="text-violet-600 hover:text-violet-700 underline"
+                      className="text-teal-600 hover:text-teal-700 underline"
                     >
                       {appointment.clientPhone}
                     </a>
@@ -298,14 +298,14 @@ export default function AppointmentDetailsModal({
 
             {/* Notes */}
             {appointment.notes && (
-              <div className="bg-gray-50 rounded-xl p-4">
-                <h4 className="font-semibold text-gray-900 mb-2">Notes</h4>
-                <p className="text-gray-700 whitespace-pre-wrap">{appointment.notes}</p>
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Notes</h4>
+                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{appointment.notes}</p>
               </div>
             )}
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
+            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
               <button
                 onClick={onClose}
                 className="premium-button-secondary text-sm"
@@ -328,13 +328,13 @@ export default function AppointmentDetailsModal({
             {/* Client Information */}
             <div className="space-y-4">
               <div className="flex items-center space-x-2 mb-3">
-                <UserIcon className="h-5 w-5 text-violet-600" />
-                <h4 className="text-lg font-semibold text-gray-900">Client Information</h4>
+                <UserIcon className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Client Information</h4>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Full Name *
                   </label>
                   <input
@@ -344,7 +344,7 @@ export default function AppointmentDetailsModal({
                     placeholder="Enter client name"
                   />
                   {errors.client_name && (
-                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center">
                       <ExclamationTriangleIcon className="h-4 w-4 mr-1" />
                       {errors.client_name.message}
                     </p>
@@ -352,7 +352,7 @@ export default function AppointmentDetailsModal({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Email Address
                   </label>
                   <input
@@ -362,7 +362,7 @@ export default function AppointmentDetailsModal({
                     placeholder="client@example.com"
                   />
                   {errors.client_email && (
-                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center">
                       <ExclamationTriangleIcon className="h-4 w-4 mr-1" />
                       {errors.client_email.message}
                     </p>
@@ -370,7 +370,7 @@ export default function AppointmentDetailsModal({
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Phone Number
                   </label>
                   <input
@@ -386,13 +386,13 @@ export default function AppointmentDetailsModal({
             {/* Date and Time */}
             <div className="space-y-4">
               <div className="flex items-center space-x-2 mb-3">
-                <CalendarDaysIcon className="h-5 w-5 text-violet-600" />
-                <h4 className="text-lg font-semibold text-gray-900">Date & Time</h4>
+                <CalendarDaysIcon className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Date & Time</h4>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Date *
                   </label>
                   <input
@@ -402,7 +402,7 @@ export default function AppointmentDetailsModal({
                     min={new Date().toISOString().split('T')[0]}
                   />
                   {errors.appointment_date && (
-                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center">
                       <ExclamationTriangleIcon className="h-4 w-4 mr-1" />
                       {errors.appointment_date.message}
                     </p>
@@ -410,7 +410,7 @@ export default function AppointmentDetailsModal({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Time *
                   </label>
                   <select
@@ -425,7 +425,7 @@ export default function AppointmentDetailsModal({
                     ))}
                   </select>
                   {errors.appointment_time && (
-                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center">
                       <ExclamationTriangleIcon className="h-4 w-4 mr-1" />
                       {errors.appointment_time.message}
                     </p>
@@ -465,7 +465,7 @@ export default function AppointmentDetailsModal({
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
+            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
               <button
                 type="button"
                 onClick={() => setIsEditing(false)}

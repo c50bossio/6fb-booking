@@ -563,9 +563,9 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* Template Selection */}
-      <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-6">
+      <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-6">
         <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-          <DocumentDuplicateIcon className="h-5 w-5 mr-2 text-purple-400" />
+          <DocumentDuplicateIcon className="h-5 w-5 mr-2 text-teal-500" />
           Quick Start Templates
         </h3>
         <p className="text-sm text-gray-400 mb-4">
@@ -580,7 +580,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
             }}
             className={`p-4 rounded-lg border-2 transition-all text-left ${
               selectedTemplate === 'starter'
-                ? 'border-purple-500 bg-purple-500/20'
+                ? 'border-teal-500 bg-teal-500/20'
                 : 'border-gray-600 bg-gray-700 hover:border-gray-500'
             }`}
           >
@@ -596,7 +596,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
             }}
             className={`p-4 rounded-lg border-2 transition-all text-left ${
               selectedTemplate === 'experienced'
-                ? 'border-purple-500 bg-purple-500/20'
+                ? 'border-teal-500 bg-teal-500/20'
                 : 'border-gray-600 bg-gray-700 hover:border-gray-500'
             }`}
           >
@@ -612,7 +612,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
             }}
             className={`p-4 rounded-lg border-2 transition-all text-left ${
               selectedTemplate === 'master'
-                ? 'border-purple-500 bg-purple-500/20'
+                ? 'border-teal-500 bg-teal-500/20'
                 : 'border-gray-600 bg-gray-700 hover:border-gray-500'
             }`}
           >
@@ -628,7 +628,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
             }}
             className={`p-4 rounded-lg border-2 transition-all text-left ${
               selectedTemplate === 'booth_rental'
-                ? 'border-purple-500 bg-purple-500/20'
+                ? 'border-teal-500 bg-teal-500/20'
                 : 'border-gray-600 bg-gray-700 hover:border-gray-500'
             }`}
           >
@@ -644,7 +644,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
             }}
             className={`p-4 rounded-lg border-2 transition-all text-left ${
               selectedTemplate === 'hybrid_modern'
-                ? 'border-purple-500 bg-purple-500/20'
+                ? 'border-teal-500 bg-teal-500/20'
                 : 'border-gray-600 bg-gray-700 hover:border-gray-500'
             }`}
           >
@@ -660,7 +660,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
             }}
             className={`p-4 rounded-lg border-2 transition-all text-left ${
               selectedTemplate === ''
-                ? 'border-purple-500 bg-purple-500/20'
+                ? 'border-teal-500 bg-teal-500/20'
                 : 'border-gray-600 bg-gray-700 hover:border-gray-500'
             }`}
           >
@@ -725,7 +725,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
           value={planName}
           onChange={(e) => setPlanName(e.target.value)}
           required
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
+          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-teal-500"
           placeholder="e.g., Standard Commission Plan, Master Barber Package"
         />
       </div>
@@ -753,8 +753,8 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                 onChange={(e) => setCompensationType(e.target.value)}
                 className="sr-only peer"
               />
-              <div className="p-4 bg-gray-700 border-2 border-gray-600 rounded-lg cursor-pointer peer-checked:border-purple-500 peer-checked:bg-purple-500/10 transition-all">
-                <type.icon className="h-5 w-5 text-purple-400 mb-2" />
+              <div className="p-4 bg-gray-700 border-2 border-gray-600 rounded-lg cursor-pointer peer-checked:border-teal-500 peer-checked:bg-teal-500/10 transition-all">
+                <type.icon className="h-5 w-5 text-teal-500 mb-2" />
                 <p className="font-medium text-white text-sm">{type.label}</p>
               </div>
             </label>
@@ -766,7 +766,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
       {(compensationType === 'salary' || compensationType === 'salary_plus_commission') && (
         <div className="bg-gray-800/50 rounded-lg p-6 space-y-4">
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-            <CalendarIcon className="h-5 w-5 mr-2 text-purple-400" />
+            <CalendarIcon className="h-5 w-5 mr-2 text-teal-500" />
             Salary Settings
           </h3>
           <div className="grid grid-cols-2 gap-4">
@@ -780,7 +780,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                 onChange={(e) => setBaseSalary(parseFloat(e.target.value))}
                 min="0"
                 step="100"
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-teal-500"
               />
             </div>
             <div>
@@ -790,7 +790,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
               <select
                 value={salaryFrequency}
                 onChange={(e) => setSalaryFrequency(e.target.value)}
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-teal-500"
               >
                 <option value="weekly">Weekly</option>
                 <option value="biweekly">Bi-weekly</option>
@@ -805,7 +805,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
       {(compensationType === 'booth_rent_only' || compensationType === 'hybrid') && (
         <div className="bg-gray-800/50 rounded-lg p-6 space-y-4">
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-            <HomeIcon className="h-5 w-5 mr-2 text-purple-400" />
+            <HomeIcon className="h-5 w-5 mr-2 text-teal-500" />
             Booth Rent Settings
           </h3>
           <div className="grid grid-cols-2 gap-4">
@@ -819,7 +819,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                 onChange={(e) => setBoothRentAmount(parseFloat(e.target.value))}
                 min="0"
                 step="50"
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-teal-500"
               />
             </div>
             <div>
@@ -829,7 +829,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
               <select
                 value={boothRentFrequency}
                 onChange={(e) => setBoothRentFrequency(e.target.value)}
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-teal-500"
               >
                 <option value="daily">Daily</option>
                 <option value="weekly">Weekly</option>
@@ -844,7 +844,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                 type="checkbox"
                 checked={includesUtilities}
                 onChange={(e) => setIncludesUtilities(e.target.checked)}
-                className="w-4 h-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
+                className="w-4 h-4 text-teal-600 bg-gray-700 border-gray-600 rounded focus:ring-teal-500"
               />
               <span className="ml-2 text-sm text-gray-300">Includes utilities</span>
             </label>
@@ -853,7 +853,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                 type="checkbox"
                 checked={includesProducts}
                 onChange={(e) => setIncludesProducts(e.target.checked)}
-                className="w-4 h-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
+                className="w-4 h-4 text-teal-600 bg-gray-700 border-gray-600 rounded focus:ring-teal-500"
               />
               <span className="ml-2 text-sm text-gray-300">Includes product usage</span>
             </label>
@@ -862,7 +862,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                 type="checkbox"
                 checked={includesMarketing}
                 onChange={(e) => setIncludesMarketing(e.target.checked)}
-                className="w-4 h-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
+                className="w-4 h-4 text-teal-600 bg-gray-700 border-gray-600 rounded focus:ring-teal-500"
               />
               <span className="ml-2 text-sm text-gray-300">Includes marketing</span>
             </label>
@@ -874,13 +874,13 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
       {compensationType !== 'booth_rent_only' && (
         <div className="bg-gray-800/50 rounded-lg p-6 space-y-4">
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-            <ChartBarIcon className="h-5 w-5 mr-2 text-purple-400" />
+            <ChartBarIcon className="h-5 w-5 mr-2 text-teal-500" />
             Commission Structure
           </h3>
 
           {/* Commission Clarity Info */}
-          <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4 mb-6">
-            <p className="text-sm text-purple-300 font-medium mb-2">💰 Commission = Barbershop Revenue</p>
+          <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-4 mb-6">
+            <p className="text-sm text-teal-400 font-medium mb-2">💰 Commission = Barbershop Revenue</p>
             <p className="text-xs text-gray-400">
               All commission percentages below represent <strong>your barbershop's share</strong> of revenue.
               The barber receives the remaining percentage. Example: 60% commission means your shop keeps $60 and the barber gets $40 from a $100 service.
@@ -901,7 +901,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                       updated[index].name = e.target.value
                       setServiceCommissions(updated)
                     }}
-                    className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                    className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
                     placeholder="Service name"
                   />
                   <input
@@ -914,7 +914,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                     }}
                     min="0"
                     max="100"
-                    className="w-20 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                    className="w-20 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
                     placeholder="%"
                   />
                   <span className="text-gray-400 text-sm">%</span>
@@ -930,7 +930,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
               <button
                 type="button"
                 onClick={() => setServiceCommissions([...serviceCommissions, { name: '', rate: 50 }])}
-                className="flex items-center text-purple-400 hover:text-purple-300 text-sm"
+                className="flex items-center text-teal-500 hover:text-teal-400 text-sm"
               >
                 <PlusIcon className="h-4 w-4 mr-1" />
                 Add Service
@@ -951,7 +951,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                     onChange={(e) => setProductCommission(parseFloat(e.target.value))}
                     min="0"
                     max="100"
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
                   />
                   <span className="text-gray-400 text-sm">%</span>
                 </div>
@@ -965,7 +965,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                     onChange={(e) => setPremiumProductCommission(parseFloat(e.target.value))}
                     min="0"
                     max="100"
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
                   />
                   <span className="text-gray-400 text-sm">%</span>
                 </div>
@@ -989,7 +989,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                         setCommissionTiers(updated)
                       }}
                       min="0"
-                      className="w-24 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                      className="w-24 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
                       placeholder="Min $"
                     />
                     <span className="text-gray-400">-</span>
@@ -1002,7 +1002,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                         setCommissionTiers(updated)
                       }}
                       min="0"
-                      className="w-24 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                      className="w-24 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
                       placeholder="Max $"
                     />
                     <input
@@ -1015,7 +1015,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                       }}
                       min="0"
                       max="100"
-                      className="w-20 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                      className="w-20 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
                       placeholder="%"
                     />
                     <span className="text-gray-400 text-sm">%</span>
@@ -1040,7 +1040,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                       rate: lastTier.rate + 5
                     }])
                   }}
-                  className="flex items-center text-purple-400 hover:text-purple-300 text-sm"
+                  className="flex items-center text-teal-500 hover:text-teal-400 text-sm"
                 >
                   <PlusIcon className="h-4 w-4 mr-1" />
                   Add Tier
@@ -1054,7 +1054,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
       {/* Performance Bonuses */}
       <div className="bg-gray-800/50 rounded-lg p-6 space-y-4">
         <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-          <StarIcon className="h-5 w-5 mr-2 text-purple-400" />
+          <StarIcon className="h-5 w-5 mr-2 text-teal-500" />
           Performance Bonuses
         </h3>
 
@@ -1075,7 +1075,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                   }}
                   min="0"
                   step="1000"
-                  className="w-32 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                  className="w-32 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
                   placeholder="Target"
                 />
                 <span className="text-gray-400 text-sm">=</span>
@@ -1090,7 +1090,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                   }}
                   min="0"
                   step="50"
-                  className="w-24 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                  className="w-24 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
                   placeholder="Bonus"
                 />
                 <button
@@ -1125,7 +1125,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
               onChange={(e) => setNewClientBonus(parseFloat(e.target.value))}
               min="0"
               step="5"
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
             />
           </div>
           <div>
@@ -1138,7 +1138,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
               onChange={(e) => setRetentionBonus(parseFloat(e.target.value))}
               min="0"
               step="25"
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
             />
           </div>
         </div>
@@ -1162,7 +1162,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
               min="0"
               max="100"
               step="0.5"
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
             />
           </div>
           <div>
@@ -1176,7 +1176,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
               min="0"
               max="10"
               step="0.1"
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
             />
           </div>
           <div>
@@ -1189,7 +1189,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
               onChange={(e) => setMarketingContribution(parseFloat(e.target.value))}
               min="0"
               step="10"
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
             />
           </div>
           <div>
@@ -1202,7 +1202,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
               onChange={(e) => setNoShowPenalty(parseFloat(e.target.value))}
               min="0"
               step="5"
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
             />
           </div>
         </div>
@@ -1211,7 +1211,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
       {/* Special Conditions */}
       <div className="bg-gray-800/50 rounded-lg p-6 space-y-4">
         <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-          <AcademicCapIcon className="h-5 w-5 mr-2 text-purple-400" />
+          <AcademicCapIcon className="h-5 w-5 mr-2 text-teal-500" />
           Special Conditions
         </h3>
 
@@ -1222,7 +1222,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
               type="checkbox"
               checked={hasApprenticePeriod}
               onChange={(e) => setHasApprenticePeriod(e.target.checked)}
-              className="w-4 h-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500 mr-2"
+              className="w-4 h-4 text-teal-600 bg-gray-700 border-gray-600 rounded focus:ring-teal-500 mr-2"
             />
             <span className="text-sm text-gray-300">Include apprentice period</span>
           </label>
@@ -1236,7 +1236,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                   onChange={(e) => setApprenticeMonths(parseInt(e.target.value))}
                   min="1"
                   max="24"
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
                 />
               </div>
               <div>
@@ -1247,7 +1247,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                   onChange={(e) => setApprenticeRate(parseFloat(e.target.value))}
                   min="0"
                   max="100"
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
                 />
               </div>
             </div>
@@ -1266,7 +1266,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
               onChange={(e) => setWeekendPremium(parseFloat(e.target.value))}
               min="0"
               max="50"
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
             />
           </div>
           <div>
@@ -1279,7 +1279,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
               onChange={(e) => setHolidayPremium(parseFloat(e.target.value))}
               min="0"
               max="100"
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
             />
           </div>
         </div>
@@ -1288,7 +1288,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
       {/* Time-Based Rate Variations */}
       <div className="bg-gray-800/50 rounded-lg p-6 space-y-4">
         <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-          <ClockIcon className="h-5 w-5 mr-2 text-purple-400" />
+          <ClockIcon className="h-5 w-5 mr-2 text-teal-500" />
           Time-Based Rate Variations
         </h3>
 
@@ -1299,7 +1299,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
               type="checkbox"
               checked={enablePeakHours}
               onChange={(e) => setEnablePeakHours(e.target.checked)}
-              className="w-4 h-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500 mr-2"
+              className="w-4 h-4 text-teal-600 bg-gray-700 border-gray-600 rounded focus:ring-teal-500 mr-2"
             />
             <span className="text-sm text-gray-300">Enable peak hour premiums</span>
           </label>
@@ -1314,7 +1314,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                       updated[index].day = e.target.value
                       setPeakHours(updated)
                     }}
-                    className="w-28 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                    className="w-28 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
                   >
                     <option value="weekday">Weekdays</option>
                     <option value="saturday">Saturday</option>
@@ -1328,7 +1328,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                       updated[index].start = e.target.value
                       setPeakHours(updated)
                     }}
-                    className="w-24 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                    className="w-24 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
                   />
                   <span className="text-gray-400">to</span>
                   <input
@@ -1339,7 +1339,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                       updated[index].end = e.target.value
                       setPeakHours(updated)
                     }}
-                    className="w-24 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                    className="w-24 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
                   />
                   <input
                     type="number"
@@ -1349,7 +1349,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                       updated[index].rateAdjustment = parseFloat(e.target.value)
                       setPeakHours(updated)
                     }}
-                    className="w-16 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                    className="w-16 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
                     placeholder="%"
                   />
                   <span className="text-gray-400 text-sm">%</span>
@@ -1365,7 +1365,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
               <button
                 type="button"
                 onClick={() => setPeakHours([...peakHours, { day: 'weekday', start: '09:00', end: '17:00', rateAdjustment: 5 }])}
-                className="flex items-center text-purple-400 hover:text-purple-300 text-sm"
+                className="flex items-center text-teal-500 hover:text-teal-400 text-sm"
               >
                 <PlusIcon className="h-4 w-4 mr-1" />
                 Add Peak Hour Slot
@@ -1387,7 +1387,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                   onChange={(e) => setLastMinuteHours(parseInt(e.target.value))}
                   min="1"
                   max="24"
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
                 />
               </div>
               <div>
@@ -1398,7 +1398,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                   onChange={(e) => setLastMinuteRate(parseFloat(e.target.value))}
                   min="0"
                   max="50"
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
                 />
               </div>
             </div>
@@ -1414,7 +1414,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                   onChange={(e) => setAdvanceBookingDays(parseInt(e.target.value))}
                   min="1"
                   max="30"
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
                 />
               </div>
               <div>
@@ -1425,7 +1425,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                   onChange={(e) => setAdvanceBookingDiscount(-Math.abs(parseFloat(e.target.value)))}
                   min="0"
                   max="20"
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
                 />
               </div>
             </div>
@@ -1436,7 +1436,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
       {/* Client-Type Based Rates */}
       <div className="bg-gray-800/50 rounded-lg p-6 space-y-4">
         <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-          <UserGroupIcon className="h-5 w-5 mr-2 text-purple-400" />
+          <UserGroupIcon className="h-5 w-5 mr-2 text-teal-500" />
           Client-Type Based Rates
         </h3>
 
@@ -1452,7 +1452,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                 onChange={(e) => setNewClientRate(parseFloat(e.target.value))}
                 min="0"
                 max="50"
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
               />
             </div>
             <div>
@@ -1463,7 +1463,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                 onChange={(e) => setNewClientVisits(parseInt(e.target.value))}
                 min="1"
                 max="10"
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
               />
             </div>
           </div>
@@ -1480,7 +1480,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                 value={vipMinVisits}
                 onChange={(e) => setVipMinVisits(parseInt(e.target.value))}
                 min="1"
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
               />
             </div>
             <div>
@@ -1491,7 +1491,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                 onChange={(e) => setVipMinSpend(parseFloat(e.target.value))}
                 min="0"
                 step="100"
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
               />
             </div>
             <div>
@@ -1502,7 +1502,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                 onChange={(e) => setVipRateAdjustment(parseFloat(e.target.value))}
                 min="0"
                 max="50"
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
               />
             </div>
           </div>
@@ -1522,7 +1522,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                     updated[index].name = e.target.value
                     setLoyaltyTiers(updated)
                   }}
-                  className="w-32 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                  className="w-32 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
                   placeholder="Tier name"
                 />
                 <input
@@ -1534,7 +1534,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                     setLoyaltyTiers(updated)
                   }}
                   min="0"
-                  className="w-24 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                  className="w-24 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
                   placeholder="Min visits"
                 />
                 <span className="text-gray-400 text-sm">visits =</span>
@@ -1548,7 +1548,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                   }}
                   min="0"
                   max="50"
-                  className="w-16 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                  className="w-16 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
                 />
                 <span className="text-gray-400 text-sm">% premium</span>
                 <button
@@ -1575,7 +1575,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
       {/* Automatic Rate Escalation */}
       <div className="bg-gray-800/50 rounded-lg p-6 space-y-4">
         <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-          <TrendingUpIcon className="h-5 w-5 mr-2 text-purple-400" />
+          <TrendingUpIcon className="h-5 w-5 mr-2 text-teal-500" />
           Automatic Rate Escalation
         </h3>
 
@@ -1586,7 +1586,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
               type="checkbox"
               checked={enableTenureEscalation}
               onChange={(e) => setEnableTenureEscalation(e.target.checked)}
-              className="w-4 h-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500 mr-2"
+              className="w-4 h-4 text-teal-600 bg-gray-700 border-gray-600 rounded focus:ring-teal-500 mr-2"
             />
             <span className="text-sm text-gray-300">Enable tenure-based rate increases</span>
           </label>
@@ -1604,7 +1604,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                       setTenureRules(updated)
                     }}
                     min="1"
-                    className="w-20 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                    className="w-20 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
                   />
                   <span className="text-gray-400 text-sm">months =</span>
                   <input
@@ -1617,7 +1617,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                     }}
                     min="0"
                     max="50"
-                    className="w-16 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                    className="w-16 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
                   />
                   <span className="text-gray-400 text-sm">% increase</span>
                   <button
@@ -1632,7 +1632,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
               <button
                 type="button"
                 onClick={() => setTenureRules([...tenureRules, { months: 0, rateIncrease: 0 }])}
-                className="flex items-center text-purple-400 hover:text-purple-300 text-sm"
+                className="flex items-center text-teal-500 hover:text-teal-400 text-sm"
               >
                 <PlusIcon className="h-4 w-4 mr-1" />
                 Add Tenure Milestone
@@ -1653,7 +1653,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                 onChange={(e) => setPerformanceThreshold(parseFloat(e.target.value))}
                 min="0"
                 step="1000"
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
               />
             </div>
             <div>
@@ -1664,7 +1664,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                 onChange={(e) => setPerformanceMonths(parseInt(e.target.value))}
                 min="1"
                 max="12"
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
               />
             </div>
             <div>
@@ -1675,7 +1675,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                 onChange={(e) => setPerformanceIncrease(parseFloat(e.target.value))}
                 min="0"
                 max="50"
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
               />
             </div>
           </div>
@@ -1685,7 +1685,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
       {/* Automated Payout Settings */}
       <div className="bg-gray-800/50 rounded-lg p-6 space-y-4">
         <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-          <BanknotesIcon className="h-5 w-5 mr-2 text-purple-400" />
+          <BanknotesIcon className="h-5 w-5 mr-2 text-teal-500" />
           Automated Payout Settings
         </h3>
 
@@ -1694,7 +1694,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
             type="checkbox"
             checked={enableAutoPayout}
             onChange={(e) => setEnableAutoPayout(e.target.checked)}
-            className="w-4 h-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500 mr-2"
+            className="w-4 h-4 text-teal-600 bg-gray-700 border-gray-600 rounded focus:ring-teal-500 mr-2"
           />
           <span className="text-sm text-gray-300">Enable automated payouts</span>
         </label>
@@ -1710,7 +1710,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                 <select
                   value={payoutMethod}
                   onChange={(e) => setPayoutMethod(e.target.value)}
-                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-teal-500"
                 >
                   <option value="stripe_instant">Stripe Instant (1% fee)</option>
                   <option value="stripe_standard">Stripe Standard (2-5 days)</option>
@@ -1726,7 +1726,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                 <select
                   value={payoutFrequency}
                   onChange={(e) => setPayoutFrequency(e.target.value)}
-                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-teal-500"
                 >
                   <option value="daily">Daily</option>
                   <option value="weekly">Weekly</option>
@@ -1746,7 +1746,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                   <select
                     value={payoutDayOfWeek}
                     onChange={(e) => setPayoutDayOfWeek(parseInt(e.target.value))}
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-teal-500"
                   >
                     <option value="1">Monday</option>
                     <option value="2">Tuesday</option>
@@ -1767,7 +1767,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                     onChange={(e) => setPayoutDayOfMonth(parseInt(e.target.value))}
                     min="1"
                     max="28"
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-teal-500"
                   />
                 </div>
               )}
@@ -1779,7 +1779,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                   type="time"
                   value={payoutTime}
                   onChange={(e) => setPayoutTime(e.target.value)}
-                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-teal-500"
                 />
               </div>
             </div>
@@ -1796,7 +1796,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                   onChange={(e) => setMinimumPayout(parseFloat(e.target.value))}
                   min="0"
                   step="10"
-                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-teal-500"
                 />
               </div>
               <div>
@@ -1809,7 +1809,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                   onChange={(e) => setHoldDays(parseInt(e.target.value))}
                   min="0"
                   max="30"
-                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-teal-500"
                 />
               </div>
             </div>
@@ -1823,7 +1823,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                     type="checkbox"
                     checked={autoDeductFees}
                     onChange={(e) => setAutoDeductFees(e.target.checked)}
-                    className="w-4 h-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500 mr-2"
+                    className="w-4 h-4 text-teal-600 bg-gray-700 border-gray-600 rounded focus:ring-teal-500 mr-2"
                   />
                   <span className="text-sm text-gray-300">Automatically deduct processing fees</span>
                 </label>
@@ -1832,7 +1832,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                     type="checkbox"
                     checked={sendPayoutNotification}
                     onChange={(e) => setSendPayoutNotification(e.target.checked)}
-                    className="w-4 h-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500 mr-2"
+                    className="w-4 h-4 text-teal-600 bg-gray-700 border-gray-600 rounded focus:ring-teal-500 mr-2"
                   />
                   <span className="text-sm text-gray-300">Send payout notifications to barber</span>
                 </label>
@@ -1841,7 +1841,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
                     type="checkbox"
                     checked={sendSummaryReport}
                     onChange={(e) => setSendSummaryReport(e.target.checked)}
-                    className="w-4 h-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500 mr-2"
+                    className="w-4 h-4 text-teal-600 bg-gray-700 border-gray-600 rounded focus:ring-teal-500 mr-2"
                   />
                   <span className="text-sm text-gray-300">Include earnings summary report</span>
                 </label>
@@ -1849,8 +1849,8 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
             </div>
 
             {/* Payout Preview */}
-            <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
-              <p className="text-sm text-purple-300 font-medium mb-2">💸 Next Payout Schedule</p>
+            <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-4">
+              <p className="text-sm text-teal-400 font-medium mb-2">💸 Next Payout Schedule</p>
               <p className="text-xs text-gray-400">
                 {payoutFrequency === 'daily' && 'Payouts will be processed daily'}
                 {payoutFrequency === 'weekly' && `Payouts will be processed every ${['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'][payoutDayOfWeek]}`}
@@ -1876,7 +1876,7 @@ export default function CompensationPlanForm({ barberId, existingPlan, onSubmit,
         </button>
         <button
           type="submit"
-          className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
+          className="px-6 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-medium transition-colors"
         >
           {existingPlan ? 'Update Plan' : 'Create Plan'}
         </button>

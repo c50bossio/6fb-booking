@@ -271,7 +271,7 @@ export function AnalyticsDashboard() {
                     <p className="text-2xl font-bold text-gray-900">
                       {data.metrics.activeClients?.toLocaleString() || '0'}
                     </p>
-                    <p className="text-sm text-purple-600 flex items-center mt-1">
+                    <p className="text-sm text-slate-600 flex items-center mt-1">
                       <Users className="h-4 w-4 mr-1" />
                       {data.metrics.retention || 0}% retention
                     </p>

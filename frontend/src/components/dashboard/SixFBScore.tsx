@@ -54,7 +54,7 @@ export default function SixFBScore() {
   }
 
   return (
-    <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200">
+    <Card className="bg-gradient-to-r from-slate-50 to-slate-100 border-2 border-slate-200">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -125,7 +125,7 @@ export default function SixFBScore() {
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
               <div 
-                className="bg-purple-600 h-2 rounded-full" 
+                className="bg-slate-600 h-2 rounded-full" 
                 style={{ width: `${mockSixFBScore.components.customerRetention}%` }}
               ></div>
             </div>

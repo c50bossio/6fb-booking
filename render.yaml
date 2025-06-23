@@ -1,0 +1,102 @@
+# Render.com deployment configuration for 6FB Booking Platform
+# This file configures both backend and frontend services
+
+services:
+  # Backend API Service
+  - type: web
+    name: 6fb-booking-backend
+    runtime: python-3.11
+    region: oregon
+    plan: starter
+    buildCommand: |
+      cd backend && \
+      pip install --upgrade pip setuptools wheel && \
+      pip install -r requirements.txt && \
+      alembic upgrade head
+    startCommand: cd backend && gunicorn main:app -w 2 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT --timeout 120 --keep-alive 5 --log-level info
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: ENVIRONMENT
+        value: production
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: 6fb-booking-frontend
+          property: host
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: 6fb-booking-db
+          property: connectionString
+      - key: STRIPE_SECRET_KEY
+        sync: false  # Set manually in Render dashboard
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false  # Set manually in Render dashboard
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false  # Set manually in Render dashboard
+      - key: STRIPE_CONNECT_CLIENT_ID
+        sync: false  # Set manually in Render dashboard
+      - key: SENDGRID_API_KEY
+        sync: false  # Set manually in Render dashboard
+      - key: FROM_EMAIL
+        sync: false  # Set manually in Render dashboard
+      - key: GOOGLE_CLIENT_ID
+        sync: false  # Set manually in Render dashboard
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false  # Set manually in Render dashboard
+      - key: GOOGLE_CALENDAR_API_KEY
+        sync: false  # Set manually in Render dashboard
+      - key: ENCRYPTION_KEY
+        generateValue: true
+      - key: LOG_LEVEL
+        value: info
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://sixfb-frontend.onrender.com
+      - key: MAX_WORKERS
+        value: "2"
+      - key: WEB_CONCURRENCY
+        value: "2"
+    healthCheckPath: /api/v1/health
+    autoDeploy: false  # Enable after initial setup
+
+  # Frontend Next.js Application
+  - type: web
+    name: 6fb-booking-frontend
+    runtime: node
+    region: oregon
+    plan: starter
+    buildCommand: |
+      cd frontend && \
+      npm ci --only=production && \
+      npm run build
+    startCommand: cd frontend && npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        value: https://sixfb-backend.onrender.com
+      - key: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+        sync: false  # Set manually in Render dashboard
+      - key: NEXT_PUBLIC_GA_TRACKING_ID
+        sync: false  # Set manually in Render dashboard
+      - key: PORT
+        value: 3000
+    healthCheckPath: /
+    autoDeploy: true
+
+# Database
+databases:
+  - name: 6fb-booking-db
+    databaseName: sixfb_booking
+    user: sixfb_user
+    region: oregon
+    plan: starter  # $7/month - upgrade to standard for production
+    ipAllowList: []  # Allow connections from all IPs (Render services)
+
+# Redis Cache (Optional)
+# - name: 6fb-booking-redis
+#   plan: starter  # $7/month

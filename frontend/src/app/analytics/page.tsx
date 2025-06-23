@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { 
-  TrendingUp, 
-  TrendingDown, 
+import {
+  TrendingUp,
+  TrendingDown,
   Calendar,
   DollarSign,
   Users,
@@ -32,7 +32,7 @@ import {
   Filler
 } from 'chart.js'
 import apiClient from '@/lib/api/client'
-import { formatDate as formatDateDate, startOfMonth, endOfMonth, subDays, addDays } from 'date-fns'
+import { format, startOfMonth, endOfMonth, subDays, addDays } from 'date-fns'
 
 // Register ChartJS components
 ChartJS.register(
@@ -113,8 +113,8 @@ function MetricCard({ title, value, change, trend, icon, subtitle }: MetricCardP
                 <TrendingDown className="w-4 h-4 text-red-500 mr-1" />
               ) : null}
               <span className={`text-sm ${
-                trend === 'up' ? 'text-green-500' : 
-                trend === 'down' ? 'text-red-500' : 
+                trend === 'up' ? 'text-green-500' :
+                trend === 'down' ? 'text-red-500' :
                 'text-gray-400'
               }`}>
                 {change > 0 ? '+' : ''}{change}%
@@ -122,7 +122,7 @@ function MetricCard({ title, value, change, trend, icon, subtitle }: MetricCardP
             </div>
           )}
         </div>
-        <div className="text-blue-500 bg-blue-500/10 rounded-lg p-3">
+        <div className="text-teal-500 bg-teal-500/10 rounded-lg p-3">
           {icon}
         </div>
       </div>
@@ -138,7 +138,7 @@ export default function AnalyticsPage() {
   })
   const [selectedLocation, setSelectedLocation] = useState<number | null>(null)
   const [activeTab, setActiveTab] = useState('overview')
-  
+
   // Data states
   const [metrics, setMetrics] = useState<any>(null)
   const [revenueData, setRevenueData] = useState<any[]>([])
@@ -163,8 +163,8 @@ export default function AnalyticsPage() {
   const fetchAnalytics = async () => {
     setLoading(true)
     try {
-      const startDate = formatDate(dateRange.start, 'yyyy-MM-dd')
-      const endDate = formatDate(dateRange.end, 'yyyy-MM-dd')
+      const startDate = format(dateRange.start, 'yyyy-MM-dd')
+      const endDate = format(dateRange.end, 'yyyy-MM-dd')
       const locationParam = selectedLocation ? `&location_id=${selectedLocation}` : ''
 
       // Fetch all data in parallel
@@ -237,22 +237,22 @@ export default function AnalyticsPage() {
   }
 
   // Export functionality
-  const handleExport = async (formatDate: 'csv' | 'pdf' | 'excel') => {
+  const handleExport = async (exportFormat: 'csv' | 'pdf' | 'excel') => {
     try {
-      const startDate = formatDate(dateRange.start, 'yyyy-MM-dd')
-      const endDate = formatDate(dateRange.end, 'yyyy-MM-dd')
+      const startDate = format(dateRange.start, 'yyyy-MM-dd')
+      const endDate = format(dateRange.end, 'yyyy-MM-dd')
       const locationParam = selectedLocation ? `&location_id=${selectedLocation}` : ''
-      
+
       const response = await apiClient.get(
-        `/analytics/export?formatDate=${formatDate}&start_date=${startDate}&end_date=${endDate}${locationParam}`,
+        `/analytics/export?format=${exportFormat}&start_date=${startDate}&end_date=${endDate}${locationParam}`,
         { responseType: 'blob' }
       )
-      
+
       // Create download link
       const url = window.URL.createObjectURL(new Blob([response.data]))
       const link = document.createElement('a')
       link.href = url
-      link.setAttribute('download', `analytics_${startDate}_${endDate}.${formatDate}`)
+      link.setAttribute('download', `analytics_${startDate}_${endDate}.${exportFormat}`)
       document.body.appendChild(link)
       link.click()
       link.remove()
@@ -263,13 +263,13 @@ export default function AnalyticsPage() {
 
   // Prepare chart data
   const revenueChartData = {
-    labels: revenueData.map(d => formatDate(new Date(d.date), 'MMM d')),
+    labels: revenueData.map(d => format(new Date(d.date), 'MMM d')),
     datasets: [
       {
         label: 'Total Revenue',
         data: revenueData.map(d => d.revenue),
-        borderColor: 'rgb(59, 130, 246)',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        borderColor: 'rgb(20, 184, 166)',
+        backgroundColor: 'rgba(20, 184, 166, 0.1)',
         fill: true,
         tension: 0.4
       }
@@ -277,7 +277,7 @@ export default function AnalyticsPage() {
   }
 
   const bookingChartData = {
-    labels: bookingData.map(d => formatDate(new Date(d.date), 'MMM d')),
+    labels: bookingData.map(d => format(new Date(d.date), 'MMM d')),
     datasets: [
       {
         label: 'Completed',
@@ -306,11 +306,11 @@ export default function AnalyticsPage() {
       {
         data: serviceData.slice(0, 5).map(s => s.revenue),
         backgroundColor: [
-          'rgba(59, 130, 246, 0.8)',
+          'rgba(20, 184, 166, 0.8)',
           'rgba(34, 197, 94, 0.8)',
-          'rgba(168, 85, 247, 0.8)',
+          'rgba(100, 116, 139, 0.8)',
           'rgba(251, 146, 60, 0.8)',
-          'rgba(236, 72, 153, 0.8)'
+          'rgba(148, 163, 184, 0.8)'
         ],
         borderWidth: 0
       }
@@ -320,7 +320,7 @@ export default function AnalyticsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
       </div>
     )
   }
@@ -333,7 +333,7 @@ export default function AnalyticsPage() {
           <h1 className="text-2xl font-bold text-white">Analytics Dashboard</h1>
           <p className="text-gray-400 mt-1">Track your business performance and insights</p>
         </div>
-        
+
         <div className="flex flex-wrap items-center gap-3">
           {/* Date presets */}
           <div className="flex items-center gap-2 bg-slate-800 rounded-lg p-1">
@@ -347,10 +347,10 @@ export default function AnalyticsPage() {
               </button>
             ))}
           </div>
-          
+
           {/* Export dropdown */}
           <div className="relative group">
-            <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+            <button className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors">
               <Download className="w-4 h-4" />
               Export
             </button>
@@ -386,7 +386,7 @@ export default function AnalyticsPage() {
             onClick={() => setActiveTab(tab)}
             className={`px-4 py-2 rounded-md capitalize transition-colors ${
               activeTab === tab
-                ? 'bg-blue-600 text-white'
+                ? 'bg-teal-600 text-white'
                 : 'text-gray-400 hover:text-white hover:bg-slate-700'
             }`}
           >
@@ -441,7 +441,7 @@ export default function AnalyticsPage() {
                 <Line data={revenueChartData} options={chartOptions} />
               </div>
             </div>
-            
+
             <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
               <h3 className="text-lg font-semibold text-white mb-4">Booking Status</h3>
               <div className="h-64">
@@ -530,9 +530,9 @@ export default function AnalyticsPage() {
             <div className="lg:col-span-2 bg-slate-800 rounded-xl p-6 border border-slate-700">
               <h3 className="text-lg font-semibold text-white mb-4">Revenue Breakdown</h3>
               <div className="h-80">
-                <Line 
+                <Line
                   data={{
-                    labels: revenueData.map(d => formatDate(new Date(d.date), 'MMM d')),
+                    labels: revenueData.map(d => format(new Date(d.date), 'MMM d')),
                     datasets: [
                       {
                         label: 'Services',
@@ -544,8 +544,8 @@ export default function AnalyticsPage() {
                       {
                         label: 'Products',
                         data: revenueData.map(d => d.products),
-                        borderColor: 'rgb(168, 85, 247)',
-                        backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                        borderColor: 'rgb(100, 116, 139)',
+                        backgroundColor: 'rgba(100, 116, 139, 0.1)',
                         fill: true
                       },
                       {
@@ -634,7 +634,7 @@ export default function AnalyticsPage() {
                       {day}
                     </div>
                     {Array.from({ length: 12 }, (_, hour) => {
-                      const data = peakHoursData.find(d => 
+                      const data = peakHoursData.find(d =>
                         d.day === day && d.hour === hour + 9
                       )
                       const intensity = data ? Math.min(data.bookings / 10, 1) : 0
@@ -644,7 +644,7 @@ export default function AnalyticsPage() {
                           className="aspect-square rounded"
                           style={{
                             backgroundColor: intensity > 0
-                              ? `rgba(59, 130, 246, ${intensity})`
+                              ? `rgba(20, 184, 166, ${intensity})`
                               : 'rgba(148, 163, 184, 0.1)'
                           }}
                           title={`${data?.bookings || 0} bookings`}
@@ -696,8 +696,8 @@ export default function AnalyticsPage() {
                     {
                       label: 'Retention Rate',
                       data: retentionData.monthlyRetention.map((d: any) => d.retention),
-                      borderColor: 'rgb(59, 130, 246)',
-                      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                      borderColor: 'rgb(20, 184, 166)',
+                      backgroundColor: 'rgba(20, 184, 166, 0.1)',
                       fill: true
                     },
                     {
@@ -724,7 +724,7 @@ export default function AnalyticsPage() {
                     <div className="flex items-center gap-3">
                       <div className="w-32 bg-slate-700 rounded-full h-2">
                         <div
-                          className="bg-blue-500 h-2 rounded-full"
+                          className="bg-teal-500 h-2 rounded-full"
                           style={{ width: `${(freq.clients / 280) * 100}%` }}
                         />
                       </div>
@@ -808,7 +808,7 @@ export default function AnalyticsPage() {
               <div key={score.barber_id} className="bg-slate-800 rounded-xl p-6 border border-slate-700">
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="text-lg font-medium text-white">{score.barber_name}</h4>
-                  <div className="text-2xl font-bold text-blue-500">{score.overall_score}</div>
+                  <div className="text-2xl font-bold text-teal-500">{score.overall_score}</div>
                 </div>
                 <div className="space-y-2">
                   {Object.entries(score.components).map(([key, value]) => (

@@ -29,7 +29,7 @@ export default function DashboardHeader() {
         <div className="flex items-center justify-between">
           {/* Left side - Branding */}
           <div className="flex items-center space-x-4">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-2 rounded-lg font-bold text-lg">
+            <div className="bg-gradient-to-r from-teal-600 to-teal-700 text-white px-3 py-2 rounded-lg font-bold text-lg">
               6FB
             </div>
             <div>

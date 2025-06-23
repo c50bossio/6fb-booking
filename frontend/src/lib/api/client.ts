@@ -41,7 +41,7 @@ apiClient.interceptors.response.use(
   (error) => {
     // DEMO MODE: Return mock data instead of failing
     if (error.response?.status === 401 || error.response?.status === 403 || !error.response) {
-      console.log('Demo mode: Intercepting API error and returning mock data')
+      console.log('Demo mode: Intercepting API error and returning mock data', { url: error.config?.url, status: error.response?.status })
 
       // Return mock data based on the request URL
       const url = error.config?.url || ''
@@ -61,23 +61,55 @@ apiClient.interceptors.response.use(
         }
       }
 
+      // Calendar events
+      if (url?.includes('/dashboard/demo/calendar/events') || url?.includes('/calendar/events')) {
+        const today = new Date()
+        const events = []
+        
+        // Generate some demo events
+        for (let i = 0; i < 5; i++) {
+          const eventDate = new Date(today)
+          eventDate.setDate(today.getDate() + Math.floor(Math.random() * 7))
+          const hour = 9 + Math.floor(Math.random() * 10)
+          
+          events.push({
+            id: i + 1,
+            title: ['Haircut', 'Beard Trim', 'Hair Color', 'Premium Cut'][Math.floor(Math.random() * 4)],
+            start: `${eventDate.toISOString().split('T')[0]}T${hour.toString().padStart(2, '0')}:00:00`,
+            end: `${eventDate.toISOString().split('T')[0]}T${(hour + 1).toString().padStart(2, '0')}:00:00`,
+            extendedProps: {
+              client: ['John Doe', 'Jane Smith', 'Mike Johnson', 'Sarah Williams'][Math.floor(Math.random() * 4)],
+              barber: ['Marcus Johnson', 'Sarah Mitchell', 'Carlos Rodriguez', 'Tyler Brooks'][Math.floor(Math.random() * 4)],
+              price: [45, 35, 65, 85][Math.floor(Math.random() * 4)],
+              status: ['confirmed', 'pending', 'completed'][Math.floor(Math.random() * 3)]
+            }
+          })
+        }
+        
+        return {
+          data: {
+            events: events
+          }
+        }
+      }
+
       // Barbers
       if (url?.includes('/barbers')) {
-        return {
-          data: [
-            {
-              id: 1,
-              first_name: 'John',
-              last_name: 'Doe',
-              email: 'john.doe@example.com',
-              phone: '(555) 123-4567',
-              is_active: true,
-              location_id: 1,
-              commission_rate: 60,
-              sixfb_score: 85,
-              monthly_revenue: 12500,
-              appointments_this_week: 24
-            },
+        const barbersData = [
+          {
+            id: 1,
+            first_name: 'John',
+            last_name: 'Doe',
+            email: 'john.doe@example.com',
+            phone: '(555) 123-4567',
+            is_active: true,
+            location_id: 1,
+            commission_rate: 60,
+            sixfb_score: 85,
+            monthly_revenue: 12500,
+            appointments_this_week: 24,
+            created_at: new Date().toISOString()
+          },
             {
               id: 2,
               first_name: 'Jane',
@@ -89,7 +121,8 @@ apiClient.interceptors.response.use(
               commission_rate: 65,
               sixfb_score: 92,
               monthly_revenue: 15200,
-              appointments_this_week: 28
+              appointments_this_week: 28,
+              created_at: new Date().toISOString()
             },
             {
               id: 3,
@@ -102,7 +135,8 @@ apiClient.interceptors.response.use(
               commission_rate: 55,
               sixfb_score: 78,
               monthly_revenue: 9800,
-              appointments_this_week: 20
+              appointments_this_week: 20,
+              created_at: new Date().toISOString()
             },
             {
               id: 4,
@@ -115,72 +149,100 @@ apiClient.interceptors.response.use(
               commission_rate: 70,
               sixfb_score: 95,
               monthly_revenue: 18500,
-              appointments_this_week: 32
+              appointments_this_week: 32,
+              created_at: new Date().toISOString()
             }
-          ]
+        ]
+        
+        // Return as paginated response to match API structure
+        return {
+          data: {
+            data: barbersData,
+            total: barbersData.length,
+            page: 1,
+            limit: barbersData.length
+          }
         }
       }
 
       // Appointments
       if (url?.includes('/appointments')) {
+        console.log('Demo mode: Returning mock appointments data for URL:', url)
         const today = new Date()
+        const appointmentsData = [
+          {
+            id: 1,
+            barber_id: 1,
+            barber_name: 'John Doe',
+            client_id: 1,
+            client_name: 'Michael Brown',
+            client_email: 'michael.brown@example.com',
+            client_phone: '(555) 111-2222',
+            appointment_date: today.toISOString().split('T')[0],
+            appointment_time: '09:00',
+            status: 'completed',
+            service_name: 'Premium Haircut',
+            service_duration: 45,
+            service_price: 45,
+            service_id: 1,
+            tip_amount: 10,
+            total_amount: 55,
+            customer_type: 'regular',
+            source: 'online',
+            created_at: today.toISOString()
+          },
+          {
+            id: 2,
+            barber_id: 2,
+            barber_name: 'Jane Smith',
+            client_id: 2,
+            client_name: 'David Wilson',
+            client_email: 'david.wilson@example.com',
+            client_phone: '(555) 222-3333',
+            appointment_date: today.toISOString().split('T')[0],
+            appointment_time: '10:30',
+            status: 'scheduled',
+            service_name: 'Beard Trim & Shape',
+            service_duration: 30,
+            service_price: 35,
+            service_id: 2,
+            tip_amount: 0,
+            total_amount: 35,
+            customer_type: 'new',
+            source: 'walk-in',
+            created_at: today.toISOString()
+          },
+          {
+            id: 3,
+            barber_id: 3,
+            barber_name: 'Mike Johnson',
+            client_id: 3,
+            client_name: 'Robert Taylor',
+            client_email: 'robert.taylor@example.com',
+            client_phone: '(555) 333-4444',
+            appointment_date: today.toISOString().split('T')[0],
+            appointment_time: '14:00',
+            status: 'scheduled',
+            service_name: 'Haircut & Beard',
+            service_duration: 60,
+            service_price: 65,
+            service_id: 3,
+            tip_amount: 0,
+            total_amount: 65,
+            customer_type: 'regular',
+            source: 'online',
+            created_at: today.toISOString()
+          }
+        ]
+        
+        // Return proper paginated structure
         return {
-          data: [
-            {
-              id: 1,
-              barber_id: 1,
-              barber_name: 'John Doe',
-              client_name: 'Michael Brown',
-              client_email: 'michael.brown@example.com',
-              client_phone: '(555) 111-2222',
-              appointment_date: today.toISOString().split('T')[0],
-              appointment_time: '09:00',
-              status: 'completed',
-              service_name: 'Premium Haircut',
-              service_duration: 45,
-              service_price: 45,
-              tip_amount: 10,
-              total_amount: 55,
-              customer_type: 'regular',
-              source: 'online'
-            },
-            {
-              id: 2,
-              barber_id: 2,
-              barber_name: 'Jane Smith',
-              client_name: 'David Wilson',
-              client_email: 'david.wilson@example.com',
-              client_phone: '(555) 222-3333',
-              appointment_date: today.toISOString().split('T')[0],
-              appointment_time: '10:30',
-              status: 'upcoming',
-              service_name: 'Beard Trim & Shape',
-              service_duration: 30,
-              service_price: 35,
-              tip_amount: 0,
-              total_amount: 35,
-              customer_type: 'new',
-              source: 'walk-in'
-            },
-            {
-              id: 3,
-              barber_id: 3,
-              barber_name: 'Mike Johnson',
-              client_name: 'Robert Taylor',
-              client_email: 'robert.taylor@example.com',
-              client_phone: '(555) 333-4444',
-              appointment_date: today.toISOString().split('T')[0],
-              appointment_time: '14:00',
-              status: 'upcoming',
-              service_name: 'Haircut & Beard',
-              service_duration: 60,
-              service_price: 65,
-              tip_amount: 0,
-              total_amount: 65,
-              customer_type: 'regular',
-              source: 'online'
-            }
-          ]
+          data: {
+            data: appointmentsData,
+            total: appointmentsData.length,
+            page: 1,
+            limit: appointmentsData.length
+          }
         }
       }
 
@@ -350,6 +412,64 @@ apiClient.interceptors.response.use(
         }
       }
 
+      // Services
+      if (url?.includes('/services')) {
+        return {
+          data: [
+            {
+              id: 1,
+              name: 'Premium Haircut',
+              description: 'Professional haircut with consultation and styling',
+              duration: 45,
+              price: 45,
+              category: 'Haircuts',
+              is_active: true,
+              created_at: new Date().toISOString()
+            },
+            {
+              id: 2,
+              name: 'Beard Trim & Shape',
+              description: 'Professional beard trimming and shaping',
+              duration: 30,
+              price: 35,
+              category: 'Beard Services',
+              is_active: true,
+              created_at: new Date().toISOString()
+            },
+            {
+              id: 3,
+              name: 'Haircut & Beard',
+              description: 'Complete haircut and beard service',
+              duration: 60,
+              price: 65,
+              category: 'Combo Services',
+              is_active: true,
+              created_at: new Date().toISOString()
+            },
+            {
+              id: 4,
+              name: 'Hot Towel Shave',
+              description: 'Traditional hot towel straight razor shave',
+              duration: 45,
+              price: 55,
+              category: 'Shave Services',
+              is_active: true,
+              created_at: new Date().toISOString()
+            },
+            {
+              id: 5,
+              name: 'Hair Wash & Style',
+              description: 'Professional hair wash and styling',
+              duration: 30,
+              price: 25,
+              category: 'Styling',
+              is_active: true,
+              created_at: new Date().toISOString()
+            }
+          ]
+        }
+      }
+
       // Booking endpoints
       if (url?.includes('/booking')) {
         return {
@@ -366,6 +486,79 @@ apiClient.interceptors.response.use(
             }
           }
         }
+      }
+
+      // Compensation plans
+      if (url?.includes('/compensation-plans')) {
+        return {
+          data: [
+            {
+              id: 1,
+              name: 'Standard Commission',
+              description: 'Standard 60/40 split for experienced barbers',
+              payment_type: 'commission',
+              commission_rate: 60,
+              product_commission_rate: 50,
+              tip_handling: 'barber_keeps_all',
+              is_active: true,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            },
+            {
+              id: 2,
+              name: 'Booth Rental',
+              description: 'Weekly booth rental for independent barbers',
+              payment_type: 'booth_rent',
+              booth_rent_amount: 300,
+              booth_rent_frequency: 'weekly',
+              tip_handling: 'barber_keeps_all',
+              is_active: true,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            },
+            {
+              id: 3,
+              name: 'New Barber Plan',
+              description: 'Entry level commission for new barbers',
+              payment_type: 'commission',
+              commission_rate: 45,
+              product_commission_rate: 40,
+              tip_handling: 'barber_keeps_all',
+              is_active: true,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            }
+          ]
+        }
+      }
+
+      // Handle different HTTP methods for demo mode
+      const method = error.config?.method?.toUpperCase()
+      
+      // For POST requests (create operations)
+      if (method === 'POST') {
+        if (url?.includes('/compensation-plans')) {
+          return {
+            data: {
+              id: Date.now(),
+              ...error.config.data,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            }
+          }
+        }
+        // Default POST response
+        return { data: { success: true, id: Date.now(), message: 'Demo mode - item created' } }
+      }
+      
+      // For PUT/PATCH requests (update operations)
+      if (method === 'PUT' || method === 'PATCH') {
+        return { data: { success: true, message: 'Demo mode - item updated' } }
+      }
+      
+      // For DELETE requests
+      if (method === 'DELETE') {
+        return { data: { success: true, message: 'Demo mode - item deleted' } }
       }
 
       // For other endpoints, return empty success response

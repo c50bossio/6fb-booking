@@ -1,0 +1,829 @@
+{
+  "summary": {
+    "filesScanned": 203,
+    "componentsWithResponsive": 125,
+    "issuesFound": 57
+  },
+  "issues": [
+    {
+      "type": "touch-targets",
+      "message": "Buttons may lack adequate padding for touch devices",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/__tests__/analytics-integration.test.tsx"
+    },
+    {
+      "type": "touch-targets",
+      "message": "Buttons may lack adequate padding for touch devices",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/__tests__/components/LoginPage.test.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-500, w-600, w-500",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/analytics/page-complex.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-900, w-800, w-500, w-500, w-500",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/analytics/page.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-500, w-100, w-800, w-300, w-500, w-100, w-800",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/app/calendar/page.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-100, w-800",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/app/payments/page.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-100, w-800",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/app/payouts/page.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-400, w-500, w-400, w-400, w-500, w-400, w-500, w-400, w-400, w-500, w-400, w-500, w-500, w-400, w-500",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/barber-payments/page.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-500, w-600, w-500, w-400, w-400, w-400",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/barbers/page-complex.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-500, w-200, w-800, w-700",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/booking-demo/page.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-500, w-400",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/dashboard/calendar/page.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-400, w-500",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/dashboard/page.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-100, w-800, w-900, w-400",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/demo/dashboard/page.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-500, w-500",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/globals.css"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: width: 300px",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/globals.css"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-400",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/page.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-500, w-500, w-400, w-500, w-400, w-500, w-400",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/payments/page.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-100, w-800, w-200, w-500",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/payouts/page.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-400",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/signup/page.tsx"
+    },
+    {
+      "type": "mobile-first",
+      "message": "Large screen classes without mobile/tablet considerations",
+      "severity": "low",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/AddBarberModal.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-500",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/AnimatedNotificationCenter.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-400",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/CompensationPlanForm.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-500",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/DashboardWithAPI.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-400, w-300, w-500, w-500, w-400, w-300",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/DemoModernSidebar.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-400",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/ExtensionDetector.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-500",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/NotificationCenter.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-600, w-500, w-200, w-500",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/analytics/BarberComparison.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-200, w-600, w-700",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/analytics/BookingTrendsChart.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-500",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/analytics/ClientRetentionChart.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-500, w-500",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/analytics/PeakHoursHeatmap.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-500, w-500, w-500",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/analytics/PerformanceMetrics.tsx"
+    },
+    {
+      "type": "touch-targets",
+      "message": "Buttons may lack adequate padding for touch devices",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/analytics/__tests__/AnalyticsDashboard.test.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-400, w-400",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/booking/BarberProfile.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-500, w-500",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/booking/BookingFlow.tsx"
+    },
+    {
+      "type": "missing-responsive",
+      "message": "Key component \"CalendarSystem.tsx\" lacks responsive design classes",
+      "severity": "high",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/calendar/CalendarSystem.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-400, w-400",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/calendar/EnterpriseCalendar.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-500",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/calendar/GoogleCalendarSync.tsx"
+    },
+    {
+      "type": "missing-responsive",
+      "message": "Key component \"ResponsiveCalendar.tsx\" lacks responsive design classes",
+      "severity": "high",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/calendar/ResponsiveCalendar.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-100, w-800",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/dashboard/AutomationDashboard.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-500, w-600, w-600",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/dashboard/SixFBScore.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-100, w-800",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/dashboard/TrafftIntegration.tsx"
+    },
+    {
+      "type": "mobile-first",
+      "message": "Large screen classes without mobile/tablet considerations",
+      "severity": "low",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/dashboard/WeeklyComparison.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-500, w-500",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/demo/NotificationDemo.tsx"
+    },
+    {
+      "type": "missing-responsive",
+      "message": "Key component \"ClientSelectionModal.tsx\" lacks responsive design classes",
+      "severity": "high",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/modals/ClientSelectionModal.tsx"
+    },
+    {
+      "type": "missing-responsive",
+      "message": "Key component \"ConfirmationModal.tsx\" lacks responsive design classes",
+      "severity": "high",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/modals/ConfirmationModal.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-400",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/modals/CreateAppointmentModal.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-500, w-400",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/modals/NewAppointmentModal.tsx"
+    },
+    {
+      "type": "missing-responsive",
+      "message": "Key component \"AddPaymentMethodForm.tsx\" lacks responsive design classes",
+      "severity": "high",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/payments/AddPaymentMethodForm.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-500",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/settings/GoogleCalendarSettings.tsx"
+    },
+    {
+      "type": "missing-responsive",
+      "message": "Key component \"GoogleCalendarSettings.tsx\" lacks responsive design classes",
+      "severity": "high",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/settings/GoogleCalendarSettings.tsx"
+    },
+    {
+      "type": "missing-responsive",
+      "message": "Key component \"SettingsIntegratedCalendar.tsx\" lacks responsive design classes",
+      "severity": "high",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/settings/SettingsIntegratedCalendar.tsx"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-400",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/ui/success-animation.tsx"
+    },
+    {
+      "type": "touch-targets",
+      "message": "Buttons may lack adequate padding for touch devices",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/hooks/useAccessibility.tsx"
+    },
+    {
+      "type": "missing-responsive",
+      "message": "Key component \"useGoogleCalendar.ts\" lacks responsive design classes",
+      "severity": "high",
+      "file": "/Users/bossio/6fb-booking/frontend/src/hooks/useGoogleCalendar.ts"
+    },
+    {
+      "type": "touch-targets",
+      "message": "Buttons may lack adequate padding for touch devices",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/lib/animations.ts"
+    },
+    {
+      "type": "fixed-width",
+      "message": "Fixed width elements detected: w-600, w-100",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/lib/api/payments.ts"
+    },
+    {
+      "type": "touch-targets",
+      "message": "Buttons may lack adequate padding for touch devices",
+      "severity": "medium",
+      "file": "/Users/bossio/6fb-booking/frontend/src/lib/api/settings.ts"
+    }
+  ],
+  "recommendations": [
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/analytics/page-complex.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/analytics/page-complex.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/analytics/page-complex.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/analytics/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/analytics/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/app/analytics/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/app/appointments/page.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/app/barbers/page.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/app/barbers/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/app/barbers/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/app/calendar/page.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/app/clients/page.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/app/clients/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/app/clients/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/app/page.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/app/payments/page.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/app/payments/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/app/payments/page.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/app/payouts/page.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/app/payouts/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/app/payouts/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/appointments/page.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/barber-payments/page.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/barber-payments/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/barber-payments/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/barbers/page-backup.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/barbers/page-complex.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/barbers/page.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/book/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/book/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/calendar-demo/page.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/clients/[id]/page.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/clients/[id]/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/clients/[id]/page.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/clients/page.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/clients/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/clients/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/dashboard/appointments/new/page.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/dashboard/appointments/page.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/dashboard/appointments/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/dashboard/appointments/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/dashboard/calendar-demo/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/dashboard/calendar-settings/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/dashboard/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/dashboard/trafft-connect/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/demo/booking/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/demo/calendar/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/demo/calendar-modals/page.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/demo/dashboard/page.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/demo/dashboard/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/demo/dashboard/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/example-dashboard/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/locations/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/notifications/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/page.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/payments/page.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/payments/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/payments/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/payouts/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/settings/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/app/signup/page.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/CompensationPlanForm.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/CompensationPlanManager.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/DashboardWithAPI.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/analytics/AnalyticsDashboard.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/analytics/AnimatedAnalyticsDashboard.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/analytics/BarberComparison.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/analytics/BarberComparison.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/analytics/BookingTrendsChart.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/analytics/ClientRetentionChart.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/analytics/ClientRetentionChart.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/analytics/PeakHoursHeatmap.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/analytics/PeakHoursHeatmap.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/analytics/PerformanceMetrics.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/analytics/RevenueChart.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/analytics/ServiceAnalytics.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/analytics/ServiceAnalytics.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/booking/BarberProfile.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/booking/BookingFlow.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/calendar/AppointmentCreateModal.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/calendar/AppointmentDetailsModal.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/dashboard/AutomationDashboard.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/dashboard/MetricsCards.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/dashboard/SixFBScore.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/modals/AppointmentDetailsModal.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/modals/ClientModal.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/modals/CreateAppointmentModal.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/modals/EditAppointmentModal.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/modals/NewAppointmentModal.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/modals/ServiceSelectionModal.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/payments/PaymentHistory.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/payments/PaymentHistory.tsx"
+    },
+    {
+      "type": "good-practice",
+      "message": "Good mobile-first grid implementation",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/payments/PaymentHistory.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/ui/button.tsx"
+    },
+    {
+      "type": "overflow",
+      "message": "Consider responsive alternatives to horizontal scrolling",
+      "file": "/Users/bossio/6fb-booking/frontend/src/components/ui/tabs.tsx"
+    }
+  ],
+  "goodPractices": []
+}

@@ -57,7 +57,7 @@ export default function NotificationsPage() {
       const token = localStorage.getItem('access_token')
 
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/notifications`,
+        `${process.env.NEXT_PUBLIC_API_URL}/notifications`,
         { headers: { Authorization: `Bearer ${token}` } }
       )
 
@@ -141,7 +141,7 @@ export default function NotificationsPage() {
     try {
       const token = localStorage.getItem('access_token')
       await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/notifications/${notificationId}/read`,
+        `${process.env.NEXT_PUBLIC_API_URL}/notifications/${notificationId}/read`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -164,7 +164,7 @@ export default function NotificationsPage() {
     try {
       const token = localStorage.getItem('access_token')
       await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/notifications/mark-all-read`,
+        `${process.env.NEXT_PUBLIC_API_URL}/notifications/mark-all-read`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -181,7 +181,7 @@ export default function NotificationsPage() {
     try {
       const token = localStorage.getItem('access_token')
       await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/notifications/${notificationId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/notifications/${notificationId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       )
 
@@ -261,7 +261,7 @@ export default function NotificationsPage() {
     return (
       <ModernLayout>
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
         </div>
       </ModernLayout>
     )
@@ -280,13 +280,13 @@ export default function NotificationsPage() {
                 placeholder="Search notifications..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               />
             </div>
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-teal-500 focus:border-transparent"
             >
               <option value="all">All Types</option>
               <option value="appointment">Appointments</option>
@@ -298,7 +298,7 @@ export default function NotificationsPage() {
             <select
               value={filterRead}
               onChange={(e) => setFilterRead(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-teal-500 focus:border-transparent"
             >
               <option value="all">All Status</option>
               <option value="unread">Unread Only</option>
@@ -315,7 +315,7 @@ export default function NotificationsPage() {
               <span>Mark All Read</span>
             </button>
 
-            <button className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg font-medium hover:from-violet-700 hover:to-purple-700 transition-all flex items-center space-x-2">
+            <button className="px-4 py-2 bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-lg font-medium hover:from-teal-700 hover:to-teal-800 transition-all flex items-center space-x-2">
               <BellIcon className="h-5 w-5" />
               <span>Settings</span>
             </button>
@@ -326,7 +326,7 @@ export default function NotificationsPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="premium-card-modern p-6 hover-lift">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl">
+              <div className="p-3 bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl">
                 <BellIcon className="h-6 w-6 text-white" />
               </div>
             </div>
@@ -336,7 +336,7 @@ export default function NotificationsPage() {
 
           <div className="premium-card-modern p-6 hover-lift">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl">
+              <div className="p-3 bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl">
                 <EyeIcon className="h-6 w-6 text-white" />
               </div>
             </div>

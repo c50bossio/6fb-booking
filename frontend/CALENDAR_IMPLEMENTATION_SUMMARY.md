@@ -70,7 +70,7 @@ I've successfully made the calendar page fully functional by connecting it to th
 ### 4. **Status Management**
 Updated status options to match backend:
 - `scheduled` - Initial booking status
-- `confirmed` - Confirmed by barber/admin  
+- `confirmed` - Confirmed by barber/admin
 - `in_progress` - Currently being serviced
 - `completed` - Service completed
 - `cancelled` - Appointment cancelled
@@ -87,7 +87,7 @@ Updated status options to match backend:
 1. **GET** `/api/v1/appointments` - Fetch appointments with filters
 2. **POST** `/api/v1/appointments` - Create new appointment
 3. **PUT** `/api/v1/appointments/{id}` - Update appointment
-4. **DELETE** `/api/v1/appointments/{id}` - Cancel appointment  
+4. **DELETE** `/api/v1/appointments/{id}` - Cancel appointment
 5. **POST** `/api/v1/appointments/{id}/reschedule` - Reschedule via drag & drop
 6. **GET** `/api/v1/barbers` - Fetch active barbers
 7. **GET** `/api/v1/services` - Fetch available services

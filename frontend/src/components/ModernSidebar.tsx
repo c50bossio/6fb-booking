@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useNavigation } from './NavigationProvider'
+import { useTheme } from '@/contexts/ThemeContext'
 import {
   HomeIcon,
   CalendarDaysIcon,
@@ -107,6 +108,7 @@ const bottomItems = [
 export default function ModernSidebar({ user, onLogout }: SidebarProps) {
   const pathname = usePathname()
   const { isCollapsed, setIsCollapsed } = useNavigation()
+  const { theme } = useTheme()
 
   const getUserInitials = (firstName: string, lastName: string) => {
     return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase()
@@ -117,27 +119,33 @@ export default function ModernSidebar({ user, onLogout }: SidebarProps) {
   }
 
   return (
-    <div className={`sidebar-dark h-screen flex flex-col transition-all duration-300 flex-shrink-0 ${
+    <div className={`h-screen flex flex-col transition-all duration-300 flex-shrink-0 ${
       isCollapsed ? 'w-20' : 'w-72'
-    }`}>
+    } ${theme === 'dark' ? 'sidebar-dark' : 'sidebar-light'}`}>
       {/* Header */}
-      <div className="p-6 border-b border-white/10">
+      <div className={`p-6 border-b ${theme === 'dark' ? 'border-white/10' : 'border-gray-200'}`}>
         <div className="flex items-center justify-between">
           {!isCollapsed && (
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <BanknotesIcon className="h-6 w-6 text-white" />
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                theme === 'dark' ? 'bg-slate-700' : 'bg-slate-200'
+              }`}>
+                <BanknotesIcon className={`h-6 w-6 ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`} />
               </div>
               <div>
-                <h1 className="text-white font-bold text-lg">6FB Payouts</h1>
-                <p className="text-gray-400 text-xs">Professional Platform</p>
+                <h1 className={`font-bold text-lg ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>6FB Payouts</h1>
+                <p className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Professional Platform</p>
               </div>
             </div>
           )}
 
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors focus-ring"
+            className={`p-2 rounded-lg transition-colors focus-ring ${
+              theme === 'dark'
+                ? 'text-gray-400 hover:text-white hover:bg-white/5'
+                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+            }`}
           >
             {isCollapsed ? (
               <ChevronRightIcon className="h-5 w-5" />
@@ -150,17 +158,21 @@ export default function ModernSidebar({ user, onLogout }: SidebarProps) {
 
       {/* User Profile */}
       {user && (
-        <div className="px-6 py-4 border-b border-white/10">
+        <div className={`px-6 py-4 border-b ${theme === 'dark' ? 'border-white/10' : 'border-gray-200'}`}>
           <div className="flex items-center space-x-3">
-            <div className="user-avatar">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold ${
+              theme === 'dark'
+                ? 'bg-teal-600 text-white'
+                : 'bg-teal-100 text-teal-700'
+            }`}>
               {getUserInitials(user.first_name, user.last_name)}
             </div>
             {!isCollapsed && (
               <div className="flex-1 min-w-0">
-                <p className="text-white font-medium text-sm truncate">
+                <p className={`font-medium text-sm truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
                   {user.first_name} {user.last_name}
                 </p>
-                <p className="text-gray-400 text-xs truncate">
+                <p className={`text-xs truncate ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                   {formatRole(user.role)}
                 </p>
               </div>
@@ -179,14 +191,26 @@ export default function ModernSidebar({ user, onLogout }: SidebarProps) {
             <Link
               key={item.name}
               href={item.href}
-              className={`sidebar-nav-item group ${isActive ? 'active' : ''}`}
+              className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 group ${
+                isActive
+                  ? theme === 'dark'
+                    ? 'bg-teal-600 text-white'
+                    : 'bg-teal-100 text-teal-700'
+                  : theme === 'dark'
+                    ? 'text-gray-300 hover:text-white hover:bg-white/5'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
               title={isCollapsed ? item.name : undefined}
             >
               <Icon className="h-5 w-5 flex-shrink-0" />
               {!isCollapsed && (
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate">{item.name}</p>
-                  <p className="text-xs text-gray-400 truncate group-hover:text-gray-300">
+                  <p className={`text-xs truncate ${
+                    isActive
+                      ? theme === 'dark' ? 'text-teal-200' : 'text-teal-600'
+                      : theme === 'dark' ? 'text-gray-300 group-hover:text-gray-200' : 'text-gray-600'
+                  }`}>
                     {item.description}
                   </p>
                 </div>
@@ -197,17 +221,21 @@ export default function ModernSidebar({ user, onLogout }: SidebarProps) {
       </nav>
 
       {/* Bottom Section */}
-      <div className="px-4 py-4 border-t border-white/10 space-y-2">
+      <div className={`px-4 py-4 border-t space-y-2 ${theme === 'dark' ? 'border-white/10' : 'border-gray-200'}`}>
         {/* Notifications */}
-        <button className="sidebar-nav-item w-full" title={isCollapsed ? 'Notifications' : undefined}>
+        <button className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 w-full ${
+          theme === 'dark'
+            ? 'text-gray-300 hover:text-white hover:bg-white/5'
+            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+        }`} title={isCollapsed ? 'Notifications' : undefined}>
           <BellIcon className="h-5 w-5 flex-shrink-0" />
           {!isCollapsed && (
             <div className="flex-1 min-w-0 text-left">
               <p className="font-medium">Notifications</p>
-              <p className="text-xs text-gray-400">Recent updates</p>
+              <p className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Recent updates</p>
             </div>
           )}
-          <div className="w-2 h-2 bg-violet-500 rounded-full flex-shrink-0"></div>
+          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${theme === 'dark' ? 'bg-teal-400' : 'bg-teal-500'}`}></div>
         </button>
 
         {/* Settings */}
@@ -219,14 +247,22 @@ export default function ModernSidebar({ user, onLogout }: SidebarProps) {
             <Link
               key={item.name}
               href={item.href}
-              className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
+              className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 ${
+                isActive
+                  ? theme === 'dark'
+                    ? 'bg-teal-600 text-white'
+                    : 'bg-teal-100 text-teal-700'
+                  : theme === 'dark'
+                    ? 'text-gray-300 hover:text-white hover:bg-white/5'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
               title={isCollapsed ? item.name : undefined}
             >
               <Icon className="h-5 w-5 flex-shrink-0" />
               {!isCollapsed && (
                 <div className="flex-1 min-w-0">
                   <p className="font-medium">{item.name}</p>
-                  <p className="text-xs text-gray-400">{item.description}</p>
+                  <p className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>{item.description}</p>
                 </div>
               )}
             </Link>
@@ -237,14 +273,18 @@ export default function ModernSidebar({ user, onLogout }: SidebarProps) {
         {onLogout && (
           <button
             onClick={onLogout}
-            className="sidebar-nav-item w-full text-red-400 hover:text-red-300 hover:bg-red-500/10"
+            className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 w-full ${
+              theme === 'dark'
+                ? 'text-red-400 hover:text-red-300 hover:bg-red-500/10'
+                : 'text-red-600 hover:text-red-700 hover:bg-red-50'
+            }`}
             title={isCollapsed ? 'Logout' : undefined}
           >
             <ArrowRightOnRectangleIcon className="h-5 w-5 flex-shrink-0" />
             {!isCollapsed && (
               <div className="flex-1 min-w-0 text-left">
                 <p className="font-medium">Logout</p>
-                <p className="text-xs text-gray-400">Sign out</p>
+                <p className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Sign out</p>
               </div>
             )}
           </button>

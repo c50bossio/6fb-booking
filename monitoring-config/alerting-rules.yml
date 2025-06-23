@@ -1,0 +1,527 @@
+# Comprehensive Alerting Rules Configuration for 6FB Booking Platform
+# Production-ready alerting rules with proper thresholds and escalation
+
+# Global Configuration
+global_config:
+  resolve_timeout: "5m"
+  smtp_smarthost: "smtp.sendgrid.net:587"
+  smtp_from: "alerts@6fb-booking.com"
+  smtp_auth_username: "apikey"
+  smtp_auth_password: "${SENDGRID_API_KEY}"
+
+# Alert Group Definitions
+groups:
+  # System Health Alerts
+  - name: "system_health"
+    interval: "30s"
+    rules:
+      - alert: "SystemDown"
+        expr: "up{job='6fb-booking-api'} == 0"
+        for: "1m"
+        labels:
+          severity: "critical"
+          category: "system"
+          component: "api"
+          team: "platform"
+        annotations:
+          summary: "6FB Booking API is down"
+          description: "The main API service has been down for more than 1 minute"
+          impact: "All booking functionality is unavailable"
+          runbook_url: "https://runbooks.6fb-booking.com/system-down"
+          dashboard_url: "https://monitoring.6fb-booking.com/d/system-overview"
+
+      - alert: "HighCPUUsage"
+        expr: "cpu_usage_percent > 85"
+        for: "5m"
+        labels:
+          severity: "warning"
+          category: "system"
+          component: "server"
+          team: "platform"
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is above 85% for 5 minutes (current: {{ $value }}%)"
+          impact: "Performance degradation possible"
+          action: "Consider scaling resources or investigating high CPU processes"
+
+      - alert: "HighMemoryUsage"
+        expr: "memory_usage_percent > 90"
+        for: "3m"
+        labels:
+          severity: "warning"
+          category: "system"
+          component: "server"
+          team: "platform"
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is above 90% for 3 minutes (current: {{ $value }}%)"
+          impact: "Risk of out-of-memory conditions"
+          action: "Investigate memory leaks or scale memory resources"
+
+      - alert: "DiskSpaceCritical"
+        expr: "disk_usage_percent > 95"
+        for: "1m"
+        labels:
+          severity: "critical"
+          category: "system"
+          component: "storage"
+          team: "platform"
+        annotations:
+          summary: "Critical disk space usage"
+          description: "Disk usage is above 95% (current: {{ $value }}%)"
+          impact: "System may become unresponsive, data loss risk"
+          action: "Immediate cleanup or storage expansion required"
+
+  # Application Performance Alerts
+  - name: "application_performance"
+    interval: "30s"
+    rules:
+      - alert: "HighErrorRate"
+        expr: "rate(http_requests_total{status=~'5..'}[5m]) / rate(http_requests_total[5m]) > 0.05"
+        for: "2m"
+        labels:
+          severity: "critical"
+          category: "application"
+          component: "api"
+          team: "development"
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is above 5% for 2 minutes (current: {{ $value | humanizePercentage }})"
+          impact: "Users experiencing service failures"
+          action: "Check logs and investigate error causes"
+
+      - alert: "SlowResponseTime"
+        expr: "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2"
+        for: "5m"
+        labels:
+          severity: "warning"
+          category: "application"
+          component: "api"
+          team: "development"
+        annotations:
+          summary: "Slow API response times"
+          description: "95th percentile response time is above 2 seconds (current: {{ $value }}s)"
+          impact: "Poor user experience, potential timeouts"
+          action: "Investigate slow endpoints and optimize performance"
+
+      - alert: "AuthenticationFailureSpike"
+        expr: "rate(auth_failures_total[5m]) > 10"
+        for: "2m"
+        labels:
+          severity: "warning"
+          category: "security"
+          component: "auth"
+          team: "security"
+        annotations:
+          summary: "High authentication failure rate"
+          description: "Authentication failures are above 10/minute (current: {{ $value }})"
+          impact: "Possible brute force attack or system issue"
+          action: "Check for security threats and system issues"
+
+  # Payment System Alerts
+  - name: "payment_system"
+    interval: "30s"
+    rules:
+      - alert: "PaymentProcessingDown"
+        expr: "up{job='payment-processor'} == 0"
+        for: "30s"
+        labels:
+          severity: "critical"
+          category: "business"
+          component: "payments"
+          team: "platform"
+        annotations:
+          summary: "Payment processing system is down"
+          description: "Payment processor has been unreachable for 30 seconds"
+          impact: "No payments can be processed, revenue loss"
+          action: "Immediate investigation required"
+          escalation: "page_on_call"
+
+      - alert: "HighPaymentFailureRate"
+        expr: "rate(payment_failed_total[5m]) / rate(payment_attempts_total[5m]) > 0.1"
+        for: "3m"
+        labels:
+          severity: "critical"
+          category: "business"
+          component: "payments"
+          team: "platform"
+        annotations:
+          summary: "High payment failure rate"
+          description: "Payment failure rate is above 10% (current: {{ $value | humanizePercentage }})"
+          impact: "Significant revenue loss, poor customer experience"
+          action: "Check Stripe status and payment processing logs"
+
+      - alert: "StripeWebhookFailures"
+        expr: "rate(stripe_webhook_failures_total[5m]) > 5"
+        for: "2m"
+        labels:
+          severity: "warning"
+          category: "integration"
+          component: "webhooks"
+          team: "platform"
+        annotations:
+          summary: "Stripe webhook failures detected"
+          description: "Stripe webhook failures above 5/minute (current: {{ $value }})"
+          impact: "Payment status updates may be delayed"
+          action: "Check webhook endpoint health and Stripe connectivity"
+
+      - alert: "SuspiciousPaymentActivity"
+        expr: "rate(payment_fraud_detected_total[5m]) > 2"
+        for: "1m"
+        labels:
+          severity: "warning"
+          category: "security"
+          component: "fraud_detection"
+          team: "security"
+        annotations:
+          summary: "Suspicious payment activity detected"
+          description: "Fraud detection triggered above 2/minute (current: {{ $value }})"
+          impact: "Potential financial security threat"
+          action: "Review recent transactions and fraud detection logs"
+
+  # Database Performance Alerts
+  - name: "database_performance"
+    interval: "30s"
+    rules:
+      - alert: "DatabaseConnectionFailure"
+        expr: "db_connections_failed_total > 0"
+        for: "30s"
+        labels:
+          severity: "critical"
+          category: "database"
+          component: "connections"
+          team: "platform"
+        annotations:
+          summary: "Database connection failures"
+          description: "Database is rejecting connections"
+          impact: "Application functionality severely impacted"
+          action: "Check database status and connection limits"
+
+      - alert: "SlowDatabaseQueries"
+        expr: "rate(db_slow_queries_total[5m]) > 10"
+        for: "3m"
+        labels:
+          severity: "warning"
+          category: "database"
+          component: "performance"
+          team: "development"
+        annotations:
+          summary: "High rate of slow database queries"
+          description: "Slow queries above 10/minute (current: {{ $value }})"
+          impact: "Performance degradation, potential timeouts"
+          action: "Review slow query log and optimize problematic queries"
+
+      - alert: "DatabaseConnectionPoolExhaustion"
+        expr: "db_connections_active / db_connections_max > 0.9"
+        for: "2m"
+        labels:
+          severity: "warning"
+          category: "database"
+          component: "connections"
+          team: "platform"
+        annotations:
+          summary: "Database connection pool near exhaustion"
+          description: "Connection pool usage above 90% (current: {{ $value | humanizePercentage }})"
+          impact: "New connections may be rejected"
+          action: "Investigate connection leaks or increase pool size"
+
+  # Business Metrics Alerts
+  - name: "business_metrics"
+    interval: "60s"
+    rules:
+      - alert: "BookingConversionDrop"
+        expr: "booking_conversion_rate < 0.7"
+        for: "10m"
+        labels:
+          severity: "warning"
+          category: "business"
+          component: "conversions"
+          team: "product"
+        annotations:
+          summary: "Booking conversion rate below target"
+          description: "Conversion rate is below 70% (current: {{ $value | humanizePercentage }})"
+          impact: "Reduced bookings and revenue"
+          action: "Investigate booking flow issues and user experience"
+
+      - alert: "LowDailyActiveUsers"
+        expr: "daily_active_users < 100"
+        for: "30m"
+        labels:
+          severity: "warning"
+          category: "business"
+          component: "engagement"
+          team: "product"
+        annotations:
+          summary: "Low daily active users"
+          description: "Daily active users below 100 (current: {{ $value }})"
+          impact: "Reduced platform usage"
+          action: "Check for system issues or marketing campaigns"
+
+      - alert: "RevenueDropSignificant"
+        expr: "rate(revenue_total[1h]) < rate(revenue_total[1h] offset 1d) * 0.7"
+        for: "2h"
+        labels:
+          severity: "warning"
+          category: "business"
+          component: "revenue"
+          team: "business"
+        annotations:
+          summary: "Significant revenue drop detected"
+          description: "Hourly revenue is 30% below yesterday's rate"
+          impact: "Business performance concern"
+          action: "Analyze booking patterns and payment processing"
+
+  # Security Alerts
+  - name: "security_monitoring"
+    interval: "30s"
+    rules:
+      - alert: "SuspiciousLoginActivity"
+        expr: "rate(failed_login_attempts_total[5m]) > 50"
+        for: "2m"
+        labels:
+          severity: "warning"
+          category: "security"
+          component: "authentication"
+          team: "security"
+        annotations:
+          summary: "High rate of failed login attempts"
+          description: "Failed logins above 50/minute (current: {{ $value }})"
+          impact: "Possible brute force attack"
+          action: "Review login attempts and consider IP blocking"
+
+      - alert: "CSPViolationSpike"
+        expr: "rate(csp_violations_total[5m]) > 20"
+        for: "3m"
+        labels:
+          severity: "warning"
+          category: "security"
+          component: "content_security"
+          team: "security"
+        annotations:
+          summary: "High rate of CSP violations"
+          description: "CSP violations above 20/minute (current: {{ $value }})"
+          impact: "Potential XSS attacks or configuration issues"
+          action: "Review CSP violation logs and update policies"
+
+      - alert: "UnauthorizedAPIAccess"
+        expr: "rate(unauthorized_api_access_total[5m]) > 10"
+        for: "1m"
+        labels:
+          severity: "critical"
+          category: "security"
+          component: "api_security"
+          team: "security"
+        annotations:
+          summary: "High rate of unauthorized API access attempts"
+          description: "Unauthorized access attempts above 10/minute (current: {{ $value }})"
+          impact: "Potential security breach attempt"
+          action: "Investigate access patterns and strengthen authentication"
+
+  # External Dependencies Alerts
+  - name: "external_dependencies"
+    interval: "60s"
+    rules:
+      - alert: "StripeAPIDown"
+        expr: "stripe_api_success_rate < 0.95"
+        for: "3m"
+        labels:
+          severity: "critical"
+          category: "external"
+          component: "stripe"
+          team: "platform"
+        annotations:
+          summary: "Stripe API experiencing issues"
+          description: "Stripe API success rate below 95% (current: {{ $value | humanizePercentage }})"
+          impact: "Payment processing severely impacted"
+          action: "Check Stripe status page and implement fallback measures"
+
+      - alert: "EmailServiceDown"
+        expr: "email_delivery_success_rate < 0.9"
+        for: "5m"
+        labels:
+          severity: "warning"
+          category: "external"
+          component: "email"
+          team: "platform"
+        annotations:
+          summary: "Email service experiencing issues"
+          description: "Email delivery success rate below 90% (current: {{ $value | humanizePercentage }})"
+          impact: "Users not receiving email notifications"
+          action: "Check SendGrid status and email queue"
+
+# Notification Routing Configuration
+route:
+  group_by: ["alertname", "severity", "category"]
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 12h
+  receiver: "default-receiver"
+  routes:
+    # Critical alerts - immediate notification
+    - match:
+        severity: "critical"
+      receiver: "critical-alerts"
+      group_wait: 0s
+      repeat_interval: 5m
+      routes:
+        # Payment system critical alerts - page on-call
+        - match:
+            component: "payments"
+          receiver: "payment-critical-alerts"
+          
+        # System down alerts - multiple channels
+        - match:
+            component: "api"
+          receiver: "system-critical-alerts"
+
+    # Warning alerts - less frequent notifications
+    - match:
+        severity: "warning"
+      receiver: "warning-alerts"
+      group_wait: 30s
+      repeat_interval: 30m
+      
+    # Business alerts - business hours only
+    - match:
+        category: "business"
+      receiver: "business-alerts"
+      group_wait: 5m
+      repeat_interval: 1h
+
+# Notification Receivers
+receivers:
+  - name: "default-receiver"
+    email_configs:
+      - to: "admin@6fb-booking.com"
+        subject: "6FB Booking Alert: {{ .GroupLabels.alertname }}"
+        body: |
+          Alert Details:
+          {{ range .Alerts }}
+          - {{ .Annotations.summary }}
+          - Description: {{ .Annotations.description }}
+          - Impact: {{ .Annotations.impact }}
+          - Action: {{ .Annotations.action }}
+          {{ end }}
+
+  - name: "critical-alerts"
+    slack_configs:
+      - api_url: "https://hooks.slack.com/services/YOUR/CRITICAL/WEBHOOK"
+        channel: "#alerts-critical"
+        title: "🚨 CRITICAL ALERT"
+        text: |
+          {{ range .Alerts }}
+          *{{ .Annotations.summary }}*
+          📝 {{ .Annotations.description }}
+          💥 Impact: {{ .Annotations.impact }}
+          🔧 Action: {{ .Annotations.action }}
+          {{ if .Annotations.runbook_url }}📚 Runbook: {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
+        send_resolved: true
+    email_configs:
+      - to: "admin@6fb-booking.com,devops@6fb-booking.com"
+        subject: "🚨 CRITICAL: {{ .GroupLabels.alertname }}"
+        html: |
+          <h2>Critical Alert - Immediate Action Required</h2>
+          {{ range .Alerts }}
+          <p><strong>{{ .Annotations.summary }}</strong></p>
+          <p>{{ .Annotations.description }}</p>
+          <p><strong>Impact:</strong> {{ .Annotations.impact }}</p>
+          <p><strong>Action:</strong> {{ .Annotations.action }}</p>
+          {{ if .Annotations.dashboard_url }}<p><a href="{{ .Annotations.dashboard_url }}">View Dashboard</a></p>{{ end }}
+          {{ end }}
+
+  - name: "payment-critical-alerts"
+    pagerduty_configs:
+      - routing_key: "your-pagerduty-integration-key"
+        description: "6FB Booking Payment System Alert"
+        severity: "critical"
+        details:
+          summary: "{{ .GroupLabels.alertname }}"
+          component: "{{ .GroupLabels.component }}"
+          group: "{{ .GroupLabels.category }}"
+    slack_configs:
+      - api_url: "https://hooks.slack.com/services/YOUR/PAYMENTS/WEBHOOK"
+        channel: "#payments-alerts"
+        title: "💳 PAYMENT SYSTEM CRITICAL"
+        text: |
+          {{ range .Alerts }}
+          *{{ .Annotations.summary }}*
+          💰 REVENUE IMPACT: {{ .Annotations.impact }}
+          🚀 Action: {{ .Annotations.action }}
+          {{ end }}
+
+  - name: "system-critical-alerts"
+    email_configs:
+      - to: "admin@6fb-booking.com,devops@6fb-booking.com,oncall@6fb-booking.com"
+        subject: "🚨 SYSTEM DOWN: {{ .GroupLabels.alertname }}"
+        html: |
+          <h1 style="color: red;">SYSTEM DOWN ALERT</h1>
+          {{ range .Alerts }}
+          <p><strong>{{ .Annotations.summary }}</strong></p>
+          <p>{{ .Annotations.description }}</p>
+          <p><strong>Impact:</strong> {{ .Annotations.impact }}</p>
+          {{ end }}
+    
+  - name: "warning-alerts"
+    slack_configs:
+      - api_url: "https://hooks.slack.com/services/YOUR/WARNING/WEBHOOK"
+        channel: "#alerts-warning"
+        title: "⚠️ Warning Alert"
+        text: |
+          {{ range .Alerts }}
+          {{ .Annotations.summary }}
+          {{ .Annotations.description }}
+          {{ end }}
+    email_configs:
+      - to: "dev-team@6fb-booking.com"
+        subject: "⚠️ Warning: {{ .GroupLabels.alertname }}"
+
+  - name: "business-alerts"
+    slack_configs:
+      - api_url: "https://hooks.slack.com/services/YOUR/BUSINESS/WEBHOOK"
+        channel: "#business-metrics"
+        title: "📊 Business Metrics Alert"
+        text: |
+          {{ range .Alerts }}
+          {{ .Annotations.summary }}
+          {{ .Annotations.description }}
+          {{ end }}
+    email_configs:
+      - to: "business@6fb-booking.com,product@6fb-booking.com"
+        subject: "📊 Business Alert: {{ .GroupLabels.alertname }}"
+
+# Inhibition Rules (prevent spam)
+inhibit_rules:
+  # Inhibit warning alerts when critical alerts are firing
+  - source_match:
+      severity: "critical"
+    target_match:
+      severity: "warning"
+    equal: ["component"]
+    
+  # Inhibit individual service alerts when system is down
+  - source_match:
+      alertname: "SystemDown"
+    target_match_re:
+      alertname: "(HighErrorRate|SlowResponseTime|DatabaseConnectionFailure)"
+    equal: ["instance"]
+
+# Alert Silencing Templates
+silences:
+  maintenance_window:
+    comment: "Scheduled maintenance window"
+    created_by: "admin@6fb-booking.com"
+    starts_at: "2025-06-23T02:00:00Z"
+    ends_at: "2025-06-23T04:00:00Z"
+    matchers:
+      - name: "component"
+        value: ".*"
+        is_regex: true
+        
+  deployment_window:
+    comment: "Production deployment in progress"
+    created_by: "devops@6fb-booking.com"
+    duration: "30m"
+    matchers:
+      - name: "severity"
+        value: "warning"

@@ -114,7 +114,7 @@ export default function SettingsPage() {
       const token = localStorage.getItem('access_token')
 
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings`,
+        `${process.env.NEXT_PUBLIC_API_URL}/settings`,
         { headers: { Authorization: `Bearer ${token}` } }
       )
 
@@ -147,7 +147,7 @@ export default function SettingsPage() {
       const token = localStorage.getItem('access_token')
 
       await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings/${settingsType}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/settings/${settingsType}`,
         data,
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -175,7 +175,7 @@ export default function SettingsPage() {
       const token = localStorage.getItem('access_token')
 
       await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/change-password`,
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/change-password`,
         {
           current_password: passwordForm.current_password,
           new_password: passwordForm.new_password
@@ -205,7 +205,7 @@ export default function SettingsPage() {
     return (
       <ModernLayout>
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600"></div>
         </div>
       </ModernLayout>
     )
@@ -249,7 +249,7 @@ export default function SettingsPage() {
                     onClick={() => setActiveTab(tab.id)}
                     className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors ${
                       activeTab === tab.id
-                        ? 'border-violet-500 text-violet-600'
+                        ? 'border-slate-500 text-slate-700'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
                   >
@@ -265,7 +265,7 @@ export default function SettingsPage() {
             {/* Business Settings */}
             {activeTab === 'business' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-medium text-gray-900">Business Information</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Business Information</h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
@@ -276,7 +276,7 @@ export default function SettingsPage() {
                       type="text"
                       value={businessSettings.name}
                       onChange={(e) => setBusinessSettings(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                     />
                   </div>
 
@@ -288,7 +288,7 @@ export default function SettingsPage() {
                       type="tel"
                       value={businessSettings.phone}
                       onChange={(e) => setBusinessSettings(prev => ({ ...prev, phone: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                     />
                   </div>
 
@@ -300,7 +300,7 @@ export default function SettingsPage() {
                       type="email"
                       value={businessSettings.email}
                       onChange={(e) => setBusinessSettings(prev => ({ ...prev, email: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                     />
                   </div>
 
@@ -312,7 +312,7 @@ export default function SettingsPage() {
                       type="url"
                       value={businessSettings.website}
                       onChange={(e) => setBusinessSettings(prev => ({ ...prev, website: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                     />
                   </div>
 
@@ -324,7 +324,7 @@ export default function SettingsPage() {
                       rows={3}
                       value={businessSettings.address}
                       onChange={(e) => setBusinessSettings(prev => ({ ...prev, address: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                     />
                   </div>
 
@@ -335,7 +335,7 @@ export default function SettingsPage() {
                     <select
                       value={businessSettings.timezone}
                       onChange={(e) => setBusinessSettings(prev => ({ ...prev, timezone: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                     >
                       <option value="America/New_York">Eastern Time</option>
                       <option value="America/Chicago">Central Time</option>
@@ -353,7 +353,7 @@ export default function SettingsPage() {
                       step="0.01"
                       value={businessSettings.tax_rate}
                       onChange={(e) => setBusinessSettings(prev => ({ ...prev, tax_rate: parseFloat(e.target.value) }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                     />
                   </div>
                 </div>
@@ -361,7 +361,7 @@ export default function SettingsPage() {
                 <button
                   onClick={() => saveSettings('business', businessSettings)}
                   disabled={saving}
-                  className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg font-medium hover:from-violet-700 hover:to-purple-700 transition-all disabled:opacity-50"
+                  className="px-4 py-2 bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-lg font-medium hover:from-slate-700 hover:to-slate-800 transition-all disabled:opacity-50"
                 >
                   {saving ? 'Saving...' : 'Save Business Settings'}
                 </button>
@@ -371,22 +371,22 @@ export default function SettingsPage() {
             {/* Notification Settings */}
             {activeTab === 'notifications' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-medium text-gray-900">Notification Preferences</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Notification Preferences</h3>
 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <EnvelopeIcon className="h-5 w-5 text-gray-400 mr-3" />
                       <div>
-                        <p className="text-sm font-medium text-gray-900">Email Notifications</p>
-                        <p className="text-sm text-gray-500">Receive notifications via email</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">Email Notifications</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Receive notifications via email</p>
                       </div>
                     </div>
                     <input
                       type="checkbox"
                       checked={notificationSettings.email_notifications}
                       onChange={(e) => setNotificationSettings(prev => ({ ...prev, email_notifications: e.target.checked }))}
-                      className="h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-slate-600 focus:ring-slate-500 border-gray-300 rounded"
                     />
                   </div>
 
@@ -394,15 +394,15 @@ export default function SettingsPage() {
                     <div className="flex items-center">
                       <DevicePhoneMobileIcon className="h-5 w-5 text-gray-400 mr-3" />
                       <div>
-                        <p className="text-sm font-medium text-gray-900">SMS Notifications</p>
-                        <p className="text-sm text-gray-500">Receive notifications via text message</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">SMS Notifications</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Receive notifications via text message</p>
                       </div>
                     </div>
                     <input
                       type="checkbox"
                       checked={notificationSettings.sms_notifications}
                       onChange={(e) => setNotificationSettings(prev => ({ ...prev, sms_notifications: e.target.checked }))}
-                      className="h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-slate-600 focus:ring-slate-500 border-gray-300 rounded"
                     />
                   </div>
 
@@ -410,15 +410,15 @@ export default function SettingsPage() {
                     <div className="flex items-center">
                       <ClockIcon className="h-5 w-5 text-gray-400 mr-3" />
                       <div>
-                        <p className="text-sm font-medium text-gray-900">Appointment Reminders</p>
-                        <p className="text-sm text-gray-500">Send automatic appointment reminders</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">Appointment Reminders</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Send automatic appointment reminders</p>
                       </div>
                     </div>
                     <input
                       type="checkbox"
                       checked={notificationSettings.appointment_reminders}
                       onChange={(e) => setNotificationSettings(prev => ({ ...prev, appointment_reminders: e.target.checked }))}
-                      className="h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-slate-600 focus:ring-slate-500 border-gray-300 rounded"
                     />
                   </div>
 
@@ -434,7 +434,7 @@ export default function SettingsPage() {
                       type="checkbox"
                       checked={notificationSettings.payment_notifications}
                       onChange={(e) => setNotificationSettings(prev => ({ ...prev, payment_notifications: e.target.checked }))}
-                      className="h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-slate-600 focus:ring-slate-500 border-gray-300 rounded"
                     />
                   </div>
 
@@ -450,7 +450,7 @@ export default function SettingsPage() {
                       type="checkbox"
                       checked={notificationSettings.push_notifications}
                       onChange={(e) => setNotificationSettings(prev => ({ ...prev, push_notifications: e.target.checked }))}
-                      className="h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-slate-600 focus:ring-slate-500 border-gray-300 rounded"
                     />
                   </div>
                 </div>
@@ -458,7 +458,7 @@ export default function SettingsPage() {
                 <button
                   onClick={() => saveSettings('notifications', notificationSettings)}
                   disabled={saving}
-                  className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg font-medium hover:from-violet-700 hover:to-purple-700 transition-all disabled:opacity-50"
+                  className="px-4 py-2 bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-lg font-medium hover:from-slate-700 hover:to-slate-800 transition-all disabled:opacity-50"
                 >
                   {saving ? 'Saving...' : 'Save Notification Settings'}
                 </button>
@@ -468,18 +468,18 @@ export default function SettingsPage() {
             {/* Payment Settings */}
             {activeTab === 'payments' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-medium text-gray-900">Payment Configuration</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Payment Configuration</h3>
 
                 <div className="space-y-6">
                   <div className="border border-gray-200 rounded-lg p-4">
-                    <h4 className="text-sm font-medium text-gray-900 mb-3">Connected Payment Methods</h4>
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Connected Payment Methods</h4>
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
-                          <div className="w-8 h-8 bg-purple-600 rounded flex items-center justify-center mr-3">
+                          <div className="w-8 h-8 bg-slate-600 rounded flex items-center justify-center mr-3">
                             <span className="text-white text-xs font-bold">S</span>
                           </div>
-                          <span className="text-sm font-medium">Stripe</span>
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">Stripe</span>
                         </div>
                         <span className={`px-2 py-1 text-xs rounded-full ${
                           paymentSettings.stripe_connected ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
@@ -493,7 +493,7 @@ export default function SettingsPage() {
                           <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center mr-3">
                             <span className="text-white text-xs font-bold">□</span>
                           </div>
-                          <span className="text-sm font-medium">Square</span>
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">Square</span>
                         </div>
                         <span className={`px-2 py-1 text-xs rounded-full ${
                           paymentSettings.square_connected ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
@@ -512,7 +512,7 @@ export default function SettingsPage() {
                       <select
                         value={paymentSettings.payout_frequency}
                         onChange={(e) => setPaymentSettings(prev => ({ ...prev, payout_frequency: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                       >
                         <option value="daily">Daily</option>
                         <option value="weekly">Weekly</option>
@@ -529,7 +529,7 @@ export default function SettingsPage() {
                         type="number"
                         value={paymentSettings.minimum_payout}
                         onChange={(e) => setPaymentSettings(prev => ({ ...prev, minimum_payout: parseInt(e.target.value) }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                       />
                     </div>
                   </div>
@@ -543,7 +543,7 @@ export default function SettingsPage() {
                       type="checkbox"
                       checked={paymentSettings.auto_payouts}
                       onChange={(e) => setPaymentSettings(prev => ({ ...prev, auto_payouts: e.target.checked }))}
-                      className="h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-slate-600 focus:ring-slate-500 border-gray-300 rounded"
                     />
                   </div>
                 </div>
@@ -551,7 +551,7 @@ export default function SettingsPage() {
                 <button
                   onClick={() => saveSettings('payments', paymentSettings)}
                   disabled={saving}
-                  className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg font-medium hover:from-violet-700 hover:to-purple-700 transition-all disabled:opacity-50"
+                  className="px-4 py-2 bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-lg font-medium hover:from-slate-700 hover:to-slate-800 transition-all disabled:opacity-50"
                 >
                   {saving ? 'Saving...' : 'Save Payment Settings'}
                 </button>
@@ -561,7 +561,7 @@ export default function SettingsPage() {
             {/* Security Settings */}
             {activeTab === 'security' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-medium text-gray-900">Security & Privacy</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Security & Privacy</h3>
 
                 <div className="space-y-6">
                   {/* Change Password */}
@@ -601,7 +601,7 @@ export default function SettingsPage() {
                           type="password"
                           value={passwordForm.new_password}
                           onChange={(e) => setPasswordForm(prev => ({ ...prev, new_password: e.target.value }))}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                         />
                       </div>
 
@@ -613,14 +613,14 @@ export default function SettingsPage() {
                           type="password"
                           value={passwordForm.confirm_password}
                           onChange={(e) => setPasswordForm(prev => ({ ...prev, confirm_password: e.target.value }))}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                         />
                       </div>
 
                       <button
                         onClick={changePassword}
                         disabled={saving || !passwordForm.current_password || !passwordForm.new_password || !passwordForm.confirm_password}
-                        className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg font-medium hover:from-violet-700 hover:to-purple-700 transition-all disabled:opacity-50"
+                        className="px-4 py-2 bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-lg font-medium hover:from-slate-700 hover:to-slate-800 transition-all disabled:opacity-50"
                       >
                         {saving ? 'Changing...' : 'Change Password'}
                       </button>
@@ -641,7 +641,7 @@ export default function SettingsPage() {
                         type="checkbox"
                         checked={securitySettings.two_factor_enabled}
                         onChange={(e) => setSecuritySettings(prev => ({ ...prev, two_factor_enabled: e.target.checked }))}
-                        className="h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-slate-600 focus:ring-slate-500 border-gray-300 rounded"
                       />
                     </div>
 
@@ -657,7 +657,7 @@ export default function SettingsPage() {
                         type="checkbox"
                         checked={securitySettings.login_notifications}
                         onChange={(e) => setSecuritySettings(prev => ({ ...prev, login_notifications: e.target.checked }))}
-                        className="h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-slate-600 focus:ring-slate-500 border-gray-300 rounded"
                       />
                     </div>
 
@@ -670,7 +670,7 @@ export default function SettingsPage() {
                           type="number"
                           value={securitySettings.session_timeout}
                           onChange={(e) => setSecuritySettings(prev => ({ ...prev, session_timeout: parseInt(e.target.value) }))}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                         />
                       </div>
 
@@ -682,7 +682,7 @@ export default function SettingsPage() {
                           type="number"
                           value={securitySettings.password_expiry}
                           onChange={(e) => setSecuritySettings(prev => ({ ...prev, password_expiry: parseInt(e.target.value) }))}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                         />
                       </div>
                     </div>
@@ -692,7 +692,7 @@ export default function SettingsPage() {
                 <button
                   onClick={() => saveSettings('security', securitySettings)}
                   disabled={saving}
-                  className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg font-medium hover:from-violet-700 hover:to-purple-700 transition-all disabled:opacity-50"
+                  className="px-4 py-2 bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-lg font-medium hover:from-slate-700 hover:to-slate-800 transition-all disabled:opacity-50"
                 >
                   {saving ? 'Saving...' : 'Save Security Settings'}
                 </button>

@@ -178,7 +178,7 @@ export default function ClientSelectionModal({
       className={`
         relative p-4 border-2 rounded-xl cursor-pointer transition-all duration-200
         ${isSelected
-          ? 'border-violet-500 bg-violet-50'
+          ? 'border-teal-500 bg-teal-50'
           : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
         }
       `}
@@ -193,7 +193,7 @@ export default function ClientSelectionModal({
               className="w-10 h-10 rounded-full object-cover"
             />
           ) : (
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
+            <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-white font-semibold text-sm">
               {getClientInitials(client.name)}
             </div>
           )}
@@ -204,7 +204,7 @@ export default function ClientSelectionModal({
           <div className="flex items-center justify-between">
             <h4 className="font-semibold text-gray-900 truncate">{client.name}</h4>
             {isSelected && (
-              <CheckCircleIcon className="h-5 w-5 text-violet-600 flex-shrink-0" />
+              <CheckCircleIcon className="h-5 w-5 text-teal-600 flex-shrink-0" />
             )}
           </div>
 
@@ -275,7 +275,7 @@ export default function ClientSelectionModal({
             // In a real app, this would open a "Create New Client" modal
             console.log('Add new client')
           }}
-          className="w-full flex items-center justify-center space-x-2 p-4 border-2 border-dashed border-gray-300 rounded-xl text-gray-600 hover:border-violet-400 hover:text-violet-600 transition-colors"
+          className="w-full flex items-center justify-center space-x-2 p-4 border-2 border-dashed border-gray-300 rounded-xl text-gray-600 hover:border-teal-400 hover:text-teal-600 transition-colors"
         >
           <PlusIcon className="h-5 w-5" />
           <span>Add New Client</span>

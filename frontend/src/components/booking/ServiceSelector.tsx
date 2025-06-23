@@ -68,8 +68,8 @@ export default function ServiceSelector({
                   key={service.id}
                   value={service}
                   className={({ active, checked }) =>
-                    `${active ? 'ring-2 ring-violet-600 ring-offset-2' : ''}
-                    ${checked ? 'bg-violet-50 border-violet-600' : 'bg-white border-gray-300'}
+                    `${active ? 'ring-2 ring-teal-600 ring-offset-2' : ''}
+                    ${checked ? 'bg-teal-50 border-teal-600' : 'bg-white border-gray-300'}
                     relative flex cursor-pointer rounded-lg border px-4 py-4 shadow-sm focus:outline-none
                     ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'}`
                   }
@@ -80,14 +80,14 @@ export default function ServiceSelector({
                         <div className="flex-1">
                           <RadioGroup.Label
                             as="p"
-                            className={`font-medium ${checked ? 'text-violet-900' : 'text-gray-900'}`}
+                            className={`font-medium ${checked ? 'text-teal-900' : 'text-gray-900'}`}
                           >
                             {service.name}
                           </RadioGroup.Label>
                           {service.description && (
                             <RadioGroup.Description
                               as="p"
-                              className={`mt-1 text-sm ${checked ? 'text-violet-700' : 'text-gray-500'}`}
+                              className={`mt-1 text-sm ${checked ? 'text-teal-700' : 'text-gray-500'}`}
                             >
                               {service.description}
                             </RadioGroup.Description>
@@ -106,7 +106,7 @@ export default function ServiceSelector({
                         </div>
                         <div className="ml-4 flex items-center">
                           <div className="text-right">
-                            <p className={`text-lg font-semibold ${checked ? 'text-violet-900' : 'text-gray-900'}`}>
+                            <p className={`text-lg font-semibold ${checked ? 'text-teal-900' : 'text-gray-900'}`}>
                               {formatPrice(service.base_price)}
                             </p>
                             {service.requires_deposit && (
@@ -117,7 +117,7 @@ export default function ServiceSelector({
                           </div>
                           {checked && (
                             <div className="ml-3 flex h-5 w-5 items-center justify-center">
-                              <CheckIcon className="h-5 w-5 text-violet-600" />
+                              <CheckIcon className="h-5 w-5 text-teal-600" />
                             </div>
                           )}
                         </div>

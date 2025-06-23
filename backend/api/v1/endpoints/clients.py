@@ -125,15 +125,13 @@ async def get_clients(
     # Base query with eager loading to prevent N+1 queries
     query = db.query(Client).options(
         joinedload(Client.barber),
-        selectinload(Client.appointments).joinedload(Appointment.service)
+        selectinload(Client.appointments).joinedload(Appointment.service),
     )
 
     # Filter by barber if not admin with optimized query
     if current_user.get("role") == "barber":
         barber = (
-            db.query(Barber.id)
-            .filter(Barber.user_id == current_user["id"])
-            .first()
+            db.query(Barber.id).filter(Barber.user_id == current_user["id"]).first()
         )
         if barber:
             query = query.filter(Client.barber_id == barber.id)
@@ -249,9 +247,7 @@ async def create_client(
 
     # Check if client with email already exists
     existing_client = (
-        db.query(Client.id)
-        .filter(Client.email == client_data.email)
-        .first()
+        db.query(Client.id).filter(Client.email == client_data.email).first()
     )
     if existing_client:
         raise HTTPException(
@@ -262,9 +258,7 @@ async def create_client(
     barber_id = None
     if current_user.get("role") == "barber":
         barber = (
-            db.query(Barber.id)
-            .filter(Barber.user_id == current_user["id"])
-            .first()
+            db.query(Barber.id).filter(Barber.user_id == current_user["id"]).first()
         )
         if barber:
             barber_id = barber.id
@@ -352,7 +346,7 @@ async def get_client(
         db.query(Client)
         .options(
             joinedload(Client.barber),
-            selectinload(Client.appointments).joinedload(Appointment.service)
+            selectinload(Client.appointments).joinedload(Appointment.service),
         )
         .filter(Client.id == client_id)
         .first()
@@ -363,9 +357,7 @@ async def get_client(
     # Check permissions with optimized query
     if current_user.get("role") == "barber":
         barber = (
-            db.query(Barber.id)
-            .filter(Barber.user_id == current_user["id"])
-            .first()
+            db.query(Barber.id).filter(Barber.user_id == current_user["id"]).first()
         )
         if not barber or client.barber_id != barber.id:
             raise HTTPException(
@@ -586,7 +578,7 @@ async def update_vip_status(
     if not rbac.has_permission(current_user, Permission.UPDATE_ALL_CLIENTS):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only admins can set VIP status"
+            detail="Only admins can set VIP status",
         )
 
     client = db.query(Client).filter(Client.id == client_id).first()
@@ -787,7 +779,7 @@ async def delete_client(
     if not rbac.has_permission(current_user, Permission.DELETE_ALL_CLIENTS):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only admins can delete clients"
+            detail="Only admins can delete clients",
         )
 
     client = db.query(Client).filter(Client.id == client_id).first()

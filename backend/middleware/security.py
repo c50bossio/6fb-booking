@@ -29,7 +29,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
         # Enhanced Content Security Policy
         settings = request.app.state.settings
-        
+
         if settings.ENVIRONMENT == "production" and settings.SECURITY_HEADERS_STRICT:
             # Strict production CSP
             csp_directives = [
@@ -45,11 +45,11 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
                 "form-action 'self'",
                 "upgrade-insecure-requests",
             ]
-            
+
             # Add CSP reporting if configured
             if settings.CSP_REPORT_URI:
                 csp_directives.append(f"report-uri {settings.CSP_REPORT_URI}")
-                
+
         elif settings.ENVIRONMENT == "development":
             # Development CSP - more permissive
             csp_directives = [
@@ -125,7 +125,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable):
         # Enhanced security for documentation endpoints
         settings = request.app.state.settings
-        
+
         # In production, apply rate limiting to docs endpoints
         if settings.ENVIRONMENT == "production" and settings.RATE_LIMIT_STRICT_MODE:
             # Only skip rate limiting for root endpoint

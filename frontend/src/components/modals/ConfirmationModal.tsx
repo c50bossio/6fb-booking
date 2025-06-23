@@ -46,17 +46,17 @@ export default function ConfirmationModal({
     >
       <div className="text-center">
         {/* Icon */}
-        <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-          {icon || <ExclamationTriangleIcon className="h-6 w-6 text-red-600" />}
+        <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 mb-4">
+          {icon || <ExclamationTriangleIcon className="h-6 w-6 text-red-600 dark:text-red-400" />}
         </div>
 
         {/* Title */}
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
           {title}
         </h3>
 
         {/* Message */}
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-600 dark:text-gray-300 mb-6">
           {message}
         </p>
 

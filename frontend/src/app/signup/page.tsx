@@ -188,7 +188,7 @@ export default function SignupPage() {
               Back to Home
             </Link>
             <div className="flex items-center">
-              <CurrencyDollarIcon className="h-8 w-8 text-blue-600" />
+              <CurrencyDollarIcon className="h-8 w-8 text-teal-600" />
               <span className="ml-2 text-2xl font-bold text-gray-900">6FB Payouts</span>
             </div>
             <Link href="/login" className="text-gray-500 hover:text-gray-900">
@@ -215,20 +215,20 @@ export default function SignupPage() {
               <div key={num} className="flex items-center">
                 <div className={`
                   w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium
-                  ${step >= num ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}
+                  ${step >= num ? 'bg-teal-600 text-white' : 'bg-gray-200 text-gray-600'}
                 `}>
                   {num}
                 </div>
                 {num < 3 && (
-                  <div className={`w-16 h-1 mx-4 ${step > num ? 'bg-blue-600' : 'bg-gray-200'}`} />
+                  <div className={`w-16 h-1 mx-4 ${step > num ? 'bg-teal-600' : 'bg-gray-200'}`} />
                 )}
               </div>
             ))}
           </div>
           <div className="flex justify-center mt-4 space-x-16 text-sm text-gray-500">
-            <span className={step >= 1 ? 'text-blue-600 font-medium' : ''}>Choose Plan</span>
-            <span className={step >= 2 ? 'text-blue-600 font-medium' : ''}>Account Info</span>
-            <span className={step >= 3 ? 'text-blue-600 font-medium' : ''}>Complete</span>
+            <span className={step >= 1 ? 'text-teal-600 font-medium' : ''}>Choose Plan</span>
+            <span className={step >= 2 ? 'text-teal-600 font-medium' : ''}>Account Info</span>
+            <span className={step >= 3 ? 'text-teal-600 font-medium' : ''}>Complete</span>
           </div>
         </div>
 
@@ -243,7 +243,7 @@ export default function SignupPage() {
                     <div
                       key={key}
                       className={`border rounded-lg p-6 cursor-pointer transition-all ${
-                        selectedPlan === key ? 'border-blue-600 bg-blue-50 ring-2 ring-blue-600' : 'border-gray-200 hover:border-gray-300'
+                        selectedPlan === key ? 'border-teal-600 bg-teal-50 ring-2 ring-teal-600' : 'border-gray-200 hover:border-gray-300'
                       }`}
                       onClick={() => setSelectedPlan(key)}
                     >
@@ -255,13 +255,13 @@ export default function SignupPage() {
                             value={key}
                             checked={selectedPlan === key}
                             onChange={() => setSelectedPlan(key)}
-                            className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                            className="h-4 w-4 text-teal-600 border-gray-300 focus:ring-teal-500"
                           />
                           <div className="ml-4">
                             <div className="flex items-center">
                               <h3 className="text-lg font-semibold text-gray-900">{plan.name}</h3>
                               {plan.popular && (
-                                <span className="ml-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+                                <span className="ml-2 bg-teal-600 text-white text-xs px-2 py-1 rounded-full">
                                   Most Popular
                                 </span>
                               )}
@@ -294,7 +294,7 @@ export default function SignupPage() {
                         name="firstName"
                         value={formData.firstName}
                         onChange={handleInputChange}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 ${
                           errors.firstName ? 'border-red-500' : 'border-gray-300'
                         }`}
                         placeholder="John"
@@ -312,7 +312,7 @@ export default function SignupPage() {
                         name="lastName"
                         value={formData.lastName}
                         onChange={handleInputChange}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 ${
                           errors.lastName ? 'border-red-500' : 'border-gray-300'
                         }`}
                         placeholder="Doe"
@@ -331,7 +331,7 @@ export default function SignupPage() {
                       name="email"
                       value={formData.email}
                       onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 ${
                         errors.email ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="john@barbershop.com"
@@ -350,7 +350,7 @@ export default function SignupPage() {
                         name="phone"
                         value={formData.phone}
                         onChange={handleInputChange}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 ${
                           errors.phone ? 'border-red-500' : 'border-gray-300'
                         }`}
                         placeholder="(555) 123-4567"
@@ -368,7 +368,7 @@ export default function SignupPage() {
                         name="shopName"
                         value={formData.shopName}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                         placeholder="The Cut Above"
                         autoComplete="organization"
                       />
@@ -385,7 +385,7 @@ export default function SignupPage() {
                         name="password"
                         value={formData.password}
                         onChange={handleInputChange}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 ${
                           errors.password ? 'border-red-500' : 'border-gray-300'
                         }`}
                         placeholder="••••••••"
@@ -403,7 +403,7 @@ export default function SignupPage() {
                         name="confirmPassword"
                         value={formData.confirmPassword}
                         onChange={handleInputChange}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 ${
                           errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
                         }`}
                         placeholder="••••••••"
@@ -420,10 +420,10 @@ export default function SignupPage() {
                         name="agreeToTerms"
                         checked={formData.agreeToTerms}
                         onChange={handleInputChange}
-                        className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mt-1"
+                        className="h-4 w-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500 mt-1"
                       />
                       <label className="ml-3 text-sm text-gray-600">
-                        I agree to the <Link href="#" className="text-blue-600 hover:underline">Terms of Service</Link> and <Link href="#" className="text-blue-600 hover:underline">Privacy Policy</Link> *
+                        I agree to the <Link href="/terms" className="text-teal-600 hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-teal-600 hover:underline">Privacy Policy</Link> *
                       </label>
                     </div>
                     {errors.agreeToTerms && <p className="text-red-500 text-sm">{errors.agreeToTerms}</p>}
@@ -434,7 +434,7 @@ export default function SignupPage() {
                         name="subscribeToNewsletter"
                         checked={formData.subscribeToNewsletter}
                         onChange={handleInputChange}
-                        className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mt-1"
+                        className="h-4 w-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500 mt-1"
                       />
                       <label className="ml-3 text-sm text-gray-600">
                         Subscribe to our newsletter for tips and updates
@@ -475,7 +475,7 @@ export default function SignupPage() {
                   <button
                     onClick={handleCreateAccount}
                     disabled={loading}
-                    className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50"
+                    className="w-full bg-teal-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-teal-700 disabled:opacity-50"
                   >
                     {loading ? 'Setting up your account...' : 'Complete Setup & Start Trial'}
                   </button>
@@ -495,7 +495,7 @@ export default function SignupPage() {
                 </button>
                 <button
                   onClick={handleContinue}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  className="px-6 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700"
                 >
                   {step === 1 ? 'Continue' : 'Create Account'}
                 </button>
@@ -534,12 +534,12 @@ export default function SignupPage() {
                 <span className="font-bold text-gray-900">{selectedPlanData.price}/month</span>
               </div>
 
-              <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="bg-teal-50 p-4 rounded-lg">
                 <div className="flex items-center">
-                  <ShieldCheckIcon className="h-5 w-5 text-blue-600 mr-2" />
-                  <span className="text-sm text-blue-800 font-medium">Risk-Free Trial</span>
+                  <ShieldCheckIcon className="h-5 w-5 text-teal-600 mr-2" />
+                  <span className="text-sm text-teal-800 font-medium">Risk-Free Trial</span>
                 </div>
-                <p className="text-xs text-blue-700 mt-1">
+                <p className="text-xs text-teal-700 mt-1">
                   Cancel anytime during your trial with no charges
                 </p>
               </div>

@@ -59,7 +59,7 @@ const generateTimeSlots = (date: string, barberId?: number): TimeSlot[] => {
 }
 
 const mockBarbers = [
-  { id: 1, name: 'Marcus Johnson', color: 'violet' },
+  { id: 1, name: 'Marcus Johnson', color: 'slate' },
   { id: 2, name: 'Sarah Mitchell', color: 'emerald' },
   { id: 3, name: 'David Rodriguez', color: 'amber' }
 ]
@@ -166,9 +166,9 @@ export default function TimeSlotPickerModal({
   }
 
   const getBarberColor = (barberId?: number) => {
-    if (!barberId) return 'violet'
+    if (!barberId) return 'slate'
     const barber = mockBarbers.find(b => b.id === barberId)
-    return barber?.color || 'violet'
+    return barber?.color || 'slate'
   }
 
   const TimeSlotGrid = ({ slots, title }: { slots: TimeSlot[]; title: string }) => {
@@ -224,8 +224,8 @@ export default function TimeSlotPickerModal({
       <div className="space-y-6">
         {/* Service Info Banner */}
         {serviceId && (
-          <div className="bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-200 rounded-xl p-4">
-            <div className="flex items-center space-x-2 text-violet-700">
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <div className="flex items-center space-x-2 text-slate-700">
               <ClockIcon className="h-5 w-5" />
               <span className="text-sm font-medium">
                 Service Duration: {serviceDuration} minutes
@@ -249,8 +249,8 @@ export default function TimeSlotPickerModal({
                 className={`
                   p-3 rounded-lg text-sm font-medium transition-all duration-200 relative
                   ${currentDate === dateInfo.date
-                    ? 'bg-violet-600 text-white shadow-lg'
-                    : 'border-2 border-gray-200 text-gray-700 hover:border-violet-400 hover:bg-violet-50'
+                    ? 'bg-teal-600 text-white shadow-lg'
+                    : 'border-2 border-gray-200 text-gray-700 hover:border-teal-400 hover:bg-teal-50'
                   }
                 `}
               >
@@ -286,7 +286,7 @@ export default function TimeSlotPickerModal({
             </div>
             {isLoading && (
               <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-violet-600"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-slate-600"></div>
                 <span>Loading...</span>
               </div>
             )}
@@ -321,11 +321,11 @@ export default function TimeSlotPickerModal({
         {/* Legend */}
         <div className="flex items-center justify-center space-x-6 text-xs text-gray-600 bg-gray-50 rounded-lg p-3">
           <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 bg-violet-600 rounded"></div>
+            <div className="w-4 h-4 bg-teal-600 rounded"></div>
             <span>Selected</span>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 border-2 border-violet-200 rounded"></div>
+            <div className="w-4 h-4 border-2 border-teal-200 rounded"></div>
             <span>Available</span>
           </div>
           <div className="flex items-center space-x-2">

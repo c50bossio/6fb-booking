@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import ClientOnly from "@/components/ClientOnly";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ExtensionDetector from "@/components/ExtensionDetector";
+import ExtensionErrorHandler from "@/components/ExtensionErrorHandler";
 import Script from "next/script";
 
 const geistSans = Geist({
@@ -81,6 +82,7 @@ export default function RootLayout({
               </NavigationProvider>
             </AuthProvider>
             <ExtensionDetector />
+            <ExtensionErrorHandler />
           </ThemeProvider>
         </ErrorBoundary>
       </body>

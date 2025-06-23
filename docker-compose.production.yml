@@ -1,0 +1,280 @@
+# ==============================================================================
+# PRODUCTION DOCKER COMPOSE FOR 6FB BOOKING PLATFORM
+# ==============================================================================
+# Full production stack with PostgreSQL, Redis, and monitoring
+
+version: '3.8'
+
+networks:
+  6fb-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  app_logs:
+    driver: local
+  app_uploads:
+    driver: local
+  app_backups:
+    driver: local
+
+services:
+  # ==============================================================================
+  # DATABASE SERVICE
+  # ==============================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: 6fb-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-6fb_booking}
+      POSTGRES_USER: ${POSTGRES_USER:-6fb_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - 6fb-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-6fb_user} -d ${POSTGRES_DB:-6fb_booking}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+
+  # ==============================================================================
+  # REDIS CACHE SERVICE
+  # ==============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: 6fb-redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - 6fb-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+
+  # ==============================================================================
+  # BACKEND APPLICATION SERVICE
+  # ==============================================================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.production
+      args:
+        - ENVIRONMENT=production
+    container_name: 6fb-backend
+    restart: unless-stopped
+    environment:
+      # Core Configuration
+      ENVIRONMENT: production
+      PYTHONPATH: /app
+      
+      # Security
+      SECRET_KEY: ${SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 1440
+      
+      # Database
+      DATABASE_URL: postgresql://${POSTGRES_USER:-6fb_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-6fb_booking}
+      DB_POOL_SIZE: 20
+      DB_MAX_OVERFLOW: 30
+      DB_POOL_TIMEOUT: 30
+      DB_POOL_RECYCLE: 3600
+      DB_POOL_PRE_PING: true
+      
+      # Redis
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      
+      # Payment Processing
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      STRIPE_CONNECT_CLIENT_ID: ${STRIPE_CONNECT_CLIENT_ID}
+      
+      # Email Services
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+      FROM_EMAIL: ${FROM_EMAIL}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-6FB Platform}
+      
+      # Monitoring
+      SENTRY_DSN: ${SENTRY_DSN}
+      SENTRY_ENVIRONMENT: production
+      SENTRY_TRACES_SAMPLE_RATE: 0.1
+      
+      # Security & Rate Limiting
+      RATE_LIMIT_PER_MINUTE: 60
+      RATE_LIMIT_BURST: 100
+      SECURITY_HEADERS_ENABLED: true
+      CONTENT_SECURITY_POLICY_ENABLED: true
+      
+      # Performance
+      WORKERS: 4
+      WORKER_CLASS: uvicorn.workers.UvicornWorker
+      MAX_REQUESTS: 10000
+      MAX_REQUESTS_JITTER: 1000
+      REQUEST_TIMEOUT: 30
+      KEEP_ALIVE: 2
+      
+      # Feature Flags
+      FEATURE_GOOGLE_CALENDAR_SYNC: ${FEATURE_GOOGLE_CALENDAR_SYNC:-true}
+      FEATURE_PAYMENT_SPLITS: ${FEATURE_PAYMENT_SPLITS:-true}
+      FEATURE_ANALYTICS_DASHBOARD: ${FEATURE_ANALYTICS_DASHBOARD:-true}
+      FEATURE_AUTOMATED_REMINDERS: ${FEATURE_AUTOMATED_REMINDERS:-true}
+      
+      # Logging
+      LOG_LEVEL: INFO
+      LOG_FORMAT: json
+      LOG_RETENTION_DAYS: 30
+      
+      # CORS
+      FRONTEND_URL: ${FRONTEND_URL}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+      
+    volumes:
+      - app_logs:/app/logs
+      - app_uploads:/app/uploads
+      - app_backups:/app/backups
+    ports:
+      - "8000:8000"
+    networks:
+      - 6fb-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+
+  # ==============================================================================
+  # NGINX REVERSE PROXY (OPTIONAL)
+  # ==============================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: 6fb-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - app_logs:/var/log/nginx
+    networks:
+      - 6fb-network
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.25'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+
+  # ==============================================================================
+  # MONITORING SERVICES (OPTIONAL)
+  # ==============================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: 6fb-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    networks:
+      - 6fb-network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.25'
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: 6fb-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+    volumes:
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+    ports:
+      - "3001:3000"
+    networks:
+      - 6fb-network
+    depends_on:
+      - prometheus
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'

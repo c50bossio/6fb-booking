@@ -65,18 +65,18 @@ export default function ClientModal({ isOpen, onClose, onSuccess, client }: Clie
     try {
       const token = localStorage.getItem('access_token')
       const headers = { Authorization: `Bearer ${token}` }
-      
+
       if (client) {
         // Update existing client
         await axios.put(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/clients/${client.id}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/clients/${client.id}`,
           formData,
           { headers }
         )
       } else {
         // Create new client
         await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/clients`,
+          `${process.env.NEXT_PUBLIC_API_URL}/clients`,
           formData,
           { headers }
         )
@@ -129,15 +129,15 @@ export default function ClientModal({ isOpen, onClose, onSuccess, client }: Clie
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white dark:bg-gray-900 p-6 text-left align-middle shadow-xl transition-all">
                 <Dialog.Title
                   as="h3"
-                  className="text-xl font-semibold leading-6 text-gray-900 flex items-center justify-between"
+                  className="text-xl font-semibold leading-6 text-gray-900 dark:text-white flex items-center justify-between"
                 >
                   {client ? 'Edit Client' : 'Add New Client'}
                   <button
                     onClick={onClose}
-                    className="text-gray-400 hover:text-gray-500"
+                    className="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-300"
                   >
                     <XMarkIcon className="h-6 w-6" />
                   </button>
@@ -146,7 +146,7 @@ export default function ClientModal({ isOpen, onClose, onSuccess, client }: Clie
                 <form onSubmit={handleSubmit} className="mt-6 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         First Name *
                       </label>
                       <input
@@ -154,12 +154,12 @@ export default function ClientModal({ isOpen, onClose, onSuccess, client }: Clie
                         required
                         value={formData.first_name}
                         onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Last Name *
                       </label>
                       <input
@@ -167,12 +167,12 @@ export default function ClientModal({ isOpen, onClose, onSuccess, client }: Clie
                         required
                         value={formData.last_name}
                         onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Email *
                       </label>
                       <input
@@ -180,12 +180,12 @@ export default function ClientModal({ isOpen, onClose, onSuccess, client }: Clie
                         required
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Phone *
                       </label>
                       <input
@@ -193,25 +193,25 @@ export default function ClientModal({ isOpen, onClose, onSuccess, client }: Clie
                         required
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                         placeholder="(555) 123-4567"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Date of Birth
                       </label>
                       <input
                         type="date"
                         value={formData.date_of_birth}
                         onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Tags
                       </label>
                       <div className="flex items-center space-x-2">
@@ -220,13 +220,13 @@ export default function ClientModal({ isOpen, onClose, onSuccess, client }: Clie
                           value={tagInput}
                           onChange={(e) => setTagInput(e.target.value)}
                           onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                           placeholder="Add a tag"
                         />
                         <button
                           type="button"
                           onClick={addTag}
-                          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                          className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                         >
                           Add
                         </button>
@@ -235,13 +235,13 @@ export default function ClientModal({ isOpen, onClose, onSuccess, client }: Clie
                         {formData.tags.map(tag => (
                           <span
                             key={tag}
-                            className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm flex items-center space-x-1"
+                            className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm flex items-center space-x-1"
                           >
                             <span>{tag}</span>
                             <button
                               type="button"
                               onClick={() => removeTag(tag)}
-                              className="text-gray-500 hover:text-gray-700"
+                              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                             >
                               ×
                             </button>
@@ -259,22 +259,22 @@ export default function ClientModal({ isOpen, onClose, onSuccess, client }: Clie
                       rows={3}
                       value={formData.notes}
                       onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                       placeholder="Add any notes about this client..."
                     />
                   </div>
 
                   <div className="space-y-3">
-                    <h4 className="text-sm font-medium text-gray-700">Communication Preferences</h4>
-                    
+                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Communication Preferences</h4>
+
                     <label className="flex items-center space-x-2">
                       <input
                         type="checkbox"
                         checked={formData.sms_enabled}
                         onChange={(e) => setFormData({ ...formData, sms_enabled: e.target.checked })}
-                        className="h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
                       />
-                      <span className="text-sm text-gray-700">Enable SMS notifications</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Enable SMS notifications</span>
                     </label>
 
                     <label className="flex items-center space-x-2">
@@ -282,9 +282,9 @@ export default function ClientModal({ isOpen, onClose, onSuccess, client }: Clie
                         type="checkbox"
                         checked={formData.email_enabled}
                         onChange={(e) => setFormData({ ...formData, email_enabled: e.target.checked })}
-                        className="h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
                       />
-                      <span className="text-sm text-gray-700">Enable email notifications</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Enable email notifications</span>
                     </label>
 
                     <label className="flex items-center space-x-2">
@@ -292,24 +292,24 @@ export default function ClientModal({ isOpen, onClose, onSuccess, client }: Clie
                         type="checkbox"
                         checked={formData.marketing_enabled}
                         onChange={(e) => setFormData({ ...formData, marketing_enabled: e.target.checked })}
-                        className="h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
                       />
-                      <span className="text-sm text-gray-700">Enable marketing communications</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Enable marketing communications</span>
                     </label>
                   </div>
 
-                  <div className="flex justify-end space-x-3 pt-6 border-t">
+                  <div className="flex justify-end space-x-3 pt-6 border-t border-gray-300 dark:border-gray-700">
                     <button
                       type="button"
                       onClick={onClose}
-                      className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                      className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={loading}
-                      className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg font-medium hover:from-violet-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-4 py-2 bg-slate-700 text-white rounded-lg font-medium hover:bg-slate-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {loading ? 'Saving...' : (client ? 'Update Client' : 'Add Client')}
                     </button>

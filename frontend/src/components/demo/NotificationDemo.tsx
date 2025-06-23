@@ -71,8 +71,8 @@ export function NotificationDemo() {
       type: 'team_update',
       label: 'Team Update',
       icon: Users,
-      color: 'text-purple-500',
-      bgColor: 'bg-purple-50'
+      color: 'text-teal-500',
+      bgColor: 'bg-teal-50'
     },
     {
       type: 'payment_received',

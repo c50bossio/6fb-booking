@@ -40,7 +40,7 @@ const notificationColors = {
   payment: 'text-green-500 bg-green-50',
   achievement: 'text-yellow-500 bg-yellow-50',
   alert: 'text-red-500 bg-red-50',
-  team: 'text-purple-500 bg-purple-50'
+  team: 'text-teal-500 bg-teal-50'
 }
 
 export function AnimatedNotificationCenter() {

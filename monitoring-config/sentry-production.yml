@@ -1,0 +1,228 @@
+# Sentry Production Configuration for 6FB Booking Platform
+# This file contains production-ready Sentry configuration and setup instructions
+
+# Project Configuration
+project_config:
+  backend:
+    name: "6fb-booking-backend"
+    platform: "python"
+    environment: "production"
+    release_version: "1.0.0"
+    
+  frontend:
+    name: "6fb-booking-frontend"
+    platform: "javascript-nextjs"
+    environment: "production"
+    release_version: "1.0.0"
+
+# Environment Variables for Production
+environment_variables:
+  # Required for backend
+  SENTRY_DSN: "https://your-dsn-here@o123456.ingest.sentry.io/123456"
+  SENTRY_ENVIRONMENT: "production"
+  SENTRY_RELEASE: "6fb-booking@1.0.0"
+  SENTRY_TRACES_SAMPLE_RATE: "0.1"  # 10% sampling for performance
+  SENTRY_PROFILES_SAMPLE_RATE: "0.1"  # 10% sampling for profiling
+  
+  # Required for frontend
+  NEXT_PUBLIC_SENTRY_DSN: "https://your-frontend-dsn@o123456.ingest.sentry.io/123457"
+  NEXT_PUBLIC_SENTRY_ENVIRONMENT: "production"
+  NEXT_PUBLIC_SENTRY_RELEASE: "6fb-booking-frontend@1.0.0"
+
+# Alert Rules Configuration
+alert_rules:
+  backend:
+    - name: "High Error Rate"
+      condition: "event.count:>50"
+      time_window: "1m"
+      environment: "production"
+      actions:
+        - type: "email"
+          target_identifier: "admin@6fb-booking.com"
+        - type: "slack"
+          channel: "#alerts-critical"
+          
+    - name: "Performance Issues"
+      condition: "event.type:transaction AND measurements.fcp:>3000"
+      time_window: "5m"
+      environment: "production"
+      actions:
+        - type: "email"
+          target_identifier: "dev-team@6fb-booking.com"
+        - type: "slack"
+          channel: "#alerts-warning"
+          
+    - name: "Payment Failures"
+      condition: "transaction:/api/v1/payments/process AND status:>=400"
+      time_window: "1m"
+      environment: "production"
+      actions:
+        - type: "email"
+          target_identifier: "admin@6fb-booking.com"
+        - type: "pagerduty"
+          service: "6fb-payment-service"
+
+  frontend:
+    - name: "JavaScript Errors"
+      condition: "event.count:>20"
+      time_window: "5m"
+      environment: "production"
+      actions:
+        - type: "email"
+          target_identifier: "frontend-team@6fb-booking.com"
+        - type: "slack"
+          channel: "#alerts-warning"
+          
+    - name: "Core Web Vitals Issues"
+      condition: "measurements.cls:>0.25 OR measurements.fcp:>3000 OR measurements.fid:>300"
+      time_window: "10m"
+      environment: "production"
+      actions:
+        - type: "email"
+          target_identifier: "performance-team@6fb-booking.com"
+
+# Performance Monitoring Configuration
+performance_config:
+  backend:
+    traces_sample_rate: 0.1  # 10% of transactions
+    profiles_sample_rate: 0.1  # 10% profiling
+    enable_tracing: true
+    enable_profiling: true
+    attach_stacktrace: true
+    
+  frontend:
+    traces_sample_rate: 0.1
+    replay_sample_rate: 0.1  # Session replay
+    enable_tracing: true
+    track_components: true
+    track_interactions: true
+
+# Custom Tags and Context
+custom_context:
+  backend:
+    server_name: "6fb-booking-api"
+    service_version: "1.0.0"
+    deployment_environment: "production"
+    
+  frontend:
+    app_name: "6fb-booking-frontend"
+    app_version: "1.0.0"
+    deployment_environment: "production"
+
+# Release Tracking
+releases:
+  backend:
+    version_format: "6fb-booking@{version}"
+    deploy_hook: "https://sentry.io/api/hooks/release/builtin/123456/deploy/"
+    
+  frontend:
+    version_format: "6fb-booking-frontend@{version}"
+    deploy_hook: "https://sentry.io/api/hooks/release/builtin/123457/deploy/"
+
+# Data Scrubbing and Privacy
+data_privacy:
+  scrub_sensitive_data: true
+  scrub_fields:
+    - "password"
+    - "credit_card"
+    - "ssn"
+    - "email"
+    - "phone"
+    - "api_key"
+    - "token"
+  scrub_headers:
+    - "authorization"
+    - "cookie"
+    - "x-api-key"
+
+# Integrations Configuration
+integrations:
+  slack:
+    webhook_url: "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+    channel: "#alerts"
+    username: "Sentry"
+    
+  email:
+    smtp_host: "smtp.sendgrid.net"
+    smtp_port: 587
+    username: "apikey"
+    password: "${SENDGRID_API_KEY}"
+    
+  pagerduty:
+    integration_key: "your-pagerduty-integration-key"
+    service_name: "6FB Booking Platform"
+
+# Sampling Rules
+sampling_rules:
+  # High priority endpoints - always sample
+  - conditions:
+      - op: "and"
+        inner:
+          - name: "event.transaction"
+            op: "glob"
+            value: "/api/v1/payments/*"
+    sample_rate: 1.0
+    
+  # Authentication endpoints - high sampling
+  - conditions:
+      - name: "event.transaction"
+        op: "glob"
+        value: "/api/v1/auth/*"
+    sample_rate: 0.5
+    
+  # Health checks - low sampling
+  - conditions:
+      - name: "event.transaction"
+        op: "glob"
+        value: "/api/v1/health*"
+    sample_rate: 0.01
+    
+  # Default sampling
+  - sample_rate: 0.1
+
+# Dashboard Configuration
+dashboards:
+  - name: "6FB Booking - Production Overview"
+    widgets:
+      - title: "Error Rate"
+        query: "event.type:error"
+        display_type: "line"
+      - title: "Response Time"
+        query: "event.type:transaction"
+        display_type: "line"
+      - title: "Payment Success Rate"
+        query: "transaction:/api/v1/payments/process"
+        display_type: "table"
+      - title: "Active Users"
+        query: "event.type:transaction AND transaction:/api/v1/auth/me"
+        display_type: "number"
+
+# Notification Settings
+notifications:
+  frequency:
+    immediate: ["critical"]
+    hourly_digest: ["warning"]
+    daily_digest: ["info"]
+    
+  escalation:
+    level_1: 
+      delay: "0m"
+      targets: ["admin@6fb-booking.com"]
+    level_2:
+      delay: "15m"
+      targets: ["admin@6fb-booking.com", "devops@6fb-booking.com"]
+    level_3:
+      delay: "30m"
+      targets: ["all-hands@6fb-booking.com"]
+
+# Maintenance and Cleanup
+maintenance:
+  data_retention:
+    errors: "30 days"
+    transactions: "30 days"
+    releases: "90 days"
+    
+  quota_management:
+    monthly_error_limit: 100000
+    monthly_transaction_limit: 1000000
+    alert_at_percentage: 80

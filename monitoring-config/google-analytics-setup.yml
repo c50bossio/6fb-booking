@@ -1,0 +1,404 @@
+# Google Analytics 4 Setup Configuration for 6FB Booking Platform
+# Complete GA4 setup with custom events, conversions, and enhanced ecommerce
+
+# Property Configuration
+property_config:
+  name: "6FB Booking Platform"
+  website_url: "https://your-domain.com"
+  industry_category: "Professional Services"
+  business_size: "Small Business"
+  country: "United States"
+  currency: "USD"
+  timezone: "America/New_York"
+
+# Environment Variables Required
+environment_variables:
+  production:
+    NEXT_PUBLIC_GA_TRACKING_ID: "G-XXXXXXXXXX"
+    NEXT_PUBLIC_GA_DEBUG_MODE: "false"
+    GA_MEASUREMENT_PROTOCOL_API_SECRET: "your-api-secret"
+    
+  development:
+    NEXT_PUBLIC_GA_TRACKING_ID: "G-XXXXXXXXXX"
+    NEXT_PUBLIC_GA_DEBUG_MODE: "true"
+    GA_MEASUREMENT_PROTOCOL_API_SECRET: "your-dev-api-secret"
+
+# Custom Events Configuration
+custom_events:
+  # User Authentication Events
+  - event_name: "login"
+    description: "User login completed"
+    parameters:
+      - name: "method"
+        type: "string"
+        description: "Login method (email, google, etc.)"
+      - name: "user_type"
+        type: "string"
+        description: "barber, client, admin"
+        
+  - event_name: "sign_up"
+    description: "User registration completed"
+    parameters:
+      - name: "method"
+        type: "string"
+        description: "Registration method"
+      - name: "user_type"
+        type: "string"
+        description: "barber, client"
+
+  # Booking Events
+  - event_name: "booking_started"
+    description: "User started booking flow"
+    parameters:
+      - name: "service_type"
+        type: "string"
+        description: "haircut, beard, color, etc."
+      - name: "barber_id"
+        type: "string"
+        description: "Selected barber ID"
+        
+  - event_name: "booking_completed"
+    description: "Booking successfully completed"
+    parameters:
+      - name: "booking_id"
+        type: "string"
+        description: "Booking ID"
+      - name: "service_type"
+        type: "string"
+        description: "Service category"
+      - name: "barber_id"
+        type: "string"
+        description: "Barber ID"
+      - name: "value"
+        type: "number"
+        description: "Booking value in USD"
+      - name: "currency"
+        type: "string"
+        description: "USD"
+        
+  - event_name: "booking_cancelled"
+    description: "Booking cancelled by user"
+    parameters:
+      - name: "booking_id"
+        type: "string"
+        description: "Booking ID"
+      - name: "cancellation_reason"
+        type: "string"
+        description: "Reason for cancellation"
+
+  # Payment Events
+  - event_name: "payment_started"
+    description: "Payment process initiated"
+    parameters:
+      - name: "payment_method"
+        type: "string"
+        description: "card, google_pay, apple_pay"
+      - name: "value"
+        type: "number"
+        description: "Payment amount"
+      - name: "currency"
+        type: "string"
+        description: "USD"
+        
+  - event_name: "purchase"
+    description: "Payment successfully completed"
+    parameters:
+      - name: "transaction_id"
+        type: "string"
+        description: "Payment transaction ID"
+      - name: "value"
+        type: "number"
+        description: "Payment amount"
+      - name: "currency"
+        type: "string"
+        description: "USD"
+      - name: "payment_method"
+        type: "string"
+        description: "Payment method used"
+        
+  - event_name: "payment_failed"
+    description: "Payment failed"
+    parameters:
+      - name: "error_code"
+        type: "string"
+        description: "Payment error code"
+      - name: "error_message"
+        type: "string"
+        description: "Payment error message"
+
+  # Barber Events
+  - event_name: "barber_onboarded"
+    description: "New barber completed onboarding"
+    parameters:
+      - name: "barber_id"
+        type: "string"
+        description: "Barber ID"
+      - name: "location_id"
+        type: "string"
+        description: "Location ID"
+      - name: "onboarding_duration"
+        type: "number"
+        description: "Time taken to complete onboarding (minutes)"
+
+  - event_name: "barber_profile_updated"
+    description: "Barber updated their profile"
+    parameters:
+      - name: "barber_id"
+        type: "string"
+        description: "Barber ID"
+      - name: "update_type"
+        type: "string"
+        description: "Type of update (services, availability, profile)"
+
+  # Engagement Events
+  - event_name: "page_view_time"
+    description: "Time spent on page"
+    parameters:
+      - name: "page_title"
+        type: "string"
+        description: "Page title"
+      - name: "engagement_time"
+        type: "number"
+        description: "Time spent in seconds"
+        
+  - event_name: "calendar_interaction"
+    description: "User interacted with calendar"
+    parameters:
+      - name: "interaction_type"
+        type: "string"
+        description: "view_month, view_day, select_slot"
+      - name: "barber_id"
+        type: "string"
+        description: "Barber ID if applicable"
+
+# Custom Dimensions
+custom_dimensions:
+  - name: "user_type"
+    scope: "USER"
+    description: "Type of user (barber, client, admin)"
+    
+  - name: "barber_location"
+    scope: "EVENT"
+    description: "Barber location/city"
+    
+  - name: "service_category"
+    scope: "EVENT"
+    description: "Service category (haircut, beard, etc.)"
+    
+  - name: "payment_method"
+    scope: "EVENT"
+    description: "Payment method used"
+    
+  - name: "booking_source"
+    scope: "EVENT"
+    description: "How user found the booking (direct, search, referral)"
+    
+  - name: "device_type"
+    scope: "EVENT"
+    description: "mobile, desktop, tablet"
+    
+  - name: "user_tier"
+    scope: "USER"
+    description: "VIP, regular, new"
+
+# Custom Metrics
+custom_metrics:
+  - name: "booking_value"
+    measurement_unit: "CURRENCY"
+    scope: "EVENT"
+    description: "Value of booking in USD"
+    
+  - name: "session_duration"
+    measurement_unit: "SECONDS"
+    scope: "EVENT"
+    description: "Session duration in seconds"
+    
+  - name: "booking_lead_time"
+    measurement_unit: "HOURS"
+    scope: "EVENT"
+    description: "Hours between booking and appointment"
+
+# Conversion Events
+conversion_events:
+  - event_name: "booking_completed"
+    counting_method: "ONCE_PER_SESSION"
+    description: "Primary conversion - booking completed"
+    
+  - event_name: "purchase"
+    counting_method: "ONCE_PER_EVENT"
+    description: "Payment conversion"
+    
+  - event_name: "sign_up"
+    counting_method: "ONCE_PER_SESSION"
+    description: "User registration conversion"
+    
+  - event_name: "barber_onboarded"
+    counting_method: "ONCE_PER_SESSION"
+    description: "Barber onboarding conversion"
+
+# Enhanced Ecommerce Configuration
+ecommerce_config:
+  enable_enhanced_ecommerce: true
+  currency: "USD"
+  
+  # Item parameters for purchase events
+  item_parameters:
+    - item_id: "service_id"
+    - item_name: "service_name"
+    - item_category: "service_category"
+    - item_variant: "service_duration"
+    - price: "service_price"
+    - quantity: 1
+    - item_brand: "barber_name"
+    - item_list_name: "available_services"
+
+# Audience Configuration
+audiences:
+  - name: "High Value Clients"
+    description: "Clients with bookings > $500 in 30 days"
+    criteria:
+      - dimension: "user_type"
+        operator: "EXACT"
+        value: "client"
+      - metric: "total_revenue"
+        operator: "GREATER_THAN"
+        value: 500
+        
+  - name: "New Barbers"
+    description: "Barbers who joined in last 30 days"
+    criteria:
+      - dimension: "user_type"
+        operator: "EXACT"
+        value: "barber"
+      - condition: "first_seen_date"
+        operator: "WITHIN_LAST"
+        value: "30_DAYS"
+        
+  - name: "Abandoned Bookings"
+    description: "Users who started but didn't complete booking"
+    criteria:
+      - event: "booking_started"
+        operator: "EXISTS"
+      - event: "booking_completed"
+        operator: "DOES_NOT_EXIST"
+
+# Data Retention Settings
+data_retention:
+  user_data: "26_MONTHS"  # Maximum for GA4
+  event_data: "14_MONTHS"  # Standard retention
+  
+# Data Export Configuration
+data_exports:
+  bigquery:
+    enable: true
+    project_id: "your-gcp-project-id"
+    dataset_id: "analytics_6fb_booking"
+    
+  ga4_reporting_api:
+    enable: true
+    service_account: "ga4-reporting@your-project.iam.gserviceaccount.com"
+
+# Privacy and Compliance
+privacy_settings:
+  ads_personalization: false  # GDPR compliance
+  google_signals: false       # For privacy
+  data_collection:
+    collect_google_ads_data: false
+    collect_search_console_data: true
+    
+  consent_mode:
+    default_consent_state:
+      ad_storage: "denied"
+      analytics_storage: "granted"
+      functionality_storage: "granted"
+      personalization_storage: "denied"
+      security_storage: "granted"
+
+# Reporting Configuration
+reports:
+  custom_reports:
+    - name: "Booking Funnel Analysis"
+      metrics:
+        - "booking_started"
+        - "booking_completed"
+        - "conversion_rate"
+      dimensions:
+        - "service_category"
+        - "barber_location"
+        - "user_type"
+        
+    - name: "Payment Performance"
+      metrics:
+        - "payment_started"
+        - "purchase"
+        - "payment_failed"
+        - "revenue"
+      dimensions:
+        - "payment_method"
+        - "device_type"
+        - "user_tier"
+        
+    - name: "Barber Performance"
+      metrics:
+        - "booking_completed"
+        - "revenue"
+        - "active_users"
+      dimensions:
+        - "barber_id"
+        - "service_category"
+        - "barber_location"
+
+# Alert Configuration
+alerts:
+  - name: "Booking Conversion Drop"
+    metric: "booking_completed"
+    condition: "DECREASE_MORE_THAN"
+    threshold: 20  # 20% decrease
+    comparison_period: "PREVIOUS_WEEK"
+    notification_emails:
+      - "admin@6fb-booking.com"
+      - "analytics@6fb-booking.com"
+      
+  - name: "Payment Failure Spike"
+    metric: "payment_failed"
+    condition: "INCREASE_MORE_THAN"
+    threshold: 50  # 50% increase
+    comparison_period: "PREVIOUS_DAY"
+    notification_emails:
+      - "admin@6fb-booking.com"
+      - "payments@6fb-booking.com"
+      
+  - name: "High Revenue Day"
+    metric: "purchase_revenue"
+    condition: "INCREASE_MORE_THAN"
+    threshold: 100  # 100% increase (good news!)
+    comparison_period: "PREVIOUS_WEEK"
+    notification_emails:
+      - "admin@6fb-booking.com"
+
+# Integration Settings
+integrations:
+  google_ads:
+    enable: false  # Set to true if using Google Ads
+    
+  google_optimize:
+    enable: false  # Set to true for A/B testing
+    
+  firebase:
+    enable: false  # Set to true if using Firebase
+    
+  search_console:
+    enable: true
+    website_url: "https://your-domain.com"
+
+# Development and Testing
+debug_settings:
+  development:
+    debug_mode: true
+    gtag_debug: true
+    measurement_protocol_validation: true
+    
+  production:
+    debug_mode: false
+    gtag_debug: false
+    measurement_protocol_validation: false

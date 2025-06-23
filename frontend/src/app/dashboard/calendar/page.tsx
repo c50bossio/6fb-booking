@@ -2,39 +2,18 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import EnterpriseCalendar from '@/components/calendar/EnterpriseCalendar'
+import ModernCalendar from '@/components/ModernCalendar'
 import BookingFlow from '@/components/booking/BookingFlow'
-import { CreateAppointmentModal, AppointmentDetailsModal } from '@/components/modals'
+import { NewAppointmentModal, EditAppointmentModal, DeleteAppointmentModal } from '@/components/modals'
 import { appointmentsService } from '@/lib/api/appointments'
 import { barbersService } from '@/lib/api/barbers'
 import { servicesService } from '@/lib/api/services'
+import { calendarBookingIntegration, CalendarHelpers, type CalendarAppointment } from '@/lib/api/calendar-booking-integration'
 import type { Booking } from '@/lib/api/bookings'
 import type { Service } from '@/lib/api/services'
 import type { BarberProfile } from '@/lib/api/barbers'
 
-// Unified appointment interface for calendar
-interface CalendarAppointment {
-  id: string
-  title: string
-  client: string
-  clientId?: number
-  barber: string
-  barberId: number
-  startTime: string
-  endTime: string
-  service: string
-  serviceId?: number
-  price: number
-  status: 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show'
-  date: string
-  clientEmail?: string
-  clientPhone?: string
-  notes?: string
-  confirmationNumber?: string
-  serviceRevenue?: number
-  tipAmount?: number
-  productRevenue?: number
-}
+// Use the CalendarAppointment interface from the integration layer
 
 // Map appointment status to display status
 const mapAppointmentStatus = (status: string): CalendarAppointment['status'] => {
@@ -50,13 +29,27 @@ const mapAppointmentStatus = (status: string): CalendarAppointment['status'] => 
   return statusMap[status] || 'scheduled'
 }
 
+// Map CalendarAppointment to ModernCalendar format
+const mapToModernCalendarFormat = (appointment: CalendarAppointment): any => ({
+  id: appointment.id,
+  title: appointment.title,
+  client: appointment.client,
+  barber: appointment.barber,
+  startTime: appointment.startTime,
+  endTime: appointment.endTime,
+  service: appointment.service,
+  price: appointment.price,
+  status: appointment.status === 'scheduled' || appointment.status === 'in_progress' || appointment.status === 'no_show' ? 'confirmed' : appointment.status as any,
+  date: appointment.date
+})
+
 export default function CalendarPage() {
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [viewMode, setViewMode] = useState<'week' | 'day'>('week')
   const [appointments, setAppointments] = useState<CalendarAppointment[]>([])
-  const [barbers, setBarbers] = useState<Array<{ id: number; name: string; status: string }>>([]) 
+  const [barbers, setBarbers] = useState<Array<{ id: number; name: string; status: string }>>([])
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -68,8 +61,6 @@ export default function CalendarPage() {
   const [selectedAppointment, setSelectedAppointment] = useState<CalendarAppointment | null>(null)
   const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string } | null>(null)
   const [calendarView, setCalendarView] = useState<'month' | 'week' | 'day' | 'agenda'>('week')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [isRefreshing, setIsRefreshing] = useState(false)
 
   // Date range for fetching appointments
   const [dateRange, setDateRange] = useState(() => {
@@ -84,49 +75,19 @@ export default function CalendarPage() {
     }
   })
 
-  // Fetch appointments from API
+  // Fetch appointments from API using the integration layer
   const fetchAppointments = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
-      
-      const response = await appointmentsService.getAppointmentsByDateRange(
-        dateRange.start,
-        dateRange.end
-      )
-      
-      // Transform API appointments to calendar format
-      const calendarAppointments: CalendarAppointment[] = response.map(apt => {
-        // Calculate end time based on duration
-        const [hours, minutes] = (apt.appointment_time || '09:00').split(':').map(Number)
-        const startDate = new Date(apt.appointment_date)
-        startDate.setHours(hours, minutes)
-        const endDate = new Date(startDate.getTime() + (apt.service_duration || 60) * 60000)
-        
-        return {
-          id: apt.id.toString(),
-          title: `${apt.client_name} - ${apt.service_name}`,
-          client: apt.client_name,
-          clientId: apt.client_id,
-          barber: apt.barber_name || 'Unknown',
-          barberId: apt.barber_id,
-          startTime: apt.appointment_time || '09:00',
-          endTime: `${endDate.getHours().toString().padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}`,
-          service: apt.service_name,
-          serviceId: apt.service_id,
-          price: apt.service_price || 0,
-          status: mapAppointmentStatus(apt.status),
-          date: apt.appointment_date,
-          clientEmail: apt.client_email,
-          clientPhone: apt.client_phone,
-          notes: apt.notes,
-          confirmationNumber: `BK${apt.id.toString().padStart(6, '0')}`,
-          serviceRevenue: apt.service_revenue,
-          tipAmount: apt.tip_amount,
-          productRevenue: apt.product_revenue
-        }
+
+      // Use the calendar-booking integration for enhanced appointment data
+      const calendarAppointments = await calendarBookingIntegration.getCalendarAppointments({
+        startDate: dateRange.start,
+        endDate: dateRange.end,
+        timezone: 'America/New_York'
       })
-      
+
       setAppointments(calendarAppointments)
     } catch (err) {
       console.error('Error fetching appointments:', err)
@@ -140,14 +101,30 @@ export default function CalendarPage() {
   const fetchBarbers = useCallback(async () => {
     try {
       const response = await barbersService.getBarbers({ is_active: true })
-      const barberList = response.data.map(barber => ({
-        id: barber.id,
-        name: `${barber.first_name} ${barber.last_name}`,
-        status: barber.is_active ? 'online' : 'offline'
-      }))
-      setBarbers(barberList)
+      // Handle both paginated response and direct array response (for mock data)
+      const barbersData = Array.isArray(response) ? response : (response?.data || [])
+      
+      // Ensure barbersData is an array before mapping
+      if (Array.isArray(barbersData)) {
+        const barberList = barbersData.map(barber => ({
+          id: barber.id,
+          name: `${barber.first_name} ${barber.last_name}`,
+          status: barber.is_active ? 'online' : 'offline'
+        }))
+        setBarbers(barberList)
+      } else {
+        console.error('Invalid barbers data structure:', response)
+        setBarbers([])
+      }
     } catch (err) {
       console.error('Error fetching barbers:', err)
+      // Set fallback mock data on error to prevent undefined errors
+      setBarbers([
+        { id: 1, name: 'John Doe', status: 'online' },
+        { id: 2, name: 'Jane Smith', status: 'online' },
+        { id: 3, name: 'Mike Johnson', status: 'offline' },
+        { id: 4, name: 'Sarah Williams', status: 'online' }
+      ])
     }
   }, [])
 
@@ -179,7 +156,7 @@ export default function CalendarPage() {
   // Handler functions for modal interactions
   const handleNewAppointment = () => {
     setSelectedSlot(null)
-    setShowBookingFlow(true)
+    setShowCreateModal(true)
   }
 
   const handleAppointmentClick = (appointment: CalendarAppointment) => {
@@ -189,95 +166,139 @@ export default function CalendarPage() {
 
   const handleTimeSlotClick = (date: string, time: string) => {
     setSelectedSlot({ date, time })
-    setShowBookingFlow(true)
+    setShowCreateModal(true)
+  }
+
+  const handleDateClick = (date: string) => {
+    // When clicking on a date, show the create modal with the date pre-filled
+    setSelectedSlot({ date, time: '09:00' }) // Default to 9 AM
+    setShowCreateModal(true)
   }
 
   const handleAppointmentCreated = async (appointmentData: any) => {
     try {
-      // Create appointment via API
-      const createData = {
-        barber_id: appointmentData.barber?.id || appointmentData.barberId,
-        client_name: appointmentData.clientInfo?.name || appointmentData.client_name,
-        client_email: appointmentData.clientInfo?.email || appointmentData.client_email,
-        client_phone: appointmentData.clientInfo?.phone || appointmentData.client_phone,
-        appointment_date: appointmentData.date || appointmentData.appointment_date,
-        appointment_time: appointmentData.time || appointmentData.appointment_time,
-        service_id: appointmentData.service?.id || appointmentData.service_id,
-        service_name: appointmentData.service?.name || appointmentData.service_name,
-        service_duration: appointmentData.service?.duration || appointmentData.service_duration || 60,
-        service_price: appointmentData.service?.price || appointmentData.service_price || 0,
-        notes: appointmentData.clientInfo?.notes || appointmentData.notes
+      // Check if the appointment was already created by NewAppointmentModal
+      // If so, just refresh the appointments list
+      if (appointmentData.id) {
+        console.log('Appointment created successfully:', appointmentData)
+        
+        // Refresh appointments list to show the new appointment
+        await fetchAppointments()
+        
+        // Close the modal
+        setShowCreateModal(false)
+        
+        // Clear any errors
+        setError(null)
+        
+        return
       }
       
-      const response = await appointmentsService.createAppointment(createData)
-      
+      // Otherwise, create appointment via the integration layer with enhanced validation
+      // This path is used by BookingFlow
+      const createData = {
+        barberId: appointmentData.barber?.id || appointmentData.barberId,
+        serviceId: appointmentData.service?.id || appointmentData.service_id,
+        date: appointmentData.date || appointmentData.appointment_date,
+        time: appointmentData.time || appointmentData.appointment_time,
+        clientInfo: {
+          name: appointmentData.clientInfo?.name || appointmentData.client_name,
+          email: appointmentData.clientInfo?.email || appointmentData.client_email,
+          phone: appointmentData.clientInfo?.phone || appointmentData.client_phone
+        },
+        notes: appointmentData.clientInfo?.notes || appointmentData.notes,
+        duration: appointmentData.service?.duration || appointmentData.service_duration || 60,
+        timezone: 'America/New_York'
+      }
+
+      const response = await calendarBookingIntegration.createCalendarAppointment(createData)
+
       // Refresh appointments list
       await fetchAppointments()
+      setShowCreateModal(false)
       setShowBookingFlow(false)
-      
+      setError(null)
+
       // Show success message (you could add a toast notification here)
-      console.log('Appointment created successfully:', response.data)
-    } catch (err) {
+      console.log('Appointment created successfully:', response)
+    } catch (err: any) {
       console.error('Error creating appointment:', err)
-      setError('Failed to create appointment')
+      
+      // Handle conflict suggestions
+      if (err.suggestions?.length > 0) {
+        setError(`Failed to create appointment: ${err.message}. Suggested alternatives available.`)
+        // TODO: Show suggestions in a modal
+      } else {
+        setError('Failed to create appointment: ' + (err.message || 'Unknown error'))
+      }
     }
   }
 
   const handleAppointmentUpdated = async (updatedAppointment: CalendarAppointment) => {
     try {
-      // Update via API
-      const updateData = {
-        appointment_date: updatedAppointment.date,
-        appointment_time: updatedAppointment.startTime,
-        status: updatedAppointment.status as any,
-        service_name: updatedAppointment.service,
-        service_price: updatedAppointment.price,
-        service_revenue: updatedAppointment.serviceRevenue,
-        tip_amount: updatedAppointment.tipAmount,
-        product_revenue: updatedAppointment.productRevenue,
-        notes: updatedAppointment.notes,
-        barber_id: updatedAppointment.barberId
-      }
-      
-      await appointmentsService.updateAppointment(parseInt(updatedAppointment.id), updateData)
-      
+      // Update via the integration layer with conflict detection
+      const response = await calendarBookingIntegration.updateCalendarAppointment(
+        updatedAppointment.id,
+        updatedAppointment
+      )
+
       // Refresh appointments list
       await fetchAppointments()
       setShowDetailsModal(false)
-    } catch (err) {
+      
+      console.log('Appointment updated successfully:', response)
+    } catch (err: any) {
       console.error('Error updating appointment:', err)
-      setError('Failed to update appointment')
+      
+      // Handle conflict suggestions
+      if (err.suggestions?.length > 0) {
+        setError(`Failed to update appointment: ${err.message}. Suggested alternatives available.`)
+        // TODO: Show suggestions in a modal
+      } else {
+        setError('Failed to update appointment: ' + (err.message || 'Unknown error'))
+      }
     }
   }
 
   const handleAppointmentDeleted = async (appointmentId: string) => {
     try {
-      await appointmentsService.cancelAppointment(parseInt(appointmentId))
-      
+      await calendarBookingIntegration.cancelCalendarAppointment(appointmentId, 'Cancelled via calendar')
+
       // Refresh appointments list
       await fetchAppointments()
       setShowDetailsModal(false)
-    } catch (err) {
+      
+      console.log('Appointment cancelled successfully')
+    } catch (err: any) {
       console.error('Error deleting appointment:', err)
-      setError('Failed to delete appointment')
+      setError('Failed to delete appointment: ' + (err.message || 'Unknown error'))
     }
   }
 
   const handleAppointmentDrop = async (appointmentId: string, newDate: string, newTime: string) => {
     try {
-      // Reschedule appointment via API
-      await appointmentsService.rescheduleAppointment(
-        parseInt(appointmentId),
+      // Reschedule appointment via integration layer with conflict detection
+      const response = await calendarBookingIntegration.rescheduleAppointment(
+        appointmentId,
         newDate,
         newTime,
         'Rescheduled via calendar drag and drop'
       )
-      
+
       // Refresh appointments
       await fetchAppointments()
-    } catch (err) {
+      
+      console.log('Appointment rescheduled successfully:', response)
+    } catch (err: any) {
       console.error('Error rescheduling appointment:', err)
-      setError('Failed to reschedule appointment')
+      
+      // Handle conflict suggestions
+      if (err.suggestions?.length > 0) {
+        setError(`Failed to reschedule appointment: ${err.message}. Suggested alternatives available.`)
+        // TODO: Show suggestions in a modal
+      } else {
+        setError('Failed to reschedule appointment: ' + (err.message || 'Unknown error'))
+      }
     }
   }
 
@@ -292,7 +313,7 @@ export default function CalendarPage() {
   // Update date range when view changes
   const updateDateRange = (date: Date, view: 'week' | 'day' | 'month') => {
     let start: Date, end: Date
-    
+
     if (view === 'day') {
       start = new Date(date)
       end = new Date(date)
@@ -306,19 +327,13 @@ export default function CalendarPage() {
       start = new Date(date.getFullYear(), date.getMonth(), 1)
       end = new Date(date.getFullYear(), date.getMonth() + 1, 0)
     }
-    
+
     setDateRange({
       start: start.toISOString().split('T')[0],
       end: end.toISOString().split('T')[0]
     })
   }
 
-  // Handle refresh
-  const handleRefresh = async () => {
-    setIsRefreshing(true)
-    await fetchAppointments()
-    setIsRefreshing(false)
-  }
 
   if (!mounted) {
     return (
@@ -326,9 +341,9 @@ export default function CalendarPage() {
         title="Calendar"
         description="Manage appointments and schedules"
       >
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
           <div className="flex items-center justify-center h-96">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-500"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-500"></div>
           </div>
         </div>
       </div>
@@ -345,7 +360,7 @@ export default function CalendarPage() {
     const productRevenue = apt.productRevenue || 0
     return sum + serviceRevenue + tipAmount + productRevenue
   }, 0)
-  
+
   const availableBarbers = barbers.filter(b => b.status === 'online').length
 
   return (
@@ -356,9 +371,9 @@ export default function CalendarPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
         {/* Animated Background Blobs */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-violet-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-          <div className="absolute top-40 left-40 w-80 h-80 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-slate-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-slate-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+          <div className="absolute top-40 left-40 w-80 h-80 bg-teal-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
         </div>
 
         <div className="relative z-10 p-4 sm:p-6 lg:p-8">
@@ -369,7 +384,7 @@ export default function CalendarPage() {
                 <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
                   Calendar
                 </h1>
-                <p className="text-gray-400 text-lg">
+                <p className="text-gray-300 dark:text-gray-400 text-lg">
                   Manage your appointments and schedule
                 </p>
               </div>
@@ -377,7 +392,7 @@ export default function CalendarPage() {
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={handleNewAppointment}
-                  className="px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold rounded-xl hover:from-violet-700 hover:to-purple-700 hover:shadow-lg hover:shadow-violet-500/25 transform hover:-translate-y-0.5 transition-all duration-200"
+                  className="px-6 py-3 bg-gradient-to-r from-slate-600 to-slate-700 text-white font-semibold rounded-xl hover:from-slate-700 hover:to-slate-800 hover:shadow-lg hover:shadow-slate-500/25 transform hover:-translate-y-0.5 transition-all duration-200"
                 >
                   New Appointment
                 </button>
@@ -386,7 +401,7 @@ export default function CalendarPage() {
                     onClick={() => setViewMode('week')}
                     className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                       viewMode === 'week'
-                        ? 'bg-violet-600 text-white shadow-lg'
+                        ? 'bg-slate-600 text-white shadow-lg'
                         : 'text-gray-400 hover:text-white'
                     }`}
                   >
@@ -396,7 +411,7 @@ export default function CalendarPage() {
                     onClick={() => setViewMode('day')}
                     className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                       viewMode === 'day'
-                        ? 'bg-violet-600 text-white shadow-lg'
+                        ? 'bg-slate-600 text-white shadow-lg'
                         : 'text-gray-400 hover:text-white'
                     }`}
                   >
@@ -407,15 +422,35 @@ export default function CalendarPage() {
             </div>
           </div>
 
+          {/* Error Notification */}
+          {error && (
+            <div className="mb-6 bg-red-900/20 border border-red-800/50 rounded-lg p-4">
+              <div className="flex items-center">
+                <svg className="w-5 h-5 text-red-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-red-300 text-sm">{error}</p>
+                <button
+                  onClick={() => setError(null)}
+                  className="ml-auto text-red-400 hover:text-red-300"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Stats Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
-            <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 hover:scale-105 hover:bg-gray-800/40 transition-all duration-300 hover:shadow-lg hover:shadow-violet-500/10">
+            <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 hover:scale-105 hover:bg-gray-800/40 transition-all duration-300 hover:shadow-lg hover:shadow-slate-500/10">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm font-medium">Today's Appointments</p>
+                  <p className="text-gray-300 dark:text-gray-400 text-sm font-medium">Today's Appointments</p>
                   <p className="text-2xl font-bold text-white mt-1">{todayAppointments.length}</p>
                 </div>
-                <div className="w-10 h-10 bg-gradient-to-r from-violet-500 to-purple-500 rounded-lg flex items-center justify-center">
+                <div className="w-10 h-10 bg-gradient-to-r from-slate-500 to-slate-600 rounded-lg flex items-center justify-center">
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
@@ -426,7 +461,7 @@ export default function CalendarPage() {
             <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 hover:scale-105 hover:bg-gray-800/40 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm font-medium">Week Revenue</p>
+                  <p className="text-gray-300 dark:text-gray-400 text-sm font-medium">Week Revenue</p>
                   <p className="text-2xl font-bold text-white mt-1">${weekRevenue}</p>
                 </div>
                 <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-green-500 rounded-lg flex items-center justify-center">
@@ -440,7 +475,7 @@ export default function CalendarPage() {
             <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 hover:scale-105 hover:bg-gray-800/40 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm font-medium">Available Barbers</p>
+                  <p className="text-gray-300 dark:text-gray-400 text-sm font-medium">Available Barbers</p>
                   <p className="text-2xl font-bold text-white mt-1">{availableBarbers}</p>
                 </div>
                 <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
@@ -454,7 +489,7 @@ export default function CalendarPage() {
             <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 hover:scale-105 hover:bg-gray-800/40 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/10">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm font-medium">Completion Rate</p>
+                  <p className="text-gray-300 dark:text-gray-400 text-sm font-medium">Completion Rate</p>
                   <p className="text-2xl font-bold text-white mt-1">98%</p>
                 </div>
                 <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
@@ -466,84 +501,21 @@ export default function CalendarPage() {
             </div>
           </div>
 
-          {/* Enterprise Calendar */}
+          {/* Modern Calendar */}
           <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 mb-8">
-            <EnterpriseCalendar
-              appointments={appointments}
-              onAppointmentClick={handleAppointmentClick}
+            <ModernCalendar
+              appointments={appointments.map(mapToModernCalendarFormat)}
+              onAppointmentClick={(appointment) => {
+                // Find the original appointment with full data
+                const fullAppointment = appointments.find(a => a.id === appointment.id)
+                if (fullAppointment) {
+                  handleAppointmentClick(fullAppointment)
+                }
+              }}
               onTimeSlotClick={handleTimeSlotClick}
-              onAppointmentDrop={handleAppointmentDrop}
-              view={calendarView}
-              theme='dark'
-              loading={loading}
-              error={error}
-              onRefresh={handleRefresh}
-              selectedBarbers={[]}
-              availableBarbers={barbers.map(b => ({
-                id: b.id.toString(),
-                name: b.name,
-                color: `#${Math.floor(Math.random()*16777215).toString(16)}`, // Generate random color
-                status: b.status as 'online' | 'busy' | 'offline'
-              }))}
-              onBarberFilter={(barberIds) => {
-                // Filter appointments by selected barbers
-                if (barberIds.length > 0) {
-                  const filtered = appointments.filter(apt => 
-                    barberIds.includes(apt.barberId.toString())
-                  )
-                  setAppointments(filtered)
-                } else {
-                  fetchAppointments() // Reset to all appointments
-                }
-              }}
-              enableDragDrop={true}
-              showToolbar={true}
-              enableVirtualScroll={true}
-              cacheData={true}
-              realTimeUpdates={true}
-              onExport={(format) => {
-                // Export functionality
-                const data = appointments.map(apt => ({
-                  Date: apt.date,
-                  Time: apt.startTime,
-                  Client: apt.client,
-                  Service: apt.service,
-                  Barber: apt.barber,
-                  Status: apt.status,
-                  Price: apt.price
-                }))
-                
-                if (format === 'csv') {
-                  // Convert to CSV
-                  const csv = [
-                    Object.keys(data[0]).join(','),
-                    ...data.map(row => Object.values(row).join(','))
-                  ].join('\n')
-                  
-                  const blob = new Blob([csv], { type: 'text/csv' })
-                  const url = URL.createObjectURL(blob)
-                  const a = document.createElement('a')
-                  a.href = url
-                  a.download = `appointments-${new Date().toISOString().split('T')[0]}.csv`
-                  a.click()
-                }
-              }}
-              onPrint={() => {
-                window.print()
-              }}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              filterOptions={{}}
-              onDateChange={(date) => {
-                setSelectedDate(date)
-                updateDateRange(date, viewMode)
-              }}
-              onViewChange={(view) => {
-                setCalendarView(view)
-                if (view === 'day' || view === 'week') {
-                  updateDateRange(selectedDate, view)
-                }
-              }}
+              onDateClick={handleDateClick}
+              view={calendarView === 'agenda' ? 'week' : calendarView as any}
+              showCreateModal={showCreateModal}
             />
           </div>
 
@@ -591,7 +563,15 @@ export default function CalendarPage() {
         }))}
       />
 
-      <AppointmentDetailsModal
+      <NewAppointmentModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        selectedDate={selectedSlot?.date}
+        selectedTime={selectedSlot?.time}
+        onSuccess={handleAppointmentCreated}
+      />
+
+      <EditAppointmentModal
         isOpen={showDetailsModal}
         onClose={() => setShowDetailsModal(false)}
         appointment={selectedAppointment}
@@ -614,6 +594,28 @@ export default function CalendarPage() {
           await handleAppointmentDeleted(id)
         }}
       />
+      
+      {/* Error Modal for backwards compatibility */}
+      {error && (
+        <div className="fixed bottom-4 right-4 z-50 max-w-md">
+          <div className="bg-red-900/20 border border-red-800/50 rounded-lg p-4">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 text-red-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-red-300 text-sm">{error}</p>
+              <button
+                onClick={() => setError(null)}
+                className="ml-auto text-red-400 hover:text-red-300"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -36,6 +36,7 @@ from models import (
 
 # Import security middleware
 from middleware.security import SecurityHeadersMiddleware, RateLimitMiddleware
+
 # from middleware.advanced_security import AdvancedSecurityMiddleware, SecurityHeadersEnhancedMiddleware
 from middleware.request_logging import RequestLoggingMiddleware
 from middleware.error_handling import (
@@ -138,7 +139,7 @@ else:
         if os.getenv("CORS_ALLOWED_ORIGINS")
         else []
     )
-    
+
     default_origins = [
         "http://localhost:3000",
         "http://localhost:3001",
@@ -150,14 +151,16 @@ else:
         "https://bookbarber.com",  # Production domain
         "https://app.bookbarber.com",  # App subdomain
     ]
-    
+
     # Only allow wildcards in development
     if settings.ENVIRONMENT == "development":
-        default_origins.extend([
-            "https://bookbarber-dkbwc7iez-6fb.vercel.app",
-            "https://*.vercel.app",  # Preview deployments (dev only)
-        ])
-    
+        default_origins.extend(
+            [
+                "https://bookbarber-dkbwc7iez-6fb.vercel.app",
+                "https://*.vercel.app",  # Preview deployments (dev only)
+            ]
+        )
+
     cors_origins = list(set(env_origins + default_origins))
     cors_origins = [origin.strip() for origin in cors_origins if origin.strip()]
 

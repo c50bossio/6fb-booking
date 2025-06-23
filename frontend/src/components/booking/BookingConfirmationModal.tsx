@@ -103,18 +103,18 @@ export default function BookingConfirmationModal({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-900 p-6 text-left align-middle shadow-xl transition-all">
                 {/* Success Icon */}
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-                  <CheckCircleIcon className="h-6 w-6 text-green-600" aria-hidden="true" />
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
+                  <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" aria-hidden="true" />
                 </div>
 
                 {/* Title */}
                 <div className="mt-3 text-center">
-                  <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                  <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900 dark:text-white">
                     Booking Confirmed!
                   </Dialog.Title>
-                  <p className="mt-2 text-sm text-gray-500">
+                  <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                     Confirmation #{booking.confirmation_number}
                   </p>
                 </div>
@@ -122,24 +122,24 @@ export default function BookingConfirmationModal({
                 {/* Booking Details */}
                 <div className="mt-6 space-y-4">
                   {/* Service & Barber */}
-                  <div className="rounded-lg bg-gray-50 p-4">
+                  <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-4">
                     <div className="flex items-start">
-                      <UserIcon className="h-5 w-5 text-gray-400 mt-0.5" />
+                      <UserIcon className="h-5 w-5 text-gray-400 dark:text-gray-500 mt-0.5" />
                       <div className="ml-3 flex-1">
-                        <p className="text-sm font-medium text-gray-900">{booking.service_name}</p>
-                        <p className="text-sm text-gray-500">with {booking.barber_name}</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">{booking.service_name}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">with {booking.barber_name}</p>
                       </div>
-                      <p className="text-sm font-medium text-gray-900">${booking.price}</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">${booking.price}</p>
                     </div>
                   </div>
 
                   {/* Date & Time */}
-                  <div className="rounded-lg bg-gray-50 p-4">
+                  <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-4">
                     <div className="flex items-start">
-                      <CalendarIcon className="h-5 w-5 text-gray-400 mt-0.5" />
+                      <CalendarIcon className="h-5 w-5 text-gray-400 dark:text-gray-500 mt-0.5" />
                       <div className="ml-3 flex-1">
-                        <p className="text-sm font-medium text-gray-900">{formatDate(booking.appointment_date)}</p>
-                        <div className="flex items-center text-sm text-gray-500">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">{formatDate(booking.appointment_date)}</p>
+                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                           <ClockIcon className="h-4 w-4 mr-1" />
                           {formatTime(booking.appointment_time)} - {getEndTime(booking.appointment_time, booking.duration)}
                         </div>
@@ -148,18 +148,18 @@ export default function BookingConfirmationModal({
                   </div>
 
                   {/* Client Info */}
-                  <div className="rounded-lg bg-gray-50 p-4">
-                    <p className="text-sm font-medium text-gray-900 mb-2">Client Information</p>
+                  <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-4">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white mb-2">Client Information</p>
                     <div className="space-y-1">
-                      <p className="text-sm text-gray-600">{booking.client_name}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">{booking.client_name}</p>
                       {booking.client_email && (
-                        <div className="flex items-center text-sm text-gray-600">
+                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                           <EnvelopeIcon className="h-4 w-4 mr-1" />
                           {booking.client_email}
                         </div>
                       )}
                       {booking.client_phone && (
-                        <div className="flex items-center text-sm text-gray-600">
+                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                           <PhoneIcon className="h-4 w-4 mr-1" />
                           {booking.client_phone}
                         </div>
@@ -169,9 +169,9 @@ export default function BookingConfirmationModal({
 
                   {/* Location */}
                   {booking.location && (
-                    <div className="rounded-lg bg-gray-50 p-4">
-                      <p className="text-sm font-medium text-gray-900 mb-1">{booking.location.name}</p>
-                      <p className="text-sm text-gray-600">
+                    <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-4">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">{booking.location.name}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
                         {booking.location.address}<br />
                         {booking.location.city}, {booking.location.state} {booking.location.zip}
                       </p>
@@ -180,8 +180,8 @@ export default function BookingConfirmationModal({
                 </div>
 
                 {/* Confirmation Note */}
-                <div className="mt-6 rounded-lg bg-blue-50 border border-blue-200 p-4">
-                  <p className="text-sm text-blue-800">
+                <div className="mt-6 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4">
+                  <p className="text-sm text-slate-700 dark:text-slate-300">
                     A confirmation email has been sent to {booking.client_email || 'the client'}.
                   </p>
                 </div>
@@ -190,7 +190,7 @@ export default function BookingConfirmationModal({
                 <div className="mt-6 flex justify-end space-x-3">
                   <button
                     type="button"
-                    className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    className="inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:ring-offset-2"
                     onClick={onClose}
                   >
                     Close
@@ -198,7 +198,7 @@ export default function BookingConfirmationModal({
                   {onNewBooking && (
                     <button
                       type="button"
-                      className="inline-flex justify-center rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
+                      className="inline-flex justify-center rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                       onClick={() => {
                         onClose()
                         onNewBooking()

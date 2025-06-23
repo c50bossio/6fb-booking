@@ -69,7 +69,7 @@ export default function TimeSlotSelector({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
         <span className="ml-3 text-gray-600">Checking availability...</span>
       </div>
     )
@@ -100,8 +100,8 @@ export default function TimeSlotSelector({
                   relative px-3 py-2 rounded-lg text-sm font-medium transition-all
                   ${slot.available && !disabled
                     ? selectedTime === slot.time
-                      ? 'bg-violet-600 text-white ring-2 ring-violet-600 ring-offset-2'
-                      : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-violet-300'
+                      ? 'bg-teal-600 text-white ring-2 ring-teal-600 ring-offset-2'
+                      : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-teal-300'
                     : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   }
                 `}
@@ -118,8 +118,8 @@ export default function TimeSlotSelector({
       ))}
 
       {selectedTime && (
-        <div className="mt-4 p-3 bg-violet-50 border border-violet-200 rounded-lg">
-          <p className="text-sm text-violet-800">
+        <div className="mt-4 p-3 bg-teal-50 border border-teal-200 rounded-lg">
+          <p className="text-sm text-teal-800">
             Selected time: <span className="font-medium">{formatTime(selectedTime)}</span>
           </p>
         </div>

@@ -11,7 +11,9 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:extensions": "node scripts/test-extensions.js",
-    "debug:extensions": "node scripts/test-extensions.js && echo '\n📖 See BROWSER_EXTENSION_TROUBLESHOOTING.md for detailed solutions'"
+    "debug:extensions": "node scripts/test-extensions.js && echo '\n📖 See BROWSER_EXTENSION_TROUBLESHOOTING.md for detailed solutions'",
+    "validate:build": "node scripts/validate-build.js",
+    "predeploy": "npm run validate:build"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",

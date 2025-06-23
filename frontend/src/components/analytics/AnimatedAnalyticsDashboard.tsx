@@ -364,7 +364,7 @@ export function AnimatedAnalyticsDashboard() {
                   title="Active Clients"
                   value={data.metrics.activeClients?.toLocaleString() || '0'}
                   growth={data.metrics.retention}
-                  color="text-purple-600"
+                  color="text-slate-600"
                 />
               </motion.div>
               <motion.div variants={staggerItem}>

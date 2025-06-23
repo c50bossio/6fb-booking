@@ -77,7 +77,7 @@ export default function BarbersPage() {
 
       const headers = { Authorization: `Bearer ${token}` }
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/barbers`,
+        `${process.env.NEXT_PUBLIC_API_URL}/barbers`,
         { headers }
       )
 

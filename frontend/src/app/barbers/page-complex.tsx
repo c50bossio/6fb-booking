@@ -97,7 +97,7 @@ export default function BarbersPage() {
         try {
           const headers = { Authorization: `Bearer ${token}` }
           const response = await axios.get(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/v1/barbers`,
+            `${process.env.NEXT_PUBLIC_API_URL}/barbers`,
             { headers }
           )
           setBarbers(response.data || [])
@@ -109,7 +109,7 @@ export default function BarbersPage() {
 
       // Use demo data
       const demoResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/dashboard/demo/barbers`
+        `${process.env.NEXT_PUBLIC_API_URL}/dashboard/demo/barbers`
       )
 
       // Transform demo data to match expected format
@@ -152,7 +152,7 @@ export default function BarbersPage() {
       const headers = { Authorization: `Bearer ${token}` }
 
       await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/barbers/${barberId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/barbers/${barberId}`,
         { headers }
       )
 
@@ -197,7 +197,7 @@ export default function BarbersPage() {
       console.log('🌐 API URL:', process.env.NEXT_PUBLIC_API_URL)
       console.log('📤 Sending barber data:', JSON.stringify(barberData, null, 2))
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/barbers`,
+        `${process.env.NEXT_PUBLIC_API_URL}/barbers`,
         barberData,
         { headers }
       )
@@ -210,7 +210,7 @@ export default function BarbersPage() {
         console.log('🔗 Initiating Stripe OAuth for barber:', newBarber.id)
         try {
           const stripeResponse = await axios.post(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payment-splits/connect-account`,
+            `${process.env.NEXT_PUBLIC_API_URL}/payment-splits/connect-account`,
             {
               barber_id: newBarber.id,
               platform: 'stripe'
@@ -235,7 +235,7 @@ export default function BarbersPage() {
         console.log('🔗 Initiating Square OAuth for barber:', newBarber.id)
         try {
           const squareResponse = await axios.post(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payment-splits/connect-account`,
+            `${process.env.NEXT_PUBLIC_API_URL}/payment-splits/connect-account`,
             {
               barber_id: newBarber.id,
               platform: 'square'
@@ -524,7 +524,7 @@ export default function BarbersPage() {
                         try {
                           const token = localStorage.getItem('access_token')
                           const response = await axios.get(
-                            `${process.env.NEXT_PUBLIC_API_URL}/api/v1/stripe-connect/status/${barber.id}`,
+                            `${process.env.NEXT_PUBLIC_API_URL}/stripe-connect/status/${barber.id}`,
                             { headers: { Authorization: `Bearer ${token}` } }
                           )
 
@@ -551,7 +551,7 @@ export default function BarbersPage() {
                         try {
                           const token = localStorage.getItem('access_token')
                           const response = await axios.post(
-                            `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payment-splits/connect-account`,
+                            `${process.env.NEXT_PUBLIC_API_URL}/payment-splits/connect-account`,
                             {
                               barber_id: barber.id,
                               platform: 'stripe'

@@ -32,9 +32,51 @@ const nextConfig = {
     ],
   },
   // Clean webpack configuration without deprecated options
-  webpack: (config, { dev }) => {
+  webpack: (config, { dev, isServer }) => {
     // Don't override devtool in development - let Next.js handle it
     // This prevents the warning about reverting webpack devtool
+
+    // Handle Chrome extension script injection issues
+    if (!isServer && dev) {
+      // Ignore chrome-extension protocol in module resolution
+      config.resolve = {
+        ...config.resolve,
+        fallback: {
+          ...config.resolve?.fallback,
+          // Prevent fs module errors from extensions
+          fs: false,
+          path: false,
+          crypto: false,
+        },
+      };
+
+      // Add externals to ignore extension protocols
+      config.externals = [
+        ...(config.externals || []),
+        function ({ request }, callback) {
+          if (request && (
+            request.startsWith('chrome-extension://') ||
+            request.startsWith('moz-extension://') ||
+            request.startsWith('extension://')
+          )) {
+            // Treat extension URLs as external dependencies
+            return callback(null, 'commonjs ' + request);
+          }
+          callback();
+        },
+      ];
+
+      // Configure webpack to be more tolerant of extension interference
+      config.stats = {
+        ...config.stats,
+        warningsFilter: [
+          /Failed to parse source map/,
+          /DevTools failed to load source map/,
+          /chrome-extension/,
+          /moz-extension/,
+        ],
+      };
+    }
 
     return config;
   },

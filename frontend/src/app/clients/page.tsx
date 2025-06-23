@@ -89,7 +89,7 @@ export default function ClientsPage() {
       if (filterType !== 'all') params.customer_type = filterType
 
       // Try authenticated endpoints first
-      const clientsRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/clients`, { headers, params })
+      const clientsRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/clients`, { headers, params })
 
       setClients(clientsRes.data.clients || [])
       setTotalPages(clientsRes.data.total_pages || 1)
@@ -101,7 +101,7 @@ export default function ClientsPage() {
         new_clients_this_month: clientsData.filter((c: Client) => {
           const createdDate = new Date(c.created_at)
           const thisMonth = new Date()
-          return createdDate.getMonth() === thisMonth.getMonth() && 
+          return createdDate.getMonth() === thisMonth.getMonth() &&
                  createdDate.getFullYear() === thisMonth.getFullYear()
         }).length,
         vip_clients: clientsData.filter((c: Client) => c.customer_type === 'vip').length,
@@ -236,15 +236,15 @@ export default function ClientsPage() {
       const token = localStorage.getItem('access_token')
       const headers = { Authorization: `Bearer ${token}` }
       const params: any = { format: 'csv' }
-      
+
       if (filterType !== 'all') params.customer_type = filterType
-      
+
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/clients/export`,
+        `${process.env.NEXT_PUBLIC_API_URL}/clients/export`,
         {},
         { headers, params, responseType: 'blob' }
       )
-      
+
       // Create download link
       const url = window.URL.createObjectURL(new Blob([response.data]))
       const link = document.createElement('a')
@@ -261,10 +261,10 @@ export default function ClientsPage() {
 
   const getCustomerTypeBadge = (type: string) => {
     const styles = {
-      new: 'bg-blue-100 text-blue-800 border-blue-200',
-      returning: 'bg-green-100 text-green-800 border-green-200',
-      vip: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      at_risk: 'bg-red-100 text-red-800 border-red-200'
+      new: 'bg-slate-100 text-slate-700 border-slate-200',
+      returning: 'bg-teal-50 text-teal-700 border-teal-200',
+      vip: 'bg-slate-200 text-slate-800 border-slate-300',
+      at_risk: 'bg-red-50 text-red-700 border-red-200'
     }
 
     const labels = {
@@ -284,7 +284,7 @@ export default function ClientsPage() {
   const getCustomerTypeIcon = (type: string) => {
     switch (type) {
       case 'vip':
-        return <StarIcon className="h-5 w-5 text-yellow-600" />
+        return <StarIcon className="h-5 w-5 text-slate-600" />
       case 'at_risk':
         return <ExclamationTriangleIcon className="h-5 w-5 text-red-600" />
       default:
@@ -296,7 +296,7 @@ export default function ClientsPage() {
     return (
       <ModernLayout>
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600"></div>
         </div>
       </ModernLayout>
     )
@@ -315,13 +315,13 @@ export default function ClientsPage() {
                 placeholder="Search clients..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-gray-900 dark:text-white dark:bg-gray-800 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-slate-500 focus:border-transparent"
               />
             </div>
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-900 dark:text-white dark:bg-gray-800 dark:border-gray-600 focus:ring-2 focus:ring-slate-500 focus:border-transparent"
             >
               <option value="all">All Clients</option>
               <option value="new">New Clients</option>
@@ -332,7 +332,7 @@ export default function ClientsPage() {
           </div>
 
           <div className="flex items-center space-x-3">
-            <button 
+            <button
               onClick={handleExportClients}
               className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2"
             >
@@ -340,9 +340,9 @@ export default function ClientsPage() {
               <span>Export</span>
             </button>
 
-            <button 
+            <button
               onClick={handleAddClient}
-              className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg font-medium hover:from-violet-700 hover:to-purple-700 transition-all flex items-center space-x-2"
+              className="px-4 py-2 bg-slate-700 text-white rounded-lg font-medium hover:bg-slate-800 transition-colors flex items-center space-x-2"
             >
               <PlusIcon className="h-5 w-5" />
               <span>Add Client</span>
@@ -354,50 +354,50 @@ export default function ClientsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="premium-card-modern p-6 hover-lift">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl">
+              <div className="p-3 bg-slate-600 rounded-xl">
                 <UserGroupIcon className="h-6 w-6 text-white" />
               </div>
             </div>
-            <p className="text-sm font-medium text-gray-600">Total Clients</p>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Total Clients</p>
             <p className="text-2xl font-bold text-gray-900 mt-1">{stats?.total_clients || 0}</p>
-            <p className="text-xs text-gray-500 mt-1">{stats?.new_clients_this_month || 0} new this month</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{stats?.new_clients_this_month || 0} new this month</p>
           </div>
 
           <div className="premium-card-modern p-6 hover-lift">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-xl">
+              <div className="p-3 bg-slate-500 rounded-xl">
                 <StarIcon className="h-6 w-6 text-white" />
               </div>
             </div>
-            <p className="text-sm font-medium text-gray-600">VIP Clients</p>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">VIP Clients</p>
             <p className="text-2xl font-bold text-gray-900 mt-1">{stats?.vip_clients || 0}</p>
-            <p className="text-xs text-gray-500 mt-1">High-value customers</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">High-value customers</p>
           </div>
 
           <div className="premium-card-modern p-6 hover-lift">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl">
+              <div className="p-3 bg-teal-600 rounded-xl">
                 <CurrencyDollarIcon className="h-6 w-6 text-white" />
               </div>
             </div>
-            <p className="text-sm font-medium text-gray-600">Avg Lifetime Value</p>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Avg Lifetime Value</p>
             <p className="text-2xl font-bold text-gray-900 mt-1">
               {formatCurrency(stats?.average_lifetime_value || 0)}
             </p>
-            <p className="text-xs text-gray-500 mt-1">Per client revenue</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Per client revenue</p>
           </div>
 
           <div className="premium-card-modern p-6 hover-lift">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl">
+              <div className="p-3 bg-slate-700 rounded-xl">
                 <CalendarIcon className="h-6 w-6 text-white" />
               </div>
             </div>
-            <p className="text-sm font-medium text-gray-600">Retention Rate</p>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Retention Rate</p>
             <p className="text-2xl font-bold text-gray-900 mt-1">
               {((stats?.retention_rate || 0) * 100).toFixed(1)}%
             </p>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
               {stats?.at_risk_clients || 0} at risk
             </p>
           </div>
@@ -426,25 +426,25 @@ export default function ClientsPage() {
               <table className="min-w-full">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                       Client
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                       Type
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                       Visits
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                       Total Spent
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                       Last Visit
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                       Favorite Service
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -455,7 +455,7 @@ export default function ClientsPage() {
                       <td className="px-6 py-4">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10">
-                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+                            <div className="h-10 w-10 rounded-full bg-slate-600 flex items-center justify-center">
                               <span className="text-sm font-medium text-white">
                                 {client.first_name[0]}{client.last_name[0]}
                               </span>
@@ -463,7 +463,7 @@ export default function ClientsPage() {
                           </div>
                           <div className="ml-4">
                             <div className="text-sm font-medium text-gray-900">{client.first_name} {client.last_name}</div>
-                            <div className="text-xs text-gray-500 flex items-center space-x-2">
+                            <div className="text-xs text-gray-600 dark:text-gray-400 flex items-center space-x-2">
                               <span className="flex items-center">
                                 <EnvelopeIcon className="h-3 w-3 mr-1" />
                                 {client.email}
@@ -484,15 +484,15 @@ export default function ClientsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{client.total_visits}</div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-600 dark:text-gray-400">
                           {client.visit_frequency_days ? `Every ${client.visit_frequency_days} days` : 'First visit'}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-semibold text-emerald-600">
+                        <div className="text-sm font-semibold text-teal-700">
                           {formatCurrency(client.total_spent)}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-600 dark:text-gray-400">
                           {formatCurrency(client.average_ticket)} avg
                         </div>
                       </td>
@@ -505,27 +505,27 @@ export default function ClientsPage() {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-700">{client.favorite_service || '-'}</div>
+                        <div className="text-sm text-gray-800 dark:text-gray-300">{client.favorite_service || '-'}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-2">
                           <button
                             onClick={() => router.push(`/clients/${client.id}`)}
-                            className="text-blue-600 hover:text-blue-700 p-1 rounded-md hover:bg-blue-50 transition-colors"
+                            className="text-slate-600 hover:text-slate-700 p-1 rounded-md hover:bg-slate-50 transition-colors"
                             title="View Profile"
                           >
                             <EyeIcon className="h-4 w-4" />
                           </button>
-                          <button 
+                          <button
                             onClick={() => handleEditClient(client)}
-                            className="text-gray-600 hover:text-gray-700 p-1 rounded-md hover:bg-gray-50 transition-colors" 
+                            className="text-gray-600 hover:text-gray-700 p-1 rounded-md hover:bg-gray-50 transition-colors"
                             title="Edit"
                           >
                             <PencilIcon className="h-4 w-4" />
                           </button>
-                          <button 
+                          <button
                             onClick={() => handleMessageClient(client)}
-                            className="text-green-600 hover:text-green-700 p-1 rounded-md hover:bg-green-50 transition-colors" 
+                            className="text-teal-600 hover:text-teal-700 p-1 rounded-md hover:bg-teal-50 transition-colors"
                             title="Send Message"
                           >
                             <ChatBubbleLeftIcon className="h-4 w-4" />

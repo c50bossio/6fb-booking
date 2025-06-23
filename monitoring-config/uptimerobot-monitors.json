@@ -1,0 +1,379 @@
+{
+  "monitoring_setup": {
+    "description": "UptimeRobot monitoring configuration for 6FB Booking Platform",
+    "total_monitors": 8,
+    "monitoring_interval": 300,
+    "locations": ["US-East", "US-West", "Europe", "Asia"],
+    "alert_contacts_needed": 3
+  },
+  "monitors": [
+    {
+      "friendly_name": "6FB Booking - Main Website",
+      "url": "https://your-domain.com",
+      "type": 1,
+      "sub_type": 1,
+      "keyword_type": 1,
+      "keyword_value": "6FB Booking",
+      "interval": 300,
+      "timeout": 30,
+      "http_method": 1,
+      "http_auth_type": 0,
+      "alert_contacts": ["email_contact_id", "slack_contact_id"],
+      "description": "Main website availability and keyword monitoring",
+      "tags": ["production", "critical", "frontend"]
+    },
+    {
+      "friendly_name": "6FB Booking - API Health Check",
+      "url": "https://your-domain.com/api/v1/health",
+      "type": 1,
+      "sub_type": 1,
+      "keyword_type": 1,
+      "keyword_value": "healthy",
+      "interval": 300,
+      "timeout": 30,
+      "http_method": 1,
+      "http_auth_type": 0,
+      "alert_contacts": ["email_contact_id", "slack_contact_id", "sms_contact_id"],
+      "description": "API health check endpoint monitoring",
+      "tags": ["production", "critical", "api", "health"]
+    },
+    {
+      "friendly_name": "6FB Booking - Payment Health",
+      "url": "https://your-domain.com/api/v1/health/payments",
+      "type": 1,
+      "sub_type": 1,
+      "keyword_type": 1,
+      "keyword_value": "payment_health",
+      "interval": 600,
+      "timeout": 45,
+      "http_method": 1,
+      "http_auth_type": 0,
+      "alert_contacts": ["email_contact_id", "slack_contact_id", "sms_contact_id", "pagerduty_contact_id"],
+      "description": "Payment system health monitoring",
+      "tags": ["production", "critical", "payments"]
+    },
+    {
+      "friendly_name": "6FB Booking - Database Health",
+      "url": "https://your-domain.com/api/v1/health/database",
+      "type": 1,
+      "sub_type": 1,
+      "keyword_type": 1,
+      "keyword_value": "database_health",
+      "interval": 600,
+      "timeout": 30,
+      "http_method": 1,
+      "http_auth_type": 0,
+      "alert_contacts": ["email_contact_id", "slack_contact_id"],
+      "description": "Database performance and connectivity monitoring",
+      "tags": ["production", "critical", "database"]
+    },
+    {
+      "friendly_name": "6FB Booking - Security Health",
+      "url": "https://your-domain.com/api/v1/health/security",
+      "type": 1,
+      "sub_type": 1,
+      "keyword_type": 1,
+      "keyword_value": "security_health",
+      "interval": 900,
+      "timeout": 30,
+      "http_method": 1,
+      "http_auth_type": 0,
+      "alert_contacts": ["email_contact_id", "slack_contact_id"],
+      "description": "Security monitoring and headers validation",
+      "tags": ["production", "security", "compliance"]
+    },
+    {
+      "friendly_name": "6FB Booking - Simple Uptime",
+      "url": "https://your-domain.com/api/v1/uptime",
+      "type": 1,
+      "sub_type": 1,
+      "keyword_type": 1,
+      "keyword_value": "\"ok\":true",
+      "interval": 180,
+      "timeout": 15,
+      "http_method": 1,
+      "http_auth_type": 0,
+      "alert_contacts": ["email_contact_id"],
+      "description": "Fast uptime check for quick detection",
+      "tags": ["production", "uptime", "fast"]
+    },
+    {
+      "friendly_name": "6FB Booking - SSL Certificate",
+      "url": "https://your-domain.com",
+      "type": 1,
+      "sub_type": 3,
+      "ssl_check_type": 1,
+      "interval": 3600,
+      "timeout": 30,
+      "alert_contacts": ["email_contact_id", "slack_contact_id"],
+      "description": "SSL certificate expiration monitoring",
+      "tags": ["production", "ssl", "security"]
+    },
+    {
+      "friendly_name": "6FB Booking - Booking Flow",
+      "url": "https://your-domain.com/book",
+      "type": 1,
+      "sub_type": 1,
+      "keyword_type": 1,
+      "keyword_value": "Book Appointment",
+      "interval": 600,
+      "timeout": 45,
+      "http_method": 1,
+      "http_auth_type": 0,
+      "alert_contacts": ["email_contact_id", "slack_contact_id"],
+      "description": "Booking page availability monitoring",
+      "tags": ["production", "booking", "user-facing"]
+    }
+  ],
+  "alert_contacts": [
+    {
+      "friendly_name": "Primary Admin Email",
+      "type": 2,
+      "value": "admin@6fb-booking.com",
+      "threshold": 2,
+      "recurrence": 2,
+      "description": "Primary notification for all critical alerts"
+    },
+    {
+      "friendly_name": "DevOps Team Email",
+      "type": 2,
+      "value": "devops@6fb-booking.com",
+      "threshold": 2,
+      "recurrence": 3,
+      "description": "DevOps team for infrastructure issues"
+    },
+    {
+      "friendly_name": "Slack Alerts Channel",
+      "type": 11,
+      "value": "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK",
+      "threshold": 2,
+      "recurrence": 1,
+      "description": "Slack notifications for team awareness"
+    },
+    {
+      "friendly_name": "SMS Emergency Alert",
+      "type": 4,
+      "value": "+1234567890",
+      "threshold": 3,
+      "recurrence": 5,
+      "description": "SMS for critical outages (5+ minutes down)"
+    },
+    {
+      "friendly_name": "PagerDuty Integration",
+      "type": 15,
+      "value": "your-pagerduty-integration-key",
+      "threshold": 2,
+      "recurrence": 1,
+      "description": "PagerDuty escalation for payment issues"
+    }
+  ],
+  "maintenance_windows": [
+    {
+      "friendly_name": "Weekly Maintenance",
+      "type": 2,
+      "value": "3",
+      "start_time": "02:00",
+      "duration": 120,
+      "monitors": ["all"],
+      "description": "Weekly maintenance window - Sundays 2-4 AM EST"
+    },
+    {
+      "friendly_name": "Emergency Maintenance",
+      "type": 1,
+      "monitors": ["all"],
+      "description": "On-demand maintenance window for emergencies"
+    }
+  ],
+  "notification_settings": {
+    "escalation_policy": {
+      "level_1": {
+        "delay_minutes": 0,
+        "contacts": ["admin@6fb-booking.com", "slack_webhook"],
+        "description": "Immediate notification"
+      },
+      "level_2": {
+        "delay_minutes": 5,
+        "contacts": ["devops@6fb-booking.com", "sms_alert"],
+        "description": "Escalation after 5 minutes down"
+      },
+      "level_3": {
+        "delay_minutes": 15,
+        "contacts": ["manager@6fb-booking.com", "pagerduty"],
+        "description": "Management escalation after 15 minutes"
+      }
+    },
+    "recovery_notifications": {
+      "enabled": true,
+      "send_to_all_contacts": true,
+      "include_downtime_duration": true
+    },
+    "scheduled_reports": {
+      "daily_summary": {
+        "enabled": true,
+        "time": "08:00",
+        "recipients": ["admin@6fb-booking.com"]
+      },
+      "weekly_report": {
+        "enabled": true,
+        "day": "monday",
+        "time": "09:00",
+        "recipients": ["admin@6fb-booking.com", "devops@6fb-booking.com"]
+      },
+      "monthly_report": {
+        "enabled": true,
+        "day": 1,
+        "time": "10:00",
+        "recipients": ["admin@6fb-booking.com", "manager@6fb-booking.com"]
+      }
+    }
+  },
+  "status_page": {
+    "enabled": true,
+    "custom_domain": "status.your-domain.com",
+    "design": {
+      "logo_url": "https://your-domain.com/logo.png",
+      "favicon_url": "https://your-domain.com/favicon.ico",
+      "custom_css": "/* Custom status page styling */",
+      "layout": "horizontal"
+    },
+    "monitors_to_show": [
+      "6FB Booking - Main Website",
+      "6FB Booking - API Health Check",
+      "6FB Booking - Payment Health",
+      "6FB Booking - Database Health"
+    ],
+    "custom_text": {
+      "title": "6FB Booking Platform Status",
+      "header": "Real-time status and uptime monitoring for the 6FB Booking Platform",
+      "footer": "For support, contact admin@6fb-booking.com"
+    },
+    "incident_management": {
+      "auto_incident_creation": true,
+      "incident_templates": [
+        {
+          "name": "Payment System Issue",
+          "description": "Payment processing is experiencing issues",
+          "affected_services": ["Payment Health"]
+        },
+        {
+          "name": "Database Connectivity",
+          "description": "Database connectivity issues detected",
+          "affected_services": ["Database Health", "API Health Check"]
+        },
+        {
+          "name": "Planned Maintenance",
+          "description": "Scheduled maintenance in progress",
+          "affected_services": ["all"]
+        }
+      ]
+    }
+  },
+  "webhook_integrations": [
+    {
+      "name": "Internal Monitoring Webhook",
+      "url": "https://your-domain.com/api/v1/monitoring/uptime-webhook",
+      "events": ["down", "up", "ssl_expiry"],
+      "method": "POST",
+      "headers": {
+        "Authorization": "Bearer your-webhook-secret",
+        "Content-Type": "application/json"
+      },
+      "post_value": {
+        "monitor_id": "*monitorID*",
+        "monitor_url": "*monitorURL*",
+        "monitor_friendly_name": "*monitorFriendlyName*",
+        "alert_type": "*alertType*",
+        "alert_type_friendly_name": "*alertTypeFriendlyName*",
+        "alert_details": "*alertDetails*",
+        "alert_duration": "*alertDuration*",
+        "alert_datetime": "*alertDateTime*",
+        "service": "6fb-booking"
+      }
+    },
+    {
+      "name": "Slack Webhook Integration",
+      "url": "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK",
+      "events": ["down", "up"],
+      "method": "POST",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "post_value": {
+        "text": "🚨 *6FB Booking Alert*\n*Service:* *monitorFriendlyName*\n*Status:* *alertTypeFriendlyName*\n*Time:* *alertDateTime*\n*Duration:* *alertDuration*",
+        "channel": "#alerts",
+        "username": "UptimeRobot"
+      }
+    }
+  ],
+  "api_settings": {
+    "rate_limits": {
+      "requests_per_minute": 10,
+      "requests_per_hour": 600,
+      "requests_per_day": 10000
+    },
+    "authentication": {
+      "api_key": "your-uptimerobot-api-key",
+      "format": "json"
+    }
+  },
+  "advanced_settings": {
+    "custom_http_headers": {
+      "User-Agent": "UptimeRobot/2.0 (6FB-Booking-Monitor)",
+      "Accept": "application/json, text/html",
+      "Cache-Control": "no-cache"
+    },
+    "follow_redirects": true,
+    "ignore_ssl_errors": false,
+    "custom_port_monitoring": {
+      "enabled": false,
+      "ports": []
+    },
+    "geo_location_monitoring": {
+      "enabled": true,
+      "locations": [
+        "US-East",
+        "US-West", 
+        "Europe-UK",
+        "Asia-Japan"
+      ]
+    }
+  },
+  "budget_optimization": {
+    "free_tier_limits": {
+      "monitors": 50,
+      "alert_contacts": 50,
+      "maintenance_windows": "unlimited",
+      "status_pages": 1,
+      "monitoring_interval": 300
+    },
+    "upgrade_recommendations": {
+      "pro_plan_benefits": [
+        "1-minute monitoring intervals",
+        "Advanced location monitoring",
+        "More detailed statistics",
+        "Longer data retention"
+      ],
+      "cost_estimate": "$58/year for Pro plan"
+    }
+  },
+  "backup_monitoring": {
+    "description": "Recommended backup monitoring services",
+    "services": [
+      {
+        "name": "Pingdom",
+        "setup_priority": "high",
+        "reason": "Different monitoring infrastructure for redundancy"
+      },
+      {
+        "name": "StatusCake",
+        "setup_priority": "medium", 
+        "reason": "Free tier available, good for additional coverage"
+      },
+      {
+        "name": "Site24x7",
+        "setup_priority": "low",
+        "reason": "Comprehensive monitoring if budget allows"
+      }
+    ]
+  }
+}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -12,7 +12,8 @@ import {
   CurrencyDollarIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline'
 import { bookingService, type Service, type Booking } from '../../lib/api/bookings'
 
@@ -49,7 +50,8 @@ const mockServices: Service[] = [
     duration: 60,
     price: 65,
     is_active: true,
-    popular: true
+    popular: true,
+    timeOfDay: ['morning', 'afternoon']
   },
   {
     id: 2,
@@ -59,7 +61,8 @@ const mockServices: Service[] = [
     category_id: 2,
     duration: 30,
     price: 25,
-    is_active: true
+    is_active: true,
+    timeOfDay: ['morning', 'afternoon', 'evening']
   },
   {
     id: 3,
@@ -70,7 +73,19 @@ const mockServices: Service[] = [
     duration: 45,
     price: 45,
     is_active: true,
-    popular: true
+    popular: true,
+    timeOfDay: ['morning', 'afternoon']
+  },
+  {
+    id: 4,
+    name: 'Quick Touch-up',
+    description: 'Fast styling for busy schedules',
+    category: 'Haircuts',
+    category_id: 1,
+    duration: 30,
+    price: 35,
+    is_active: true,
+    timeOfDay: ['morning', 'evening']
   }
 ]
 
@@ -86,6 +101,34 @@ const timeSlots = [
   '15:00', '15:30', '16:00', '16:30', '17:00', '17:30'
 ]
 
+// Helper function to get time of day
+const getTimeOfDay = (time: string): string => {
+  const hour = parseInt(time.split(':')[0])
+  if (hour < 12) return 'morning'
+  if (hour < 17) return 'afternoon'
+  return 'evening'
+}
+
+// Helper function to format date for display
+const formatDateForDisplay = (dateString: string): string => {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })
+}
+
+// Helper function to format time for display
+const formatTimeForDisplay = (timeString: string): string => {
+  const [hours, minutes] = timeString.split(':')
+  const hour = parseInt(hours)
+  const ampm = hour >= 12 ? 'PM' : 'AM'
+  const displayHour = hour % 12 || 12
+  return `${displayHour}:${minutes} ${ampm}`
+}
+
 export default function CreateAppointmentModal({
   isOpen,
   onClose,
@@ -94,9 +137,13 @@ export default function CreateAppointmentModal({
   onSuccess
 }: CreateAppointmentModalProps) {
   const [isLoading, setIsLoading] = useState(false)
-  const [services, setServices] = useState<Service[]>(mockServices)
+  const [services, setServices] = useState<Service[]>([])
   const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [showSuccess, setShowSuccess] = useState(false)
+  const clientNameRef = useRef<HTMLInputElement>(null)
+  const [recommendedServices, setRecommendedServices] = useState<Service[]>([])
+  const [isPreFilled, setIsPreFilled] = useState(false)
+  const [loadingServices, setLoadingServices] = useState(false)
 
   const {
     register,
@@ -123,14 +170,69 @@ export default function CreateAppointmentModal({
     }
   }, [watchedServiceId, services])
 
-  // Set initial values when modal opens
+  // Fetch services from API
+  const fetchServices = async () => {
+    setLoadingServices(true)
+    try {
+      // Try to get services for a specific barber (default to barber ID 1)
+      const response = await bookingService.getServices({ barber_id: 1 })
+      const apiServices = response.data.map((service: any) => ({
+        id: service.id,
+        name: service.name,
+        description: service.description,
+        category: service.category_name,
+        category_id: service.category_id,
+        duration: service.duration_minutes,
+        price: service.base_price,
+        is_active: true,
+        popular: service.id <= 2, // Mark first two services as popular
+        timeOfDay: ['morning', 'afternoon', 'evening'] // Default to all times
+      }))
+      setServices(apiServices)
+    } catch (error) {
+      console.error('Failed to fetch services, using mock data:', error)
+      // Fallback to mock services if API fails
+      setServices(mockServices)
+    } finally {
+      setLoadingServices(false)
+    }
+  }
+
+  // Set initial values when modal opens and handle auto-focus
   useEffect(() => {
     if (isOpen) {
       setValue('appointment_date', selectedDate || '')
       setValue('appointment_time', selectedTime || '')
       setShowSuccess(false)
+      
+      // Fetch services when modal opens
+      fetchServices()
+      
+      // Check if date and time are pre-filled
+      const hasPreFilledDateTime = !!(selectedDate && selectedTime)
+      setIsPreFilled(hasPreFilledDateTime)
+      
+      // Auto-focus client name field if date/time are pre-filled
+      if (hasPreFilledDateTime) {
+        setTimeout(() => {
+          clientNameRef.current?.focus()
+        }, 100)
+      }
     }
   }, [isOpen, selectedDate, selectedTime, setValue])
+
+  // Update recommended services when services change or time is selected
+  useEffect(() => {
+    if (selectedTime && services.length > 0) {
+      const timeOfDay = getTimeOfDay(selectedTime)
+      const recommended = services.filter(service => 
+        service.timeOfDay?.includes(timeOfDay)
+      )
+      setRecommendedServices(recommended.length > 0 ? recommended : services)
+    } else {
+      setRecommendedServices([])
+    }
+  }, [services, selectedTime])
 
   const onSubmit = async (data: AppointmentFormData) => {
     setIsLoading(true)
@@ -210,10 +312,10 @@ export default function CreateAppointmentModal({
           <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
             <CheckCircleIcon className="h-8 w-8 text-green-600" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
             Appointment Created!
           </h3>
-          <p className="text-gray-600 mb-4">
+          <p className="text-gray-600 dark:text-gray-300 mb-4">
             Your appointment has been successfully scheduled. A confirmation email will be sent shortly.
           </p>
           <button
@@ -235,20 +337,62 @@ export default function CreateAppointmentModal({
       size="2xl"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {/* Pre-filled Date/Time Banner */}
+        {isPreFilled && selectedDate && selectedTime && (
+          <div className="bg-gradient-to-r from-teal-50 to-blue-50 border border-teal-200 rounded-xl p-4 mb-6">
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center">
+                  <CalendarDaysIcon className="w-5 h-5 text-teal-600" />
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                  Selected Time Slot
+                </h4>
+                <div className="flex items-center space-x-4 text-sm text-gray-700 dark:text-gray-300">
+                  <div className="flex items-center space-x-1">
+                    <CalendarDaysIcon className="w-4 h-4 text-teal-600" />
+                    <span className="font-medium">{formatDateForDisplay(selectedDate)}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <ClockIcon className="w-4 h-4 text-teal-600" />
+                    <span className="font-medium">{formatTimeForDisplay(selectedTime)}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-shrink-0">
+                <div className="flex items-center text-xs font-medium text-teal-700 bg-teal-100 px-2 py-1 rounded-full">
+                  <CheckCircleIcon className="w-3 h-3 mr-1" />
+                  Pre-selected
+                </div>
+              </div>
+            </div>
+            {recommendedServices.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-teal-200">
+                <div className="flex items-center space-x-2 text-sm text-teal-700 dark:text-teal-300">
+                  <SparklesIcon className="w-4 h-4" />
+                  <span className="font-medium">Recommended for {getTimeOfDay(selectedTime)} appointments</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
         {/* Client Information */}
         <div className="space-y-4">
           <div className="flex items-center space-x-2 mb-3">
-            <UserIcon className="h-5 w-5 text-violet-600" />
-            <h4 className="text-lg font-semibold text-gray-900">Client Information</h4>
+            <UserIcon className="h-5 w-5 text-teal-600" />
+            <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Client Information</h4>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Full Name *
               </label>
               <input
                 {...register('client_name')}
+                ref={clientNameRef}
                 type="text"
                 className="premium-input w-full"
                 placeholder="Enter client name"
@@ -262,7 +406,7 @@ export default function CreateAppointmentModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Email Address *
               </label>
               <input
@@ -280,7 +424,7 @@ export default function CreateAppointmentModal({
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Phone Number
               </label>
               <input
@@ -295,20 +439,92 @@ export default function CreateAppointmentModal({
 
         {/* Service Selection */}
         <div className="space-y-4">
-          <div className="flex items-center space-x-2 mb-3">
-            <CurrencyDollarIcon className="h-5 w-5 text-violet-600" />
-            <h4 className="text-lg font-semibold text-gray-900">Service Selection</h4>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-2">
+              <CurrencyDollarIcon className="h-5 w-5 text-teal-600" />
+              <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Service Selection</h4>
+            </div>
+            {recommendedServices.length > 0 && (
+              <div className="flex items-center text-xs font-medium text-teal-700 bg-teal-50 px-2 py-1 rounded-full">
+                <SparklesIcon className="w-3 h-3 mr-1" />
+                {recommendedServices.length} recommended
+              </div>
+            )}
           </div>
 
+          {/* Recommended Services First */}
+          {recommendedServices.length > 0 && (
+            <>
+              <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Recommended for your time slot:</div>
+              <div className="grid grid-cols-1 gap-3 mb-4">
+                {recommendedServices.map((service) => (
+                  <label
+                    key={service.id}
+                    className={`
+                      relative flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200
+                      ${watchedServiceId === service.id
+                        ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 ring-2 ring-teal-200 dark:ring-teal-800'
+                        : 'border-teal-200 dark:border-teal-700 bg-teal-50/20 dark:bg-teal-900/10 hover:border-teal-300 dark:hover:border-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900/20'
+                      }
+                    `}
+                  >
+                    <input
+                      {...register('service_id', { valueAsNumber: true })}
+                      type="radio"
+                      value={service.id}
+                      className="sr-only"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center space-x-2">
+                            <h5 className="font-semibold text-gray-900 dark:text-white">{service.name}</h5>
+                            <div className="flex items-center text-xs font-medium text-teal-700 bg-teal-100 px-2 py-1 rounded-full">
+                              <SparklesIcon className="w-3 h-3 mr-1" />
+                              Recommended
+                            </div>
+                          </div>
+                          {service.description && (
+                            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{service.description}</p>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-gray-900 dark:text-white">${service.price}</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">{service.duration} min</div>
+                        </div>
+                      </div>
+                      {service.popular && (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-teal-100 dark:bg-teal-900/50 text-teal-800 dark:text-teal-200 mt-2">
+                          Popular
+                        </span>
+                      )}
+                    </div>
+                    {watchedServiceId === service.id && (
+                      <CheckCircleIcon className="h-5 w-5 text-teal-600 ml-3" />
+                    )}
+                  </label>
+                ))}
+              </div>
+              
+              {services.filter(s => !recommendedServices.some(r => r.id === s.id)).length > 0 && (
+                <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Other available services:</div>
+              )}
+            </>
+          )}
+
+          {/* All Services or Non-recommended Services */}
           <div className="grid grid-cols-1 gap-3">
-            {services.map((service) => (
+            {(recommendedServices.length > 0 
+              ? services.filter(s => !recommendedServices.some(r => r.id === s.id))
+              : services
+            ).map((service) => (
               <label
                 key={service.id}
                 className={`
                   relative flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200
                   ${watchedServiceId === service.id
-                    ? 'border-violet-500 bg-violet-50'
-                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/50'
                   }
                 `}
               >
@@ -321,24 +537,24 @@ export default function CreateAppointmentModal({
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h5 className="font-semibold text-gray-900">{service.name}</h5>
+                      <h5 className="font-semibold text-gray-900 dark:text-white">{service.name}</h5>
                       {service.description && (
-                        <p className="text-sm text-gray-600 mt-1">{service.description}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{service.description}</p>
                       )}
                     </div>
                     <div className="text-right">
-                      <div className="text-lg font-bold text-gray-900">${service.price}</div>
-                      <div className="text-sm text-gray-500">{service.duration} min</div>
+                      <div className="text-lg font-bold text-gray-900 dark:text-white">${service.price}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{service.duration} min</div>
                     </div>
                   </div>
                   {service.popular && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-violet-100 text-violet-800 mt-2">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-teal-100 dark:bg-teal-900/50 text-teal-800 dark:text-teal-200 mt-2">
                       Popular
                     </span>
                   )}
                 </div>
                 {watchedServiceId === service.id && (
-                  <CheckCircleIcon className="h-5 w-5 text-violet-600 ml-3" />
+                  <CheckCircleIcon className="h-5 w-5 text-teal-600 ml-3" />
                 )}
               </label>
             ))}
@@ -353,7 +569,7 @@ export default function CreateAppointmentModal({
 
         {/* Barber Selection */}
         <div className="space-y-4">
-          <h4 className="text-lg font-semibold text-gray-900">Select Barber</h4>
+          <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Select Barber</h4>
           <div className="grid grid-cols-1 gap-3">
             {mockBarbers.map((barber) => (
               <label
@@ -361,8 +577,8 @@ export default function CreateAppointmentModal({
                 className={`
                   relative flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200
                   ${watch('barber_id') === barber.id
-                    ? 'border-violet-500 bg-violet-50'
-                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/50'
                   }
                 `}
               >
@@ -375,7 +591,7 @@ export default function CreateAppointmentModal({
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h5 className="font-semibold text-gray-900">{barber.name}</h5>
+                      <h5 className="font-semibold text-gray-900 dark:text-white">{barber.name}</h5>
                       <div className="flex items-center mt-1">
                         <div className="flex items-center">
                           {[...Array(5)].map((_, i) => (
@@ -390,14 +606,14 @@ export default function CreateAppointmentModal({
                               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                             </svg>
                           ))}
-                          <span className="ml-1 text-sm text-gray-600">{barber.rating}</span>
+                          <span className="ml-1 text-sm text-gray-600 dark:text-gray-400">{barber.rating}</span>
                         </div>
                       </div>
                       <div className="flex flex-wrap gap-1 mt-2">
                         {barber.specialties.map((specialty) => (
                           <span
                             key={specialty}
-                            className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                            className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                           >
                             {specialty}
                           </span>
@@ -407,7 +623,7 @@ export default function CreateAppointmentModal({
                   </div>
                 </div>
                 {watch('barber_id') === barber.id && (
-                  <CheckCircleIcon className="h-5 w-5 text-violet-600 ml-3" />
+                  <CheckCircleIcon className="h-5 w-5 text-teal-600 ml-3" />
                 )}
               </label>
             ))}
@@ -422,22 +638,39 @@ export default function CreateAppointmentModal({
 
         {/* Date and Time Selection */}
         <div className="space-y-4">
-          <div className="flex items-center space-x-2 mb-3">
-            <CalendarDaysIcon className="h-5 w-5 text-violet-600" />
-            <h4 className="text-lg font-semibold text-gray-900">Date & Time</h4>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-2">
+              <CalendarDaysIcon className="h-5 w-5 text-teal-600" />
+              <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Date & Time</h4>
+            </div>
+            {isPreFilled && (
+              <div className="flex items-center text-xs font-medium text-green-700 bg-green-50 px-2 py-1 rounded-full">
+                <CheckCircleIcon className="w-3 h-3 mr-1" />
+                Already selected
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Date *
               </label>
-              <input
-                {...register('appointment_date')}
-                type="date"
-                className="premium-input w-full"
-                min={new Date().toISOString().split('T')[0]}
-              />
+              <div className="relative">
+                <input
+                  {...register('appointment_date')}
+                  type="date"
+                  className={`premium-input w-full ${
+                    isPreFilled && selectedDate ? 'bg-green-50 border-green-200' : ''
+                  }`}
+                  min={new Date().toISOString().split('T')[0]}
+                />
+                {isPreFilled && selectedDate && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <CheckCircleIcon className="w-4 h-4 text-green-600" />
+                  </div>
+                )}
+              </div>
               {errors.appointment_date && (
                 <p className="mt-1 text-sm text-red-600 flex items-center">
                   <ExclamationTriangleIcon className="h-4 w-4 mr-1" />
@@ -447,20 +680,29 @@ export default function CreateAppointmentModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Time *
               </label>
-              <select
-                {...register('appointment_time')}
-                className="premium-input w-full"
-              >
-                <option value="">Select a time</option>
-                {timeSlots.map((time) => (
-                  <option key={time} value={time}>
-                    {time}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  {...register('appointment_time')}
+                  className={`premium-input w-full ${
+                    isPreFilled && selectedTime ? 'bg-green-50 border-green-200' : ''
+                  }`}
+                >
+                  <option value="">Select a time</option>
+                  {timeSlots.map((time) => (
+                    <option key={time} value={time}>
+                      {formatTimeForDisplay(time)}
+                    </option>
+                  ))}
+                </select>
+                {isPreFilled && selectedTime && (
+                  <div className="absolute right-8 top-1/2 transform -translate-y-1/2">
+                    <CheckCircleIcon className="w-4 h-4 text-green-600" />
+                  </div>
+                )}
+              </div>
               {errors.appointment_time && (
                 <p className="mt-1 text-sm text-red-600 flex items-center">
                   <ExclamationTriangleIcon className="h-4 w-4 mr-1" />
@@ -473,7 +715,7 @@ export default function CreateAppointmentModal({
 
         {/* Notes */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Additional Notes
           </label>
           <textarea
@@ -486,20 +728,20 @@ export default function CreateAppointmentModal({
 
         {/* Summary */}
         {selectedService && (
-          <div className="bg-violet-50 border border-violet-200 rounded-xl p-4">
-            <h5 className="font-semibold text-violet-900 mb-2">Appointment Summary</h5>
+          <div className="bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-xl p-4">
+            <h5 className="font-semibold text-teal-900 dark:text-teal-100 mb-2">Appointment Summary</h5>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-violet-700">Service:</span>
-                <span className="font-medium text-violet-900">{selectedService.name}</span>
+                <span className="text-teal-700 dark:text-teal-300">Service:</span>
+                <span className="font-medium text-teal-900 dark:text-teal-100">{selectedService.name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-violet-700">Duration:</span>
-                <span className="font-medium text-violet-900">{selectedService.duration} minutes</span>
+                <span className="text-teal-700 dark:text-teal-300">Duration:</span>
+                <span className="font-medium text-teal-900 dark:text-teal-100">{selectedService.duration} minutes</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-violet-700">Price:</span>
-                <span className="font-medium text-violet-900">${selectedService.price}</span>
+                <span className="text-teal-700 dark:text-teal-300">Price:</span>
+                <span className="font-medium text-teal-900 dark:text-teal-100">${selectedService.price}</span>
               </div>
             </div>
           </div>
