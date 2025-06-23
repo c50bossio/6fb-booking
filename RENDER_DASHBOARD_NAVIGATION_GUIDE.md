@@ -78,7 +78,7 @@ This guide provides step-by-step instructions with exact navigation paths for de
 1. **Review Settings**
    - Scroll through all sections
    - Verify all fields are correct
-   
+
 2. **Click "Create Web Service"**
    - Bottom of the page
    - Blue button

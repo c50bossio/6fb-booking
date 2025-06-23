@@ -40,36 +40,36 @@ print_warning() {
 # Check for required environment variables
 check_requirements() {
     print_status "Checking requirements..."
-    
+
     if [ -z "$RENDER_API_KEY" ]; then
         print_error "RENDER_API_KEY environment variable is not set"
         echo "Please set it with: export RENDER_API_KEY='your-api-key'"
         echo "Get your API key from: https://dashboard.render.com/account/settings"
         exit 1
     fi
-    
+
     if ! command -v curl &> /dev/null; then
         print_error "curl is not installed"
         exit 1
     fi
-    
+
     if ! command -v jq &> /dev/null; then
         print_warning "jq is not installed. Installing it will improve output formatting"
         echo "Install with: brew install jq (macOS) or apt-get install jq (Linux)"
     fi
-    
+
     print_success "Requirements check passed"
 }
 
 # Get owner ID (required for API calls)
 get_owner_id() {
     print_status "Getting Render account owner ID..."
-    
+
     OWNER_RESPONSE=$(curl -s -X GET \
         -H "Authorization: Bearer $RENDER_API_KEY" \
         -H "Accept: application/json" \
         "https://api.render.com/v1/owners")
-    
+
     if command -v jq &> /dev/null; then
         OWNER_ID=$(echo "$OWNER_RESPONSE" | jq -r '.[0].owner.id')
         OWNER_NAME=$(echo "$OWNER_RESPONSE" | jq -r '.[0].owner.name')
@@ -77,25 +77,25 @@ get_owner_id() {
         # Fallback parsing without jq
         OWNER_ID=$(echo "$OWNER_RESPONSE" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
     fi
-    
+
     if [ -z "$OWNER_ID" ] || [ "$OWNER_ID" = "null" ]; then
         print_error "Failed to get owner ID"
         echo "Response: $OWNER_RESPONSE"
         exit 1
     fi
-    
+
     print_success "Owner ID: $OWNER_ID (${OWNER_NAME:-Unknown})"
 }
 
 # Check if service exists
 check_service_exists() {
     print_status "Checking if service '$SERVICE_NAME' exists..."
-    
+
     SERVICES_RESPONSE=$(curl -s -X GET \
         -H "Authorization: Bearer $RENDER_API_KEY" \
         -H "Accept: application/json" \
         "https://api.render.com/v1/services?name=$SERVICE_NAME")
-    
+
     if command -v jq &> /dev/null; then
         SERVICE_COUNT=$(echo "$SERVICES_RESPONSE" | jq '. | length')
         if [ "$SERVICE_COUNT" -gt 0 ]; then
@@ -113,7 +113,7 @@ check_service_exists() {
             return 0
         fi
     fi
-    
+
     print_warning "Service does not exist"
     return 1
 }
@@ -121,7 +121,7 @@ check_service_exists() {
 # Create new service
 create_service() {
     print_status "Creating new service '$SERVICE_NAME'..."
-    
+
     # Get repository URL from git
     REPO_URL=$(git config --get remote.origin.url || echo "")
     if [ -z "$REPO_URL" ]; then
@@ -129,17 +129,17 @@ create_service() {
         echo "Please enter your repository URL (e.g., https://github.com/username/repo):"
         read -r REPO_URL
     fi
-    
+
     # Convert SSH URL to HTTPS if needed
     if [[ "$REPO_URL" == git@github.com:* ]]; then
         REPO_URL=$(echo "$REPO_URL" | sed 's/git@github.com:/https:\/\/github.com\//')
     fi
-    
+
     # Remove .git suffix if present
     REPO_URL=${REPO_URL%.git}
-    
+
     print_status "Using repository: $REPO_URL"
-    
+
     # Create service payload
     SERVICE_PAYLOAD=$(cat <<EOF
 {
@@ -164,7 +164,7 @@ create_service() {
 }
 EOF
 )
-    
+
     print_status "Creating service with Render API..."
     CREATE_RESPONSE=$(curl -s -X POST \
         -H "Authorization: Bearer $RENDER_API_KEY" \
@@ -172,7 +172,7 @@ EOF
         -H "Content-Type: application/json" \
         -d "$SERVICE_PAYLOAD" \
         "https://api.render.com/v1/services")
-    
+
     # Check if creation was successful
     if echo "$CREATE_RESPONSE" | grep -q "\"id\""; then
         if command -v jq &> /dev/null; then
@@ -194,13 +194,13 @@ EOF
 # Set environment variables
 set_env_variables() {
     print_status "Setting environment variables for service '$SERVICE_ID'..."
-    
+
     # Read environment variables from .env.production
     ENV_FILE="frontend/.env.production"
     if [ ! -f "$ENV_FILE" ]; then
         print_warning "No .env.production file found at $ENV_FILE"
         print_status "Creating from template..."
-        
+
         # Create basic .env.production
         cat > "$ENV_FILE" <<EOF
 NEXT_PUBLIC_API_URL=https://sixfb-backend.onrender.com
@@ -211,18 +211,18 @@ NEXT_PUBLIC_SENTRY_DSN=
 EOF
         print_success "Created basic .env.production file. Please update with your values."
     fi
-    
+
     # Parse environment variables
     ENV_VARS_JSON="["
     FIRST=true
-    
+
     while IFS='=' read -r key value || [ -n "$key" ]; do
         # Skip comments and empty lines
         if [[ ! "$key" =~ ^[[:space:]]*# ]] && [[ -n "$key" ]]; then
             # Remove leading/trailing whitespace
             key=$(echo "$key" | xargs)
             value=$(echo "$value" | xargs)
-            
+
             if [ -n "$key" ] && [ -n "$value" ]; then
                 if [ "$FIRST" = true ]; then
                     FIRST=false
@@ -233,9 +233,9 @@ EOF
             fi
         fi
     done < "$ENV_FILE"
-    
+
     ENV_VARS_JSON+="]"
-    
+
     print_status "Updating environment variables via API..."
     UPDATE_RESPONSE=$(curl -s -X PUT \
         -H "Authorization: Bearer $RENDER_API_KEY" \
@@ -243,7 +243,7 @@ EOF
         -H "Content-Type: application/json" \
         -d "{\"envVars\":$ENV_VARS_JSON}" \
         "https://api.render.com/v1/services/$SERVICE_ID/env-vars")
-    
+
     if echo "$UPDATE_RESPONSE" | grep -q "error"; then
         print_error "Failed to update environment variables"
         echo "Response: $UPDATE_RESPONSE"
@@ -255,18 +255,18 @@ EOF
 # Trigger deployment
 trigger_deployment() {
     print_status "Triggering deployment for service '$SERVICE_ID'..."
-    
+
     DEPLOY_RESPONSE=$(curl -s -X POST \
         -H "Authorization: Bearer $RENDER_API_KEY" \
         -H "Accept: application/json" \
         "https://api.render.com/v1/services/$SERVICE_ID/deploys")
-    
+
     if command -v jq &> /dev/null; then
         DEPLOY_ID=$(echo "$DEPLOY_RESPONSE" | jq -r '.id')
     else
         DEPLOY_ID=$(echo "$DEPLOY_RESPONSE" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
     fi
-    
+
     if [ -n "$DEPLOY_ID" ] && [ "$DEPLOY_ID" != "null" ]; then
         print_success "Deployment triggered! Deploy ID: $DEPLOY_ID"
         return 0
@@ -281,19 +281,19 @@ trigger_deployment() {
 check_deployment_status() {
     local deploy_id=$1
     print_status "Checking deployment status..."
-    
+
     while true; do
         STATUS_RESPONSE=$(curl -s -X GET \
             -H "Authorization: Bearer $RENDER_API_KEY" \
             -H "Accept: application/json" \
             "https://api.render.com/v1/services/$SERVICE_ID/deploys/$deploy_id")
-        
+
         if command -v jq &> /dev/null; then
             STATUS=$(echo "$STATUS_RESPONSE" | jq -r '.status')
         else
             STATUS=$(echo "$STATUS_RESPONSE" | grep -o '"status":"[^"]*"' | head -1 | cut -d'"' -f4)
         fi
-        
+
         case "$STATUS" in
             "live")
                 print_success "Deployment is live!"
@@ -315,17 +315,17 @@ check_deployment_status() {
 main() {
     print_status "Starting Render Frontend Deployment Helper"
     echo "================================================"
-    
+
     check_requirements
     get_owner_id
-    
+
     if check_service_exists; then
         print_status "Service already exists. Would you like to:"
         echo "1) Update environment variables and trigger new deployment"
         echo "2) Just trigger a new deployment"
         echo "3) Exit"
         read -p "Choose an option (1-3): " choice
-        
+
         case $choice in
             1)
                 set_env_variables
@@ -350,7 +350,7 @@ main() {
     else
         print_status "Service does not exist. Would you like to create it? (y/n)"
         read -p "> " create_choice
-        
+
         if [[ "$create_choice" =~ ^[Yy]$ ]]; then
             create_service
             set_env_variables
@@ -362,7 +362,7 @@ main() {
             exit 0
         fi
     fi
-    
+
     echo ""
     print_success "Deployment helper completed!"
     echo "================================================"
