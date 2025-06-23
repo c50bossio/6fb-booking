@@ -240,7 +240,7 @@ export default function LandingPage() {
             The Complete Platform for
             <br />
             <span className="text-teal-600 relative">
-              Six-Figure Barbers. {/* UPDATED 2025-06-23 22:50 */}
+              Six-Figure Barbers.
               <div className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-teal-500 to-teal-600 rounded-full opacity-30"></div>
             </span>
           </h1>
@@ -268,7 +268,7 @@ export default function LandingPage() {
           </div>
 
           {/* Social Proof Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto bg-yellow-200 p-8 rounded-lg">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 text-center">
               <div className="text-3xl font-bold text-slate-700 mb-2">$2.5M+</div>
               <div className="text-sm font-medium" style={{color: '#000000 !important'}}>Paid Out Monthly</div>
