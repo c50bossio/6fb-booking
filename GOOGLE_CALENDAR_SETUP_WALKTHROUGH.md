@@ -95,7 +95,7 @@ Navigate to: `http://localhost:3000/settings/google-calendar`
 
 ### **4.1 Automatic Sync Triggers**
 - **Appointment created** → Google Calendar event created
-- **Appointment updated** → Google Calendar event updated  
+- **Appointment updated** → Google Calendar event updated
 - **Appointment deleted** → Google Calendar event deleted
 - **Appointment status changed** → Event details updated
 

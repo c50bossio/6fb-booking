@@ -488,11 +488,11 @@ alerts:
   high_error_rate:
     threshold: "5% over 5 minutes"
     notification: ["admin@email.com", "slack-channel"]
-  
+
   slow_response:
     threshold: "2 seconds average"
     notification: ["ops-team@email.com"]
-  
+
   payment_failures:
     threshold: "10 failures in 1 hour"
     notification: ["finance@email.com", "admin@email.com"]

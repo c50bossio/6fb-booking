@@ -1,8 +1,8 @@
 # 6FB Booking Platform - Production Security Deployment Guide
 
-**Version**: 1.0  
-**Date**: 2025-06-23  
-**Environment**: Production Security Hardening  
+**Version**: 1.0
+**Date**: 2025-06-23
+**Environment**: Production Security Hardening
 
 ## 🎯 Overview
 
@@ -67,7 +67,7 @@ ALERT_THRESHOLD_RATE_LIMIT_HITS=100
 # Generate SECRET_KEY
 python3 -c 'import secrets; print("SECRET_KEY=" + secrets.token_urlsafe(64))'
 
-# Generate JWT_SECRET_KEY  
+# Generate JWT_SECRET_KEY
 python3 -c 'import secrets; print("JWT_SECRET_KEY=" + secrets.token_urlsafe(64))'
 ```
 
@@ -410,7 +410,7 @@ All security events are logged with:
 SECURITY_EMAIL=security@6fb.com
 SECURITY_PHONE=+1-XXX-XXX-XXXX
 
-# Infrastructure Team  
+# Infrastructure Team
 OPS_EMAIL=ops@6fb.com
 OPS_PHONE=+1-XXX-XXX-XXXX
 
@@ -451,9 +451,9 @@ This guide should be updated whenever:
 
 ---
 
-**Last Updated**: 2025-06-23  
-**Next Review**: 2025-09-23  
-**Document Owner**: Security Team  
-**Approval**: CTO/CISO  
+**Last Updated**: 2025-06-23
+**Next Review**: 2025-09-23
+**Document Owner**: Security Team
+**Approval**: CTO/CISO
 
 *This document contains sensitive security information and should only be shared with authorized personnel.*

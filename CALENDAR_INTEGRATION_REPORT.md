@@ -127,7 +127,7 @@ export class CalendarBookingIntegration {
 ### Public Booking Integration
 ✅ **PASSED** - Successfully tested public booking system integration:
 - Retrieved 1 barber from location
-- Retrieved 2 services from booking system  
+- Retrieved 2 services from booking system
 - Created public booking with confirmation token: `qBHODB19SgddNWBC5T03bXC1j6z8stwu`
 
 ### Authentication-Required Features

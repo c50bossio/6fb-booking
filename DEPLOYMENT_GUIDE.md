@@ -338,13 +338,13 @@ module.exports = {
   output: 'standalone',
   compress: true,
   poweredByHeader: false,
-  
+
   // Image optimization
   images: {
     domains: ['yourdomain.com'],
     formats: ['image/webp', 'image/avif'],
   },
-  
+
   // Bundle analysis
   webpack: (config, { isServer }) => {
     if (!isServer) {
@@ -418,12 +418,12 @@ alerts:
     condition: "error_rate > 5%"
     duration: "5m"
     action: "email + slack"
-    
+
   - name: "High Response Time"
     condition: "response_time > 2s"
     duration: "5m"
     action: "email"
-    
+
   - name: "Database Connection Failed"
     condition: "db_connection_failed"
     duration: "1m"
@@ -438,7 +438,7 @@ alerts:
    ```bash
    # Check database credentials
    ./scripts/health-check.sh
-   
+
    # Test database connection manually
    psql $DATABASE_URL -c "SELECT 1;"
    ```
@@ -448,7 +448,7 @@ alerts:
    # Check service logs
    journalctl -u 6fb-backend -f
    journalctl -u 6fb-frontend -f
-   
+
    # Check service status
    systemctl status 6fb-backend
    systemctl status 6fb-frontend
@@ -458,7 +458,7 @@ alerts:
    ```bash
    # Test Nginx configuration
    nginx -t
-   
+
    # Reload Nginx
    systemctl reload nginx
    ```
@@ -467,7 +467,7 @@ alerts:
    ```bash
    # Check certificate status
    certbot certificates
-   
+
    # Renew certificate
    certbot renew --dry-run
    ```

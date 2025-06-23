@@ -1,6 +1,6 @@
 # Booking Workflow Sprint - Completion Report
 
-**Date**: 2025-06-23  
+**Date**: 2025-06-23
 **Sprint Goal**: Complete the booking workflow and fix all dashboard functionality
 
 ## ✅ COMPLETED TASKS
@@ -79,7 +79,7 @@
 - ✅ Professional UI design
 
 ### 6. ✅ Footer Links Fixed
-**Locations**: 
+**Locations**:
 - `/frontend/src/app/page.tsx`
 - `/frontend/src/app/signup/page.tsx`
 
@@ -136,7 +136,7 @@
   },
   {
     "id": 2,
-    "name": "Fade Cut", 
+    "name": "Fade Cut",
     "description": "Modern fade haircut",
     "category_name": "Haircuts",
     "base_price": 45.0,

@@ -1,6 +1,6 @@
 # 🚀 Complete Your Production Deployment
 
-Your backend is **LIVE and working perfectly** at https://sixfb-backend.onrender.com! 
+Your backend is **LIVE and working perfectly** at https://sixfb-backend.onrender.com!
 
 Let's finish the setup with admin access and frontend deployment.
 
@@ -43,7 +43,7 @@ db.execute(text('DELETE FROM users WHERE email = :email'), {'email': email})
 user = User(
     email=email,
     first_name='Admin',
-    last_name='User', 
+    last_name='User',
     hashed_password=hashed,
     role='super_admin',
     is_active=True
@@ -84,7 +84,7 @@ Your backend is fully functional! You can test everything via API docs:
 ### **Available Endpoints** (test at /docs):
 - ✅ **Health**: `/api/v1/health`
 - ✅ **Services**: `/api/v1/services/` (3 services)
-- ✅ **Barbers**: `/api/v1/barbers/` (3 barbers)  
+- ✅ **Barbers**: `/api/v1/barbers/` (3 barbers)
 - ✅ **Bookings**: `/api/v1/availability/1/?date=2025-06-24`
 - ✅ **Auth**: `/api/v1/auth/token`
 

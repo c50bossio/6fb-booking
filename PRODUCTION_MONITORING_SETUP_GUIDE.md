@@ -239,7 +239,7 @@ Run these commands to verify monitoring is working:
 # Test basic health
 curl https://your-domain.com/api/v1/health
 
-# Test detailed health  
+# Test detailed health
 curl https://your-domain.com/api/v1/health/detailed
 
 # Test payment monitoring

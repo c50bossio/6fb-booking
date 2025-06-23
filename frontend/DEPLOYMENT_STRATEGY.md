@@ -111,11 +111,11 @@ def migrate_data():
     # Connect to SQLite
     sqlite_conn = sqlite3.connect('6fb_booking.db')
     sqlite_conn.row_factory = sqlite3.Row
-    
+
     # Connect to PostgreSQL
     pg_conn = psycopg2.connect(os.getenv('POSTGRES_URL'))
     pg_cursor = pg_conn.cursor()
-    
+
     # Tables in order of dependencies
     tables = [
         'locations', 'users', 'barbers', 'clients',
@@ -123,11 +123,11 @@ def migrate_data():
         'barber_availability', 'appointments', 'payments',
         'booking_rules', 'reviews', 'booking_slots', 'wait_lists'
     ]
-    
+
     for table in tables:
         print(f"Migrating {table}...")
         migrate_table(sqlite_conn, pg_conn, table)
-    
+
     pg_conn.commit()
     print("Migration completed successfully!")
 ```
@@ -139,7 +139,7 @@ python scripts/validate_migration.py
 
 # Check row counts
 psql 6fb_booking_prod -c "
-SELECT 
+SELECT
     schemaname,
     tablename,
     n_live_tup as row_count
@@ -175,21 +175,21 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-    
+
     steps:
     - uses: actions/checkout@v3
-    
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
-    
+
     - name: Install backend dependencies
       run: |
         cd backend
         pip install -r requirements.txt
         pip install pytest pytest-cov
-    
+
     - name: Run backend tests
       env:
         DATABASE_URL: postgresql://postgres:postgres@localhost/test_db
@@ -198,22 +198,22 @@ jobs:
       run: |
         cd backend
         pytest --cov=. --cov-report=xml
-    
+
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '18'
-    
+
     - name: Install frontend dependencies
       run: |
         cd frontend
         npm ci
-    
+
     - name: Run frontend tests
       run: |
         cd frontend
         npm test -- --coverage --watchAll=false
-    
+
     - name: Build frontend
       run: |
         cd frontend
@@ -223,25 +223,25 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-    
+
     steps:
     - uses: actions/checkout@v3
-    
+
     - name: Deploy to DigitalOcean
       uses: digitalocean/action-doctl@v2
       with:
         token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
-    
+
     - name: Build and push Docker images
       run: |
         # Build backend
         docker build -t registry.digitalocean.com/6fb-booking/backend:${{ github.sha }} ./backend
         docker push registry.digitalocean.com/6fb-booking/backend:${{ github.sha }}
-        
+
         # Build frontend
         docker build -t registry.digitalocean.com/6fb-booking/frontend:${{ github.sha }} ./frontend
         docker push registry.digitalocean.com/6fb-booking/frontend:${{ github.sha }}
-    
+
     - name: Deploy to App Platform
       run: |
         doctl apps update ${{ secrets.APP_ID }} --spec .do/app.yaml
@@ -388,17 +388,17 @@ server {
 server {
     listen 443 ssl http2;
     server_name 6fbooking.com www.6fbooking.com;
-    
+
     ssl_certificate /etc/letsencrypt/live/6fbooking.com/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/6fbooking.com/privkey.pem;
-    
+
     # Security headers
     add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-XSS-Protection "1; mode=block" always;
     add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.stripe.com" always;
-    
+
     location / {
         proxy_pass http://frontend:3000;
         proxy_set_header Host $host;
@@ -406,7 +406,7 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
-    
+
     location /api {
         proxy_pass http://backend:8000;
         proxy_set_header Host $host;
@@ -487,7 +487,7 @@ services:
       - prometheus_data:/prometheus
     ports:
       - "9090:9090"
-  
+
   grafana:
     image: grafana/grafana:latest
     environment:
@@ -498,12 +498,12 @@ services:
       - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
     ports:
       - "3001:3000"
-  
+
   node_exporter:
     image: prom/node-exporter:latest
     ports:
       - "9100:9100"
-  
+
   postgres_exporter:
     image: wrouesnel/postgres_exporter:latest
     environment:
@@ -529,7 +529,7 @@ async def health_check():
         "stripe": await check_stripe(),
         "email": await check_email_service(),
     }
-    
+
     # Determine overall health
     if all(check["status"] == "healthy" for check in checks.values() if isinstance(check, dict)):
         return JSONResponse(content=checks, status_code=200)
@@ -582,13 +582,13 @@ jobs:
         doctl apps create-deployment ${{ secrets.APP_ID }} \
           --component backend \
           --git-commit-sha ${{ github.event.inputs.version }}
-    
+
     - name: Rollback Frontend
       run: |
         doctl apps create-deployment ${{ secrets.APP_ID }} \
           --component frontend \
           --git-commit-sha ${{ github.event.inputs.version }}
-    
+
     - name: Verify Rollback
       run: |
         sleep 60

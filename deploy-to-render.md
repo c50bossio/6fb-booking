@@ -59,7 +59,7 @@ Click "Create Web Service" for both services. Deployment takes ~5-10 minutes.
 
 ## Total Cost: ~$14/month
 - Backend: $7/month
-- Database: $7/month  
+- Database: $7/month
 - Frontend: Free
 
 Your app will be live at:

@@ -197,10 +197,10 @@ server {
 server {
     listen 443 ssl http2;
     server_name yourdomain.com www.yourdomain.com;
-    
+
     ssl_certificate /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
-    
+
     location / {
         proxy_pass http://localhost:3000;
         proxy_http_version 1.1;
@@ -224,10 +224,10 @@ server {
 server {
     listen 443 ssl http2;
     server_name api.yourdomain.com;
-    
+
     ssl_certificate /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
-    
+
     location / {
         proxy_pass http://localhost:8000;
         proxy_http_version 1.1;
@@ -238,7 +238,7 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
-        
+
         # Increase timeouts for API requests
         proxy_connect_timeout 60s;
         proxy_send_timeout 60s;
@@ -295,7 +295,7 @@ crontab -e
    ```bash
    # Check database status
    docker-compose logs postgres
-   
+
    # Test connection
    docker-compose exec backend python -c "from config.database import check_database_health; print(check_database_health())"
    ```
@@ -304,7 +304,7 @@ crontab -e
    ```bash
    # Renew certificate
    certbot renew --dry-run
-   
+
    # Check certificate status
    certbot certificates
    ```
@@ -314,7 +314,7 @@ crontab -e
    # Check logs
    docker-compose logs backend
    docker-compose logs frontend
-   
+
    # Restart services
    docker-compose restart
    ```

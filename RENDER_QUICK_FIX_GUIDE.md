@@ -1,113 +1,67 @@
-# 🚨 RENDER DEPLOYMENT QUICK FIX GUIDE
+# Render PostgreSQL Fix - Quick Deployment Guide
 
-## IMMEDIATE STEPS TO GET DEPLOYED (10 minutes)
+## ✅ Changes Made
 
-### Option 1: Use the Fixed Dockerfile (RECOMMENDED)
-1. In Render Dashboard:
-   - Go to your service settings
-   - Change Docker Path to: `./backend/Dockerfile.render`
-   - Click "Save Changes"
-   - Trigger manual deploy
+1. **Fixed PostgreSQL driver compatibility**:
+   - Updated `psycopg2-binary` to version 2.9.10
+   - Removed duplicate psycopg2-binary entries
+   - Added specific versions for all dependencies
 
-### Option 2: Quick Dashboard Fixes
-1. **Environment Variables** - Add these NOW in Render Dashboard:
+2. **Python version specification**:
+   - Created `runtime.txt` with `python-3.11.10`
+   - Created `.python-version` with `3.11.10`
+   - Created `backend/runtime.txt` and `backend/.python-version`
+   - Updated `render.yaml` to use `runtime: python-3.11`
+
+3. **Dependency versions fixed**:
+   - `twilio==9.4.0`
+   - `sendgrid==6.12.0`
+   - `squareup==50.0.0`
+   - Google API dependencies with specific versions
+
+## 🚀 Next Steps on Render
+
+1. **Go to your Render dashboard**
+2. **If deployment is still failing**, try:
+   - Click "Manual Deploy" → "Clear build cache & deploy"
+   - Or delete the service and recreate using the Blueprint
+
+3. **Environment Variables to Set** (if not already set):
    ```
-   PYTHONPATH=/app
-   PORT=8000
    ENVIRONMENT=production
-   JWT_SECRET_KEY=your-secret-key-here
-   JWT_ALGORITHM=HS256
-   JWT_ACCESS_TOKEN_EXPIRE_MINUTES=1440
-   CORS_ORIGINS=*
+   SECRET_KEY=[generate-a-secure-key]
+   JWT_SECRET_KEY=[generate-another-secure-key]
+   DATABASE_URL=[automatically-provided-by-render]
+   STRIPE_SECRET_KEY=[your-stripe-key]
+   STRIPE_PUBLISHABLE_KEY=[your-stripe-pub-key]
+   SENDGRID_API_KEY=[your-sendgrid-key]
+   FROM_EMAIL=noreply@yourdomain.com
    ```
 
-2. **Start Command** - Change to:
+4. **If still having issues**, use Render Shell:
    ```bash
-   ./start-render.sh
-   ```
-   Or if that fails:
-   ```bash
-   sh -c "python main.py || uvicorn main:app --host 0.0.0.0 --port 8000"
+   cd backend
+   python -m pip install --upgrade pip
+   pip install -r requirements.txt
    ```
 
-### Option 3: Render Shell Emergency Fix
-1. Open Render Shell from dashboard
-2. Run these commands:
-   ```bash
-   # Download and run patch script
-   curl -O https://raw.githubusercontent.com/yourusername/6fb-booking/main/backend/render-patch.py
-   python render-patch.py
+## ✨ What Should Work Now
 
-   # Or manually:
-   pip install uvicorn[standard] fastapi sqlalchemy
-   export PYTHONPATH=/app
-   python main.py
-   ```
+- PostgreSQL driver will install correctly with Python 3.11
+- All dependencies have fixed versions to avoid conflicts
+- Multiple Python version specifications ensure Render uses 3.11
 
-### Option 4: Manual Build Command Override
-In Render Dashboard, set:
-- **Build Command**:
-  ```bash
-  pip install -r requirements.txt && chmod +x start-render.sh
-  ```
-- **Start Command**:
-  ```bash
-  ./start-render.sh
-  ```
+## 📝 Important Notes
 
-### Option 5: Use render.yaml (Blueprint)
-1. Copy the `render.yaml` to your repo root
-2. In Render Dashboard:
-   - New > Blueprint
-   - Connect your repo
-   - It will auto-configure everything
+- The deployment should now work with Python 3.11 instead of 3.13
+- All dependency versions are locked to ensure compatibility
+- The psycopg2-binary package is now at the correct version
 
-## EMERGENCY FALLBACK
-If nothing works, create a minimal service:
-1. In Render Shell:
-   ```bash
-   cat > emergency_start.py << 'EOF'
-   from fastapi import FastAPI
-   import uvicorn
-   import os
+## 🔧 If Problems Persist
 
-   app = FastAPI()
+Contact Render support and mention:
+- You need Python 3.11 (not 3.13)
+- You're using psycopg2-binary==2.9.10
+- Show them the runtime.txt and .python-version files
 
-   @app.get("/")
-   def root():
-       return {"status": "running", "message": "6FB Booking Backend"}
-
-   @app.get("/health")
-   def health():
-       return {"status": "healthy"}
-
-   if __name__ == "__main__":
-       port = int(os.environ.get("PORT", 8000))
-       uvicorn.run(app, host="0.0.0.0", port=port)
-   EOF
-
-   python emergency_start.py
-   ```
-
-## DATABASE URL FIX
-If you see database errors:
-1. In Environment Variables, ensure DATABASE_URL starts with `postgresql://` not `postgres://`
-2. Or add this env var:
-   ```
-   DATABASE_URL_OVERRIDE=postgresql://...your-connection-string...
-   ```
-
-## VERIFICATION
-Once deployed, test:
-```bash
-curl https://your-app.onrender.com/health
-```
-
-## NEXT STEPS AFTER DEPLOYMENT
-1. Monitor logs for any errors
-2. Test all API endpoints
-3. Set up proper monitoring
-4. Configure custom domain if needed
-
----
-**Need more help?** The patch script (`render-patch.py`) will diagnose and fix most issues automatically!
+The deployment should now proceed without the PostgreSQL compilation error!

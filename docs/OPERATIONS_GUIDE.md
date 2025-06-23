@@ -180,22 +180,22 @@ aws s3 sync s3://6fb-staging-assets s3://6fb-production-assets
 #### Health Checks
 ```sql
 -- Check database connections
-SELECT count(*) as active_connections 
-FROM pg_stat_activity 
+SELECT count(*) as active_connections
+FROM pg_stat_activity
 WHERE state = 'active';
 
 -- Check slow queries
-SELECT query, mean_time, calls 
-FROM pg_stat_statements 
-ORDER BY mean_time DESC 
+SELECT query, mean_time, calls
+FROM pg_stat_statements
+ORDER BY mean_time DESC
 LIMIT 10;
 
 -- Check database size
-SELECT 
+SELECT
     schemaname,
     tablename,
     pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as size
-FROM pg_tables 
+FROM pg_tables
 WHERE schemaname = 'public'
 ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
 ```
@@ -203,17 +203,17 @@ ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
 #### Performance Monitoring
 ```sql
 -- Check index usage
-SELECT 
+SELECT
     indexrelname,
     idx_scan,
     idx_tup_read,
     idx_tup_fetch,
     pg_size_pretty(pg_relation_size(indexrelname::regclass)) as size
-FROM pg_stat_user_indexes 
+FROM pg_stat_user_indexes
 ORDER BY idx_scan DESC;
 
 -- Monitor table statistics
-SELECT 
+SELECT
     schemaname,
     tablename,
     n_tup_ins,
@@ -288,11 +288,11 @@ REINDEX DATABASE 6fb_booking;
 VACUUM ANALYZE;
 
 -- Check for unused indexes
-SELECT 
+SELECT
     indexrelname,
     idx_scan,
     pg_size_pretty(pg_relation_size(indexrelname::regclass)) as size
-FROM pg_stat_user_indexes 
+FROM pg_stat_user_indexes
 WHERE idx_scan = 0
 ORDER BY pg_relation_size(indexrelname::regclass) DESC;
 ```
@@ -354,7 +354,7 @@ async def health_check():
         "email": await check_email_service(),
         "storage": await check_file_storage()
     }
-    
+
     status = "healthy" if all(checks.values()) else "unhealthy"
     return {"status": status, "checks": checks, "timestamp": datetime.utcnow()}
 
@@ -380,7 +380,7 @@ groups:
           severity: critical
         annotations:
           summary: "PostgreSQL database is down"
-          
+
       - alert: HighErrorRate
         expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
         for: 2m
@@ -388,7 +388,7 @@ groups:
           severity: warning
         annotations:
           summary: "High error rate detected"
-          
+
       - alert: SlowResponseTime
         expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 0.5
         for: 5m
@@ -622,13 +622,13 @@ add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" alway
 #### User Access Review
 ```sql
 -- Monthly user access audit
-SELECT 
+SELECT
     u.id,
     u.email,
     u.role,
     u.last_login,
     u.created_at,
-    CASE 
+    CASE
         WHEN u.last_login < NOW() - INTERVAL '90 days' THEN 'Inactive'
         WHEN u.failed_login_attempts > 5 THEN 'Locked'
         ELSE 'Active'
@@ -637,13 +637,13 @@ FROM users u
 ORDER BY u.last_login DESC;
 
 -- Check for privilege escalations
-SELECT 
+SELECT
     audit_log.user_id,
     audit_log.action,
     audit_log.old_value,
     audit_log.new_value,
     audit_log.created_at
-FROM audit_log 
+FROM audit_log
 WHERE action = 'role_change'
 AND created_at > NOW() - INTERVAL '30 days';
 ```
@@ -653,7 +653,7 @@ AND created_at > NOW() - INTERVAL '30 days';
 # Rate limiting by user role
 RATE_LIMITS = {
     'client': '100/hour',
-    'barber': '500/hour', 
+    'barber': '500/hour',
     'admin': '2000/hour',
     'api_key': '5000/hour'
 }
@@ -674,20 +674,20 @@ ADMIN_IP_WHITELIST = [
 #### Query Optimization
 ```sql
 -- Index creation for common queries
-CREATE INDEX CONCURRENTLY idx_appointments_barber_date 
+CREATE INDEX CONCURRENTLY idx_appointments_barber_date
 ON appointments (barber_id, appointment_date);
 
-CREATE INDEX CONCURRENTLY idx_appointments_status_date 
+CREATE INDEX CONCURRENTLY idx_appointments_status_date
 ON appointments (status, appointment_date);
 
-CREATE INDEX CONCURRENTLY idx_payments_created_status 
+CREATE INDEX CONCURRENTLY idx_payments_created_status
 ON payments (created_at, status);
 
 -- Partial indexes for common filters
-CREATE INDEX CONCURRENTLY idx_active_users 
+CREATE INDEX CONCURRENTLY idx_active_users
 ON users (id) WHERE active = true;
 
-CREATE INDEX CONCURRENTLY idx_confirmed_appointments 
+CREATE INDEX CONCURRENTLY idx_confirmed_appointments
 ON appointments (appointment_date) WHERE status = 'confirmed';
 ```
 
@@ -725,10 +725,10 @@ def cache_result(ttl=3600):
         async def wrapper(*args, **kwargs):
             cache_key = f"{func.__name__}:{hash(str(args) + str(kwargs))}"
             cached_result = redis_client.get(cache_key)
-            
+
             if cached_result:
                 return json.loads(cached_result)
-            
+
             result = await func(*args, **kwargs)
             redis_client.setex(cache_key, ttl, json.dumps(result, default=str))
             return result
@@ -756,7 +756,7 @@ async def list_appointments(
     offset = (page - 1) * per_page
     appointments = await get_appointments(offset=offset, limit=per_page)
     total = await count_appointments()
-    
+
     return {
         "appointments": appointments,
         "pagination": {
@@ -856,7 +856,7 @@ upstream 6fb_api_backend {
     server api-1.6fbbooking.com:8000;
     server api-2.6fbbooking.com:8000;
     server api-3.6fbbooking.com:8000;
-    
+
     # Health check
     check interval=5000 rise=2 fall=3 timeout=3000;
 }
@@ -864,7 +864,7 @@ upstream 6fb_api_backend {
 server {
     listen 80;
     server_name api.6fbbooking.com;
-    
+
     location / {
         proxy_pass http://6fb_api_backend;
         proxy_set_header Host $host;
@@ -932,14 +932,14 @@ addEventListener('fetch', event => {
 async function handleRequest(request) {
   const cache = caches.default
   const cacheKey = new Request(request.url, request)
-  
+
   // Check cache first
   let response = await cache.match(cacheKey)
-  
+
   if (!response) {
     // Fetch from origin
     response = await fetch(request)
-    
+
     // Cache API responses for 5 minutes
     if (request.url.includes('/api/') && response.status === 200) {
       const newResponse = new Response(response.body, {
@@ -954,7 +954,7 @@ async function handleRequest(request) {
       return newResponse
     }
   }
-  
+
   return response
 }
 ```
