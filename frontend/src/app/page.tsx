@@ -232,7 +232,7 @@ export default function LandingPage() {
           {/* Trust Badge */}
           <div className="inline-flex items-center bg-white/90 backdrop-blur-sm border border-slate-200/50 rounded-full px-6 py-3 mb-8 shadow-lg hover:shadow-xl transition-all duration-300">
             <ShieldCheckIcon className="h-4 w-4 text-emerald-500 mr-2" />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-100">Trusted by 1,200+ barbers nationwide</span>
+            <span className="text-sm font-medium" style={{color: '#374151 !important'}}>Trusted by 1,200+ barbers nationwide</span>
             <div className="ml-2 w-2 h-2 bg-slate-500 rounded-full animate-pulse"></div>
           </div>
 
@@ -245,7 +245,7 @@ export default function LandingPage() {
             </span>
           </h1>
 
-          <p className="text-xl md:text-2xl text-gray-700 dark:text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed">
+          <p className="text-xl md:text-2xl mb-12 max-w-4xl mx-auto leading-relaxed" style={{color: '#374151 !important'}}>
             Automate payouts, track earnings, and manage appointments with the most trusted platform in the industry.
             <span className="text-gray-900 dark:text-white font-semibold"> Join the barbers earning $100K+</span>
           </p>
@@ -333,7 +333,7 @@ export default function LandingPage() {
               Built for Barbers Who
               <span className="text-gradient"> Mean Business</span>
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl max-w-3xl mx-auto leading-relaxed" style={{color: '#4B5563 !important'}}>
               Every feature is designed to help you save time, make more money, and build the six-figure career you deserve.
             </p>
           </div>
@@ -352,7 +352,7 @@ export default function LandingPage() {
                   {feature.name}
                 </h3>
 
-                <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                <p className="text-sm leading-relaxed" style={{color: '#4B5563 !important'}}>
                   {feature.description}
                 </p>
               </div>
@@ -440,7 +440,7 @@ export default function LandingPage() {
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Choose Your Plan
             </h2>
-            <p className="text-xl text-gray-700 dark:text-gray-300">
+            <p className="text-xl" style={{color: '#374151 !important'}}>
               Start with a 14-day free trial. No credit card required.
             </p>
           </div>
@@ -463,10 +463,10 @@ export default function LandingPage() {
 
                 <div className="text-center mb-8">
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                  <p className="text-gray-700 dark:text-gray-300 mb-4">{plan.description}</p>
+                  <p className="mb-4" style={{color: '#374151 !important'}}>{plan.description}</p>
                   <div className="flex items-baseline justify-center">
                     <span className="text-4xl font-bold text-gray-900">{plan.price}</span>
-                    <span className="text-gray-600 dark:text-gray-400 ml-1">{plan.period}</span>
+                    <span className="ml-1" style={{color: '#4B5563 !important'}}>{plan.period}</span>
                   </div>
                 </div>
 
@@ -474,7 +474,7 @@ export default function LandingPage() {
                   {plan.features.map((feature, index) => (
                     <li key={index} className="flex items-start">
                       <CheckIcon className="h-5 w-5 text-teal-600 dark:text-teal-400 mt-1 mr-3 flex-shrink-0" />
-                      <span className="text-gray-600 dark:text-gray-300">{feature}</span>
+                      <span style={{color: '#4B5563 !important'}}>{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -508,7 +508,7 @@ export default function LandingPage() {
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Simple Setup, Powerful Results
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+            <p className="text-xl max-w-2xl mx-auto" style={{color: '#4B5563 !important'}}>
               Get started in minutes and see immediate impact on your business
             </p>
           </div>
@@ -519,21 +519,21 @@ export default function LandingPage() {
                 1
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Create Your Account</h3>
-              <p className="text-gray-600 dark:text-gray-300">Sign up and connect your bank account with Stripe Express in under 5 minutes</p>
+              <p style={{color: '#4B5563 !important'}}>Sign up and connect your bank account with Stripe Express in under 5 minutes</p>
             </div>
             <div className="text-center">
               <div className="bg-slate-700 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-lg font-bold">
                 2
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Set Your Rates</h3>
-              <p className="text-gray-600 dark:text-gray-300">Choose your compensation model and customize rates for different services and clients</p>
+              <p style={{color: '#4B5563 !important'}}>Choose your compensation model and customize rates for different services and clients</p>
             </div>
             <div className="text-center">
               <div className="bg-slate-700 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-lg font-bold">
                 3
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Start Earning</h3>
-              <p className="text-gray-600 dark:text-gray-300">Track appointments, see real-time earnings, and get paid automatically on your schedule</p>
+              <p style={{color: '#4B5563 !important'}}>Track appointments, see real-time earnings, and get paid automatically on your schedule</p>
             </div>
           </div>
         </div>
