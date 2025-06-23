@@ -308,7 +308,7 @@ async def get_appointments(
         query.options(
             joinedload(Appointment.barber).joinedload(Barber.user),
             joinedload(Appointment.client),
-            joinedload(Appointment.barber).joinedload(Barber.location)
+            joinedload(Appointment.barber).joinedload(Barber.location),
         )
         .order_by(Appointment.appointment_date.desc())
         .offset(skip)
@@ -336,11 +336,17 @@ async def get_appointments(
                     f"{barber.first_name} {barber.last_name}" if barber else "Unknown"
                 ),
                 client_id=appointment.client_id,
-                client_name=appointment.client.full_name if appointment.client else "Unknown",
+                client_name=(
+                    appointment.client.full_name if appointment.client else "Unknown"
+                ),
                 client_email=appointment.client.email if appointment.client else None,
                 client_phone=appointment.client.phone if appointment.client else None,
                 appointment_date=appointment.appointment_date,
-                appointment_time=appointment.appointment_time.time() if appointment.appointment_time else None,
+                appointment_time=(
+                    appointment.appointment_time.time()
+                    if appointment.appointment_time
+                    else None
+                ),
                 status=appointment.status,
                 service_name=appointment.service_name,
                 service_duration=appointment.duration_minutes,
@@ -495,8 +501,10 @@ async def create_appointment(
     if appointment_data.send_confirmation:
         notification_service = NotificationService()
         await notification_service.send_appointment_notification(
-            db, new_appointment.barber_id, "appointment_confirmation", 
-            {"appointment_id": new_appointment.id, "client_email": client.email}
+            db,
+            new_appointment.barber_id,
+            "appointment_confirmation",
+            {"appointment_id": new_appointment.id, "client_email": client.email},
         )
 
     return AppointmentResponse(
@@ -508,7 +516,11 @@ async def create_appointment(
         client_email=client.email,
         client_phone=client.phone,
         appointment_date=new_appointment.appointment_date,
-        appointment_time=new_appointment.appointment_time.time() if new_appointment.appointment_time else None,
+        appointment_time=(
+            new_appointment.appointment_time.time()
+            if new_appointment.appointment_time
+            else None
+        ),
         status=new_appointment.status,
         service_name=new_appointment.service_name,
         service_duration=new_appointment.duration_minutes,
@@ -536,7 +548,7 @@ async def get_appointment(
         .options(
             joinedload(Appointment.barber).joinedload(Barber.user),
             joinedload(Appointment.client),
-            joinedload(Appointment.barber).joinedload(Barber.location)
+            joinedload(Appointment.barber).joinedload(Barber.location),
         )
         .filter(Appointment.id == appointment_id)
         .first()
@@ -585,7 +597,11 @@ async def get_appointment(
         client_email=appointment.client.email if appointment.client else None,
         client_phone=appointment.client.phone if appointment.client else None,
         appointment_date=appointment.appointment_date,
-        appointment_time=appointment.appointment_time.time() if appointment.appointment_time else None,
+        appointment_time=(
+            appointment.appointment_time.time()
+            if appointment.appointment_time
+            else None
+        ),
         status=appointment.status,
         service_name=appointment.service_name,
         service_duration=appointment.duration_minutes,
@@ -614,7 +630,7 @@ async def update_appointment(
         .options(
             joinedload(Appointment.barber).joinedload(Barber.user),
             joinedload(Appointment.client),
-            joinedload(Appointment.barber).joinedload(Barber.location)
+            joinedload(Appointment.barber).joinedload(Barber.location),
         )
         .filter(Appointment.id == appointment_id)
         .first()
@@ -697,7 +713,11 @@ async def update_appointment(
         client_email=appointment.client.email if appointment.client else None,
         client_phone=appointment.client.phone if appointment.client else None,
         appointment_date=appointment.appointment_date,
-        appointment_time=appointment.appointment_time.time() if appointment.appointment_time else None,
+        appointment_time=(
+            appointment.appointment_time.time()
+            if appointment.appointment_time
+            else None
+        ),
         status=appointment.status,
         service_name=appointment.service_name,
         service_duration=appointment.duration_minutes,
@@ -724,7 +744,7 @@ async def cancel_appointment(
         db.query(Appointment)
         .options(
             joinedload(Appointment.barber).joinedload(Barber.user),
-            joinedload(Appointment.client)
+            joinedload(Appointment.client),
         )
         .filter(Appointment.id == appointment_id)
         .first()
@@ -784,8 +804,13 @@ async def cancel_appointment(
     if appointment.client and appointment.client.email:
         notification_service = NotificationService()
         await notification_service.send_appointment_notification(
-            db, appointment.barber_id, "appointment_cancellation", 
-            {"appointment_id": appointment.id, "client_email": appointment.client.email}
+            db,
+            appointment.barber_id,
+            "appointment_cancellation",
+            {
+                "appointment_id": appointment.id,
+                "client_email": appointment.client.email,
+            },
         )
 
     return {"message": "Appointment cancelled successfully"}
@@ -875,7 +900,7 @@ async def get_calendar_appointments(
     query = db.query(Appointment).options(
         joinedload(Appointment.barber).joinedload(Barber.user),
         joinedload(Appointment.barber).joinedload(Barber.location),
-        joinedload(Appointment.client)
+        joinedload(Appointment.client),
     )
 
     # Date range filter
@@ -983,28 +1008,31 @@ async def get_calendar_appointments(
 async def get_multi_barber_availability(
     date: date = Query(..., description="Date to check availability"),
     barber_ids: str = Query(..., description="Comma-separated barber IDs"),
-    service_id: Optional[int] = Query(None, description="Service ID for duration check"),
+    service_id: Optional[int] = Query(
+        None, description="Service ID for duration check"
+    ),
     timezone: str = Query("America/New_York", description="Timezone for slots"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """Get availability for multiple barbers on a specific date"""
     try:
-        barber_id_list = [int(bid.strip()) for bid in barber_ids.split(',') if bid.strip()]
+        barber_id_list = [
+            int(bid.strip()) for bid in barber_ids.split(",") if bid.strip()
+        ]
     except ValueError:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid barber IDs format"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid barber IDs format"
         )
 
     if not barber_id_list:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="At least one barber ID is required"
+            detail="At least one barber ID is required",
         )
 
     availability_results = {}
-    
+
     for barber_id in barber_id_list:
         try:
             # Get individual barber availability
@@ -1014,7 +1042,7 @@ async def get_multi_barber_availability(
                 service_id=service_id,
                 timezone=timezone,
                 current_user=current_user,
-                db=db
+                db=db,
             )
             availability_results[str(barber_id)] = slots_response
         except HTTPException:
@@ -1028,7 +1056,7 @@ async def get_multi_barber_availability(
         "date": date.isoformat(),
         "timezone": timezone,
         "barber_availability": availability_results,
-        "total_barbers": len(availability_results)
+        "total_barbers": len(availability_results),
     }
 
 
@@ -1328,7 +1356,7 @@ async def get_appointment_details(
         .options(
             joinedload(Appointment.barber).joinedload(Barber.user),
             joinedload(Appointment.client),
-            joinedload(Appointment.barber).joinedload(Barber.location)
+            joinedload(Appointment.barber).joinedload(Barber.location),
         )
         .filter(Appointment.id == appointment_id)
         .first()
@@ -1369,9 +1397,7 @@ async def get_appointment_details(
         # Get all appointments for this client with optimized query
         client_appointments = (
             db.query(Appointment)
-            .options(
-                joinedload(Appointment.barber).joinedload(Barber.user)
-            )
+            .options(joinedload(Appointment.barber).joinedload(Barber.user))
             .filter(
                 Appointment.client_id == appointment.client_id,
                 Appointment.status.in_(["completed", "no_show"]),
@@ -1436,7 +1462,11 @@ async def get_appointment_details(
         client_email=appointment.client.email if appointment.client else None,
         client_phone=appointment.client.phone if appointment.client else None,
         appointment_date=appointment.appointment_date,
-        appointment_time=appointment.appointment_time.time() if appointment.appointment_time else None,
+        appointment_time=(
+            appointment.appointment_time.time()
+            if appointment.appointment_time
+            else None
+        ),
         status=appointment.status,
         service_name=appointment.service_name,
         service_duration=appointment.duration_minutes,
@@ -1937,24 +1967,32 @@ async def check_appointment_conflicts(
 ):
     """Check for appointment conflicts with enhanced conflict detection"""
     try:
-        barber_id = conflict_request.get("barberId") or conflict_request.get("barber_id")
-        service_id = conflict_request.get("serviceId") or conflict_request.get("service_id", 1)
-        appointment_date = conflict_request.get("date") or conflict_request.get("appointment_date")
-        appointment_time = conflict_request.get("time") or conflict_request.get("appointment_time")
+        barber_id = conflict_request.get("barberId") or conflict_request.get(
+            "barber_id"
+        )
+        service_id = conflict_request.get("serviceId") or conflict_request.get(
+            "service_id", 1
+        )
+        appointment_date = conflict_request.get("date") or conflict_request.get(
+            "appointment_date"
+        )
+        appointment_time = conflict_request.get("time") or conflict_request.get(
+            "appointment_time"
+        )
         duration = conflict_request.get("duration", 60)
-        
+
         if not all([barber_id, appointment_date, appointment_time]):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Missing required fields: barberId, date, time"
+                detail="Missing required fields: barberId, date, time",
             )
 
         # Parse the date and time
         if isinstance(appointment_date, str):
             appointment_date = date.fromisoformat(appointment_date)
-        
+
         if isinstance(appointment_time, str):
-            time_parts = appointment_time.split(':')
+            time_parts = appointment_time.split(":")
             appointment_time = time(int(time_parts[0]), int(time_parts[1]))
 
         # Verify barber exists
@@ -1962,15 +2000,17 @@ async def check_appointment_conflicts(
         if not barber:
             return {
                 "has_conflicts": True,
-                "conflicts": [{"type": "barber_not_found", "message": "Barber not found"}]
+                "conflicts": [
+                    {"type": "barber_not_found", "message": "Barber not found"}
+                ],
             }
 
         conflicts = []
-        
+
         # Check for existing appointments
         appointment_datetime = datetime.combine(appointment_date, appointment_time)
         end_datetime = appointment_datetime + timedelta(minutes=duration)
-        
+
         existing_appointments = (
             db.query(Appointment)
             .filter(
@@ -1983,18 +2023,27 @@ async def check_appointment_conflicts(
 
         for existing in existing_appointments:
             if existing.appointment_time:
-                existing_start = datetime.combine(appointment_date, existing.appointment_time)
-                existing_end = existing_start + timedelta(minutes=existing.service_duration or 60)
-                
+                existing_start = datetime.combine(
+                    appointment_date, existing.appointment_time
+                )
+                existing_end = existing_start + timedelta(
+                    minutes=existing.service_duration or 60
+                )
+
                 # Check for overlap
-                if not (end_datetime <= existing_start or appointment_datetime >= existing_end):
-                    conflicts.append({
-                        "type": "appointment_overlap",
-                        "message": f"Conflicts with existing appointment at {existing.appointment_time}",
-                        "appointment_id": existing.id,
-                        "existing_time": str(existing.appointment_time),
-                        "existing_client": existing.client_name
-                    })
+                if not (
+                    end_datetime <= existing_start
+                    or appointment_datetime >= existing_end
+                ):
+                    conflicts.append(
+                        {
+                            "type": "appointment_overlap",
+                            "message": f"Conflicts with existing appointment at {existing.appointment_time}",
+                            "appointment_id": existing.id,
+                            "existing_time": str(existing.appointment_time),
+                            "existing_client": existing.client_name,
+                        }
+                    )
 
         # Check barber availability
         day_of_week = appointment_date.weekday()
@@ -2021,31 +2070,41 @@ async def check_appointment_conflicts(
         )
 
         if not availability:
-            conflicts.append({
-                "type": "barber_unavailable",
-                "message": f"Barber is not available on {appointment_date.strftime('%A')}s"
-            })
+            conflicts.append(
+                {
+                    "type": "barber_unavailable",
+                    "message": f"Barber is not available on {appointment_date.strftime('%A')}s",
+                }
+            )
         else:
             # Check if time is within working hours
             work_start = datetime.combine(appointment_date, availability.start_time)
             work_end = datetime.combine(appointment_date, availability.end_time)
-            
+
             if appointment_datetime < work_start or end_datetime > work_end:
-                conflicts.append({
-                    "type": "outside_working_hours",
-                    "message": f"Appointment time is outside working hours ({availability.start_time} - {availability.end_time})"
-                })
-            
+                conflicts.append(
+                    {
+                        "type": "outside_working_hours",
+                        "message": f"Appointment time is outside working hours ({availability.start_time} - {availability.end_time})",
+                    }
+                )
+
             # Check break times
             if availability.break_start and availability.break_end:
-                break_start = datetime.combine(appointment_date, availability.break_start)
+                break_start = datetime.combine(
+                    appointment_date, availability.break_start
+                )
                 break_end = datetime.combine(appointment_date, availability.break_end)
-                
-                if not (end_datetime <= break_start or appointment_datetime >= break_end):
-                    conflicts.append({
-                        "type": "break_time_conflict",
-                        "message": f"Appointment conflicts with break time ({availability.break_start} - {availability.break_end})"
-                    })
+
+                if not (
+                    end_datetime <= break_start or appointment_datetime >= break_end
+                ):
+                    conflicts.append(
+                        {
+                            "type": "break_time_conflict",
+                            "message": f"Appointment conflicts with break time ({availability.break_start} - {availability.break_end})",
+                        }
+                    )
 
         # Check blocked slots
         blocked_slots = (
@@ -2061,12 +2120,16 @@ async def check_appointment_conflicts(
         for blocked in blocked_slots:
             blocked_start = datetime.combine(appointment_date, blocked.start_time)
             blocked_end = datetime.combine(appointment_date, blocked.end_time)
-            
-            if not (end_datetime <= blocked_start or appointment_datetime >= blocked_end):
-                conflicts.append({
-                    "type": "time_blocked",
-                    "message": f"Time slot is blocked: {blocked.block_reason or 'No reason specified'}"
-                })
+
+            if not (
+                end_datetime <= blocked_start or appointment_datetime >= blocked_end
+            ):
+                conflicts.append(
+                    {
+                        "type": "time_blocked",
+                        "message": f"Time slot is blocked: {blocked.block_reason or 'No reason specified'}",
+                    }
+                )
 
         # Check booking rules (advance booking requirements, etc.)
         if service_id:
@@ -2088,12 +2151,14 @@ async def check_appointment_conflicts(
                     params = rule.parameters
                     min_hours = params.get("min_hours", 0)
                     min_booking_time = datetime.now() + timedelta(hours=min_hours)
-                    
+
                     if appointment_datetime < min_booking_time:
-                        conflicts.append({
-                            "type": "advance_booking_required",
-                            "message": f"Must book at least {min_hours} hours in advance"
-                        })
+                        conflicts.append(
+                            {
+                                "type": "advance_booking_required",
+                                "message": f"Must book at least {min_hours} hours in advance",
+                            }
+                        )
 
         # Suggest alternative slots if conflicts exist
         alternatives = []
@@ -2106,14 +2171,14 @@ async def check_appointment_conflicts(
         return {
             "has_conflicts": len(conflicts) > 0,
             "conflicts": conflicts,
-            "suggested_alternatives": alternatives
+            "suggested_alternatives": alternatives,
         }
 
     except Exception as e:
         logger.error(f"Error checking conflicts: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error checking conflicts: {str(e)}"
+            detail=f"Error checking conflicts: {str(e)}",
         )
 
 
@@ -2123,15 +2188,15 @@ async def get_alternative_slots(
     preferred_date: date,
     duration: int,
     service_id: Optional[int] = None,
-    max_suggestions: int = 5
+    max_suggestions: int = 5,
 ) -> List[Dict[str, Any]]:
     """Get alternative time slots for appointment booking"""
     alternatives = []
-    
+
     # Check current day and next 7 days
     for days_ahead in range(8):
         check_date = preferred_date + timedelta(days=days_ahead)
-        
+
         # Get availability for this date
         try:
             day_of_week = check_date.weekday()
@@ -2156,10 +2221,10 @@ async def get_alternative_slots(
                 )
                 .first()
             )
-            
+
             if not availability:
                 continue
-                
+
             # Get existing appointments for this date
             existing_appointments = (
                 db.query(Appointment)
@@ -2170,53 +2235,57 @@ async def get_alternative_slots(
                 )
                 .all()
             )
-            
+
             # Generate time slots
             start_time = datetime.combine(check_date, availability.start_time)
             end_time = datetime.combine(check_date, availability.end_time)
             slot_duration = timedelta(minutes=30)  # 30-minute increments
-            
+
             current_slot = start_time
             while current_slot + timedelta(minutes=duration) <= end_time:
                 slot_end = current_slot + timedelta(minutes=duration)
-                
+
                 # Check if slot is available
                 is_available = True
-                
+
                 # Check against existing appointments
                 for apt in existing_appointments:
                     if apt.appointment_time:
                         apt_start = datetime.combine(check_date, apt.appointment_time)
-                        apt_end = apt_start + timedelta(minutes=apt.service_duration or 60)
-                        
+                        apt_end = apt_start + timedelta(
+                            minutes=apt.service_duration or 60
+                        )
+
                         if not (slot_end <= apt_start or current_slot >= apt_end):
                             is_available = False
                             break
-                
+
                 # Check break times
                 if is_available and availability.break_start and availability.break_end:
                     break_start = datetime.combine(check_date, availability.break_start)
                     break_end = datetime.combine(check_date, availability.break_end)
-                    
+
                     if not (slot_end <= break_start or current_slot >= break_end):
                         is_available = False
-                
+
                 if is_available:
-                    alternatives.append({
-                        "date": check_date.isoformat(),
-                        "time": current_slot.time().strftime("%H:%M"),
-                        "barber_id": barber_id,
-                        "day_name": check_date.strftime("%A"),
-                        "score": 100 - (days_ahead * 10)  # Prefer sooner dates
-                    })
-                    
+                    alternatives.append(
+                        {
+                            "date": check_date.isoformat(),
+                            "time": current_slot.time().strftime("%H:%M"),
+                            "barber_id": barber_id,
+                            "day_name": check_date.strftime("%A"),
+                            "score": 100 - (days_ahead * 10),  # Prefer sooner dates
+                        }
+                    )
+
                     if len(alternatives) >= max_suggestions:
                         return alternatives
-                
+
                 current_slot += slot_duration
-                
+
         except Exception as e:
             logger.warning(f"Error getting alternatives for {check_date}: {e}")
             continue
-    
+
     return alternatives

@@ -87,7 +87,7 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
   const pathname = usePathname()
   const { theme, toggleTheme } = useTheme()
   const [isCollapsed, setIsCollapsed] = useState(false)
-  
+
   // Debug: Log when component mounts
   useEffect(() => {
     console.log('DemoModernSidebar mounted, theme:', theme)
@@ -115,12 +115,12 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
   }
 
   return (
-    <aside 
+    <aside
       className={`h-screen flex flex-col transition-all duration-300 flex-shrink-0 sticky top-0 left-0 ${
         isCollapsed ? 'w-20' : 'w-72'
       } ${theme === 'dark' ? 'sidebar-dark' : 'sidebar-light'}`}
-      style={{ 
-        minHeight: '100vh', 
+      style={{
+        minHeight: '100vh',
         zIndex: 10,
         backgroundColor: theme === 'dark' ? '#0f172a' : '#ffffff',
         borderRight: theme === 'dark' ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
@@ -131,7 +131,7 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
         <div className="flex items-center justify-between">
           {!isCollapsed && (
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-teal-600 to-teal-700 rounded-lg flex items-center justify-center">
                 <BanknotesIcon className="h-6 w-6 text-white" />
               </div>
               <div>
@@ -147,7 +147,7 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
 
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className={`p-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 ${
+            className={`p-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2 ${
               theme === 'dark'
                 ? 'text-gray-400 hover:text-white hover:bg-white/5 focus:ring-offset-slate-900'
                 : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 focus:ring-offset-white'
@@ -167,8 +167,8 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
         <div className="flex items-center space-x-3">
           <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${
             theme === 'dark'
-              ? 'bg-violet-600 text-white'
-              : 'bg-violet-100 text-violet-700'
+              ? 'bg-teal-600 text-white'
+              : 'bg-teal-100 text-teal-700'
           }`}>
             {getUserInitials(demoUser.first_name, demoUser.last_name)}
           </div>
@@ -198,8 +198,8 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
               className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 group ${
                 isActive
                   ? theme === 'dark'
-                    ? 'bg-violet-600 text-white'
-                    : 'bg-violet-100 text-violet-700'
+                    ? 'bg-teal-600 text-white'
+                    : 'bg-teal-100 text-teal-700'
                   : theme === 'dark'
                     ? 'text-gray-300 hover:text-white hover:bg-white/5'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
@@ -212,7 +212,7 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
                   <p className="font-medium truncate">{item.name}</p>
                   <p className={`text-xs truncate ${
                     isActive
-                      ? theme === 'dark' ? 'text-violet-200' : 'text-violet-600'
+                      ? theme === 'dark' ? 'text-teal-200' : 'text-teal-600'
                       : theme === 'dark' ? 'text-gray-400 group-hover:text-gray-300' : 'text-gray-500'
                   }`}>
                     {item.description}
@@ -232,7 +232,7 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
           className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 w-full border-2 ${
             theme === 'dark'
               ? 'text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/10 border-yellow-500/30 hover:border-yellow-400/50'
-              : 'text-purple-600 hover:text-purple-700 hover:bg-purple-50 border-purple-200 hover:border-purple-300'
+              : 'text-teal-600 hover:text-teal-700 hover:bg-teal-50 border-teal-200 hover:border-teal-300'
           }`}
           title={isCollapsed ? 'Toggle Theme' : undefined}
         >
@@ -246,7 +246,7 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
               <p className="font-semibold">
                 {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
               </p>
-              <p className={`text-xs ${theme === 'dark' ? 'text-yellow-300' : 'text-purple-500'}`}>
+              <p className={`text-xs ${theme === 'dark' ? 'text-yellow-300' : 'text-teal-500'}`}>
                 Switch theme
               </p>
             </div>
@@ -268,7 +268,7 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
               </p>
             </div>
           )}
-          <div className="w-2 h-2 bg-violet-500 rounded-full flex-shrink-0"></div>
+          <div className="w-2 h-2 bg-teal-500 rounded-full flex-shrink-0"></div>
         </button>
 
         {/* Settings */}
@@ -277,8 +277,8 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
           className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 ${
             pathname === '/app/settings'
               ? theme === 'dark'
-                ? 'bg-violet-600 text-white'
-                : 'bg-violet-100 text-violet-700'
+                ? 'bg-teal-600 text-white'
+                : 'bg-teal-100 text-teal-700'
               : theme === 'dark'
                 ? 'text-gray-300 hover:text-white hover:bg-white/5'
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'

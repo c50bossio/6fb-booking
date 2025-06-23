@@ -145,7 +145,7 @@ export default function AppointmentsPage() {
   const getStatusBadge = (status: string) => {
     const badges = {
       scheduled: 'bg-blue-100 text-blue-800',
-      confirmed: 'bg-violet-100 text-violet-800',
+      confirmed: 'bg-slate-100 text-slate-800',
       completed: 'bg-emerald-100 text-emerald-800',
       pending: 'bg-amber-100 text-amber-800',
       cancelled: 'bg-red-100 text-red-800'
@@ -219,7 +219,7 @@ export default function AppointmentsPage() {
           </div>
           <button
             onClick={() => router.push('/dashboard/appointments/new')}
-            className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors flex items-center space-x-2"
+            className="px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors flex items-center space-x-2"
           >
             <PlusIcon className="h-4 w-4" />
             <span>New Appointment</span>
@@ -237,7 +237,7 @@ export default function AppointmentsPage() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search appointments..."
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
               />
             </div>
 
@@ -245,7 +245,7 @@ export default function AppointmentsPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
             >
               <option value="all">All Statuses</option>
               <option value="scheduled">Scheduled</option>
@@ -259,7 +259,7 @@ export default function AppointmentsPage() {
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
             >
               <option value="all">All Dates</option>
               <option value="today">Today</option>
@@ -297,7 +297,7 @@ export default function AppointmentsPage() {
               </p>
               <button
                 onClick={() => router.push('/dashboard/appointments/new')}
-                className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors"
+                className="px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors"
               >
                 Create Appointment
               </button>
@@ -368,21 +368,21 @@ export default function AppointmentsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
-                          <button 
+                          <button
                             onClick={() => router.push(`/dashboard/appointments/${appointment.id}`)}
                             className="text-gray-400 hover:text-gray-600"
                             title="View details"
                           >
                             <EyeIcon className="h-4 w-4" />
                           </button>
-                          <button 
+                          <button
                             onClick={() => router.push(`/dashboard/appointments/${appointment.id}/edit`)}
                             className="text-gray-400 hover:text-gray-600"
                             title="Edit appointment"
                           >
                             <PencilIcon className="h-4 w-4" />
                           </button>
-                          <button 
+                          <button
                             onClick={() => handleDelete(appointment.id)}
                             className="text-gray-400 hover:text-red-600"
                             title="Cancel appointment"
@@ -404,7 +404,7 @@ export default function AppointmentsPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <div className="flex items-center">
-                <CalendarIcon className="h-8 w-8 text-violet-600" />
+                <CalendarIcon className="h-8 w-8 text-slate-600" />
                 <div className="ml-3">
                   <p className="text-sm font-medium text-gray-500">Total</p>
                   <p className="text-lg font-semibold text-gray-900">

@@ -37,11 +37,11 @@ interface BookingForm {
 export default function BookingPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  
+
   // Check if specific barber or location is pre-selected
   const preselectedBarberId = searchParams.get('barber')
   const preselectedLocationId = searchParams.get('location')
-  
+
   const [currentStep, setCurrentStep] = useState<BookingStep>('location')
   const [loading, setLoading] = useState(false)
   const [locations, setLocations] = useState<Location[]>([])
@@ -53,7 +53,7 @@ export default function BookingPage() {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [bookingConfirmation, setBookingConfirmation] = useState<any>(null)
-  
+
   const [form, setForm] = useState<BookingForm>({
     location_id: preselectedLocationId ? parseInt(preselectedLocationId) : null,
     service_id: null,
@@ -109,7 +109,7 @@ export default function BookingPage() {
     try {
       const response = await locationsService.getLocations({ is_active: true })
       setLocations(response.data)
-      
+
       // Auto-select if only one location
       if (response.data.length === 1) {
         setForm(prev => ({ ...prev, location_id: response.data[0].id }))
@@ -126,7 +126,7 @@ export default function BookingPage() {
       const params: any = { is_active: true }
       if (form.location_id) params.location_id = form.location_id
       if (form.barber_id) params.barber_id = form.barber_id
-      
+
       const response = await servicesService.getServices(params)
       setServices(response.data)
     } catch (error) {
@@ -144,11 +144,13 @@ export default function BookingPage() {
         service_id: form.service_id!,
         is_active: true
       })
-      setBarbers(response.data)
-      
+      // Handle both paginated response and direct array response (for mock data)
+      const barbersData = Array.isArray(response) ? response : (response?.data || [])
+      setBarbers(Array.isArray(barbersData) ? barbersData : [])
+
       // If pre-selected barber, find and select them
-      if (preselectedBarberId) {
-        const barber = response.data.find(b => b.id === parseInt(preselectedBarberId))
+      if (preselectedBarberId && Array.isArray(barbersData)) {
+        const barber = barbersData.find(b => b.id === parseInt(preselectedBarberId))
         if (barber) {
           setSelectedBarber(barber)
           setForm(prev => ({ ...prev, barber_id: barber.id }))
@@ -156,6 +158,7 @@ export default function BookingPage() {
       }
     } catch (error) {
       console.error('Failed to load barbers:', error)
+      setBarbers([])
     } finally {
       setLoading(false)
     }
@@ -163,7 +166,7 @@ export default function BookingPage() {
 
   const checkAvailability = async () => {
     if (!form.barber_id || !form.date || !selectedService) return
-    
+
     setLoading(true)
     try {
       const response = await barbersService.getAvailability(
@@ -173,7 +176,7 @@ export default function BookingPage() {
         form.service_id!,
         selectedService.duration_minutes
       )
-      
+
       const slots = response.data[form.date] || []
       setAvailableSlots(slots)
     } catch (error) {
@@ -215,7 +218,7 @@ export default function BookingPage() {
       }
 
       const response = await bookingService.createBooking(bookingData)
-      
+
       // Prepare confirmation data
       setBookingConfirmation({
         ...response.data,
@@ -225,7 +228,7 @@ export default function BookingPage() {
         price: selectedService?.base_price,
         location: selectedLocation
       })
-      
+
       setShowConfirmation(true)
     } catch (error: any) {
       console.error('Failed to create booking:', error)
@@ -241,7 +244,7 @@ export default function BookingPage() {
         return (
           <div className="space-y-4">
             <h2 className="text-xl font-semibold text-gray-900">Select Location</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               {locations.map((location) => (
                 <button
                   key={location.id}
@@ -251,9 +254,9 @@ export default function BookingPage() {
                     handleNext()
                   }}
                   className={`p-4 rounded-lg border-2 transition-all text-left
-                    ${form.location_id === location.id 
-                      ? 'border-violet-600 bg-violet-50' 
-                      : 'border-gray-300 hover:border-violet-300'}`}
+                    ${form.location_id === location.id
+                      ? 'border-slate-700 bg-slate-50'
+                      : 'border-gray-300 hover:border-slate-400'}`}
                 >
                   <h3 className="font-medium text-gray-900">{location.name}</h3>
                   <p className="text-sm text-gray-600 mt-1">
@@ -284,7 +287,7 @@ export default function BookingPage() {
             {selectedService && (
               <button
                 onClick={handleNext}
-                className="w-full mt-4 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors"
+                className="w-full mt-4 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors"
               >
                 Continue
               </button>
@@ -296,7 +299,7 @@ export default function BookingPage() {
         return (
           <div className="space-y-4">
             <h2 className="text-xl font-semibold text-gray-900">Select Barber</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               {barbers.map((barber) => (
                 <button
                   key={barber.id}
@@ -306,9 +309,9 @@ export default function BookingPage() {
                     handleNext()
                   }}
                   className={`p-4 rounded-lg border-2 transition-all text-left
-                    ${form.barber_id === barber.id 
-                      ? 'border-violet-600 bg-violet-50' 
-                      : 'border-gray-300 hover:border-violet-300'}`}
+                    ${form.barber_id === barber.id
+                      ? 'border-slate-700 bg-slate-50'
+                      : 'border-gray-300 hover:border-slate-400'}`}
                 >
                   <h3 className="font-medium text-gray-900">
                     {barber.first_name} {barber.last_name}
@@ -331,7 +334,7 @@ export default function BookingPage() {
         return (
           <div className="space-y-4">
             <h2 className="text-xl font-semibold text-gray-900">Select Date & Time</h2>
-            
+
             {/* Date Selector */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
@@ -340,7 +343,7 @@ export default function BookingPage() {
                 value={form.date}
                 onChange={(e) => setForm(prev => ({ ...prev, date: e.target.value }))}
                 min={new Date().toISOString().split('T')[0]}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
               />
             </div>
 
@@ -364,7 +367,7 @@ export default function BookingPage() {
             {form.time && (
               <button
                 onClick={handleNext}
-                className="w-full mt-4 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors"
+                className="w-full mt-4 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors"
               >
                 Continue
               </button>
@@ -376,7 +379,7 @@ export default function BookingPage() {
         return (
           <div className="space-y-4">
             <h2 className="text-xl font-semibold text-gray-900">Your Details</h2>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Full Name *
@@ -386,7 +389,7 @@ export default function BookingPage() {
                 required
                 value={form.client_name}
                 onChange={(e) => setForm(prev => ({ ...prev, client_name: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
                 placeholder="John Smith"
               />
             </div>
@@ -400,7 +403,7 @@ export default function BookingPage() {
                 required
                 value={form.client_email}
                 onChange={(e) => setForm(prev => ({ ...prev, client_email: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
                 placeholder="john@example.com"
               />
             </div>
@@ -413,7 +416,7 @@ export default function BookingPage() {
                 type="tel"
                 value={form.client_phone}
                 onChange={(e) => setForm(prev => ({ ...prev, client_phone: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
                 placeholder="(555) 123-4567"
               />
             </div>
@@ -426,7 +429,7 @@ export default function BookingPage() {
                 value={form.notes}
                 onChange={(e) => setForm(prev => ({ ...prev, notes: e.target.value }))}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
                 placeholder="Any special requests or notes..."
               />
             </div>
@@ -434,7 +437,7 @@ export default function BookingPage() {
             <button
               onClick={handleNext}
               disabled={!form.client_name || !form.client_email}
-              className="w-full mt-4 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full mt-4 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Review Booking
             </button>
@@ -445,7 +448,7 @@ export default function BookingPage() {
         return (
           <div className="space-y-4">
             <h2 className="text-xl font-semibold text-gray-900">Confirm Your Booking</h2>
-            
+
             <div className="bg-gray-50 rounded-lg p-6 space-y-4">
               <div>
                 <p className="text-sm text-gray-600">Service</p>
@@ -496,7 +499,7 @@ export default function BookingPage() {
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="w-full px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+              className="w-full px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
             >
               {loading ? (
                 <>
@@ -514,7 +517,7 @@ export default function BookingPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-3xl mx-auto px-4 py-8">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Book Your Appointment</h1>
@@ -522,33 +525,33 @@ export default function BookingPage() {
         </div>
 
         {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center justify-between overflow-x-auto pb-2">
             {steps.map((step, index) => {
               const stepIndex = steps.findIndex(s => s.key === currentStep)
               const isActive = index <= stepIndex
               const Icon = step.icon
-              
+
               return (
                 <div key={step.key} className="flex items-center flex-1">
                   <div className="relative">
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors
-                        ${isActive 
-                          ? 'bg-violet-600 border-violet-600 text-white' 
+                        ${isActive
+                          ? 'bg-slate-700 border-slate-700 text-white'
                           : 'bg-white border-gray-300 text-gray-400'}`}
                     >
                       <Icon className="h-5 w-5" />
                     </div>
                     <p className={`absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs whitespace-nowrap
-                      ${isActive ? 'text-violet-600 font-medium' : 'text-gray-400'}`}>
+                      ${isActive ? 'text-slate-700 font-medium' : 'text-gray-400'}`}>
                       {step.label}
                     </p>
                   </div>
                   {index < steps.length - 1 && (
                     <div
                       className={`flex-1 h-0.5 mx-2 transition-colors
-                        ${index < stepIndex ? 'bg-violet-600' : 'bg-gray-300'}`}
+                        ${index < stepIndex ? 'bg-slate-700' : 'bg-gray-300'}`}
                     />
                   )}
                 </div>
@@ -558,7 +561,7 @@ export default function BookingPage() {
         </div>
 
         {/* Content */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-12">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 mt-8 sm:mt-12">
           {getStepContent()}
 
           {/* Navigation */}

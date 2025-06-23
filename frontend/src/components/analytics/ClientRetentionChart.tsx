@@ -83,7 +83,7 @@ export function ClientRetentionChart({ data }: ClientRetentionChartProps) {
             <div>
               <p className="text-sm text-gray-600">Avg LTV</p>
               <p className="text-2xl font-bold">${retentionMetrics.lifetimeValue}</p>
-              <p className="text-xs text-purple-600 mt-1">Per client</p>
+              <p className="text-xs text-slate-600 mt-1">Per client</p>
             </div>
             <TrendingUp className="h-8 w-8 text-gray-400" />
           </div>
@@ -160,7 +160,7 @@ export function ClientRetentionChart({ data }: ClientRetentionChartProps) {
               <XAxis dataKey="frequency" stroke="#6b7280" fontSize={12} />
               <YAxis stroke="#6b7280" fontSize={12} />
               <Tooltip />
-              <Bar dataKey="clients" fill="#8b5cf6" name="Number of Clients" />
+              <Bar dataKey="clients" fill="#64748b" name="Number of Clients" />
             </BarChart>
           </ResponsiveContainer>
         </Card>

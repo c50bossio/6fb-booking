@@ -53,7 +53,7 @@ const serviceCategories: ServiceCategory[] = [
     name: 'Haircuts',
     description: 'Professional cuts and styling',
     icon: <ScissorsIcon className="h-5 w-5" />,
-    color: 'violet'
+    color: 'slate'
   },
   {
     id: 2,
@@ -245,7 +245,7 @@ export default function ServiceSelectionModal({
 
   const getCategoryColor = (categoryName: string) => {
     const category = serviceCategories.find(cat => cat.name === categoryName)
-    return category?.color || 'violet'
+    return category?.color || 'slate'
   }
 
   const getCategoryIcon = (categoryName: string) => {
@@ -274,8 +274,8 @@ export default function ServiceSelectionModal({
         className={`
           relative p-6 border-2 rounded-xl cursor-pointer transition-all duration-200 group
           ${isSelected
-            ? 'border-violet-500 bg-violet-50 shadow-lg'
-            : 'border-gray-200 hover:border-violet-300 hover:bg-violet-25 hover:shadow-md'
+            ? 'border-teal-500 bg-teal-50 shadow-lg'
+            : 'border-gray-200 hover:border-teal-300 hover:bg-teal-50 hover:shadow-md'
           }
         `}
       >
@@ -302,7 +302,7 @@ export default function ServiceSelectionModal({
             </div>
 
             {/* Service Name */}
-            <h3 className="text-lg font-semibold text-gray-900 mb-1 group-hover:text-violet-700 transition-colors">
+            <h3 className="text-lg font-semibold text-gray-900 mb-1 group-hover:text-teal-700 transition-colors">
               {service.name}
             </h3>
 
@@ -350,7 +350,7 @@ export default function ServiceSelectionModal({
           {/* Selection Indicator */}
           {isSelected && (
             <div className="ml-4">
-              <CheckCircleIcon className="h-6 w-6 text-violet-600" />
+              <CheckCircleIcon className="h-6 w-6 text-teal-600" />
             </div>
           )}
         </div>
@@ -387,7 +387,7 @@ export default function ServiceSelectionModal({
             className={`
               px-4 py-2 rounded-lg text-sm font-medium transition-colors
               ${!selectedCategoryId
-                ? 'bg-violet-100 text-violet-700 border-2 border-violet-200'
+                ? 'bg-slate-100 text-slate-700 border-2 border-slate-200'
                 : 'bg-gray-100 text-gray-700 border-2 border-transparent hover:bg-gray-200'
               }
             `}

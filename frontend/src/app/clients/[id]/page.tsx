@@ -80,7 +80,7 @@ export default function ClientProfilePage() {
   const router = useRouter()
   const params = useParams()
   const clientId = params.id as string
-  
+
   const [loading, setLoading] = useState(true)
   const [client, setClient] = useState<ClientDetails | null>(null)
   const [history, setHistory] = useState<ClientHistory | null>(null)
@@ -99,12 +99,12 @@ export default function ClientProfilePage() {
     try {
       const token = localStorage.getItem('access_token')
       const headers = { Authorization: `Bearer ${token}` }
-      
+
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/clients/${clientId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/clients/${clientId}`,
         { headers }
       )
-      
+
       setClient(response.data)
     } catch (error) {
       console.error('Failed to fetch client:', error)
@@ -142,12 +142,12 @@ export default function ClientProfilePage() {
     try {
       const token = localStorage.getItem('access_token')
       const headers = { Authorization: `Bearer ${token}` }
-      
+
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/clients/${clientId}/history`,
+        `${process.env.NEXT_PUBLIC_API_URL}/clients/${clientId}/history`,
         { headers }
       )
-      
+
       setHistory(response.data)
     } catch (error) {
       console.error('Failed to fetch client history:', error)
@@ -220,10 +220,10 @@ export default function ClientProfilePage() {
 
   const getCustomerTypeBadge = (type: string) => {
     const styles = {
-      new: 'bg-blue-100 text-blue-800 border-blue-200',
-      returning: 'bg-green-100 text-green-800 border-green-200',
-      vip: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      at_risk: 'bg-red-100 text-red-800 border-red-200'
+      new: 'bg-slate-100 text-slate-700 border-slate-200',
+      returning: 'bg-teal-50 text-teal-700 border-teal-200',
+      vip: 'bg-slate-200 text-slate-800 border-slate-300',
+      at_risk: 'bg-red-50 text-red-700 border-red-200'
     }
 
     const labels = {
@@ -244,11 +244,11 @@ export default function ClientProfilePage() {
     try {
       const token = localStorage.getItem('access_token')
       const headers = { Authorization: `Bearer ${token}` }
-      
+
       const newVipStatus = client?.customer_type !== 'vip'
-      
+
       await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/clients/${clientId}/vip-status`,
+        `${process.env.NEXT_PUBLIC_API_URL}/clients/${clientId}/vip-status`,
         {
           is_vip: newVipStatus,
           custom_rate: newVipStatus ? 10 : null, // 10% discount for VIP
@@ -260,7 +260,7 @@ export default function ClientProfilePage() {
         },
         { headers }
       )
-      
+
       alert(`Client ${newVipStatus ? 'marked as VIP' : 'VIP status removed'} successfully!`)
       fetchClientData()
     } catch (error) {
@@ -273,7 +273,7 @@ export default function ClientProfilePage() {
     return (
       <ModernLayout>
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600"></div>
         </div>
       </ModernLayout>
     )
@@ -286,7 +286,7 @@ export default function ClientProfilePage() {
           <h3 className="text-lg font-medium text-gray-900">Client not found</h3>
           <button
             onClick={() => router.push('/clients')}
-            className="mt-4 text-violet-600 hover:text-violet-700"
+            className="mt-4 text-slate-600 hover:text-slate-700"
           >
             Back to clients
           </button>
@@ -315,7 +315,7 @@ export default function ClientProfilePage() {
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-3">
             <button
               onClick={() => setIsMessageModalOpen(true)}
@@ -326,7 +326,7 @@ export default function ClientProfilePage() {
             </button>
             <button
               onClick={() => setIsEditModalOpen(true)}
-              className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg font-medium hover:from-violet-700 hover:to-purple-700 transition-all flex items-center space-x-2"
+              className="px-4 py-2 bg-slate-700 text-white rounded-lg font-medium hover:bg-slate-800 transition-colors flex items-center space-x-2"
             >
               <PencilIcon className="h-5 w-5" />
               <span>Edit Profile</span>
@@ -341,7 +341,7 @@ export default function ClientProfilePage() {
               onClick={() => setActiveTab('overview')}
               className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'overview'
-                  ? 'border-violet-600 text-violet-600'
+                  ? 'border-slate-600 text-slate-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -351,7 +351,7 @@ export default function ClientProfilePage() {
               onClick={() => setActiveTab('history')}
               className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'history'
-                  ? 'border-violet-600 text-violet-600'
+                  ? 'border-slate-600 text-slate-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -361,7 +361,7 @@ export default function ClientProfilePage() {
               onClick={() => setActiveTab('notes')}
               className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'notes'
-                  ? 'border-violet-600 text-violet-600'
+                  ? 'border-slate-600 text-slate-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -401,14 +401,14 @@ export default function ClientProfilePage() {
                   </div>
                 )}
               </div>
-              
+
               <div className="mt-6 pt-6 border-t border-gray-200">
                 <h4 className="text-sm font-medium text-gray-900 mb-3">Communication Preferences</h4>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">SMS</span>
                     {client.sms_enabled ? (
-                      <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                      <CheckCircleIcon className="h-5 w-5 text-teal-600" />
                     ) : (
                       <ExclamationCircleIcon className="h-5 w-5 text-gray-300" />
                     )}
@@ -416,7 +416,7 @@ export default function ClientProfilePage() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Email</span>
                     {client.email_enabled ? (
-                      <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                      <CheckCircleIcon className="h-5 w-5 text-teal-600" />
                     ) : (
                       <ExclamationCircleIcon className="h-5 w-5 text-gray-300" />
                     )}
@@ -424,7 +424,7 @@ export default function ClientProfilePage() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Marketing</span>
                     {client.marketing_enabled ? (
-                      <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                      <CheckCircleIcon className="h-5 w-5 text-teal-600" />
                     ) : (
                       <ExclamationCircleIcon className="h-5 w-5 text-gray-300" />
                     )}
@@ -443,7 +443,7 @@ export default function ClientProfilePage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Total Spent</p>
-                  <p className="text-2xl font-bold text-emerald-600">{formatCurrency(client.total_spent)}</p>
+                  <p className="text-2xl font-bold text-teal-700">{formatCurrency(client.total_spent)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Average Ticket</p>
@@ -456,7 +456,7 @@ export default function ClientProfilePage() {
                   </p>
                 </div>
               </div>
-              
+
               <div className="mt-6 pt-6 border-t border-gray-200">
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
@@ -481,7 +481,7 @@ export default function ClientProfilePage() {
               <div className="space-y-3">
                 <button
                   onClick={() => router.push(`/dashboard/appointments/new?client=${clientId}`)}
-                  className="w-full px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors"
+                  className="w-full px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors"
                 >
                   Book Appointment
                 </button>
@@ -498,7 +498,7 @@ export default function ClientProfilePage() {
                   </div>
                 )}
               </div>
-              
+
               {history?.average_rating && (
                 <div className="mt-6 pt-6 border-t border-gray-200">
                   <p className="text-sm text-gray-500 mb-2">Average Rating</p>
@@ -508,7 +508,7 @@ export default function ClientProfilePage() {
                         key={i}
                         className={`h-5 w-5 ${
                           i < Math.floor(history.average_rating || 0)
-                            ? 'text-yellow-400'
+                            ? 'text-slate-400'
                             : 'text-gray-200'
                         }`}
                       />
@@ -536,7 +536,7 @@ export default function ClientProfilePage() {
                 Appointment History ({history.total_appointments} total)
               </h3>
             </div>
-            
+
             {history.appointments.length === 0 ? (
               <div className="p-12 text-center">
                 <CalendarIcon className="mx-auto h-12 w-12 text-gray-400" />
@@ -583,16 +583,16 @@ export default function ClientProfilePage() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {appointment.barber}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-emerald-600">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-teal-700">
                           {formatCurrency(appointment.cost)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            appointment.status === 'completed' 
-                              ? 'bg-green-100 text-green-800'
+                            appointment.status === 'completed'
+                              ? 'bg-teal-50 text-teal-800'
                               : appointment.status === 'cancelled'
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-yellow-100 text-yellow-800'
+                              ? 'bg-red-50 text-red-700'
+                              : 'bg-slate-100 text-slate-700'
                           }`}>
                             {appointment.status}
                           </span>
@@ -603,7 +603,7 @@ export default function ClientProfilePage() {
                 </table>
               </div>
             )}
-            
+
             {history.services_breakdown && Object.keys(history.services_breakdown).length > 0 && (
               <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
                 <h4 className="text-sm font-medium text-gray-900 mb-3">Service Breakdown</h4>
@@ -632,7 +632,7 @@ export default function ClientProfilePage() {
                 <p className="text-sm text-gray-500">No notes added yet.</p>
               )}
             </div>
-            
+
             <div className="premium-card-modern p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Tags</h3>
               {client.tags && client.tags.length > 0 ? (

@@ -54,23 +54,23 @@ log "Bind Address: $BIND_ADDRESS"
 # Validate critical environment variables
 validate_environment() {
     log "Validating environment configuration..."
-    
+
     local errors=0
-    
+
     # Check required environment variables
     local required_vars=(
         "SECRET_KEY"
-        "JWT_SECRET_KEY" 
+        "JWT_SECRET_KEY"
         "DATABASE_URL"
     )
-    
+
     for var in "${required_vars[@]}"; do
         if [[ -z "${!var:-}" ]]; then
             error "Required environment variable $var is not set"
             ((errors++))
         fi
     done
-    
+
     # Validate database URL format
     if [[ -n "${DATABASE_URL:-}" ]]; then
         if [[ "$DATABASE_URL" == *"sqlite"* ]] && [[ "$ENVIRONMENT" == "production" ]]; then
@@ -78,24 +78,24 @@ validate_environment() {
             ((errors++))
         fi
     fi
-    
+
     # Check payment configuration for production
     if [[ "$ENVIRONMENT" == "production" ]]; then
         if [[ -z "${STRIPE_SECRET_KEY:-}" || -z "${STRIPE_PUBLISHABLE_KEY:-}" ]]; then
             warning "Payment processing not configured - some features may be disabled"
         fi
     fi
-    
+
     # Check email configuration
     if [[ -z "${SMTP_USERNAME:-}" && -z "${SENDGRID_API_KEY:-}" && -z "${MAILGUN_API_KEY:-}" ]]; then
         warning "No email service configured - email notifications will be disabled"
     fi
-    
+
     if [[ $errors -gt 0 ]]; then
         error "Environment validation failed with $errors errors"
         exit 1
     fi
-    
+
     success "Environment validation completed"
 }
 
@@ -104,10 +104,10 @@ validate_environment() {
 # ==============================================================================
 wait_for_database() {
     log "Waiting for database connection..."
-    
+
     local max_attempts=30
     local attempt=1
-    
+
     while [[ $attempt -le $max_attempts ]]; do
         if python -c "
 import sys
@@ -126,24 +126,24 @@ except Exception as e:
             success "Database connection established"
             return 0
         fi
-        
+
         warning "Database not ready (attempt $attempt/$max_attempts)"
         sleep 2
         ((attempt++))
     done
-    
+
     error "Database connection failed after $max_attempts attempts"
     exit 1
 }
 
 run_migrations() {
     log "Running database migrations..."
-    
+
     if ! alembic upgrade head; then
         error "Database migration failed"
         exit 1
     fi
-    
+
     success "Database migrations completed"
 }
 
@@ -152,7 +152,7 @@ run_migrations() {
 # ==============================================================================
 validate_application_startup() {
     log "Validating application configuration..."
-    
+
     if ! python -c "
 import sys
 sys.path.insert(0, '/app')
@@ -167,7 +167,7 @@ except Exception as e:
         error "Application startup validation failed"
         exit 1
     fi
-    
+
     success "Application configuration validated"
 }
 
@@ -176,18 +176,18 @@ except Exception as e:
 # ==============================================================================
 setup_security() {
     log "Configuring security settings..."
-    
+
     # Set restrictive file permissions
     chmod 600 .env* 2>/dev/null || true
-    
+
     # Create secure log directories
     mkdir -p logs
     chmod 755 logs
-    
+
     # Create uploads directory with restrictions
     mkdir -p uploads
     chmod 755 uploads
-    
+
     success "Security configuration completed"
 }
 
@@ -196,7 +196,7 @@ setup_security() {
 # ==============================================================================
 setup_logging() {
     log "Configuring logging..."
-    
+
     # Initialize logging configuration
     python -c "
 import sys
@@ -205,7 +205,7 @@ from utils.logging import setup_logging
 setup_logging()
 print('Logging configured successfully')
     "
-    
+
     success "Logging configuration completed"
 }
 
@@ -220,9 +220,9 @@ main() {
     wait_for_database
     run_migrations
     validate_application_startup
-    
+
     log "Starting application server..."
-    
+
     # Production server command with optimized settings
     exec gunicorn main:app \
         --worker-class "$WORKER_CLASS" \

@@ -74,6 +74,7 @@ export interface Service {
   barber_ids?: number[]
   location_ids?: number[]
   available_addons?: ServiceAddon[]
+  timeOfDay?: ('morning' | 'afternoon' | 'evening')[]
 }
 
 export interface ServiceAddon {
@@ -121,52 +122,51 @@ export const bookingService = {
   }): Promise<ApiResponse<Service[]>> {
     // Use the actual backend endpoint pattern
     if (params?.barber_id) {
-      const response = await apiClient.get(`/booking-public/barbers/${params.barber_id}/services`)
+      const response = await apiClient.get(`/booking/public/barbers/${params.barber_id}/services`)
       return { data: response.data }
     }
     // Fallback to a general services endpoint if we implement it
-    const response = await apiClient.get('/booking-auth/services', { params })
+    const response = await apiClient.get('/booking/services', { params })
     return { data: response.data }
   },
 
   // Get service by ID
   async getService(id: number): Promise<ApiResponse<Service>> {
-    const response = await apiClient.get(`/booking-auth/services/${id}`)
+    const response = await apiClient.get(`/booking/services/${id}`)
     return { data: response.data }
   },
 
   // Get service categories
   async getServiceCategories(): Promise<ApiResponse<ServiceCategory[]>> {
-    const response = await apiClient.get('/booking-auth/categories')
+    const response = await apiClient.get('/booking/categories')
     return { data: response.data }
   },
 
   // Get barbers for a specific location (using correct backend endpoint)
   async getBarbers(locationId: number): Promise<ApiResponse<any[]>> {
-    const response = await apiClient.get(`/booking-public/shops/${locationId}/barbers`)
+    const response = await apiClient.get(`/booking/public/shops/${locationId}/barbers`)
     return { data: response.data }
   },
 
   // Get availability for a specific barber and date
   async getAvailability(params: AvailabilityRequest & { barber_id: number }): Promise<ApiResponse<BarberAvailability[]>> {
     const queryParams = new URLSearchParams({
-      date: params.date,
-      service_id: params.service_id.toString(),
-      duration: params.duration.toString()
+      start_date: params.date,  // Use correct parameter name
+      service_id: params.service_id.toString()
     })
-    const response = await apiClient.get(`/booking-public/barbers/${params.barber_id}/availability?${queryParams}`)
+    const response = await apiClient.get(`/booking/public/barbers/${params.barber_id}/availability?${queryParams}`)
     return { data: response.data }
   },
 
   // Create a new booking
   async createBooking(bookingData: BookingRequest): Promise<ApiResponse<Booking>> {
-    const response = await apiClient.post('/booking-public/bookings/create', bookingData)
+    const response = await apiClient.post('/booking/public/bookings/create', bookingData)
     return { data: response.data }
   },
 
   // Get booking by confirmation number
   async getBooking(confirmationNumber: string): Promise<ApiResponse<Booking>> {
-    const response = await apiClient.get(`/booking-public/bookings/confirm/${confirmationNumber}`)
+    const response = await apiClient.get(`/booking/public/bookings/confirm/${confirmationNumber}`)
     return { data: response.data }
   },
 

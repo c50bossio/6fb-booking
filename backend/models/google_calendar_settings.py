@@ -79,9 +79,11 @@ class GoogleCalendarSyncLog(BaseModel):
 
     # Sync details
     operation = Column(String(20), nullable=False)  # create, update, delete, import
-    direction = Column(String(20), nullable=False)  # to_google, from_google, bidirectional
+    direction = Column(
+        String(20), nullable=False
+    )  # to_google, from_google, bidirectional
     status = Column(String(20), nullable=False)  # success, failed, partial
-    
+
     # Google Calendar details
     google_event_id = Column(String(255))
     google_calendar_id = Column(String(255))

@@ -15,12 +15,12 @@ logger = logging.getLogger(__name__)
 
 class EnvironmentConfig:
     """Environment-specific configuration manager"""
-    
+
     def __init__(self):
         self.environment = settings.ENVIRONMENT
         self.is_development = settings.is_development
         self.is_production = settings.is_production
-        
+
     @property
     def database_config(self) -> Dict[str, Any]:
         """Get database configuration based on environment"""
@@ -28,52 +28,60 @@ class EnvironmentConfig:
             "echo": not self.is_production,
             "echo_pool": not self.is_production,
         }
-        
+
         if settings.database_type == "postgresql":
             # Production PostgreSQL configuration
             if self.is_production:
-                base_config.update({
-                    "pool_size": settings.DB_POOL_SIZE,
-                    "max_overflow": settings.DB_MAX_OVERFLOW,
-                    "pool_timeout": settings.DB_POOL_TIMEOUT,
-                    "pool_recycle": settings.DB_POOL_RECYCLE,
-                    "pool_pre_ping": settings.DB_POOL_PRE_PING,
-                    "connect_args": {
-                        "sslmode": "require",
-                        "connect_timeout": 10,
-                        "application_name": "6fb_booking_prod",
+                base_config.update(
+                    {
+                        "pool_size": settings.DB_POOL_SIZE,
+                        "max_overflow": settings.DB_MAX_OVERFLOW,
+                        "pool_timeout": settings.DB_POOL_TIMEOUT,
+                        "pool_recycle": settings.DB_POOL_RECYCLE,
+                        "pool_pre_ping": settings.DB_POOL_PRE_PING,
+                        "connect_args": {
+                            "sslmode": "require",
+                            "connect_timeout": 10,
+                            "application_name": "6fb_booking_prod",
+                        },
                     }
-                })
+                )
             else:
                 # Development/Staging PostgreSQL configuration
-                base_config.update({
-                    "pool_size": 5,
-                    "max_overflow": 10,
-                    "pool_timeout": 30,
-                    "pool_recycle": 3600,
-                    "pool_pre_ping": True,
-                    "connect_args": {
-                        "sslmode": "prefer",
-                        "connect_timeout": 10,
-                        "application_name": f"6fb_booking_{self.environment}",
+                base_config.update(
+                    {
+                        "pool_size": 5,
+                        "max_overflow": 10,
+                        "pool_timeout": 30,
+                        "pool_recycle": 3600,
+                        "pool_pre_ping": True,
+                        "connect_args": {
+                            "sslmode": "prefer",
+                            "connect_timeout": 10,
+                            "application_name": f"6fb_booking_{self.environment}",
+                        },
                     }
-                })
+                )
         elif settings.database_type == "sqlite":
             # SQLite configuration (development only)
-            base_config.update({
-                "connect_args": {
-                    "check_same_thread": False,
-                    "timeout": 20,
-                    "isolation_level": None,
-                },
-                "pool_pre_ping": True,
-            })
-            
+            base_config.update(
+                {
+                    "connect_args": {
+                        "check_same_thread": False,
+                        "timeout": 20,
+                        "isolation_level": None,
+                    },
+                    "pool_pre_ping": True,
+                }
+            )
+
             if self.is_production:
-                logger.warning("SQLite database detected in production - consider using PostgreSQL")
-        
+                logger.warning(
+                    "SQLite database detected in production - consider using PostgreSQL"
+                )
+
         return base_config
-    
+
     @property
     def logging_config(self) -> Dict[str, Any]:
         """Get logging configuration based on environment"""
@@ -93,7 +101,7 @@ class EnvironmentConfig:
                 "structured": False,
                 "retention_days": 7,
             }
-    
+
     @property
     def security_config(self) -> Dict[str, Any]:
         """Get security configuration based on environment"""
@@ -102,30 +110,34 @@ class EnvironmentConfig:
             "security_headers_enabled": settings.SECURITY_HEADERS_ENABLED,
             "csp_enabled": settings.CONTENT_SECURITY_POLICY_ENABLED,
         }
-        
+
         if self.is_production:
-            base_config.update({
-                "rate_limit_per_minute": settings.RATE_LIMIT_PER_MINUTE,
-                "rate_limit_burst": settings.RATE_LIMIT_BURST,
-                "strict_transport_security": True,
-                "content_type_nosniff": True,
-                "x_frame_options": "DENY",
-                "x_content_type_options": "nosniff",
-                "referrer_policy": "strict-origin-when-cross-origin",
-            })
+            base_config.update(
+                {
+                    "rate_limit_per_minute": settings.RATE_LIMIT_PER_MINUTE,
+                    "rate_limit_burst": settings.RATE_LIMIT_BURST,
+                    "strict_transport_security": True,
+                    "content_type_nosniff": True,
+                    "x_frame_options": "DENY",
+                    "x_content_type_options": "nosniff",
+                    "referrer_policy": "strict-origin-when-cross-origin",
+                }
+            )
         else:
-            base_config.update({
-                "rate_limit_per_minute": 120,  # More lenient for development
-                "rate_limit_burst": 200,
-                "strict_transport_security": False,
-                "content_type_nosniff": True,
-                "x_frame_options": "SAMEORIGIN",
-                "x_content_type_options": "nosniff",
-                "referrer_policy": "same-origin",
-            })
-        
+            base_config.update(
+                {
+                    "rate_limit_per_minute": 120,  # More lenient for development
+                    "rate_limit_burst": 200,
+                    "strict_transport_security": False,
+                    "content_type_nosniff": True,
+                    "x_frame_options": "SAMEORIGIN",
+                    "x_content_type_options": "nosniff",
+                    "referrer_policy": "same-origin",
+                }
+            )
+
         return base_config
-    
+
     @property
     def cors_config(self) -> Dict[str, Any]:
         """Get CORS configuration based on environment"""
@@ -153,7 +165,7 @@ class EnvironmentConfig:
                 "expose_headers": ["*"],
                 "max_age": 600,  # 10 minutes
             }
-    
+
     @property
     def cache_config(self) -> Dict[str, Any]:
         """Get cache configuration based on environment"""
@@ -174,7 +186,7 @@ class EnvironmentConfig:
                 "key_prefix": f"6fb_{self.environment}:",
                 "serializer": "pickle",
             }
-    
+
     @property
     def monitoring_config(self) -> Dict[str, Any]:
         """Get monitoring configuration based on environment"""
@@ -183,28 +195,32 @@ class EnvironmentConfig:
             "metrics_enabled": True,
             "health_checks_enabled": True,
         }
-        
+
         if self.is_production:
-            base_config.update({
-                "sentry_dsn": settings.SENTRY_DSN,
-                "sentry_traces_sample_rate": settings.SENTRY_TRACES_SAMPLE_RATE,
-                "sentry_environment": "production",
-                "performance_monitoring": True,
-                "error_reporting": True,
-                "uptime_monitoring": True,
-            })
+            base_config.update(
+                {
+                    "sentry_dsn": settings.SENTRY_DSN,
+                    "sentry_traces_sample_rate": settings.SENTRY_TRACES_SAMPLE_RATE,
+                    "sentry_environment": "production",
+                    "performance_monitoring": True,
+                    "error_reporting": True,
+                    "uptime_monitoring": True,
+                }
+            )
         else:
-            base_config.update({
-                "sentry_dsn": settings.SENTRY_DSN,
-                "sentry_traces_sample_rate": 1.0,  # Sample all traces in development
-                "sentry_environment": self.environment,
-                "performance_monitoring": False,
-                "error_reporting": bool(settings.SENTRY_DSN),
-                "uptime_monitoring": False,
-            })
-        
+            base_config.update(
+                {
+                    "sentry_dsn": settings.SENTRY_DSN,
+                    "sentry_traces_sample_rate": 1.0,  # Sample all traces in development
+                    "sentry_environment": self.environment,
+                    "performance_monitoring": False,
+                    "error_reporting": bool(settings.SENTRY_DSN),
+                    "uptime_monitoring": False,
+                }
+            )
+
         return base_config
-    
+
     @property
     def worker_config(self) -> Dict[str, Any]:
         """Get worker configuration based on environment"""
@@ -232,7 +248,7 @@ class EnvironmentConfig:
                 "preload_app": False,
                 "reload": True,  # Enable reload in development
             }
-    
+
     @property
     def feature_flags(self) -> Dict[str, bool]:
         """Get feature flags based on environment"""
@@ -246,7 +262,7 @@ class EnvironmentConfig:
             "admin_panel": True,
             "backup_system": settings.BACKUP_ENABLED,
         }
-    
+
     @property
     def email_config(self) -> Dict[str, Any]:
         """Get email configuration based on environment"""
@@ -255,36 +271,44 @@ class EnvironmentConfig:
             "from_name": settings.EMAIL_FROM_NAME,
             "from_email": settings.EMAIL_FROM_ADDRESS,
         }
-        
+
         if settings.SENDGRID_API_KEY:
-            base_config.update({
-                "backend": "sendgrid",
-                "api_key": settings.SENDGRID_API_KEY,
-                "sandbox_mode": not self.is_production,
-            })
+            base_config.update(
+                {
+                    "backend": "sendgrid",
+                    "api_key": settings.SENDGRID_API_KEY,
+                    "sandbox_mode": not self.is_production,
+                }
+            )
         elif settings.MAILGUN_API_KEY:
-            base_config.update({
-                "backend": "mailgun",
-                "api_key": settings.MAILGUN_API_KEY,
-                "domain": settings.MAILGUN_DOMAIN,
-            })
+            base_config.update(
+                {
+                    "backend": "mailgun",
+                    "api_key": settings.MAILGUN_API_KEY,
+                    "domain": settings.MAILGUN_DOMAIN,
+                }
+            )
         elif settings.SMTP_USERNAME:
-            base_config.update({
-                "backend": "smtp",
-                "host": settings.SMTP_HOST,
-                "port": settings.SMTP_PORT,
-                "username": settings.SMTP_USERNAME,
-                "password": settings.SMTP_PASSWORD,
-                "use_tls": True,
-            })
+            base_config.update(
+                {
+                    "backend": "smtp",
+                    "host": settings.SMTP_HOST,
+                    "port": settings.SMTP_PORT,
+                    "username": settings.SMTP_USERNAME,
+                    "password": settings.SMTP_PASSWORD,
+                    "use_tls": True,
+                }
+            )
         else:
-            base_config.update({
-                "backend": "console",  # Console output for development
-                "enabled": not self.is_production,
-            })
-        
+            base_config.update(
+                {
+                    "backend": "console",  # Console output for development
+                    "enabled": not self.is_production,
+                }
+            )
+
         return base_config
-    
+
     def get_all_config(self) -> Dict[str, Any]:
         """Get all environment-specific configuration"""
         return {
@@ -299,44 +323,44 @@ class EnvironmentConfig:
             "features": self.feature_flags,
             "email": self.email_config,
         }
-    
+
     def validate_environment_requirements(self) -> bool:
         """Validate environment-specific requirements"""
         errors = []
         warnings = []
-        
+
         # Production-specific validations
         if self.is_production:
             if settings.database_type == "sqlite":
                 errors.append("SQLite database not suitable for production")
-            
+
             if not settings.payment_enabled:
                 warnings.append("Payment processing not configured")
-                
+
             if not settings.email_enabled:
                 warnings.append("Email service not configured")
-                
+
             if not settings.monitoring_enabled:
                 warnings.append("Monitoring (Sentry) not configured")
-                
+
             if settings.DEBUG:
                 errors.append("DEBUG mode must be disabled in production")
-        
+
         # Development-specific validations
         elif self.is_development:
             if not settings.email_enabled:
                 logger.info("Email service not configured - using console output")
-        
+
         # Log warnings
         for warning in warnings:
             logger.warning(f"Environment warning: {warning}")
-        
+
         # Check for errors
         if errors:
             for error in errors:
                 logger.error(f"Environment error: {error}")
             return False
-        
+
         logger.info(f"Environment validation passed for {self.environment}")
         return True
 

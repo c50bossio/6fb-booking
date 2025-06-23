@@ -61,7 +61,7 @@ export default function AppointmentsPage() {
 
       // Fetch appointments
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/appointments`,
+        `${process.env.NEXT_PUBLIC_API_URL}/appointments`,
         {
           headers: { Authorization: `Bearer ${token}` },
           params: { date: dateStr }
@@ -133,7 +133,7 @@ export default function AppointmentsPage() {
     try {
       const token = localStorage.getItem('access_token')
       await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/appointments/${appointmentId}/status`,
+        `${process.env.NEXT_PUBLIC_API_URL}/appointments/${appointmentId}/status`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       )

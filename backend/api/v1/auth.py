@@ -403,10 +403,7 @@ async def forgot_password(
 
     # Send password reset email using proper email service
     email_sent = email_service.send_password_reset(
-        db=db,
-        to_email=user.email,
-        reset_token=reset_token,
-        user_name=user.first_name
+        db=db, to_email=user.email, reset_token=reset_token, user_name=user.first_name
     )
 
     # In development, we always return success even if email fails
@@ -556,9 +553,7 @@ async def verify_magic_token(token: str, db: Session = Depends(get_db)):
 
 
 @router.post("/reset-password")
-async def reset_password(
-    request: ResetPasswordRequest, db: Session = Depends(get_db)
-):
+async def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
     """Reset password using token"""
     try:
         # Decode and validate the reset token
@@ -586,7 +581,9 @@ async def reset_password(
         # Validate new password strength
         is_valid, error_msg = validate_password_strength(request.new_password)
         if not is_valid:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error_msg)
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=error_msg
+            )
 
         # Update password
         user.hashed_password = get_password_hash(request.new_password)

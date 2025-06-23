@@ -24,11 +24,11 @@ async function testCalendarAPIs() {
         }
       }
     );
-    
+
     if (!appointmentsResponse.ok) {
       throw new Error(`Failed to fetch appointments: ${appointmentsResponse.status}`);
     }
-    
+
     const appointments = await appointmentsResponse.json();
     console.log(`✅ Found ${appointments.length} appointments for this week`);
     console.log('Sample appointment:', appointments[0]);
@@ -40,11 +40,11 @@ async function testCalendarAPIs() {
         'Authorization': `Bearer ${TOKEN}`
       }
     });
-    
+
     if (!barbersResponse.ok) {
       throw new Error(`Failed to fetch barbers: ${barbersResponse.status}`);
     }
-    
+
     const barbers = await barbersResponse.json();
     console.log(`✅ Found ${barbers.data.length} active barbers`);
     console.log('Sample barber:', barbers.data[0]);
@@ -56,11 +56,11 @@ async function testCalendarAPIs() {
         'Authorization': `Bearer ${TOKEN}`
       }
     });
-    
+
     if (!servicesResponse.ok) {
       throw new Error(`Failed to fetch services: ${servicesResponse.status}`);
     }
-    
+
     const services = await servicesResponse.json();
     console.log(`✅ Found ${services.data.length} active services`);
     console.log('Sample service:', services.data[0]);
@@ -69,7 +69,7 @@ async function testCalendarAPIs() {
     console.log('\n4️⃣ Testing: POST /appointments');
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    
+
     const newAppointment = {
       barber_id: barbers.data[0]?.id || 1,
       client_name: 'Test Client',
@@ -85,7 +85,7 @@ async function testCalendarAPIs() {
     };
 
     console.log('Creating appointment:', newAppointment);
-    
+
     const createResponse = await fetch(`${API_BASE_URL}/appointments`, {
       method: 'POST',
       headers: {
@@ -94,21 +94,21 @@ async function testCalendarAPIs() {
       },
       body: JSON.stringify(newAppointment)
     });
-    
+
     if (!createResponse.ok) {
       const error = await createResponse.text();
       console.log(`❌ Failed to create appointment: ${createResponse.status}`, error);
     } else {
       const created = await createResponse.json();
       console.log('✅ Created appointment:', created);
-      
+
       // 5. Test updating appointment
       console.log('\n5️⃣ Testing: PUT /appointments/:id');
       const updateData = {
         status: 'confirmed',
         notes: 'Updated from calendar test'
       };
-      
+
       const updateResponse = await fetch(`${API_BASE_URL}/appointments/${created.id}`, {
         method: 'PUT',
         headers: {
@@ -117,14 +117,14 @@ async function testCalendarAPIs() {
         },
         body: JSON.stringify(updateData)
       });
-      
+
       if (!updateResponse.ok) {
         console.log(`❌ Failed to update appointment: ${updateResponse.status}`);
       } else {
         const updated = await updateResponse.json();
         console.log('✅ Updated appointment status to:', updated.status);
       }
-      
+
       // 6. Test deleting appointment
       console.log('\n6️⃣ Testing: DELETE /appointments/:id');
       const deleteResponse = await fetch(`${API_BASE_URL}/appointments/${created.id}`, {
@@ -133,7 +133,7 @@ async function testCalendarAPIs() {
           'Authorization': `Bearer ${TOKEN}`
         }
       });
-      
+
       if (!deleteResponse.ok) {
         console.log(`❌ Failed to delete appointment: ${deleteResponse.status}`);
       } else {
@@ -151,7 +151,7 @@ async function testCalendarAPIs() {
         }
       }
     );
-    
+
     if (!calendarResponse.ok) {
       console.log(`❌ Calendar endpoint not available: ${calendarResponse.status}`);
     } else {

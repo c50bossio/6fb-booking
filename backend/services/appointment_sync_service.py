@@ -10,7 +10,10 @@ from sqlalchemy.orm import Session
 
 from config.database import get_db
 from models.appointment import Appointment
-from models.google_calendar_settings import GoogleCalendarSettings, GoogleCalendarSyncLog
+from models.google_calendar_settings import (
+    GoogleCalendarSettings,
+    GoogleCalendarSyncLog,
+)
 from services.google_calendar_service import google_calendar_service
 
 logger = logging.getLogger(__name__)
@@ -32,21 +35,25 @@ class AppointmentSyncService:
             # Check if barber has Google Calendar connected and auto-sync enabled
             settings = self._get_barber_calendar_settings(appointment.barber_id, db)
             if not settings or not settings.is_connected or not settings.sync_on_create:
-                logger.debug(f"Skipping sync for appointment {appointment.id} - not configured")
+                logger.debug(
+                    f"Skipping sync for appointment {appointment.id} - not configured"
+                )
                 return True
 
             # Check sync filters
             if not self._should_sync_appointment(appointment, settings):
-                logger.debug(f"Skipping sync for appointment {appointment.id} - filtered out")
+                logger.debug(
+                    f"Skipping sync for appointment {appointment.id} - filtered out"
+                )
                 return True
 
             # Sync to Google Calendar
             event_id = self.google_calendar.sync_appointment(appointment, "create")
-            
+
             if event_id:
                 # Update appointment with Google Calendar event ID
                 appointment.google_calendar_event_id = event_id
-                
+
                 # Log successful sync
                 self._log_sync_operation(
                     appointment.barber_id,
@@ -55,10 +62,12 @@ class AppointmentSyncService:
                     "to_google",
                     "success",
                     event_id,
-                    db
+                    db,
                 )
-                
-                logger.info(f"Successfully synced appointment {appointment.id} to Google Calendar")
+
+                logger.info(
+                    f"Successfully synced appointment {appointment.id} to Google Calendar"
+                )
                 return True
             else:
                 # Log failed sync
@@ -70,15 +79,19 @@ class AppointmentSyncService:
                     "failed",
                     None,
                     db,
-                    "Failed to create calendar event"
+                    "Failed to create calendar event",
                 )
-                
-                logger.warning(f"Failed to sync appointment {appointment.id} to Google Calendar")
+
+                logger.warning(
+                    f"Failed to sync appointment {appointment.id} to Google Calendar"
+                )
                 return False
 
         except Exception as e:
-            logger.error(f"Error syncing appointment {appointment.id} on create: {str(e)}")
-            
+            logger.error(
+                f"Error syncing appointment {appointment.id} on create: {str(e)}"
+            )
+
             # Log error
             self._log_sync_operation(
                 appointment.barber_id,
@@ -88,9 +101,9 @@ class AppointmentSyncService:
                 "failed",
                 None,
                 db,
-                str(e)
+                str(e),
             )
-            
+
             return False
 
     def sync_appointment_on_update(self, appointment: Appointment, db: Session) -> bool:
@@ -101,7 +114,9 @@ class AppointmentSyncService:
             # Check if barber has Google Calendar connected and auto-sync enabled
             settings = self._get_barber_calendar_settings(appointment.barber_id, db)
             if not settings or not settings.is_connected or not settings.sync_on_update:
-                logger.debug(f"Skipping update sync for appointment {appointment.id} - not configured")
+                logger.debug(
+                    f"Skipping update sync for appointment {appointment.id} - not configured"
+                )
                 return True
 
             # Check sync filters
@@ -122,7 +137,7 @@ class AppointmentSyncService:
                 operation = "create"
                 if event_id:
                     appointment.google_calendar_event_id = event_id
-            
+
             if event_id:
                 # Log successful sync
                 self._log_sync_operation(
@@ -132,10 +147,12 @@ class AppointmentSyncService:
                     "to_google",
                     "success",
                     event_id,
-                    db
+                    db,
                 )
-                
-                logger.info(f"Successfully synced appointment {appointment.id} update to Google Calendar")
+
+                logger.info(
+                    f"Successfully synced appointment {appointment.id} update to Google Calendar"
+                )
                 return True
             else:
                 # Log failed sync
@@ -147,15 +164,19 @@ class AppointmentSyncService:
                     "failed",
                     appointment.google_calendar_event_id,
                     db,
-                    "Failed to update calendar event"
+                    "Failed to update calendar event",
                 )
-                
-                logger.warning(f"Failed to sync appointment {appointment.id} update to Google Calendar")
+
+                logger.warning(
+                    f"Failed to sync appointment {appointment.id} update to Google Calendar"
+                )
                 return False
 
         except Exception as e:
-            logger.error(f"Error syncing appointment {appointment.id} on update: {str(e)}")
-            
+            logger.error(
+                f"Error syncing appointment {appointment.id} on update: {str(e)}"
+            )
+
             # Log error
             self._log_sync_operation(
                 appointment.barber_id,
@@ -165,9 +186,9 @@ class AppointmentSyncService:
                 "failed",
                 appointment.google_calendar_event_id,
                 db,
-                str(e)
+                str(e),
             )
-            
+
             return False
 
     def sync_appointment_on_delete(self, appointment: Appointment, db: Session) -> bool:
@@ -178,24 +199,27 @@ class AppointmentSyncService:
             # Check if barber has Google Calendar connected and delete sync enabled
             settings = self._get_barber_calendar_settings(appointment.barber_id, db)
             if not settings or not settings.is_connected or not settings.sync_on_delete:
-                logger.debug(f"Skipping delete sync for appointment {appointment.id} - not configured")
+                logger.debug(
+                    f"Skipping delete sync for appointment {appointment.id} - not configured"
+                )
                 return True
 
             # Only delete if we have a Google Calendar event ID
             if not appointment.google_calendar_event_id:
-                logger.debug(f"No Google Calendar event to delete for appointment {appointment.id}")
+                logger.debug(
+                    f"No Google Calendar event to delete for appointment {appointment.id}"
+                )
                 return True
 
             # Delete from Google Calendar
             success = self.google_calendar.delete_calendar_event(
-                appointment.barber_id,
-                appointment.google_calendar_event_id
+                appointment.barber_id, appointment.google_calendar_event_id
             )
-            
+
             if success:
                 # Clear the event ID
                 appointment.google_calendar_event_id = None
-                
+
                 # Log successful sync
                 self._log_sync_operation(
                     appointment.barber_id,
@@ -204,10 +228,12 @@ class AppointmentSyncService:
                     "to_google",
                     "success",
                     None,
-                    db
+                    db,
                 )
-                
-                logger.info(f"Successfully deleted appointment {appointment.id} from Google Calendar")
+
+                logger.info(
+                    f"Successfully deleted appointment {appointment.id} from Google Calendar"
+                )
                 return True
             else:
                 # Log failed sync
@@ -219,15 +245,19 @@ class AppointmentSyncService:
                     "failed",
                     appointment.google_calendar_event_id,
                     db,
-                    "Failed to delete calendar event"
+                    "Failed to delete calendar event",
                 )
-                
-                logger.warning(f"Failed to delete appointment {appointment.id} from Google Calendar")
+
+                logger.warning(
+                    f"Failed to delete appointment {appointment.id} from Google Calendar"
+                )
                 return False
 
         except Exception as e:
-            logger.error(f"Error syncing appointment {appointment.id} on delete: {str(e)}")
-            
+            logger.error(
+                f"Error syncing appointment {appointment.id} on delete: {str(e)}"
+            )
+
             # Log error
             self._log_sync_operation(
                 appointment.barber_id,
@@ -237,20 +267,26 @@ class AppointmentSyncService:
                 "failed",
                 appointment.google_calendar_event_id,
                 db,
-                str(e)
+                str(e),
             )
-            
+
             return False
 
-    def _get_barber_calendar_settings(self, barber_id: int, db: Session) -> Optional[GoogleCalendarSettings]:
+    def _get_barber_calendar_settings(
+        self, barber_id: int, db: Session
+    ) -> Optional[GoogleCalendarSettings]:
         """
         Get calendar settings for a barber
         """
-        return db.query(GoogleCalendarSettings).filter(
-            GoogleCalendarSettings.barber_id == barber_id
-        ).first()
+        return (
+            db.query(GoogleCalendarSettings)
+            .filter(GoogleCalendarSettings.barber_id == barber_id)
+            .first()
+        )
 
-    def _should_sync_appointment(self, appointment: Appointment, settings: GoogleCalendarSettings) -> bool:
+    def _should_sync_appointment(
+        self, appointment: Appointment, settings: GoogleCalendarSettings
+    ) -> bool:
         """
         Check if appointment should be synced based on settings
         """
@@ -261,17 +297,20 @@ class AppointmentSyncService:
         # Check sync filters
         if settings.sync_all_appointments:
             return True
-        
-        if settings.sync_only_confirmed and appointment.status in ['confirmed', 'completed']:
+
+        if settings.sync_only_confirmed and appointment.status in [
+            "confirmed",
+            "completed",
+        ]:
             return True
-        
-        if settings.sync_only_paid and appointment.payment_status == 'paid':
+
+        if settings.sync_only_paid and appointment.payment_status == "paid":
             return True
-        
+
         # If specific filters are enabled but none match, don't sync
         if settings.sync_only_confirmed or settings.sync_only_paid:
             return False
-        
+
         # Default to sync if no specific filters
         return True
 
@@ -284,7 +323,7 @@ class AppointmentSyncService:
         status: str,
         google_event_id: Optional[str],
         db: Session,
-        error_message: Optional[str] = None
+        error_message: Optional[str] = None,
     ):
         """
         Log sync operation to database
@@ -297,7 +336,7 @@ class AppointmentSyncService:
                 direction=direction,
                 status=status,
                 google_event_id=google_event_id,
-                error_message=error_message
+                error_message=error_message,
             )
             db.add(sync_log)
             db.commit()
@@ -318,15 +357,19 @@ class AppointmentSyncService:
                     "message": "Google Calendar not connected",
                     "synced_count": 0,
                     "failed_count": 0,
-                    "errors": []
+                    "errors": [],
                 }
 
             # Get all future appointments for barber
-            appointments = db.query(Appointment).filter(
-                Appointment.barber_id == barber_id,
-                Appointment.status.in_(["scheduled", "confirmed"]),
-                Appointment.appointment_date >= datetime.now().date()
-            ).all()
+            appointments = (
+                db.query(Appointment)
+                .filter(
+                    Appointment.barber_id == barber_id,
+                    Appointment.status.in_(["scheduled", "confirmed"]),
+                    Appointment.appointment_date >= datetime.now().date(),
+                )
+                .all()
+            )
 
             synced_count = 0
             failed_count = 0
@@ -339,11 +382,15 @@ class AppointmentSyncService:
 
                     if appointment.google_calendar_event_id:
                         # Update existing
-                        event_id = self.google_calendar.sync_appointment(appointment, "update")
+                        event_id = self.google_calendar.sync_appointment(
+                            appointment, "update"
+                        )
                         operation = "update"
                     else:
                         # Create new
-                        event_id = self.google_calendar.sync_appointment(appointment, "create")
+                        event_id = self.google_calendar.sync_appointment(
+                            appointment, "create"
+                        )
                         operation = "create"
                         if event_id:
                             appointment.google_calendar_event_id = event_id
@@ -357,7 +404,7 @@ class AppointmentSyncService:
                             "to_google",
                             "success",
                             event_id,
-                            db
+                            db,
                         )
                     else:
                         failed_count += 1
@@ -371,7 +418,7 @@ class AppointmentSyncService:
                             "failed",
                             None,
                             db,
-                            error_msg
+                            error_msg,
                         )
 
                 except Exception as e:
@@ -389,7 +436,7 @@ class AppointmentSyncService:
                 "message": f"Bulk sync completed. {synced_count} synced, {failed_count} failed.",
                 "synced_count": synced_count,
                 "failed_count": failed_count,
-                "errors": errors[:10]  # Limit error messages
+                "errors": errors[:10],  # Limit error messages
             }
 
         except Exception as e:
@@ -400,7 +447,7 @@ class AppointmentSyncService:
                 "message": error_msg,
                 "synced_count": 0,
                 "failed_count": 0,
-                "errors": [error_msg]
+                "errors": [error_msg],
             }
 
 

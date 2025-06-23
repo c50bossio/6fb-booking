@@ -35,7 +35,7 @@ export default function TrafftConnect({ onConnectionSuccess }: TrafftConnectProp
     try {
       const token = localStorage.getItem('auth_token')
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/trafft/connect-trafft`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/trafft/connect-trafft`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

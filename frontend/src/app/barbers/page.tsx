@@ -104,7 +104,9 @@ export default function BarbersPage() {
   const fetchBarbers = async () => {
     try {
       const response = await barbersService.getBarbers()
-      setBarbers(response.data || [])
+      // Handle both paginated response and direct array response (for mock data)
+      const barbersData = Array.isArray(response) ? response : (response?.data || [])
+      setBarbers(Array.isArray(barbersData) ? barbersData : [])
     } catch (error) {
       console.error('Failed to fetch barbers:', error)
       setBarbers([])
@@ -145,7 +147,7 @@ export default function BarbersPage() {
         compensation_plan_id: null
       })
       setShowAddBarber(false)
-      
+
       // Refresh barbers list
       fetchBarbers()
 
@@ -265,7 +267,7 @@ export default function BarbersPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600"></div>
       </div>
     )
   }
@@ -278,7 +280,7 @@ export default function BarbersPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl font-bold text-white">Barber Management</h1>
-        
+
         <div className="flex items-center space-x-4">
           <div className="relative">
             <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -287,20 +289,20 @@ export default function BarbersPage() {
               placeholder="Search barbers..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+              className="pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-slate-500 focus:border-transparent"
             />
           </div>
-          
-          <select 
+
+          <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value as any)}
-            className="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+            className="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-slate-500 focus:border-transparent"
           >
             <option value="all">All Status</option>
             <option value="connected">Stripe Connected</option>
             <option value="not-connected">Not Connected</option>
           </select>
-          
+
           <button
             onClick={() => fetchBarbers()}
             className="text-gray-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-700"
@@ -308,10 +310,10 @@ export default function BarbersPage() {
           >
             <ArrowPathIcon className="h-5 w-5" />
           </button>
-          
+
           <button
             onClick={() => setShowAddBarber(true)}
-            className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg font-medium hover:from-violet-700 hover:to-purple-700 transition-all flex items-center space-x-2"
+            className="px-4 py-2 bg-slate-600 text-white rounded-lg font-medium hover:bg-slate-700 transition-all flex items-center space-x-2"
           >
             <PlusIcon className="h-5 w-5" />
             <span>Add Barber</span>
@@ -323,11 +325,11 @@ export default function BarbersPage() {
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <div className="bg-slate-800 rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl">
+            <div className="p-3 bg-slate-600 rounded-xl">
               <UserGroupIcon className="h-6 w-6 text-white" />
             </div>
           </div>
-          <p className="text-sm font-medium text-gray-400">Total Barbers</p>
+          <p className="text-sm font-medium text-gray-200">Total Barbers</p>
           <p className="text-2xl font-bold text-white mt-1">{barbers.length}</p>
         </div>
 
@@ -337,7 +339,7 @@ export default function BarbersPage() {
               <CurrencyDollarIcon className="h-6 w-6 text-white" />
             </div>
           </div>
-          <p className="text-sm font-medium text-gray-400">Total Revenue</p>
+          <p className="text-sm font-medium text-gray-200">Total Revenue</p>
           <p className="text-2xl font-bold text-white mt-1">
             ${totalRevenue.toLocaleString()}
           </p>
@@ -345,11 +347,11 @@ export default function BarbersPage() {
 
         <div className="bg-slate-800 rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl">
+            <div className="p-3 bg-slate-600 rounded-xl">
               <ChartBarIcon className="h-6 w-6 text-white" />
             </div>
           </div>
-          <p className="text-sm font-medium text-gray-400">Avg 6FB Score</p>
+          <p className="text-sm font-medium text-gray-200">Avg 6FB Score</p>
           <p className="text-2xl font-bold text-white mt-1">{avgScore}</p>
         </div>
 
@@ -359,7 +361,7 @@ export default function BarbersPage() {
               <LinkIcon className="h-6 w-6 text-white" />
             </div>
           </div>
-          <p className="text-sm font-medium text-gray-400">Connected</p>
+          <p className="text-sm font-medium text-gray-200">Connected</p>
           <p className="text-2xl font-bold text-white mt-1">
             {connectedCount}/{barbers.length}
           </p>
@@ -373,7 +375,7 @@ export default function BarbersPage() {
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 bg-slate-600 rounded-full flex items-center justify-center">
                   <span className="text-white font-bold text-lg">
                     {barber.first_name.charAt(0)}{barber.last_name.charAt(0)}
                   </span>
@@ -382,10 +384,10 @@ export default function BarbersPage() {
                   <h3 className="text-lg font-semibold text-white">
                     {barber.first_name} {barber.last_name}
                   </h3>
-                  <p className="text-sm text-gray-400">{barber.email}</p>
+                  <p className="text-sm text-gray-200">{barber.email}</p>
                 </div>
               </div>
-              
+
               <div className="flex items-center space-x-1">
                 <button
                   onClick={() => {
@@ -409,12 +411,12 @@ export default function BarbersPage() {
 
             {/* Payment Model Info */}
             <div className="mb-4 p-3 bg-slate-700 rounded-lg">
-              <h4 className="text-sm font-medium text-gray-300 mb-2 flex items-center">
-                <CreditCardIcon className="h-4 w-4 mr-2 text-violet-400" />
+              <h4 className="text-sm font-medium text-gray-200 mb-2 flex items-center">
+                <CreditCardIcon className="h-4 w-4 mr-2 text-slate-400" />
                 Payment Model
               </h4>
-              <p className="text-sm text-gray-300">
-                {barber.commission_rate 
+              <p className="text-sm text-gray-200">
+                {barber.commission_rate
                   ? `Commission: ${barber.commission_rate}%`
                   : barber.payment_model?.payment_type === 'booth_rent'
                     ? `Booth Rent: $${barber.payment_model?.booth_rent_amount || 0}/${barber.payment_model?.booth_rent_frequency || 'weekly'}`
@@ -427,14 +429,14 @@ export default function BarbersPage() {
             <div className="space-y-2 mb-4">
               <div className="flex items-center justify-between p-3 bg-slate-700 rounded-lg">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-purple-600/20 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-purple-400" viewBox="0 0 24 24" fill="currentColor">
+                  <div className="w-10 h-10 bg-slate-700 rounded-lg flex items-center justify-center">
+                    <svg className="w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.594-7.305h.003z"/>
                     </svg>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-white">Stripe</p>
-                    <p className="text-xs text-gray-400">Instant payouts</p>
+                    <p className="text-xs text-gray-300">Instant payouts</p>
                   </div>
                 </div>
                 {barber.payment_model?.stripe_connect_account_id ? (
@@ -448,7 +450,7 @@ export default function BarbersPage() {
                 ) : (
                   <button
                     onClick={() => handleConnectStripe(barber.id)}
-                    className="flex items-center space-x-2 text-gray-400 hover:text-white bg-purple-600/20 hover:bg-purple-600/30 px-3 py-1 rounded-md transition-colors"
+                    className="flex items-center space-x-2 text-gray-400 hover:text-white bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-md transition-colors"
                   >
                     <PlusIcon className="h-4 w-4" />
                     <span className="text-sm">Connect</span>
@@ -462,17 +464,17 @@ export default function BarbersPage() {
               <div className="bg-slate-700 rounded-lg p-3">
                 <div className="flex items-center space-x-2 mb-1">
                   <CurrencyDollarIcon className="h-4 w-4 text-green-400" />
-                  <p className="text-xs text-gray-400">Revenue</p>
+                  <p className="text-xs text-gray-300">Revenue</p>
                 </div>
                 <p className="text-xl font-bold text-white">
                   ${(barber.total_revenue || 0).toLocaleString()}
                 </p>
               </div>
-              
+
               <div className="bg-slate-700 rounded-lg p-3">
                 <div className="flex items-center space-x-2 mb-1">
-                  <ChartBarIcon className="h-4 w-4 text-purple-400" />
-                  <p className="text-xs text-gray-400">6FB Score</p>
+                  <ChartBarIcon className="h-4 w-4 text-slate-400" />
+                  <p className="text-xs text-gray-300">6FB Score</p>
                 </div>
                 <p className="text-xl font-bold text-white">
                   {barber.sixfb_score || 0}
@@ -482,16 +484,16 @@ export default function BarbersPage() {
 
             {/* Contact Info */}
             <div className="space-y-2 text-sm">
-              <a href={`tel:${barber.phone}`} className="flex items-center space-x-2 text-gray-400 hover:text-white">
+              <a href={`tel:${barber.phone}`} className="flex items-center space-x-2 text-gray-300 hover:text-white">
                 <PhoneIcon className="h-4 w-4" />
                 <span>{barber.phone}</span>
               </a>
-              <a href={`mailto:${barber.email}`} className="flex items-center space-x-2 text-gray-400 hover:text-white">
+              <a href={`mailto:${barber.email}`} className="flex items-center space-x-2 text-gray-300 hover:text-white">
                 <EnvelopeIcon className="h-4 w-4" />
                 <span className="truncate">{barber.email}</span>
               </a>
               {barber.location_name && (
-                <div className="flex items-center space-x-2 text-gray-400">
+                <div className="flex items-center space-x-2 text-gray-300">
                   <MapPinIcon className="h-4 w-4" />
                   <span>{barber.location_name}</span>
                 </div>
@@ -576,7 +578,7 @@ export default function BarbersPage() {
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 text-sm bg-purple-600 hover:bg-purple-700 text-white py-2 px-3 rounded transition-colors"
+                      className="flex-1 text-sm bg-slate-600 hover:bg-slate-700 text-white py-2 px-3 rounded transition-colors"
                     >
                       Save Changes
                     </button>
@@ -608,7 +610,7 @@ export default function BarbersPage() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-200 mb-1">
                       First Name
                     </label>
                     <input
@@ -620,7 +622,7 @@ export default function BarbersPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-200 mb-1">
                       Last Name
                     </label>
                     <input
@@ -676,7 +678,7 @@ export default function BarbersPage() {
 
                 {compensationPlans.length > 0 && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-200 mb-1">
                       Compensation Plan (Optional)
                     </label>
                     <select
@@ -705,7 +707,7 @@ export default function BarbersPage() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                  className="flex-1 px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700"
                 >
                   Add Barber
                 </button>

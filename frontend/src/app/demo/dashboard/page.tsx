@@ -6,11 +6,13 @@ import {
   CalendarDaysIcon,
   UserGroupIcon,
   CurrencyDollarIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
   CheckCircleIcon,
   ClockIcon
 } from '@heroicons/react/24/outline'
+import {
+  TrendingUpIcon,
+  TrendingDownIcon
+} from '@heroicons/react/24/solid'
 
 export default function DemoDashboard() {
   const [timeRange, setTimeRange] = useState('week')
@@ -127,7 +129,7 @@ export default function DemoDashboard() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-gray-600 dark:text-gray-500">
               Welcome back! Here's what's happening with your business today.
             </p>
           </div>
@@ -160,7 +162,7 @@ export default function DemoDashboard() {
                       <Icon className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{stat.name}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-500">{stat.name}</p>
                       <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
                     </div>
                   </div>
@@ -180,7 +182,7 @@ export default function DemoDashboard() {
                       {stat.change}
                     </span>
                   </div>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">{stat.period}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-500">{stat.period}</span>
                 </div>
               </div>
             )
@@ -201,22 +203,22 @@ export default function DemoDashboard() {
             <table className="w-full">
               <thead className="bg-gray-50 dark:bg-gray-800/50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                     Client
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                     Barber
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                     Service
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                     Time
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                     Price
                   </th>
                 </tr>
@@ -228,13 +230,13 @@ export default function DemoDashboard() {
                       <div className="font-medium text-gray-900 dark:text-white">{booking.client}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-gray-900 dark:text-gray-300">{booking.barber}</div>
+                      <div className="text-gray-900 dark:text-gray-400">{booking.barber}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-gray-900 dark:text-gray-300">{booking.service}</div>
+                      <div className="text-gray-900 dark:text-gray-400">{booking.service}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center text-gray-900 dark:text-gray-300">
+                      <div className="flex items-center text-gray-900 dark:text-gray-400">
                         <ClockIcon className="h-4 w-4 mr-1" />
                         {booking.time}
                       </div>
@@ -263,7 +265,7 @@ export default function DemoDashboard() {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Schedule Appointment</h3>
             </div>
-            <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+            <p className="text-gray-600 dark:text-gray-500 text-sm mb-4">
               Book a new appointment for your clients
             </p>
             <button className="w-full premium-button-sm">
@@ -278,7 +280,7 @@ export default function DemoDashboard() {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Manage Barbers</h3>
             </div>
-            <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+            <p className="text-gray-600 dark:text-gray-500 text-sm mb-4">
               Add or update barber information
             </p>
             <button className="w-full premium-button-sm">
@@ -293,7 +295,7 @@ export default function DemoDashboard() {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">View Analytics</h3>
             </div>
-            <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+            <p className="text-gray-600 dark:text-gray-500 text-sm mb-4">
               Analyze your business performance
             </p>
             <button className="w-full premium-button-sm">

@@ -54,7 +54,7 @@ export function PerformanceMetrics({ data, dateRange }: PerformanceMetricsProps)
       target: 100,
       current: data.utilizationRate || 0,
       format: 'percentage',
-      color: 'purple'
+      color: 'slate'
     }
   ]
 
@@ -82,10 +82,10 @@ export function PerformanceMetrics({ data, dateRange }: PerformanceMetricsProps)
   const getIcon = (metric: any) => {
     const Icon = metric.icon
     const colors = {
-      blue: 'text-blue-500',
+      blue: 'text-teal-500',
       green: 'text-green-500',
       yellow: 'text-yellow-500',
-      purple: 'text-purple-500'
+      slate: 'text-slate-500'
     }
     return <Icon className={`h-5 w-5 ${colors[metric.color as keyof typeof colors]}`} />
   }

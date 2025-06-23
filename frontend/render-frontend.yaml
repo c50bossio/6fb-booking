@@ -1,0 +1,51 @@
+# Render.com deployment configuration for 6FB Booking Frontend
+# This file configures the Next.js frontend application
+
+services:
+  # Frontend Next.js Application
+  - type: web
+    name: 6fb-booking-frontend
+    runtime: node
+    region: oregon # Choose your preferred region: oregon, ohio, virginia, frankfurt, singapore
+    plan: starter # Options: starter ($7/month), standard ($25/month)
+    
+    # Repository settings
+    repo: https://github.com/YOUR_GITHUB_USERNAME/6fb-booking # Replace with your repo URL
+    branch: main # or your production branch
+    rootDir: frontend # Important: Tell Render the frontend is in a subdirectory
+    
+    # Build configuration
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    
+    # Health check configuration
+    healthCheckPath: /
+    
+    # Auto-deploy when pushing to branch
+    autoDeploy: true
+    
+    # Environment variables
+    envVars:
+      # Node environment
+      - key: NODE_ENV
+        value: production
+      
+      # Next.js specific
+      - key: PORT
+        value: 3000
+        
+      # API URL - Update this to your backend URL
+      - key: NEXT_PUBLIC_API_URL
+        value: https://sixfb-backend.onrender.com
+        
+      # Stripe configuration
+      - key: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+        sync: false # Set manually in Render dashboard
+        
+      # Google Analytics
+      - key: NEXT_PUBLIC_GA_TRACKING_ID
+        sync: false # Set manually in Render dashboard (optional)
+        
+      # Additional configuration
+      - key: NEXT_TELEMETRY_DISABLED
+        value: 1 # Disable Next.js telemetry in production

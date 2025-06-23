@@ -45,12 +45,12 @@ The client management system has been fully implemented with real database integ
 #### Main Client List Page (`/clients`)
 - **Real-time Data**: Fetches from actual API endpoints
 - **Search & Filter**: Full-text search and customer type filtering
-- **Statistics Dashboard**: 
+- **Statistics Dashboard**:
   - Total clients
   - VIP clients count
   - Average lifetime value
   - Retention rate
-- **Interactive Table**: 
+- **Interactive Table**:
   - Sortable columns
   - Client avatars
   - Status badges
@@ -61,7 +61,7 @@ The client management system has been fully implemented with real database integ
 - **Tabbed Interface**: Overview, History, Notes & Tags
 - **Contact Information**: Complete contact details with communication preferences
 - **Statistics**: Visit counts, spending, frequency analysis
-- **Quick Actions**: 
+- **Quick Actions**:
   - Book new appointment
   - Update VIP status
   - Send messages
@@ -90,29 +90,29 @@ class Client(BaseModel):
     email: str (encrypted)
     phone: str (encrypted)
     date_of_birth: Date
-    
+
     # Business Metrics
     customer_type: str  # new, returning, vip, at_risk
     total_visits: int
     total_spent: float
     average_ticket: float
     visit_frequency_days: int
-    
+
     # Engagement Tracking
     no_show_count: int
     cancellation_count: int
     referral_count: int
-    
+
     # Preferences & Notes
     notes: str (encrypted)
     tags: str
     preferred_services: str
-    
+
     # Communication Settings
     sms_enabled: bool
     email_enabled: bool
     marketing_enabled: bool
-    
+
     # Relationships
     barber_id: ForeignKey
     appointments: relationship("Appointment")

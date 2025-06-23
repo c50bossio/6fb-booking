@@ -173,7 +173,7 @@ export default function AddBarberModal({ isOpen, onClose, onSuccess }: AddBarber
       }
 
       const barberResponse = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/barbers`,
+        `${process.env.NEXT_PUBLIC_API_URL}/barbers`,
         barberData,
         { headers }
       )
@@ -194,7 +194,7 @@ export default function AddBarberModal({ isOpen, onClose, onSuccess }: AddBarber
       }
 
       await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/barber-payments/payment-models/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/barber-payments/payment-models/`,
         paymentData,
         { headers }
       )
@@ -235,7 +235,7 @@ export default function AddBarberModal({ isOpen, onClose, onSuccess }: AddBarber
             <div className="space-y-6">
               <div>
                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-                  <UserGroupIcon className="h-5 w-5 mr-2 text-purple-400" />
+                  <UserGroupIcon className="h-5 w-5 mr-2 text-teal-400" />
                   Basic Information
                 </h3>
 
@@ -250,7 +250,7 @@ export default function AddBarberModal({ isOpen, onClose, onSuccess }: AddBarber
                         name="first_name"
                         value={formData.first_name}
                         onChange={handleInputChange}
-                        className={`w-full px-4 py-2 bg-gray-700 border rounded-lg text-white focus:outline-none focus:border-purple-500 ${
+                        className={`w-full px-4 py-2 bg-gray-700 border rounded-lg text-white focus:outline-none focus:border-teal-500 ${
                           errors.first_name ? 'border-red-500' : 'border-gray-600'
                         }`}
                       />
@@ -268,7 +268,7 @@ export default function AddBarberModal({ isOpen, onClose, onSuccess }: AddBarber
                         name="last_name"
                         value={formData.last_name}
                         onChange={handleInputChange}
-                        className={`w-full px-4 py-2 bg-gray-700 border rounded-lg text-white focus:outline-none focus:border-purple-500 ${
+                        className={`w-full px-4 py-2 bg-gray-700 border rounded-lg text-white focus:outline-none focus:border-teal-500 ${
                           errors.last_name ? 'border-red-500' : 'border-gray-600'
                         }`}
                       />
@@ -307,7 +307,7 @@ export default function AddBarberModal({ isOpen, onClose, onSuccess }: AddBarber
                         value={formData.phone}
                         onChange={handleInputChange}
                         placeholder="(555) 123-4567"
-                        className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                        className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-teal-500"
                       />
                     </div>
 
@@ -319,7 +319,7 @@ export default function AddBarberModal({ isOpen, onClose, onSuccess }: AddBarber
                         name="location_id"
                         value={formData.location_id}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                        className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-teal-500"
                       >
                         <option value="">Select Location</option>
                         <option value="1">Downtown Shop</option>
@@ -334,7 +334,7 @@ export default function AddBarberModal({ isOpen, onClose, onSuccess }: AddBarber
               {/* Payment Connections */}
               <div>
                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-                  <CreditCardIcon className="h-5 w-5 mr-2 text-purple-400" />
+                  <CreditCardIcon className="h-5 w-5 mr-2 text-teal-400" />
                   Payment Connections
                 </h3>
 
@@ -345,7 +345,7 @@ export default function AddBarberModal({ isOpen, onClose, onSuccess }: AddBarber
                       name="enable_stripe"
                       checked={formData.enable_stripe}
                       onChange={handleInputChange}
-                      className="w-4 h-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
+                      className="w-4 h-4 text-teal-600 bg-gray-700 border-gray-600 rounded focus:ring-teal-500"
                     />
                     <div className="flex-1">
                       <p className="text-white font-medium">Enable Stripe Connect</p>
@@ -359,7 +359,7 @@ export default function AddBarberModal({ isOpen, onClose, onSuccess }: AddBarber
                       name="enable_square"
                       checked={formData.enable_square}
                       onChange={handleInputChange}
-                      className="w-4 h-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
+                      className="w-4 h-4 text-teal-600 bg-gray-700 border-gray-600 rounded focus:ring-teal-500"
                     />
                     <div className="flex-1">
                       <p className="text-white font-medium">Enable Square Integration</p>
@@ -374,7 +374,7 @@ export default function AddBarberModal({ isOpen, onClose, onSuccess }: AddBarber
             <div className="space-y-6">
               <div>
                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-                  <InformationCircleIcon className="h-5 w-5 mr-2 text-purple-400" />
+                  <InformationCircleIcon className="h-5 w-5 mr-2 text-teal-400" />
                   Compensation Plan
                 </h3>
 
@@ -387,7 +387,7 @@ export default function AddBarberModal({ isOpen, onClose, onSuccess }: AddBarber
                       onClick={() => selectPreset(preset)}
                       className={`w-full p-4 rounded-lg border transition-all text-left ${
                         selectedPreset === preset.id
-                          ? 'bg-purple-600/20 border-purple-500 text-white'
+                          ? 'bg-teal-600/20 border-teal-500 text-white'
                           : 'bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600'
                       }`}
                     >
@@ -400,7 +400,7 @@ export default function AddBarberModal({ isOpen, onClose, onSuccess }: AddBarber
                           </div>
                         </div>
                         {selectedPreset === preset.id && (
-                          <CheckCircleIcon className="h-5 w-5 text-purple-400" />
+                          <CheckCircleIcon className="h-5 w-5 text-teal-400" />
                         )}
                       </div>
                     </button>
@@ -439,7 +439,7 @@ export default function AddBarberModal({ isOpen, onClose, onSuccess }: AddBarber
                         onChange={handleInputChange}
                         min="0"
                         max="100"
-                        className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                        className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-teal-500"
                       />
                     </div>
                   )}
@@ -456,7 +456,7 @@ export default function AddBarberModal({ isOpen, onClose, onSuccess }: AddBarber
                           value={formData.booth_rent_amount}
                           onChange={handleInputChange}
                           min="0"
-                          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-teal-500"
                         />
                       </div>
 
@@ -468,7 +468,7 @@ export default function AddBarberModal({ isOpen, onClose, onSuccess }: AddBarber
                           name="rent_frequency"
                           value={formData.rent_frequency}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-teal-500"
                         >
                           <option value="weekly">Weekly</option>
                           <option value="monthly">Monthly</option>
@@ -500,7 +500,7 @@ export default function AddBarberModal({ isOpen, onClose, onSuccess }: AddBarber
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
             >
               {loading ? (
                 <>

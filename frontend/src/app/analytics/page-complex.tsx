@@ -95,7 +95,7 @@ export default function AnalyticsDashboard() {
     try {
       // Try demo endpoint first for analytics overview
       const demoResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/dashboard/demo/analytics/overview`
+        `${process.env.NEXT_PUBLIC_API_URL}/dashboard/demo/analytics/overview`
       )
 
       if (demoResponse.data) {
@@ -140,7 +140,7 @@ export default function AnalyticsDashboard() {
 
         // Use barbers from demo endpoint
         const barbersResponse = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/dashboard/demo/barbers`
+          `${process.env.NEXT_PUBLIC_API_URL}/dashboard/demo/barbers`
         )
 
         setBarberPerformance(barbersResponse.data.map((barber: any) => ({

@@ -284,7 +284,7 @@ export const NotificationPreferences: React.FC = () => {
       {/* Push Notifications */}
       <Card className="p-6">
         <div className="flex items-center mb-4">
-          <Bell className="w-6 h-6 mr-2 text-purple-600" />
+          <Bell className="w-6 h-6 mr-2 text-teal-600" />
           <h3 className="text-xl font-semibold">Push Notifications</h3>
         </div>
 
@@ -382,7 +382,7 @@ export const NotificationPreferences: React.FC = () => {
       {/* Quiet Hours */}
       <Card className="p-6">
         <div className="flex items-center mb-4">
-          <Moon className="w-6 h-6 mr-2 text-indigo-600" />
+          <Moon className="w-6 h-6 mr-2 text-slate-600" />
           <h3 className="text-xl font-semibold">Quiet Hours</h3>
         </div>
 
