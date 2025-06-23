@@ -6,13 +6,13 @@
 // Test the booking flow step by step
 async function testBookingFlow() {
   console.log('🚀 Starting booking flow test...');
-  
+
   try {
     // Step 1: Test dashboard access
     console.log('📊 Step 1: Testing dashboard access');
     const dashboardResponse = await fetch('http://localhost:3002/dashboard');
     console.log('Dashboard status:', dashboardResponse.status);
-    
+
     // Step 2: Test API connectivity
     console.log('🔌 Step 2: Testing API connectivity');
     try {
@@ -23,7 +23,7 @@ async function testBookingFlow() {
     } catch (error) {
       console.log('API not accessible:', error.message);
     }
-    
+
     // Step 3: Test demo endpoints
     console.log('🎭 Step 3: Testing demo endpoints');
     try {
@@ -34,7 +34,7 @@ async function testBookingFlow() {
     } catch (error) {
       console.log('Demo API error:', error.message);
     }
-    
+
     // Step 4: Test services endpoint
     console.log('🛎️ Step 4: Testing services endpoint');
     try {
@@ -45,14 +45,14 @@ async function testBookingFlow() {
     } catch (error) {
       console.log('Services API error:', error.message);
     }
-    
+
     console.log('✅ Booking flow test completed');
     console.log('👆 Now test the UI components manually:');
     console.log('1. Click Quick Actions dropdown');
     console.log('2. Click New Appointment button');
     console.log('3. Fill out the appointment form');
     console.log('4. Test metric card clicks');
-    
+
   } catch (error) {
     console.error('❌ Booking flow test failed:', error);
   }

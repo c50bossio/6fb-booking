@@ -378,35 +378,14 @@ def read_root():
         "message": "Welcome to 6FB Booking Platform API",
         "version": "1.0.0",
         "docs": "/docs",
-        "health": "/health",
+        "health": "/api/v1/health",
     }
 
 
 @app.get("/health")
-def health_check():
-    """Health check endpoint"""
-    health_status = {
-        "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
-        "version": "1.0.0",
-    }
-
-    # Try to check database connection
-    try:
-        from config.database import SessionLocal
-
-        db = SessionLocal()
-        from sqlalchemy import text
-
-        db.execute(text("SELECT 1"))
-        db.close()
-        health_status["database"] = "connected"
-    except Exception as e:
-        health_status["database"] = "disconnected"
-        health_status["database_error"] = str(e)
-        # Don't fail the health check if database is down
-
-    return health_status
+async def health_check_redirect():
+    """Redirect to the proper health endpoint for backward compatibility"""
+    return RedirectResponse(url="/api/v1/health", status_code=301)
 
 
 @app.get("/api/usage-summary")

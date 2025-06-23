@@ -145,7 +145,7 @@ chmod +x render-deploy-helper.sh
    # Check for pending migrations
    alembic current
    alembic history
-   
+
    # Apply new migrations
    alembic upgrade head
    ```

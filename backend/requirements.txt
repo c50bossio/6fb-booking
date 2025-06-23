@@ -50,7 +50,7 @@ email-validator==2.2.0
 python-json-logger==3.2.0
 
 # Square integration (if needed)
-squareup==50.0.0
+squareup==43.0.0.20250618
 
 # Date handling
 python-dateutil==2.9.0.post0
