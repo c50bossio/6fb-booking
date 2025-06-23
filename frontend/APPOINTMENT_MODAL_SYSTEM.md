@@ -338,14 +338,14 @@ const customAppointmentSchema = z.object({
     .min(2, 'Name too short')
     .max(50, 'Name too long')
     .regex(/^[a-zA-Z\s]+$/, 'Name can only contain letters'),
-  
+
   client_email: z.string()
     .email('Invalid email format')
     .refine(async (email) => {
       // Custom async validation
       return await checkEmailDomain(email)
     }, 'Email domain not allowed'),
-  
+
   // Custom business rules
   appointment_date: z.string()
     .refine((date) => {

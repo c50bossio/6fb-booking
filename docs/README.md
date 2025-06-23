@@ -275,6 +275,6 @@ Reference the [Operations Guide](./OPERATIONS_GUIDE.md) for maintenance and oper
 
 *Welcome to the 6FB Booking Platform! This documentation will help you succeed with our platform. For additional support, don't hesitate to contact our team.*
 
-**Support**: support@6fbbooking.com | 1-800-6FB-BOOK  
-**Documentation**: documentation@6fbbooking.com  
+**Support**: support@6fbbooking.com | 1-800-6FB-BOOK
+**Documentation**: documentation@6fbbooking.com
 **Status**: https://status.6fbbooking.com

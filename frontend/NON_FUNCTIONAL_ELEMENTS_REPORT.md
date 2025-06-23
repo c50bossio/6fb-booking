@@ -26,7 +26,7 @@ This report lists all non-functional buttons, links, and interactive elements fo
 
 - **Metric Cards** (lines 251, 274, 300, 321): All metric cards have `cursor-pointer` class but no onClick handlers
   - Today's Revenue card
-  - Appointments card  
+  - Appointments card
   - Active Barbers card
   - Weekly Payout card
 

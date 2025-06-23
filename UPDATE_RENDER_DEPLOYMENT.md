@@ -49,7 +49,7 @@ Should return: `{"status":"healthy","database":"healthy",...}`
 ### 5. Login and Test
 
 Visit your frontend URL and login with:
-- **Email**: admin@6fb.com  
+- **Email**: admin@6fb.com
 - **Password**: admin123
 
 ## 🚀 What's New in This Update
@@ -73,7 +73,7 @@ If automatic deployment doesn't work:
 
 Your existing setup is probably:
 - Backend: $7/month (Starter)
-- PostgreSQL: $7/month 
+- PostgreSQL: $7/month
 - Frontend: Free
 - **Total**: ~$14/month
 

@@ -236,7 +236,7 @@ For production use:
 Before finishing, verify:
 
 - [ ] Google Cloud project created
-- [ ] Google Calendar API enabled  
+- [ ] Google Calendar API enabled
 - [ ] OAuth consent screen configured
 - [ ] OAuth 2.0 client credentials created
 - [ ] Environment variables added to `.env`
@@ -250,7 +250,7 @@ Before finishing, verify:
 ## 🆘 **Troubleshooting Common Issues**
 
 ### **Issue 1: "redirect_uri_mismatch" Error**
-**Solution:** 
+**Solution:**
 - Verify the redirect URI in Google Console exactly matches your `.env` file
 - Check for typos, extra slashes, or http vs https
 

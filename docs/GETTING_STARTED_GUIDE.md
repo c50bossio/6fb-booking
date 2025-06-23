@@ -65,7 +65,7 @@ Internet Connection:
    - Email Address
    - Phone Number
    - Secure Password (8+ characters)
-   
+
    Optional Information:
    - Date of Birth (for age-appropriate services)
    - Preferred Communication Method (email/SMS)
@@ -151,7 +151,7 @@ Day of Appointment:
    - Contact information
    - Professional email address
    - Secure password
-   
+
    License and Credentials:
    - Barber license number
    - State of licensure
@@ -199,12 +199,12 @@ Day of Appointment:
    ✅ Lowest fees
    ✅ Best reporting
    ✅ International support
-   
+
    Square:
    ✅ Familiar interface
    ✅ POS integration
    ✅ Next-day deposits
-   
+
    Tremendous:
    ✅ Flexible payout options
    ✅ Gift card rewards
@@ -261,13 +261,13 @@ Day of Appointment:
        - Contact information
        - Operating hours
        - Holiday schedules
-     
+
      Services Setup:
        - Define service categories
        - Set base pricing structure
        - Configure booking rules
        - Set cancellation policies
-     
+
      Staff Management:
        - Add barber accounts
        - Set permission levels
@@ -298,13 +298,13 @@ Day of Appointment:
        - View own bookings
        - Process payments
        - Communicate with clients
-     
+
      Location Manager:
        - Manage location settings
        - Oversee location barbers
        - View location analytics
        - Handle local customer service
-     
+
      Super Admin:
        - Full system access
        - Financial oversight

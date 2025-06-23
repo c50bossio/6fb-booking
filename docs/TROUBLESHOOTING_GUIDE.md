@@ -23,7 +23,7 @@ This guide helps resolve common issues encountered while using the 6FB Booking P
 Before troubleshooting, check if the issue is system-wide:
 
 1. **Status Page**: Visit https://status.6fbbooking.com
-2. **Service Health**: 
+2. **Service Health**:
    ```bash
    curl -X GET "https://api.6fbbooking.com/health"
    ```
@@ -632,7 +632,7 @@ def verify_webhook_signature(payload, signature, secret):
         payload.encode('utf-8'),
         hashlib.sha256
     ).hexdigest()
-    
+
     return hmac.compare_digest(f"sha256={expected}", signature)
 ```
 

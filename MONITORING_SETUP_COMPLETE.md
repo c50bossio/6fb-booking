@@ -63,7 +63,7 @@ NEXT_PUBLIC_GA_TRACKING_ID=G-XXXXXXXXXX
 - Keyword Monitoring: "6FB" (optional)
 
 **Monitor 2 - API Health**:
-- Monitor Type: HTTP(s) 
+- Monitor Type: HTTP(s)
 - Friendly Name: "6FB Booking - API Health"
 - URL: `https://yourdomain.com/api/v1/health`
 - Monitoring Interval: 5 minutes
@@ -168,7 +168,7 @@ After setup, bookmark these URLs:
 2. Login with your account
 3. Enable push notifications for critical alerts
 
-### Sentry Mobile App  
+### Sentry Mobile App
 1. Download "Sentry" app from App Store/Google Play
 2. Login with your account
 3. Configure notification preferences
@@ -187,7 +187,7 @@ After setup, bookmark these URLs:
 ### Security Endpoints
 ```bash
 /api/v1/security/security-headers    # Security headers status
-/api/v1/security/security-summary    # Security monitoring dashboard  
+/api/v1/security/security-summary    # Security monitoring dashboard
 /api/v1/security/csp-report         # CSP violation reporting
 ```
 

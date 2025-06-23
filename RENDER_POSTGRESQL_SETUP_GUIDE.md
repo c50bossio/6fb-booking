@@ -132,7 +132,7 @@ The enhanced module automatically adds `sslmode=require`. If you still have issu
 
 ```python
 # The module handles this automatically, but you can verify:
-DATABASE_URL=postgresql://user:pass@host/db?sslmode=require
+DATABASE_URL=postgresql://user:pass@host/db?sslmode=require  # pragma: allowlist secret
 ```
 
 ### Import Errors

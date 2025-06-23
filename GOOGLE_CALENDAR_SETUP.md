@@ -195,7 +195,7 @@ export default function AppointmentModal({ appointment }) {
   return (
     <div>
       {/* Appointment details */}
-      <GoogleCalendarSync 
+      <GoogleCalendarSync
         appointmentId={appointment.id}
         googleEventId={appointment.google_calendar_event_id}
         showStatus={true}
