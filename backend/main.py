@@ -4,7 +4,7 @@ Force deployment trigger - Updated: 2025-06-23 14:30:00 UTC
 Build version: v1.0.0-2025-06-23-deploy-fix
 """
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
 from fastapi.staticfiles import StaticFiles
@@ -90,9 +90,12 @@ from api.v1.endpoints import (
     test_email,
     clients,
     google_calendar,
+    google_oauth,
     security_admin,
     health,
     availability_check,
+    financial_dashboard,
+    error_reporting,
 )
 
 # Import logging setup
@@ -141,8 +144,8 @@ if (
     and hasattr(settings, "CORS_STRICT_MODE")
     and settings.CORS_STRICT_MODE
 ):
-    # Production: Only allow specific domains
-    cors_origins = settings.production_cors_origins
+    # Production: Only allow specific domains from settings
+    cors_origins = settings.ALLOWED_ORIGINS
 else:
     # Development: Allow broader access
     env_origins = (
@@ -161,6 +164,7 @@ else:
         "https://sixfb-frontend-paby.onrender.com",
         "https://bookbarber.com",  # Production domain
         "https://app.bookbarber.com",  # App subdomain
+        "https://bookbarber-agndzzr3p-6fb.vercel.app",  # Vercel production deployment
     ]
 
     # Only allow wildcards in development
@@ -168,12 +172,19 @@ else:
         default_origins.extend(
             [
                 "https://bookbarber-dkbwc7iez-6fb.vercel.app",
-                "https://*.vercel.app",  # Preview deployments (dev only)
+                "https://bookbarber-agndzzr3p-6fb.vercel.app",
+                # Remove wildcard as it may cause issues - add specific domains instead
             ]
         )
 
     cors_origins = list(set(env_origins + default_origins))
     cors_origins = [origin.strip() for origin in cors_origins if origin.strip()]
+
+    # Log CORS configuration for debugging
+    logger.info(f"CORS Configuration - Environment: {settings.ENVIRONMENT}")
+    logger.info(f"CORS Origins configured: {cors_origins}")
+    logger.info(f"ENV origins: {env_origins}")
+    logger.info(f"Default origins: {default_origins}")
 
 app.add_middleware(
     CORSMiddleware,
@@ -188,6 +199,9 @@ app.add_middleware(
         "Authorization",
         "X-Requested-With",
         "Cache-Control",
+        "Origin",
+        "Access-Control-Request-Method",
+        "Access-Control-Request-Headers",
     ],
 )
 
@@ -231,6 +245,11 @@ app.include_router(
     public_status.router, prefix="/api/v1/public", tags=["Public Status"]
 )
 app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["Dashboard"])
+app.include_router(
+    financial_dashboard.router,
+    prefix="/api/v1/financial-dashboard",
+    tags=["Financial Dashboard"],
+)
 app.include_router(temp_reset.router, prefix="/api/v1/temp", tags=["Temp"])
 app.include_router(debug.router, prefix="/api/v1/debug", tags=["Debug"])
 app.include_router(
@@ -302,6 +321,11 @@ app.include_router(
     tags=["Google Calendar"],
 )
 app.include_router(
+    google_oauth.router,
+    prefix="/api/v1/auth/google",
+    tags=["Google OAuth"],
+)
+app.include_router(
     security_admin.router,
     prefix="/api/v1/security",
     tags=["Security Administration"],
@@ -315,6 +339,11 @@ app.include_router(
     availability_check.router,
     prefix="/api/v1/availability",
     tags=["Availability Check"],
+)
+app.include_router(
+    error_reporting.router,
+    prefix="/api/v1",
+    tags=["Error Reporting"],
 )
 
 # Add authentication system (disabled for now)
@@ -481,12 +510,27 @@ def get_cost_estimates():
     }
 
 
+@app.get("/cors-debug")
+def cors_debug():
+    """CORS debug endpoint - shows current CORS configuration"""
+    if settings.ENVIRONMENT.lower() != "development":
+        raise HTTPException(status_code=404, detail="Not found")
+
+    return {
+        "cors_origins": cors_origins,
+        "environment": settings.ENVIRONMENT,
+        "vercel_domain_included": "https://bookbarber-agndzzr3p-6fb.vercel.app"
+        in cors_origins,
+        "timestamp": datetime.utcnow().isoformat(),
+    }
+
+
 @app.get("/sentry-debug")
 def trigger_error():
     """Sentry debug endpoint - triggers a test error"""
     # Only allow in development environment
     if settings.ENVIRONMENT.lower() != "development":
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+        raise HTTPException(status_code=404, detail="Not found")
 
     logger.info("Sentry debug endpoint called - triggering test error")
     # This will be captured by Sentry

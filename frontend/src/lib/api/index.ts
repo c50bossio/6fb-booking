@@ -14,6 +14,7 @@ export { bookingService } from './bookings'
 export { calendarService } from './calendar'
 export { servicesService } from './services'
 export { barbersService } from './barbers'
+export { compensationService } from './compensation'
 
 // Re-export types
 export type {
@@ -110,6 +111,18 @@ export type {
   CreateLocationRequest,
   UpdateLocationRequest
 } from './locations'
+
+// Re-export compensation types
+export type {
+  CompensationPlan,
+  TieredRate,
+  BonusStructure,
+  Deduction,
+  BarberCompensation,
+  CompensationCalculation,
+  CompensationFilter,
+  CompensationAssignment
+} from './compensation'
 
 // Re-export utilities
 export { TimezoneHelper } from '../utils/datetime'

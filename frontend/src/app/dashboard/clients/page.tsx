@@ -52,6 +52,7 @@ function ClientsPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [historyModalTab, setHistoryModalTab] = useState<'appointments' | 'statistics' | 'communication'>('appointments');
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
@@ -127,6 +128,13 @@ function ClientsPage() {
 
   const handleViewHistory = (client: Client) => {
     setSelectedClient(client);
+    setHistoryModalTab('appointments');
+    setShowHistoryModal(true);
+  };
+
+  const handleSendMessage = (client: Client) => {
+    setSelectedClient(client);
+    setHistoryModalTab('communication');
     setShowHistoryModal(true);
   };
 
@@ -500,7 +508,7 @@ function ClientsPage() {
                           </button>
 
                           <button
-                            onClick={() => handleViewHistory(client)}
+                            onClick={() => handleSendMessage(client)}
                             className="p-2 rounded-lg transition-colors hover:bg-purple-50 dark:hover:bg-purple-900/20"
                             title="Send Message"
                           >
@@ -662,6 +670,7 @@ function ClientsPage() {
           setSelectedClient(null);
         }}
         client={selectedClient}
+        initialTab={historyModalTab}
       />
 
       <ConfirmationDialog

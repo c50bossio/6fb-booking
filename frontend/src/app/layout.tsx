@@ -11,6 +11,8 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ExtensionDetector from "@/components/ExtensionDetector";
 import ExtensionErrorHandler from "@/components/ExtensionErrorHandler";
 import HighContrastEnforcer from "@/components/HighContrastEnforcer";
+import ServiceWorkerProvider from "@/components/ServiceWorkerProvider";
+import PWAInstaller from "@/components/PWAInstaller";
 import Script from "next/script";
 
 const inter = Inter({
@@ -24,6 +26,14 @@ export const metadata: Metadata = {
   keywords: "barber, booking, appointments, six figure barber, analytics",
   authors: [{ name: "6FB Platform Team" }],
   robots: "index, follow",
+  manifest: "/manifest.json",
+  viewport: "width=device-width, initial-scale=1, viewport-fit=cover",
+  themeColor: "#20D9D2",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "6FB Booking",
+  },
   other: {
     // Security headers
     'X-Content-Type-Options': 'nosniff',
@@ -31,6 +41,13 @@ export const metadata: Metadata = {
     'X-XSS-Protection': '1; mode=block',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
+    // PWA meta tags
+    'apple-mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-status-bar-style': 'default',
+    'apple-mobile-web-app-title': '6FB Booking',
+    'mobile-web-app-capable': 'yes',
+    'msapplication-TileColor': '#20D9D2',
+    'msapplication-config': '/browserconfig.xml',
   }
 };
 
@@ -76,9 +93,12 @@ export default function RootLayout({
               <AuthProvider>
                 <NavigationProvider>
                   <StripeProvider>
-                    <ClientOnly>
-                      {children}
-                    </ClientOnly>
+                    <ServiceWorkerProvider>
+                      <ClientOnly>
+                        {children}
+                      </ClientOnly>
+                      <PWAInstaller />
+                    </ServiceWorkerProvider>
                   </StripeProvider>
                 </NavigationProvider>
               </AuthProvider>

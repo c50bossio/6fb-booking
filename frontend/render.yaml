@@ -1,13 +1,68 @@
 services:
-  - type: web
-    name: sixfb-frontend
+  # Primary: Static Site Deployment (Recommended)
+  - type: static_site
+    name: sixfb-frontend-static
     runtime: node
-    buildCommand: npm install && npm run build
-    startCommand: npm start
+    region: oregon
+    plan: starter
+    buildCommand: npm ci && npm run build:render
+    publishPath: out
     envVars:
       - key: NODE_ENV
         value: production
+      - key: NEXT_TELEMETRY_DISABLED
+        value: 1
       - key: NEXT_PUBLIC_API_URL
         value: https://sixfb-backend.onrender.com/api/v1
       - key: NEXT_PUBLIC_APP_URL
-        value: https://sixfb-frontend.onrender.com
+        value: https://sixfb-frontend-static.onrender.com
+      - key: NEXT_PUBLIC_ENVIRONMENT
+        value: production
+      - key: NEXT_PUBLIC_ENABLE_ANALYTICS
+        value: true
+      - key: NEXT_PUBLIC_ENABLE_WEBSOCKET
+        value: true
+      - key: NEXT_PUBLIC_ENABLE_PAYMENTS
+        value: true
+      # Add your Stripe key in Render dashboard
+      - key: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+        sync: false
+    headers:
+      - path: /*
+        headers:
+          - key: X-Frame-Options
+            value: SAMEORIGIN
+          - key: X-Content-Type-Options
+            value: nosniff
+          - key: Cache-Control
+            value: public, max-age=3600
+      - path: /_next/static/*
+        headers:
+          - key: Cache-Control
+            value: public, max-age=31536000, immutable
+
+  # Fallback: Server Deployment  
+  - type: web
+    name: sixfb-frontend-server
+    runtime: node
+    region: oregon
+    plan: starter
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: NEXT_TELEMETRY_DISABLED
+        value: 1
+      - key: NEXT_PUBLIC_API_URL
+        value: https://sixfb-backend.onrender.com/api/v1
+      - key: NEXT_PUBLIC_APP_URL
+        value: https://sixfb-frontend-server.onrender.com
+      - key: NEXT_PUBLIC_ENVIRONMENT
+        value: production
+      # Add your Stripe key in Render dashboard
+      - key: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+        sync: false

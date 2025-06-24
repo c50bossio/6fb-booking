@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6FB Booking - Offline</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            color: #334155;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            padding: 3rem;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 2rem;
+            background: linear-gradient(135deg, #20D9D2, #1BC5B8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .icon svg {
+            width: 40px;
+            height: 40px;
+            color: white;
+        }
+
+        h1 {
+            color: #1e293b;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .subtitle {
+            color: #64748b;
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
+
+        .description {
+            color: #64748b;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .features {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .features h3 {
+            color: #1e293b;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .feature-list {
+            list-style: none;
+            space-y: 0.75rem;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            color: #475569;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-list li::before {
+            content: "✓";
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.875rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+            min-width: 120px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #20D9D2, #1BC5B8);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(32, 217, 210, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #475569;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            border-color: #20D9D2;
+            color: #20D9D2;
+            transform: translateY(-2px);
+        }
+
+        .status {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #fef3c7;
+            border: 1px solid #fbbf24;
+            border-radius: 8px;
+            color: #92400e;
+            font-size: 0.875rem;
+        }
+
+        .status.online {
+            background: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
+        }
+
+        .footer {
+            margin-top: 2rem;
+            font-size: 0.875rem;
+            color: #94a3b8;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 2rem;
+                margin: 1rem;
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            .subtitle {
+                font-size: 1.1rem;
+            }
+
+            .buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 200px;
+            }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            }
+
+            .container {
+                background: #1e293b;
+                color: #e2e8f0;
+            }
+
+            h1 {
+                color: #f1f5f9;
+            }
+
+            .subtitle, .description {
+                color: #cbd5e1;
+            }
+
+            .features {
+                background: #334155;
+            }
+
+            .features h3 {
+                color: #f1f5f9;
+            }
+
+            .feature-list li {
+                color: #cbd5e1;
+            }
+
+            .btn-secondary {
+                background: #334155;
+                color: #cbd5e1;
+                border-color: #475569;
+            }
+
+            .btn-secondary:hover {
+                border-color: #20D9D2;
+                color: #20D9D2;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636" />
+            </svg>
+        </div>
+        
+        <h1>You're Offline</h1>
+        <p class="subtitle">No internet connection detected</p>
+        
+        <p class="description">
+            Don't worry! 6FB Booking works offline too. Your data is safe and will automatically sync when your connection is restored.
+        </p>
+
+        <div class="features">
+            <h3>Available Offline:</h3>
+            <ul class="feature-list">
+                <li>View cached appointments and schedules</li>
+                <li>Browse client information and history</li>
+                <li>Access analytics dashboards</li>
+                <li>Create new appointments (syncs later)</li>
+                <li>Update client information</li>
+                <li>View business metrics and reports</li>
+            </ul>
+        </div>
+
+        <div class="buttons">
+            <button class="btn btn-primary" onclick="checkConnection()">
+                Check Connection
+            </button>
+            <a href="/dashboard" class="btn btn-secondary">
+                Continue Offline
+            </a>
+        </div>
+
+        <div id="connectionStatus" class="status">
+            <span id="statusText">Checking connection status...</span>
+        </div>
+
+        <div class="footer">
+            Powered by 6FB Booking Platform
+        </div>
+    </div>
+
+    <script>
+        let retryCount = 0;
+        const maxRetries = 3;
+
+        function updateConnectionStatus() {
+            const statusElement = document.getElementById('connectionStatus');
+            const statusText = document.getElementById('statusText');
+            
+            if (navigator.onLine) {
+                statusElement.className = 'status online';
+                statusText.textContent = 'Connection restored! Redirecting to dashboard...';
+                
+                // Redirect to dashboard after a short delay
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 2000);
+            } else {
+                statusElement.className = 'status';
+                statusText.textContent = 'Still offline. Will keep checking...';
+            }
+        }
+
+        function checkConnection() {
+            const statusText = document.getElementById('statusText');
+            statusText.textContent = 'Checking connection...';
+            
+            // Try to fetch a small resource to test connectivity
+            fetch('/favicon.ico?' + Date.now(), { 
+                mode: 'no-cors',
+                cache: 'no-cache'
+            })
+            .then(() => {
+                if (navigator.onLine) {
+                    updateConnectionStatus();
+                } else {
+                    throw new Error('Still offline');
+                }
+            })
+            .catch(() => {
+                retryCount++;
+                const statusElement = document.getElementById('connectionStatus');
+                statusElement.className = 'status';
+                
+                if (retryCount < maxRetries) {
+                    statusText.textContent = `Connection failed. Retrying in 3 seconds... (${retryCount}/${maxRetries})`;
+                    setTimeout(checkConnection, 3000);
+                } else {
+                    statusText.textContent = 'Still offline. Please check your internet connection.';
+                    retryCount = 0; // Reset for next manual check
+                }
+            });
+        }
+
+        // Listen for online/offline events
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+
+        // Check connection on page load
+        window.addEventListener('load', () => {
+            setTimeout(checkConnection, 1000);
+            
+            // Periodic connection check every 30 seconds
+            setInterval(() => {
+                if (!navigator.onLine) {
+                    checkConnection();
+                }
+            }, 30000);
+        });
+
+        // Auto-refresh when coming back online
+        window.addEventListener('focus', () => {
+            if (navigator.onLine) {
+                checkConnection();
+            }
+        });
+    </script>
+</body>
+</html>

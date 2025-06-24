@@ -16,6 +16,7 @@ interface BaseModalProps {
   panelClassName?: string
   closeOnOverlayClick?: boolean
   preventScroll?: boolean
+  debugButtons?: boolean  // For troubleshooting button issues
 }
 
 const sizeClasses = {
@@ -40,7 +41,8 @@ export default function BaseModal({
   overlayClassName = '',
   panelClassName = '',
   closeOnOverlayClick = true,
-  preventScroll = true
+  preventScroll = true,
+  debugButtons = false
 }: BaseModalProps) {
   const initialFocusRef = useRef(null)
 
@@ -59,11 +61,30 @@ export default function BaseModal({
     }
   }, [isOpen, preventScroll])
 
-  const handleOverlayClick = () => {
-    if (closeOnOverlayClick) {
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    // Only close if clicking directly on the overlay, not child elements
+    if (e.target === e.currentTarget && closeOnOverlayClick) {
+      if (debugButtons) {
+        console.log('[BaseModal] Overlay clicked - closing modal')
+      }
       onClose()
     }
   }
+
+  // Add global click listener for debugging button issues
+  useEffect(() => {
+    if (!debugButtons || !isOpen) return
+
+    const handleGlobalClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (target.tagName === 'BUTTON' || target.closest('button')) {
+        console.log('[BaseModal] Button clicked:', target, 'Disabled:', target.closest('button')?.disabled)
+      }
+    }
+
+    document.addEventListener('click', handleGlobalClick, true)
+    return () => document.removeEventListener('click', handleGlobalClick, true)
+  }, [debugButtons, isOpen])
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -128,7 +149,14 @@ export default function BaseModal({
                       <button
                         type="button"
                         className="rounded-lg p-2 min-h-[44px] min-w-[44px] text-gray-400 dark:text-[#8B92A5] hover:text-gray-600 dark:hover:text-[#FFFFFF] hover:bg-gray-100 dark:hover:bg-[#24252E] transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#20D9D2]/20"
-                        onClick={onClose}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          if (debugButtons) {
+                            console.log('[BaseModal] Close button clicked')
+                          }
+                          onClose()
+                        }}
                       >
                         <span className="sr-only">Close</span>
                         <XMarkIcon className="h-5 w-5" aria-hidden="true" />

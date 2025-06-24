@@ -1,62 +1,63 @@
 {
-  "timestamp": "2025-06-23T07:29:43.237343",
+  "timestamp": "2025-06-24T05:10:02.915866",
   "server_status": {
     "running": true,
-    "health_response_time": 0.010612010955810547,
+    "health_response_time": 0.008165121078491211,
     "health_data": {
       "status": "healthy",
-      "timestamp": "2025-06-23T11:29:43.245964",
-      "version": "1.0.0",
-      "database": "connected"
+      "timestamp": "2025-06-24T09:10:02.922947",
+      "service": "6fb-booking-api",
+      "version": "unknown",
+      "database": "healthy"
     }
   },
   "authentication_test": {
     "success": true,
-    "time": 0.2334129810333252,
+    "time": 0.2292628288269043,
     "has_token": true,
     "user_data": {
-      "id": 2,
+      "id": 1,
       "email": "admin@6fb.com",
-      "full_name": "Test Admin",
+      "full_name": "Admin User",
       "role": "super_admin",
       "permissions": [
-        "locations:create",
-        "users:create",
-        "clients:view_all",
-        "financial:manage_commissions",
-        "locations:view_all",
-        "locations:delete",
         "automation:manage",
-        "locations:manage_all",
+        "financial:view_payouts",
+        "system:view_logs",
+        "locations:create",
         "appointments:manage_all",
         "automation:configure_workflows",
-        "analytics:financial",
-        "analytics:view_all",
-        "users:delete",
-        "financial:view_payouts",
-        "financial:view_revenue",
+        "locations:view_all",
         "automation:view_logs",
-        "users:view_all",
-        "system:admin",
-        "system:view_logs",
-        "analytics:export",
+        "system:manage_platform",
         "users:manage",
+        "users:view_all",
+        "analytics:view_all",
+        "analytics:financial",
+        "financial:manage_commissions",
+        "analytics:export",
+        "locations:delete",
         "users:assign_roles",
-        "system:manage_platform"
+        "users:create",
+        "financial:view_revenue",
+        "users:delete",
+        "system:admin",
+        "clients:view_all",
+        "locations:manage_all"
       ],
       "primary_location_id": null
     }
   },
   "api_endpoints": {
     "endpoints_tested": 8,
-    "successful_endpoints": 4,
-    "failed_endpoints": 4,
+    "successful_endpoints": 5,
+    "failed_endpoints": 3,
     "endpoint_details": {
       "/api/v1/auth/me": {
         "method": "GET",
         "description": "Protected route test",
         "status_code": 200,
-        "response_time": 0.002213001251220703,
+        "response_time": 0.002824068069458008,
         "success": true,
         "requires_auth": true,
         "response_size": 198
@@ -64,71 +65,86 @@
       "/api/v1/services": {
         "method": "GET",
         "description": "List services",
-        "status_code": 404,
-        "response_time": 0.0037271976470947266,
-        "success": false,
+        "status_code": 200,
+        "response_time": 0.013733863830566406,
+        "success": true,
         "requires_auth": false,
-        "response_size": 1097
+        "response_size": 42
       },
       "/api/v1/clients": {
         "method": "GET",
         "description": "List clients",
         "status_code": 500,
-        "response_time": 0.011888265609741211,
+        "response_time": 0.009062051773071289,
         "success": false,
         "requires_auth": true,
-        "response_size": 3664
+        "response_size": 3781
       },
       "/api/v1/barbers": {
         "method": "GET",
         "description": "List barbers",
         "status_code": 200,
-        "response_time": 0.08976173400878906,
+        "response_time": 0.00523686408996582,
         "success": true,
         "requires_auth": true,
-        "response_size": 975
+        "response_size": 2
       },
       "/api/v1/appointments": {
         "method": "GET",
         "description": "List appointments",
         "status_code": 500,
-        "response_time": 0.009144783020019531,
+        "response_time": 0.007000923156738281,
         "success": false,
         "requires_auth": true,
-        "response_size": 3635
+        "response_size": 3751
       },
       "/api/v1/analytics/dashboard": {
         "method": "GET",
         "description": "Dashboard analytics",
         "status_code": 404,
-        "response_time": 0.0033512115478515625,
+        "response_time": 0.0028848648071289062,
         "success": false,
         "requires_auth": true,
-        "response_size": 1097
+        "response_size": 953
       },
       "/health": {
         "method": "GET",
         "description": "Health check",
         "status_code": 200,
-        "response_time": 0.002414226531982422,
+        "response_time": 0.0032558441162109375,
         "success": true,
         "requires_auth": false,
-        "response_size": 102
+        "response_size": 130
       }
     },
-    "average_response_time": 0.01581016182899475,
-    "fastest_response": 0.002213001251220703,
-    "slowest_response": 0.08976173400878906
+    "average_response_time": 0.005892306566238403,
+    "fastest_response": 0.002824068069458008,
+    "slowest_response": 0.013733863830566406
   },
   "booking_workflow": {
     "workflow_steps": {
       "get_services": {
+        "success": true,
+        "time": 0.00487518310546875,
+        "service_count": 0
+      },
+      "get_clients": {
         "success": false,
-        "status_code": 404,
-        "time": 0.0031747817993164062
+        "status_code": 500,
+        "time": 0.006121158599853516
+      },
+      "get_barbers": {
+        "success": true,
+        "time": 0.004021167755126953,
+        "barber_count": 0
+      },
+      "create_booking": {
+        "success": false,
+        "error": "Missing required data (clients, barbers, or services)",
+        "time": 0
       }
     },
-    "total_workflow_time": 0,
+    "total_workflow_time": 0.015043973922729492,
     "workflow_successful": false,
     "created_booking_id": null
   },
@@ -136,21 +152,21 @@
     "concurrent_requests": {
       "5_concurrent": {
         "total_requests": 15,
-        "successful_requests": 5,
-        "success_rate": 33.33333333333333,
-        "avg_response_time": 0.008226966857910157,
-        "max_response_time": 0.009634733200073242,
-        "total_time": 0.020517826080322266,
-        "requests_per_second": 731.0716028724813
+        "successful_requests": 10,
+        "success_rate": 66.66666666666666,
+        "avg_response_time": 0.011161518096923829,
+        "max_response_time": 0.01453709602355957,
+        "total_time": 0.028359174728393555,
+        "requests_per_second": 528.9293550909229
       },
       "10_concurrent": {
         "total_requests": 30,
-        "successful_requests": 10,
-        "success_rate": 33.33333333333333,
-        "avg_response_time": 0.03834898471832275,
-        "max_response_time": 0.07554316520690918,
-        "total_time": 0.09264612197875977,
-        "requests_per_second": 323.8127981965382
+        "successful_requests": 20,
+        "success_rate": 66.66666666666666,
+        "avg_response_time": 0.027533304691314698,
+        "max_response_time": 0.07901883125305176,
+        "total_time": 0.14323115348815918,
+        "requests_per_second": 209.45164001964196
       }
     },
     "response_time_analysis": {},
@@ -182,7 +198,7 @@
     "security_score": 50.0
   },
   "summary": {
-    "overall_score": 48.33333333333333,
+    "overall_score": 59.791666666666664,
     "api_functionality": "needs_work",
     "booking_workflow": "issues",
     "security_status": "needs_improvement",
@@ -194,12 +210,12 @@
     ],
     "recommendations": [],
     "key_metrics": {
-      "avg_api_response_time": 0.01581016182899475,
-      "api_success_rate": 50.0,
-      "booking_workflow_time": 0,
+      "avg_api_response_time": 0.005892306566238403,
+      "api_success_rate": 62.5,
+      "booking_workflow_time": 0.015043973922729492,
       "security_score": 50.0,
       "max_concurrent_users_tested": 10
     }
   },
-  "total_test_time": 0.2546861171722412
+  "total_test_time": 0.24396014213562012
 }

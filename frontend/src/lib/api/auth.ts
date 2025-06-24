@@ -31,13 +31,14 @@ export const authService = {
    * Login user
    */
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    const formData = new FormData()
-    formData.append('username', credentials.username)
+    // Use form-urlencoded format for the /auth/token endpoint (OAuth2 standard)
+    const formData = new URLSearchParams()
+    formData.append('username', credentials.username) // OAuth2 expects 'username' even for email
     formData.append('password', credentials.password)
-
+    
     const response = await apiClient.post<LoginResponse>('/auth/token', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
     })
 

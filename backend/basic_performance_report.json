@@ -1,90 +1,44 @@
 {
-  "timestamp": "2025-06-23T07:25:08.394923",
+  "timestamp": "2025-06-24T09:39:15.466938",
   "database_performance": {
     "connection_test": {
       "successful": true,
-      "time": 0.00012993812561035156
+      "time": 6.985664367675781e-05
     },
     "basic_queries": {
-      "average_time": 0.0013662338256835937,
-      "total_time": 0.006831169128417969,
-      "fastest": 0.00010538101196289062,
-      "slowest": 0.006107807159423828,
+      "average_time": 0.08006713867187501,
+      "total_time": 0.400335693359375,
+      "fastest": 0.000335693359375,
+      "slowest": 0.1,
       "queries_executed": 5
     },
     "complex_queries": {
-      "average_time": 0.0001747608184814453,
+      "average_time": 0.2,
       "query_times": [
-        0.00012421607971191406,
-        0.0002980232238769531,
-        0.00010204315185546875
+        0.2,
+        0.2,
+        0.2
       ]
     },
     "table_analysis": {
-      "total_tables": 54,
+      "total_tables": 8,
       "table_names": [
-        "automation_rules",
-        "revenue_shares",
-        "workflow_logs",
-        "commissions",
-        "sqlite_stat1",
-        "users",
-        "locations",
-        "certifications",
-        "training_paths",
-        "communication_templates",
-        "user_sessions",
-        "user_activities",
-        "location_analytics",
-        "barbers",
-        "training_modules",
-        "user_certifications",
-        "skill_assessments",
-        "training_path_enrollments",
-        "notifications",
-        "payment_methods",
-        "payment_reports",
-        "email_logs",
-        "sms_logs",
-        "notification_preferences",
-        "clients",
-        "daily_metrics",
-        "weekly_metrics",
-        "monthly_metrics",
-        "sixfb_scores",
-        "training_enrollments",
-        "stripe_customers",
-        "appointments",
-        "training_attempts",
-        "payments",
-        "refunds",
-        "payment_webhook_events",
-        "barber_payment_models",
-        "product_sales",
-        "payment_integrations",
-        "booth_rent_payments",
-        "commission_payments",
-        "compensation_plans",
-        "commission_calculations",
-        "payment_history",
-        "service_categories",
-        "barber_availability",
-        "reviews",
-        "services",
-        "booking_rules",
-        "booking_slots",
-        "wait_lists",
         "alembic_version",
-        "google_calendar_settings",
-        "google_calendar_sync_logs"
+        "service_categories",
+        "services",
+        "barber_availability",
+        "booking_rules",
+        "reviews",
+        "booking_slots",
+        "wait_lists"
       ],
-      "total_indexes": 146,
-      "has_user_indexes": true,
-      "has_appointment_indexes": true
+      "total_indexes": 7,
+      "has_user_indexes": false,
+      "has_appointment_indexes": false
     },
-    "performance_score": 100,
-    "estimated_improvement": "65%",
-    "meets_50_70_target": true
+    "performance_score": 80,
+    "estimated_improvement": "30%",
+    "meets_50_70_target": false
   },
   "security_validation": {
     "environment_security": {
@@ -118,14 +72,14 @@
     "database_readiness": {
       "connection_works": true,
       "required_tables": {
-        "users": true,
-        "barbers": true,
-        "clients": true,
-        "appointments": true,
+        "users": false,
+        "barbers": false,
+        "clients": false,
+        "appointments": false,
         "services": true
       },
-      "all_tables_exist": true,
-      "total_tables": 54
+      "all_tables_exist": false,
+      "total_tables": 8
     },
     "file_structure": {
       "main.py": true,
@@ -135,23 +89,24 @@
       "models_dir": true,
       "api_dir": true
     },
-    "readiness_score": 100.0
+    "readiness_score": 91.66666666666666
   },
   "performance_summary": {
-    "overall_score": 94.44444444444444,
-    "database_optimization_validated": true,
+    "overall_score": 85.0,
+    "database_optimization_validated": false,
     "security_status": "good",
     "production_ready": true,
     "key_metrics": {
-      "avg_query_time": 0.0013662338256835937,
-      "database_performance_score": 100,
+      "avg_query_time": 0.08006713867187501,
+      "database_performance_score": 80,
       "security_score": 83.33333333333334,
-      "production_readiness_score": 100.0,
-      "total_database_tables": 54
+      "production_readiness_score": 91.66666666666666,
+      "total_database_tables": 8
     },
-    "recommendations": [],
-    "critical_issues": [],
-    "estimated_improvement": "65%"
+    "recommendations": [
+      "Implement additional database optimizations to reach 50-70% improvement target"
+    ],
+    "critical_issues": []
   },
-  "total_test_time": 0.008460044860839844
+  "total_test_time": 0.00414276123046875
 }

@@ -144,13 +144,13 @@ export default function ServicesPage() {
                 style={{
                   borderColor: colors.border,
                   color: colors.textPrimary,
-                  backgroundColor: 'transparent'
+                  backgroundColor: "transparent"
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = theme === 'dark' ? '#374151' : theme === 'charcoal' ? '#2a2a2a' : theme === 'soft-light' ? '#f0f0f0' : '#f9fafb'
+                  e.currentTarget.style.backgroundColor = theme === "dark" ? "#374151" : theme === "charcoal" ? "#2a2a2a" : theme === "soft-light" ? "#f0f0f0" : "#f9fafb"
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent'
+                  e.currentTarget.style.backgroundColor = "transparent"
                 }}
               >
                 <Squares2X2Icon className="h-4 w-4" />
@@ -379,7 +379,7 @@ export default function ServicesPage() {
               }}>
                 <div className="flex items-center">
                   <ScissorsIcon className="h-8 w-8" style={{
-                    color: theme === 'soft-light' ? '#7c9885' : theme === 'charcoal' ? '#6b7280' : '#64748b'
+                    color: theme === "soft-light" ? "#7c9885" : theme === "charcoal" ? "#6b7280" : "#64748b"
                   }} />
                   <div className="ml-3">
                     <p className="text-sm font-medium" style={{
@@ -401,7 +401,7 @@ export default function ServicesPage() {
               }}>
                 <div className="flex items-center">
                   <TagIcon className="h-8 w-8" style={{
-                    color: '#8b5cf6'
+                    color: "#8b5cf6"
                   }} />
                   <div className="ml-3">
                     <p className="text-sm font-medium" style={{
@@ -423,7 +423,7 @@ export default function ServicesPage() {
               }}>
                 <div className="flex items-center">
                   <ClockIcon className="h-8 w-8" style={{
-                    color: '#d97706'
+                    color: "#d97706"
                   }} />
                   <div className="ml-3">
                     <p className="text-sm font-medium" style={{
@@ -445,7 +445,7 @@ export default function ServicesPage() {
               }}>
                 <div className="flex items-center">
                   <CurrencyDollarIcon className="h-8 w-8" style={{
-                    color: '#059669'
+                    color: "#059669"
                   }} />
                   <div className="ml-3">
                     <p className="text-sm font-medium" style={{

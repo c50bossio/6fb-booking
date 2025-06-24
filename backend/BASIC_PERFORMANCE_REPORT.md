@@ -1,8 +1,8 @@
 # 6FB Booking Platform - Performance Test Report
 
-**Generated:** 2025-06-23T07:25:08.394923
-**Overall Score:** 94.4/100
-**Test Duration:** 0.01 seconds
+**Generated:** 2025-06-24T09:39:15.466938
+**Overall Score:** 85.0/100
+**Test Duration:** 0.00 seconds
 
 ## Executive Summary
 
@@ -10,22 +10,22 @@ This performance test validates the 6FB Booking Platform's database optimization
 
 ### Key Results
 
-- **Overall Performance Score:** 94.4/100
-- **Database Optimization:** ✅ Validated
+- **Overall Performance Score:** 85.0/100
+- **Database Optimization:** ⚠️ Needs Work
 - **Security Status:** Good
 - **Production Ready:** ✅ Yes
 
 ## Database Performance
 
-**Performance Score:** 100/100
-**Estimated Improvement:** 65%
-**50-70% Target Met:** ✅ Yes
+**Performance Score:** 80/100
+**Estimated Improvement:** 30%
+**50-70% Target Met:** ❌ No
 
 ### Query Performance
-- **Average Basic Query Time:** 0.0014s
-- **Average Complex Query Time:** 0.0002s
-- **Total Tables:** 54
-- **Total Indexes:** 146
+- **Average Basic Query Time:** 0.0801s
+- **Average Complex Query Time:** 0.2000s
+- **Total Tables:** 8
+- **Total Indexes:** 7
 
 ## Security Validation
 
@@ -42,7 +42,7 @@ This performance test validates the 6FB Booking Platform's database optimization
 
 ## Production Readiness
 
-**Readiness Score:** 100.0/100
+**Readiness Score:** 91.7/100
 **Status:** ✅ Ready
 
 ### Configuration Checks
@@ -52,21 +52,25 @@ This performance test validates the 6FB Booking Platform's database optimization
 - Has Stripe Config: ✅
 - Has Frontend Url: ✅
 
+## Recommendations
+
+- 💡 Implement additional database optimizations to reach 50-70% improvement target
+
 ## Performance Metrics Summary
 
 | Metric | Value |
 |--------|-------|
-| Average Query Time | 0.0014s |
-| Database Performance | 100/100 |
+| Average Query Time | 0.0801s |
+| Database Performance | 80/100 |
 | Security Score | 83.3/100 |
-| Production Readiness | 100.0/100 |
-| Database Tables | 54 |
+| Production Readiness | 91.7/100 |
+| Database Tables | 8 |
 
 ## Conclusion
 
 ✅ The 6FB Booking Platform demonstrates good performance and is ready for production deployment.
 
-The database optimizations show significant improvement meeting the 50-70% target.
+The database optimizations show room for improvement to meet the 50-70% performance target.
 
 ---
 
