@@ -667,12 +667,12 @@ async def get_barber_dashboard(
         if not barber or barber.id != barber_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Access denied - can only view your own dashboard"
+                detail="Access denied - can only view your own dashboard",
             )
     elif current_user.role not in ["shop_owner", "admin", "super_admin"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Insufficient permissions to access barber dashboard"
+            detail="Insufficient permissions to access barber dashboard",
         )
 
     # Check demo mode
@@ -684,8 +684,7 @@ async def get_barber_dashboard(
         barber = db.query(Barber).filter(Barber.id == barber_id).first()
         if not barber:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Barber not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="Barber not found"
             )
 
         today = date.today()
@@ -693,41 +692,74 @@ async def get_barber_dashboard(
         month_start = today.replace(day=1)
 
         # Get today's metrics
-        today_metrics = db.query(
-            func.sum(Appointment.service_revenue + Appointment.product_revenue + Appointment.tip_amount).label("earnings"),
-            func.count(Appointment.id).label("appointments"),
-            func.sum(Appointment.tip_amount).label("tips"),
-            func.sum(Appointment.service_revenue).label("services"),
-            func.sum(Appointment.product_revenue).label("products"),
-            func.avg(func.extract('epoch', Appointment.end_time - Appointment.start_time) / 3600).label("hours_worked"),
-            func.avg(Appointment.service_revenue + Appointment.product_revenue + Appointment.tip_amount).label("avg_ticket")
-        ).filter(
-            Appointment.barber_id == barber_id,
-            Appointment.appointment_date == today,
-            Appointment.status == "completed"
-        ).first()
+        today_metrics = (
+            db.query(
+                func.sum(
+                    Appointment.service_revenue
+                    + Appointment.product_revenue
+                    + Appointment.tip_amount
+                ).label("earnings"),
+                func.count(Appointment.id).label("appointments"),
+                func.sum(Appointment.tip_amount).label("tips"),
+                func.sum(Appointment.service_revenue).label("services"),
+                func.sum(Appointment.product_revenue).label("products"),
+                func.avg(
+                    func.extract("epoch", Appointment.end_time - Appointment.start_time)
+                    / 3600
+                ).label("hours_worked"),
+                func.avg(
+                    Appointment.service_revenue
+                    + Appointment.product_revenue
+                    + Appointment.tip_amount
+                ).label("avg_ticket"),
+            )
+            .filter(
+                Appointment.barber_id == barber_id,
+                Appointment.appointment_date == today,
+                Appointment.status == "completed",
+            )
+            .first()
+        )
 
         # Get week metrics
-        week_metrics = db.query(
-            func.sum(Appointment.service_revenue + Appointment.product_revenue + Appointment.tip_amount).label("earnings"),
-            func.count(Appointment.id).label("appointments"),
-            func.sum(Appointment.tip_amount).label("tips"),
-            func.count(func.distinct(Appointment.client_id)).label("unique_clients")
-        ).filter(
-            Appointment.barber_id == barber_id,
-            Appointment.appointment_date >= week_start,
-            Appointment.status == "completed"
-        ).first()
+        week_metrics = (
+            db.query(
+                func.sum(
+                    Appointment.service_revenue
+                    + Appointment.product_revenue
+                    + Appointment.tip_amount
+                ).label("earnings"),
+                func.count(Appointment.id).label("appointments"),
+                func.sum(Appointment.tip_amount).label("tips"),
+                func.count(func.distinct(Appointment.client_id)).label(
+                    "unique_clients"
+                ),
+            )
+            .filter(
+                Appointment.barber_id == barber_id,
+                Appointment.appointment_date >= week_start,
+                Appointment.status == "completed",
+            )
+            .first()
+        )
 
         # Get month metrics
-        month_metrics = db.query(
-            func.sum(Appointment.service_revenue + Appointment.product_revenue + Appointment.tip_amount).label("earnings"),
-            func.count(Appointment.id).label("appointments")
-        ).filter(
-            Appointment.barber_id == barber_id,
-            Appointment.appointment_date >= month_start,
-            Appointment.status == "completed"
-        ).first()
+        month_metrics = (
+            db.query(
+                func.sum(
+                    Appointment.service_revenue
+                    + Appointment.product_revenue
+                    + Appointment.tip_amount
+                ).label("earnings"),
+                func.count(Appointment.id).label("appointments"),
+            )
+            .filter(
+                Appointment.barber_id == barber_id,
+                Appointment.appointment_date >= month_start,
+                Appointment.status == "completed",
+            )
+            .first()
+        )
 
         # Calculate default values
         today_earnings = float(today_metrics.earnings or 0)
@@ -743,7 +775,7 @@ async def get_barber_dashboard(
                 "products": float(today_metrics.products or 0),
                 "hours_worked": float(today_metrics.hours_worked or 0),
                 "avg_ticket": float(today_metrics.avg_ticket or 0),
-                "client_satisfaction": 4.8  # Mock data for now
+                "client_satisfaction": 4.8,  # Mock data for now
             },
             "week": {
                 "earnings": week_earnings,
@@ -753,7 +785,7 @@ async def get_barber_dashboard(
                 "progress": min((week_earnings / 1500) * 100, 100),
                 "trend": 12.3,  # Mock trend
                 "new_clients": 8,  # Mock data
-                "returning_clients": max(0, (week_metrics.unique_clients or 0) - 8)
+                "returning_clients": max(0, (week_metrics.unique_clients or 0) - 8),
             },
             "month": {
                 "earnings": month_earnings,
@@ -763,7 +795,7 @@ async def get_barber_dashboard(
                 "trend": 15.7,  # Mock trend
                 "top_service": "Premium Fade",  # Mock data
                 "best_day": "Saturday",  # Mock data
-                "personal_record": month_earnings > 5000
+                "personal_record": month_earnings > 5000,
             },
             "goals": {
                 "daily_target": 300,
@@ -771,7 +803,7 @@ async def get_barber_dashboard(
                 "monthly_target": 6000,
                 "annual_target": 75000,
                 "current_streak": 5,  # Mock data
-                "best_streak": 12   # Mock data
+                "best_streak": 12,  # Mock data
             },
             "achievements": {
                 "recent": [
@@ -781,7 +813,7 @@ async def get_barber_dashboard(
                         "description": "Hit daily goal 5 days in a row",
                         "icon": "🔥",
                         "earned_date": "2024-12-23",
-                        "rarity": "rare"
+                        "rarity": "rare",
                     }
                 ],
                 "progress": [
@@ -790,34 +822,56 @@ async def get_barber_dashboard(
                         "title": "Weekly Warrior",
                         "progress": 31,
                         "target": 50,
-                        "reward": "Premium Badge + $50 Bonus"
+                        "reward": "Premium Badge + $50 Bonus",
                     }
-                ]
+                ],
             },
             "insights": {
                 "top_insight": {
                     "title": "Peak Hour Opportunity",
                     "description": "You earn 34% more during 6-8 PM slots. Consider booking more evening appointments.",
                     "potential_value": 280,
-                    "action": "Optimize Schedule"
+                    "action": "Optimize Schedule",
                 },
                 "peak_hours": ["10:00 AM", "2:00 PM", "6:00 PM", "7:00 PM"],
                 "top_clients": [
-                    {"name": "Marcus J.", "total_spent": 520, "visits": 8, "last_visit": "2024-12-20"},
-                    {"name": "David R.", "total_spent": 480, "visits": 7, "last_visit": "2024-12-18"}
+                    {
+                        "name": "Marcus J.",
+                        "total_spent": 520,
+                        "visits": 8,
+                        "last_visit": "2024-12-20",
+                    },
+                    {
+                        "name": "David R.",
+                        "total_spent": 480,
+                        "visits": 7,
+                        "last_visit": "2024-12-18",
+                    },
                 ],
                 "service_performance": [
-                    {"service": "Premium Fade", "revenue": 1200, "count": 24, "avg_price": 50, "trend": 15},
-                    {"service": "Beard Trim", "revenue": 800, "count": 32, "avg_price": 25, "trend": 8}
-                ]
-            }
+                    {
+                        "service": "Premium Fade",
+                        "revenue": 1200,
+                        "count": 24,
+                        "avg_price": 50,
+                        "trend": 15,
+                    },
+                    {
+                        "service": "Beard Trim",
+                        "revenue": 800,
+                        "count": 32,
+                        "avg_price": 25,
+                        "trend": 8,
+                    },
+                ],
+            },
         }
 
     except Exception as e:
         logger.error(f"Error fetching barber dashboard: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to fetch barber dashboard data"
+            detail="Failed to fetch barber dashboard data",
         )
 
 
@@ -832,7 +886,7 @@ def generate_demo_barber_dashboard_data(barber_id: int) -> Dict[str, Any]:
             "products": 0,
             "hours_worked": 7.5,
             "avg_ticket": 47.58,
-            "client_satisfaction": 4.8
+            "client_satisfaction": 4.8,
         },
         "week": {
             "earnings": 1450.75,
@@ -842,7 +896,7 @@ def generate_demo_barber_dashboard_data(barber_id: int) -> Dict[str, Any]:
             "progress": 96.7,
             "trend": 12.3,
             "new_clients": 8,
-            "returning_clients": 24
+            "returning_clients": 24,
         },
         "month": {
             "earnings": 5890.25,
@@ -852,7 +906,7 @@ def generate_demo_barber_dashboard_data(barber_id: int) -> Dict[str, Any]:
             "trend": 15.7,
             "top_service": "Premium Fade",
             "best_day": "Saturday",
-            "personal_record": True
+            "personal_record": True,
         },
         "goals": {
             "daily_target": 300,
@@ -860,7 +914,7 @@ def generate_demo_barber_dashboard_data(barber_id: int) -> Dict[str, Any]:
             "monthly_target": 6000,
             "annual_target": 75000,
             "current_streak": 5,
-            "best_streak": 12
+            "best_streak": 12,
         },
         "achievements": {
             "recent": [
@@ -870,7 +924,7 @@ def generate_demo_barber_dashboard_data(barber_id: int) -> Dict[str, Any]:
                     "description": "Hit daily goal 5 days in a row",
                     "icon": "🔥",
                     "earned_date": "2024-12-23",
-                    "rarity": "rare"
+                    "rarity": "rare",
                 },
                 {
                     "id": "new_record",
@@ -878,8 +932,8 @@ def generate_demo_barber_dashboard_data(barber_id: int) -> Dict[str, Any]:
                     "description": "Highest monthly earnings ever",
                     "icon": "🏆",
                     "earned_date": "2024-12-22",
-                    "rarity": "epic"
-                }
+                    "rarity": "epic",
+                },
             ],
             "progress": [
                 {
@@ -887,36 +941,69 @@ def generate_demo_barber_dashboard_data(barber_id: int) -> Dict[str, Any]:
                     "title": "Weekly Warrior",
                     "progress": 31,
                     "target": 50,
-                    "reward": "Premium Badge + $50 Bonus"
+                    "reward": "Premium Badge + $50 Bonus",
                 },
                 {
                     "id": "client_whisperer",
                     "title": "Client Whisperer",
                     "progress": 18,
                     "target": 25,
-                    "reward": "Advanced CRM Features"
-                }
-            ]
+                    "reward": "Advanced CRM Features",
+                },
+            ],
         },
         "insights": {
             "top_insight": {
                 "title": "Peak Hour Opportunity",
                 "description": "You earn 34% more during 6-8 PM slots. Consider booking more evening appointments.",
                 "potential_value": 280,
-                "action": "Optimize Schedule"
+                "action": "Optimize Schedule",
             },
             "peak_hours": ["10:00 AM", "2:00 PM", "6:00 PM", "7:00 PM"],
             "top_clients": [
-                {"name": "Marcus J.", "total_spent": 520, "visits": 8, "last_visit": "2024-12-20"},
-                {"name": "David R.", "total_spent": 480, "visits": 7, "last_visit": "2024-12-18"},
-                {"name": "James M.", "total_spent": 440, "visits": 6, "last_visit": "2024-12-19"}
+                {
+                    "name": "Marcus J.",
+                    "total_spent": 520,
+                    "visits": 8,
+                    "last_visit": "2024-12-20",
+                },
+                {
+                    "name": "David R.",
+                    "total_spent": 480,
+                    "visits": 7,
+                    "last_visit": "2024-12-18",
+                },
+                {
+                    "name": "James M.",
+                    "total_spent": 440,
+                    "visits": 6,
+                    "last_visit": "2024-12-19",
+                },
             ],
             "service_performance": [
-                {"service": "Premium Fade", "revenue": 1200, "count": 24, "avg_price": 50, "trend": 15},
-                {"service": "Beard Trim", "revenue": 800, "count": 32, "avg_price": 25, "trend": 8},
-                {"service": "Classic Cut", "revenue": 600, "count": 20, "avg_price": 30, "trend": -5}
-            ]
-        }
+                {
+                    "service": "Premium Fade",
+                    "revenue": 1200,
+                    "count": 24,
+                    "avg_price": 50,
+                    "trend": 15,
+                },
+                {
+                    "service": "Beard Trim",
+                    "revenue": 800,
+                    "count": 32,
+                    "avg_price": 25,
+                    "trend": 8,
+                },
+                {
+                    "service": "Classic Cut",
+                    "revenue": 600,
+                    "count": 20,
+                    "avg_price": 30,
+                    "trend": -5,
+                },
+            ],
+        },
     }
 
 

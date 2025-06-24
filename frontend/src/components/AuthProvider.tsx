@@ -18,7 +18,7 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const PUBLIC_ROUTES = ['/login', '/forgot-password', '/register']
+const PUBLIC_ROUTES = ['/login', '/forgot-password', '/register', '/signup']
 
 // DEMO MODE: Set to true to bypass authentication
 const DEMO_MODE = false

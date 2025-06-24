@@ -15,16 +15,26 @@ from fastapi import HTTPException, UploadFile, status
 from pydantic import BaseModel, ValidationError, validator, Field
 import sqlparse
 from urllib.parse import urlparse
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 import phonenumbers
 from phonenumbers import NumberParseException
+import ipaddress
+import uuid as uuid_module
+from email_validator import validate_email, EmailNotValidError
 
 
 class InputValidationError(HTTPException):
     """Custom exception for input validation errors"""
 
-    def __init__(self, detail: str):
-        super().__init__(status_code=status.HTTP_400_BAD_REQUEST, detail=detail)
+    def __init__(self, detail: str, error_code: str = "VALIDATION_ERROR"):
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail={
+                "error": "Input Validation Error",
+                "message": detail,
+                "error_code": error_code
+            }
+        )
 
 
 class FileUploadValidator:
@@ -286,6 +296,202 @@ class SQLInjectionValidator:
         return sanitized.strip()
 
 
+class EnhancedValidator:
+    """Enhanced validation utilities for improved security"""
+    
+    @staticmethod
+    def validate_email_enhanced(email: str) -> Dict[str, Any]:
+        """Enhanced email validation with additional checks"""
+        try:
+            # Basic validation
+            validation_result = validate_email(email)
+            email = validation_result.email
+            
+            # Additional security checks
+            if len(email) > 254:
+                raise InputValidationError("Email address too long", "EMAIL_TOO_LONG")
+            
+            # Check for suspicious patterns
+            suspicious_patterns = [
+                r'\.{2,}',  # Multiple consecutive dots
+                r'^\.|\.$',  # Leading or trailing dots
+                r'@.*@',  # Multiple @ symbols
+                r'[<>"\']',  # HTML/script injection characters
+            ]
+            
+            for pattern in suspicious_patterns:
+                if re.search(pattern, email):
+                    raise InputValidationError("Email contains invalid characters", "EMAIL_INVALID_CHARS")
+            
+            return {
+                "email": email,
+                "domain": validation_result.email.split('@')[1],
+                "local": validation_result.email.split('@')[0],
+                "is_valid": True
+            }
+            
+        except EmailNotValidError as e:
+            raise InputValidationError(f"Invalid email address: {str(e)}", "EMAIL_INVALID")
+    
+    @staticmethod
+    def validate_phone_number(phone: str, region: str = "US") -> Dict[str, Any]:
+        """Enhanced phone number validation"""
+        try:
+            # Remove common formatting characters
+            cleaned_phone = re.sub(r'[^\d+]', '', phone)
+            
+            # Parse and validate
+            parsed_number = phonenumbers.parse(cleaned_phone, region)
+            
+            if not phonenumbers.is_valid_number(parsed_number):
+                raise InputValidationError("Invalid phone number", "PHONE_INVALID")
+            
+            return {
+                "phone": phonenumbers.format_number(parsed_number, phonenumbers.PhoneNumberFormat.E164),
+                "formatted": phonenumbers.format_number(parsed_number, phonenumbers.PhoneNumberFormat.INTERNATIONAL),
+                "region": phonenumbers.region_code_for_number(parsed_number),
+                "is_valid": True
+            }
+            
+        except NumberParseException as e:
+            raise InputValidationError(f"Invalid phone number format: {str(e)}", "PHONE_INVALID_FORMAT")
+    
+    @staticmethod
+    def validate_uuid(uuid_string: str) -> str:
+        """Validate UUID format"""
+        try:
+            uuid_obj = uuid_module.UUID(uuid_string)
+            return str(uuid_obj)
+        except ValueError:
+            raise InputValidationError("Invalid UUID format", "UUID_INVALID")
+    
+    @staticmethod
+    def validate_ip_address(ip: str) -> Dict[str, Any]:
+        """Validate IP address and check if it's private/public"""
+        try:
+            ip_obj = ipaddress.ip_address(ip)
+            
+            return {
+                "ip": str(ip_obj),
+                "version": ip_obj.version,
+                "is_private": ip_obj.is_private,
+                "is_loopback": ip_obj.is_loopback,
+                "is_multicast": ip_obj.is_multicast,
+                "is_global": ip_obj.is_global if hasattr(ip_obj, 'is_global') else not ip_obj.is_private
+            }
+            
+        except ValueError:
+            raise InputValidationError("Invalid IP address format", "IP_INVALID")
+    
+    @staticmethod
+    def validate_date_range(start_date: str, end_date: str, max_range_days: int = 365) -> Dict[str, Any]:
+        """Validate date range with business rules"""
+        try:
+            # Parse dates
+            start = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+            end = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+            
+            # Ensure start is before end
+            if start >= end:
+                raise InputValidationError("Start date must be before end date", "DATE_RANGE_INVALID")
+            
+            # Check range length
+            range_days = (end - start).days
+            if range_days > max_range_days:
+                raise InputValidationError(f"Date range too large (max {max_range_days} days)", "DATE_RANGE_TOO_LARGE")
+            
+            # Ensure dates are not too far in the future
+            now = datetime.now(timezone.utc)
+            max_future_date = now.replace(year=now.year + 5)  # 5 years in future
+            
+            if start > max_future_date or end > max_future_date:
+                raise InputValidationError("Dates too far in the future", "DATE_TOO_FUTURE")
+            
+            return {
+                "start_date": start.isoformat(),
+                "end_date": end.isoformat(),
+                "range_days": range_days,
+                "is_valid": True
+            }
+            
+        except ValueError as e:
+            raise InputValidationError(f"Invalid date format: {str(e)}", "DATE_FORMAT_INVALID")
+    
+    @staticmethod
+    def validate_monetary_amount(amount: Union[int, float, str], min_amount: float = 0, max_amount: float = 100000) -> float:
+        """Validate monetary amounts with precision checks"""
+        try:
+            # Convert to float
+            if isinstance(amount, str):
+                # Remove currency symbols and whitespace
+                amount = re.sub(r'[$,\s]', '', amount)
+                amount = float(amount)
+            
+            # Check range
+            if amount < min_amount:
+                raise InputValidationError(f"Amount too small (minimum: ${min_amount})", "AMOUNT_TOO_SMALL")
+            
+            if amount > max_amount:
+                raise InputValidationError(f"Amount too large (maximum: ${max_amount})", "AMOUNT_TOO_LARGE")
+            
+            # Check precision (max 2 decimal places for currency)
+            if round(amount, 2) != amount:
+                amount = round(amount, 2)
+            
+            return amount
+            
+        except (ValueError, TypeError):
+            raise InputValidationError("Invalid monetary amount format", "AMOUNT_INVALID")
+    
+    @staticmethod
+    def sanitize_html_content(content: str) -> str:
+        """Sanitize HTML content to prevent XSS"""
+        if not content:
+            return ""
+        
+        # Basic HTML entity encoding
+        content = html.escape(content)
+        
+        # Remove potentially dangerous tags
+        dangerous_patterns = [
+            r'<script[^>]*>.*?</script>',
+            r'<iframe[^>]*>.*?</iframe>',
+            r'<object[^>]*>.*?</object>',
+            r'<embed[^>]*>.*?</embed>',
+            r'<link[^>]*>',
+            r'<meta[^>]*>',
+            r'<style[^>]*>.*?</style>',
+            r'javascript:',
+            r'vbscript:',
+            r'data:',
+            r'on\w+\s*=',  # Event handlers like onclick, onload, etc.
+        ]
+        
+        for pattern in dangerous_patterns:
+            content = re.sub(pattern, '', content, flags=re.IGNORECASE | re.DOTALL)
+        
+        return content.strip()
+    
+    @staticmethod
+    def validate_pagination_params(page: int = 1, per_page: int = 20, max_per_page: int = 100) -> Dict[str, int]:
+        """Validate pagination parameters"""
+        if page < 1:
+            raise InputValidationError("Page number must be positive", "PAGE_INVALID")
+        
+        if per_page < 1:
+            raise InputValidationError("Per page value must be positive", "PER_PAGE_INVALID")
+        
+        if per_page > max_per_page:
+            raise InputValidationError(f"Per page value too large (max: {max_per_page})", "PER_PAGE_TOO_LARGE")
+        
+        return {
+            "page": page,
+            "per_page": per_page,
+            "offset": (page - 1) * per_page,
+            "limit": per_page
+        }
+
+
 class URLValidator:
     """Validate URLs for security"""
 
@@ -452,7 +658,7 @@ def validate_input(validator_func):
 
 class ProductionInputValidator:
     """Comprehensive production-grade input validation"""
-    
+
     # XSS patterns for enhanced detection
     XSS_PATTERNS = [
         r"(?i)(<script[^>]*>)",
@@ -469,7 +675,7 @@ class ProductionInputValidator:
         r"(?i)(confirm\s*\()",
         r"(?i)(prompt\s*\()",
     ]
-    
+
     # Path traversal patterns
     PATH_TRAVERSAL_PATTERNS = [
         r"(\.\.\/)",
@@ -484,7 +690,7 @@ class ProductionInputValidator:
         r"(\\windows\\)",
         r"(\\system32\\)",
     ]
-    
+
     # Command injection patterns
     COMMAND_INJECTION_PATTERNS = [
         r"(;\s*(rm|del|format|shutdown))",
@@ -495,292 +701,309 @@ class ProductionInputValidator:
         r"(>\s*/dev/)",
         r"(<\s*/dev/)",
     ]
-    
+
     @classmethod
     def validate_comprehensive_input(cls, value: str, field_name: str = "input") -> str:
         """
         Comprehensive input validation against multiple attack vectors
-        
+
         Args:
             value: Input value to validate
             field_name: Name of the field being validated
-            
+
         Returns:
             Sanitized input value
-            
+
         Raises:
             InputValidationError: If malicious content detected
         """
         if not isinstance(value, str):
             raise InputValidationError(f"{field_name} must be a string")
-        
+
         # Check for null bytes
-        if '\x00' in value:
+        if "\x00" in value:
             raise InputValidationError(f"{field_name} contains null bytes")
-        
+
         # Check for XSS patterns
         for pattern in cls.XSS_PATTERNS:
             if re.search(pattern, value):
-                raise InputValidationError(f"{field_name} contains potential XSS content")
-        
+                raise InputValidationError(
+                    f"{field_name} contains potential XSS content"
+                )
+
         # Check for path traversal
         for pattern in cls.PATH_TRAVERSAL_PATTERNS:
             if re.search(pattern, value):
-                raise InputValidationError(f"{field_name} contains path traversal attempt")
-        
+                raise InputValidationError(
+                    f"{field_name} contains path traversal attempt"
+                )
+
         # Check for command injection
         for pattern in cls.COMMAND_INJECTION_PATTERNS:
             if re.search(pattern, value):
-                raise InputValidationError(f"{field_name} contains command injection attempt")
-        
+                raise InputValidationError(
+                    f"{field_name} contains command injection attempt"
+                )
+
         # Validate against SQL injection (reuse existing)
         SQLInjectionValidator.validate_query_string(value)
-        
+
         # HTML encode and sanitize
         sanitized = html.escape(value)
         sanitized = sanitized.strip()
-        
+
         return sanitized
-    
+
     @classmethod
-    def validate_json_input(cls, json_str: str, max_size: int = 1024*1024) -> Dict:
+    def validate_json_input(cls, json_str: str, max_size: int = 1024 * 1024) -> Dict:
         """
         Validate JSON input with size and content restrictions
-        
+
         Args:
             json_str: JSON string to validate
             max_size: Maximum size in bytes
-            
+
         Returns:
             Parsed JSON object
-            
+
         Raises:
             InputValidationError: If validation fails
         """
-        if len(json_str.encode('utf-8')) > max_size:
+        if len(json_str.encode("utf-8")) > max_size:
             raise InputValidationError(f"JSON input too large (max {max_size} bytes)")
-        
+
         try:
             parsed = json.loads(json_str)
         except json.JSONDecodeError as e:
             raise InputValidationError(f"Invalid JSON: {str(e)}")
-        
+
         # Recursively validate JSON values
         cls._validate_json_recursive(parsed)
-        
+
         return parsed
-    
+
     @classmethod
     def _validate_json_recursive(cls, obj: Any, depth: int = 0):
         """Recursively validate JSON object contents"""
         max_depth = 10
         max_string_length = 10000
-        
+
         if depth > max_depth:
             raise InputValidationError("JSON structure too deep")
-        
+
         if isinstance(obj, dict):
             if len(obj) > 100:  # Limit number of keys
                 raise InputValidationError("Too many keys in JSON object")
-            
+
             for key, value in obj.items():
                 if isinstance(key, str):
                     cls.validate_comprehensive_input(key, "JSON key")
                 cls._validate_json_recursive(value, depth + 1)
-        
+
         elif isinstance(obj, list):
             if len(obj) > 1000:  # Limit array size
                 raise InputValidationError("JSON array too large")
-            
+
             for item in obj:
                 cls._validate_json_recursive(item, depth + 1)
-        
+
         elif isinstance(obj, str):
             if len(obj) > max_string_length:
                 raise InputValidationError("JSON string value too long")
             cls.validate_comprehensive_input(obj, "JSON string value")
 
+
 class SecureFormValidator:
     """Enhanced form validation for production security"""
-    
+
     @classmethod
     def validate_email_comprehensive(cls, email: str) -> str:
         """
         Comprehensive email validation with security checks
-        
+
         Args:
             email: Email address to validate
-            
+
         Returns:
             Validated email address
-            
+
         Raises:
             InputValidationError: If email is invalid or dangerous
         """
         if not email:
             raise InputValidationError("Email is required")
-        
+
         # Basic format check
-        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
         if not re.match(email_pattern, email):
             raise InputValidationError("Invalid email format")
-        
+
         # Length check
         if len(email) > 254:
             raise InputValidationError("Email address too long")
-        
+
         # Check for dangerous patterns
         ProductionInputValidator.validate_comprehensive_input(email, "email")
-        
+
         # Domain validation
-        domain = email.split('@')[1].lower()
-        
+        domain = email.split("@")[1].lower()
+
         # Block common throwaway domains (optional)
         throwaway_domains = {
-            '10minutemail.com', 'tempmail.org', 'guerrillamail.com',
-            'mailinator.com', 'yopmail.com'
+            "10minutemail.com",
+            "tempmail.org",
+            "guerrillamail.com",
+            "mailinator.com",
+            "yopmail.com",
         }
-        
+
         if domain in throwaway_domains:
             raise InputValidationError("Throwaway email domains not allowed")
-        
+
         return email.lower()
-    
+
     @classmethod
     def validate_phone_international(cls, phone: str, country_code: str = "US") -> str:
         """
         International phone number validation using phonenumbers library
-        
+
         Args:
             phone: Phone number to validate
             country_code: Default country code
-            
+
         Returns:
             Formatted phone number in E164 format
-            
+
         Raises:
             InputValidationError: If phone number is invalid
         """
         if not phone:
             return ""
-        
+
         try:
             parsed = phonenumbers.parse(phone, country_code)
-            
+
             if not phonenumbers.is_valid_number(parsed):
                 raise InputValidationError("Invalid phone number")
-            
+
             # Format in E164 format for consistency
-            formatted = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
-            
+            formatted = phonenumbers.format_number(
+                parsed, phonenumbers.PhoneNumberFormat.E164
+            )
+
             return formatted
-            
+
         except NumberParseException as e:
             raise InputValidationError(f"Invalid phone number format: {str(e)}")
-    
+
     @classmethod
     def validate_password_strength(cls, password: str) -> Dict[str, Any]:
         """
         Validate password strength and security
-        
+
         Args:
             password: Password to validate
-            
+
         Returns:
             Dictionary with validation results
-            
+
         Raises:
             InputValidationError: If password doesn't meet requirements
         """
         if not password:
             raise InputValidationError("Password is required")
-        
+
         min_length = 8
         max_length = 128
-        
+
         # Length check
         if len(password) < min_length:
-            raise InputValidationError(f"Password must be at least {min_length} characters")
-        
+            raise InputValidationError(
+                f"Password must be at least {min_length} characters"
+            )
+
         if len(password) > max_length:
-            raise InputValidationError(f"Password must be no more than {max_length} characters")
-        
+            raise InputValidationError(
+                f"Password must be no more than {max_length} characters"
+            )
+
         # Complexity checks
         checks = {
-            'has_uppercase': bool(re.search(r'[A-Z]', password)),
-            'has_lowercase': bool(re.search(r'[a-z]', password)),
-            'has_digit': bool(re.search(r'\d', password)),
-            'has_special': bool(re.search(r'[!@#$%^&*(),.?":{}|<>]', password)),
-            'no_common_patterns': not cls._check_common_passwords(password),
-            'no_personal_info': True,  # Would need user context to check properly
+            "has_uppercase": bool(re.search(r"[A-Z]", password)),
+            "has_lowercase": bool(re.search(r"[a-z]", password)),
+            "has_digit": bool(re.search(r"\d", password)),
+            "has_special": bool(re.search(r'[!@#$%^&*(),.?":{}|<>]', password)),
+            "no_common_patterns": not cls._check_common_passwords(password),
+            "no_personal_info": True,  # Would need user context to check properly
         }
-        
+
         # Require at least 3 out of 4 character types
-        char_type_count = sum([
-            checks['has_uppercase'],
-            checks['has_lowercase'], 
-            checks['has_digit'],
-            checks['has_special']
-        ])
-        
+        char_type_count = sum(
+            [
+                checks["has_uppercase"],
+                checks["has_lowercase"],
+                checks["has_digit"],
+                checks["has_special"],
+            ]
+        )
+
         if char_type_count < 3:
             raise InputValidationError(
                 "Password must contain at least 3 of: uppercase, lowercase, digit, special character"
             )
-        
-        if not checks['no_common_patterns']:
+
+        if not checks["no_common_patterns"]:
             raise InputValidationError("Password is too common or predictable")
-        
+
         # Calculate strength score
         strength_score = sum(checks.values()) * 100 // len(checks)
-        
-        return {
-            'valid': True,
-            'strength_score': strength_score,
-            'checks': checks
-        }
-    
+
+        return {"valid": True, "strength_score": strength_score, "checks": checks}
+
     @classmethod
     def _check_common_passwords(cls, password: str) -> bool:
         """Check against common password patterns"""
         common_patterns = [
-            r'password\d*',
-            r'123456\d*',
-            r'qwerty\d*',
-            r'admin\d*',
-            r'letmein\d*',
-            r'welcome\d*',
-            r'monkey\d*',
-            r'dragon\d*',
+            r"password\d*",
+            r"123456\d*",
+            r"qwerty\d*",
+            r"admin\d*",
+            r"letmein\d*",
+            r"welcome\d*",
+            r"monkey\d*",
+            r"dragon\d*",
         ]
-        
+
         password_lower = password.lower()
-        
+
         for pattern in common_patterns:
             if re.fullmatch(pattern, password_lower):
                 return True
-        
+
         return False
+
 
 class APIInputValidator:
     """API-specific input validation for production endpoints"""
-    
+
     @classmethod
-    def validate_api_pagination(cls, limit: Optional[int], offset: Optional[int]) -> Tuple[int, int]:
+    def validate_api_pagination(
+        cls, limit: Optional[int], offset: Optional[int]
+    ) -> Tuple[int, int]:
         """
         Validate API pagination parameters
-        
+
         Args:
             limit: Number of items to return
             offset: Number of items to skip
-            
+
         Returns:
             Tuple of validated (limit, offset)
         """
         # Default values
         default_limit = 20
         max_limit = 100
-        
+
         # Validate limit
         if limit is None:
             limit = default_limit
@@ -788,112 +1011,129 @@ class APIInputValidator:
             limit = default_limit
         elif limit > max_limit:
             limit = max_limit
-        
+
         # Validate offset
         if offset is None:
             offset = 0
         elif offset < 0:
             offset = 0
-        
+
         return limit, offset
-    
+
     @classmethod
-    def validate_sort_parameters(cls, sort_by: Optional[str], sort_order: Optional[str], 
-                                allowed_fields: List[str]) -> Tuple[str, str]:
+    def validate_sort_parameters(
+        cls,
+        sort_by: Optional[str],
+        sort_order: Optional[str],
+        allowed_fields: List[str],
+    ) -> Tuple[str, str]:
         """
         Validate API sorting parameters
-        
+
         Args:
             sort_by: Field to sort by
             sort_order: Sort order (asc/desc)
             allowed_fields: List of allowed sort fields
-            
+
         Returns:
             Tuple of validated (sort_by, sort_order)
         """
         # Validate sort_by
         if sort_by not in allowed_fields:
-            sort_by = allowed_fields[0] if allowed_fields else 'id'
-        
+            sort_by = allowed_fields[0] if allowed_fields else "id"
+
         # Validate sort_order
-        if sort_order not in ['asc', 'desc']:
-            sort_order = 'asc'
-        
+        if sort_order not in ["asc", "desc"]:
+            sort_order = "asc"
+
         return sort_by, sort_order
-    
+
     @classmethod
-    def validate_date_range(cls, start_date: Optional[str], end_date: Optional[str]) -> Tuple[Optional[date], Optional[date]]:
+    def validate_date_range(
+        cls, start_date: Optional[str], end_date: Optional[str]
+    ) -> Tuple[Optional[date], Optional[date]]:
         """
         Validate date range parameters
-        
+
         Args:
             start_date: Start date string (YYYY-MM-DD)
             end_date: End date string (YYYY-MM-DD)
-            
+
         Returns:
             Tuple of validated date objects
         """
         validated_start = None
         validated_end = None
-        
+
         if start_date:
             try:
-                validated_start = datetime.strptime(start_date, '%Y-%m-%d').date()
+                validated_start = datetime.strptime(start_date, "%Y-%m-%d").date()
             except ValueError:
                 raise InputValidationError("Invalid start_date format. Use YYYY-MM-DD")
-        
+
         if end_date:
             try:
-                validated_end = datetime.strptime(end_date, '%Y-%m-%d').date()
+                validated_end = datetime.strptime(end_date, "%Y-%m-%d").date()
             except ValueError:
                 raise InputValidationError("Invalid end_date format. Use YYYY-MM-DD")
-        
+
         # Validate date range logic
         if validated_start and validated_end:
             if validated_start > validated_end:
                 raise InputValidationError("start_date cannot be after end_date")
-            
+
             # Limit date range to prevent performance issues
             date_diff = (validated_end - validated_start).days
             if date_diff > 365:
                 raise InputValidationError("Date range cannot exceed 365 days")
-        
+
         return validated_start, validated_end
+
 
 # Security utility functions
 def generate_secure_token(length: int = 32) -> str:
     """Generate cryptographically secure random token"""
     import secrets
+
     return secrets.token_urlsafe(length)
+
 
 def hash_sensitive_data(data: str, salt: Optional[str] = None) -> str:
     """Hash sensitive data with salt"""
     if salt is None:
         salt = generate_secure_token(16)
-    
-    hashed = hashlib.pbkdf2_hmac('sha256', data.encode(), salt.encode(), 100000)
+
+    hashed = hashlib.pbkdf2_hmac("sha256", data.encode(), salt.encode(), 100000)
     return f"{salt}${base64.b64encode(hashed).decode()}"
+
 
 def verify_hashed_data(data: str, hashed: str) -> bool:
     """Verify hashed data"""
     try:
-        salt, hash_value = hashed.split('$', 1)
-        expected_hash = hashlib.pbkdf2_hmac('sha256', data.encode(), salt.encode(), 100000)
+        salt, hash_value = hashed.split("$", 1)
+        expected_hash = hashlib.pbkdf2_hmac(
+            "sha256", data.encode(), salt.encode(), 100000
+        )
         return base64.b64encode(expected_hash).decode() == hash_value
     except:
         return False
+
 
 # Usage example
 if __name__ == "__main__":
     # Test comprehensive validation
     try:
-        result = ProductionInputValidator.validate_comprehensive_input("normal input", "test_field")
+        result = ProductionInputValidator.validate_comprehensive_input(
+            "normal input", "test_field"
+        )
         print("✅ Safe input validated")
     except InputValidationError as e:
         print(f"❌ Validation failed: {e.detail}")
 
     try:
-        ProductionInputValidator.validate_comprehensive_input("<script>alert('xss')</script>", "test_field")
+        ProductionInputValidator.validate_comprehensive_input(
+            "<script>alert('xss')</script>", "test_field"
+        )
         print("❌ XSS not detected!")
     except InputValidationError as e:
         print(f"✅ XSS detected: {e.detail}")

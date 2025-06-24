@@ -91,7 +91,7 @@ export default function FinancialDashboard() {
               <Card className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold">My Earnings Dashboard</h2>
-                  <Button 
+                  <Button
                     onClick={() => {
                       // TODO: Replace with actual user barber ID from auth context
                       const barberId = user?.barber_id || '1'; // Fallback to 1 for demo
@@ -167,8 +167,8 @@ export default function FinancialDashboard() {
                             <p className="text-sm font-medium">🔥 {barber.streak}</p>
                             <p className="text-xs text-gray-600">goal streak</p>
                           </div>
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             variant="outline"
                             onClick={() => {
                               // TODO: Replace with actual barber ID from barber data

@@ -548,7 +548,7 @@ export const servicesService = {
     if (DEMO_MODE) {
       console.log('Demo mode active - returning mock services')
       let filteredServices = [...MOCK_SERVICES]
-      
+
       // Apply filters
       if (filters?.category_id) {
         filteredServices = filteredServices.filter(s => s.category_id === filters.category_id)
@@ -558,16 +558,16 @@ export const servicesService = {
       }
       if (filters?.search) {
         const search = filters.search.toLowerCase()
-        filteredServices = filteredServices.filter(s => 
-          s.name.toLowerCase().includes(search) || 
+        filteredServices = filteredServices.filter(s =>
+          s.name.toLowerCase().includes(search) ||
           s.description?.toLowerCase().includes(search)
         )
       }
-      
+
       const limit = filters?.limit || 20
       const skip = filters?.skip || 0
       const paginatedServices = filteredServices.slice(skip, skip + limit)
-      
+
       return {
         data: paginatedServices,
         total: filteredServices.length,
@@ -639,7 +639,7 @@ export const servicesService = {
       }
       throw new Error('Service not found')
     }
-    
+
     const response = await apiClient.delete(`/services/${serviceId}`)
     return { data: response.data }
   },
@@ -657,7 +657,7 @@ export const servicesService = {
       }
       throw new Error('Service not found')
     }
-    
+
     const response = await apiClient.post<Service>(`/services/${serviceId}/toggle-status`)
     return { data: response.data }
   },
@@ -672,7 +672,7 @@ export const servicesService = {
       console.log('Demo mode active - returning mock categories')
       return { data: MOCK_CATEGORIES }
     }
-    
+
     const params = includeStats ? '?include_stats=true' : ''
     const response = await apiClient.get<ServiceCategory[]>(`/services/categories${params}`)
     return { data: response.data }
@@ -906,7 +906,7 @@ export const servicesService = {
       console.log('Demo mode active - returning mock service stats')
       return { data: MOCK_SERVICE_STATS }
     }
-    
+
     const params = new URLSearchParams()
     if (startDate) params.append('start_date', startDate)
     if (endDate) params.append('end_date', endDate)

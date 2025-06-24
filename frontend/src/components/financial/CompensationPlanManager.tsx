@@ -20,6 +20,7 @@ import { compensationService } from '@/lib/api/compensation'
 import type { CompensationPlan, BarberCompensation, CompensationCalculation } from '@/lib/api/compensation'
 import { barbersService } from '@/lib/api/barbers'
 import type { Barber } from '@/lib/api/client'
+import Notification from '@/components/Notification'
 
 // Demo mode flag
 const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
@@ -53,6 +54,20 @@ export default function CompensationPlanManager() {
   const [comparePlans, setComparePlans] = useState<CompensationPlan[]>([])
   const [previewCalculation, setPreviewCalculation] = useState<Partial<CompensationCalculation> | null>(null)
   
+  // Loading states for individual operations
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isDeletingPlan, setIsDeletingPlan] = useState<number | null>(null)
+  const [isTogglingStatus, setIsTogglingStatus] = useState<number | null>(null)
+  const [isAssigning, setIsAssigning] = useState(false)
+  const [isPreviewing, setIsPreviewing] = useState(false)
+  
+  // Notification state
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error' | 'warning' | 'info';
+    title: string;
+    message?: string;
+  } | null>(null)
+
   const [formData, setFormData] = useState<CompensationFormData>({
     name: '',
     description: '',
@@ -85,7 +100,7 @@ export default function CompensationPlanManager() {
         barbersService.getBarbers(),
         compensationService.getBarberCompensations()
       ])
-      
+
       setPlans(plansResponse.data || [])
       setBarbers(barbersResponse.data || [])
       setBarberCompensations(compensationsResponse.data || [])
@@ -101,6 +116,11 @@ export default function CompensationPlanManager() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    e.stopPropagation()
+    
+    if (isSubmitting) return
+    
+    setIsSubmitting(true)
     try {
       const planData: Omit<CompensationPlan, 'id' | 'created_at' | 'updated_at'> = {
         name: formData.name,
@@ -118,15 +138,31 @@ export default function CompensationPlanManager() {
 
       if (editingPlan) {
         await compensationService.updatePlan(editingPlan.id, planData)
+        setNotification({
+          type: 'success',
+          title: 'Plan updated successfully',
+          message: `${formData.name} has been updated.`
+        })
       } else {
         await compensationService.createPlan(planData)
+        setNotification({
+          type: 'success',
+          title: 'Plan created successfully',
+          message: `${formData.name} has been created.`
+        })
       }
 
       resetForm()
       fetchData()
     } catch (error: any) {
       console.error('Failed to save plan:', error)
-      alert(`Failed to save plan: ${error.message}`)
+      setNotification({
+        type: 'error',
+        title: 'Failed to save plan',
+        message: error.message || 'Please try again later or contact support.'
+      })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -166,40 +202,84 @@ export default function CompensationPlanManager() {
     setShowAddPlan(true)
   }
 
-  const handleDelete = async (planId: number, planName: string) => {
+  const handleDelete = async (planId: number, planName: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    
+    if (isDeletingPlan === planId) return
+    
     if (!confirm(`Are you sure you want to delete the "${planName}" compensation plan?`)) {
       return
     }
 
+    setIsDeletingPlan(planId)
     try {
       await compensationService.deletePlan(planId)
+      setNotification({
+        type: 'success',
+        title: 'Plan deleted successfully',
+        message: `${planName} has been deleted.`
+      })
       fetchData()
     } catch (error: any) {
       console.error('Failed to delete plan:', error)
-      alert(`Failed to delete plan: ${error.message}`)
+      setNotification({
+        type: 'error',
+        title: 'Failed to delete plan',
+        message: error.message || 'Please try again later or contact support.'
+      })
+    } finally {
+      setIsDeletingPlan(null)
     }
   }
 
-  const togglePlanStatus = async (plan: CompensationPlan) => {
+  const togglePlanStatus = async (plan: CompensationPlan, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    
+    if (isTogglingStatus === plan.id) return
+    
+    setIsTogglingStatus(plan.id)
     try {
       await compensationService.updatePlan(plan.id, {
         is_active: !plan.is_active
       })
+      setNotification({
+        type: 'success',
+        title: 'Plan status updated',
+        message: `${plan.name} is now ${!plan.is_active ? 'active' : 'inactive'}.`
+      })
       fetchData()
     } catch (error: any) {
       console.error('Failed to toggle plan status:', error)
-      alert(`Failed to update plan: ${error.message}`)
+      setNotification({
+        type: 'error',
+        title: 'Failed to update plan status',
+        message: error.message || 'Please try again later or contact support.'
+      })
+    } finally {
+      setIsTogglingStatus(null)
     }
   }
 
   const handleAssignPlan = async () => {
-    if (!selectedPlan || !selectedBarber) return
+    if (!selectedPlan || !selectedBarber || isAssigning) return
 
+    setIsAssigning(true)
     try {
       await compensationService.assignPlanToBarber({
         barber_id: selectedBarber,
         plan_id: selectedPlan.id,
         effective_date: new Date().toISOString()
+      })
+      setNotification({
+        type: 'success',
+        title: 'Plan assigned successfully',
+        message: `${selectedPlan.name} has been assigned to the selected barber.`
       })
       setShowAssignModal(false)
       setSelectedPlan(null)
@@ -207,21 +287,35 @@ export default function CompensationPlanManager() {
       fetchData()
     } catch (error: any) {
       console.error('Failed to assign plan:', error)
-      alert(`Failed to assign plan: ${error.message}`)
+      setNotification({
+        type: 'error',
+        title: 'Failed to assign plan',
+        message: error.message || 'Please try again later or contact support.'
+      })
+    } finally {
+      setIsAssigning(false)
     }
   }
 
   const handlePreviewCalculation = async () => {
-    if (!selectedPlan) return
+    if (!selectedPlan || isPreviewing) return
 
+    setIsPreviewing(true)
     try {
       const result = await compensationService.previewCompensation(
         selectedPlan.id,
         previewRevenue
       )
       setPreviewCalculation(result.data)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to preview calculation:', error)
+      setNotification({
+        type: 'error',
+        title: 'Failed to preview calculation',
+        message: error.message || 'Please try again later or contact support.'
+      })
+    } finally {
+      setIsPreviewing(false)
     }
   }
 
@@ -288,10 +382,10 @@ export default function CompensationPlanManager() {
         {plans.map((plan) => {
           const assignedBarbers = getAssignedBarbers(plan.id)
           const isComparing = comparePlans.some(p => p.id === plan.id)
-          
+
           return (
-            <div 
-              key={plan.id} 
+            <div
+              key={plan.id}
               className={`bg-slate-800 rounded-lg p-6 relative transition-all ${
                 isComparing ? 'ring-2 ring-purple-500' : ''
               }`}
@@ -311,29 +405,37 @@ export default function CompensationPlanManager() {
                 <h3 className="text-lg font-semibold text-white pr-8">{plan.name}</h3>
                 <div className="flex items-center space-x-2">
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
                       setSelectedPlan(plan)
                       setShowPreviewModal(true)
                       handlePreviewCalculation()
                     }}
-                    className="text-gray-400 hover:text-white transition-colors"
+                    disabled={isPreviewing}
+                    className="text-gray-400 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Preview calculations"
                   >
-                    <CalculatorIcon className="h-5 w-5" />
+                    <CalculatorIcon className={`h-5 w-5 ${isPreviewing ? 'animate-pulse' : ''}`} />
                   </button>
                   <button
-                    onClick={() => handleEdit(plan)}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      handleEdit(plan)
+                    }}
                     className="text-gray-400 hover:text-white transition-colors"
                     title="Edit plan"
                   >
                     <PencilIcon className="h-5 w-5" />
                   </button>
                   <button
-                    onClick={() => handleDelete(plan.id, plan.name)}
-                    className="text-gray-400 hover:text-red-500 transition-colors"
+                    onClick={(e) => handleDelete(plan.id, plan.name, e)}
+                    disabled={isDeletingPlan === plan.id}
+                    className="text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Delete plan"
                   >
-                    <TrashIcon className="h-5 w-5" />
+                    <TrashIcon className={`h-5 w-5 ${isDeletingPlan === plan.id ? 'animate-pulse text-red-500' : ''}`} />
                   </button>
                 </div>
               </div>
@@ -714,7 +816,7 @@ export default function CompensationPlanManager() {
                     <span className="text-sm font-medium">Note</span>
                   </div>
                   <p className="text-sm text-gray-300">
-                    This will replace any existing compensation plan for the selected barber 
+                    This will replace any existing compensation plan for the selected barber
                     and take effect immediately.
                   </p>
                 </div>
@@ -795,7 +897,7 @@ export default function CompensationPlanManager() {
                     <td className="py-3 px-4 text-sm text-gray-300">Booth Rent</td>
                     {comparePlans.map(plan => (
                       <td key={plan.id} className="py-3 px-4 text-sm text-white">
-                        {plan.booth_rent_amount 
+                        {plan.booth_rent_amount
                           ? `$${plan.booth_rent_amount}/${compensationService.formatFrequency(plan.booth_rent_frequency || 'weekly')}`
                           : 'N/A'
                         }
@@ -993,6 +1095,16 @@ export default function CompensationPlanManager() {
             </div>
           </div>
         </div>
+      )}
+      
+      {/* Notification */}
+      {notification && (
+        <Notification
+          type={notification.type}
+          title={notification.title}
+          message={notification.message}
+          onClose={() => setNotification(null)}
+        />
       )}
     </div>
   )

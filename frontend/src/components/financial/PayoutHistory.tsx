@@ -93,7 +93,7 @@ export function PayoutHistory({ barberId, isShopOwner = false }: PayoutHistoryPr
         ...filters,
         barber_id: barberId || filters.barber_id
       });
-      
+
       if (response.data) {
         setPayouts(response.data);
       }
@@ -109,8 +109,20 @@ export function PayoutHistory({ barberId, isShopOwner = false }: PayoutHistoryPr
     }
   };
 
-  const handleDownloadReceipt = async (payout: Payout) => {
+  const [downloadingReceipts, setDownloadingReceipts] = useState<Set<number>>(new Set());
+  const [retryingPayouts, setRetryingPayouts] = useState<Set<number>>(new Set());
+
+  const handleDownloadReceipt = async (payout: Payout, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    if (downloadingReceipts.has(payout.id)) return;
+
     try {
+      setDownloadingReceipts(prev => new Set(prev).add(payout.id));
+      
       const blob = await payoutService.downloadReceipt(payout.id);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -133,11 +145,26 @@ export function PayoutHistory({ barberId, isShopOwner = false }: PayoutHistoryPr
         title: 'Failed to download receipt',
         message: 'Please try again later.'
       });
+    } finally {
+      setDownloadingReceipts(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(payout.id);
+        return newSet;
+      });
     }
   };
 
-  const handleRetryPayout = async (payout: Payout) => {
+  const handleRetryPayout = async (payout: Payout, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    if (retryingPayouts.has(payout.id)) return;
+
     try {
+      setRetryingPayouts(prev => new Set(prev).add(payout.id));
+      
       const response = await payoutService.retryPayout(payout.id);
       if (response.data) {
         await fetchPayouts();
@@ -153,6 +180,12 @@ export function PayoutHistory({ barberId, isShopOwner = false }: PayoutHistoryPr
         type: 'error',
         title: 'Failed to retry payout',
         message: 'Please try again later or contact support.'
+      });
+    } finally {
+      setRetryingPayouts(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(payout.id);
+        return newSet;
       });
     }
   };
@@ -424,7 +457,7 @@ export function PayoutHistory({ barberId, isShopOwner = false }: PayoutHistoryPr
                           <div className="flex items-center gap-1">
                             {getMethodIcon(payout.method)}
                             <span className="text-sm">
-                              {payout.method.replace('_', ' ').charAt(0).toUpperCase() + 
+                              {payout.method.replace('_', ' ').charAt(0).toUpperCase() +
                                payout.method.replace('_', ' ').slice(1)}
                             </span>
                           </div>
@@ -444,7 +477,9 @@ export function PayoutHistory({ barberId, isShopOwner = false }: PayoutHistoryPr
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
                                   setSelectedPayout(payout);
                                   setShowDetails(true);
                                 }}
@@ -454,18 +489,20 @@ export function PayoutHistory({ barberId, isShopOwner = false }: PayoutHistoryPr
                               </DropdownMenuItem>
                               {(payout.status === 'completed' || payout.receipt_url) && (
                                 <DropdownMenuItem
-                                  onClick={() => handleDownloadReceipt(payout)}
+                                  onClick={(e) => handleDownloadReceipt(payout, e)}
+                                  disabled={downloadingReceipts.has(payout.id)}
                                 >
                                   <Download className="h-4 w-4 mr-2" />
-                                  Download Receipt
+                                  {downloadingReceipts.has(payout.id) ? 'Downloading...' : 'Download Receipt'}
                                 </DropdownMenuItem>
                               )}
                               {payout.status === 'failed' && (
                                 <DropdownMenuItem
-                                  onClick={() => handleRetryPayout(payout)}
+                                  onClick={(e) => handleRetryPayout(payout, e)}
+                                  disabled={retryingPayouts.has(payout.id)}
                                 >
-                                  <RefreshCw className="h-4 w-4 mr-2" />
-                                  Retry Payout
+                                  <RefreshCw className={`h-4 w-4 mr-2 ${retryingPayouts.has(payout.id) ? 'animate-spin' : ''}`} />
+                                  {retryingPayouts.has(payout.id) ? 'Retrying...' : 'Retry Payout'}
                                 </DropdownMenuItem>
                               )}
                             </DropdownMenuContent>
@@ -519,7 +556,7 @@ export function PayoutHistory({ barberId, isShopOwner = false }: PayoutHistoryPr
               {selectedPayout?.reference_number}
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedPayout && (
             <div className="space-y-4">
               {/* Status and Timeline */}
@@ -597,7 +634,7 @@ export function PayoutHistory({ barberId, isShopOwner = false }: PayoutHistoryPr
                       <div className="flex items-center gap-2 mt-1">
                         {getMethodIcon(selectedPayout.method)}
                         <span className="font-medium">
-                          {selectedPayout.method.replace('_', ' ').charAt(0).toUpperCase() + 
+                          {selectedPayout.method.replace('_', ' ').charAt(0).toUpperCase() +
                            selectedPayout.method.replace('_', ' ').slice(1)}
                         </span>
                       </div>
@@ -637,29 +674,38 @@ export function PayoutHistory({ barberId, isShopOwner = false }: PayoutHistoryPr
             {selectedPayout?.status === 'failed' && (
               <Button
                 variant="default"
-                onClick={() => {
-                  handleRetryPayout(selectedPayout);
+                disabled={retryingPayouts.has(selectedPayout.id)}
+                onClick={(e) => {
+                  handleRetryPayout(selectedPayout, e);
                   setShowDetails(false);
                 }}
               >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Retry Payout
+                <RefreshCw className={`h-4 w-4 mr-2 ${retryingPayouts.has(selectedPayout.id) ? 'animate-spin' : ''}`} />
+                {retryingPayouts.has(selectedPayout.id) ? 'Retrying...' : 'Retry Payout'}
               </Button>
             )}
             {(selectedPayout?.status === 'completed' || selectedPayout?.receipt_url) && (
               <Button
                 variant="outline"
-                onClick={() => {
+                disabled={selectedPayout ? downloadingReceipts.has(selectedPayout.id) : false}
+                onClick={(e) => {
                   if (selectedPayout) {
-                    handleDownloadReceipt(selectedPayout);
+                    handleDownloadReceipt(selectedPayout, e);
                   }
                 }}
               >
                 <Download className="h-4 w-4 mr-2" />
-                Download Receipt
+                {selectedPayout && downloadingReceipts.has(selectedPayout.id) ? 'Downloading...' : 'Download Receipt'}
               </Button>
             )}
-            <Button variant="ghost" onClick={() => setShowDetails(false)}>
+            <Button 
+              variant="ghost" 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowDetails(false);
+              }}
+            >
               Close
             </Button>
           </DialogFooter>

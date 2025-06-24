@@ -281,7 +281,7 @@ export const payoutService = {
     if (DEMO_MODE) {
       console.log('Demo mode active - returning mock payouts')
       let filtered = [...MOCK_PAYOUTS]
-      
+
       if (filters) {
         if (filters.barber_id) {
           filtered = filtered.filter(p => p.barber_id === filters.barber_id)
@@ -293,7 +293,7 @@ export const payoutService = {
           filtered = filtered.filter(p => p.method === filters.method)
         }
       }
-      
+
       return { data: filtered }
     }
 
@@ -331,12 +331,12 @@ export const payoutService = {
    * Get barber earnings breakdown
    */
   async getBarberEarnings(
-    barberId: number, 
+    barberId: number,
     dateRange: string = 'last_30_days'
   ): Promise<ApiResponse<BarberEarnings>> {
     if (DEMO_MODE) {
       console.log('Demo mode active - returning mock barber earnings')
-      return { 
+      return {
         data: {
           ...MOCK_BARBER_EARNINGS,
           barber_id: barberId,

@@ -9,21 +9,22 @@ from datetime import datetime
 
 BASE_URL = "http://localhost:8000"
 
+
 def test_barber_dashboard_endpoint():
     """Test the barber dashboard endpoint with demo mode"""
-    
+
     # Test endpoint accessibility
     endpoint = f"{BASE_URL}/api/v1/financial-dashboard/barber-dashboard/1"
-    
+
     try:
         print(f"🧪 Testing endpoint: {endpoint}")
-        
+
         # This will fail without authentication, but that's expected
         # We're just checking the route is registered correctly
         response = requests.get(endpoint, timeout=5)
-        
+
         print(f"✅ Endpoint is reachable (status: {response.status_code})")
-        
+
         if response.status_code == 401:
             print("✅ Authentication required (expected)")
         elif response.status_code == 200:
@@ -33,7 +34,7 @@ def test_barber_dashboard_endpoint():
         else:
             print(f"⚠️  Unexpected status code: {response.status_code}")
             print(f"Response: {response.text[:200]}...")
-            
+
     except requests.exceptions.ConnectionError:
         print("❌ Backend server is not running on localhost:8000")
         print("   Start it with: cd backend && uvicorn main:app --reload")
@@ -41,8 +42,9 @@ def test_barber_dashboard_endpoint():
     except Exception as e:
         print(f"❌ Error testing endpoint: {e}")
         return False
-    
+
     return True
+
 
 def test_api_health():
     """Test basic API health"""
@@ -55,19 +57,20 @@ def test_api_health():
             print(f"⚠️  Health check returned: {response.status_code}")
     except Exception as e:
         print(f"❌ Health check failed: {e}")
-    
+
     return False
+
 
 if __name__ == "__main__":
     print("🚀 Starting Premium Barber Dashboard Integration Test")
     print(f"⏰ Timestamp: {datetime.now().isoformat()}")
     print("=" * 60)
-    
+
     # Test API health first
     if not test_api_health():
         print("\n❌ Cannot proceed - API is not healthy")
         exit(1)
-    
+
     # Test barber dashboard endpoint
     if test_barber_dashboard_endpoint():
         print("\n✅ Integration test completed successfully!")

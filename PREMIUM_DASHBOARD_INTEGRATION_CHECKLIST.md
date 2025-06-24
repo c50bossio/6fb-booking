@@ -100,7 +100,7 @@
 
 ## 📱 **Mobile Experience**
 - [x] Responsive grid layouts
-- [x] Touch-friendly buttons and interactions  
+- [x] Touch-friendly buttons and interactions
 - [x] Optimized chart rendering for small screens
 - [x] Proper text sizing and spacing
 

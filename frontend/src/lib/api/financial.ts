@@ -372,7 +372,7 @@ export const financialService = {
   async getBarberDashboard(barberId: number): Promise<ApiResponse<any>> {
     if (DEMO_MODE) {
       console.log('Demo mode active - returning mock barber dashboard data')
-      return { 
+      return {
         data: {
           today: {
             earnings: 285.50,

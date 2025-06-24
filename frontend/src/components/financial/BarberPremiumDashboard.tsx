@@ -250,7 +250,7 @@ export function BarberPremiumDashboard({ barberId, barberName, isPremium = true 
     try {
       setLoading(true);
       const response = await financialService.getBarberDashboard(Number(barberId));
-      
+
       // Validate response data structure
       if (response.data && typeof response.data === 'object') {
         setData(response.data);
@@ -523,16 +523,16 @@ export function BarberPremiumDashboard({ barberId, barberName, isPremium = true 
                           return ['$0.00', 'Earnings'];
                         }
                       }} />
-                      <Area 
-                        type="monotone" 
-                        dataKey="earnings" 
-                        stroke="#3b82f6" 
-                        fill="url(#colorEarnings)" 
+                      <Area
+                        type="monotone"
+                        dataKey="earnings"
+                        stroke="#3b82f6"
+                        fill="url(#colorEarnings)"
                       />
-                      <Line 
-                        type="monotone" 
-                        dataKey="goal" 
-                        stroke="#ef4444" 
+                      <Line
+                        type="monotone"
+                        dataKey="goal"
+                        stroke="#ef4444"
                         strokeDasharray="5 5"
                       />
                       <defs>
@@ -621,7 +621,7 @@ export function BarberPremiumDashboard({ barberId, barberName, isPremium = true 
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {data.achievements.recent.map((achievement) => (
-                    <div 
+                    <div
                       key={achievement.id}
                       className={`p-3 rounded-lg bg-gradient-to-r ${getRarityColor(achievement.rarity)} text-white`}
                     >

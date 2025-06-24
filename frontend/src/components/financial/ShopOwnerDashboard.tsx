@@ -143,8 +143,8 @@ export function ShopOwnerDashboard() {
     setLoading(true);
     try {
       // Map date range to API expected format
-      const apiDateRange = dateRange === 'week' ? 'last_7_days' : 
-                          dateRange === 'month' ? 'last_30_days' : 
+      const apiDateRange = dateRange === 'week' ? 'last_7_days' :
+                          dateRange === 'month' ? 'last_30_days' :
                           'last_90_days';
 
       const [metricsRes, barbersRes] = await Promise.all([
@@ -154,30 +154,30 @@ export function ShopOwnerDashboard() {
 
       if (metricsRes.data) {
         setMetrics(metricsRes.data);
-        
+
         // Calculate revenue breakdown for pie chart
         const breakdown = [
           {
             category: 'Services',
             amount: metricsRes.data.service_revenue,
-            percentage: metricsRes.data.total_revenue > 0 
-              ? (metricsRes.data.service_revenue / metricsRes.data.total_revenue) * 100 
+            percentage: metricsRes.data.total_revenue > 0
+              ? (metricsRes.data.service_revenue / metricsRes.data.total_revenue) * 100
               : 0,
             color: '#10b981'
           },
           {
             category: 'Products',
             amount: metricsRes.data.product_revenue,
-            percentage: metricsRes.data.total_revenue > 0 
-              ? (metricsRes.data.product_revenue / metricsRes.data.total_revenue) * 100 
+            percentage: metricsRes.data.total_revenue > 0
+              ? (metricsRes.data.product_revenue / metricsRes.data.total_revenue) * 100
               : 0,
             color: '#3b82f6'
           },
           {
             category: 'Tips',
             amount: metricsRes.data.tips_total,
-            percentage: metricsRes.data.total_revenue > 0 
-              ? (metricsRes.data.tips_total / metricsRes.data.total_revenue) * 100 
+            percentage: metricsRes.data.total_revenue > 0
+              ? (metricsRes.data.tips_total / metricsRes.data.total_revenue) * 100
               : 0,
             color: '#f59e0b'
           }
@@ -446,11 +446,11 @@ export function ShopOwnerDashboard() {
                     <td className="text-right p-2">{formatCurrency(barber.commission_owed)}</td>
                     <td className="text-center p-2">
                       <Badge
-                        variant={barber.booth_rent_status === 'paid' ? 'default' : 
-                                barber.booth_rent_status === 'overdue' ? 'destructive' : 
+                        variant={barber.booth_rent_status === 'paid' ? 'default' :
+                                barber.booth_rent_status === 'overdue' ? 'destructive' :
                                 'secondary'}
-                        className={barber.booth_rent_status === 'paid' ? 'bg-green-100 text-green-800' : 
-                                  barber.booth_rent_status === 'overdue' ? 'bg-red-100 text-red-800' : 
+                        className={barber.booth_rent_status === 'paid' ? 'bg-green-100 text-green-800' :
+                                  barber.booth_rent_status === 'overdue' ? 'bg-red-100 text-red-800' :
                                   'bg-yellow-100 text-yellow-800'}
                       >
                         {financialService.getBoothRentStatusLabel(barber.booth_rent_status)}

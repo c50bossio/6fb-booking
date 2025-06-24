@@ -216,7 +216,7 @@ class Settings(BaseSettings):
         default="http://localhost:8000/api/v1/auth/google/callback",
         description="Google OAuth redirect URI for authentication",
     )
-    
+
     # Google Calendar Integration
     GOOGLE_CALENDAR_CLIENT_ID: Optional[str] = Field(
         default_factory=lambda: os.getenv("GOOGLE_CALENDAR_CLIENT_ID"),

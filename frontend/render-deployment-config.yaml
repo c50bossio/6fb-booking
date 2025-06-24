@@ -1,0 +1,108 @@
+# Render.com Deployment Configuration for 6FB Booking Frontend
+# Optimized for static site deployment and performance
+
+services:
+  # Primary Frontend Application
+  - type: static_site
+    name: sixfb-frontend-static
+    runtime: node
+    region: oregon # Same as backend for low latency
+    plan: starter
+    
+    # Repository Configuration
+    repo: https://github.com/YOUR_GITHUB_USERNAME/6fb-booking # Update with actual repo
+    branch: main
+    rootDir: frontend
+    
+    # Build Configuration for Static Export
+    buildCommand: |
+      npm ci &&
+      npm run build:static &&
+      cp -r out/* $PUBLISH_DIR/
+    
+    # Publish directory for static files
+    publishPath: out
+    
+    # Auto-deploy configuration
+    autoDeploy: true
+    
+    # Build Environment Variables
+    buildEnvVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_TELEMETRY_DISABLED
+        value: 1
+      - key: NEXT_PUBLIC_API_URL
+        value: https://sixfb-backend.onrender.com/api/v1
+      - key: NEXT_PUBLIC_APP_URL
+        value: https://sixfb-frontend-static.onrender.com
+      - key: NEXT_PUBLIC_ENVIRONMENT
+        value: production
+    
+    # Static site headers
+    headers:
+      - path: /*
+        headers:
+          - key: X-Frame-Options
+            value: SAMEORIGIN
+          - key: X-Content-Type-Options
+            value: nosniff
+          - key: Referrer-Policy
+            value: strict-origin-when-cross-origin
+          - key: Strict-Transport-Security
+            value: max-age=31536000; includeSubDomains
+          - key: Cache-Control
+            value: public, max-age=31536000, immutable
+      
+      # Special caching for assets
+      - path: /_next/static/*
+        headers:
+          - key: Cache-Control
+            value: public, max-age=31536000, immutable
+      
+      # API routes shouldn't be cached
+      - path: /api/*
+        headers:
+          - key: Cache-Control
+            value: no-cache, no-store, must-revalidate
+
+  # Fallback: Traditional Node.js Server (if static fails)
+  - type: web
+    name: sixfb-frontend-server
+    runtime: node
+    region: oregon
+    plan: starter
+    
+    # Repository Configuration
+    repo: https://github.com/YOUR_GITHUB_USERNAME/6fb-booking # Update with actual repo
+    branch: main
+    rootDir: frontend
+    
+    # Server Build Configuration
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    
+    # Health check
+    healthCheckPath: /
+    
+    # Server Environment Variables
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: NEXT_PUBLIC_API_URL
+        value: https://sixfb-backend.onrender.com/api/v1
+      - key: NEXT_PUBLIC_APP_URL
+        value: https://sixfb-frontend-server.onrender.com
+      - key: NEXT_PUBLIC_ENVIRONMENT
+        value: production
+      - key: NEXT_TELEMETRY_DISABLED
+        value: 1
+
+# Database (if needed for caching/sessions)
+databases:
+  - name: frontend-cache
+    databaseName: frontend_cache
+    user: cache_user
+    plan: free

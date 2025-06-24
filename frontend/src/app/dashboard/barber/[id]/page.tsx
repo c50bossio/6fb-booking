@@ -20,7 +20,7 @@ export default function BarberDashboardPage() {
   const params = useParams();
   const router = useRouter();
   const barberId = params.id as string;
-  
+
   const [barber, setBarber] = useState<BarberInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -94,9 +94,9 @@ export default function BarberDashboardPage() {
       {/* Header Navigation */}
       <div className="container mx-auto p-4">
         <div className="flex items-center gap-4 mb-6">
-          <Button 
-            onClick={handleBack} 
-            variant="ghost" 
+          <Button
+            onClick={handleBack}
+            variant="ghost"
             size="sm"
             className="flex items-center gap-2"
           >

@@ -15,25 +15,25 @@ export interface CompensationPlan {
   name: string
   description?: string
   payment_type: 'commission' | 'booth_rent' | 'hybrid'
-  
+
   // Commission settings
   commission_rate?: number // Percentage for service revenue
   product_commission_rate?: number // Percentage for product sales
-  
+
   // Booth rent settings
   booth_rent_amount?: number
   booth_rent_frequency?: 'daily' | 'weekly' | 'biweekly' | 'monthly'
-  
+
   // Tip handling
   tip_handling?: 'barber_keeps_all' | 'split_tips' | 'pool_tips'
   tip_split_percentage?: number // If tips are split
-  
+
   // Advanced settings
   minimum_guarantee?: number // Minimum earnings guarantee
   tiered_rates?: TieredRate[] // Different rates based on revenue
   bonus_structure?: BonusStructure[]
   deductions?: Deduction[]
-  
+
   // Status and metadata
   is_active: boolean
   is_default?: boolean
@@ -92,13 +92,13 @@ export interface CompensationCalculation {
   plan_name: string
   period_start: string
   period_end: string
-  
+
   // Revenue breakdown
   service_revenue: number
   product_revenue: number
   tips_collected: number
   total_revenue: number
-  
+
   // Calculations
   service_commission: number
   product_commission: number
@@ -106,12 +106,12 @@ export interface CompensationCalculation {
   booth_rent_due?: number
   bonuses_earned: number
   deductions_total: number
-  
+
   // Final amounts
   gross_earnings: number
   net_earnings: number
   shop_earnings: number
-  
+
   // Details
   bonus_details?: Array<{
     type: string
@@ -275,7 +275,7 @@ export const compensationService = {
     if (DEMO_MODE) {
       console.log('Demo mode active - returning mock compensation plans')
       let plans = [...MOCK_COMPENSATION_PLANS]
-      
+
       if (filter) {
         if (filter.is_active !== undefined) {
           plans = plans.filter(p => p.is_active === filter.is_active)
@@ -285,13 +285,13 @@ export const compensationService = {
         }
         if (filter.search) {
           const search = filter.search.toLowerCase()
-          plans = plans.filter(p => 
+          plans = plans.filter(p =>
             p.name.toLowerCase().includes(search) ||
             p.description?.toLowerCase().includes(search)
           )
         }
       }
-      
+
       return { data: plans }
     }
 
@@ -402,7 +402,7 @@ export const compensationService = {
       if (!plan) {
         throw new Error('Compensation plan not found')
       }
-      
+
       const newAssignment: BarberCompensation = {
         id: MOCK_BARBER_COMPENSATIONS.length + 1,
         barber_id: assignment.barber_id,
@@ -435,7 +435,7 @@ export const compensationService = {
       // Mock calculation based on barber's assigned plan
       const assignment = MOCK_BARBER_COMPENSATIONS.find(c => c.barber_id === barberId && c.is_active)
       const plan = assignment ? MOCK_COMPENSATION_PLANS.find(p => p.id === assignment.plan_id) : null
-      
+
       const mockCalculation: CompensationCalculation = {
         barber_id: barberId,
         barber_name: assignment?.barber_name || `Barber ${barberId}`,
@@ -462,10 +462,10 @@ export const compensationService = {
           { type: 'supplies', description: 'Product supplies', amount: 50 }
         ]
       }
-      
+
       // Calculate final amounts
       if (plan?.payment_type === 'commission') {
-        mockCalculation.gross_earnings = 
+        mockCalculation.gross_earnings =
           (5000 * (100 - (plan.commission_rate || 0)) / 100) +
           (500 * (100 - (plan.product_commission_rate || 0)) / 100) +
           300 + 100
@@ -474,18 +474,18 @@ export const compensationService = {
         mockCalculation.gross_earnings = 5800 + 100
         mockCalculation.shop_earnings = plan.booth_rent_amount || 0
       } else if (plan?.payment_type === 'hybrid') {
-        mockCalculation.gross_earnings = 
+        mockCalculation.gross_earnings =
           (5000 * (100 - (plan.commission_rate || 0)) / 100) +
           (500 * (100 - (plan.product_commission_rate || 0)) / 100) +
           300 + 100
-        mockCalculation.shop_earnings = 
-          mockCalculation.service_commission + 
-          mockCalculation.product_commission + 
+        mockCalculation.shop_earnings =
+          mockCalculation.service_commission +
+          mockCalculation.product_commission +
           (plan.booth_rent_amount || 0)
       }
-      
+
       mockCalculation.net_earnings = mockCalculation.gross_earnings - mockCalculation.deductions_total - (mockCalculation.booth_rent_due || 0)
-      
+
       return { data: mockCalculation }
     }
 
@@ -514,7 +514,7 @@ export const compensationService = {
       if (!plan) {
         throw new Error('Compensation plan not found')
       }
-      
+
       const preview: Partial<CompensationCalculation> = {
         plan_name: plan.name,
         service_revenue: revenue.service_revenue,
@@ -526,10 +526,10 @@ export const compensationService = {
         tips_earned: revenue.tips,
         booth_rent_due: plan.booth_rent_amount
       }
-      
+
       // Calculate earnings based on plan type
       if (plan.payment_type === 'commission') {
-        preview.gross_earnings = 
+        preview.gross_earnings =
           (revenue.service_revenue * (100 - (plan.commission_rate || 0)) / 100) +
           (revenue.product_revenue * (100 - (plan.product_commission_rate || 0)) / 100) +
           revenue.tips
@@ -538,18 +538,18 @@ export const compensationService = {
         preview.gross_earnings = revenue.service_revenue + revenue.product_revenue + revenue.tips
         preview.shop_earnings = plan.booth_rent_amount || 0
       } else if (plan.payment_type === 'hybrid') {
-        preview.gross_earnings = 
+        preview.gross_earnings =
           (revenue.service_revenue * (100 - (plan.commission_rate || 0)) / 100) +
           (revenue.product_revenue * (100 - (plan.product_commission_rate || 0)) / 100) +
           revenue.tips
-        preview.shop_earnings = 
-          (preview.service_commission || 0) + 
-          (preview.product_commission || 0) + 
+        preview.shop_earnings =
+          (preview.service_commission || 0) +
+          (preview.product_commission || 0) +
           (plan.booth_rent_amount || 0)
       }
-      
+
       preview.net_earnings = (preview.gross_earnings || 0) - (plan.booth_rent_amount || 0)
-      
+
       return { data: preview }
     }
 

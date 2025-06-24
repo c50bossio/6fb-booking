@@ -367,9 +367,21 @@ export default function LandingPage() {
         .bg-slate-700,
         .bg-slate-700 *,
         [class*="premium-button"],
-        [class*="premium-button"] * {
+        [class*="premium-button"] *,
+        .premium-button,
+        .premium-button * {
           color: white !important;
           opacity: 1 !important;
+        }
+        
+        /* Specific fix for Try Full Demo Now button */
+        a[class*="from-slate-700"],
+        a[class*="from-slate-700"] *,
+        a[class*="to-slate-800"],
+        a[class*="to-slate-800"] * {
+          color: white !important;
+          opacity: 1 !important;
+          font-weight: 600 !important;
         }
 
         /* Override any remaining inline styles on dark backgrounds */
@@ -473,10 +485,11 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-16">
             <Link
               href="/app"
-              className="premium-button text-lg px-10 py-4 hover-lift bg-gradient-to-r from-slate-700 to-slate-800"
+              className="premium-button text-lg px-10 py-4 hover-lift bg-gradient-to-r from-slate-700 to-slate-800 text-white"
+              style={{color: 'white'}}
             >
-              <PlayIcon className="mr-2 h-5 w-5" />
-              Try Full Demo Now
+              <PlayIcon className="mr-2 h-5 w-5 text-white" />
+              <span className="text-white">Try Full Demo Now</span>
             </Link>
             <Link
               href="#pricing"

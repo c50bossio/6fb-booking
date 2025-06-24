@@ -31,10 +31,15 @@ export const authService = {
    * Login user
    */
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    // Use JSON format for the /auth/login endpoint
-    const response = await apiClient.post<LoginResponse>('/auth/login', {
-      email: credentials.username, // The backend expects 'email' field
-      password: credentials.password,
+    // Use form-urlencoded format for the /auth/token endpoint (OAuth2 standard)
+    const formData = new URLSearchParams()
+    formData.append('username', credentials.username) // OAuth2 expects 'username' even for email
+    formData.append('password', credentials.password)
+    
+    const response = await apiClient.post<LoginResponse>('/auth/token', formData, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
     })
 
     // Store token and user data with safe storage

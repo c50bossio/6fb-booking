@@ -176,7 +176,7 @@ export default function DashboardPage() {
 
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error)
-      
+
       // Set default values on error
       setTodayStats({
         total_appointments: 0,
@@ -186,7 +186,7 @@ export default function DashboardPage() {
         today_revenue: 0
       })
       setActiveBarbers(0)
-      
+
       // If it's a 401 error, redirect to login
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         localStorage.removeItem('access_token')

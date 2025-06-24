@@ -7,6 +7,7 @@ import { z } from 'zod'
 import BaseModal from './BaseModal'
 import { useTheme } from '@/contexts/ThemeContext'
 import { clientsService, Client, ClientHistory } from '@/lib/api/clients'
+import Notification from '@/components/Notification'
 import {
   UserIcon,
   CalendarDaysIcon,
@@ -45,11 +46,12 @@ interface Props {
   isOpen: boolean
   onClose: () => void
   client: Client | null
+  initialTab?: TabType
 }
 
 type TabType = 'appointments' | 'statistics' | 'communication'
 
-export default function ClientHistoryModal({ isOpen, onClose, client }: Props) {
+export default function ClientHistoryModal({ isOpen, onClose, client, initialTab }: Props) {
   const { theme, getThemeColors } = useTheme()
   const themeColors = getThemeColors()
 
@@ -59,6 +61,11 @@ export default function ClientHistoryModal({ isOpen, onClose, client }: Props) {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
   const [isSendingMessage, setIsSendingMessage] = useState(false)
   const [messageSuccess, setMessageSuccess] = useState(false)
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error' | 'warning' | 'info';
+    title: string;
+    message?: string;
+  } | null>(null)
 
   const {
     register,
@@ -77,10 +84,10 @@ export default function ClientHistoryModal({ isOpen, onClose, client }: Props) {
   useEffect(() => {
     if (isOpen && client) {
       loadClientHistory()
-      setActiveTab('appointments')
+      setActiveTab(initialTab || 'appointments')
       setMessageSuccess(false)
     }
-  }, [isOpen, client])
+  }, [isOpen, client, initialTab])
 
   const loadClientHistory = async () => {
     if (!client) return
@@ -107,14 +114,28 @@ export default function ClientHistoryModal({ isOpen, onClose, client }: Props) {
       setTimeout(() => setMessageSuccess(false), 3000)
     } catch (error) {
       console.error('Failed to send message:', error)
+      // Add error notification for better user feedback
+      setNotification({
+        type: 'error',
+        title: 'Failed to send message',
+        message: 'Please try again later or contact support if the issue persists.'
+      })
     } finally {
       setIsSendingMessage(false)
     }
   }
 
-  const exportHistory = async () => {
-    if (!client) return
+  const [isExporting, setIsExporting] = useState(false)
 
+  const exportHistory = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    if (!client || isExporting) return
+
+    setIsExporting(true)
     try {
       const blob = await clientsService.exportClients('csv')
       const url = window.URL.createObjectURL(blob as Blob)
@@ -125,8 +146,21 @@ export default function ClientHistoryModal({ isOpen, onClose, client }: Props) {
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
+      
+      setNotification({
+        type: 'success',
+        title: 'Export successful',
+        message: `History for ${client.first_name} ${client.last_name} has been exported.`
+      })
     } catch (error) {
       console.error('Failed to export history:', error)
+      setNotification({
+        type: 'error',
+        title: 'Failed to export history',
+        message: 'Please try again later or contact support if the issue persists.'
+      })
+    } finally {
+      setIsExporting(false)
     }
   }
 
@@ -234,7 +268,11 @@ export default function ClientHistoryModal({ isOpen, onClose, client }: Props) {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as TabType)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setActiveTab(tab.id as TabType);
+                }}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   activeTab === tab.id
                     ? 'bg-[#20D9D2] text-white'
@@ -260,10 +298,20 @@ export default function ClientHistoryModal({ isOpen, onClose, client }: Props) {
               </h3>
               <button
                 onClick={exportHistory}
-                className="premium-button-secondary text-sm flex items-center space-x-2"
+                disabled={isExporting}
+                className="premium-button-secondary text-sm flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <DocumentArrowDownIcon className="h-4 w-4" />
-                <span>Export</span>
+                {isExporting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                    <span>Exporting...</span>
+                  </>
+                ) : (
+                  <>
+                    <DocumentArrowDownIcon className="h-4 w-4" />
+                    <span>Export</span>
+                  </>
+                )}
               </button>
             </div>
 
@@ -628,13 +676,27 @@ export default function ClientHistoryModal({ isOpen, onClose, client }: Props) {
             Client since {formatDate(client.created_at)} • Last visit {clientsService.formatLastVisit(client)}
           </div>
           <button
-            onClick={onClose}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onClose();
+            }}
             className="premium-button-secondary"
           >
             Close
           </button>
         </div>
       </div>
+      
+      {/* Notification */}
+      {notification && (
+        <Notification
+          type={notification.type}
+          title={notification.title}
+          message={notification.message}
+          onClose={() => setNotification(null)}
+        />
+      )}
     </BaseModal>
   )
 }

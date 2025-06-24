@@ -179,7 +179,7 @@ else:
 
     cors_origins = list(set(env_origins + default_origins))
     cors_origins = [origin.strip() for origin in cors_origins if origin.strip()]
-    
+
     # Log CORS configuration for debugging
     logger.info(f"CORS Configuration - Environment: {settings.ENVIRONMENT}")
     logger.info(f"CORS Origins configured: {cors_origins}")
@@ -515,13 +515,15 @@ def cors_debug():
     """CORS debug endpoint - shows current CORS configuration"""
     if settings.ENVIRONMENT.lower() != "development":
         raise HTTPException(status_code=404, detail="Not found")
-    
+
     return {
         "cors_origins": cors_origins,
         "environment": settings.ENVIRONMENT,
-        "vercel_domain_included": "https://bookbarber-agndzzr3p-6fb.vercel.app" in cors_origins,
+        "vercel_domain_included": "https://bookbarber-agndzzr3p-6fb.vercel.app"
+        in cors_origins,
         "timestamp": datetime.utcnow().isoformat(),
     }
+
 
 @app.get("/sentry-debug")
 def trigger_error():

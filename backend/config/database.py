@@ -7,11 +7,15 @@ from sqlalchemy import create_engine, event, pool
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import QueuePool, StaticPool
-from typing import Generator
+from sqlalchemy.exc import DisconnectionError, OperationalError, TimeoutError as SQLTimeoutError
+from typing import Generator, Optional
 import os
 import logging
 from contextlib import contextmanager
 import time
+import asyncio
+from functools import wraps
+import random
 
 logger = logging.getLogger(__name__)
 
@@ -162,46 +166,141 @@ class ConnectionMonitor:
 connection_monitor = ConnectionMonitor()
 
 
+# Circuit breaker for database operations
+class DatabaseCircuitBreaker:
+    """Circuit breaker pattern for database connections"""
+    
+    def __init__(self, failure_threshold: int = 5, recovery_timeout: int = 60):
+        self.failure_threshold = failure_threshold
+        self.recovery_timeout = recovery_timeout
+        self.failure_count = 0
+        self.last_failure_time = None
+        self.state = "CLOSED"  # CLOSED, OPEN, HALF_OPEN
+    
+    def call(self, func, *args, **kwargs):
+        """Execute function with circuit breaker protection"""
+        if self.state == "OPEN":
+            if self._should_attempt_reset():
+                self.state = "HALF_OPEN"
+            else:
+                raise OperationalError("Circuit breaker is OPEN", None, None)
+        
+        try:
+            result = func(*args, **kwargs)
+            self._on_success()
+            return result
+        except (DisconnectionError, OperationalError, SQLTimeoutError) as e:
+            self._on_failure()
+            raise e
+    
+    def _should_attempt_reset(self) -> bool:
+        """Check if enough time has passed to attempt reset"""
+        if self.last_failure_time is None:
+            return True
+        return time.time() - self.last_failure_time >= self.recovery_timeout
+    
+    def _on_success(self):
+        """Reset circuit breaker on successful operation"""
+        self.failure_count = 0
+        self.state = "CLOSED"
+    
+    def _on_failure(self):
+        """Handle failure in circuit breaker"""
+        self.failure_count += 1
+        self.last_failure_time = time.time()
+        
+        if self.failure_count >= self.failure_threshold:
+            self.state = "OPEN"
+            logger.warning(f"Circuit breaker opened after {self.failure_count} failures")
+
+
+# Global circuit breaker instance
+db_circuit_breaker = DatabaseCircuitBreaker()
+
+
+# Retry decorator with exponential backoff
+def retry_db_operation(max_retries: int = 3, base_delay: float = 1.0, max_delay: float = 30.0):
+    """Retry database operations with exponential backoff"""
+    
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            last_exception = None
+            
+            for attempt in range(max_retries + 1):
+                try:
+                    return db_circuit_breaker.call(func, *args, **kwargs)
+                except (DisconnectionError, OperationalError, SQLTimeoutError) as e:
+                    last_exception = e
+                    
+                    if attempt == max_retries:
+                        logger.error(f"Database operation failed after {max_retries + 1} attempts: {str(e)}")
+                        break
+                    
+                    # Calculate delay with exponential backoff and jitter
+                    delay = min(base_delay * (2 ** attempt), max_delay)
+                    jitter = random.uniform(0.1, 0.3) * delay
+                    total_delay = delay + jitter
+                    
+                    logger.warning(f"Database operation failed (attempt {attempt + 1}/{max_retries + 1}), retrying in {total_delay:.2f}s: {str(e)}")
+                    time.sleep(total_delay)
+            
+            raise last_exception
+        
+        return wrapper
+    return decorator
+
+
 # Enhanced database dependency with error handling and monitoring
+@retry_db_operation(max_retries=3, base_delay=0.5, max_delay=5.0)
+def _create_db_session() -> Session:
+    """Create a database session with retry logic"""
+    return SessionLocal()
+
+
 def get_db() -> Generator[Session, None, None]:
     """
-    Database dependency for FastAPI with enhanced error handling
+    Database dependency for FastAPI with enhanced error handling and retry logic
     """
-    db = SessionLocal()
-    connection_monitor.connection_created()
-
+    db = None
     try:
+        db = _create_db_session()
+        connection_monitor.connection_created()
         yield db
     except Exception as e:
         logger.error(f"Database session error: {str(e)}")
         connection_monitor.connection_error()
-        db.rollback()
+        if db:
+            db.rollback()
         raise
     finally:
-        db.close()
-        connection_monitor.connection_closed()
+        if db:
+            db.close()
+            connection_monitor.connection_closed()
 
 
 # Context manager for database sessions
 @contextmanager
 def get_db_session():
     """
-    Context manager for database sessions outside of FastAPI
+    Context manager for database sessions outside of FastAPI with retry logic
     """
-    db = SessionLocal()
-    connection_monitor.connection_created()
-
+    db = None
     try:
+        db = _create_db_session()
+        connection_monitor.connection_created()
         yield db
         db.commit()
     except Exception as e:
         logger.error(f"Database session error: {str(e)}")
         connection_monitor.connection_error()
-        db.rollback()
+        if db:
+            db.rollback()
         raise
     finally:
-        db.close()
-        connection_monitor.connection_closed()
+        if db:
+            db.close()
+            connection_monitor.connection_closed()
 
 
 # Bulk operations for better performance
@@ -303,7 +402,7 @@ class QueryOptimizer:
 
 # Database health check
 def check_database_health():
-    """Check database connection health"""
+    """Check database connection health with circuit breaker status"""
     try:
         with get_db_session() as db:
             from sqlalchemy import text
@@ -319,11 +418,25 @@ def check_database_health():
                     "postgresql" if "postgresql" in DATABASE_URL else "sqlite"
                 ),
                 "connection_stats": stats,
+                "circuit_breaker": {
+                    "state": db_circuit_breaker.state,
+                    "failure_count": db_circuit_breaker.failure_count,
+                    "last_failure_time": db_circuit_breaker.last_failure_time
+                },
                 "timestamp": time.time(),
             }
     except Exception as e:
         logger.error(f"Database health check failed: {str(e)}")
-        return {"status": "unhealthy", "error": str(e), "timestamp": time.time()}
+        return {
+            "status": "unhealthy", 
+            "error": str(e), 
+            "circuit_breaker": {
+                "state": db_circuit_breaker.state,
+                "failure_count": db_circuit_breaker.failure_count,
+                "last_failure_time": db_circuit_breaker.last_failure_time
+            },
+            "timestamp": time.time()
+        }
 
 
 # Export enhanced components
@@ -337,4 +450,7 @@ __all__ = [
     "QueryOptimizer",
     "connection_monitor",
     "check_database_health",
+    "retry_db_operation",
+    "db_circuit_breaker",
+    "DatabaseCircuitBreaker",
 ]
