@@ -307,13 +307,13 @@ export default function NewAppointmentModal({
     return (
       <BaseModal isOpen={isOpen} onClose={handleClose} size="md" showCloseButton={false}>
         <div className="text-center py-8">
-          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 dark:bg-green-900 mb-4">
-            <CheckCircleIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/20 mb-4">
+            <CheckCircleIcon className="h-8 w-8 text-green-600 dark:text-[#20D9D2]" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-[#FFFFFF] mb-2">
             Appointment Created!
           </h3>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">
+          <p className="text-gray-600 dark:text-[#8B92A5] mb-4">
             Your appointment has been successfully scheduled. A confirmation email will be sent shortly.
           </p>
           <button
@@ -337,15 +337,15 @@ export default function NewAppointmentModal({
       {loadingData ? (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mr-3"></div>
-          <span className="text-gray-600 dark:text-gray-300">Loading services and barbers...</span>
+          <span className="text-gray-600 dark:text-[#8B92A5]">Loading services and barbers...</span>
         </div>
       ) : error ? (
         <div className="text-center py-8">
-          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 dark:bg-red-900 mb-4">
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/20 mb-4">
             <ExclamationTriangleIcon className="h-8 w-8 text-red-600 dark:text-red-400" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Error Loading Data</h3>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">{error}</p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-[#FFFFFF] mb-2">Error Loading Data</h3>
+          <p className="text-gray-600 dark:text-[#8B92A5] mb-4">{error}</p>
           <button
             onClick={loadInitialData}
             className="premium-button text-sm"
@@ -358,13 +358,13 @@ export default function NewAppointmentModal({
           {/* Client Information */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2 mb-3">
-              <UserIcon className="h-5 w-5 text-teal-600" />
-              <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Client Information</h4>
+              <UserIcon className="h-5 w-5 text-[#20D9D2]" />
+              <h4 className="text-lg font-semibold text-gray-900 dark:text-[#FFFFFF]">Client Information</h4>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="relative">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-[#8B92A5] mb-2">
                   Full Name *
                 </label>
                 <div className="relative">
@@ -384,18 +384,18 @@ export default function NewAppointmentModal({
 
                 {/* Client suggestions dropdown */}
                 {clientSuggestions.length > 0 && (
-                  <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  <div className="absolute z-50 w-full mt-1 bg-white dark:bg-[#24252E] border border-gray-300 dark:border-[#2C2D3A] rounded-lg shadow-lg max-h-60 overflow-y-auto">
                     {clientSuggestions.map((client, index) => (
                       <button
                         key={index}
                         type="button"
                         onClick={() => selectClient(client)}
-                        className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                        className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-[#2C2D3A] border-b border-gray-100 dark:border-[#2C2D3A] last:border-b-0"
                       >
-                        <div className="font-medium text-gray-900 dark:text-white">{client.name}</div>
-                        <div className="text-sm text-gray-600 dark:text-gray-300">{client.email}</div>
+                        <div className="font-medium text-gray-900 dark:text-[#FFFFFF]">{client.name}</div>
+                        <div className="text-sm text-gray-600 dark:text-[#8B92A5]">{client.email}</div>
                         {client.phone && (
-                          <div className="text-sm text-gray-500 dark:text-gray-400">{client.phone}</div>
+                          <div className="text-sm text-gray-500 dark:text-[#8B92A5]">{client.phone}</div>
                         )}
                       </button>
                     ))}
@@ -411,7 +411,7 @@ export default function NewAppointmentModal({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-[#8B92A5] mb-2">
                   Email Address *
                 </label>
                 <div className="relative">
@@ -433,7 +433,7 @@ export default function NewAppointmentModal({
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-[#8B92A5] mb-2">
                   Phone Number
                 </label>
                 <div className="relative">
@@ -461,8 +461,8 @@ export default function NewAppointmentModal({
             {/* Service Selection */}
             <div className="space-y-4">
               <div className="flex items-center space-x-2 mb-3">
-                <ScissorsIcon className="h-5 w-5 text-teal-600" />
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Service Selection</h4>
+                <ScissorsIcon className="h-5 w-5 text-[#20D9D2]" />
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-[#FFFFFF]">Service Selection</h4>
               </div>
 
               <div className="space-y-3 max-h-64 overflow-y-auto">
@@ -472,8 +472,8 @@ export default function NewAppointmentModal({
                     className={`
                       relative flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200
                       ${watchedServiceId === service.id
-                        ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/20'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
+                        ? 'border-[#20D9D2] bg-teal-50 dark:bg-[#20D9D2]/10'
+                        : 'border-gray-200 dark:border-[#2C2D3A] hover:border-gray-300 dark:hover:border-[#20D9D2]/50 hover:bg-gray-50 dark:hover:bg-[#24252E]'
                       }
                     `}
                   >
@@ -486,29 +486,29 @@ export default function NewAppointmentModal({
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h5 className="font-semibold text-gray-900 dark:text-white">{service.name}</h5>
+                          <h5 className="font-semibold text-gray-900 dark:text-[#FFFFFF]">{service.name}</h5>
                           {service.description && (
-                            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{service.description}</p>
+                            <p className="text-sm text-gray-600 dark:text-[#8B92A5] mt-1">{service.description}</p>
                           )}
                           <div className="flex items-center space-x-2 mt-2">
-                            <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                            <span className="text-xs text-gray-500 dark:text-[#8B92A5] bg-gray-100 dark:bg-[#24252E] px-2 py-1 rounded">
                               {service.category}
                             </span>
                             {service.popular && (
-                              <span className="text-xs bg-teal-100 dark:bg-teal-900 text-teal-800 dark:text-teal-300 px-2 py-1 rounded">
+                              <span className="text-xs bg-teal-100 dark:bg-[#20D9D2]/20 text-teal-800 dark:text-[#20D9D2] px-2 py-1 rounded">
                                 Popular
                               </span>
                             )}
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-lg font-bold text-gray-900 dark:text-white">${service.price}</div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">{service.duration} min</div>
+                          <div className="text-lg font-bold text-gray-900 dark:text-[#FFFFFF]">${service.price}</div>
+                          <div className="text-sm text-gray-500 dark:text-[#8B92A5]">{service.duration} min</div>
                         </div>
                       </div>
                     </div>
                     {watchedServiceId === service.id && (
-                      <CheckCircleIcon className="h-5 w-5 text-teal-600 ml-3" />
+                      <CheckCircleIcon className="h-5 w-5 text-[#20D9D2] ml-3" />
                     )}
                   </label>
                 ))}
@@ -524,8 +524,8 @@ export default function NewAppointmentModal({
             {/* Barber Selection */}
             <div className="space-y-4">
               <div className="flex items-center space-x-2 mb-3">
-                <UserIcon className="h-5 w-5 text-teal-600" />
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Select Barber</h4>
+                <UserIcon className="h-5 w-5 text-[#20D9D2]" />
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-[#FFFFFF]">Select Barber</h4>
               </div>
               <div className="space-y-3 max-h-64 overflow-y-auto">
                 {barbers.map((barber) => (
@@ -534,8 +534,8 @@ export default function NewAppointmentModal({
                     className={`
                       relative flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200
                       ${watchedBarberId === barber.id
-                        ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/20'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
+                        ? 'border-[#20D9D2] bg-teal-50 dark:bg-[#20D9D2]/10'
+                        : 'border-gray-200 dark:border-[#2C2D3A] hover:border-gray-300 dark:hover:border-[#20D9D2]/50 hover:bg-gray-50 dark:hover:bg-[#24252E]'
                       }
                     `}
                   >
@@ -549,7 +549,7 @@ export default function NewAppointmentModal({
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="flex items-center space-x-2">
-                            <h5 className="font-semibold text-gray-900 dark:text-white">{barber.name}</h5>
+                            <h5 className="font-semibold text-gray-900 dark:text-[#FFFFFF]">{barber.name}</h5>
                             <div className={`w-2 h-2 rounded-full ${
                               barber.status === 'online' ? 'bg-green-500' :
                               barber.status === 'busy' ? 'bg-yellow-500' : 'bg-gray-400'
@@ -570,7 +570,7 @@ export default function NewAppointmentModal({
                                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                   </svg>
                                 ))}
-                                <span className="ml-1 text-sm text-gray-600 dark:text-gray-300">{barber.rating}</span>
+                                <span className="ml-1 text-sm text-gray-600 dark:text-[#8B92A5]">{barber.rating}</span>
                               </div>
                             </div>
                           )}
@@ -579,13 +579,13 @@ export default function NewAppointmentModal({
                               {barber.specialties.slice(0, 3).map((specialty) => (
                                 <span
                                   key={specialty}
-                                  className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+                                  className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-[#24252E] text-gray-800 dark:text-[#8B92A5]"
                                 >
                                   {specialty}
                                 </span>
                               ))}
                               {barber.specialties.length > 3 && (
-                                <span className="text-xs text-gray-500 dark:text-gray-400">+{barber.specialties.length - 3} more</span>
+                                <span className="text-xs text-gray-500 dark:text-[#8B92A5]">+{barber.specialties.length - 3} more</span>
                               )}
                             </div>
                           )}
@@ -593,7 +593,7 @@ export default function NewAppointmentModal({
                       </div>
                     </div>
                     {watchedBarberId === barber.id && (
-                      <CheckCircleIcon className="h-5 w-5 text-teal-600 ml-3" />
+                      <CheckCircleIcon className="h-5 w-5 text-[#20D9D2] ml-3" />
                     )}
                   </label>
                 ))}
@@ -610,13 +610,13 @@ export default function NewAppointmentModal({
           {/* Date and Time Selection */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2 mb-3">
-              <CalendarDaysIcon className="h-5 w-5 text-teal-600" />
-              <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Date & Time</h4>
+              <CalendarDaysIcon className="h-5 w-5 text-[#20D9D2]" />
+              <h4 className="text-lg font-semibold text-gray-900 dark:text-[#FFFFFF]">Date & Time</h4>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-[#8B92A5] mb-2">
                   Date *
                 </label>
                 <input
@@ -634,7 +634,7 @@ export default function NewAppointmentModal({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-[#8B92A5] mb-2">
                   Time *
                 </label>
                 <select
@@ -666,7 +666,7 @@ export default function NewAppointmentModal({
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[#8B92A5] mb-2">
               Additional Notes
             </label>
             <textarea
@@ -679,20 +679,20 @@ export default function NewAppointmentModal({
 
           {/* Summary */}
           {selectedService && (
-            <div className="bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-xl p-4">
-              <h5 className="font-semibold text-teal-900 dark:text-teal-300 mb-2">Appointment Summary</h5>
+            <div className="bg-teal-50 dark:bg-[#20D9D2]/10 border border-teal-200 dark:border-[#20D9D2]/30 rounded-xl p-4">
+              <h5 className="font-semibold text-teal-900 dark:text-[#20D9D2] mb-2">Appointment Summary</h5>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-teal-700 dark:text-teal-400">Service:</span>
-                  <span className="font-medium text-teal-900 dark:text-teal-300">{selectedService.name}</span>
+                  <span className="text-teal-700 dark:text-[#8B92A5]">Service:</span>
+                  <span className="font-medium text-teal-900 dark:text-[#FFFFFF]">{selectedService.name}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-teal-700 dark:text-teal-400">Duration:</span>
-                  <span className="font-medium text-teal-900 dark:text-teal-300">{selectedService.duration} minutes</span>
+                  <span className="text-teal-700 dark:text-[#8B92A5]">Duration:</span>
+                  <span className="font-medium text-teal-900 dark:text-[#FFFFFF]">{selectedService.duration} minutes</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-teal-700 dark:text-teal-400">Price:</span>
-                  <span className="font-medium text-teal-900 dark:text-teal-300">${selectedService.price}</span>
+                  <span className="text-teal-700 dark:text-[#8B92A5]">Price:</span>
+                  <span className="font-medium text-teal-900 dark:text-[#FFFFFF]">${selectedService.price}</span>
                 </div>
               </div>
             </div>
@@ -700,7 +700,7 @@ export default function NewAppointmentModal({
 
           {/* Error Display */}
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-xl p-4">
               <div className="flex items-center">
                 <ExclamationTriangleIcon className="h-5 w-5 text-red-600 dark:text-red-400 mr-2" />
                 <span className="text-red-800 dark:text-red-300 font-medium">Error</span>
@@ -710,7 +710,7 @@ export default function NewAppointmentModal({
           )}
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
+          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-[#2C2D3A]">
             <button
               type="button"
               onClick={handleClose}

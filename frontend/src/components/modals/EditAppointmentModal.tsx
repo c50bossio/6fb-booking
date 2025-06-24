@@ -397,15 +397,15 @@ export default function EditAppointmentModal({
             </div>
 
             {/* Service Information */}
-            <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
+            <div className="bg-slate-50 dark:bg-[#24252E] border border-slate-200 dark:border-[#2C2D3A] rounded-xl p-6">
               <div className="flex items-center space-x-2 mb-4">
-                <ScissorsIcon className="h-5 w-5 text-slate-600 dark:text-slate-400" />
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Service Details</h3>
+                <ScissorsIcon className="h-5 w-5 text-slate-600 dark:text-[#20D9D2]" />
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-[#FFFFFF]">Service Details</h3>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-slate-700 dark:text-slate-300">Service</p>
-                  <p className="font-semibold text-slate-900 dark:text-slate-100">{appointment.service}</p>
+                  <p className="text-sm text-slate-700 dark:text-[#8B92A5]">Service</p>
+                  <p className="font-semibold text-slate-900 dark:text-[#FFFFFF]">{appointment.service}</p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-700 dark:text-slate-300">Price</p>
@@ -426,20 +426,20 @@ export default function EditAppointmentModal({
 
             {/* Date & Time */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
+              <div className="bg-gray-50 dark:bg-[#24252E] rounded-xl p-4">
                 <div className="flex items-center space-x-2 mb-2">
-                  <CalendarDaysIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                  <h4 className="font-semibold text-gray-900 dark:text-white">Date</h4>
+                  <CalendarDaysIcon className="h-5 w-5 text-gray-600 dark:text-[#20D9D2]" />
+                  <h4 className="font-semibold text-gray-900 dark:text-[#FFFFFF]">Date</h4>
                 </div>
-                <p className="text-gray-700 dark:text-gray-300">{formatDate(appointment.date)}</p>
+                <p className="text-gray-700 dark:text-[#8B92A5]">{formatDate(appointment.date)}</p>
               </div>
 
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
+              <div className="bg-gray-50 dark:bg-[#24252E] rounded-xl p-4">
                 <div className="flex items-center space-x-2 mb-2">
-                  <ClockIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                  <h4 className="font-semibold text-gray-900 dark:text-white">Time</h4>
+                  <ClockIcon className="h-5 w-5 text-gray-600 dark:text-[#20D9D2]" />
+                  <h4 className="font-semibold text-gray-900 dark:text-[#FFFFFF]">Time</h4>
                 </div>
-                <p className="text-gray-700 dark:text-gray-300">
+                <p className="text-gray-700 dark:text-[#8B92A5]">
                   {formatTime(appointment.startTime)} - {formatTime(appointment.endTime)}
                 </p>
               </div>
@@ -448,13 +448,13 @@ export default function EditAppointmentModal({
             {/* Client Information */}
             <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-6">
               <div className="flex items-center space-x-2 mb-4">
-                <UserIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Client Information</h3>
+                <UserIcon className="h-5 w-5 text-gray-600 dark:text-[#20D9D2]" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-[#FFFFFF]">Client Information</h3>
               </div>
               <div className="space-y-3">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Name</p>
-                  <p className="font-medium text-gray-900 dark:text-white">{appointment.client}</p>
+                  <p className="text-sm text-gray-600 dark:text-[#8B92A5]">Name</p>
+                  <p className="font-medium text-gray-900 dark:text-[#FFFFFF]">{appointment.client}</p>
                 </div>
                 {appointment.clientEmail && (
                   <div className="flex items-center space-x-2">
@@ -483,19 +483,19 @@ export default function EditAppointmentModal({
 
             {/* Revenue Information */}
             {(appointment.serviceRevenue || appointment.tipAmount || appointment.productRevenue) && (
-              <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-6">
+              <div className="bg-emerald-50 dark:bg-[#20D9D2]/10 rounded-xl p-6">
                 <div className="flex items-center space-x-2 mb-4">
-                  <BanknotesIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                  <h3 className="text-lg font-semibold text-emerald-900 dark:text-emerald-100">Revenue Breakdown</h3>
+                  <BanknotesIcon className="h-5 w-5 text-emerald-600 dark:text-[#20D9D2]" />
+                  <h3 className="text-lg font-semibold text-emerald-900 dark:text-[#FFFFFF]">Revenue Breakdown</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <p className="text-sm text-emerald-700 dark:text-emerald-300">Service Revenue</p>
-                    <p className="font-semibold text-emerald-900 dark:text-emerald-100">${appointment.serviceRevenue || 0}</p>
+                    <p className="text-sm text-emerald-700 dark:text-[#8B92A5]">Service Revenue</p>
+                    <p className="font-semibold text-emerald-900 dark:text-[#FFFFFF]">${appointment.serviceRevenue || 0}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-emerald-700 dark:text-emerald-300">Tip Amount</p>
-                    <p className="font-semibold text-emerald-900 dark:text-emerald-100">${appointment.tipAmount || 0}</p>
+                    <p className="text-sm text-emerald-700 dark:text-[#8B92A5]">Tip Amount</p>
+                    <p className="font-semibold text-emerald-900 dark:text-[#FFFFFF]">${appointment.tipAmount || 0}</p>
                   </div>
                   <div>
                     <p className="text-sm text-emerald-700 dark:text-emerald-300">Product Revenue</p>
@@ -507,17 +507,17 @@ export default function EditAppointmentModal({
 
             {/* Notes */}
             {appointment.notes && (
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
+              <div className="bg-gray-50 dark:bg-[#24252E] rounded-xl p-4">
                 <div className="flex items-center space-x-2 mb-2">
-                  <DocumentTextIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                  <h4 className="font-semibold text-gray-900 dark:text-white">Notes</h4>
+                  <DocumentTextIcon className="h-5 w-5 text-gray-600 dark:text-[#20D9D2]" />
+                  <h4 className="font-semibold text-gray-900 dark:text-[#FFFFFF]">Notes</h4>
                 </div>
                 <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{appointment.notes}</p>
               </div>
             )}
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-[#2C2D3A]">
               <button
                 onClick={onClose}
                 className="premium-button-secondary text-sm"
@@ -540,20 +540,20 @@ export default function EditAppointmentModal({
             {loadingData ? (
               <div className="flex items-center justify-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-600 mr-3"></div>
-                <span className="text-gray-600 dark:text-gray-300">Loading editing options...</span>
+                <span className="text-gray-600 dark:text-[#8B92A5]">Loading editing options...</span>
               </div>
             ) : (
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 {/* Client Information */}
                 <div className="space-y-4">
                   <div className="flex items-center space-x-2 mb-3">
-                    <UserIcon className="h-5 w-5 text-teal-600 dark:text-teal-400" />
-                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Client Information</h4>
+                    <UserIcon className="h-5 w-5 text-[#20D9D2]" />
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-[#FFFFFF]">Client Information</h4>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-[#8B92A5] mb-2">
                         Full Name *
                       </label>
                       <input
@@ -571,7 +571,7 @@ export default function EditAppointmentModal({
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-[#8B92A5] mb-2">
                         Email Address
                       </label>
                       <input
@@ -589,7 +589,7 @@ export default function EditAppointmentModal({
                     </div>
 
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-[#8B92A5] mb-2">
                         Phone Number
                       </label>
                       <input
@@ -605,13 +605,13 @@ export default function EditAppointmentModal({
                 {/* Date and Time */}
                 <div className="space-y-4">
                   <div className="flex items-center space-x-2 mb-3">
-                    <CalendarDaysIcon className="h-5 w-5 text-teal-600 dark:text-teal-400" />
-                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Date & Time</h4>
+                    <CalendarDaysIcon className="h-5 w-5 text-[#20D9D2]" />
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-[#FFFFFF]">Date & Time</h4>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-[#8B92A5] mb-2">
                         Date *
                       </label>
                       <input
@@ -629,7 +629,7 @@ export default function EditAppointmentModal({
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-[#8B92A5] mb-2">
                         Time *
                       </label>
                       <select
@@ -655,7 +655,7 @@ export default function EditAppointmentModal({
 
                 {/* Status */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-[#8B92A5] mb-2">
                     Status
                   </label>
                   <select
@@ -674,13 +674,13 @@ export default function EditAppointmentModal({
                 {watchedStatus === 'completed' && (
                   <div className="space-y-4">
                     <div className="flex items-center space-x-2 mb-3">
-                      <BanknotesIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Revenue Information</h4>
+                      <BanknotesIcon className="h-5 w-5 text-emerald-600 dark:text-[#20D9D2]" />
+                      <h4 className="text-lg font-semibold text-gray-900 dark:text-[#FFFFFF]">Revenue Information</h4>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-[#8B92A5] mb-2">
                           Service Revenue
                         </label>
                         <input
@@ -693,7 +693,7 @@ export default function EditAppointmentModal({
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-[#8B92A5] mb-2">
                           Tip Amount
                         </label>
                         <input
@@ -706,7 +706,7 @@ export default function EditAppointmentModal({
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-[#8B92A5] mb-2">
                           Product Revenue
                         </label>
                         <input
@@ -723,7 +723,7 @@ export default function EditAppointmentModal({
 
                 {/* Notes */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-[#8B92A5] mb-2">
                     Notes
                   </label>
                   <textarea
@@ -736,7 +736,7 @@ export default function EditAppointmentModal({
 
                 {/* Error Display */}
                 {error && (
-                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-xl p-4">
                     <div className="flex items-center">
                       <ExclamationTriangleIcon className="h-5 w-5 text-red-600 dark:text-red-400 mr-2" />
                       <span className="text-red-800 dark:text-red-300 font-medium">Error</span>
@@ -746,7 +746,7 @@ export default function EditAppointmentModal({
                 )}
 
                 {/* Action Buttons */}
-                <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-[#2C2D3A]">
                   <button
                     type="button"
                     onClick={() => setIsEditing(false)}

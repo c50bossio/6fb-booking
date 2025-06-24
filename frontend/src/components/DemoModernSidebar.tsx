@@ -85,7 +85,7 @@ const navigationItems = [
 
 export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
   const pathname = usePathname()
-  const { theme, toggleTheme } = useTheme()
+  const { theme, cycleTheme } = useTheme()
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   // Debug: Log when component mounts
@@ -228,15 +228,19 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
       <div className={`px-4 py-4 border-t space-y-2 ${theme === 'dark' ? 'border-white/10' : 'border-gray-200'}`}>
         {/* Theme Toggle - Prominent styling */}
         <button
-          onClick={toggleTheme}
+          onClick={cycleTheme}
           className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 w-full border-2 ${
             theme === 'dark'
               ? 'text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/10 border-yellow-500/30 hover:border-yellow-400/50'
+              : theme === 'soft-light'
+              ? 'text-amber-600 hover:text-amber-700 hover:bg-amber-50 border-amber-200 hover:border-amber-300'
               : 'text-teal-600 hover:text-teal-700 hover:bg-teal-50 border-teal-200 hover:border-teal-300'
           }`}
           title={isCollapsed ? 'Toggle Theme' : undefined}
         >
           {theme === 'dark' ? (
+            <SunIcon className="h-5 w-5 flex-shrink-0" />
+          ) : theme === 'soft-light' ? (
             <SunIcon className="h-5 w-5 flex-shrink-0" />
           ) : (
             <MoonIcon className="h-5 w-5 flex-shrink-0" />
@@ -244,9 +248,13 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
           {!isCollapsed && (
             <div className="flex-1 min-w-0 text-left">
               <p className="font-semibold">
-                {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                {theme === 'dark' ? 'Light Mode' : theme === 'soft-light' ? 'Dark Mode' : 'Soft Light Mode'}
               </p>
-              <p className={`text-xs ${theme === 'dark' ? 'text-yellow-300' : 'text-teal-500'}`}>
+              <p className={`text-xs ${
+                theme === 'dark' ? 'text-yellow-300' :
+                theme === 'soft-light' ? 'text-amber-500' :
+                'text-teal-500'
+              }`}>
                 Switch theme
               </p>
             </div>

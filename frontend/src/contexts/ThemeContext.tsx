@@ -2,23 +2,69 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 
-type Theme = 'light' | 'dark'
+type Theme = 'light' | 'soft-light' | 'dark'
 
 interface ThemeContextType {
   theme: Theme
   toggleTheme: () => void
   setTheme: (theme: Theme) => void
+  cycleTheme: () => void
   highContrastMode: boolean
   setHighContrastMode: (enabled: boolean) => void
   isHighContrastNeeded: () => boolean
+  getThemeColors: () => ThemeColors
+}
+
+interface ThemeColors {
+  background: string
+  cardBackground: string
+  textPrimary: string
+  textSecondary: string
+  border: string
+  shadow: string
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('dark')
+  const [theme, setTheme] = useState<Theme>('light')
   const [highContrastMode, setHighContrastModeState] = useState(false)
   const [mounted, setMounted] = useState(false)
+
+  // Define color palettes for each theme
+  const getThemeColors = (): ThemeColors => {
+    switch (theme) {
+      case 'light':
+        return {
+          background: '#ffffff',
+          cardBackground: '#f0f0f0',
+          textPrimary: '#000000',
+          textSecondary: '#4a5568',
+          border: '#cccccc',
+          shadow: '0 4px 6px -1px rgba(0, 0, 0, 0.15), 0 2px 4px -2px rgba(0, 0, 0, 0.15)'
+        }
+      case 'soft-light':
+        return {
+          background: '#faf8f5',
+          cardBackground: '#ffffff',
+          textPrimary: '#2d3748',
+          textSecondary: '#718096',
+          border: '#e8dfd7',
+          shadow: '0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.08)'
+        }
+      case 'dark':
+        return {
+          background: '#111827',
+          cardBackground: '#374151',
+          textPrimary: '#ffffff',
+          textSecondary: '#d1d5db',
+          border: '#4b5563',
+          shadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)'
+        }
+      default:
+        return getThemeColors() // fallback to current theme
+    }
+  }
 
   // Function to detect if high contrast is needed based on user preferences
   const isHighContrastNeeded = (): boolean => {
@@ -53,11 +99,17 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     // Get theme from localStorage
     const savedTheme = localStorage.getItem('bookbarber-theme') as Theme
-    if (savedTheme) {
+    if (savedTheme && ['light', 'soft-light', 'dark'].includes(savedTheme)) {
       setTheme(savedTheme)
     } else {
-      // Default to dark theme like in the screenshot
-      setTheme('dark')
+      // Detect system preference and default accordingly
+      const systemPrefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches
+      if (systemPrefersDark) {
+        setTheme('dark')
+      } else {
+        // Default to 'light' for light system preference
+        setTheme('light')
+      }
     }
 
     // Get high contrast preference from localStorage
@@ -79,22 +131,37 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('bookbarber-theme', theme)
 
       // Update document class for global theme
+      // Remove all theme classes first
+      document.documentElement.classList.remove('dark', 'light', 'soft-light')
+      document.body.classList.remove('dark', 'light', 'soft-light', 'bg-slate-900', 'bg-gray-50', 'bg-gray-100', 'bg-white')
+
+      // Add transition for smooth theme switching
+      document.body.style.transition = 'background-color 0.3s ease, color 0.3s ease'
+
       if (theme === 'dark') {
         document.documentElement.classList.add('dark')
-        document.documentElement.classList.remove('light')
         document.body.classList.add('dark', 'bg-slate-900')
-        document.body.classList.remove('light', 'bg-gray-50')
+        document.body.style.backgroundColor = '#111827'
 
         // Only add text color classes if high contrast mode is not enabled
         if (!highContrastMode) {
           document.body.classList.add('text-white')
           document.body.classList.remove('text-gray-900')
         }
-      } else {
+      } else if (theme === 'light') {
         document.documentElement.classList.add('light')
-        document.documentElement.classList.remove('dark')
-        document.body.classList.add('light', 'bg-gray-50')
-        document.body.classList.remove('dark', 'bg-slate-900')
+        document.body.classList.add('light', 'bg-white')
+        document.body.style.backgroundColor = '#ffffff'
+
+        // Only add text color classes if high contrast mode is not enabled
+        if (!highContrastMode) {
+          document.body.classList.add('text-gray-900')
+          document.body.classList.remove('text-white')
+        }
+      } else { // soft-light
+        document.documentElement.classList.add('soft-light')
+        document.body.classList.add('soft-light')
+        document.body.style.backgroundColor = '#faf8f5'
 
         // Only add text color classes if high contrast mode is not enabled
         if (!highContrastMode) {
@@ -118,7 +185,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         if (theme === 'dark') {
           document.body.classList.add('text-white')
           document.body.classList.remove('text-gray-900')
-        } else {
+        } else { // light or soft-light
           document.body.classList.add('text-gray-900')
           document.body.classList.remove('text-white')
         }
@@ -147,19 +214,54 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [mounted])
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light')
+    setTheme(prev => {
+      switch (prev) {
+        case 'light':
+          return 'soft-light'
+        case 'soft-light':
+          return 'dark'
+        case 'dark':
+          return 'light'
+        default:
+          return 'light'
+      }
+    })
+  }
+
+  const cycleTheme = () => {
+    setTheme(prev => {
+      switch (prev) {
+        case 'light':
+          return 'soft-light'
+        case 'soft-light':
+          return 'dark'
+        case 'dark':
+          return 'light'
+        default:
+          return 'light'
+      }
+    })
   }
 
   // Always render children, but use a default theme during SSR
   const value = mounted
-    ? { theme, toggleTheme, setTheme, highContrastMode, setHighContrastMode, isHighContrastNeeded }
+    ? { theme, toggleTheme, setTheme, cycleTheme, highContrastMode, setHighContrastMode, isHighContrastNeeded, getThemeColors }
     : {
-        theme: 'dark' as Theme,
+        theme: 'light' as Theme,
         toggleTheme: () => {},
         setTheme: () => {},
+        cycleTheme: () => {},
         highContrastMode: false,
         setHighContrastMode: () => {},
-        isHighContrastNeeded: () => false
+        isHighContrastNeeded: () => false,
+        getThemeColors: () => ({
+          background: '#ffffff',
+          cardBackground: '#ffffff',
+          textPrimary: '#111111',
+          textSecondary: '#6b7280',
+          border: '#d1d5db',
+          shadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)'
+        })
       }
 
   return (
@@ -174,12 +276,21 @@ export function useTheme() {
   if (context === undefined) {
     // Return a default value during SSR instead of throwing
     return {
-      theme: 'dark' as Theme,
+      theme: 'light' as Theme,
       toggleTheme: () => {},
       setTheme: () => {},
+      cycleTheme: () => {},
       highContrastMode: false,
       setHighContrastMode: () => {},
-      isHighContrastNeeded: () => false
+      isHighContrastNeeded: () => false,
+      getThemeColors: () => ({
+        background: '#ffffff',
+        cardBackground: '#ffffff',
+        textPrimary: '#111111',
+        textSecondary: '#6b7280',
+        border: '#d1d5db',
+        shadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)'
+      })
     }
   }
   return context

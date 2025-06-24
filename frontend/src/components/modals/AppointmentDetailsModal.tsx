@@ -69,7 +69,7 @@ const timeSlots = [
 ]
 
 const statusOptions = [
-  { value: 'confirmed', label: 'Confirmed', color: 'text-emerald-600', bg: 'bg-emerald-100' },
+  { value: 'confirmed', label: 'Confirmed', color: 'text-[#20D9D2]', bg: 'bg-emerald-100' },
   { value: 'pending', label: 'Pending', color: 'text-amber-600', bg: 'bg-amber-100' },
   { value: 'completed', label: 'Completed', color: 'text-blue-600', bg: 'bg-blue-100' },
   { value: 'cancelled', label: 'Cancelled', color: 'text-red-600', bg: 'bg-red-100' }
@@ -196,7 +196,7 @@ export default function AppointmentDetailsModal({
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="p-2 text-gray-500 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-lg transition-colors"
+                  className="p-2 text-gray-500 dark:text-gray-400 hover:text-[#20D9D2] dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-lg transition-colors"
                   title="Edit appointment"
                 >
                   <PencilIcon className="h-5 w-5" />
@@ -214,7 +214,7 @@ export default function AppointmentDetailsModal({
             {/* Service Information */}
             <div className="bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-900/20 dark:to-emerald-900/20 border border-teal-200 dark:border-teal-800 rounded-xl p-6">
               <div className="flex items-center space-x-2 mb-4">
-                <CurrencyDollarIcon className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+                <CurrencyDollarIcon className="h-5 w-5 text-[#20D9D2] dark:text-teal-400" />
                 <h3 className="text-lg font-semibold text-teal-900 dark:text-teal-100">Service Details</h3>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -241,18 +241,18 @@ export default function AppointmentDetailsModal({
 
             {/* Date & Time */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
+              <div className="bg-gray-50 dark:bg-[#24252E] rounded-xl p-4">
                 <div className="flex items-center space-x-2 mb-2">
-                  <CalendarDaysIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                  <h4 className="font-semibold text-gray-900 dark:text-white">Date</h4>
+                  <CalendarDaysIcon className="h-5 w-5 text-gray-600 dark:text-[#8B92A5]" />
+                  <h4 className="font-semibold text-gray-900 dark:text-[#FFFFFF]">Date</h4>
                 </div>
                 <p className="text-gray-700 dark:text-gray-300">{formatDate(appointment.date)}</p>
               </div>
 
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
+              <div className="bg-gray-50 dark:bg-[#24252E] rounded-xl p-4">
                 <div className="flex items-center space-x-2 mb-2">
-                  <ClockIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                  <h4 className="font-semibold text-gray-900 dark:text-white">Time</h4>
+                  <ClockIcon className="h-5 w-5 text-gray-600 dark:text-[#8B92A5]" />
+                  <h4 className="font-semibold text-gray-900 dark:text-[#FFFFFF]">Time</h4>
                 </div>
                 <p className="text-gray-700 dark:text-gray-300">
                   {appointment.startTime} - {appointment.endTime}
@@ -261,22 +261,22 @@ export default function AppointmentDetailsModal({
             </div>
 
             {/* Client Information */}
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-6">
+            <div className="bg-gray-50 dark:bg-[#24252E] rounded-xl p-6">
               <div className="flex items-center space-x-2 mb-4">
-                <UserIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Client Information</h3>
+                <UserIcon className="h-5 w-5 text-gray-600 dark:text-[#8B92A5]" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-[#FFFFFF]">Client Information</h3>
               </div>
               <div className="space-y-3">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Name</p>
-                  <p className="font-medium text-gray-900 dark:text-white">{appointment.client}</p>
+                  <p className="text-sm text-gray-600 dark:text-[#8B92A5]">Name</p>
+                  <p className="font-medium text-gray-900 dark:text-[#FFFFFF]">{appointment.client}</p>
                 </div>
                 {appointment.clientEmail && (
                   <div className="flex items-center space-x-2">
                     <EnvelopeIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                     <a
                       href={`mailto:${appointment.clientEmail}`}
-                      className="text-teal-600 hover:text-teal-700 underline"
+                      className="text-[#20D9D2] hover:text-teal-700 underline"
                     >
                       {appointment.clientEmail}
                     </a>
@@ -287,7 +287,7 @@ export default function AppointmentDetailsModal({
                     <PhoneIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                     <a
                       href={`tel:${appointment.clientPhone}`}
-                      className="text-teal-600 hover:text-teal-700 underline"
+                      className="text-[#20D9D2] hover:text-teal-700 underline"
                     >
                       {appointment.clientPhone}
                     </a>
@@ -298,14 +298,14 @@ export default function AppointmentDetailsModal({
 
             {/* Notes */}
             {appointment.notes && (
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Notes</h4>
+              <div className="bg-gray-50 dark:bg-[#24252E] rounded-xl p-4">
+                <h4 className="font-semibold text-gray-900 dark:text-[#FFFFFF] mb-2">Notes</h4>
                 <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{appointment.notes}</p>
               </div>
             )}
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-[#2C2D3A]">
               <button
                 onClick={onClose}
                 className="premium-button-secondary text-sm"
@@ -328,8 +328,8 @@ export default function AppointmentDetailsModal({
             {/* Client Information */}
             <div className="space-y-4">
               <div className="flex items-center space-x-2 mb-3">
-                <UserIcon className="h-5 w-5 text-teal-600 dark:text-teal-400" />
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Client Information</h4>
+                <UserIcon className="h-5 w-5 text-[#20D9D2] dark:text-teal-400" />
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-[#FFFFFF]">Client Information</h4>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -386,8 +386,8 @@ export default function AppointmentDetailsModal({
             {/* Date and Time */}
             <div className="space-y-4">
               <div className="flex items-center space-x-2 mb-3">
-                <CalendarDaysIcon className="h-5 w-5 text-teal-600 dark:text-teal-400" />
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Date & Time</h4>
+                <CalendarDaysIcon className="h-5 w-5 text-[#20D9D2] dark:text-teal-400" />
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-[#FFFFFF]">Date & Time</h4>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -465,7 +465,7 @@ export default function AppointmentDetailsModal({
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-[#2C2D3A]">
               <button
                 type="button"
                 onClick={() => setIsEditing(false)}

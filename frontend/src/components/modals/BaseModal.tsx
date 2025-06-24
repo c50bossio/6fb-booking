@@ -84,7 +84,7 @@ export default function BaseModal({
           leaveTo="opacity-0"
         >
           <div
-            className={`fixed inset-0 bg-black/40 backdrop-blur-sm ${overlayClassName}`}
+            className={`fixed inset-0 bg-black/60 backdrop-blur-sm ${overlayClassName}`}
             onClick={handleOverlayClick}
           />
         </Transition.Child>
@@ -104,8 +104,8 @@ export default function BaseModal({
               <Dialog.Panel
                 className={`
                   w-full ${sizeClasses[size]} transform overflow-hidden
-                  rounded-2xl bg-white dark:bg-gray-900 text-left align-middle transition-all
-                  border border-gray-200 dark:border-gray-700
+                  rounded-2xl bg-white dark:bg-[#1A1B23] text-left align-middle transition-all
+                  border border-gray-200 dark:border-[#2C2D3A]
                   shadow-2xl dark:shadow-2xl
                   ${panelClassName}
                   ${className}
@@ -114,11 +114,11 @@ export default function BaseModal({
               >
                 {/* Header */}
                 {(title || showCloseButton) && (
-                  <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-[#2C2D3A]">
                     {title && (
                       <Dialog.Title
                         as="h3"
-                        className="text-xl font-semibold leading-6 text-gray-900 dark:text-white"
+                        className="text-xl font-semibold leading-6 text-gray-900 dark:text-[#FFFFFF]"
                       >
                         {title}
                       </Dialog.Title>
@@ -127,7 +127,7 @@ export default function BaseModal({
                     {showCloseButton && (
                       <button
                         type="button"
-                        className="rounded-lg p-2 min-h-[44px] min-w-[44px] text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                        className="rounded-lg p-2 min-h-[44px] min-w-[44px] text-gray-400 dark:text-[#8B92A5] hover:text-gray-600 dark:hover:text-[#FFFFFF] hover:bg-gray-100 dark:hover:bg-[#24252E] transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#20D9D2]/20"
                         onClick={onClose}
                       >
                         <span className="sr-only">Close</span>
