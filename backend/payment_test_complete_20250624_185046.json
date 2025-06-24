@@ -1,0 +1,54 @@
+{
+  "timestamp": "20250624_185046",
+  "results": [
+    {
+      "test": "Webhook secret configured: whsec_eh49qe3Qp14l64...",
+      "status": "success"
+    },
+    {
+      "test": "Connected to Stripe account: acct_1OUIw0AV7WL65KS1",
+      "status": "success"
+    },
+    {
+      "test": "Created payment intent: pi_3RdffsAV7WL65KS10a7gq6RZ",
+      "status": "success"
+    },
+    {
+      "test": "Payment intent updated successfully",
+      "status": "success"
+    },
+    {
+      "test": "Payment intent cancelled: canceled",
+      "status": "success"
+    },
+    {
+      "test": "Webhook signature verification working!",
+      "status": "success"
+    },
+    {
+      "test": "Created customer: cus_SYnG7szBd1KMB5",
+      "status": "success"
+    },
+    {
+      "test": "Customer updated successfully",
+      "status": "success"
+    },
+    {
+      "test": "Customer deleted successfully",
+      "status": "success"
+    },
+    {
+      "test": "Refund API is properly configured",
+      "status": "success"
+    },
+    {
+      "test": "Stripe Connect OAuth URL generated",
+      "status": "success"
+    }
+  ],
+  "summary": {
+    "total": 11,
+    "passed": 11,
+    "failed": 0
+  }
+}

@@ -1,0 +1,195 @@
+{% extends "base_email.html" %}
+
+{% block title %}Keep Your Style Fresh - Care Tips from {{ barber_name }}{% endblock %}
+
+{% block content %}
+<div class="greeting">
+    Keep Your Style Fresh, {{ client_first_name }}! ✨
+</div>
+
+<div class="main-text">
+    Thanks for visiting {{ barbershop_name }}! {{ barber_name | default("Your barber") }} wanted to share some personalized care tips to help you maintain that fresh-cut look until your next appointment.
+</div>
+
+<div class="highlight-box" style="background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%); color: #1a1a1a; text-align: center;">
+    <h3 style="margin-bottom: 15px;">🎯 Your {{ service_received | default("Fresh Cut") }} Care Guide</h3>
+    <p style="margin-bottom: 15px; font-size: 16px;">
+        Personalized tips from {{ barber_name | default("your barber") }} to keep you looking sharp
+    </p>
+    <div class="offer-badge" style="background: #1a1a1a; color: #d4af37;">
+        Follow these tips for 2-3 weeks of perfect styling
+    </div>
+</div>
+
+<div class="highlight-box">
+    <h3 style="color: #1a1a1a; margin-bottom: 20px;">✂️ First 24 Hours After Your Cut</h3>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div>
+            <strong style="color: #d4af37;">Immediate Care:</strong>
+            <ul style="margin: 10px 0; padding-left: 20px; font-size: 14px;">
+                <li>Avoid washing for 12-24 hours</li>
+                <li>Let your hair settle naturally</li>
+                <li>Avoid excessive touching</li>
+                <li>Sleep on a clean pillowcase</li>
+            </ul>
+        </div>
+        <div>
+            <strong style="color: #d4af37;">What to Avoid:</strong>
+            <ul style="margin: 10px 0; padding-left: 20px; font-size: 14px;">
+                <li>Heavy exercise/sweating</li>
+                <li>Swimming or hot tubs</li>
+                <li>Heat styling tools</li>
+                <li>Tight hats or helmets</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% if service_received and "beard" in service_received.lower() %}
+<div class="highlight-box">
+    <h3 style="color: #1a1a1a; margin-bottom: 20px;">🧔 Beard Care Essentials</h3>
+
+    <div style="margin-bottom: 20px;">
+        <strong style="color: #d4af37;">Daily Beard Maintenance:</strong>
+        <p style="margin: 8px 0; font-size: 14px; color: #666;">
+            Apply 3-4 drops of beard oil every morning. Work it through from roots to tips, paying extra attention to the skin underneath.
+        </p>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <strong style="color: #d4af37;">Weekly Deep Care:</strong>
+        <p style="margin: 8px 0; font-size: 14px; color: #666;">
+            Use a dedicated beard wash once per week. Follow with beard balm for shape and conditioning.
+        </p>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <strong style="color: #d4af37;">Styling Tips:</strong>
+        <p style="margin: 8px 0; font-size: 14px; color: #666;">
+            Brush your beard downward in the morning, then style as needed. Your beard shape will last 2-3 weeks with proper care.
+        </p>
+    </div>
+</div>
+{% endif %}
+
+<div class="services-grid">
+    <div class="service-item" style="border: 2px solid #d4af37;">
+        <div class="service-icon">🌅</div>
+        <div class="service-name">Morning Routine</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Start with damp hair, apply product</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">💧</div>
+        <div class="service-name">Gentle Washing</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">2-3 times per week max</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">🧴</div>
+        <div class="service-name">Quality Products</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Use what we recommended</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">🌙</div>
+        <div class="service-name">Night Care</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Brush out, apply conditioner</div>
+    </div>
+</div>
+
+<div class="highlight-box" style="background: linear-gradient(135deg, #1a1a1a 0%, #333333 100%); color: white;">
+    <h3 style="color: #d4af37; margin-bottom: 15px;">💡 Pro Styling Tips from {{ barber_name | default("Your Barber") }}</h3>
+
+    <div style="margin-bottom: 20px;">
+        <strong>Morning Styling Routine:</strong>
+        <ol style="margin: 10px 0; padding-left: 20px; font-size: 14px;">
+            <li>Start with slightly damp hair (towel dry or light mist)</li>
+            <li>Apply a small amount of product (less is more!)</li>
+            <li>Work through with fingers, then style with comb</li>
+            <li>Finish with a light hairspray if needed</li>
+        </ol>
+    </div>
+
+    <div>
+        <strong>Weekly Maintenance:</strong>
+        <ul style="margin: 10px 0; padding-left: 20px; font-size: 14px;">
+            <li>Deep condition once a week</li>
+            <li>Trim any stray neck hairs carefully</li>
+            <li>Book your next appointment in 3-4 weeks</li>
+        </ul>
+    </div>
+</div>
+
+<div class="testimonial">
+    "Following the aftercare tips makes such a difference. My cut looks fresh for weeks longer now, and I've learned so much about proper hair care. Thanks for the education!"
+    <div class="testimonial-author">- Thomas K., Regular Client</div>
+</div>
+
+<div class="highlight-box">
+    <h3 style="color: #1a1a1a; margin-bottom: 15px;">🛍️ Recommended Products for Your Hair Type</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div>
+            <strong>Daily Essentials:</strong>
+            <ul style="margin: 10px 0; padding-left: 20px; font-size: 14px;">
+                <li>Medium-hold pomade</li>
+                <li>Leave-in conditioner</li>
+                <li>Natural bristle brush</li>
+                <li>Microfiber towel</li>
+            </ul>
+        </div>
+        <div>
+            <strong>Weekly Treatments:</strong>
+            <ul style="margin: 10px 0; padding-left: 20px; font-size: 14px;">
+                <li>Deep conditioning mask</li>
+                <li>Clarifying shampoo</li>
+                <li>Scalp treatment oil</li>
+                <li>Professional-grade scissors (for touch-ups)</li>
+            </ul>
+        </div>
+    </div>
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="#" style="display: inline-block; background: #d4af37; color: #1a1a1a; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+            Shop Recommended Products
+        </a>
+    </div>
+</div>
+
+<div class="main-text">
+    Remember, these tips are specifically tailored to your hair type and the service you received. Following this routine will help maintain your style and keep your hair healthy between visits.
+</div>
+
+{% if next_appointment %}
+<div class="highlight-box" style="background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%); color: #1a1a1a; text-align: center;">
+    <h3 style="margin-bottom: 15px;">📅 Your Next Appointment</h3>
+    <p style="margin-bottom: 15px; font-size: 16px;">
+        Based on your cut and hair growth, we recommend booking again in 3-4 weeks
+    </p>
+    <div style="font-weight: bold; font-size: 18px; margin: 15px 0;">
+        Optimal rebooking date: {{ next_appointment }}
+    </div>
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="#" style="display: inline-block; background: #1a1a1a; color: #d4af37; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+            Book Your Next Appointment
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="#" class="cta-button">Ask {{ barber_name | default("Your Barber") }} a Question</a>
+</div>
+
+<div class="contact-info">
+    <h3>Questions About Your Care Routine?</h3>
+    <div class="contact-item">📞 Call us: (555) 123-4567</div>
+    <div class="contact-item">💬 Text {{ barber_name | default("us") }}: (555) 123-4567</div>
+    <div class="contact-item">📧 Email: care@sixfigurebarber.com</div>
+    <div class="contact-item" style="margin-top: 15px; font-weight: bold; color: #1a1a1a;">
+        Free styling consultations with every visit
+    </div>
+</div>
+
+<div class="main-text" style="margin-top: 30px; text-align: center; font-style: italic; color: #666;">
+    Keep looking sharp, {{ client_first_name }}!
+    {{ barber_name | default("We") }} can't wait to see you for your next appointment.
+</div>
+{% endblock %}

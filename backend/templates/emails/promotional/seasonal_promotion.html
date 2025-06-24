@@ -1,0 +1,231 @@
+{% extends "base_email.html" %}
+
+{% block title %}{{ season | default("Seasonal") }} Special: {{ promotion_title | default("Limited Time Offer") }}{% endblock %}
+
+{% block content %}
+<div class="greeting">
+    {{ season | default("Seasonal") }} Special for You, {{ client_first_name }}! 🌟
+</div>
+
+<div class="main-text" style="text-align: center; font-size: 18px; color: #d4af37; font-weight: bold;">
+    {{ promotion_title | default("Limited Time Exclusive Offer") }}
+</div>
+
+<div class="highlight-box" style="background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%); color: #1a1a1a; text-align: center;">
+    <h3 style="margin-bottom: 20px; font-size: 24px;">🔥 {{ season | default("Special") }} Deal</h3>
+    {% if offer_details %}
+    <div class="offer-badge" style="background: #1a1a1a; color: #d4af37; font-size: 24px; padding: 20px 30px;">
+        {{ offer_details | default("PREMIUM SEASONAL SERVICES") }}
+    </div>
+    {% if promo_code %}
+    <p style="margin: 20px 0; font-weight: bold; font-size: 16px;">
+        Use code: <strong>{{ promo_code }}</strong>
+    </p>
+    {% endif %}
+    {% if offer_expiry %}
+    <p style="font-size: 14px; color: #666;">
+        {{ offer_expiry }}
+    </p>
+    {% endif %}
+    {% else %}
+    <div class="offer-badge" style="background: #1a1a1a; color: #d4af37; font-size: 24px; padding: 20px 30px;">
+        PREMIUM {{ season | upper }} SERVICES
+    </div>
+    <p style="margin: 20px 0; font-weight: bold; font-size: 16px;">
+        Experience {{ season | lower }} grooming excellence
+    </p>
+    {% endif %}
+</div>
+
+<div class="main-text">
+    {{ season | default("This season") }} is the perfect time to refresh your look and invest in your appearance. Whether you're preparing for special events, professional meetings, or just want to feel your best, we've got you covered.
+</div>
+
+{% if season == "Spring" %}
+<div class="services-grid">
+    <div class="service-item" style="border: 2px solid #90EE90;">
+        <div class="service-icon">🌱</div>
+        <div class="service-name">Spring Refresh</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">New season, new look</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">✂️</div>
+        <div class="service-name">Lighter Cuts</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Beat the warming weather</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">🧴</div>
+        <div class="service-name">Scalp Treatment</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Post-winter recovery</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">🌿</div>
+        <div class="service-name">Natural Products</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Organic spring line</div>
+    </div>
+</div>
+{% elif season == "Summer" %}
+<div class="services-grid">
+    <div class="service-item" style="border: 2px solid #FFD700;">
+        <div class="service-icon">☀️</div>
+        <div class="service-name">Summer Cuts</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Cool & comfortable</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">🏖️</div>
+        <div class="service-name">Vacation Ready</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Low maintenance styles</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">🧴</div>
+        <div class="service-name">UV Protection</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Hair & scalp care</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">💦</div>
+        <div class="service-name">Cooling Treatments</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Beat the heat</div>
+    </div>
+</div>
+{% elif season == "Fall" %}
+<div class="services-grid">
+    <div class="service-item" style="border: 2px solid #D2691E;">
+        <div class="service-icon">🍂</div>
+        <div class="service-name">Fall Transition</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Professional looks</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">🧥</div>
+        <div class="service-name">Business Ready</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Back to work styles</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">🍁</div>
+        <div class="service-name">Beard Prep</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Winter growing season</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">💼</div>
+        <div class="service-name">Executive Package</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Complete professional look</div>
+    </div>
+</div>
+{% elif season == "Winter" %}
+<div class="services-grid">
+    <div class="service-item" style="border: 2px solid #87CEEB;">
+        <div class="service-icon">❄️</div>
+        <div class="service-name">Winter Care</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Combat dry conditions</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">🧣</div>
+        <div class="service-name">Holiday Ready</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Special occasion cuts</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">🧔</div>
+        <div class="service-name">Beard Mastery</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Full winter grooming</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">🔥</div>
+        <div class="service-name">Hot Towel Special</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Warm up in style</div>
+    </div>
+</div>
+{% else %}
+<div class="services-grid">
+    <div class="service-item" style="border: 2px solid #d4af37;">
+        <div class="service-icon">⭐</div>
+        <div class="service-name">Signature Service</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Our premium offering</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">✂️</div>
+        <div class="service-name">Fresh Cut</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Classic & contemporary</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">🧔</div>
+        <div class="service-name">Beard Design</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Shape & style</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">👔</div>
+        <div class="service-name">Full Experience</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Complete grooming</div>
+    </div>
+</div>
+{% endif %}
+
+<div class="testimonial">
+    "I always look forward to the seasonal promotions. It's a great excuse to try new services and the deals are genuinely amazing. The {{ season | lower }} special was perfect timing for my style refresh."
+    <div class="testimonial-author">- Alex M., Seasonal Regular</div>
+</div>
+
+<div class="highlight-box">
+    <h3 style="color: #1a1a1a; margin-bottom: 15px;">🎯 Why Book During {{ season | default("This") }} Special?</h3>
+    <ul style="list-style: none; padding: 0;">
+        <li style="margin: 12px 0; padding-left: 25px; position: relative;">
+            <span style="position: absolute; left: 0; color: #d4af37;">💰</span>
+            <strong>Maximum Savings:</strong> Best discount we offer all year
+        </li>
+        <li style="margin: 12px 0; padding-left: 25px; position: relative;">
+            <span style="position: absolute; left: 0; color: #d4af37;">🕒</span>
+            <strong>Perfect Timing:</strong> {{ season | default("Season") }}-appropriate styling advice
+        </li>
+        <li style="margin: 12px 0; padding-left: 25px; position: relative;">
+            <span style="position: absolute; left: 0; color: #d4af37;">✨</span>
+            <strong>Fresh Products:</strong> New {{ season | lower }} product line included
+        </li>
+        <li style="margin: 12px 0; padding-left: 25px; position: relative;">
+            <span style="position: absolute; left: 0; color: #d4af37;">👨‍💼</span>
+            <strong>Expert Consultation:</strong> Personalized {{ season | lower }} style recommendations
+        </li>
+    </ul>
+</div>
+
+<div class="highlight-box" style="background: linear-gradient(135deg, #1a1a1a 0%, #333333 100%); color: white;">
+    <h3 style="color: #d4af37; margin-bottom: 15px;">⏰ Limited Time Offer Details</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div>
+            <strong>Offer Valid:</strong>
+            <p style="margin: 8px 0; font-size: 14px;">{{ offer_start_date | default("Now") }} - {{ offer_end_date | default("End of month") }}</p>
+            <strong>Eligible Services:</strong>
+            <p style="margin: 8px 0; font-size: 14px;">All premium services & packages</p>
+        </div>
+        <div>
+            <strong>Booking Window:</strong>
+            <p style="margin: 8px 0; font-size: 14px;">Must book by {{ booking_deadline | default("end of promotion") }}</p>
+            <strong>Service Window:</strong>
+            <p style="margin: 8px 0; font-size: 14px;">Services can be used within 60 days</p>
+        </div>
+    </div>
+    <div style="text-align: center; margin-top: 20px; padding: 15px; background: rgba(212, 175, 55, 0.2); border-radius: 8px;">
+        <strong>⚡ Book in the next 48 hours and get an additional 5% off!</strong>
+    </div>
+</div>
+
+<div class="main-text">
+    Don't let this opportunity slip away. {{ season | default("This") }} specials like this only come around once a year, and appointments are filling up fast.
+</div>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="#" class="cta-button">Claim My {{ season | default("Special") }} Discount</a>
+</div>
+
+<div class="contact-info">
+    <h3>Ready to Save Big?</h3>
+    <div class="contact-item">📞 Call now: (555) 123-4567</div>
+    <div class="contact-item">💻 Book online: www.sixfigurebarber.com</div>
+    <div class="contact-item">💬 Text "{{ promo_code | default("SPECIAL") }}" for instant booking</div>
+    <div class="contact-item" style="margin-top: 15px; font-weight: bold; color: #1a1a1a;">
+        Limited appointments available at this discount
+    </div>
+</div>
+
+<div class="main-text" style="margin-top: 30px; text-align: center; font-style: italic; color: #666;">
+    Don't miss out, {{ client_first_name }}!
+    This is the perfect time to invest in looking your absolute best.
+</div>
+{% endblock %}

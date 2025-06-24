@@ -1,0 +1,51 @@
+VALENTINE'S DAY SPECIAL: Date Night Ready Package
+
+Get Date Night Ready, {{ client_first_name }}! 💕
+
+💘 DATE NIGHT SPECIAL 💘
+{% if offer_details %}{{ offer_details }}{% else %}PREMIUM DATE NIGHT PACKAGE{% endif %}
+{% if promo_code %}Use code: {{ promo_code }}{% endif %}
+{% if offer_expiry %}{{ offer_expiry }}{% endif %}
+
+Make this Valentine's Day unforgettable! Whether you're planning a romantic dinner, special date, or just want to look your absolute best for your loved one, our Date Night Ready Package has everything you need.
+
+WHAT'S INCLUDED:
+• Signature Cut & Style - Fresh, sharp, irresistible
+• Beard Sculpting - Perfectly groomed & kissable
+• Hot Towel Treatment - Relaxing & rejuvenating
+• Style Consultation - Date night styling tips
+
+CUSTOMER SUCCESS STORY:
+"I booked the Date Night Ready package before proposing to my girlfriend. I looked so good, she said yes before I even got down on one knee! Worth every penny." - Marcus T., Happy Fiancé
+
+WHY CHOOSE OUR DATE NIGHT PACKAGE?
+💫 Confidence Boost: Look and feel your absolute best
+🎯 Date-Ready Style: Perfectly groomed for any occasion
+🏆 Premium Products: High-end styling products included
+💝 Gift Card Option: Perfect gift for your partner too!
+
+SPECIAL VALENTINE'S PERKS:
+Complimentary:
+• Premium cologne sample
+• Style maintenance tips
+• Priority booking for future dates
+
+Gift Card Bonus: Buy $100+ gift card, get $20 free
+Couple's Package: Book for you & partner, save 30%
+
+🌹 Book by February 10th for guaranteed Valentine's Day availability!
+
+Don't leave your Valentine's Day look to chance. This is your moment to shine and show your special someone how much effort you put into looking amazing for them.
+
+BOOK NOW:
+📞 Call: (555) 123-4567
+💻 Online: www.sixfigurebarber.com
+💬 Text "LOVE25" for instant Valentine's booking
+
+Valentine's Week appointments filling fast!
+
+Make this Valentine's Day unforgettable, {{ client_first_name }}!
+Your date will thank you. 💕
+
+---
+To unsubscribe: {{ unsubscribe_link }}

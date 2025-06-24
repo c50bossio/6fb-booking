@@ -1,0 +1,330 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database for staging
+  postgres-staging:
+    image: postgres:15-alpine
+    container_name: 6fb-postgres-staging
+    environment:
+      POSTGRES_DB: 6fb_booking_staging
+      POSTGRES_USER: staging_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-staging_password_change_this}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5433:5432"  # Different port to avoid conflicts
+    volumes:
+      - postgres-staging-data:/var/lib/postgresql/data
+      - ./database/init-staging.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - 6fb-staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U staging_user -d 6fb_booking_staging"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    command: postgres -c max_connections=100 -c shared_buffers=256MB -c effective_cache_size=1GB
+
+  # Redis for caching and sessions
+  redis-staging:
+    image: redis:7-alpine
+    container_name: 6fb-redis-staging
+    ports:
+      - "6380:6379"  # Different port to avoid conflicts
+    volumes:
+      - redis-staging-data:/data
+      - ./redis/redis.staging.conf:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - 6fb-staging-network
+    restart: unless-stopped
+    command: redis-server /usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Mailhog for email testing
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: 6fb-mailhog-staging
+    ports:
+      - "1025:1025"  # SMTP port
+      - "8025:8025"  # Web UI port
+    networks:
+      - 6fb-staging-network
+    restart: unless-stopped
+    environment:
+      MH_STORAGE: maildir
+      MH_MAILDIR_PATH: /maildir
+    volumes:
+      - mailhog-data:/maildir
+
+  # Backend service
+  backend-staging:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.staging
+      args:
+        BUILD_ENV: staging
+    container_name: 6fb-backend-staging
+    ports:
+      - "8001:8000"  # Different port for staging
+    environment:
+      - ENVIRONMENT=staging
+      - DATABASE_URL=postgresql://staging_user:${POSTGRES_PASSWORD:-staging_password_change_this}@postgres-staging:5432/6fb_booking_staging
+      - REDIS_URL=redis://redis-staging:6379/0
+      - SMTP_SERVER=mailhog
+      - SMTP_PORT=1025
+    env_file:
+      - ./backend/.env.staging
+    volumes:
+      - ./backend:/app
+      - backend-staging-logs:/app/logs
+      - backend-staging-uploads:/app/uploads
+    depends_on:
+      postgres-staging:
+        condition: service_healthy
+      redis-staging:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    networks:
+      - 6fb-staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend-staging.rule=Host(`api-staging.6fbplatform.com`)"
+      - "traefik.http.routers.backend-staging.tls=true"
+      - "traefik.http.routers.backend-staging.tls.certresolver=letsencrypt"
+
+  # Frontend service
+  frontend-staging:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.staging
+      args:
+        BUILD_ENV: staging
+        NEXT_PUBLIC_API_URL: https://api-staging.6fbplatform.com/api/v1
+    container_name: 6fb-frontend-staging
+    ports:
+      - "3001:3000"  # Different port for staging
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_ENVIRONMENT=staging
+    env_file:
+      - ./frontend/.env.staging
+    depends_on:
+      - backend-staging
+    networks:
+      - 6fb-staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend-staging.rule=Host(`staging.6fbplatform.com`)"
+      - "traefik.http.routers.frontend-staging.tls=true"
+      - "traefik.http.routers.frontend-staging.tls.certresolver=letsencrypt"
+
+  # Nginx reverse proxy for staging
+  nginx-staging:
+    image: nginx:alpine
+    container_name: 6fb-nginx-staging
+    ports:
+      - "8080:80"   # HTTP port for staging
+      - "8443:443"  # HTTPS port for staging
+    volumes:
+      - ./nginx/nginx.staging.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/staging-ssl:/etc/nginx/ssl:ro
+      - nginx-staging-logs:/var/log/nginx
+    depends_on:
+      - backend-staging
+      - frontend-staging
+    networks:
+      - 6fb-staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Traefik reverse proxy (alternative to nginx)
+  traefik-staging:
+    image: traefik:v2.10
+    container_name: 6fb-traefik-staging
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # Traefik dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.staging.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic.staging.yml:/etc/traefik/dynamic.yml:ro
+      - traefik-staging-data:/data
+    networks:
+      - 6fb-staging-network
+    restart: unless-stopped
+    profiles:
+      - traefik  # Only start with --profile traefik
+
+  # Monitoring and observability
+  prometheus-staging:
+    image: prom/prometheus:latest
+    container_name: 6fb-prometheus-staging
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.staging.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-staging-data:/prometheus
+    networks:
+      - 6fb-staging-network
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+  grafana-staging:
+    image: grafana/grafana:latest
+    container_name: 6fb-grafana-staging
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=staging_admin_password
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    volumes:
+      - grafana-staging-data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - 6fb-staging-network
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+  # Database migration and seeding service
+  db-migration-staging:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.staging
+    container_name: 6fb-db-migration-staging
+    environment:
+      - DATABASE_URL=postgresql://staging_user:${POSTGRES_PASSWORD:-staging_password_change_this}@postgres-staging:5432/6fb_booking_staging
+    env_file:
+      - ./backend/.env.staging
+    depends_on:
+      postgres-staging:
+        condition: service_healthy
+    networks:
+      - 6fb-staging-network
+    profiles:
+      - migration
+    command: >
+      sh -c "
+        echo 'Running database migrations...' &&
+        python -m alembic upgrade head &&
+        echo 'Seeding test data...' &&
+        python scripts/seed_staging_data.py &&
+        echo 'Database setup complete!'
+      "
+
+  # Background task processor (Celery)
+  celery-worker-staging:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.staging
+    container_name: 6fb-celery-worker-staging
+    environment:
+      - CELERY_BROKER_URL=redis://redis-staging:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis-staging:6379/1
+    env_file:
+      - ./backend/.env.staging
+    depends_on:
+      - redis-staging
+      - postgres-staging
+    networks:
+      - 6fb-staging-network
+    restart: unless-stopped
+    profiles:
+      - celery
+    command: celery -A tasks.celery worker --loglevel=info
+
+  celery-beat-staging:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.staging
+    container_name: 6fb-celery-beat-staging
+    environment:
+      - CELERY_BROKER_URL=redis://redis-staging:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis-staging:6379/1
+    env_file:
+      - ./backend/.env.staging
+    depends_on:
+      - redis-staging
+      - postgres-staging
+    networks:
+      - 6fb-staging-network
+    restart: unless-stopped
+    profiles:
+      - celery
+    command: celery -A tasks.celery beat --loglevel=info
+
+networks:
+  6fb-staging-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  postgres-staging-data:
+    driver: local
+  redis-staging-data:
+    driver: local
+  backend-staging-logs:
+    driver: local
+  backend-staging-uploads:
+    driver: local
+  nginx-staging-logs:
+    driver: local
+  traefik-staging-data:
+    driver: local
+  prometheus-staging-data:
+    driver: local
+  grafana-staging-data:
+    driver: local
+  mailhog-data:
+    driver: local
+
+# Usage examples:
+# Start basic staging environment:
+# docker-compose -f docker-compose.staging.yml up -d
+
+# Start with monitoring:
+# docker-compose -f docker-compose.staging.yml --profile monitoring up -d
+
+# Start with background tasks:
+# docker-compose -f docker-compose.staging.yml --profile celery up -d
+
+# Run database migration:
+# docker-compose -f docker-compose.staging.yml --profile migration up db-migration-staging
+
+# Start with Traefik instead of Nginx:
+# docker-compose -f docker-compose.staging.yml --profile traefik up -d
+
+# View logs:
+# docker-compose -f docker-compose.staging.yml logs -f [service-name]
+
+# Scale services:
+# docker-compose -f docker-compose.staging.yml up -d --scale backend-staging=2

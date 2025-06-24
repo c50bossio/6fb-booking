@@ -1,0 +1,153 @@
+{% extends "base_email.html" %}
+
+{% block title %}Pro Grooming Tips - {{ barbershop_name }}{% endblock %}
+
+{% block content %}
+<div class="greeting">
+    Pro Grooming Tips Just for You, {{ client_first_name }}
+</div>
+
+<div class="main-text">
+    As a member of the {{ barbershop_name }} family, you deserve to look your best every day—not just when you leave our chair. Here are some insider tips from our master barbers to keep you looking sharp between visits.
+</div>
+
+<div class="highlight-box">
+    <h3 style="color: #1a1a1a; margin-bottom: 20px;">✂️ Hair Care Essentials</h3>
+
+    <div style="margin-bottom: 20px;">
+        <strong style="color: #d4af37;">1. The Right Washing Frequency</strong>
+        <p style="margin: 8px 0; font-size: 14px; color: #666;">
+            Wash your hair 2-3 times per week max. Over-washing strips natural oils, leaving hair dry and unmanageable.
+        </p>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <strong style="color: #d4af37;">2. Quality Products Matter</strong>
+        <p style="margin: 8px 0; font-size: 14px; color: #666;">
+            Invest in sulfate-free shampoo and a good leave-in conditioner. Your hair will thank you, and your style will last longer.
+        </p>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <strong style="color: #d4af37;">3. Proper Drying Technique</strong>
+        <p style="margin: 8px 0; font-size: 14px; color: #666;">
+            Pat dry with a microfiber towel, never rub. Use a blow dryer on medium heat with a round brush for volume.
+        </p>
+    </div>
+</div>
+
+<div class="highlight-box">
+    <h3 style="color: #1a1a1a; margin-bottom: 20px;">🧔 Beard Maintenance 101</h3>
+
+    <div style="margin-bottom: 20px;">
+        <strong style="color: #d4af37;">Daily Beard Oil</strong>
+        <p style="margin: 8px 0; font-size: 14px; color: #666;">
+            Apply 3-4 drops of quality beard oil daily. Work it in from roots to tips to prevent itching and promote healthy growth.
+        </p>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <strong style="color: #d4af37;">Weekly Deep Clean</strong>
+        <p style="margin: 8px 0; font-size: 14px; color: #666;">
+            Use a dedicated beard wash once a week. Regular shampoo is too harsh and will dry out both your beard and the skin underneath.
+        </p>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <strong style="color: #d4af37;">Trim Between Visits</strong>
+        <p style="margin: 8px 0; font-size: 14px; color: #666;">
+            Light trimming of stray hairs is okay, but leave the shaping to us. A small mistake can take weeks to fix.
+        </p>
+    </div>
+</div>
+
+<div class="services-grid" style="margin: 30px 0;">
+    <div class="service-item">
+        <div class="service-icon">🧴</div>
+        <div class="service-name">Premium Shampoo</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Sulfate-free formula</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">💧</div>
+        <div class="service-name">Beard Oil</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">All-natural blend</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">🧴</div>
+        <div class="service-name">Styling Pomade</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Medium hold</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">🧽</div>
+        <div class="service-name">Microfiber Towel</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Gentle drying</div>
+    </div>
+</div>
+
+<div class="highlight-box" style="background: linear-gradient(135deg, #1a1a1a 0%, #333333 100%); color: white;">
+    <h3 style="color: #d4af37; margin-bottom: 15px;">🎯 Pro Styling Tips</h3>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div>
+            <strong>Morning Routine:</strong>
+            <ul style="margin: 10px 0; padding-left: 20px; font-size: 14px;">
+                <li>Start with slightly damp hair</li>
+                <li>Apply product evenly</li>
+                <li>Style with your fingers first</li>
+                <li>Finish with a comb</li>
+            </ul>
+        </div>
+        <div>
+            <strong>Evening Care:</strong>
+            <ul style="margin: 10px 0; padding-left: 20px; font-size: 14px;">
+                <li>Brush out all product</li>
+                <li>Apply leave-in conditioner</li>
+                <li>Use a silk pillowcase</li>
+                <li>Never sleep with wet hair</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="testimonial">
+    "Following these tips has completely changed my grooming game. My hair looks salon-fresh for days longer, and I get compliments constantly. The investment in quality products pays for itself."
+    <div class="testimonial-author">- David R., Six Figure Barber Client</div>
+</div>
+
+{% if product_recommendations %}
+<div class="highlight-box" style="background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%); color: #1a1a1a;">
+    <h3 style="margin-bottom: 15px;">🛍️ Recommended Products</h3>
+    <p style="margin-bottom: 15px;">
+        These are the exact products our barbers use and recommend. Available for purchase at our shop or online.
+    </p>
+    <div style="text-align: center;">
+        <a href="#" style="display: inline-block; background: #1a1a1a; color: #d4af37; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+            Shop Products
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<div class="main-text">
+    Remember, great style is a journey, not a destination. These tips will help you maintain your look between visits, but nothing replaces the expertise of a professional barber.
+</div>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="#" class="cta-button">Schedule Your Next Appointment</a>
+</div>
+
+<div class="contact-info">
+    <h3>Questions About Grooming?</h3>
+    <div class="contact-item">📞 Call us: (555) 123-4567</div>
+    <div class="contact-item">💬 Text us for quick tips</div>
+    <div class="contact-item">📧 Email: grooming@sixfigurebarber.com</div>
+    <div class="contact-item" style="margin-top: 15px; font-weight: bold; color: #1a1a1a;">
+        Free grooming consultations with every service
+    </div>
+</div>
+
+<div class="main-text" style="margin-top: 30px; text-align: center; font-style: italic; color: #666;">
+    Keep looking sharp, {{ client_first_name }}.
+    We're here to help you maintain that Six Figure Barber standard every day.
+</div>
+{% endblock %}

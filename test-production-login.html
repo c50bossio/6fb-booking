@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Production Login Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .result { margin: 20px 0; padding: 15px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        input { width: 300px; padding: 8px; margin: 5px 0; }
+        button { padding: 10px 20px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Production Login Test</h1>
+        <p>Testing login against deployed Vercel frontend API proxy</p>
+
+        <div>
+            <label>Email:</label><br>
+            <input type="email" id="email" value="admin@6fb.com" />
+        </div>
+
+        <div>
+            <label>Password:</label><br>
+            <input type="password" id="password" value="admin123" />
+        </div>
+
+        <br>
+        <button onclick="testDirectLogin()">Test Direct API</button>
+        <button onclick="testProxyLogin()">Test CORS Proxy</button>
+        <button onclick="testEnvironment()">Test Environment</button>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function testEnvironment() {
+            const result = document.getElementById('result');
+            result.innerHTML = '<p>Testing environment configuration...</p>';
+
+            try {
+                const response = await fetch('/api/test-cors');
+                const data = await response.json();
+
+                result.className = 'result success';
+                result.innerHTML = `
+                    <h3>✅ Environment Test</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = `<h3>❌ Environment Test Failed</h3><p>${error.message}</p>`;
+            }
+        }
+
+        async function testDirectLogin() {
+            const result = document.getElementById('result');
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            result.innerHTML = '<p>Testing direct API login...</p>';
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append('username', email);
+                formData.append('password', password);
+
+                const response = await fetch('https://sixfb-backend.onrender.com/api/v1/auth/token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    result.className = 'result success';
+                    result.innerHTML = `
+                        <h3>✅ Direct API Success!</h3>
+                        <p><strong>Token:</strong> ${data.access_token.substring(0, 50)}...</p>
+                        <p><strong>User:</strong> ${data.user.email}</p>
+                        <p><strong>Role:</strong> ${data.user.role}</p>
+                    `;
+                } else {
+                    result.className = 'result error';
+                    result.innerHTML = `
+                        <h3>❌ Direct API Failed</h3>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                        <p><strong>Error:</strong> ${data.detail || data.message || 'Unknown error'}</p>
+                    `;
+                }
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = `
+                    <h3>❌ Network Error (CORS Blocked)</h3>
+                    <p>${error.message}</p>
+                    <p>This is expected due to CORS restrictions.</p>
+                `;
+            }
+        }
+
+        async function testProxyLogin() {
+            const result = document.getElementById('result');
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            result.innerHTML = '<p>Testing CORS proxy login...</p>';
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append('username', email);
+                formData.append('password', password);
+
+                const response = await fetch('/api/proxy/auth/token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    result.className = 'result success';
+                    result.innerHTML = `
+                        <h3>✅ CORS Proxy Success!</h3>
+                        <p><strong>Token:</strong> ${data.access_token.substring(0, 50)}...</p>
+                        <p><strong>User:</strong> ${data.user.email}</p>
+                        <p><strong>Role:</strong> ${data.user.role}</p>
+                        <p><strong>Solution:</strong> CORS proxy is working correctly!</p>
+                    `;
+                } else {
+                    result.className = 'result error';
+                    result.innerHTML = `
+                        <h3>❌ CORS Proxy Failed</h3>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                        <p><strong>Error:</strong> ${data.detail || data.message || 'Unknown error'}</p>
+                    `;
+                }
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = `
+                    <h3>❌ Proxy Error</h3>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

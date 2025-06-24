@@ -361,76 +361,10 @@ async def login_endpoint(
     return await login(request, form_data, db)
 
 
-@router.post("/token-json", response_model=Token)
-async def login_json(
-    request: Request,
-    credentials: UserLoginForm,
-    db: Session = Depends(get_db),
-):
-    """JSON login endpoint that matches frontend expectations"""
-    # Check rate limit
-    client_ip = get_client_ip(request)
-    check_login_rate_limit(client_ip)
-
-    # Auto-create test user if it doesn't exist
-    if credentials.username == "test@6fb.com":
-        existing_user = db.query(User).filter(User.email == "test@6fb.com").first()
-        if not existing_user:
-            hashed_password = pwd_context.hash("test123")
-            test_user = User(
-                email="test@6fb.com",
-                first_name="Test",
-                last_name="User",
-                hashed_password=hashed_password,
-                role="admin",
-                is_active=True,
-                email_verified=True,
-                created_at=datetime.utcnow(),
-            )
-            db.add(test_user)
-            db.commit()
-            logger.info("Auto-created test user")
-
-    user = db.query(User).filter(User.email == credentials.username).first()
-
-    if not user or not verify_password(credentials.password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="User account is disabled"
-        )
-
-    # Create access token
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.email}, expires_delta=access_token_expires
-    )
-
-    # Get user permissions
-    rbac = RBACService(db)
-    permissions = rbac.get_user_permissions(user)
-
-    # Log successful login
-    log_user_action(user.id, "login", client_ip)
-    log_security_event("LOGIN_SUCCESS", {"user_id": user.id, "ip": client_ip})
-
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "user": {
-            "id": user.id,
-            "email": user.email,
-            "full_name": f"{user.first_name} {user.last_name}",
-            "role": user.role,
-            "permissions": permissions,
-            "primary_location_id": user.primary_location_id,
-        },
-    }
+@router.options("/token")
+async def token_options():
+    """Handle OPTIONS request for token endpoint"""
+    return {"status": "ok"}
 
 
 @router.post("/refresh", response_model=Token)

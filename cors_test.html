@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS Test - 6FB Booking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 3px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .info {
+            background-color: #e3f2fd;
+            border: 1px solid #90caf9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 CORS Test for 6FB Booking Platform</h1>
+
+        <div class="info">
+            <strong>Testing:</strong><br>
+            Frontend: https://bookbarber-fz9nh51da-6fb.vercel.app<br>
+            Backend: https://sixfb-backend.onrender.com<br><br>
+            <em>Run these tests from your Vercel-deployed frontend to verify CORS is working.</em>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 1: Health Check</h3>
+            <p>Basic connectivity test to the backend health endpoint.</p>
+            <button onclick="testHealth()">Test Health Endpoint</button>
+            <div id="health-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 2: API Documentation</h3>
+            <p>Test access to the API documentation endpoint.</p>
+            <button onclick="testDocs()">Test API Docs</button>
+            <div id="docs-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 3: Login Endpoint</h3>
+            <p>Test the authentication endpoint (expected to return 422 with demo data).</p>
+            <button onclick="testLogin()">Test Login</button>
+            <div id="login-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 4: Real Login (Admin)</h3>
+            <p>Test with actual admin credentials if they exist.</p>
+            <button onclick="testRealLogin()">Test Real Login</button>
+            <div id="real-login-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>All Tests</h3>
+            <p>Run all tests sequentially.</p>
+            <button onclick="runAllTests()" style="background-color: #28a745;">Run All Tests</button>
+            <div id="all-tests-result" class="result"></div>
+        </div>
+
+        <div class="info">
+            <strong>Expected Results:</strong><br>
+            ✅ <strong>Success:</strong> Requests complete without CORS errors<br>
+            ❌ <strong>CORS Error:</strong> "Access to fetch... has been blocked by CORS policy"<br>
+            ⚠️ <strong>Other Errors:</strong> 404, 422, etc. are OK if no CORS error
+        </div>
+    </div>
+
+    <script>
+        const BACKEND_URL = 'https://sixfb-backend.onrender.com';
+
+        function logResult(elementId, message, isError = false, isWarning = false) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = 'result';
+
+            if (isError) {
+                element.className += ' error';
+            } else if (isWarning) {
+                element.className += ' warning';
+            } else {
+                element.className += ' success';
+            }
+        }
+
+        async function testHealth() {
+            const resultId = 'health-result';
+            logResult(resultId, 'Testing...', false, true);
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/health`);
+                const data = await response.text();
+
+                if (response.ok) {
+                    logResult(resultId, `✅ SUCCESS!\nStatus: ${response.status}\nResponse: ${data}`);
+                } else {
+                    logResult(resultId, `⚠️ REQUEST WORKED (no CORS error) but got HTTP ${response.status}\nResponse: ${data}`, false, true);
+                }
+            } catch (error) {
+                if (error.message.includes('CORS')) {
+                    logResult(resultId, `❌ CORS ERROR!\n${error.message}\n\nCORS is not properly configured.`, true);
+                } else {
+                    logResult(resultId, `❌ NETWORK ERROR!\n${error.message}`, true);
+                }
+            }
+        }
+
+        async function testDocs() {
+            const resultId = 'docs-result';
+            logResult(resultId, 'Testing...', false, true);
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/docs`);
+
+                if (response.ok) {
+                    logResult(resultId, `✅ SUCCESS!\nStatus: ${response.status}\nDocs accessible (likely returns HTML)`);
+                } else {
+                    logResult(resultId, `⚠️ REQUEST WORKED (no CORS error) but got HTTP ${response.status}`, false, true);
+                }
+            } catch (error) {
+                if (error.message.includes('CORS')) {
+                    logResult(resultId, `❌ CORS ERROR!\n${error.message}`, true);
+                } else {
+                    logResult(resultId, `❌ NETWORK ERROR!\n${error.message}`, true);
+                }
+            }
+        }
+
+        async function testLogin() {
+            const resultId = 'login-result';
+            logResult(resultId, 'Testing...', false, true);
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/v1/auth/token`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: 'test@example.com',
+                        password: 'testpass'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.status === 422) {
+                    logResult(resultId, `✅ CORS WORKING!\nStatus: 422 (expected - invalid credentials)\nResponse: ${JSON.stringify(data, null, 2)}`);
+                } else if (response.ok) {
+                    logResult(resultId, `✅ UNEXPECTED SUCCESS!\nStatus: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`);
+                } else {
+                    logResult(resultId, `⚠️ REQUEST WORKED (no CORS error) but got HTTP ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`, false, true);
+                }
+            } catch (error) {
+                if (error.message.includes('CORS')) {
+                    logResult(resultId, `❌ CORS ERROR!\n${error.message}\n\nThis is the main issue blocking login!`, true);
+                } else {
+                    logResult(resultId, `❌ NETWORK ERROR!\n${error.message}`, true);
+                }
+            }
+        }
+
+        async function testRealLogin() {
+            const resultId = 'real-login-result';
+            logResult(resultId, 'Testing...', false, true);
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/v1/auth/token`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: 'admin@6fb.com',
+                        password: 'admin123'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.access_token) {
+                    logResult(resultId, `🎉 FULL SUCCESS!\nStatus: ${response.status}\nToken received: ${data.access_token.substring(0, 20)}...`);
+                } else if (response.status === 422 || response.status === 401) {
+                    logResult(resultId, `✅ CORS WORKING!\nStatus: ${response.status} (credentials invalid but CORS works)\nResponse: ${JSON.stringify(data, null, 2)}`);
+                } else {
+                    logResult(resultId, `⚠️ REQUEST WORKED (no CORS error) but got HTTP ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`, false, true);
+                }
+            } catch (error) {
+                if (error.message.includes('CORS')) {
+                    logResult(resultId, `❌ CORS ERROR!\n${error.message}\n\nThis is blocking all login attempts!`, true);
+                } else {
+                    logResult(resultId, `❌ NETWORK ERROR!\n${error.message}`, true);
+                }
+            }
+        }
+
+        async function runAllTests() {
+            const resultId = 'all-tests-result';
+            logResult(resultId, 'Running all tests...', false, true);
+
+            let results = [];
+            let corsErrors = 0;
+
+            // Test 1: Health
+            try {
+                const response = await fetch(`${BACKEND_URL}/health`);
+                results.push(`Health: ${response.ok ? '✅' : '⚠️'} (${response.status})`);
+            } catch (error) {
+                results.push(`Health: ❌ ${error.message.includes('CORS') ? 'CORS ERROR' : 'Network Error'}`);
+                if (error.message.includes('CORS')) corsErrors++;
+            }
+
+            // Test 2: Login
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/v1/auth/token`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: 'test', password: 'test' })
+                });
+                results.push(`Login: ${response.status === 422 ? '✅' : '⚠️'} (${response.status})`);
+            } catch (error) {
+                results.push(`Login: ❌ ${error.message.includes('CORS') ? 'CORS ERROR' : 'Network Error'}`);
+                if (error.message.includes('CORS')) corsErrors++;
+            }
+
+            const summary = corsErrors === 0
+                ? '🎉 All tests passed! CORS is working correctly.'
+                : `❌ ${corsErrors} CORS errors found. Update Render environment variables.`;
+
+            logResult(resultId, `${summary}\n\n${results.join('\n')}`, corsErrors > 0);
+        }
+
+        // Auto-run basic test on page load
+        window.addEventListener('load', () => {
+            setTimeout(testHealth, 1000);
+        });
+    </script>
+</body>
+</html>
