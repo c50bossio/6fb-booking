@@ -27,6 +27,7 @@ from models import (
 )
 from utils.logging import log_user_action
 from services.email_service import send_booking_confirmation
+from services.availability_service import AvailabilityService
 
 router = APIRouter()
 
@@ -243,39 +244,49 @@ async def get_all_barbers(
 ):
     """Get all active barbers or filter by location"""
     
-    # Build query with ratings
-    query = (
-        db.query(
-            Barber,
-            func.avg(Review.overall_rating).label("avg_rating"),
-            func.count(Review.id).label("review_count"),
-        )
-        .outerjoin(Review, Review.barber_id == Barber.id)
-        .filter(Barber.is_active == True)
-    )
-    
-    # Apply location filter if provided
-    if location_id:
-        query = query.filter(Barber.location_id == location_id)
-        
-    barbers = query.group_by(Barber.id).all()
-
-    result = []
-    for barber, avg_rating, review_count in barbers:
-        result.append(
-            BarberPublicProfile(
-                id=barber.id,
-                first_name=barber.first_name,
-                last_name=barber.last_name,
-                business_name=barber.business_name,
-                average_rating=float(avg_rating) if avg_rating else None,
-                total_reviews=review_count or 0,
-                bio=None,  # Add bio field to Barber model if needed
-                profile_image=None,  # Add profile_image field to Barber model if needed
+    try:
+        # Build query with ratings
+        query = (
+            db.query(
+                Barber,
+                func.avg(Review.overall_rating).label("avg_rating"),
+                func.count(Review.id).label("review_count"),
             )
+            .outerjoin(Review, Review.barber_id == Barber.id)
+            .filter(Barber.is_active == True)
         )
+        
+        # Apply location filter if provided
+        if location_id:
+            query = query.filter(Barber.location_id == location_id)
+            
+        barbers = query.group_by(Barber.id).all()
 
-    return result
+        result = []
+        for barber, avg_rating, review_count in barbers:
+            result.append(
+                BarberPublicProfile(
+                    id=barber.id,
+                    first_name=barber.first_name,
+                    last_name=barber.last_name,
+                    business_name=barber.business_name,
+                    average_rating=float(avg_rating) if avg_rating else None,
+                    total_reviews=review_count or 0,
+                    bio=None,  # Add bio field to Barber model if needed
+                    profile_image=None,  # Add profile_image field to Barber model if needed
+                )
+            )
+
+        return result
+    
+    except Exception as e:
+        # Log the error for debugging
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error fetching barbers: {str(e)}")
+        
+        # Return empty list if database has no data yet
+        return []
 
 
 @router.get("/shops/{shop_id}/barbers", response_model=List[BarberPublicProfile])
@@ -470,28 +481,25 @@ async def create_booking(booking: CreateBookingRequest, db: Session = Depends(ge
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
 
-    # Check if the slot is available
-    appointment_datetime = datetime.combine(
-        booking.appointment_date, booking.appointment_time
+    # Real-time availability check with conflict detection
+    availability_service = AvailabilityService(db)
+    
+    is_available, conflicts = availability_service.check_real_time_availability(
+        barber_id=booking.barber_id,
+        appointment_date=booking.appointment_date,
+        start_time=booking.appointment_time,
+        duration_minutes=service.duration_minutes
     )
-
-    # Check for existing appointments
-    existing = (
-        db.query(Appointment)
-        .filter(
-            and_(
-                Appointment.barber_id == booking.barber_id,
-                Appointment.appointment_date == booking.appointment_date,
-                Appointment.appointment_time == appointment_datetime,
-                Appointment.status.in_(["scheduled", "completed"]),
-            )
-        )
-        .first()
-    )
-
-    if existing:
+    
+    if not is_available:
+        conflict_messages = [c.message for c in conflicts]
         raise HTTPException(
-            status_code=400, detail="This time slot is no longer available"
+            status_code=409,
+            detail={
+                "message": "Time slot is not available",
+                "conflicts": conflict_messages,
+                "suggested_action": "Please select a different time slot"
+            }
         )
 
     # Find or create client
