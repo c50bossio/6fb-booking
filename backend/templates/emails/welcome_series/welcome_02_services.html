@@ -1,0 +1,126 @@
+{% extends "base_email.html" %}
+
+{% block title %}Discover Our Premium Services - {{ barbershop_name }}{% endblock %}
+
+{% block content %}
+<div class="greeting">
+    Discover Our Premium Services, {{ client_first_name }}
+</div>
+
+<div class="main-text">
+    Now that you're part of the {{ barbershop_name }} family, let's explore the full range of premium services designed to elevate your grooming game.
+</div>
+
+<div class="services-grid">
+    <div class="service-item">
+        <div class="service-icon">✂️</div>
+        <div class="service-name">Signature Cuts</div>
+        <div style="font-size: 14px; color: #666; margin-top: 5px;">From $45</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">🧔</div>
+        <div class="service-name">Beard Design</div>
+        <div style="font-size: 14px; color: #666; margin-top: 5px;">From $35</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">🔥</div>
+        <div class="service-name">Hot Towel Shave</div>
+        <div style="font-size: 14px; color: #666; margin-top: 5px;">From $50</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">💆‍♂️</div>
+        <div class="service-name">Scalp Treatment</div>
+        <div style="font-size: 14px; color: #666; margin-top: 5px;">From $40</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">👨‍🦲</div>
+        <div class="service-name">Bald Fade</div>
+        <div style="font-size: 14px; color: #666; margin-top: 5px;">From $40</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">✨</div>
+        <div class="service-name">Full Service</div>
+        <div style="font-size: 14px; color: #666; margin-top: 5px;">From $85</div>
+    </div>
+</div>
+
+<div class="highlight-box">
+    <h3 style="color: #1a1a1a; margin-bottom: 15px;">🏆 Most Popular: The Complete Experience</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+        <div>
+            <strong>What's Included:</strong>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Consultation & styling advice</li>
+                <li>Signature haircut</li>
+                <li>Beard trim & styling</li>
+                <li>Hot towel treatment</li>
+                <li>Premium styling products</li>
+            </ul>
+        </div>
+        <div style="text-align: center;">
+            <div class="offer-badge">Complete Package: $85</div>
+            <div style="font-size: 14px; margin-top: 10px; color: #666;">
+                Save $25 vs. individual services
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="main-text">
+    Each service is performed by our master barbers using only premium products. We take the time to understand your lifestyle, face shape, and personal style to create a look that's uniquely yours.
+</div>
+
+<div class="testimonial">
+    "The attention to detail is incredible. Every visit feels like a luxury experience. I've never looked better, and the confidence boost is worth every penny."
+    <div class="testimonial-author">- Marcus T., Regular Client</div>
+</div>
+
+<div class="highlight-box" style="background: linear-gradient(135deg, #1a1a1a 0%, #333333 100%); color: white;">
+    <h3 style="color: #d4af37; margin-bottom: 15px;">💎 VIP Membership Program</h3>
+    <div style="margin-bottom: 15px;">
+        <strong>Join our exclusive membership for:</strong>
+    </div>
+    <ul style="list-style: none; padding: 0;">
+        <li style="margin: 8px 0; padding-left: 25px; position: relative;">
+            <span style="position: absolute; left: 0; color: #d4af37;">✓</span>
+            15% off all services
+        </li>
+        <li style="margin: 8px 0; padding-left: 25px; position: relative;">
+            <span style="position: absolute; left: 0; color: #d4af37;">✓</span>
+            Priority booking
+        </li>
+        <li style="margin: 8px 0; padding-left: 25px; position: relative;">
+            <span style="position: absolute; left: 0; color: #d4af37;">✓</span>
+            Complimentary beard oil monthly
+        </li>
+        <li style="margin: 8px 0; padding-left: 25px; position: relative;">
+            <span style="position: absolute; left: 0; color: #d4af37;">✓</span>
+            Exclusive member events
+        </li>
+    </ul>
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="#" style="display: inline-block; background: #d4af37; color: #1a1a1a; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+            Learn More About VIP
+        </a>
+    </div>
+</div>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ booking_link | default('#') }}" class="cta-button">Book Your Service Now</a>
+</div>
+
+<div class="contact-info">
+    <h3>Questions About Our Services?</h3>
+    <div class="contact-item">📞 Call us: (555) 123-4567</div>
+    <div class="contact-item">💬 Text us: (555) 123-4567</div>
+    <div class="contact-item">📧 Email: info@sixfigurebarber.com</div>
+    <div class="contact-item" style="margin-top: 15px; font-weight: bold; color: #1a1a1a;">
+        Free consultations available
+    </div>
+</div>
+
+<div class="main-text" style="margin-top: 30px; text-align: center; font-style: italic; color: #666;">
+    Ready to experience the difference, {{ client_first_name }}?
+    Your best look is just one appointment away.
+</div>
+{% endblock %}

@@ -1,0 +1,145 @@
+{% extends "base_email.html" %}
+
+{% block title %}Happy Birthday {{ client_first_name }}! 🎂{% endblock %}
+
+{% block content %}
+<div class="greeting" style="text-align: center;">
+    🎂 Happy Birthday, {{ client_first_name }}! 🎉
+</div>
+
+<div class="main-text" style="text-align: center; font-size: 18px; color: #d4af37; font-weight: bold;">
+    Another year of looking absolutely sharp!
+</div>
+
+<div class="highlight-box" style="background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%); color: #1a1a1a; text-align: center;">
+    <h3 style="margin-bottom: 20px; font-size: 24px;">🎁 Your Birthday Gift</h3>
+    <div class="offer-badge" style="background: #1a1a1a; color: #d4af37; font-size: 20px; padding: 15px 25px;">
+        {{ birthday_offer | default("25% OFF ANY SERVICE") }}
+    </div>
+    <p style="margin: 20px 0; font-weight: bold; font-size: 16px;">
+        Use code: <strong>BIRTHDAY25</strong>
+    </p>
+    <p style="font-size: 14px; color: #666;">
+        Valid until {{ valid_until | default("30 days from today") }}
+    </p>
+    <div style="margin-top: 20px; padding: 15px; background: rgba(26, 26, 26, 0.1); border-radius: 8px;">
+        <strong>🎈 Birthday Special Package:</strong><br>
+        Complete grooming experience + complimentary beard oil + birthday card
+    </div>
+</div>
+
+<div class="main-text">
+    Birthdays are meant to be celebrated in style, and there's no better way to start your new year than with a fresh cut and the confidence that comes with looking your absolute best.
+</div>
+
+<div class="testimonial">
+    "I've been coming here for my birthday cut for three years running. It's become a tradition I look forward to all year. The team always makes it special!"
+    <div class="testimonial-author">- Robert C., Birthday Club Member</div>
+</div>
+
+<div class="services-grid">
+    <div class="service-item" style="border: 2px solid #d4af37;">
+        <div class="service-icon">🎂</div>
+        <div class="service-name">Birthday Special</div>
+        <div style="font-size: 12px; color: #d4af37; margin-top: 5px; font-weight: bold;">25% OFF TODAY</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">✂️</div>
+        <div class="service-name">Signature Cut</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Your favorite style</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">🧔</div>
+        <div class="service-name">Beard Grooming</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Shape & style</div>
+    </div>
+    <div class="service-item">
+        <div class="service-icon">👔</div>
+        <div class="service-name">Full Service</div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">Complete package</div>
+    </div>
+</div>
+
+{% if favorite_service %}
+<div class="highlight-box">
+    <h3 style="color: #1a1a1a; margin-bottom: 15px;">🌟 Your Favorite: {{ favorite_service }}</h3>
+    <p style="margin-bottom: 15px; color: #666;">
+        We remember this is your go-to service. Want to try something new for your birthday, or stick with what you love?
+    </p>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div style="text-align: center;">
+            <a href="#" style="display: inline-block; background: #1a1a1a; color: #d4af37; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">
+                Book My Favorite
+            </a>
+        </div>
+        <div style="text-align: center;">
+            <a href="#" style="display: inline-block; background: #d4af37; color: #1a1a1a; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">
+                Try Something New
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="highlight-box" style="background: #f8f9fa; border-left: 4px solid #d4af37;">
+    <h3 style="color: #1a1a1a; margin-bottom: 15px;">🎉 Birthday Club Perks</h3>
+    <p style="margin-bottom: 15px;">
+        Join our Birthday Club and get exclusive perks all year long:
+    </p>
+    <ul style="list-style: none; padding: 0;">
+        <li style="margin: 8px 0; padding-left: 25px; position: relative;">
+            <span style="position: absolute; left: 0; color: #d4af37;">🎈</span>
+            Annual birthday discount (gets better each year!)
+        </li>
+        <li style="margin: 8px 0; padding-left: 25px; position: relative;">
+            <span style="position: absolute; left: 0; color: #d4af37;">🎁</span>
+            Surprise birthday gifts and products
+        </li>
+        <li style="margin: 8px 0; padding-left: 25px; position: relative;">
+            <span style="position: absolute; left: 0; color: #d4af37;">📅</span>
+            Priority booking during your birthday week
+        </li>
+        <li style="margin: 8px 0; padding-left: 25px; position: relative;">
+            <span style="position: absolute; left: 0; color: #d4af37;">🍰</span>
+            Complimentary birthday refreshments
+        </li>
+    </ul>
+</div>
+
+<div class="main-text">
+    Make your birthday appointment a celebration to remember. Our team is ready to help you look and feel amazing as you step into another year of success and style.
+</div>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="#" class="cta-button">Book My Birthday Appointment</a>
+</div>
+
+<div class="highlight-box" style="background: linear-gradient(135deg, #1a1a1a 0%, #333333 100%); color: white; text-align: center;">
+    <h3 style="color: #d4af37; margin-bottom: 15px;">🎊 Special Birthday Hours</h3>
+    <p style="margin-bottom: 15px;">
+        We're extending our hours just for birthday celebrations this week!
+    </p>
+    <div style="font-weight: bold;">
+        Early bird appointments: 7:00 AM - 9:00 AM<br>
+        Evening celebrations: 7:00 PM - 9:00 PM
+    </div>
+    <p style="margin-top: 15px; font-size: 14px; color: #ccc;">
+        Available by appointment only - call to book your special time
+    </p>
+</div>
+
+<div class="contact-info">
+    <h3>Ready to Celebrate?</h3>
+    <div class="contact-item">📞 Call us: (555) 123-4567</div>
+    <div class="contact-item">💻 Book online: www.sixfigurebarber.com</div>
+    <div class="contact-item">💬 Text "BIRTHDAY" for instant booking</div>
+    <div class="contact-item" style="margin-top: 15px; font-weight: bold; color: #1a1a1a;">
+        Mention it's your birthday for extra special treatment!
+    </div>
+</div>
+
+<div class="main-text" style="margin-top: 30px; text-align: center; font-style: italic; color: #666; font-size: 18px;">
+    Here's to another year of looking sharp, {{ client_first_name }}! 🥂<br>
+    Happy Birthday from all of us at {{ barbershop_name }}.
+</div>
+{% endblock %}

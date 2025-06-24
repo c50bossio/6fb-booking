@@ -1,0 +1,51 @@
+FATHER'S DAY SPECIAL: Dad's Day Grooming Package
+
+Happy Father's Day, {{ client_first_name }}! 👨‍👦
+
+👨‍👧‍👦 DAD DESERVES THE BEST 👨‍👧‍👦
+{% if offer_details %}{{ offer_details }}{% else %}PREMIUM DAD'S DAY PACKAGE{% endif %}
+{% if promo_code %}Use code: {{ promo_code }}{% endif %}
+{% if offer_expiry %}{{ offer_expiry }}{% endif %}
+
+Whether you're treating yourself or someone special is treating you, Father's Day is the perfect time to experience our premium grooming services. Look your best for family gatherings, photos, and celebrating the father you are.
+
+WHAT'S INCLUDED:
+• Executive Cut - Distinguished & professional
+• Beard Mastery - Full beard sculpting
+• Hot Towel Luxury - Traditional barbershop experience
+• Complete Package - Full grooming experience
+
+CUSTOMER SUCCESS STORY:
+"My son got me the Dad's Day package for Father's Day last year. I felt like a king! Now it's become our annual tradition. The hot towel treatment alone is worth it." - Robert K., Father of Three
+
+WHY DAD'S DAY PACKAGE IS PERFECT:
+👑 VIP Treatment: You deserve to be pampered like royalty
+📸 Photo Ready: Perfect for Father's Day family photos
+🎯 Expert Care: Specialized techniques for mature men
+🎁 Gift Worthy: Kids can treat Dad to luxury he deserves
+
+SPECIAL FATHER'S DAY PERKS:
+Complimentary:
+• Premium aftershave selection
+• Grooming maintenance guide
+• Father's Day photo package
+
+Gift Card Special: Buy $150+ gift card, get $30 free
+Family Package: Father & son combo - save 35%
+
+👨‍👦 SPECIAL: Book for Dad & get son's first cut FREE!
+
+Being a father is one of life's greatest privileges. This Father's Day, treat yourself to the luxury grooming experience you've earned, or let your family treat you to something special.
+
+BOOK NOW:
+📞 Call: (555) 123-4567
+💻 Online: www.sixfigurebarber.com
+💬 Text "DAD30" for instant Father's Day booking
+
+Perfect gift card option available!
+
+Happy Father's Day, {{ client_first_name }}!
+You've earned this luxury. 👨‍👦
+
+---
+To unsubscribe: {{ unsubscribe_link }}

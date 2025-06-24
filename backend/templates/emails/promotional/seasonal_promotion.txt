@@ -1,0 +1,74 @@
+{{ season | default("Seasonal") }} Special for You, {{ client_first_name }}! 🌟
+
+{{ promotion_title | default("Limited Time Exclusive Offer") }}
+
+🔥 {{ season | default("Special") }} DEAL
+{{ discount_details | default("30% OFF PREMIUM SERVICES") }}
+Use code: {{ promo_code | default("SEASON30") }}
+{{ terms | default("Valid through the end of this month") }}
+
+{{ season | default("This season") }} is the perfect time to refresh your look and invest in your appearance. Whether you're preparing for special events, professional meetings, or just want to feel your best, we've got you covered.
+
+FEATURED SERVICES:
+{% if season == "Spring" %}
+🌱 Spring Refresh - New season, new look
+✂️ Lighter Cuts - Beat the warming weather
+🧴 Scalp Treatment - Post-winter recovery
+🌿 Natural Products - Organic spring line
+{% elif season == "Summer" %}
+☀️ Summer Cuts - Cool & comfortable
+🏖️ Vacation Ready - Low maintenance styles
+🧴 UV Protection - Hair & scalp care
+💦 Cooling Treatments - Beat the heat
+{% elif season == "Fall" %}
+🍂 Fall Transition - Professional looks
+🧥 Business Ready - Back to work styles
+🍁 Beard Prep - Winter growing season
+💼 Executive Package - Complete professional look
+{% elif season == "Winter" %}
+❄️ Winter Care - Combat dry conditions
+🧣 Holiday Ready - Special occasion cuts
+🧔 Beard Mastery - Full winter grooming
+🔥 Hot Towel Special - Warm up in style
+{% else %}
+⭐ Signature Service - Our premium offering
+✂️ Fresh Cut - Classic & contemporary
+🧔 Beard Design - Shape & style
+👔 Full Experience - Complete grooming
+{% endif %}
+
+TESTIMONIAL:
+"I always look forward to the seasonal promotions. It's a great excuse to try new services and the deals are genuinely amazing. The {{ season | lower }} special was perfect timing for my style refresh." - Alex M., Seasonal Regular
+
+🎯 WHY BOOK DURING {{ season | default("THIS") }} SPECIAL?
+💰 Maximum Savings: Best discount we offer all year
+🕒 Perfect Timing: {{ season | default("Season") }}-appropriate styling advice
+✨ Fresh Products: New {{ season | lower }} product line included
+👨‍💼 Expert Consultation: Personalized {{ season | lower }} style recommendations
+
+⏰ LIMITED TIME OFFER DETAILS
+Offer Valid: {{ offer_start_date | default("Now") }} - {{ offer_end_date | default("End of month") }}
+Eligible Services: All premium services & packages
+Booking Window: Must book by {{ booking_deadline | default("end of promotion") }}
+Service Window: Services can be used within 60 days
+
+⚡ BONUS: Book in the next 48 hours and get an additional 5% off!
+
+Don't let this opportunity slip away. {{ season | default("This") }} specials like this only come around once a year, and appointments are filling up fast.
+
+Ready to Save Big?
+📞 Call now: (555) 123-4567
+💻 Book online: www.sixfigurebarber.com
+💬 Text "{{ promo_code | default("SPECIAL") }}" for instant booking
+Limited appointments available at this discount
+
+CLAIM MY {{ season | default("SPECIAL") }} DISCOUNT: [Book Now]
+
+Don't miss out, {{ client_first_name }}! This is the perfect time to invest in looking your absolute best.
+
+---
+{{ barbershop_name }}
+123 Main Street, Your City, State 12345
+(555) 123-4567
+
+Unsubscribe: {{ unsubscribe_link }}
