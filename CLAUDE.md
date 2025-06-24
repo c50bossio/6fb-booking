@@ -2,6 +2,44 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🛡️ SAFETY FIRST - Critical Guidelines
+
+### Before Starting ANY Work:
+1. **Create a git branch**: `git checkout -b feature/description-YYYYMMDD`
+2. **Run pre-work checklist**: `./scripts/pre-work-checklist.sh`
+3. **Check current state**: `git status` and ensure working directory is clean
+4. **Create a safety snapshot**: `./scripts/create-snapshot.sh`
+
+### During Development:
+1. **Commit frequently**: After each logical change (every 15-30 minutes)
+2. **Test incrementally**: Run relevant tests after each change
+3. **Stay focused**: Complete one task at a time from the todo list
+4. **Validate changes**: Use `git diff` to review before committing
+
+### If Something Goes Wrong:
+1. **Quick revert**: `./scripts/quick-revert.sh` (reverts uncommitted changes)
+2. **Branch recovery**: `./scripts/recover-branch.sh` (goes back to main)
+3. **Full restore**: `./scripts/restore-snapshot.sh [snapshot-name]`
+
+### Task Management Rules:
+1. **ALWAYS use TodoWrite/TodoRead** for task tracking
+2. **Break complex tasks** into items of 30 minutes or less
+3. **Mark tasks in_progress** before starting
+4. **Mark tasks completed** immediately when done
+5. **One task at a time** - never have multiple in_progress
+
+### Code Modification Boundaries:
+1. **Frontend changes**: Only modify files in `/frontend` directory
+2. **Backend changes**: Only modify files in `/backend` directory
+3. **Database changes**: ALWAYS create a migration, never modify schema directly
+4. **Config changes**: Test in development first, document in this file
+5. **Dependencies**: Run tests after any package additions
+
+### Testing Requirements:
+- Backend: Run `pytest` before marking any backend task complete
+- Frontend: Run `npm test` before marking any frontend task complete
+- Full stack: Run `./scripts/test-integration.sh` for cross-system changes
+
 ## Project Overview
 
 6FB Booking Platform is a comprehensive booking and business management system for barber shops, built on the Six Figure Barber methodology. It features:
@@ -218,3 +256,116 @@ frontend/
 - **Hosting**: Currently on Render, supports Docker/Railway/Vercel
 - **Monitoring**: Sentry integration for error tracking
 - **Security Keys**: Generate with `python -c 'import secrets; print(secrets.token_urlsafe(64))'`
+
+## 🚨 Common Pitfalls to Avoid
+
+1. **Database Migrations**:
+   - NEVER modify existing migrations
+   - ALWAYS create new migrations for schema changes
+   - Test migrations on a copy of production data
+
+2. **API Changes**:
+   - Maintain backwards compatibility
+   - Version new endpoints (/api/v2/) rather than breaking v1
+   - Update OpenAPI schema after changes
+
+3. **Environment Variables**:
+   - NEVER commit .env files
+   - ALWAYS use .env.template as reference
+   - Document new variables in this file
+
+4. **Payment Integration**:
+   - Test with Stripe test keys only
+   - NEVER log payment details
+   - Always use idempotency keys
+
+5. **Authentication**:
+   - Don't modify JWT token structure without migration plan
+   - Keep token expiry times consistent
+   - Test role-based access thoroughly
+
+## 📋 Pre-Work Checklist
+
+Before starting any work, ensure:
+- [ ] Git working directory is clean (`git status`)
+- [ ] On latest main branch (`git pull origin main`)
+- [ ] Created feature branch (`git checkout -b feature/...`)
+- [ ] Environment variables loaded (`.env` file exists)
+- [ ] Dependencies installed (backend: `pip install -r requirements.txt`, frontend: `npm install`)
+- [ ] Tests passing (backend: `pytest`, frontend: `npm test`)
+- [ ] Development servers can start successfully
+
+## 🔄 Recovery Procedures
+
+### Quick Fixes:
+```bash
+# Undo last commit (keep changes)
+git reset --soft HEAD~1
+
+# Discard all uncommitted changes
+git checkout -- .
+
+# Remove untracked files
+git clean -fd
+
+# Reset to main branch state
+git fetch origin
+git reset --hard origin/main
+```
+
+### Emergency Procedures:
+```bash
+# Full nuclear option - reset everything
+git reset --hard HEAD
+git clean -xfd
+
+# Restore from snapshot
+./scripts/restore-snapshot.sh
+
+# Rollback deployment
+./scripts/rollback-deployment.sh
+```
+
+## 📊 Project State Tracking
+
+### Check Project Health:
+```bash
+# Backend health
+cd backend && python scripts/health-check.py
+
+# Frontend health  
+cd frontend && npm run validate-build
+
+# Full system check
+./scripts/full-system-check.sh
+```
+
+### Current Known Issues:
+- None at this time (update this section when issues are discovered)
+
+### Recent Major Changes:
+- [Date] - Description of change
+- Keep last 5 major changes listed here
+
+## 🎯 Task Prioritization Guide
+
+1. **Critical (Fix immediately)**:
+   - Production down
+   - Security vulnerabilities
+   - Data loss risks
+   - Payment failures
+
+2. **High (Fix within 24h)**:
+   - Major feature broken
+   - Performance degradation
+   - Integration failures
+
+3. **Medium (Fix within week)**:
+   - Minor bugs
+   - UI/UX improvements
+   - Documentation updates
+
+4. **Low (Backlog)**:
+   - Nice-to-have features
+   - Code refactoring
+   - Test coverage improvements

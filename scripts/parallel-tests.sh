@@ -26,16 +26,16 @@ run_test_suite() {
     local command=$2
     local color=$3
     local log_file="$TEST_RESULTS_DIR/$name.log"
-    
+
     echo -e "${color}Starting $name tests...${NC}"
-    
+
     # Run the test command in background
     (
         echo "Test Suite: $name" > "$log_file"
         echo "Started at: $(date)" >> "$log_file"
         echo "Command: $command" >> "$log_file"
         echo "===========================================" >> "$log_file"
-        
+
         # Execute the test command
         if eval "$command" >> "$log_file" 2>&1; then
             echo -e "\n${GREEN}✓ $name tests PASSED${NC}" >> "$log_file"
@@ -44,10 +44,10 @@ run_test_suite() {
             echo -e "\n${RED}✗ $name tests FAILED${NC}" >> "$log_file"
             echo -e "${RED}✗ $name tests FAILED${NC}"
         fi
-        
+
         echo "Completed at: $(date)" >> "$log_file"
     ) &
-    
+
     # Store the PID
     eval "${name}_PID=$!"
 }
@@ -59,15 +59,15 @@ test_api_endpoint() {
     local method=$3
     local data=$4
     local expected_status=$5
-    
+
     response=$(curl -s -w "\n%{http_code}" -X "$method" \
         -H "Content-Type: application/json" \
         -d "$data" \
         "http://localhost:8000$url")
-    
+
     status_code=$(echo "$response" | tail -n1)
     body=$(echo "$response" | head -n-1)
-    
+
     if [ "$status_code" = "$expected_status" ]; then
         echo -e "${GREEN}✓ $name: Status $status_code${NC}"
         return 0
@@ -118,7 +118,7 @@ if [ $attempts -lt $max_attempts ]; then
     echo -e "${GREEN}API server is ready!${NC}"
     echo ""
     echo "Running API endpoint tests..."
-    
+
     # Test critical endpoints
     test_api_endpoint "Health Check" "/health" "GET" "" "200"
     test_api_endpoint "API Docs" "/docs" "GET" "" "200"

@@ -19,27 +19,25 @@ NC='\033[0m' # No Color
 # Get current date for branch naming
 DATE=$(date +%Y%m%d)
 
-# Array of feature branches to create
-declare -A FEATURES=(
-    ["google-calendar"]="Google Calendar integration with OAuth, sync, and availability"
-    ["payment-complete"]="Payment processing, success/failed pages, and Stripe integration"
-    ["payout-system"]="Barber payout system with Stripe Connect"
-    ["booking-flow"]="Public booking flow with service selection and confirmation"
-    ["client-management"]="Client database, history, and communication preferences"
-    ["analytics-dashboard"]="6FB methodology analytics and business insights"
-    ["notification-system"]="Email/SMS notifications with SendGrid and Twilio"
-    ["production-deploy"]="Production configuration and deployment setup"
-)
+# Feature branches to create (compatible with all shells)
+FEATURES="google-calendar:Google Calendar integration with OAuth, sync, and availability
+payment-complete:Payment processing, success/failed pages, and Stripe integration
+payout-system:Barber payout system with Stripe Connect
+booking-flow:Public booking flow with service selection and confirmation
+client-management:Client database, history, and communication preferences
+analytics-dashboard:6FB methodology analytics and business insights
+notification-system:Email/SMS notifications with SendGrid and Twilio
+production-deploy:Production configuration and deployment setup"
 
 # Function to create a feature branch
 create_feature_branch() {
     local feature_name=$1
     local description=$2
     local branch_name="feature/${feature_name}-${DATE}"
-    
+
     echo -e "${BLUE}Creating branch: ${branch_name}${NC}"
     echo "Description: $description"
-    
+
     # Check if branch already exists
     if git show-ref --verify --quiet "refs/heads/${branch_name}"; then
         echo -e "${YELLOW}⚠ Branch already exists, skipping...${NC}"
@@ -47,7 +45,7 @@ create_feature_branch() {
         # Create and checkout the branch
         if git checkout -b "$branch_name" > /dev/null 2>&1; then
             echo -e "${GREEN}✓ Branch created successfully${NC}"
-            
+
             # Create initial commit with branch info
             echo "# $feature_name Feature" > ".branch-info.md"
             echo "" >> ".branch-info.md"
@@ -57,10 +55,10 @@ create_feature_branch() {
             echo "## Created" >> ".branch-info.md"
             echo "Date: $(date)" >> ".branch-info.md"
             echo "Branch: $branch_name" >> ".branch-info.md"
-            
+
             git add .branch-info.md > /dev/null 2>&1
             git commit -m "Initialize $feature_name feature branch" > /dev/null 2>&1
-            
+
             # Return to main branch
             git checkout main > /dev/null 2>&1
         else
@@ -105,8 +103,8 @@ echo ""
 echo "Creating feature branches..."
 echo ""
 
-for feature in "${!FEATURES[@]}"; do
-    create_feature_branch "$feature" "${FEATURES[$feature]}"
+echo "$FEATURES" | while IFS=':' read -r feature description; do
+    create_feature_branch "$feature" "$description"
 done
 
 # Create a development session script
@@ -159,7 +157,7 @@ tmux send-keys -t sixfb:frontend-server 'cd frontend && npm run dev' C-m
 tmux new-window -t sixfb -n backend-tests
 tmux send-keys -t sixfb:backend-tests 'cd backend && source venv/bin/activate && echo "Run: ptw" for continuous testing' C-m
 
-tmux new-window -t sixfb -n frontend-tests  
+tmux new-window -t sixfb -n frontend-tests
 tmux send-keys -t sixfb:frontend-tests 'cd frontend && echo "Run: npm test" for testing' C-m
 
 tmux new-window -t sixfb -n git-features
@@ -195,7 +193,7 @@ echo ""
 echo "Quick Commands:"
 echo ""
 echo "Switch to a feature branch:"
-for feature in "${!FEATURES[@]}"; do
+echo "$FEATURES" | while IFS=':' read -r feature description; do
     echo "  git checkout feature/${feature}-${DATE}"
 done
 echo ""

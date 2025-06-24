@@ -62,6 +62,7 @@ from api.v1 import (
     booking,
     calendar,
     services,
+    payouts,
 )
 from api.v1.endpoints import (
     payments,
@@ -251,6 +252,7 @@ app.include_router(
     prefix="/api/v1/barber-payments",
     tags=["Barber Payments"],
 )
+app.include_router(payouts.router, prefix="/api/v1/payouts", tags=["Payouts"])
 app.include_router(
     test_stripe_status.router,
     prefix="/api/v1/test-stripe",

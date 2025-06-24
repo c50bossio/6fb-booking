@@ -40,7 +40,7 @@ if ! git diff-index --quiet HEAD --; then
     echo ""
     read -p "Choose option (1-4): " -n 1 -r choice
     echo ""
-    
+
     case $choice in
         1)
             echo "Stashing changes..."
@@ -73,17 +73,17 @@ git checkout $main_branch
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✓${NC} Successfully switched to $main_branch"
-    
+
     # Update from remote
     echo ""
     echo "Updating from remote..."
     git pull origin $main_branch
-    
+
     echo ""
     echo -e "${GREEN}✓ Branch recovery completed!${NC}"
     echo ""
     echo "You are now on the $main_branch branch."
-    
+
     # Show stash info if we stashed
     if [ "$choice" == "1" ]; then
         echo ""
@@ -92,7 +92,7 @@ if [ $? -eq 0 ]; then
         echo "  • Apply latest stash: git stash pop"
         echo "  • Apply specific stash: git stash apply stash@{n}"
     fi
-    
+
     # Suggest next steps
     echo ""
     echo "Next steps:"

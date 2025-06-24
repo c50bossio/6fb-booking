@@ -24,7 +24,7 @@ check_status() {
     local status=$1
     local message=$2
     local severity=$3  # "error" or "warning"
-    
+
     if [ $status -eq 0 ]; then
         echo -e "${GREEN}✓${NC} $message"
     else
@@ -44,7 +44,7 @@ check_env_var() {
     local var_name=$1
     local file_path=$2
     local severity=${3:-"error"}
-    
+
     if grep -q "^${var_name}=" "$file_path" 2>/dev/null && ! grep -q "^${var_name}=$" "$file_path" 2>/dev/null; then
         check_status 0 "$var_name is configured"
     else
@@ -58,7 +58,7 @@ echo "----------------------------"
 # Check backend environment
 if [ -f "backend/.env" ]; then
     check_status 0 "Backend .env file exists"
-    
+
     # Critical environment variables
     check_env_var "DATABASE_URL" "backend/.env"
     check_env_var "JWT_SECRET" "backend/.env"
@@ -73,14 +73,14 @@ if [ -f "backend/.env" ]; then
     check_env_var "FRONTEND_URL" "backend/.env"
     check_env_var "BACKEND_URL" "backend/.env"
     check_env_var "ENCRYPTION_KEY" "backend/.env"
-    
+
     # Check for production values
     if grep -q "sqlite:///" "backend/.env" 2>/dev/null; then
         check_status 1 "Database is SQLite (should be PostgreSQL for production)" "error"
     else
         check_status 0 "Database is not SQLite"
     fi
-    
+
     if grep -q "sk_test_" "backend/.env" 2>/dev/null; then
         check_status 1 "Stripe is using test keys" "warning"
     else
@@ -164,7 +164,7 @@ echo "------------------------"
 cd backend
 if alembic current > /dev/null 2>&1; then
     check_status 0 "Database migrations are accessible"
-    
+
     # Check if migrations are up to date
     if alembic check > /dev/null 2>&1; then
         check_status 0 "Database schema is up to date"

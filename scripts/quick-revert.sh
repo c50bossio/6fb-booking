@@ -31,31 +31,31 @@ echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo ""
     echo "Creating backup of current changes..."
-    
+
     # Create a backup branch with current changes
     backup_branch="backup/revert-$(date +%Y%m%d-%H%M%S)"
     git stash push -u -m "Backup before quick revert"
     echo -e "${GREEN}✓${NC} Changes backed up to stash"
     echo "  To recover: git stash pop"
-    
+
     # Reset all tracked files
     echo ""
     echo "Reverting tracked files..."
     git checkout -- .
     echo -e "${GREEN}✓${NC} Tracked files reverted"
-    
+
     # Clean untracked files
     echo ""
     echo "Removing untracked files..."
     git clean -fd
     echo -e "${GREEN}✓${NC} Untracked files removed"
-    
+
     echo ""
     echo -e "${GREEN}✓ Quick revert completed successfully!${NC}"
     echo ""
     echo "Current status:"
     git status --short
-    
+
     echo ""
     echo "Recovery options:"
     echo "  • Restore backup: git stash pop"
