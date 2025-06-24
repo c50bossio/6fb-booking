@@ -254,17 +254,7 @@ class Settings(BaseSettings):
         default="http://localhost:3000", description="Frontend application URL"
     )
     ALLOWED_ORIGINS: List[str] = Field(
-        default_factory=lambda: [
-            "http://localhost:3000",
-            "http://localhost:3001",
-            os.getenv("FRONTEND_URL", "http://localhost:3000"),
-        ]
-        + (
-            os.getenv("ALLOWED_ORIGINS", "").split(",")
-            if os.getenv("ALLOWED_ORIGINS")
-            else []
-        ),
-        description="Allowed CORS origins",
+        default=[], description="Allowed CORS origins"
     )
 
     # =============================================================================
@@ -519,6 +509,9 @@ class Settings(BaseSettings):
 
     def model_post_init(self, __context) -> None:
         """Post-initialization validation and warnings"""
+        # Handle ALLOWED_ORIGINS parsing
+        self._setup_allowed_origins()
+        
         # Production environment checks
         if self.ENVIRONMENT == "production":
             self._validate_production_config()
@@ -526,6 +519,24 @@ class Settings(BaseSettings):
         # Development warnings
         elif self.ENVIRONMENT == "development":
             self._show_development_warnings()
+
+    def _setup_allowed_origins(self):
+        """Setup ALLOWED_ORIGINS from environment variable or defaults"""
+        # Start with defaults
+        default_origins = [
+            "http://localhost:3000",
+            "http://localhost:3001",
+            self.FRONTEND_URL,
+        ]
+        
+        # Add origins from environment variable
+        env_origins = os.getenv("ALLOWED_ORIGINS", "")
+        if env_origins:
+            env_origins_list = [origin.strip() for origin in env_origins.split(",") if origin.strip()]
+            default_origins.extend(env_origins_list)
+        
+        # Remove duplicates and set
+        self.ALLOWED_ORIGINS = list(set(default_origins))
 
     def _validate_production_config(self):
         """Validate production-specific requirements"""
