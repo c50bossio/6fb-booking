@@ -27,13 +27,13 @@ fi
 if [ -z "$1" ]; then
     echo "Available snapshots:"
     echo ""
-    
+
     if [ -f "$SNAPSHOT_DIR/index.txt" ]; then
         cat "$SNAPSHOT_DIR/index.txt" | nl
     else
         ls -1 "$SNAPSHOT_DIR" | grep -E "^snapshot-" | nl
     fi
-    
+
     echo ""
     echo "Usage: $0 <snapshot-name>"
     echo "Example: $0 snapshot-main-20240101-120000"
@@ -80,7 +80,7 @@ echo ""
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo ""
-    
+
     # 1. Stash current changes
     if ! git diff-index --quiet HEAD -- 2>/dev/null; then
         echo "Stashing current changes..."
@@ -88,13 +88,13 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
         git stash push -u -m "$stash_msg"
         echo -e "${GREEN}✓${NC} Current changes stashed"
     fi
-    
+
     # 2. Read snapshot commit
     if [ -f "$SNAPSHOT_PATH/git-commit.txt" ]; then
         target_commit=$(cat "$SNAPSHOT_PATH/git-commit.txt")
         echo ""
         echo "Checking out commit: $target_commit"
-        
+
         # Try to checkout the commit
         if git checkout "$target_commit" 2>/dev/null; then
             echo -e "${GREEN}✓${NC} Checked out snapshot commit"
@@ -104,7 +104,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
             exit 1
         fi
     fi
-    
+
     # 3. Apply uncommitted changes if any
     if [ -f "$SNAPSHOT_PATH/git-diff.patch" ] && [ -s "$SNAPSHOT_PATH/git-diff.patch" ]; then
         echo ""
@@ -115,7 +115,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
             echo -e "${YELLOW}⚠${NC}  Some changes could not be applied (conflicts)"
         fi
     fi
-    
+
     # 4. Restore branch name if on same commit
     if [ -f "$SNAPSHOT_PATH/branch.txt" ]; then
         snapshot_branch=$(cat "$SNAPSHOT_PATH/branch.txt")
@@ -127,7 +127,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
             echo -e "${GREEN}✓${NC} Switched to branch: $snapshot_branch"
         fi
     fi
-    
+
     echo ""
     echo "================================================"
     echo -e "${GREEN}✓ Restore completed!${NC}"
@@ -139,7 +139,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "Your previous changes are saved in stash."
     echo "To view stashes: git stash list"
     echo "To recover them: git stash pop"
-    
+
 else
     echo ""
     echo "Restore cancelled. No changes made."

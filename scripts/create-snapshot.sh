@@ -94,15 +94,15 @@ echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     # Stash current changes
     git stash push -u -m "Backup before restore from snapshot"
-    
+
     # Checkout the commit
     git checkout $(cat "$SNAPSHOT_DIR/git-commit.txt")
-    
+
     # Apply any uncommitted changes that were present
     if [ -s "$SNAPSHOT_DIR/git-diff.patch" ]; then
         git apply "$SNAPSHOT_DIR/git-diff.patch"
     fi
-    
+
     echo ""
     echo "✓ Restore completed!"
     echo "  Your current changes are stashed. Use 'git stash pop' to recover them."

@@ -1,5 +1,6 @@
 """Payment API endpoints for Stripe integration."""
 
+import logging
 from typing import List, Optional, Dict, Any
 from datetime import datetime, date, timedelta
 
@@ -23,6 +24,7 @@ from services.stripe_service import StripeService
 from api.v1.auth import get_current_user
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 # Pydantic schemas for request/response
@@ -175,6 +177,40 @@ class PaymentReportResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# Setup Intent Endpoint
+@router.post("/setup-intent")
+async def create_setup_intent(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Create a Stripe Setup Intent for adding a new payment method."""
+    try:
+        stripe_service = StripeService(db)
+        customer_id = await stripe_service.create_or_get_customer(current_user)
+        
+        # Create setup intent
+        import stripe
+        setup_intent = stripe.SetupIntent.create(
+            customer=customer_id,
+            payment_method_types=['card'],
+            metadata={
+                'user_id': str(current_user.id),
+                'platform': '6FB'
+            }
+        )
+        
+        return {
+            "client_secret": setup_intent.client_secret,
+            "setup_intent_id": setup_intent.id
+        }
+    except Exception as e:
+        logger.error(f"Failed to create setup intent: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Failed to create setup intent"
+        )
 
 
 # Payment Method Endpoints
