@@ -243,7 +243,7 @@ const MOCK_PAYOUT_SUMMARY: PayoutSummary = {
 // Mock data generators for different date ranges
 const generateMockDataForDateRange = (dateRange: string) => {
   const multiplier = getMultiplierForDateRange(dateRange)
-  
+
   return {
     shopMetrics: {
       ...MOCK_SHOP_METRICS,
@@ -332,7 +332,7 @@ export const financialService = {
     }
 
     const params = new URLSearchParams({ date_range: dateRange })
-    const response = await apiClient.get<ShopMetrics>(`/financial/shop-metrics?${params.toString()}`)
+    const response = await apiClient.get<ShopMetrics>(`/financial-dashboard/shop-metrics?${params.toString()}`)
     return { data: response.data }
   },
 
@@ -347,7 +347,7 @@ export const financialService = {
     }
 
     const params = new URLSearchParams({ date_range: dateRange })
-    const response = await apiClient.get<BarberRevenue[]>(`/financial/barber-revenue?${params.toString()}`)
+    const response = await apiClient.get<BarberRevenue[]>(`/financial-dashboard/barber-revenue?${params.toString()}`)
     return { data: response.data }
   },
 
@@ -362,7 +362,99 @@ export const financialService = {
     }
 
     const params = new URLSearchParams({ date_range: dateRange })
-    const response = await apiClient.get<PayoutSummary>(`/financial/payout-summary?${params.toString()}`)
+    const response = await apiClient.get<PayoutSummary>(`/financial-dashboard/payout-summary?${params.toString()}`)
+    return { data: response.data }
+  },
+
+  /**
+   * Get individual barber dashboard data
+   */
+  async getBarberDashboard(barberId: number): Promise<ApiResponse<any>> {
+    if (DEMO_MODE) {
+      console.log('Demo mode active - returning mock barber dashboard data')
+      return { 
+        data: {
+          today: {
+            earnings: 285.50,
+            appointments: 6,
+            tips: 45.00,
+            services: 240.50,
+            products: 0,
+            hours_worked: 7.5,
+            avg_ticket: 47.58,
+            client_satisfaction: 4.8
+          },
+          week: {
+            earnings: 1450.75,
+            appointments: 32,
+            tips: 220.00,
+            goal: 1500,
+            progress: 96.7,
+            trend: 12.3,
+            new_clients: 8,
+            returning_clients: 24
+          },
+          month: {
+            earnings: 5890.25,
+            appointments: 128,
+            goal: 6000,
+            progress: 98.2,
+            trend: 15.7,
+            top_service: "Premium Fade",
+            best_day: "Saturday",
+            personal_record: true
+          },
+          goals: {
+            daily_target: 300,
+            weekly_target: 1500,
+            monthly_target: 6000,
+            annual_target: 75000,
+            current_streak: 5,
+            best_streak: 12
+          },
+          achievements: {
+            recent: [
+              {
+                id: "streak_5",
+                title: "5-Day Streak!",
+                description: "Hit daily goal 5 days in a row",
+                icon: "🔥",
+                earned_date: "2024-12-23",
+                rarity: "rare"
+              }
+            ],
+            progress: [
+              {
+                id: "weekly_warrior",
+                title: "Weekly Warrior",
+                progress: 31,
+                target: 50,
+                reward: "Premium Badge + $50 Bonus"
+              }
+            ]
+          },
+          insights: {
+            top_insight: {
+              title: "Peak Hour Opportunity",
+              description: "You earn 34% more during 6-8 PM slots. Consider booking more evening appointments.",
+              potential_value: 280,
+              action: "Optimize Schedule"
+            },
+            peak_hours: ["10:00 AM", "2:00 PM", "6:00 PM", "7:00 PM"],
+            top_clients: [
+              { name: "Marcus J.", total_spent: 520, visits: 8, last_visit: "2024-12-20" },
+              { name: "David R.", total_spent: 480, visits: 7, last_visit: "2024-12-18" }
+            ],
+            service_performance: [
+              { service: "Premium Fade", revenue: 1200, count: 24, avg_price: 50, trend: 15 },
+              { service: "Beard Trim", revenue: 800, count: 32, avg_price: 25, trend: 8 }
+            ]
+          }
+        }
+      }
+    }
+
+    const response = await apiClient.get<any>(`/financial-dashboard/barber-dashboard/${barberId}`)
     return { data: response.data }
   },
 

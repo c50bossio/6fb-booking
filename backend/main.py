@@ -90,6 +90,7 @@ from api.v1.endpoints import (
     test_email,
     clients,
     google_calendar,
+    google_oauth,
     security_admin,
     health,
     availability_check,
@@ -232,7 +233,9 @@ app.include_router(
     public_status.router, prefix="/api/v1/public", tags=["Public Status"]
 )
 app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["Dashboard"])
-app.include_router(financial_dashboard.router, prefix="/api/v1/financial", tags=["Financial Dashboard"])
+app.include_router(
+    financial_dashboard.router, prefix="/api/v1/financial-dashboard", tags=["Financial Dashboard"]
+)
 app.include_router(temp_reset.router, prefix="/api/v1/temp", tags=["Temp"])
 app.include_router(debug.router, prefix="/api/v1/debug", tags=["Debug"])
 app.include_router(
@@ -302,6 +305,11 @@ app.include_router(
     google_calendar.router,
     prefix="/api/v1",
     tags=["Google Calendar"],
+)
+app.include_router(
+    google_oauth.router,
+    prefix="/api/v1/auth/google",
+    tags=["Google OAuth"],
 )
 app.include_router(
     security_admin.router,
