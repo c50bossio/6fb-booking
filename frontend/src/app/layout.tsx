@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import { NavigationProvider } from "@/components/NavigationProvider";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { StripeProvider } from "@/providers/StripeProvider";
 import ClientOnly from "@/components/ClientOnly";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ExtensionDetector from "@/components/ExtensionDetector";
@@ -77,9 +78,11 @@ export default function RootLayout({
           <ThemeProvider>
             <AuthProvider>
               <NavigationProvider>
-                <ClientOnly>
-                  {children}
-                </ClientOnly>
+                <StripeProvider>
+                  <ClientOnly>
+                    {children}
+                  </ClientOnly>
+                </StripeProvider>
               </NavigationProvider>
             </AuthProvider>
             <ExtensionDetector />
