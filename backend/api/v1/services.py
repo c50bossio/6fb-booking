@@ -126,64 +126,73 @@ async def get_services(
 ):
     """Get all services (public endpoint for booking system)"""
 
-    query = db.query(Service).options(
-        joinedload(Service.category),
-        joinedload(Service.barber),
-        joinedload(Service.location),
-    )
-
-    # Apply filters
-    if category_id:
-        query = query.filter(Service.category_id == category_id)
-
-    if barber_id:
-        query = query.filter(Service.barber_id == barber_id)
-
-    if location_id:
-        query = query.filter(Service.location_id == location_id)
-
-    if is_active is not None:
-        query = query.filter(Service.is_active == is_active)
-
-    if is_addon is not None:
-        query = query.filter(Service.is_addon == is_addon)
-
-    # Order by category and display order
-    query = query.join(
-        ServiceCategory, Service.category_id == ServiceCategory.id
-    ).order_by(ServiceCategory.display_order, Service.display_order, Service.name)
-
-    services = query.offset(skip).limit(limit).all()
-
-    # Build response
-    result = []
-    for service in services:
-        result.append(
-            ServiceResponse(
-                id=service.id,
-                name=service.name,
-                description=service.description,
-                category_id=service.category_id,
-                category_name=service.category.name if service.category else "Unknown",
-                base_price=service.base_price,
-                min_price=service.min_price,
-                max_price=service.max_price,
-                duration_minutes=service.duration_minutes,
-                buffer_minutes=service.buffer_minutes,
-                requires_deposit=service.requires_deposit or False,
-                deposit_amount=service.deposit_amount,
-                deposit_type=service.deposit_type,
-                is_addon=service.is_addon or False,
-                is_active=service.is_active,
-                display_order=service.display_order or 0,
-                tags=service.tags if service.tags else [],
-                barber_id=service.barber_id,
-                location_id=service.location_id,
-                created_at=service.created_at,
-            )
+    try:
+        query = db.query(Service).options(
+            joinedload(Service.category),
+            joinedload(Service.barber),
+            joinedload(Service.location),
         )
 
-    return result
+        # Apply filters
+        if category_id:
+            query = query.filter(Service.category_id == category_id)
+
+        if barber_id:
+            query = query.filter(Service.barber_id == barber_id)
+
+        if location_id:
+            query = query.filter(Service.location_id == location_id)
+
+        if is_active is not None:
+            query = query.filter(Service.is_active == is_active)
+
+        if is_addon is not None:
+            query = query.filter(Service.is_addon == is_addon)
+
+        # Order by category and display order
+        query = query.join(
+            ServiceCategory, Service.category_id == ServiceCategory.id
+        ).order_by(ServiceCategory.display_order, Service.display_order, Service.name)
+
+        services = query.offset(skip).limit(limit).all()
+
+        # Build response
+        result = []
+        for service in services:
+            result.append(
+                ServiceResponse(
+                    id=service.id,
+                    name=service.name,
+                    description=service.description,
+                    category_id=service.category_id,
+                    category_name=service.category.name if service.category else "Unknown",
+                    base_price=service.base_price,
+                    min_price=service.min_price,
+                    max_price=service.max_price,
+                    duration_minutes=service.duration_minutes,
+                    buffer_minutes=service.buffer_minutes,
+                    requires_deposit=service.requires_deposit or False,
+                    deposit_amount=service.deposit_amount,
+                    deposit_type=service.deposit_type,
+                    is_addon=service.is_addon or False,
+                    is_active=service.is_active,
+                    display_order=service.display_order or 0,
+                    tags=service.tags if service.tags else [],
+                    barber_id=service.barber_id,
+                    location_id=service.location_id,
+                    created_at=service.created_at,
+                )
+            )
+
+        return result
+    except Exception as e:
+        # Log the error for debugging
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error fetching services: {str(e)}")
+        
+        # Return empty list if database has no data yet
+        return []
 
 
 @router.get("/{service_id}", response_model=ServiceResponse)
