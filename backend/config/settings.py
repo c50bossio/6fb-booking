@@ -253,7 +253,7 @@ class Settings(BaseSettings):
     FRONTEND_URL: str = Field(
         default="http://localhost:3000", description="Frontend application URL"
     )
-    ALLOWED_ORIGINS: List[str] = Field(
+    CORS_ORIGINS: List[str] = Field(
         default=[], description="Allowed CORS origins"
     )
 
@@ -513,7 +513,7 @@ class Settings(BaseSettings):
             self._show_development_warnings()
 
     def _setup_allowed_origins(self):
-        """Setup ALLOWED_ORIGINS from environment variable or defaults"""
+        """Setup CORS_ORIGINS from environment variable or defaults"""
         # Start with defaults
         default_origins = [
             "http://localhost:3000",
@@ -528,7 +528,7 @@ class Settings(BaseSettings):
             default_origins.extend(env_origins_list)
         
         # Remove duplicates and set
-        self.ALLOWED_ORIGINS = list(set(default_origins))
+        self.CORS_ORIGINS = list(set(default_origins))
 
     def _validate_production_config(self):
         """Validate production-specific requirements"""
@@ -676,7 +676,7 @@ def get_database_config() -> dict:
 def get_cors_config() -> dict:
     """Get CORS configuration"""
     return {
-        "allow_origins": settings.ALLOWED_ORIGINS,
+        "allow_origins": settings.CORS_ORIGINS,
         "allow_credentials": True,
         "allow_methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
         "allow_headers": [
