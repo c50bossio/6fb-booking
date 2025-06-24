@@ -31,13 +31,14 @@ export const authService = {
    * Login user
    */
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    const formData = new FormData()
-    formData.append('username', credentials.username)
-    formData.append('password', credentials.password)
+    // Use URL-encoded format for OAuth2 compatibility
+    const params = new URLSearchParams()
+    params.append('username', credentials.username)
+    params.append('password', credentials.password)
 
-    const response = await apiClient.post<LoginResponse>('/auth/token', formData, {
+    const response = await apiClient.post<LoginResponse>('/auth/token', params, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
     })
 
