@@ -4,7 +4,7 @@
 import axios from 'axios'
 import { smartStorage } from '../utils/storage'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8003/api/v1'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
 
 // Log API configuration in development
 if (process.env.NODE_ENV === 'development') {
@@ -68,13 +68,18 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config
 
-    // Log error details
-    console.error('API Error:', {
+    // Log error details with better context
+    const errorInfo = {
       url: originalRequest?.url,
-      method: originalRequest?.method,
+      method: originalRequest?.method?.toUpperCase(),
       status: error.response?.status,
-      message: error.response?.data?.message || error.message
-    })
+      statusText: error.response?.statusText,
+      message: error.response?.data?.message || error.message,
+      details: error.response?.data?.detail || null,
+      timestamp: new Date().toISOString()
+    }
+
+    console.error('API Error:', errorInfo)
 
     // Handle 401 Unauthorized - redirect to login
     if (error.response?.status === 401) {
@@ -82,8 +87,13 @@ apiClient.interceptors.response.use(
       smartStorage.removeItem('access_token')
       smartStorage.removeItem('user')
 
-      // Redirect to login if not already there
-      if (!window.location.pathname.includes('/login')) {
+      // Only redirect if not already on login/auth pages
+      const currentPath = window.location.pathname
+      const authPaths = ['/login', '/signup', '/reset-password']
+
+      if (!authPaths.some(path => currentPath.includes(path))) {
+        // Store current location for redirect after login
+        smartStorage.setItem('redirect_after_login', currentPath)
         window.location.href = '/login'
       }
       return Promise.reject(error)
@@ -95,31 +105,87 @@ apiClient.interceptors.response.use(
       return Promise.reject(error)
     }
 
+    // Handle 404 Not Found - don't retry
+    if (error.response?.status === 404) {
+      return Promise.reject(error)
+    }
+
+    // Handle 422 Validation Error - don't retry
+    if (error.response?.status === 422) {
+      return Promise.reject(error)
+    }
+
     // Implement retry logic for network failures
     if (!error.response && !originalRequest._retry) {
       originalRequest._retry = true
 
-      // Wait 1 second before retry
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Wait with exponential backoff
+      const delay = Math.min(1000 * Math.pow(2, originalRequest._retryCount || 0), 5000)
+      await new Promise(resolve => setTimeout(resolve, delay))
 
-      console.log('Retrying failed request:', originalRequest.url)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Retrying network failure (attempt ${(originalRequest._retryCount || 0) + 1}):`, originalRequest.url)
+      }
+
+      originalRequest._retryCount = (originalRequest._retryCount || 0) + 1
       return apiClient(originalRequest)
     }
 
-    // Handle 500 server errors with retry
-    if (error.response?.status >= 500 && !originalRequest._retry) {
+    // Handle 500+ server errors with limited retry
+    if (error.response?.status >= 500 && !originalRequest._retry && (originalRequest._retryCount || 0) < 2) {
       originalRequest._retry = true
+      originalRequest._retryCount = (originalRequest._retryCount || 0) + 1
 
-      // Wait 2 seconds before retry for server errors
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Wait longer for server errors
+      const delay = Math.min(2000 * Math.pow(2, originalRequest._retryCount - 1), 10000)
+      await new Promise(resolve => setTimeout(resolve, delay))
 
-      console.log('Retrying server error:', originalRequest.url)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Retrying server error (attempt ${originalRequest._retryCount}):`, originalRequest.url)
+      }
+
       return apiClient(originalRequest)
+    }
+
+    // For client errors (4xx), add user-friendly error handling
+    if (error.response?.status >= 400 && error.response?.status < 500) {
+      // Enhance error with user-friendly message
+      error.userMessage = getUserFriendlyErrorMessage(error.response.status, error.response.data)
     }
 
     return Promise.reject(error)
   }
 )
+
+/**
+ * Get user-friendly error messages for common HTTP status codes
+ */
+function getUserFriendlyErrorMessage(status: number, data: any): string {
+  switch (status) {
+    case 400:
+      return data?.message || 'Invalid request. Please check your input and try again.'
+    case 401:
+      return 'Your session has expired. Please log in again.'
+    case 403:
+      return 'You don\'t have permission to perform this action.'
+    case 404:
+      return 'The requested resource was not found.'
+    case 409:
+      return data?.message || 'This action conflicts with existing data.'
+    case 422:
+      return data?.message || 'Please check your input and try again.'
+    case 429:
+      return 'Too many requests. Please wait a moment and try again.'
+    case 500:
+      return 'Server error. Please try again later.'
+    case 502:
+      return 'Service temporarily unavailable. Please try again later.'
+    case 503:
+      return 'Service maintenance in progress. Please try again later.'
+    default:
+      return data?.message || 'An unexpected error occurred. Please try again.'
+  }
+}
 
 // Utility functions for API health and debugging
 export const apiUtils = {

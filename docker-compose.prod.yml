@@ -2,28 +2,116 @@ version: '3.8'
 
 services:
   backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+      target: backend-production
     image: 6fb-backend:latest
     container_name: 6fb-backend
     environment:
-      - DATABASE_URL=${DATABASE_URL}
+      # Core Application
+      - ENVIRONMENT=production
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - WORKERS=${WORKERS:-4}
+
+      # Security
       - SECRET_KEY=${SECRET_KEY}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - ENVIRONMENT=production
-      - REDIS_URL=redis://redis:6379
-      - TRAFFT_API_KEY=${TRAFFT_API_KEY}
-      - TRAFFT_WEBHOOK_SECRET=${TRAFFT_WEBHOOK_SECRET}
+      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-1440}
+
+      # Database
+      - DATABASE_URL=${DATABASE_URL}
+      - DB_POOL_SIZE=${DB_POOL_SIZE:-20}
+      - DB_MAX_OVERFLOW=${DB_MAX_OVERFLOW:-30}
+
+      # Redis
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+
+      # Stripe
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - STRIPE_CONNECT_CLIENT_ID=${STRIPE_CONNECT_CLIENT_ID}
+
+      # Email
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - FROM_EMAIL=${FROM_EMAIL}
+      - EMAIL_FROM_NAME=${EMAIL_FROM_NAME}
+
+      # Communication
       - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
       - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
-      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - TWILIO_PHONE_NUMBER=${TWILIO_PHONE_NUMBER}
+
+      # Monitoring
+      - SENTRY_DSN=${SENTRY_DSN}
+      - SENTRY_ENVIRONMENT=production
+
+      # CORS
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+      - CORS_ALLOW_CREDENTIALS=true
+
+      # Rate Limiting
+      - RATE_LIMIT_PER_MINUTE=${RATE_LIMIT_PER_MINUTE:-60}
+      - AUTH_RATE_LIMIT_PER_MINUTE=${AUTH_RATE_LIMIT_PER_MINUTE:-5}
+
     volumes:
       - backend-data:/app/data
       - backend-logs:/app/logs
+      - ./ssl:/app/ssl:ro
     depends_on:
-      - redis
-      - postgres
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
     networks:
       - 6fb-network
-    restart: always
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1.5G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+      target: frontend-production
+    image: 6fb-frontend:latest
+    container_name: 6fb-frontend
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://api.6fbplatform.com}
+      - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
+      - NEXT_PUBLIC_GA_TRACKING_ID=${NEXT_PUBLIC_GA_TRACKING_ID}
+    networks:
+      - 6fb-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     deploy:
       replicas: 2
       resources:
@@ -31,27 +119,13 @@ services:
           cpus: '1'
           memory: 1G
         reservations:
-          cpus: '0.5'
-          memory: 512M
-
-  frontend:
-    image: 6fb-frontend:latest
-    container_name: 6fb-frontend
-    environment:
-      - NEXT_PUBLIC_API_URL=${FRONTEND_API_URL:-https://api.6fbplatform.com}
-      - NODE_ENV=production
-    networks:
-      - 6fb-network
-    restart: always
-    deploy:
-      replicas: 2
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-        reservations:
           cpus: '0.25'
           memory: 256M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
 
   postgres:
     image: postgres:15-alpine
@@ -88,7 +162,11 @@ services:
       retries: 3
 
   nginx:
-    image: nginx:alpine
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+      target: nginx-production
+    image: 6fb-nginx:latest
     container_name: 6fb-nginx
     ports:
       - "80:80"
@@ -99,16 +177,32 @@ services:
       - nginx-logs:/var/log/nginx
       - ./nginx/cache:/var/cache/nginx
     depends_on:
-      - backend
-      - frontend
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
     networks:
       - 6fb-network
-    restart: always
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     deploy:
       resources:
         limits:
           cpus: '0.5'
           memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
 
   prometheus:
     image: prom/prometheus:latest

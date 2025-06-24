@@ -53,6 +53,7 @@ from api.v1 import (
     users,
     locations,
     barbers,
+    clients,
     appointments,
     analytics,
     training as training_router,
@@ -198,6 +199,7 @@ app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
 app.include_router(locations.router, prefix="/api/v1/locations", tags=["Locations"])
 app.include_router(barbers.router, prefix="/api/v1/barbers", tags=["Barbers"])
+app.include_router(clients.router, prefix="/api/v1/clients", tags=["Clients"])
 app.include_router(
     appointments.router, prefix="/api/v1/appointments", tags=["Appointments"]
 )

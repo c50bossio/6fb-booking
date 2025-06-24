@@ -48,6 +48,14 @@ from .booking import (
     WaitList,
 )
 from .google_calendar_settings import GoogleCalendarSettings, GoogleCalendarSyncLog
+from .square_payment import (
+    SquarePayment,
+    SquareAccount,
+    SquarePayout,
+    SquareWebhookEvent,
+    SquarePaymentStatus,
+    SquarePayoutStatus,
+)
 
 # Export all models for easy importing
 __all__ = [
@@ -105,4 +113,11 @@ __all__ = [
     # Google Calendar models
     "GoogleCalendarSettings",
     "GoogleCalendarSyncLog",
+    # Square models
+    "SquarePayment",
+    "SquareAccount",
+    "SquarePayout",
+    "SquareWebhookEvent",
+    "SquarePaymentStatus",
+    "SquarePayoutStatus",
 ]

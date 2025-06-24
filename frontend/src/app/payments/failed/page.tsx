@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { XCircleIcon, ArrowLeftIcon, RefreshIcon, CreditCardIcon } from '@heroicons/react/24/outline'
+import { XCircleIcon, ArrowLeftIcon, ArrowPathIcon, CreditCardIcon } from '@heroicons/react/24/outline'
 
 export default function PaymentFailedPage() {
   const searchParams = useSearchParams()
@@ -49,7 +49,7 @@ export default function PaymentFailedPage() {
                 href={`/book-appointment/${appointmentId}/payment`}
                 className="w-full inline-flex items-center justify-center px-4 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-medium transition-colors"
               >
-                <RefreshIcon className="h-5 w-5 mr-2" />
+                <ArrowPathIcon className="h-5 w-5 mr-2" />
                 Try Again
               </Link>
             ) : (
@@ -61,7 +61,7 @@ export default function PaymentFailedPage() {
                 Payment Methods
               </Link>
             )}
-            
+
             <Link
               href="/dashboard"
               className="w-full inline-flex items-center justify-center px-4 py-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg font-medium transition-colors"

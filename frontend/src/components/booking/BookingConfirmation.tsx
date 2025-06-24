@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { SuccessAnimation } from '@/components/ui/success-animation'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { cn } from '@/lib/utils'
 import {
   Calendar,
@@ -16,8 +17,13 @@ import {
   CreditCard,
   Download,
   Share2,
-  CheckCircle
+  CheckCircle,
+  Bell,
+  MessageSquare,
+  AlertCircle,
+  Settings
 } from 'lucide-react'
+import { notificationService } from '@/lib/notifications/notification-service'
 
 export interface BookingDetails {
   id: string
@@ -59,6 +65,8 @@ export interface BookingConfirmationProps {
   onViewBookings?: () => void
   className?: string
   showAnimation?: boolean
+  sendNotifications?: boolean
+  userId?: string
 }
 
 const BookingConfirmation: React.FC<BookingConfirmationProps> = ({
@@ -66,10 +74,82 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({
   onNewBooking,
   onViewBookings,
   className,
-  showAnimation = true
+  showAnimation = true,
+  sendNotifications = true,
+  userId
 }) => {
   const [showShareOptions, setShowShareOptions] = useState(false)
   const [copiedToClipboard, setCopiedToClipboard] = useState(false)
+  const [notificationStatus, setNotificationStatus] = useState<{
+    email?: { status: 'sending' | 'sent' | 'failed', error?: string }
+    sms?: { status: 'sending' | 'sent' | 'failed', error?: string }
+  }>({})
+  const [showNotificationSettings, setShowNotificationSettings] = useState(false)
+
+  // Send notifications when component mounts
+  useEffect(() => {
+    if (sendNotifications && booking.id) {
+      sendBookingNotifications()
+    }
+  }, [booking.id, sendNotifications])
+
+  const sendBookingNotifications = async () => {
+    try {
+      // Get user preferences if userId is provided
+      let preferences
+      if (userId) {
+        try {
+          preferences = await notificationService.getNotificationPreferences(userId)
+        } catch (error) {
+          console.warn('Could not load notification preferences, using defaults')
+        }
+      }
+
+      // Set email status to sending
+      setNotificationStatus(prev => ({
+        ...prev,
+        email: { status: 'sending' }
+      }))
+
+      // Set SMS status to sending if phone number is provided
+      if (booking.clientInfo.phone) {
+        setNotificationStatus(prev => ({
+          ...prev,
+          sms: { status: 'sending' }
+        }))
+      }
+
+      // Send notifications
+      const responses = await notificationService.sendAppointmentConfirmation(booking, preferences)
+
+      // Update status based on responses
+      responses.forEach(response => {
+        if (response.id.includes('email')) {
+          setNotificationStatus(prev => ({
+            ...prev,
+            email: {
+              status: response.status === 'sent' || response.status === 'delivered' ? 'sent' : 'failed',
+              error: response.error
+            }
+          }))
+        } else if (response.id.includes('sms')) {
+          setNotificationStatus(prev => ({
+            ...prev,
+            sms: {
+              status: response.status === 'sent' || response.status === 'delivered' ? 'sent' : 'failed',
+              error: response.error
+            }
+          }))
+        }
+      })
+    } catch (error) {
+      console.error('Failed to send notifications:', error)
+      setNotificationStatus(prev => ({
+        email: { status: 'failed', error: 'Failed to send email notification' },
+        sms: booking.clientInfo.phone ? { status: 'failed', error: 'Failed to send SMS notification' } : undefined
+      }))
+    }
+  }
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -320,17 +400,139 @@ Payment: ${booking.paymentStatus}
             </div>
           </div>
 
-          {/* Confirmation Email Notice */}
-          <div className="bg-blue-50 rounded-lg p-4">
-            <div className="flex items-start space-x-3">
-              <Mail className="h-5 w-5 text-blue-600 mt-0.5" />
-              <div className="text-sm">
-                <p className="font-medium text-blue-900">Confirmation email sent</p>
-                <p className="text-blue-700 mt-1">
-                  We've sent a confirmation email to {booking.clientInfo.email} with all the booking details.
-                </p>
+          {/* Notification Status */}
+          <div className="space-y-3">
+            {/* Email Notification Status */}
+            {sendNotifications && (
+              <div className={`rounded-lg p-4 ${
+                notificationStatus.email?.status === 'sent' ? 'bg-green-50' :
+                notificationStatus.email?.status === 'failed' ? 'bg-red-50' :
+                'bg-blue-50'
+              }`}>
+                <div className="flex items-start space-x-3">
+                  <Mail className={`h-5 w-5 mt-0.5 ${
+                    notificationStatus.email?.status === 'sent' ? 'text-green-600' :
+                    notificationStatus.email?.status === 'failed' ? 'text-red-600' :
+                    'text-blue-600'
+                  }`} />
+                  <div className="text-sm flex-1">
+                    <div className="flex items-center space-x-2">
+                      <p className={`font-medium ${
+                        notificationStatus.email?.status === 'sent' ? 'text-green-900' :
+                        notificationStatus.email?.status === 'failed' ? 'text-red-900' :
+                        'text-blue-900'
+                      }`}>
+                        {notificationStatus.email?.status === 'sending' && 'Sending confirmation email...'}
+                        {notificationStatus.email?.status === 'sent' && 'Confirmation email sent'}
+                        {notificationStatus.email?.status === 'failed' && 'Failed to send confirmation email'}
+                        {!notificationStatus.email && 'Confirmation email'}
+                      </p>
+                      {notificationStatus.email?.status === 'sending' && (
+                        <LoadingSpinner className="w-4 h-4" />
+                      )}
+                      {notificationStatus.email?.status === 'sent' && (
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      )}
+                      {notificationStatus.email?.status === 'failed' && (
+                        <AlertCircle className="w-4 h-4 text-red-600" />
+                      )}
+                    </div>
+                    <p className={`mt-1 ${
+                      notificationStatus.email?.status === 'sent' ? 'text-green-700' :
+                      notificationStatus.email?.status === 'failed' ? 'text-red-700' :
+                      'text-blue-700'
+                    }`}>
+                      {notificationStatus.email?.status === 'sent' &&
+                        `Sent to ${booking.clientInfo.email} with all booking details.`}
+                      {notificationStatus.email?.status === 'failed' &&
+                        `Error: ${notificationStatus.email?.error || 'Unknown error occurred'}`}
+                      {notificationStatus.email?.status === 'sending' &&
+                        `Sending to ${booking.clientInfo.email}...`}
+                      {!notificationStatus.email &&
+                        `Will be sent to ${booking.clientInfo.email} with all booking details.`}
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* SMS Notification Status */}
+            {sendNotifications && booking.clientInfo.phone && (
+              <div className={`rounded-lg p-4 ${
+                notificationStatus.sms?.status === 'sent' ? 'bg-green-50' :
+                notificationStatus.sms?.status === 'failed' ? 'bg-red-50' :
+                'bg-blue-50'
+              }`}>
+                <div className="flex items-start space-x-3">
+                  <MessageSquare className={`h-5 w-5 mt-0.5 ${
+                    notificationStatus.sms?.status === 'sent' ? 'text-green-600' :
+                    notificationStatus.sms?.status === 'failed' ? 'text-red-600' :
+                    'text-blue-600'
+                  }`} />
+                  <div className="text-sm flex-1">
+                    <div className="flex items-center space-x-2">
+                      <p className={`font-medium ${
+                        notificationStatus.sms?.status === 'sent' ? 'text-green-900' :
+                        notificationStatus.sms?.status === 'failed' ? 'text-red-900' :
+                        'text-blue-900'
+                      }`}>
+                        {notificationStatus.sms?.status === 'sending' && 'Sending SMS confirmation...'}
+                        {notificationStatus.sms?.status === 'sent' && 'SMS confirmation sent'}
+                        {notificationStatus.sms?.status === 'failed' && 'Failed to send SMS confirmation'}
+                        {!notificationStatus.sms && 'SMS confirmation'}
+                      </p>
+                      {notificationStatus.sms?.status === 'sending' && (
+                        <LoadingSpinner className="w-4 h-4" />
+                      )}
+                      {notificationStatus.sms?.status === 'sent' && (
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      )}
+                      {notificationStatus.sms?.status === 'failed' && (
+                        <AlertCircle className="w-4 h-4 text-red-600" />
+                      )}
+                    </div>
+                    <p className={`mt-1 ${
+                      notificationStatus.sms?.status === 'sent' ? 'text-green-700' :
+                      notificationStatus.sms?.status === 'failed' ? 'text-red-700' :
+                      'text-blue-700'
+                    }`}>
+                      {notificationStatus.sms?.status === 'sent' &&
+                        `Sent to ${booking.clientInfo.phone}.`}
+                      {notificationStatus.sms?.status === 'failed' &&
+                        `Error: ${notificationStatus.sms?.error || 'Unknown error occurred'}`}
+                      {notificationStatus.sms?.status === 'sending' &&
+                        `Sending to ${booking.clientInfo.phone}...`}
+                      {!notificationStatus.sms &&
+                        `Will be sent to ${booking.clientInfo.phone}.`}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Notification Settings Link */}
+            {(notificationStatus.email?.status === 'failed' || notificationStatus.sms?.status === 'failed') && (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-start space-x-3">
+                  <Settings className="h-5 w-5 text-gray-600 mt-0.5" />
+                  <div className="text-sm">
+                    <p className="font-medium text-gray-900">Having notification issues?</p>
+                    <p className="text-gray-700 mt-1">
+                      Check your notification preferences or contact support for assistance.
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-2"
+                      onClick={() => window.location.href = '/settings/notifications'}
+                    >
+                      <Settings className="w-4 h-4 mr-2" />
+                      Notification Settings
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

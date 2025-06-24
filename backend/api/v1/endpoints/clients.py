@@ -767,6 +767,98 @@ async def export_clients(
         return {"clients": clients_data, "total": len(clients_data)}
 
 
+class ClientStatsResponse(BaseModel):
+    total_clients: int
+    new_clients: int
+    returning_clients: int
+    vip_clients: int
+    at_risk_clients: int
+    average_ticket: float
+    total_revenue: float
+    client_retention_rate: float
+    average_visits_per_client: float
+    top_clients: List[Dict[str, Any]]
+
+
+@router.get("/stats", response_model=ClientStatsResponse)
+async def get_client_statistics(
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    barber_id: Optional[int] = None,
+):
+    """Get client statistics and analytics"""
+
+    # Base query
+    query = db.query(Client)
+
+    # Filter by barber if not admin
+    if current_user.get("role") == "barber":
+        barber = (
+            db.query(Barber.id).filter(Barber.user_id == current_user["id"]).first()
+        )
+        if barber:
+            query = query.filter(Client.barber_id == barber.id)
+    elif barber_id:
+        query = query.filter(Client.barber_id == barber_id)
+
+    # Date filtering
+    if start_date:
+        start_dt = datetime.fromisoformat(start_date).date()
+        query = query.filter(Client.created_at >= start_dt)
+    if end_date:
+        end_dt = datetime.fromisoformat(end_date).date()
+        query = query.filter(Client.created_at <= end_dt)
+
+    clients = query.all()
+
+    # Calculate statistics
+    total_clients = len(clients)
+    new_clients = len([c for c in clients if c.customer_type == "new"])
+    returning_clients = len([c for c in clients if c.customer_type == "returning"])
+    vip_clients = len([c for c in clients if c.customer_type == "vip"])
+    at_risk_clients = len([c for c in clients if c.customer_type == "at_risk"])
+
+    total_revenue = sum(c.total_spent for c in clients)
+    total_visits = sum(c.total_visits for c in clients)
+
+    average_ticket = total_revenue / total_visits if total_visits > 0 else 0
+    average_visits_per_client = total_visits / total_clients if total_clients > 0 else 0
+
+    # Calculate retention rate (clients with more than 1 visit)
+    retained_clients = len([c for c in clients if c.total_visits > 1])
+    client_retention_rate = (
+        (retained_clients / total_clients * 100) if total_clients > 0 else 0
+    )
+
+    # Top clients by spending
+    top_clients = sorted(clients, key=lambda c: c.total_spent, reverse=True)[:5]
+    top_clients_data = [
+        {
+            "id": c.id,
+            "name": c.full_name,
+            "total_spent": c.total_spent,
+            "total_visits": c.total_visits,
+            "customer_type": c.customer_type,
+        }
+        for c in top_clients
+    ]
+
+    return ClientStatsResponse(
+        total_clients=total_clients,
+        new_clients=new_clients,
+        returning_clients=returning_clients,
+        vip_clients=vip_clients,
+        at_risk_clients=at_risk_clients,
+        average_ticket=round(average_ticket, 2),
+        total_revenue=round(total_revenue, 2),
+        client_retention_rate=round(client_retention_rate, 1),
+        average_visits_per_client=round(average_visits_per_client, 1),
+        top_clients=top_clients_data,
+    )
+
+
 @router.delete("/{client_id}")
 async def delete_client(
     client_id: int,
