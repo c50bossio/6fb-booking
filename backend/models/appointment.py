@@ -33,8 +33,9 @@ class Appointment(BaseModel):
     client_id = Column(Integer, ForeignKey("clients.id"), nullable=False)
     client = relationship("Client", back_populates="appointments")
 
-    # Payment relationship
+    # Payment relationships
     payments = relationship("Payment", back_populates="appointment")
+    square_payments = relationship("SquarePayment", back_populates="appointment")
 
     # Review relationship
     review = relationship("Review", back_populates="appointment", uselist=False)

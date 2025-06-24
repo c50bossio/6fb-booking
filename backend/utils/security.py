@@ -9,6 +9,8 @@ import time
 from collections import defaultdict
 from datetime import datetime, timedelta
 import re
+import hmac
+import hashlib
 
 
 class RateLimiter:
@@ -207,3 +209,24 @@ def get_client_ip(request: Request) -> str:
         return request.client.host
 
     return "unknown"
+
+
+def verify_square_webhook(payload: str, signature: str, webhook_secret: str) -> bool:
+    """
+    Verify Square webhook signature
+    Square uses HMAC-SHA256 for webhook verification
+    """
+    if not webhook_secret or not signature or not payload:
+        return False
+    
+    try:
+        # Square uses HMAC-SHA256 for webhook verification
+        expected_signature = hmac.new(
+            webhook_secret.encode('utf-8'),
+            payload.encode('utf-8'),
+            hashlib.sha256
+        ).hexdigest()
+        
+        return hmac.compare_digest(signature, expected_signature)
+    except Exception:
+        return False
