@@ -1,18 +1,19 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+// import { useAuth } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarberEarningsOverview } from '@/components/financial/BarberEarningsOverview';
-import { ShopOwnerDashboard } from '@/components/financial/ShopOwnerDashboard';
-import { PayoutHistory } from '@/components/financial/PayoutHistory';
-import { CompensationPlanManager } from '@/components/financial/CompensationPlanManager';
-import { FinancialReports } from '@/components/financial/FinancialReports';
+// import { BarberEarningsOverview } from '@/components/financial/BarberEarningsOverview';
+// import { ShopOwnerDashboard } from '@/components/financial/ShopOwnerDashboard';
+// import { PayoutHistory } from '@/components/financial/PayoutHistory';
+// import { CompensationPlanManager } from '@/components/financial/CompensationPlanManager';
+// import { FinancialReports } from '@/components/financial/FinancialReports';
 import { DollarSign, TrendingUp, Calendar, Settings } from 'lucide-react';
 
 export default function FinancialDashboard() {
-  const { user } = useAuth();
+  // const { user } = useAuth();
+  const user = { role: 'shop_owner' }; // Temporary placeholder
   const [activeTab, setActiveTab] = useState('overview');
 
   // Determine user role and show appropriate views
@@ -76,35 +77,36 @@ export default function FinancialDashboard() {
 
         {isShopOwner && (
           <TabsContent value="shop-overview" className="space-y-4">
-            <ShopOwnerDashboard />
+            <Card className="p-6">
+              <p>Shop Owner Dashboard - Coming Soon</p>
+            </Card>
           </TabsContent>
         )}
 
         <TabsContent value="earnings" className="space-y-4">
-          <BarberEarningsOverview
-            barberId={isBarber ? user?.barber_id : undefined}
-            showAllBarbers={isShopOwner}
-          />
+          <Card className="p-6">
+            <p>Barber Earnings Overview - Coming Soon</p>
+          </Card>
         </TabsContent>
 
         <TabsContent value="payouts" className="space-y-4">
-          <PayoutHistory
-            barberId={isBarber ? user?.barber_id : undefined}
-            showAllPayouts={isShopOwner}
-          />
+          <Card className="p-6">
+            <p>Payout History - Coming Soon</p>
+          </Card>
         </TabsContent>
 
         {isShopOwner && (
           <TabsContent value="compensation" className="space-y-4">
-            <CompensationPlanManager />
+            <Card className="p-6">
+              <p>Compensation Plan Manager - Coming Soon</p>
+            </Card>
           </TabsContent>
         )}
 
         <TabsContent value="reports" className="space-y-4">
-          <FinancialReports
-            barberId={isBarber ? user?.barber_id : undefined}
-            showAllReports={isShopOwner}
-          />
+          <Card className="p-6">
+            <p>Financial Reports - Coming Soon</p>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

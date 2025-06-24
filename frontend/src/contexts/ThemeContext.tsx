@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 
-type Theme = 'light' | 'soft-light' | 'dark'
+type Theme = 'light' | 'soft-light' | 'dark' | 'charcoal'
 
 interface ThemeContextType {
   theme: Theme
@@ -45,12 +45,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         }
       case 'soft-light':
         return {
-          background: '#faf8f5',
-          cardBackground: '#ffffff',
-          textPrimary: '#2d3748',
-          textSecondary: '#718096',
-          border: '#e8dfd7',
-          shadow: '0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.08)'
+          background: '#f5f5f0',
+          cardBackground: '#faf9f6',
+          textPrimary: '#3a3a3a',
+          textSecondary: '#6b6b6b',
+          border: '#c4c4bd',
+          shadow: '0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04)'
         }
       case 'dark':
         return {
@@ -60,6 +60,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           textSecondary: '#d1d5db',
           border: '#4b5563',
           shadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)'
+        }
+      case 'charcoal':
+        return {
+          background: '#1a1a1a',
+          cardBackground: '#242424',
+          textPrimary: '#ffffff',
+          textSecondary: '#a8a8a8',
+          border: '#2a2a2a',
+          shadow: '0 8px 16px -4px rgba(0, 0, 0, 0.5)'
         }
       default:
         return getThemeColors() // fallback to current theme
@@ -132,8 +141,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
       // Update document class for global theme
       // Remove all theme classes first
-      document.documentElement.classList.remove('dark', 'light', 'soft-light')
-      document.body.classList.remove('dark', 'light', 'soft-light', 'bg-slate-900', 'bg-gray-50', 'bg-gray-100', 'bg-white')
+      document.documentElement.classList.remove('dark', 'light', 'soft-light', 'charcoal')
+      document.body.classList.remove('dark', 'light', 'soft-light', 'charcoal', 'bg-slate-900', 'bg-gray-50', 'bg-gray-100', 'bg-white')
 
       // Add transition for smooth theme switching
       document.body.style.transition = 'background-color 0.3s ease, color 0.3s ease'
@@ -158,15 +167,25 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           document.body.classList.add('text-gray-900')
           document.body.classList.remove('text-white')
         }
-      } else { // soft-light
+      } else if (theme === 'soft-light') {
         document.documentElement.classList.add('soft-light')
         document.body.classList.add('soft-light')
-        document.body.style.backgroundColor = '#faf8f5'
+        document.body.style.backgroundColor = '#f5f5f0'
 
         // Only add text color classes if high contrast mode is not enabled
         if (!highContrastMode) {
           document.body.classList.add('text-gray-900')
           document.body.classList.remove('text-white')
+        }
+      } else { // charcoal
+        document.documentElement.classList.add('charcoal')
+        document.body.classList.add('charcoal')
+        document.body.style.backgroundColor = '#1a1a1a'
+
+        // Only add text color classes if high contrast mode is not enabled
+        if (!highContrastMode) {
+          document.body.classList.add('text-white')
+          document.body.classList.remove('text-gray-900')
         }
       }
     }
@@ -236,6 +255,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         case 'soft-light':
           return 'dark'
         case 'dark':
+          return 'charcoal'
+        case 'charcoal':
           return 'light'
         default:
           return 'light'

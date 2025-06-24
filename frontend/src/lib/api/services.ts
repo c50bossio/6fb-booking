@@ -282,7 +282,7 @@ export const servicesService = {
    * Update service
    */
   async updateService(serviceId: number, data: UpdateServiceRequest): Promise<ApiResponse<Service>> {
-    const response = await apiClient.patch<Service>(`/services/${serviceId}`, data)
+    const response = await apiClient.put<Service>(`/services/${serviceId}`, data)
     return { data: response.data }
   },
 

@@ -4,7 +4,15 @@
 import axios from 'axios'
 import { smartStorage } from '../utils/storage'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8003/api/v1'
+
+// Log API configuration in development
+if (process.env.NODE_ENV === 'development') {
+  console.log('API Configuration:', {
+    baseURL: API_BASE_URL,
+    environment: process.env.NEXT_PUBLIC_ENVIRONMENT || 'development'
+  })
+}
 
 // Create axios instance
 const apiClient = axios.create({
@@ -14,7 +22,7 @@ const apiClient = axios.create({
   },
 })
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token and logging
 apiClient.interceptors.request.use(
   (config) => {
     try {
@@ -22,6 +30,19 @@ apiClient.interceptors.request.use(
       const token = smartStorage.getItem('access_token')
       if (token) {
         config.headers.Authorization = `Bearer ${token}`
+      }
+
+      // Add request ID for debugging
+      config.headers['X-Request-ID'] = Date.now().toString()
+
+      // Log outgoing requests in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log('API Request:', {
+          method: config.method?.toUpperCase(),
+          url: config.url,
+          hasAuth: !!token,
+          timestamp: new Date().toISOString()
+        })
       }
     } catch (e) {
       // Handle any unexpected errors
@@ -35,538 +56,128 @@ apiClient.interceptors.request.use(
   }
 )
 
-// Response interceptor for error handling
+// Response interceptor for error handling and retry logic
 apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // DEMO MODE: Return mock data instead of failing
-    if (error.response?.status === 401 || error.response?.status === 403 || !error.response) {
-      console.log('Demo mode: Intercepting API error and returning mock data', { url: error.config?.url, status: error.response?.status })
-
-      // Return mock data based on the request URL
-      const url = error.config?.url || ''
-
-      // Dashboard stats
-      if (url?.includes('/dashboard/appointments/today')) {
-        return {
-          data: {
-            stats: {
-              total: 8,
-              upcoming: 2,
-              completed: 6,
-              cancelled: 0,
-              revenue: 240
-            }
-          }
-        }
-      }
-
-      // Calendar events
-      if (url?.includes('/dashboard/demo/calendar/events') || url?.includes('/calendar/events')) {
-        const today = new Date()
-        const events = []
-
-        // Generate some demo events
-        for (let i = 0; i < 5; i++) {
-          const eventDate = new Date(today)
-          eventDate.setDate(today.getDate() + Math.floor(Math.random() * 7))
-          const hour = 9 + Math.floor(Math.random() * 10)
-
-          events.push({
-            id: i + 1,
-            title: ['Haircut', 'Beard Trim', 'Hair Color', 'Premium Cut'][Math.floor(Math.random() * 4)],
-            start: `${eventDate.toISOString().split('T')[0]}T${hour.toString().padStart(2, '0')}:00:00`,
-            end: `${eventDate.toISOString().split('T')[0]}T${(hour + 1).toString().padStart(2, '0')}:00:00`,
-            extendedProps: {
-              client: ['John Doe', 'Jane Smith', 'Mike Johnson', 'Sarah Williams'][Math.floor(Math.random() * 4)],
-              barber: ['Marcus Johnson', 'Sarah Mitchell', 'Carlos Rodriguez', 'Tyler Brooks'][Math.floor(Math.random() * 4)],
-              price: [45, 35, 65, 85][Math.floor(Math.random() * 4)],
-              status: ['confirmed', 'pending', 'completed'][Math.floor(Math.random() * 3)]
-            }
-          })
-        }
-
-        return {
-          data: {
-            events: events
-          }
-        }
-      }
-
-      // Barbers
-      if (url?.includes('/barbers')) {
-        const barbersData = [
-          {
-            id: 1,
-            first_name: 'John',
-            last_name: 'Doe',
-            email: 'john.doe@example.com',
-            phone: '(555) 123-4567',
-            is_active: true,
-            location_id: 1,
-            commission_rate: 60,
-            sixfb_score: 85,
-            monthly_revenue: 12500,
-            appointments_this_week: 24,
-            created_at: new Date().toISOString()
-          },
-            {
-              id: 2,
-              first_name: 'Jane',
-              last_name: 'Smith',
-              email: 'jane.smith@example.com',
-              phone: '(555) 234-5678',
-              is_active: true,
-              location_id: 1,
-              commission_rate: 65,
-              sixfb_score: 92,
-              monthly_revenue: 15200,
-              appointments_this_week: 28,
-              created_at: new Date().toISOString()
-            },
-            {
-              id: 3,
-              first_name: 'Mike',
-              last_name: 'Johnson',
-              email: 'mike.johnson@example.com',
-              phone: '(555) 345-6789',
-              is_active: true,
-              location_id: 2,
-              commission_rate: 55,
-              sixfb_score: 78,
-              monthly_revenue: 9800,
-              appointments_this_week: 20,
-              created_at: new Date().toISOString()
-            },
-            {
-              id: 4,
-              first_name: 'Sarah',
-              last_name: 'Williams',
-              email: 'sarah.williams@example.com',
-              phone: '(555) 456-7890',
-              is_active: true,
-              location_id: 2,
-              commission_rate: 70,
-              sixfb_score: 95,
-              monthly_revenue: 18500,
-              appointments_this_week: 32,
-              created_at: new Date().toISOString()
-            }
-        ]
-
-        // Return as paginated response to match API structure
-        return {
-          data: {
-            data: barbersData,
-            total: barbersData.length,
-            page: 1,
-            limit: barbersData.length
-          }
-        }
-      }
-
-      // Appointments
-      if (url?.includes('/appointments')) {
-        console.log('Demo mode: Returning mock appointments data for URL:', url)
-        const today = new Date()
-        const appointmentsData = [
-          {
-            id: 1,
-            barber_id: 1,
-            barber_name: 'John Doe',
-            client_id: 1,
-            client_name: 'Michael Brown',
-            client_email: 'michael.brown@example.com',
-            client_phone: '(555) 111-2222',
-            appointment_date: today.toISOString().split('T')[0],
-            appointment_time: '09:00',
-            status: 'completed',
-            service_name: 'Premium Haircut',
-            service_duration: 45,
-            service_price: 45,
-            service_id: 1,
-            tip_amount: 10,
-            total_amount: 55,
-            customer_type: 'regular',
-            source: 'online',
-            created_at: today.toISOString()
-          },
-          {
-            id: 2,
-            barber_id: 2,
-            barber_name: 'Jane Smith',
-            client_id: 2,
-            client_name: 'David Wilson',
-            client_email: 'david.wilson@example.com',
-            client_phone: '(555) 222-3333',
-            appointment_date: today.toISOString().split('T')[0],
-            appointment_time: '10:30',
-            status: 'scheduled',
-            service_name: 'Beard Trim & Shape',
-            service_duration: 30,
-            service_price: 35,
-            service_id: 2,
-            tip_amount: 0,
-            total_amount: 35,
-            customer_type: 'new',
-            source: 'walk-in',
-            created_at: today.toISOString()
-          },
-          {
-            id: 3,
-            barber_id: 3,
-            barber_name: 'Mike Johnson',
-            client_id: 3,
-            client_name: 'Robert Taylor',
-            client_email: 'robert.taylor@example.com',
-            client_phone: '(555) 333-4444',
-            appointment_date: today.toISOString().split('T')[0],
-            appointment_time: '14:00',
-            status: 'scheduled',
-            service_name: 'Haircut & Beard',
-            service_duration: 60,
-            service_price: 65,
-            service_id: 3,
-            tip_amount: 0,
-            total_amount: 65,
-            customer_type: 'regular',
-            source: 'online',
-            created_at: today.toISOString()
-          }
-        ]
-
-        // Return proper paginated structure
-        return {
-          data: {
-            data: appointmentsData,
-            total: appointmentsData.length,
-            page: 1,
-            limit: appointmentsData.length
-          }
-        }
-      }
-
-      // Analytics
-      if (url?.includes('/analytics')) {
-        return {
-          data: {
-            revenue: {
-              daily: 1250,
-              weekly: 8750,
-              monthly: 35000,
-              yearly: 420000
-            },
-            appointments: {
-              daily: 24,
-              weekly: 168,
-              monthly: 720,
-              yearly: 8640
-            },
-            topServices: [
-              { name: 'Premium Haircut', count: 245, revenue: 11025 },
-              { name: 'Beard Trim & Shape', count: 180, revenue: 6300 },
-              { name: 'Haircut & Beard', count: 156, revenue: 10140 }
-            ],
-            barberPerformance: [
-              { name: 'Sarah Williams', revenue: 18500, appointments: 185, rating: 4.9 },
-              { name: 'Jane Smith', revenue: 15200, appointments: 152, rating: 4.8 },
-              { name: 'John Doe', revenue: 12500, appointments: 125, rating: 4.7 },
-              { name: 'Mike Johnson', revenue: 9800, appointments: 98, rating: 4.6 }
-            ]
-          }
-        }
-      }
-
-      // Locations
-      if (url?.includes('/locations')) {
-        return {
-          data: [
-            {
-              id: 1,
-              name: 'Downtown Barbershop',
-              location_code: 'DTN001',
-              address: '123 Main Street',
-              city: 'New York',
-              state: 'NY',
-              zip_code: '10001',
-              phone: '(555) 100-2000',
-              email: 'downtown@6fb.com',
-              franchise_type: 'company_owned',
-              is_active: true,
-              capacity: 6,
-              operating_hours: {
-                monday: '9:00 AM - 7:00 PM',
-                tuesday: '9:00 AM - 7:00 PM',
-                wednesday: '9:00 AM - 7:00 PM',
-                thursday: '9:00 AM - 8:00 PM',
-                friday: '9:00 AM - 8:00 PM',
-                saturday: '8:00 AM - 6:00 PM',
-                sunday: '10:00 AM - 5:00 PM'
-              }
-            },
-            {
-              id: 2,
-              name: 'Uptown Premium Cuts',
-              location_code: 'UPT002',
-              address: '456 Broadway',
-              city: 'New York',
-              state: 'NY',
-              zip_code: '10012',
-              phone: '(555) 200-3000',
-              email: 'uptown@6fb.com',
-              franchise_type: 'franchise',
-              is_active: true,
-              capacity: 4,
-              operating_hours: {
-                monday: '10:00 AM - 8:00 PM',
-                tuesday: '10:00 AM - 8:00 PM',
-                wednesday: '10:00 AM - 8:00 PM',
-                thursday: '10:00 AM - 9:00 PM',
-                friday: '10:00 AM - 9:00 PM',
-                saturday: '9:00 AM - 7:00 PM',
-                sunday: '11:00 AM - 6:00 PM'
-              }
-            }
-          ]
-        }
-      }
-
-      // Clients
-      if (url?.includes('/clients')) {
-        return {
-          data: [
-            {
-              id: 1,
-              first_name: 'Michael',
-              last_name: 'Brown',
-              email: 'michael.brown@example.com',
-              phone: '(555) 111-2222',
-              total_appointments: 24,
-              last_appointment: '2024-01-15',
-              total_spent: 1320,
-              loyalty_points: 132,
-              preferred_barber: 'John Doe'
-            },
-            {
-              id: 2,
-              first_name: 'David',
-              last_name: 'Wilson',
-              email: 'david.wilson@example.com',
-              phone: '(555) 222-3333',
-              total_appointments: 1,
-              last_appointment: '2024-01-20',
-              total_spent: 35,
-              loyalty_points: 3,
-              preferred_barber: 'Jane Smith'
-            },
-            {
-              id: 3,
-              first_name: 'Robert',
-              last_name: 'Taylor',
-              email: 'robert.taylor@example.com',
-              phone: '(555) 333-4444',
-              total_appointments: 48,
-              last_appointment: '2024-01-19',
-              total_spent: 3120,
-              loyalty_points: 312,
-              preferred_barber: 'Mike Johnson'
-            }
-          ]
-        }
-      }
-
-      // Payments
-      if (url?.includes('/payments')) {
-        return {
-          data: {
-            methods: [
-              {
-                id: 1,
-                type: 'card',
-                last4: '4242',
-                brand: 'Visa',
-                exp_month: 12,
-                exp_year: 2025,
-                is_default: true
-              }
-            ],
-            transactions: [
-              {
-                id: 1,
-                amount: 55,
-                status: 'completed',
-                date: '2024-01-20T10:30:00Z',
-                description: 'Premium Haircut - John Doe',
-                payment_method: 'card_4242'
-              },
-              {
-                id: 2,
-                amount: 35,
-                status: 'completed',
-                date: '2024-01-20T14:00:00Z',
-                description: 'Beard Trim & Shape - Jane Smith',
-                payment_method: 'card_4242'
-              }
-            ]
-          }
-        }
-      }
-
-      // Services
-      if (url?.includes('/services')) {
-        return {
-          data: [
-            {
-              id: 1,
-              name: 'Premium Haircut',
-              description: 'Professional haircut with consultation and styling',
-              duration: 45,
-              price: 45,
-              category: 'Haircuts',
-              is_active: true,
-              created_at: new Date().toISOString()
-            },
-            {
-              id: 2,
-              name: 'Beard Trim & Shape',
-              description: 'Professional beard trimming and shaping',
-              duration: 30,
-              price: 35,
-              category: 'Beard Services',
-              is_active: true,
-              created_at: new Date().toISOString()
-            },
-            {
-              id: 3,
-              name: 'Haircut & Beard',
-              description: 'Complete haircut and beard service',
-              duration: 60,
-              price: 65,
-              category: 'Combo Services',
-              is_active: true,
-              created_at: new Date().toISOString()
-            },
-            {
-              id: 4,
-              name: 'Hot Towel Shave',
-              description: 'Traditional hot towel straight razor shave',
-              duration: 45,
-              price: 55,
-              category: 'Shave Services',
-              is_active: true,
-              created_at: new Date().toISOString()
-            },
-            {
-              id: 5,
-              name: 'Hair Wash & Style',
-              description: 'Professional hair wash and styling',
-              duration: 30,
-              price: 25,
-              category: 'Styling',
-              is_active: true,
-              created_at: new Date().toISOString()
-            }
-          ]
-        }
-      }
-
-      // Booking endpoints
-      if (url?.includes('/booking')) {
-        return {
-          data: {
-            services: [
-              { id: 1, name: 'Premium Haircut', duration: 45, price: 45 },
-              { id: 2, name: 'Beard Trim & Shape', duration: 30, price: 35 },
-              { id: 3, name: 'Haircut & Beard', duration: 60, price: 65 }
-            ],
-            availability: {
-              '2024-01-20': ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'],
-              '2024-01-21': ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'],
-              '2024-01-22': ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00']
-            }
-          }
-        }
-      }
-
-      // Compensation plans
-      if (url?.includes('/compensation-plans')) {
-        return {
-          data: [
-            {
-              id: 1,
-              name: 'Standard Commission',
-              description: 'Standard 60/40 split for experienced barbers',
-              payment_type: 'commission',
-              commission_rate: 60,
-              product_commission_rate: 50,
-              tip_handling: 'barber_keeps_all',
-              is_active: true,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            },
-            {
-              id: 2,
-              name: 'Booth Rental',
-              description: 'Weekly booth rental for independent barbers',
-              payment_type: 'booth_rent',
-              booth_rent_amount: 300,
-              booth_rent_frequency: 'weekly',
-              tip_handling: 'barber_keeps_all',
-              is_active: true,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            },
-            {
-              id: 3,
-              name: 'New Barber Plan',
-              description: 'Entry level commission for new barbers',
-              payment_type: 'commission',
-              commission_rate: 45,
-              product_commission_rate: 40,
-              tip_handling: 'barber_keeps_all',
-              is_active: true,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            }
-          ]
-        }
-      }
-
-      // Handle different HTTP methods for demo mode
-      const method = error.config?.method?.toUpperCase()
-
-      // For POST requests (create operations)
-      if (method === 'POST') {
-        if (url?.includes('/compensation-plans')) {
-          return {
-            data: {
-              id: Date.now(),
-              ...error.config.data,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            }
-          }
-        }
-        // Default POST response
-        return { data: { success: true, id: Date.now(), message: 'Demo mode - item created' } }
-      }
-
-      // For PUT/PATCH requests (update operations)
-      if (method === 'PUT' || method === 'PATCH') {
-        return { data: { success: true, message: 'Demo mode - item updated' } }
-      }
-
-      // For DELETE requests
-      if (method === 'DELETE') {
-        return { data: { success: true, message: 'Demo mode - item deleted' } }
-      }
-
-      // For other endpoints, return empty success response
-      return { data: { success: true, message: 'Demo mode - mock response' } }
+  (response) => {
+    // Log successful requests in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('API Success:', response.config.method?.toUpperCase(), response.config.url, response.status)
     }
+    return response
+  },
+  async (error) => {
+    const originalRequest = error.config
+
+    // Log error details
+    console.error('API Error:', {
+      url: originalRequest?.url,
+      method: originalRequest?.method,
+      status: error.response?.status,
+      message: error.response?.data?.message || error.message
+    })
+
+    // Handle 401 Unauthorized - redirect to login
+    if (error.response?.status === 401) {
+      // Clear stored tokens
+      smartStorage.removeItem('access_token')
+      smartStorage.removeItem('user')
+
+      // Redirect to login if not already there
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login'
+      }
+      return Promise.reject(error)
+    }
+
+    // Handle 403 Forbidden
+    if (error.response?.status === 403) {
+      console.error('Access forbidden - insufficient permissions')
+      return Promise.reject(error)
+    }
+
+    // Implement retry logic for network failures
+    if (!error.response && !originalRequest._retry) {
+      originalRequest._retry = true
+
+      // Wait 1 second before retry
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
+      console.log('Retrying failed request:', originalRequest.url)
+      return apiClient(originalRequest)
+    }
+
+    // Handle 500 server errors with retry
+    if (error.response?.status >= 500 && !originalRequest._retry) {
+      originalRequest._retry = true
+
+      // Wait 2 seconds before retry for server errors
+      await new Promise(resolve => setTimeout(resolve, 2000))
+
+      console.log('Retrying server error:', originalRequest.url)
+      return apiClient(originalRequest)
+    }
+
     return Promise.reject(error)
   }
 )
+
+// Utility functions for API health and debugging
+export const apiUtils = {
+  /**
+   * Check API health
+   */
+  async checkHealth(): Promise<{
+    healthy: boolean
+    status?: any
+    error?: string
+  }> {
+    try {
+      const response = await apiClient.get('/health')
+      return {
+        healthy: true,
+        status: response.data
+      }
+    } catch (error: any) {
+      return {
+        healthy: false,
+        error: error.message || 'Health check failed'
+      }
+    }
+  },
+
+  /**
+   * Test authentication
+   */
+  async testAuth(): Promise<{
+    authenticated: boolean
+    user?: any
+    error?: string
+  }> {
+    try {
+      const response = await apiClient.get('/auth/me')
+      return {
+        authenticated: true,
+        user: response.data
+      }
+    } catch (error: any) {
+      return {
+        authenticated: false,
+        error: error.response?.data?.detail || error.message || 'Authentication test failed'
+      }
+    }
+  },
+
+  /**
+   * Get API configuration info
+   */
+  getConfig() {
+    return {
+      baseURL: API_BASE_URL,
+      hasToken: !!smartStorage.getItem('access_token'),
+      environment: process.env.NEXT_PUBLIC_ENVIRONMENT || 'development'
+    }
+  }
+}
 
 export default apiClient
 
@@ -680,7 +291,10 @@ export interface PaginatedResponse<T> {
   data: T[]
   total: number
   page: number
-  limit: number
+  totalPages?: number
+  hasNext?: boolean
+  hasPrev?: boolean
+  limit?: number
 }
 
 export interface ErrorResponse {

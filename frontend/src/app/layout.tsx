@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import { NavigationProvider } from "@/components/NavigationProvider";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 import { StripeProvider } from "@/providers/StripeProvider";
 import ClientOnly from "@/components/ClientOnly";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -71,18 +72,20 @@ export default function RootLayout({
 
         <ErrorBoundary>
           <ThemeProvider>
-            <AuthProvider>
-              <NavigationProvider>
-                <StripeProvider>
-                  <ClientOnly>
-                    {children}
-                  </ClientOnly>
-                </StripeProvider>
-              </NavigationProvider>
-            </AuthProvider>
-            <ExtensionDetector />
-            <ExtensionErrorHandler />
-            {/* <HighContrastEnforcer /> Temporarily disabled due to dark background conflicts */}
+            <NotificationProvider>
+              <AuthProvider>
+                <NavigationProvider>
+                  <StripeProvider>
+                    <ClientOnly>
+                      {children}
+                    </ClientOnly>
+                  </StripeProvider>
+                </NavigationProvider>
+              </AuthProvider>
+              <ExtensionDetector />
+              <ExtensionErrorHandler />
+              {/* <HighContrastEnforcer /> Temporarily disabled due to dark background conflicts */}
+            </NotificationProvider>
           </ThemeProvider>
         </ErrorBoundary>
       </body>

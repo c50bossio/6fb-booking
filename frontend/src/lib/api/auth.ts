@@ -31,70 +31,21 @@ export const authService = {
    * Login user
    */
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    try {
-      const formData = new FormData()
-      formData.append('username', credentials.username)
-      formData.append('password', credentials.password)
+    const formData = new FormData()
+    formData.append('username', credentials.username)
+    formData.append('password', credentials.password)
 
-      const response = await apiClient.post<LoginResponse>('/auth/token', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      })
+    const response = await apiClient.post<LoginResponse>('/auth/token', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
 
-      // Store token and user data with safe storage
-      smartStorage.setItem('access_token', response.data.access_token)
-      smartStorage.setItem('user', JSON.stringify(response.data.user))
+    // Store token and user data with safe storage
+    smartStorage.setItem('access_token', response.data.access_token)
+    smartStorage.setItem('user', JSON.stringify(response.data.user))
 
-      return response.data
-    } catch (error) {
-      // In demo mode, return mock login response
-      console.log('Demo mode: Returning mock login response')
-      const mockResponse: LoginResponse = {
-        access_token: 'demo-token',
-        token_type: 'bearer',
-        user: {
-          id: 1,
-          email: credentials.username,
-          username: credentials.username,
-          first_name: 'Demo',
-          last_name: 'User',
-          full_name: 'Demo User',
-          role: 'super_admin',
-          is_active: true,
-          is_verified: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          permissions: [
-            'view_all',
-            'edit_all',
-            'delete_all',
-            'manage_barbers',
-            'manage_appointments',
-            'manage_clients',
-            'manage_payments',
-            'manage_locations',
-            'view_analytics',
-            'manage_settings',
-            'view_calendar',
-            'create_appointments',
-            'edit_appointments',
-            'delete_appointments',
-            'view_revenue',
-            'manage_compensation',
-            'access_booking',
-            'access_dashboard',
-            'access_payments'
-          ]
-        }
-      }
-
-      // Store mock data with safe storage
-      smartStorage.setItem('access_token', mockResponse.access_token)
-      smartStorage.setItem('user', JSON.stringify(mockResponse.user))
-
-      return mockResponse
-    }
+    return response.data
   },
 
   /**
@@ -123,52 +74,12 @@ export const authService = {
    * Get current user info
    */
   async getCurrentUser(): Promise<User> {
-    try {
-      const response = await apiClient.get<User>('/auth/me')
-      return response.data
-    } catch (error) {
-      // In demo mode, return stored user or mock user
-      const storedUser = this.getStoredUser()
-      if (storedUser) {
-        return storedUser
-      }
+    const response = await apiClient.get<User>('/auth/me')
 
-      // Return default demo user
-      return {
-        id: 1,
-        email: 'demo@6fb.com',
-        username: 'demo@6fb.com',
-        first_name: 'Demo',
-        last_name: 'User',
-        full_name: 'Demo User',
-        role: 'super_admin',
-        is_active: true,
-        is_verified: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        permissions: [
-          'view_all',
-          'edit_all',
-          'delete_all',
-          'manage_barbers',
-          'manage_appointments',
-          'manage_clients',
-          'manage_payments',
-          'manage_locations',
-          'view_analytics',
-          'manage_settings',
-          'view_calendar',
-          'create_appointments',
-          'edit_appointments',
-          'delete_appointments',
-          'view_revenue',
-          'manage_compensation',
-          'access_booking',
-          'access_dashboard',
-          'access_payments'
-        ]
-      }
-    }
+    // Update stored user data with fresh data from server
+    smartStorage.setItem('user', JSON.stringify(response.data))
+
+    return response.data
   },
 
   /**
@@ -179,6 +90,33 @@ export const authService = {
       old_password: oldPassword,
       new_password: newPassword,
     })
+  },
+
+  /**
+   * Refresh access token
+   */
+  async refreshToken(): Promise<LoginResponse> {
+    const response = await apiClient.post<LoginResponse>('/auth/refresh')
+
+    // Update stored token
+    smartStorage.setItem('access_token', response.data.access_token)
+    if (response.data.user) {
+      smartStorage.setItem('user', JSON.stringify(response.data.user))
+    }
+
+    return response.data
+  },
+
+  /**
+   * Verify token validity
+   */
+  async verifyToken(): Promise<boolean> {
+    try {
+      await apiClient.get('/auth/verify')
+      return true
+    } catch (error) {
+      return false
+    }
   },
 
   /**

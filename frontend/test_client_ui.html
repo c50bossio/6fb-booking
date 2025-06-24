@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Management UI Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #20d9d2;
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+
+        .test-section h3 {
+            color: #333;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .status.pass {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status.fail {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .status.pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .test-item {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .instructions {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .navigation-links {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .nav-link {
+            padding: 10px 20px;
+            background-color: #20d9d2;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-link:hover {
+            background-color: #1ac7c0;
+        }
+
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+
+        .checklist li {
+            margin: 8px 0;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .checklist li:hover {
+            background-color: #e9ecef;
+        }
+
+        .checklist input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #20d9d2;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .summary {
+            background-color: #f0f8ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Client Management System - Manual Test Plan</h1>
+            <p>Comprehensive testing checklist for the 6FB Booking client management features</p>
+        </div>
+
+        <div class="instructions">
+            <h3>📋 Testing Instructions</h3>
+            <p><strong>1. Open the application:</strong> Navigate to the clients page using the link below</p>
+            <p><strong>2. Follow the checklist:</strong> Click each item as you complete it</p>
+            <p><strong>3. Report issues:</strong> Note any problems in the results section</p>
+        </div>
+
+        <div class="navigation-links">
+            <a href="http://localhost:3002/dashboard/clients" target="_blank" class="nav-link">🚀 Open Clients Page</a>
+            <a href="http://localhost:8003/docs" target="_blank" class="nav-link">📚 API Documentation</a>
+            <a href="http://localhost:3002" target="_blank" class="nav-link">🏠 Dashboard Home</a>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar"></div>
+        </div>
+        <div id="progressText">Progress: 0% (0 of 35 tests completed)</div>
+
+        <div class="test-section">
+            <h3>1. Initial Load & Display <span class="status pending">PENDING</span></h3>
+            <ul class="checklist">
+                <li><input type="checkbox" id="test1"> Page loads without errors</li>
+                <li><input type="checkbox" id="test2"> Header displays correctly with title "Clients"</li>
+                <li><input type="checkbox" id="test3"> "Add Client" button is visible and properly styled</li>
+                <li><input type="checkbox" id="test4"> Loading spinner appears during data fetch</li>
+                <li><input type="checkbox" id="test5"> Search and filter controls are present</li>
+                <li><input type="checkbox" id="test6"> Theme switching works (if available)</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Search and Filtering <span class="status pending">PENDING</span></h3>
+            <ul class="checklist">
+                <li><input type="checkbox" id="test7"> Search input accepts text and shows search icon</li>
+                <li><input type="checkbox" id="test8"> Customer type dropdown shows all options (All, New, Returning, VIP, At Risk)</li>
+                <li><input type="checkbox" id="test9"> Sort dropdown works (Last Visit, Total Spent, Total Visits, Date Added)</li>
+                <li><input type="checkbox" id="test10"> Filter combinations work together</li>
+                <li><input type="checkbox" id="test11"> Clearing search resets results</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Client Display (Empty State) <span class="status pending">PENDING</span></h3>
+            <ul class="checklist">
+                <li><input type="checkbox" id="test12"> Empty state shows user icon and "No clients found" message</li>
+                <li><input type="checkbox" id="test13"> Message changes appropriately when searching vs no data</li>
+                <li><input type="checkbox" id="test14"> Statistics section is hidden when no data</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Add Client Modal <span class="status pending">PENDING</span></h3>
+            <ul class="checklist">
+                <li><input type="checkbox" id="test15"> "Add Client" button opens modal correctly</li>
+                <li><input type="checkbox" id="test16"> Modal has proper title "Create New Client"</li>
+                <li><input type="checkbox" id="test17"> All form fields are present (name, email, phone, etc.)</li>
+                <li><input type="checkbox" id="test18"> Form validation works (required fields, email format)</li>
+                <li><input type="checkbox" id="test19"> Tags can be added and removed</li>
+                <li><input type="checkbox" id="test20"> Communication preferences checkboxes work</li>
+                <li><input type="checkbox" id="test21"> Cancel button closes modal without saving</li>
+                <li><input type="checkbox" id="test22"> Modal closes when clicking outside (if enabled)</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>5. Form Interaction <span class="status pending">PENDING</span></h3>
+            <ul class="checklist">
+                <li><input type="checkbox" id="test23"> All input fields accept and display text correctly</li>
+                <li><input type="checkbox" id="test24"> Date picker works for date of birth</li>
+                <li><input type="checkbox" id="test25"> Textarea expands properly for notes</li>
+                <li><input type="checkbox" id="test26"> Error messages display for invalid data</li>
+                <li><input type="checkbox" id="test27"> Form submits and shows loading state</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>6. Error Handling <span class="status pending">PENDING</span></h3>
+            <ul class="checklist">
+                <li><input type="checkbox" id="test28"> Network errors show appropriate messages</li>
+                <li><input type="checkbox" id="test29"> Validation errors are highlighted properly</li>
+                <li><input type="checkbox" id="test30"> Loading states prevent double submissions</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>7. Responsive Design <span class="status pending">PENDING</span></h3>
+            <ul class="checklist">
+                <li><input type="checkbox" id="test31"> Page works on mobile view (< 768px width)</li>
+                <li><input type="checkbox" id="test32"> Modal is responsive and scrollable</li>
+                <li><input type="checkbox" id="test33"> Grid layout adapts to screen size</li>
+                <li><input type="checkbox" id="test34"> Touch interactions work on mobile</li>
+                <li><input type="checkbox" id="test35"> Text remains readable at all sizes</li>
+            </ul>
+        </div>
+
+        <div class="summary">
+            <h3>📊 Test Summary</h3>
+            <div id="testSummary">
+                <p>Tests not yet started. Begin testing using the checklist above.</p>
+            </div>
+
+            <h4>🐛 Issues Found:</h4>
+            <textarea id="issuesFound" placeholder="Record any issues, bugs, or improvements needed..." style="width: 100%; height: 100px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit;"></textarea>
+
+            <h4>💡 Recommendations:</h4>
+            <textarea id="recommendations" placeholder="Note any recommendations for improvements..." style="width: 100%; height: 100px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit;"></textarea>
+        </div>
+    </div>
+
+    <script>
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const testSummary = document.getElementById('testSummary');
+        const totalTests = checkboxes.length;
+
+        function updateProgress() {
+            const completedTests = Array.from(checkboxes).filter(cb => cb.checked).length;
+            const percentage = Math.round((completedTests / totalTests) * 100);
+
+            progressBar.style.width = percentage + '%';
+            progressText.textContent = `Progress: ${percentage}% (${completedTests} of ${totalTests} tests completed)`;
+
+            // Update section statuses
+            updateSectionStatuses();
+
+            // Update summary
+            if (completedTests === 0) {
+                testSummary.innerHTML = '<p>Tests not yet started. Begin testing using the checklist above.</p>';
+            } else if (completedTests === totalTests) {
+                testSummary.innerHTML = `
+                    <p><strong>✅ All tests completed!</strong></p>
+                    <p>Total tests: ${totalTests}</p>
+                    <p>Completion rate: 100%</p>
+                    <p>Please review your notes and provide feedback.</p>
+                `;
+            } else {
+                testSummary.innerHTML = `
+                    <p><strong>Testing in progress...</strong></p>
+                    <p>Completed: ${completedTests} / ${totalTests}</p>
+                    <p>Remaining: ${totalTests - completedTests} tests</p>
+                `;
+            }
+        }
+
+        function updateSectionStatuses() {
+            const sections = document.querySelectorAll('.test-section');
+
+            sections.forEach((section, index) => {
+                const sectionCheckboxes = section.querySelectorAll('input[type="checkbox"]');
+                const completedInSection = Array.from(sectionCheckboxes).filter(cb => cb.checked).length;
+                const statusElement = section.querySelector('.status');
+
+                if (completedInSection === 0) {
+                    statusElement.textContent = 'PENDING';
+                    statusElement.className = 'status pending';
+                } else if (completedInSection === sectionCheckboxes.length) {
+                    statusElement.textContent = 'PASSED';
+                    statusElement.className = 'status pass';
+                } else {
+                    statusElement.textContent = `${completedInSection}/${sectionCheckboxes.length}`;
+                    statusElement.className = 'status pending';
+                }
+            });
+        }
+
+        // Add event listeners
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateProgress);
+        });
+
+        // Initialize
+        updateProgress();
+
+        // Add click handlers for list items
+        document.querySelectorAll('.checklist li').forEach(li => {
+            li.addEventListener('click', (e) => {
+                if (e.target.type !== 'checkbox') {
+                    const checkbox = li.querySelector('input[type="checkbox"]');
+                    checkbox.checked = !checkbox.checked;
+                    updateProgress();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
