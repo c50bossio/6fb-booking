@@ -69,10 +69,15 @@ class RateLimiter:
         return max(0, reset_time)
 
 
+# Import settings to get configurable values
+from config.settings import settings
+
 # Global rate limiters with enhanced configurations
 login_rate_limiter = RateLimiter(
-    max_requests=5, window_seconds=300, name="login"
-)  # 5 attempts per 5 minutes
+    max_requests=settings.LOGIN_RATE_LIMIT_ATTEMPTS,
+    window_seconds=settings.LOGIN_RATE_LIMIT_WINDOW,
+    name="login",
+)  # Configurable based on environment
 api_rate_limiter = RateLimiter(
     max_requests=100, window_seconds=60, name="api"
 )  # 100 requests per minute
@@ -218,15 +223,13 @@ def verify_square_webhook(payload: str, signature: str, webhook_secret: str) -> 
     """
     if not webhook_secret or not signature or not payload:
         return False
-    
+
     try:
         # Square uses HMAC-SHA256 for webhook verification
         expected_signature = hmac.new(
-            webhook_secret.encode('utf-8'),
-            payload.encode('utf-8'),
-            hashlib.sha256
+            webhook_secret.encode("utf-8"), payload.encode("utf-8"), hashlib.sha256
         ).hexdigest()
-        
+
         return hmac.compare_digest(signature, expected_signature)
     except Exception:
         return False
