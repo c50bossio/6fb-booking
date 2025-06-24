@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import ModernCalendar from '@/components/ModernCalendar'
 import BookingFlow from '@/components/booking/BookingFlow'
 import { NewAppointmentModal, EditAppointmentModal, DeleteAppointmentModal } from '@/components/modals'
+import EnhancedCreateAppointmentModal from '@/components/modals/EnhancedCreateAppointmentModal'
 import { appointmentsService } from '@/lib/api/appointments'
 import { barbersService } from '@/lib/api/barbers'
 import { servicesService } from '@/lib/api/services'
@@ -14,6 +15,12 @@ import type { Service } from '@/lib/api/services'
 import type { BarberProfile } from '@/lib/api/barbers'
 import { useTheme } from '@/contexts/ThemeContext'
 import ThemeSelector from '@/components/ThemeSelector'
+
+// Import new systems - temporarily commented out
+// import { errorManager, AppointmentError, SystemError } from '@/lib/error-handling'
+// import { loadingManager } from '@/lib/loading/loading-manager'
+// import { availabilityService } from '@/lib/availability'
+// import { appointmentValidator } from '@/lib/validation/appointment-validation'
 
 // Use the CalendarAppointment interface from the integration layer
 
@@ -55,6 +62,9 @@ export default function CalendarPage() {
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [errorType, setErrorType] = useState<'appointment' | 'system' | null>(null)
+  const [optimisticUpdates, setOptimisticUpdates] = useState<Map<string, CalendarAppointment>>(new Map())
+  const [availabilityCache, setAvailabilityCache] = useState<Map<string, boolean>>(new Map())
 
   // Global theme management
   const { theme, getThemeColors } = useTheme()
@@ -81,11 +91,12 @@ export default function CalendarPage() {
     }
   })
 
-  // Fetch appointments from API using the integration layer
+  // Fetch appointments from API using the integration layer with enhanced error handling
   const fetchAppointments = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
+      setErrorType(null)
 
       // Use the calendar-booking integration for enhanced appointment data
       const calendarAppointments = await calendarBookingIntegration.getCalendarAppointments({
@@ -98,6 +109,7 @@ export default function CalendarPage() {
     } catch (err) {
       console.error('Error fetching appointments:', err)
       setError('Failed to load appointments')
+      setErrorType('system')
     } finally {
       setLoading(false)
     }
@@ -189,20 +201,40 @@ export default function CalendarPage() {
       if (appointmentData.id) {
         console.log('Appointment created successfully:', appointmentData)
 
+        // Apply optimistic update
+        const optimisticAppointment = {
+          ...appointmentData,
+          id: appointmentData.id,
+          status: 'confirmed' as const
+        }
+
+        setOptimisticUpdates(prev => {
+          const newMap = new Map(prev)
+          newMap.set(appointmentData.id, optimisticAppointment)
+          return newMap
+        })
+
         // Refresh appointments list to show the new appointment
         await fetchAppointments()
+
+        // Clear optimistic update after successful fetch
+        setOptimisticUpdates(prev => {
+          const newMap = new Map(prev)
+          newMap.delete(appointmentData.id)
+          return newMap
+        })
 
         // Close the modal
         setShowCreateModal(false)
 
         // Clear any errors
         setError(null)
+        setErrorType(null)
 
         return
       }
 
-      // Otherwise, create appointment via the integration layer with enhanced validation
-      // This path is used by BookingFlow
+      // Validate appointment data before creation
       const createData = {
         barberId: appointmentData.barber?.id || appointmentData.barberId,
         serviceId: appointmentData.service?.id || appointmentData.service_id,
@@ -225,19 +257,14 @@ export default function CalendarPage() {
       setShowCreateModal(false)
       setShowBookingFlow(false)
       setError(null)
+      setErrorType(null)
 
       // Show success message (you could add a toast notification here)
       console.log('Appointment created successfully:', response)
     } catch (err: any) {
       console.error('Error creating appointment:', err)
-
-      // Handle conflict suggestions
-      if (err.suggestions?.length > 0) {
-        setError(`Failed to create appointment: ${err.message}. Suggested alternatives available.`)
-        // TODO: Show suggestions in a modal
-      } else {
-        setError('Failed to create appointment: ' + (err.message || 'Unknown error'))
-      }
+      setError('Failed to create appointment: ' + (err.message || 'Unknown error'))
+      setErrorType('system')
     }
   }
 
@@ -347,7 +374,9 @@ export default function CalendarPage() {
       <div className="min-h-screen flex items-center justify-center" style={{
         backgroundColor: colors.background
       }}>
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
+        <div className={`animate-spin rounded-full h-12 w-12 border-b-2 ${
+          theme === 'soft-light' ? 'border-[#7c9885]' : 'border-teal-500'
+        }`}></div>
       </div>
     )
   }
@@ -390,12 +419,18 @@ export default function CalendarPage() {
               <ThemeSelector variant="button" showLabel={false} />
               <button
                 onClick={handleNewAppointment}
-                className="px-6 py-3 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 transition-colors duration-200"
+                className={`px-6 py-3 text-white font-medium rounded-lg transition-colors duration-200 ${
+                  theme === 'soft-light'
+                    ? 'bg-[#7c9885] hover:bg-[#6a8574]'
+                    : theme === 'charcoal'
+                    ? 'bg-gray-600 hover:bg-gray-500'
+                    : 'bg-teal-600 hover:bg-teal-700'
+                }`}
               >
                 New Appointment
               </button>
               <div className="flex rounded-lg p-1" style={{
-                backgroundColor: theme === 'dark' ? '#374151' : '#f3f4f6'
+                backgroundColor: theme === 'dark' ? '#374151' : theme === 'charcoal' ? '#2a2a2a' : '#f3f4f6'
               }}>
                 <button
                   onClick={() => setViewMode('week')}
@@ -424,25 +459,47 @@ export default function CalendarPage() {
           </div>
         </div>
 
-        {/* Error Notification */}
+        {/* Enhanced Error Notification */}
         {error && (
           <div className="mb-6 rounded-lg p-4 border" style={{
-            backgroundColor: theme === 'dark' ? 'rgba(127, 29, 29, 0.3)' : '#fef2f2',
-            borderColor: theme === 'dark' ? '#991b1b' : '#fecaca',
-            color: theme === 'dark' ? '#fca5a5' : '#b91c1c'
+            backgroundColor: errorType === 'appointment'
+              ? (theme === 'dark' ? 'rgba(245, 158, 11, 0.2)' : '#fef3c7')
+              : (theme === 'dark' ? 'rgba(127, 29, 29, 0.3)' : '#fef2f2'),
+            borderColor: errorType === 'appointment'
+              ? (theme === 'dark' ? '#d97706' : '#f59e0b')
+              : (theme === 'dark' ? '#991b1b' : '#fecaca'),
+            color: errorType === 'appointment'
+              ? (theme === 'dark' ? '#fbbf24' : '#92400e')
+              : (theme === 'dark' ? '#fca5a5' : '#b91c1c')
           }}>
             <div className="flex items-center">
               <svg className="w-5 h-5 mr-2 flex-shrink-0" style={{
-                color: theme === 'dark' ? '#f87171' : '#dc2626'
+                color: errorType === 'appointment'
+                  ? (theme === 'dark' ? '#fbbf24' : '#d97706')
+                  : (theme === 'dark' ? '#f87171' : '#dc2626')
               }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d={errorType === 'appointment'
+                    ? "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                    : "M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  } />
               </svg>
-              <p className="text-sm">{error}</p>
+              <div className="flex-1">
+                <p className="text-sm font-medium">
+                  {errorType === 'appointment' ? 'Appointment Issue' : 'System Error'}
+                </p>
+                <p className="text-sm mt-1">{error}</p>
+              </div>
               <button
-                onClick={() => setError(null)}
-                className="ml-auto hover:opacity-75"
+                onClick={() => {
+                  setError(null)
+                  setErrorType(null)
+                }}
+                className="ml-4 hover:opacity-75"
                 style={{
-                  color: theme === 'dark' ? '#f87171' : '#dc2626'
+                  color: errorType === 'appointment'
+                    ? (theme === 'dark' ? '#fbbf24' : '#d97706')
+                    : (theme === 'dark' ? '#f87171' : '#dc2626')
                 }}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -470,7 +527,7 @@ export default function CalendarPage() {
                 }}>{todayAppointments.length}</p>
               </div>
               <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{
-                backgroundColor: theme === 'dark' ? '#4b5563' : '#f3f4f6'
+                backgroundColor: theme === 'dark' ? '#4b5563' : theme === 'charcoal' ? '#2a2a2a' : '#f3f4f6'
               }}>
                 <svg className="w-5 h-5" style={{
                   color: colors.textSecondary
@@ -496,9 +553,11 @@ export default function CalendarPage() {
                 }}>${weekRevenue}</p>
               </div>
               <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{
-                backgroundColor: theme === 'dark' ? 'rgba(13, 148, 136, 0.3)' : '#f0fdfa'
+                backgroundColor: theme === 'dark' ? 'rgba(13, 148, 136, 0.3)' :
+                                theme === 'soft-light' ? 'rgba(124, 152, 133, 0.15)' :
+                                theme === 'charcoal' ? 'rgba(107, 114, 128, 0.2)' : '#f0fdfa'
               }}>
-                <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className={`w-5 h-5 ${theme === 'soft-light' ? 'text-[#7c9885]' : theme === 'charcoal' ? 'text-gray-400' : 'text-teal-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                 </svg>
               </div>
@@ -520,7 +579,7 @@ export default function CalendarPage() {
                 }}>{availableBarbers}</p>
               </div>
               <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{
-                backgroundColor: theme === 'dark' ? '#4b5563' : '#f3f4f6'
+                backgroundColor: theme === 'dark' ? '#4b5563' : theme === 'charcoal' ? '#2a2a2a' : '#f3f4f6'
               }}>
                 <svg className="w-5 h-5" style={{
                   color: colors.textSecondary
@@ -546,7 +605,7 @@ export default function CalendarPage() {
                 }}>98%</p>
               </div>
               <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{
-                backgroundColor: theme === 'dark' ? '#4b5563' : '#f3f4f6'
+                backgroundColor: theme === 'dark' ? '#4b5563' : theme === 'charcoal' ? '#2a2a2a' : '#f3f4f6'
               }}>
                 <svg className="w-5 h-5" style={{
                   color: colors.textSecondary
@@ -592,12 +651,12 @@ export default function CalendarPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {barbers.map((barber) => (
               <div key={barber.id} className="flex items-center justify-between p-4 rounded-lg border" style={{
-                backgroundColor: theme === 'dark' ? '#4b5563' : '#f9fafb',
+                backgroundColor: theme === 'dark' ? '#4b5563' : theme === 'charcoal' ? '#2a2a2a' : '#f9fafb',
                 borderColor: colors.border
               }}>
                 <div className="flex items-center space-x-3">
                   <div className={`w-3 h-3 rounded-full ${
-                    barber.status === 'online' ? 'bg-teal-500' :
+                    barber.status === 'online' ? (theme === 'soft-light' ? 'bg-[#7c9885]' : 'bg-teal-500') :
                     barber.status === 'busy' ? 'bg-gray-400' : 'bg-gray-600'
                   }`}></div>
                   <span className="font-medium" style={{
@@ -635,12 +694,20 @@ export default function CalendarPage() {
         }))}
       />
 
-      <NewAppointmentModal
+      <EnhancedCreateAppointmentModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         selectedDate={selectedSlot?.date}
         selectedTime={selectedSlot?.time}
         onSuccess={handleAppointmentCreated}
+        services={services}
+        barbers={barbers.map(b => ({
+          id: b.id,
+          name: b.name,
+          first_name: b.name.split(' ')[0],
+          last_name: b.name.split(' ')[1] || '',
+          is_active: b.status === 'online'
+        }))}
       />
 
       <EditAppointmentModal

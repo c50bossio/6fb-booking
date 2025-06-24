@@ -1,3 +1,279 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Global Theme-Aware Scrollbars */
+
+/* Light Theme Scrollbars */
+.light ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.light ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.light ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.light ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.light ::-webkit-scrollbar-corner {
+  background: #f1f5f9;
+}
+
+/* Soft Light Theme Scrollbars */
+.soft-light ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.soft-light ::-webkit-scrollbar-track {
+  background: #f5f5f0;
+  border-radius: 4px;
+}
+
+.soft-light ::-webkit-scrollbar-thumb {
+  background: #c4c4bd;
+  border-radius: 4px;
+  border: 1px solid #e8e2d5;
+}
+
+.soft-light ::-webkit-scrollbar-thumb:hover {
+  background: #7c9885;
+}
+
+.soft-light ::-webkit-scrollbar-corner {
+  background: #f5f5f0;
+}
+
+/* Dark Theme Scrollbars */
+.dark ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #1e293b;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+  border: 1px solid #334155;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #0d9488;
+}
+
+.dark ::-webkit-scrollbar-corner {
+  background: #1e293b;
+}
+
+/* Charcoal Theme Scrollbars */
+.charcoal ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.charcoal ::-webkit-scrollbar-track {
+  background: #2a2a2a;
+  border-radius: 4px;
+}
+
+.charcoal ::-webkit-scrollbar-thumb {
+  background: #4a4a4a;
+  border-radius: 4px;
+  border: 1px solid #3a3a3a;
+}
+
+.charcoal ::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+.charcoal ::-webkit-scrollbar-corner {
+  background: #2a2a2a;
+}
+
+/* Firefox Scrollbars */
+.light {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+.soft-light {
+  scrollbar-width: thin;
+  scrollbar-color: #c4c4bd #f5f5f0;
+}
+
+.dark {
+  scrollbar-width: thin;
+  scrollbar-color: #475569 #1e293b;
+}
+
+.charcoal {
+  scrollbar-width: thin;
+  scrollbar-color: #4a4a4a #2a2a2a;
+}
+
+/* Ensure smooth transitions for scrollbars */
+::-webkit-scrollbar-thumb {
+  transition: background-color 0.2s ease;
+}
+
+/* Premium Sidebar Animations */
+@keyframes slideInAccent {
+  from {
+    width: 0;
+    opacity: 0;
+  }
+  to {
+    width: 3px;
+    opacity: 1;
+  }
+}
+
+@keyframes iconScale {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes iconBounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(124, 152, 133, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(124, 152, 133, 0.1);
+  }
+}
+
+/* Premium sidebar menu item styles */
+.sidebar-menu-item {
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-menu-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: linear-gradient(to bottom, var(--accent-color), var(--accent-color-light));
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+}
+
+.sidebar-menu-item:hover::before {
+  width: 3px;
+}
+
+.sidebar-menu-item.active::before {
+  width: 3px;
+  background: var(--accent-color);
+}
+
+.sidebar-menu-item .icon {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 2;
+  position: relative;
+}
+
+.sidebar-menu-item:hover .icon {
+  transform: scale(1.05);
+}
+
+.sidebar-menu-item:active .icon {
+  animation: iconBounce 0.3s ease-in-out;
+}
+
+.sidebar-menu-item .ripple-effect {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  pointer-events: none;
+  animation: ripple 0.6s linear;
+}
+
+/* Glass morphism effect */
+.glass-effect {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Multi-stage hover states */
+.sidebar-menu-item {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-menu-item:hover {
+  transform: translateX(2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-menu-item.active {
+  transform: translateX(2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Notification badge pulse animation */
+.notification-badge {
+  animation: pulseGlow 2s infinite;
+}
+
+/* Stagger animation for sidebar items */
+.sidebar-stagger-1 { animation-delay: 0.1s; }
+.sidebar-stagger-2 { animation-delay: 0.2s; }
+.sidebar-stagger-3 { animation-delay: 0.3s; }
+.sidebar-stagger-4 { animation-delay: 0.4s; }
+.sidebar-stagger-5 { animation-delay: 0.5s; }
+.sidebar-stagger-6 { animation-delay: 0.6s; }
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sidebar-fade-in {
+  animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}

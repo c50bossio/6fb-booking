@@ -1,18 +1,18 @@
 'use client'
 
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "../globals.css";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import DemoModernSidebar from "@/components/DemoModernSidebar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
 });
 
@@ -23,7 +23,7 @@ interface AppLayoutProps {
 export default function AppLayout({ children }: AppLayoutProps) {
   return (
     <ThemeProvider>
-      <div className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}>
+      <div className={`${inter.variable} ${jetbrainsMono.variable} antialiased min-h-screen`}>
         <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
           <DemoModernSidebar />
           <main className="flex-1 transition-all duration-300 overflow-y-auto">
