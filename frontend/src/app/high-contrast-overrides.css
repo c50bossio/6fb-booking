@@ -1,0 +1,340 @@
+/* High Contrast Text Overrides - Force dark text colors everywhere */
+
+/* 1. CSS Variables Override - Force dark color scheme */
+:root {
+  --text-primary: #000000 !important;
+  --text-secondary: #1a1a1a !important;
+  --text-muted: #2d2d2d !important;
+  --text-light: #333333 !important;
+  --text-gray: #404040 !important;
+  --foreground: #000000 !important;
+  --muted-foreground: #1a1a1a !important;
+}
+
+/* 2. Universal Text Selectors with Maximum Specificity */
+*,
+*::before,
+*::after,
+html *,
+body *,
+#__next *,
+.app *,
+[class*="text-"] {
+  color: #000000 !important;
+  color: var(--text-primary) !important;
+}
+
+/* 3. Override ALL Tailwind Text Color Classes */
+[class*="text-gray-"],
+[class*="text-slate-"],
+[class*="text-zinc-"],
+[class*="text-neutral-"],
+[class*="text-stone-"] {
+  color: #000000 !important;
+}
+
+/* Specific gray shade overrides */
+.text-gray-100, .text-gray-200, .text-gray-300,
+.text-gray-400, .text-gray-500, .text-gray-600 {
+  color: #1a1a1a !important;
+}
+
+.text-slate-100, .text-slate-200, .text-slate-300,
+.text-slate-400, .text-slate-500, .text-slate-600 {
+  color: #1a1a1a !important;
+}
+
+.text-zinc-100, .text-zinc-200, .text-zinc-300,
+.text-zinc-400, .text-zinc-500, .text-zinc-600 {
+  color: #1a1a1a !important;
+}
+
+.text-neutral-100, .text-neutral-200, .text-neutral-300,
+.text-neutral-400, .text-neutral-500, .text-neutral-600 {
+  color: #1a1a1a !important;
+}
+
+/* 4. Force High Contrast on Common Text Elements */
+p, span, div, section, article, aside, header, footer,
+h1, h2, h3, h4, h5, h6,
+a, button, input, textarea, select,
+label, legend, caption, figcaption,
+li, dt, dd, td, th,
+blockquote, q, cite, code, pre,
+small, strong, em, b, i, u, s, mark {
+  color: #000000 !important;
+  opacity: 1 !important;
+}
+
+/* 5. Landing Page Specific Selectors */
+
+/* Hero Section */
+.hero-section *,
+[class*="hero"] *,
+[id*="hero"] * {
+  color: #000000 !important;
+}
+
+/* Features Section */
+.features-section *,
+[class*="feature"] *,
+[id*="feature"] *,
+.feature-card *,
+.feature-item *,
+.feature-title,
+.feature-description {
+  color: #000000 !important;
+}
+
+/* Pricing Section */
+.pricing-section *,
+[class*="pricing"] *,
+[id*="pricing"] *,
+.pricing-card *,
+.pricing-tier *,
+.pricing-feature *,
+.price-tag *,
+.price-description {
+  color: #000000 !important;
+}
+
+/* How It Works Section */
+.how-it-works-section *,
+[class*="how-it-works"] *,
+[id*="how-it-works"] *,
+.step-card *,
+.step-number,
+.step-title,
+.step-description {
+  color: #000000 !important;
+}
+
+/* Testimonials Section */
+.testimonials-section *,
+[class*="testimonial"] *,
+[id*="testimonial"] *,
+.testimonial-card *,
+.testimonial-text,
+.testimonial-author {
+  color: #000000 !important;
+}
+
+/* FAQ Section */
+.faq-section *,
+[class*="faq"] *,
+[id*="faq"] *,
+.faq-item *,
+.faq-question,
+.faq-answer {
+  color: #000000 !important;
+}
+
+/* CTA Section */
+.cta-section *,
+[class*="cta"] *,
+[id*="cta"] *,
+.call-to-action * {
+  color: #000000 !important;
+}
+
+/* 6. Override Muted and Secondary Text Classes */
+.text-muted,
+.text-muted-foreground,
+.text-secondary,
+[class*="muted"],
+[class*="secondary"] {
+  color: #1a1a1a !important;
+  opacity: 1 !important;
+}
+
+/* 7. Override Opacity Classes */
+[class*="opacity-"],
+.opacity-50,
+.opacity-60,
+.opacity-70,
+.opacity-80,
+.opacity-90 {
+  opacity: 1 !important;
+}
+
+/* 8. Force Contrast on Pseudo Elements */
+*::placeholder {
+  color: #404040 !important;
+  opacity: 1 !important;
+}
+
+*::selection {
+  background-color: #0066cc !important;
+  color: #ffffff !important;
+}
+
+/* 9. Override Dark Mode Classes */
+.dark *,
+[data-theme="dark"] *,
+.dark-mode * {
+  color: #000000 !important;
+}
+
+/* 10. Nuclear Option - Ultra High Specificity */
+html body * {
+  color: #000000 !important;
+}
+
+html body [class*="text-gray"] {
+  color: #000000 !important;
+}
+
+html body [class*="text-slate"] {
+  color: #000000 !important;
+}
+
+html body [class*="text-zinc"] {
+  color: #000000 !important;
+}
+
+html body [class*="text-neutral"] {
+  color: #000000 !important;
+}
+
+/* 11. Component-Specific Overrides */
+
+/* Cards and Containers */
+.card *,
+[class*="card"] *,
+.container *,
+.section * {
+  color: #000000 !important;
+}
+
+/* Descriptions and Subtitles */
+.description,
+.subtitle,
+.subheading,
+[class*="description"],
+[class*="subtitle"] {
+  color: #1a1a1a !important;
+}
+
+/* 12. Framework-Specific Overrides */
+
+/* Next.js specific */
+#__next * {
+  color: inherit !important;
+}
+
+/* Radix UI components */
+[data-radix-collection-item] *,
+[role="dialog"] *,
+[role="menu"] *,
+[role="tooltip"] * {
+  color: #000000 !important;
+}
+
+/* 13. Form Elements */
+input, textarea, select {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #404040 !important;
+}
+
+/* 14. Link States */
+a,
+a:link,
+a:visited,
+a:hover,
+a:active,
+a:focus {
+  color: #0066cc !important;
+  text-decoration: underline !important;
+}
+
+/* Navigation links might need different treatment */
+nav a,
+.nav a,
+.navigation a {
+  color: #000000 !important;
+  text-decoration: none !important;
+}
+
+nav a:hover,
+.nav a:hover,
+.navigation a:hover {
+  color: #0066cc !important;
+}
+
+/* 15. Button Text */
+button,
+.button,
+[role="button"],
+[type="button"],
+[type="submit"],
+[class*="btn"] {
+  color: #000000 !important;
+}
+
+/* White buttons need dark text */
+.btn-white,
+.button-white,
+[class*="white"] button {
+  color: #000000 !important;
+}
+
+/* 16. Ensure Readable Contrast Against Backgrounds */
+.bg-white *,
+.bg-gray-50 *,
+.bg-gray-100 *,
+[class*="bg-white"] *,
+[class*="bg-gray-50"] *,
+[class*="bg-gray-100"] * {
+  color: #000000 !important;
+}
+
+/* 17. Override Inline Styles */
+[style*="color"] {
+  color: #000000 !important;
+}
+
+/* 18. Media Query for Print */
+@media print {
+  * {
+    color: #000000 !important;
+  }
+}
+
+/* 19. Accessibility Focus States */
+*:focus,
+*:focus-visible,
+*:focus-within {
+  outline: 2px solid #0066cc !important;
+  outline-offset: 2px !important;
+}
+
+/* 20. Final Nuclear Override - Maximum Specificity */
+html body #__next main * {
+  color: #000000 !important;
+}
+
+/* Special handling for elements that should remain light (on dark backgrounds) */
+.bg-black .text-white,
+.bg-gray-900 .text-white,
+.bg-gray-800 .text-white,
+.dark-background .light-text {
+  color: #ffffff !important;
+}
+
+/* Ensure code blocks remain readable */
+code, pre {
+  color: #000000 !important;
+  background-color: #f5f5f5 !important;
+}
+
+/* Tooltips might need special handling */
+.tooltip,
+[role="tooltip"] {
+  color: #ffffff !important;
+  background-color: #000000 !important;
+}

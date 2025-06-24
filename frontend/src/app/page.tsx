@@ -180,92 +180,163 @@ export default function LandingPage() {
   return (
     <>
       <style jsx>{`
-        /* High contrast text overrides to prevent light gray issues - v2 */
-        .stats-text {
-          color: #000000 !important;
+        /* NUCLEAR OPTION: Maximum contrast text overrides - v3 */
+        :root {
+          --force-text-dark: #000000 !important;
+          --force-text-gray-900: #111827 !important;
+          --force-text-gray-800: #1F2937 !important;
+          --force-text-gray-700: #374151 !important;
+          --force-text-light: #E5E7EB !important;
+          --force-text-lighter: #F3F4F6 !important;
+        }
+
+        /* Override ALL text colors with maximum specificity */
+        * {
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Stats section - MAXIMUM BLACK */
+        .stats-text,
+        div[class*="stats"] > div:last-child,
+        div[class*="text-sm"][class*="font-medium"] {
+          color: var(--force-text-dark) !important;
           font-weight: 600 !important;
+          opacity: 1 !important;
         }
-        .main-description {
-          color: #111827 !important;
+
+        /* Main description - DARK GRAY */
+        .main-description,
+        p[class*="text-xl"],
+        p[class*="leading-relaxed"] {
+          color: var(--force-text-gray-900) !important;
           font-weight: 500 !important;
+          opacity: 1 !important;
         }
-        /* Trust badge text */
-        .trust-badge-text {
-          color: #000000 !important;
+
+        /* Trust badge - MAXIMUM BLACK */
+        .trust-badge-text,
+        span[class*="text-sm"][class*="font-medium"] {
+          color: var(--force-text-dark) !important;
           font-weight: 600 !important;
+          opacity: 1 !important;
         }
-        /* Features section descriptions */
-        .features-description {
-          color: #111827 !important;
+
+        /* Features section - DARK GRAY */
+        .features-description,
+        .feature-description,
+        p[class*="text-base"],
+        div[class*="feature"] p {
+          color: var(--force-text-gray-900) !important;
           font-weight: 500 !important;
+          opacity: 1 !important;
         }
-        .feature-description {
-          color: #111827 !important;
+
+        /* Pricing section - MAXIMUM CONTRAST */
+        .pricing-description,
+        .plan-description,
+        .plan-period,
+        .feature-item,
+        li span,
+        div[class*="pricing"] p,
+        div[class*="plan"] p {
+          color: var(--force-text-gray-900) !important;
           font-weight: 500 !important;
+          opacity: 1 !important;
         }
-        /* Pricing section text */
-        .pricing-description {
-          color: #000000 !important;
+
+        /* How it works - DARK GRAY */
+        .how-it-works-description,
+        .step-description,
+        div[class*="step"] p,
+        section p[class*="text-base"] {
+          color: var(--force-text-gray-900) !important;
           font-weight: 500 !important;
+          opacity: 1 !important;
         }
-        .plan-description {
-          color: #000000 !important;
+
+        /* Contact text - DARK GRAY */
+        .contact-text,
+        a[class*="text-gray"],
+        p a {
+          color: var(--force-text-gray-900) !important;
           font-weight: 500 !important;
+          opacity: 1 !important;
         }
-        .plan-period {
-          color: #111827 !important;
+
+        /* Header navigation - FORCED DARK */
+        .header-nav-link,
+        header a:not([class*="premium"]),
+        nav a {
+          color: var(--force-text-gray-900) !important;
           font-weight: 600 !important;
+          opacity: 1 !important;
         }
-        .feature-item {
-          color: #111827 !important;
-          font-weight: 500 !important;
+        .header-nav-link:hover,
+        header a:not([class*="premium"]):hover {
+          color: var(--force-text-dark) !important;
+          opacity: 1 !important;
         }
-        /* How it works section */
-        .how-it-works-description {
-          color: #111827 !important;
-          font-weight: 500 !important;
-        }
-        .step-description {
-          color: #111827 !important;
-          font-weight: 500 !important;
-        }
-        /* Contact text */
-        .contact-text {
-          color: #111827 !important;
-          font-weight: 500 !important;
-        }
-        /* Header navigation text fixes */
-        .header-nav-link {
-          color: #111827 !important;
-          font-weight: 600 !important;
-        }
-        .header-nav-link:hover {
-          color: #000000 !important;
-        }
-        /* Footer text fixes */
-        .footer-text {
-          color: #D1D5DB !important;
-          font-weight: 500 !important;
-        }
-        .footer-link {
-          color: #E5E7EB !important;
-          font-weight: 500 !important;
-        }
-        .footer-link:hover {
-          color: #FFFFFF !important;
-        }
-        /* Brand tagline fix */
+
+        /* Footer - LIGHT ON DARK */
+        .footer-text,
+        .footer-link,
+        footer p,
+        footer a:not(h3),
         .brand-tagline {
-          color: #D1D5DB !important;
+          color: var(--force-text-light) !important;
           font-weight: 500 !important;
+          opacity: 1 !important;
         }
-        /* Additional footer content fixes */
+        .footer-link:hover,
+        footer a:not(h3):hover {
+          color: var(--force-text-lighter) !important;
+          opacity: 1 !important;
+        }
         .footer-copyright {
-          color: #D1D5DB !important;
+          color: var(--force-text-light) !important;
           font-weight: 500 !important;
+          opacity: 1 !important;
+        }
+
+        /* GLOBAL OVERRIDES FOR ANY MISSED ELEMENTS */
+        body .text-gray-600,
+        body .text-gray-500,
+        body .text-gray-400,
+        body .text-slate-600,
+        body .text-slate-500,
+        body .text-slate-400 {
+          color: var(--force-text-gray-900) !important;
+        }
+
+        /* Force contrast on white backgrounds */
+        .bg-white p:not([class*="text-white"]),
+        .bg-gray-50 p:not([class*="text-white"]),
+        section:not([class*="bg-slate"]):not([class*="bg-gray-900"]) p {
+          color: var(--force-text-gray-900) !important;
+          min-color-contrast: 7;
+        }
+
+        /* Force white text on dark backgrounds */
+        .bg-slate-800 *,
+        .bg-slate-900 *,
+        .bg-gray-900 *,
+        [class*="from-slate-900"] *,
+        [class*="from-slate-800"] * {
+          color: white !important;
+        }
+
+        /* Ensure headings are always visible */
+        h1, h2, h3, h4, h5, h6 {
+          opacity: 1 !important;
+        }
+
+        /* Remove any transparency from text containers */
+        p, span, div, li {
+          opacity: 1 !important;
         }
       `}</style>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50" style={{['--text-primary' as any]: '#000000', ['--text-secondary' as any]: '#111827'}}>
       {/* Demo Banner */}
       <div className="bg-gradient-to-r from-slate-700 to-slate-800 text-white py-3">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -295,11 +366,11 @@ export default function LandingPage() {
               <Link
                 href="/app"
                 className="header-nav-link transition-colors"
-                style={{color: '#111827 !important', fontWeight: '600 !important'}}
+                style={{color: '#111827', fontWeight: '600', opacity: 1}}
               >
                 Live Demo
               </Link>
-              <Link href="/login" className="header-nav-link transition-colors" style={{color: '#111827 !important', fontWeight: '600 !important'}}>
+              <Link href="/login" className="header-nav-link transition-colors" style={{color: '#111827', fontWeight: '600', opacity: 1}}>
                 Sign In
               </Link>
               <Link
@@ -320,7 +391,7 @@ export default function LandingPage() {
           {/* Trust Badge */}
           <div className="inline-flex items-center bg-white/90 backdrop-blur-sm border border-slate-200/50 rounded-full px-6 py-3 mb-8 shadow-lg hover:shadow-xl transition-all duration-300">
             <ShieldCheckIcon className="h-4 w-4 text-emerald-500 mr-2" />
-            <span className="text-sm font-medium trust-badge-text">Trusted by 1,200+ barbers nationwide</span>
+            <span className="text-sm font-medium trust-badge-text" style={{color: '#000000', fontWeight: '600'}}>Trusted by 1,200+ barbers nationwide</span>
             <div className="ml-2 w-2 h-2 bg-slate-500 rounded-full animate-pulse"></div>
           </div>
 
@@ -333,9 +404,9 @@ export default function LandingPage() {
             </span>
           </h1>
 
-          <p className="text-xl md:text-2xl mb-12 max-w-4xl mx-auto leading-relaxed main-description">
+          <p className="text-xl md:text-2xl mb-12 max-w-4xl mx-auto leading-relaxed main-description" style={{color: '#111827', fontWeight: '500'}}>
             Automate payouts, track earnings, and manage appointments with the most trusted platform in the industry.
-            <span className="font-semibold" style={{color: '#111827'}}> Join the barbers earning $100K+</span>
+            <span className="font-semibold" style={{color: '#000000', fontWeight: '700'}}> Join the barbers earning $100K+</span>
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-16">
@@ -359,19 +430,19 @@ export default function LandingPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 text-center">
               <div className="text-3xl font-bold text-slate-700 mb-2">$2.5M+</div>
-              <div className="text-sm font-medium stats-text">Paid Out Monthly</div>
+              <div className="text-sm font-medium stats-text" style={{color: '#000000', fontWeight: '600'}}>Paid Out Monthly</div>
             </div>
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 text-center">
               <div className="text-3xl font-bold text-slate-700 mb-2">45K+</div>
-              <div className="text-sm font-medium stats-text">Appointments Tracked</div>
+              <div className="text-sm font-medium stats-text" style={{color: '#000000', fontWeight: '600'}}>Appointments Tracked</div>
             </div>
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 text-center">
               <div className="text-3xl font-bold text-slate-700 mb-2">98%</div>
-              <div className="text-sm font-medium stats-text">On-Time Payouts</div>
+              <div className="text-sm font-medium stats-text" style={{color: '#000000', fontWeight: '600'}}>On-Time Payouts</div>
             </div>
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 text-center">
               <div className="text-3xl font-bold text-slate-700 mb-2">30 sec</div>
-              <div className="text-sm font-medium stats-text">Instant Transfers</div>
+              <div className="text-sm font-medium stats-text" style={{color: '#000000', fontWeight: '600'}}>Instant Transfers</div>
             </div>
           </div>
 
@@ -421,7 +492,7 @@ export default function LandingPage() {
               Built for Barbers Who
               <span className="text-gradient"> Mean Business</span>
             </h2>
-            <p className="text-xl max-w-3xl mx-auto leading-relaxed features-description">
+            <p className="text-xl max-w-3xl mx-auto leading-relaxed features-description" style={{color: '#111827', fontWeight: '500'}}>
               Every feature is designed to help you save time, make more money, and build the six-figure career you deserve.
             </p>
           </div>
@@ -440,7 +511,7 @@ export default function LandingPage() {
                   {feature.name}
                 </h3>
 
-                <p className="feature-description" style={{color: '#111827 !important', fontWeight: '500 !important'}}>
+                <p className="feature-description" style={{color: '#111827', fontWeight: '500', opacity: 1}}>
                   {feature.description}
                 </p>
               </div>
@@ -498,23 +569,23 @@ export default function LandingPage() {
           {/* Success Metrics */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             <div className="text-center glass-card-enhanced p-6 hover-lift">
-              <div className="text-4xl font-bold text-white mb-2">$2.5M+</div>
-              <div className="text-white font-medium">Paid Out Monthly</div>
+              <div className="text-4xl font-bold mb-2" style={{color: 'white'}}>$2.5M+</div>
+              <div className="font-medium" style={{color: 'white', fontWeight: '500'}}>Paid Out Monthly</div>
               <div className="mt-3 w-10 h-1 bg-gradient-to-r from-teal-500 to-teal-600 rounded-full mx-auto"></div>
             </div>
             <div className="text-center glass-card-enhanced p-6 hover-lift">
-              <div className="text-4xl font-bold text-white mb-2">45K+</div>
-              <div className="text-white font-medium">Appointments Tracked</div>
+              <div className="text-4xl font-bold mb-2" style={{color: 'white'}}>45K+</div>
+              <div className="font-medium" style={{color: 'white', fontWeight: '500'}}>Appointments Tracked</div>
               <div className="mt-3 w-10 h-1 bg-gradient-to-r from-slate-400 to-slate-500 rounded-full mx-auto"></div>
             </div>
             <div className="text-center glass-card-enhanced p-6 hover-lift">
-              <div className="text-4xl font-bold text-white mb-2">98%</div>
-              <div className="text-white font-medium">On-Time Payouts</div>
+              <div className="text-4xl font-bold mb-2" style={{color: 'white'}}>98%</div>
+              <div className="font-medium" style={{color: 'white', fontWeight: '500'}}>On-Time Payouts</div>
               <div className="mt-3 w-10 h-1 bg-gradient-to-r from-teal-500 to-teal-600 rounded-full mx-auto"></div>
             </div>
             <div className="text-center glass-card-enhanced p-6 hover-lift">
-              <div className="text-4xl font-bold text-white mb-2">30 sec</div>
-              <div className="text-white font-medium">Instant Transfers</div>
+              <div className="text-4xl font-bold mb-2" style={{color: 'white'}}>30 sec</div>
+              <div className="font-medium" style={{color: 'white', fontWeight: '500'}}>Instant Transfers</div>
               <div className="mt-3 w-10 h-1 bg-gradient-to-r from-slate-400 to-slate-500 rounded-full mx-auto"></div>
             </div>
           </div>
@@ -528,7 +599,7 @@ export default function LandingPage() {
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Choose Your Plan
             </h2>
-            <p className="text-xl pricing-description">
+            <p className="text-xl pricing-description" style={{color: '#000000', fontWeight: '500'}}>
               Start with a 14-day free trial. No credit card required.
             </p>
           </div>
@@ -551,10 +622,10 @@ export default function LandingPage() {
 
                 <div className="text-center mb-8">
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                  <p className="mb-4 plan-description">{plan.description}</p>
+                  <p className="mb-4 plan-description" style={{color: '#000000', fontWeight: '500'}}>{plan.description}</p>
                   <div className="flex items-baseline justify-center">
                     <span className="text-4xl font-bold text-gray-900">{plan.price}</span>
-                    <span className="ml-1 plan-period">{plan.period}</span>
+                    <span className="ml-1 plan-period" style={{color: '#111827', fontWeight: '600'}}>{plan.period}</span>
                   </div>
                 </div>
 
@@ -562,7 +633,7 @@ export default function LandingPage() {
                   {plan.features.map((feature, index) => (
                     <li key={index} className="flex items-start">
                       <CheckIcon className="h-5 w-5 text-teal-600 dark:text-teal-400 mt-1 mr-3 flex-shrink-0" />
-                      <span className="feature-item" style={{color: '#111827 !important', fontWeight: '500 !important'}}>{feature}</span>
+                      <span className="feature-item" style={{color: '#111827', fontWeight: '500', opacity: 1}}>{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -582,8 +653,8 @@ export default function LandingPage() {
           </div>
 
           <div className="text-center mt-12">
-            <p className="contact-text">
-              Questions? <Link href="#contact" className="header-nav-link hover:underline">Contact our sales team</Link>
+            <p className="contact-text" style={{color: '#111827', fontWeight: '500'}}>
+              Questions? <Link href="#contact" className="header-nav-link hover:underline" style={{color: '#000000', fontWeight: '600'}}>Contact our sales team</Link>
             </p>
           </div>
         </div>
@@ -596,7 +667,7 @@ export default function LandingPage() {
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Simple Setup, Powerful Results
             </h2>
-            <p className="text-xl max-w-2xl mx-auto how-it-works-description">
+            <p className="text-xl max-w-2xl mx-auto how-it-works-description" style={{color: '#111827', fontWeight: '500'}}>
               Get started in minutes and see immediate impact on your business
             </p>
           </div>
@@ -607,21 +678,21 @@ export default function LandingPage() {
                 1
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Create Your Account</h3>
-              <p className="step-description" style={{color: '#111827 !important', fontWeight: '500 !important'}}>Sign up and connect your bank account with Stripe Express in under 5 minutes</p>
+              <p className="step-description" style={{color: '#111827', fontWeight: '500', opacity: 1}}>Sign up and connect your bank account with Stripe Express in under 5 minutes</p>
             </div>
             <div className="text-center">
               <div className="bg-slate-700 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-lg font-bold">
                 2
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Set Your Rates</h3>
-              <p className="step-description" style={{color: '#111827 !important', fontWeight: '500 !important'}}>Choose your compensation model and customize rates for different services and clients</p>
+              <p className="step-description" style={{color: '#111827', fontWeight: '500', opacity: 1}}>Choose your compensation model and customize rates for different services and clients</p>
             </div>
             <div className="text-center">
               <div className="bg-slate-700 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-lg font-bold">
                 3
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Start Earning</h3>
-              <p className="step-description" style={{color: '#111827 !important', fontWeight: '500 !important'}}>Track appointments, see real-time earnings, and get paid automatically on your schedule</p>
+              <p className="step-description" style={{color: '#111827', fontWeight: '500', opacity: 1}}>Track appointments, see real-time earnings, and get paid automatically on your schedule</p>
             </div>
           </div>
         </div>
@@ -671,7 +742,7 @@ export default function LandingPage() {
                 <CurrencyDollarIcon className="h-6 w-6 text-teal-500" />
                 <span className="ml-2 text-xl font-bold text-white">6FB Payouts</span>
               </div>
-              <p className="brand-tagline">
+              <p className="brand-tagline" style={{color: '#D1D5DB', fontWeight: '500'}}>
                 Automated payout solutions for modern barbers.
               </p>
             </div>
@@ -679,33 +750,33 @@ export default function LandingPage() {
             <div>
               <h3 className="text-white font-semibold mb-4">Product</h3>
               <ul className="space-y-2">
-                <li><Link href="#features" className="footer-link transition-colors">Features</Link></li>
-                <li><Link href="#pricing" className="footer-link transition-colors">Pricing</Link></li>
-                <li><Link href="/app" className="footer-link transition-colors">Live Demo</Link></li>
+                <li><Link href="#features" className="footer-link transition-colors" style={{color: '#E5E7EB', fontWeight: '500'}}>Features</Link></li>
+                <li><Link href="#pricing" className="footer-link transition-colors" style={{color: '#E5E7EB', fontWeight: '500'}}>Pricing</Link></li>
+                <li><Link href="/app" className="footer-link transition-colors" style={{color: '#E5E7EB', fontWeight: '500'}}>Live Demo</Link></li>
               </ul>
             </div>
 
             <div>
               <h3 className="text-white font-semibold mb-4">Company</h3>
               <ul className="space-y-2">
-                <li><Link href="/about" className="footer-link transition-colors">About</Link></li>
-                <li><Link href="/contact" className="footer-link transition-colors">Contact</Link></li>
-                <li><Link href="/support" className="footer-link transition-colors">Support</Link></li>
+                <li><Link href="/about" className="footer-link transition-colors" style={{color: '#E5E7EB', fontWeight: '500'}}>About</Link></li>
+                <li><Link href="/contact" className="footer-link transition-colors" style={{color: '#E5E7EB', fontWeight: '500'}}>Contact</Link></li>
+                <li><Link href="/support" className="footer-link transition-colors" style={{color: '#E5E7EB', fontWeight: '500'}}>Support</Link></li>
               </ul>
             </div>
 
             <div>
               <h3 className="text-white font-semibold mb-4">Legal</h3>
               <ul className="space-y-2">
-                <li><Link href="/privacy" className="footer-link transition-colors">Privacy</Link></li>
-                <li><Link href="/terms" className="footer-link transition-colors">Terms</Link></li>
-                <li><Link href="/security" className="footer-link transition-colors">Security</Link></li>
+                <li><Link href="/privacy" className="footer-link transition-colors" style={{color: '#E5E7EB', fontWeight: '500'}}>Privacy</Link></li>
+                <li><Link href="/terms" className="footer-link transition-colors" style={{color: '#E5E7EB', fontWeight: '500'}}>Terms</Link></li>
+                <li><Link href="/security" className="footer-link transition-colors" style={{color: '#E5E7EB', fontWeight: '500'}}>Security</Link></li>
               </ul>
             </div>
           </div>
 
           <div className="border-t border-gray-800 mt-12 pt-8 text-center">
-            <p className="footer-copyright">&copy; 2024 6FB Payouts. All rights reserved.</p>
+            <p className="footer-copyright" style={{color: '#D1D5DB', fontWeight: '500'}}>&copy; 2024 6FB Payouts. All rights reserved.</p>
           </div>
         </div>
       </footer>
