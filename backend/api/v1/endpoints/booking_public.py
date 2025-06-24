@@ -236,6 +236,48 @@ def get_barber_availability_for_date(
 
 
 # API Endpoints
+@router.get("/barbers", response_model=List[BarberPublicProfile])
+async def get_all_barbers(
+    location_id: Optional[int] = Query(None, description="Filter by location ID"),
+    db: Session = Depends(get_db)
+):
+    """Get all active barbers or filter by location"""
+    
+    # Build query with ratings
+    query = (
+        db.query(
+            Barber,
+            func.avg(Review.overall_rating).label("avg_rating"),
+            func.count(Review.id).label("review_count"),
+        )
+        .outerjoin(Review, Review.barber_id == Barber.id)
+        .filter(Barber.is_active == True)
+    )
+    
+    # Apply location filter if provided
+    if location_id:
+        query = query.filter(Barber.location_id == location_id)
+        
+    barbers = query.group_by(Barber.id).all()
+
+    result = []
+    for barber, avg_rating, review_count in barbers:
+        result.append(
+            BarberPublicProfile(
+                id=barber.id,
+                first_name=barber.first_name,
+                last_name=barber.last_name,
+                business_name=barber.business_name,
+                average_rating=float(avg_rating) if avg_rating else None,
+                total_reviews=review_count or 0,
+                bio=None,  # Add bio field to Barber model if needed
+                profile_image=None,  # Add profile_image field to Barber model if needed
+            )
+        )
+
+    return result
+
+
 @router.get("/shops/{shop_id}/barbers", response_model=List[BarberPublicProfile])
 async def get_shop_barbers(shop_id: int, db: Session = Depends(get_db)):
     """Get all barbers for a specific shop/location"""
