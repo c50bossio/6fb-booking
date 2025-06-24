@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false, // Disable to prevent double renders and improve stability
   // Enable standalone for production deployment
   output: process.env.NODE_ENV === 'production' ? 'standalone' : undefined,
   typescript: {
@@ -36,8 +36,35 @@ const nextConfig = {
     // Don't override devtool in development - let Next.js handle it
     // This prevents the warning about reverting webpack devtool
 
-    // Handle Chrome extension script injection issues
+    // Handle Chrome extension script injection issues and improve chunk loading
     if (!isServer && dev) {
+      // Optimize webpack for better chunk loading
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        maxInitialRequests: 25,
+        maxAsyncRequests: 25,
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
+            priority: 10,
+          },
+          common: {
+            name: 'common',
+            minChunks: 2,
+            chunks: 'all',
+            priority: 5,
+            reuseExistingChunk: true,
+          },
+        },
+      };
+
+      // Better error handling for chunk loading
+      config.output.crossOriginLoading = false;
+      config.output.hotUpdateMainFilename = 'static/webpack/[fullhash].hot-update.json';
+      config.output.hotUpdateChunkFilename = 'static/webpack/[id].[fullhash].hot-update.js';
+
       // Ignore chrome-extension protocol in module resolution
       config.resolve = {
         ...config.resolve,

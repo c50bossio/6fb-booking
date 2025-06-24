@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme Test - 6FB Calendar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .test-section h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .status.pass {
+            background: #22c55e;
+        }
+
+        .status.fail {
+            background: #ef4444;
+        }
+
+        .status.warning {
+            background: #f59e0b;
+            color: black;
+        }
+
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .test-button:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>6FB Calendar Theme Implementation Test</h1>
+        <p>Testing the premium dark theme implementation for the calendar page.</p>
+
+        <div class="test-section">
+            <h3>Server Status</h3>
+            <div id="server-status">
+                <span class="status" id="server-indicator">Checking...</span>
+                <span id="server-message">Testing connection to localhost:3000</span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>Calendar Page Preview</h3>
+            <p>The calendar page should load with a premium dark theme by default, with a theme toggle button in the top-right.</p>
+            <button class="test-button" onclick="loadCalendar()">Load Calendar Page</button>
+            <button class="test-button" onclick="refreshTest()">Refresh Test</button>
+            <div id="calendar-preview" style="margin-top: 15px;">
+                <iframe id="calendar-frame" style="display: none;" src=""></iframe>
+                <div id="loading-message">Click "Load Calendar Page" to test the implementation</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>Expected Features</h3>
+            <ul>
+                <li><strong>Dark Theme by Default:</strong> Page should load with dark background (#0F0F23)</li>
+                <li><strong>Theme Toggle Button:</strong> Sun/Moon icon button in the header</li>
+                <li><strong>Inline Styles:</strong> No Tailwind class conflicts, all styling via inline styles</li>
+                <li><strong>Premium Calendar:</strong> Modern calendar with appointment blocks</li>
+                <li><strong>Statistics Cards:</strong> Today's appointments, week revenue, available barbers, completion rate</li>
+                <li><strong>Team Status:</strong> Barber status indicators at the bottom</li>
+                <li><strong>Sidebar:</strong> Dark themed sidebar with navigation</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>Test Results</h3>
+            <div id="test-results">
+                <p>No tests run yet. Load the calendar page to begin testing.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test server connectivity
+        async function testServer() {
+            const indicator = document.getElementById('server-indicator');
+            const message = document.getElementById('server-message');
+
+            try {
+                const response = await fetch('http://localhost:3000/dashboard/calendar', {
+                    method: 'HEAD',
+                    mode: 'no-cors'
+                });
+
+                indicator.className = 'status pass';
+                indicator.textContent = 'ONLINE';
+                message.textContent = 'Development server is running on localhost:3000';
+                return true;
+            } catch (error) {
+                indicator.className = 'status fail';
+                indicator.textContent = 'OFFLINE';
+                message.textContent = 'Development server is not responding. Please start with: npm run dev';
+                return false;
+            }
+        }
+
+        function loadCalendar() {
+            const frame = document.getElementById('calendar-frame');
+            const loadingMessage = document.getElementById('loading-message');
+
+            loadingMessage.textContent = 'Loading calendar page...';
+            frame.src = 'http://localhost:3000/dashboard/calendar';
+            frame.style.display = 'block';
+            loadingMessage.style.display = 'none';
+
+            // Set up frame load event
+            frame.onload = function() {
+                updateTestResults();
+            };
+
+            frame.onerror = function() {
+                loadingMessage.textContent = 'Error loading calendar page. Please ensure the server is running.';
+                loadingMessage.style.display = 'block';
+                frame.style.display = 'none';
+            };
+        }
+
+        function refreshTest() {
+            location.reload();
+        }
+
+        function updateTestResults() {
+            const resultsDiv = document.getElementById('test-results');
+            const frame = document.getElementById('calendar-frame');
+
+            let results = '<h4>Automated Test Results:</h4>';
+
+            try {
+                // Basic load test
+                if (frame.src && frame.contentWindow) {
+                    results += '<p><span class="status pass">PASS</span> Calendar page loaded successfully</p>';
+                } else {
+                    results += '<p><span class="status fail">FAIL</span> Calendar page failed to load</p>';
+                }
+
+                results += '<p><span class="status warning">MANUAL</span> Please verify the following manually:</p>';
+                results += '<ul>';
+                results += '<li>Dark theme is active by default</li>';
+                results += '<li>Theme toggle button is visible and functional</li>';
+                results += '<li>Calendar displays appointment blocks</li>';
+                results += '<li>Statistics cards show proper data</li>';
+                results += '<li>Sidebar is properly themed</li>';
+                results += '<li>No console errors in browser devtools</li>';
+                results += '</ul>';
+
+            } catch (error) {
+                results += '<p><span class="status fail">ERROR</span> Test execution failed: ' + error.message + '</p>';
+            }
+
+            resultsDiv.innerHTML = results;
+        }
+
+        // Run server test on page load
+        window.onload = function() {
+            testServer();
+        };
+    </script>
+</body>
+</html>

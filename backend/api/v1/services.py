@@ -113,7 +113,14 @@ async def get_service_categories(
     return categories
 
 
-@router.get("/", response_model=List[ServiceResponse])
+class PaginatedServiceResponse(BaseModel):
+    data: List[ServiceResponse]
+    total: int
+    skip: int
+    limit: int
+
+
+@router.get("/", response_model=PaginatedServiceResponse)
 async def get_services(
     db: Session = Depends(get_db),
     category_id: Optional[int] = None,
@@ -149,6 +156,9 @@ async def get_services(
         if is_addon is not None:
             query = query.filter(Service.is_addon == is_addon)
 
+        # Get total count before pagination
+        total_count = query.count()
+
         # Order by category and display order
         query = query.join(
             ServiceCategory, Service.category_id == ServiceCategory.id
@@ -165,7 +175,9 @@ async def get_services(
                     name=service.name,
                     description=service.description,
                     category_id=service.category_id,
-                    category_name=service.category.name if service.category else "Unknown",
+                    category_name=(
+                        service.category.name if service.category else "Unknown"
+                    ),
                     base_price=service.base_price,
                     min_price=service.min_price,
                     max_price=service.max_price,
@@ -184,15 +196,18 @@ async def get_services(
                 )
             )
 
-        return result
+        return PaginatedServiceResponse(
+            data=result, total=total_count, skip=skip, limit=limit
+        )
     except Exception as e:
         # Log the error for debugging
         import logging
+
         logger = logging.getLogger(__name__)
         logger.error(f"Error fetching services: {str(e)}")
-        
-        # Return empty list if database has no data yet
-        return []
+
+        # Return empty response if database has no data yet
+        return PaginatedServiceResponse(data=[], total=0, skip=skip, limit=limit)
 
 
 @router.get("/{service_id}", response_model=ServiceResponse)
@@ -423,3 +438,60 @@ async def delete_service(
     db.commit()
 
     return {"message": "Service deleted successfully"}
+
+
+@router.post("/{service_id}/toggle-status", response_model=ServiceResponse)
+async def toggle_service_status(
+    service_id: int,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Toggle service active status (authenticated endpoint)"""
+
+    service = db.query(Service).filter(Service.id == service_id).first()
+
+    if not service:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Service not found"
+        )
+
+    # Toggle the status
+    service.is_active = not service.is_active
+    service.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(service)
+
+    # Get the service with relationships
+    service = (
+        db.query(Service)
+        .options(
+            joinedload(Service.category),
+            joinedload(Service.barber),
+            joinedload(Service.location),
+        )
+        .filter(Service.id == service_id)
+        .first()
+    )
+
+    return ServiceResponse(
+        id=service.id,
+        name=service.name,
+        description=service.description,
+        category_id=service.category_id,
+        category_name=service.category.name if service.category else "Unknown",
+        base_price=service.base_price,
+        min_price=service.min_price,
+        max_price=service.max_price,
+        duration_minutes=service.duration_minutes,
+        buffer_minutes=service.buffer_minutes,
+        requires_deposit=service.requires_deposit or False,
+        deposit_amount=service.deposit_amount,
+        deposit_type=service.deposit_type,
+        is_addon=service.is_addon or False,
+        is_active=service.is_active,
+        display_order=service.display_order or 0,
+        tags=service.tags if service.tags else [],
+        barber_id=service.barber_id,
+        location_id=service.location_id,
+        created_at=service.created_at,
+    )

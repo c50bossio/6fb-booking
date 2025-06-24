@@ -1,0 +1,77 @@
+/* Premium Calendar Theme Override - Force Exact Colors */
+
+/* Dark Mode Colors - Exact Match to Reference Image */
+.calendar-dark-mode {
+  background-color: #171717 !important;
+}
+
+.calendar-dark-mode .stats-card {
+  background-color: #2a2a2a !important;
+  border-color: #404040 !important;
+}
+
+.calendar-dark-mode .calendar-container {
+  background-color: #2a2a2a !important;
+  border-color: #404040 !important;
+}
+
+.calendar-dark-mode .team-status-container {
+  background-color: #2a2a2a !important;
+  border-color: #404040 !important;
+}
+
+.calendar-dark-mode .team-member-card {
+  background-color: #333333 !important;
+  border-color: #505050 !important;
+}
+
+.calendar-dark-mode .button-dark {
+  background-color: #2a2a2a !important;
+  border-color: #404040 !important;
+  color: #ffffff !important;
+}
+
+.calendar-dark-mode .icon-container {
+  background-color: #333333 !important;
+  border-color: #505050 !important;
+}
+
+.calendar-dark-mode .text-primary {
+  color: #ffffff !important;
+}
+
+.calendar-dark-mode .text-secondary {
+  color: #ffffff !important;
+}
+
+.calendar-dark-mode svg {
+  color: #ffffff !important;
+}
+
+/* Ensure emerald accents remain */
+.calendar-dark-mode .emerald-accent {
+  background-color: rgba(16, 185, 129, 0.1) !important;
+  border-color: rgba(16, 185, 129, 0.2) !important;
+}
+
+.calendar-dark-mode .emerald-accent svg {
+  color: #10b981 !important;
+}
+
+.calendar-dark-mode .emerald-text {
+  color: #10b981 !important;
+}
+
+.calendar-dark-mode .emerald-dot {
+  background-color: #10b981 !important;
+}
+
+/* Remove any blue tints */
+.calendar-dark-mode * {
+  --tw-bg-opacity: 1 !important;
+}
+
+/* Force pure dark background */
+body.dark-calendar {
+  background-color: #171717 !important;
+}

@@ -319,12 +319,12 @@ export default function BookingFlow({
           // For now, we'll simulate this with a mock appointment ID
           const mockAppointmentId = Math.floor(Math.random() * 10000) + 1
           const totalPrice = bookingData.service?.price || 0
-          
-          updateBookingData({ 
+
+          updateBookingData({
             appointmentId: mockAppointmentId,
-            totalPrice 
+            totalPrice
           })
-          
+
           setCurrentStep(currentStep + 1)
         } catch (error) {
           console.error('Failed to create appointment:', error)
@@ -383,18 +383,18 @@ export default function BookingFlow({
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
         <div className={`relative w-full max-w-4xl rounded-2xl shadow-2xl ${
-          theme === 'dark' ? 'bg-gray-900 border border-gray-700' : 'bg-white border border-gray-200'
+          theme === 'dark' ? 'bg-[#1A1B23] border border-[#2C2D3A]' : 'bg-white border border-gray-200'
         }`}>
           {/* Header */}
-          <div className={`px-6 py-4 border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
+          <div className={`px-6 py-4 border-b ${theme === 'dark' ? 'border-[#2C2D3A]' : 'border-gray-200'}`}>
             <div className="flex items-center justify-between">
-              <h2 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+              <h2 className={`text-2xl font-bold ${theme === 'dark' ? 'text-[#FFFFFF]' : 'text-gray-900'}`}>
                 Book Appointment
               </h2>
               <button
                 onClick={onClose}
                 className={`p-2 rounded-lg transition-colors ${theme === 'dark'
-                  ? 'text-gray-400 hover:text-white hover:bg-gray-800'
+                  ? 'text-[#8B92A5] hover:text-[#FFFFFF] hover:bg-[#24252E]'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
@@ -410,9 +410,9 @@ export default function BookingFlow({
                 <div key={step.id} className="flex items-center">
                   <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all ${
                     index <= currentStep
-                      ? 'bg-violet-600 border-violet-600 text-white'
+                      ? 'bg-[#20D9D2] border-[#20D9D2] text-white'
                       : theme === 'dark'
-                        ? 'border-gray-600 text-gray-400'
+                        ? 'border-[#2C2D3A] text-[#8B92A5]'
                         : 'border-gray-300 text-gray-500'
                   }`}>
                     {index < currentStep ? (
@@ -424,18 +424,18 @@ export default function BookingFlow({
                   <div className="ml-2 hidden sm:block">
                     <div className={`text-sm font-medium ${
                       index <= currentStep
-                        ? theme === 'dark' ? 'text-white' : 'text-gray-900'
-                        : theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                        ? theme === 'dark' ? 'text-[#FFFFFF]' : 'text-gray-900'
+                        : theme === 'dark' ? 'text-[#8B92A5]' : 'text-gray-500'
                     }`}>
                       {step.title}
                     </div>
-                    <div className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                    <div className={`text-xs ${theme === 'dark' ? 'text-[#8B92A5]' : 'text-gray-400'}`}>
                       {step.description}
                     </div>
                   </div>
                   {index < STEPS.length - 1 && (
                     <div className={`mx-4 h-0.5 w-12 ${
-                      index < currentStep ? 'bg-violet-600' : theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'
+                      index < currentStep ? 'bg-[#20D9D2]' : theme === 'dark' ? 'bg-[#2C2D3A]' : 'bg-gray-300'
                     }`} />
                   )}
                 </div>
@@ -512,7 +512,7 @@ export default function BookingFlow({
           </div>
 
           {/* Footer */}
-          <div className={`px-6 py-4 border-t ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
+          <div className={`px-6 py-4 border-t ${theme === 'dark' ? 'border-[#2C2D3A]' : 'border-gray-200'}`}>
             <div className="flex items-center justify-between">
               <button
                 onClick={handlePrevious}
@@ -521,7 +521,7 @@ export default function BookingFlow({
                   currentStep === 0
                     ? 'opacity-50 cursor-not-allowed'
                     : theme === 'dark'
-                      ? 'text-gray-300 hover:text-white hover:bg-gray-800'
+                      ? 'text-[#8B92A5] hover:text-[#FFFFFF] hover:bg-[#24252E]'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
@@ -529,7 +529,7 @@ export default function BookingFlow({
                 <span>Previous</span>
               </button>
 
-              <div className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+              <div className={`text-sm ${theme === 'dark' ? 'text-[#8B92A5]' : 'text-gray-500'}`}>
                 Step {currentStep + 1} of {STEPS.length}
               </div>
 
@@ -539,7 +539,7 @@ export default function BookingFlow({
                 className={`flex items-center space-x-2 px-6 py-2 text-sm font-medium rounded-lg transition-colors ${
                   isLoading
                     ? 'opacity-50 cursor-not-allowed'
-                    : 'bg-violet-600 hover:bg-violet-700 text-white'
+                    : 'bg-[#20D9D2] hover:bg-[#20D9D2]/80 text-white'
                 }`}
               >
                 {isLoading ? (
@@ -592,10 +592,10 @@ function ServiceSelection({ theme, services, selectedService, onServiceSelect, e
   return (
     <div className="space-y-6">
       <div>
-        <h3 className={`text-lg font-semibold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+        <h3 className={`text-lg font-semibold mb-2 ${theme === 'dark' ? 'text-[#FFFFFF]' : 'text-gray-900'}`}>
           Choose Your Service
         </h3>
-        <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+        <p className={`text-sm ${theme === 'dark' ? 'text-[#8B92A5]' : 'text-gray-600'}`}>
           Select the service you'd like to book
         </p>
       </div>
@@ -606,7 +606,7 @@ function ServiceSelection({ theme, services, selectedService, onServiceSelect, e
 
       {categories.map(category => (
         <div key={category}>
-          <h4 className={`text-md font-medium mb-3 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
+          <h4 className={`text-md font-medium mb-3 ${theme === 'dark' ? 'text-[#FFFFFF]' : 'text-gray-800'}`}>
             {category}
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -632,24 +632,24 @@ function ServiceSelection({ theme, services, selectedService, onServiceSelect, e
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-1">
                       <ScissorsIcon className="w-5 h-5 text-violet-600" />
-                      <h5 className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                      <h5 className={`font-semibold ${theme === 'dark' ? 'text-[#FFFFFF]' : 'text-gray-900'}`}>
                         {service.name}
                       </h5>
                     </div>
-                    <p className={`text-sm mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+                    <p className={`text-sm mb-2 ${theme === 'dark' ? 'text-[#8B92A5]' : 'text-gray-600'}`}>
                       {service.description}
                     </p>
 
                     <div className="flex items-center space-x-4 text-sm">
                       <div className="flex items-center space-x-1">
                         <ClockIcon className="w-4 h-4 text-gray-500" />
-                        <span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}>
+                        <span className={theme === 'dark' ? 'text-[#8B92A5]' : 'text-gray-500'}>
                           {service.duration} min
                         </span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <CurrencyDollarIcon className="w-4 h-4 text-green-500" />
-                        <span className={`font-semibold ${theme === 'dark' ? 'text-green-400' : 'text-green-600'}`}>
+                        <span className={`font-semibold ${theme === 'dark' ? 'text-[#20D9D2]' : 'text-green-600'}`}>
                           ${service.price}
                         </span>
                       </div>
@@ -710,10 +710,10 @@ function BarberSelection({ theme, barbers, selectedBarber, onBarberSelect, error
   return (
     <div className="space-y-6">
       <div>
-        <h3 className={`text-lg font-semibold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+        <h3 className={`text-lg font-semibold mb-2 ${theme === 'dark' ? 'text-[#FFFFFF]' : 'text-gray-900'}`}>
           Choose Your Barber
         </h3>
-        <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+        <p className={`text-sm ${theme === 'dark' ? 'text-[#8B92A5]' : 'text-gray-600'}`}>
           Select your preferred barber for {selectedService?.name}
         </p>
       </div>
@@ -832,10 +832,10 @@ function DateTimeSelection({
   return (
     <div className="space-y-6">
       <div>
-        <h3 className={`text-lg font-semibold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+        <h3 className={`text-lg font-semibold mb-2 ${theme === 'dark' ? 'text-[#FFFFFF]' : 'text-gray-900'}`}>
           Select Date & Time
         </h3>
-        <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+        <p className={`text-sm ${theme === 'dark' ? 'text-[#8B92A5]' : 'text-gray-600'}`}>
           Choose your preferred appointment date and time
         </p>
       </div>
@@ -861,30 +861,30 @@ function DateTimeSelection({
                 disabled={!hasAvailableSlots}
                 className={`p-3 rounded-lg border-2 transition-all duration-200 ${
                   isSelected
-                    ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/20'
+                    ? 'border-[#20D9D2] bg-violet-50 dark:bg-[#20D9D2]/10'
                     : hasAvailableSlots
                       ? theme === 'dark'
-                        ? 'border-gray-700 bg-gray-800/30 hover:border-gray-600'
+                        ? 'border-[#2C2D3A] bg-[#24252E] hover:border-[#20D9D2]/50'
                         : 'border-gray-200 bg-gray-50 hover:border-gray-300'
                       : 'border-gray-300 bg-gray-100 opacity-50 cursor-not-allowed'
                 }`}
               >
                 <div className={`text-xs font-medium ${
-                  isSelected ? 'text-violet-600' :
-                  hasAvailableSlots ? theme === 'dark' ? 'text-white' : 'text-gray-900' :
+                  isSelected ? 'text-[#20D9D2]' :
+                  hasAvailableSlots ? theme === 'dark' ? 'text-[#FFFFFF]' : 'text-gray-900' :
                   'text-gray-400'
                 }`}>
                   {date.toLocaleDateString('en-US', { weekday: 'short' })}
                 </div>
                 <div className={`text-lg font-bold ${
-                  isSelected ? 'text-violet-600' :
-                  hasAvailableSlots ? theme === 'dark' ? 'text-white' : 'text-gray-900' :
+                  isSelected ? 'text-[#20D9D2]' :
+                  hasAvailableSlots ? theme === 'dark' ? 'text-[#FFFFFF]' : 'text-gray-900' :
                   'text-gray-400'
                 }`}>
                   {date.getDate()}
                 </div>
                 {isToday && (
-                  <div className="text-xs text-violet-600 font-medium">Today</div>
+                  <div className="text-xs text-[#20D9D2] font-medium">Today</div>
                 )}
               </button>
             )
@@ -895,13 +895,13 @@ function DateTimeSelection({
       {/* Time Selection */}
       {selectedDate && (
         <div>
-          <h4 className={`text-md font-medium mb-3 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
+          <h4 className={`text-md font-medium mb-3 ${theme === 'dark' ? 'text-[#FFFFFF]' : 'text-gray-800'}`}>
             Available Times
           </h4>
           {errors.time && <div className="text-red-500 text-sm mb-2">{errors.time}</div>}
 
           {availableTimeSlots.length === 0 ? (
-            <div className={`text-center py-8 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+            <div className={`text-center py-8 ${theme === 'dark' ? 'text-[#8B92A5]' : 'text-gray-500'}`}>
               No available time slots for this date
             </div>
           ) : (
@@ -912,9 +912,9 @@ function DateTimeSelection({
                   onClick={() => onTimeSelect(slot.time)}
                   className={`p-3 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
                     selectedTime === slot.time
-                      ? 'border-violet-500 bg-violet-600 text-white'
+                      ? 'border-[#20D9D2] bg-[#20D9D2] text-white'
                       : theme === 'dark'
-                        ? 'border-gray-700 bg-gray-800/30 text-white hover:border-gray-600'
+                        ? 'border-[#2C2D3A] bg-[#24252E] text-[#FFFFFF] hover:border-[#20D9D2]/50'
                         : 'border-gray-200 bg-gray-50 text-gray-900 hover:border-gray-300'
                   }`}
                 >
@@ -953,21 +953,21 @@ function ClientDetails({ theme, clientInfo, onClientInfoUpdate, errors }: Client
   return (
     <div className="space-y-6">
       <div>
-        <h3 className={`text-lg font-semibold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+        <h3 className={`text-lg font-semibold mb-2 ${theme === 'dark' ? 'text-[#FFFFFF]' : 'text-gray-900'}`}>
           Your Contact Information
         </h3>
-        <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+        <p className={`text-sm ${theme === 'dark' ? 'text-[#8B92A5]' : 'text-gray-600'}`}>
           Please provide your details for appointment confirmation
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
+          <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-[#8B92A5]' : 'text-gray-700'}`}>
             Full Name *
           </label>
           <div className="relative">
-            <UserIcon className={`absolute left-3 top-3 w-5 h-5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
+            <UserIcon className={`absolute left-3 top-3 w-5 h-5 ${theme === 'dark' ? 'text-[#8B92A5]' : 'text-gray-500'}`} />
             <input
               type="text"
               value={clientInfo?.name || ''}
@@ -986,11 +986,11 @@ function ClientDetails({ theme, clientInfo, onClientInfoUpdate, errors }: Client
         </div>
 
         <div>
-          <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
+          <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-[#8B92A5]' : 'text-gray-700'}`}>
             Email Address *
           </label>
           <div className="relative">
-            <EnvelopeIcon className={`absolute left-3 top-3 w-5 h-5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
+            <EnvelopeIcon className={`absolute left-3 top-3 w-5 h-5 ${theme === 'dark' ? 'text-[#8B92A5]' : 'text-gray-500'}`} />
             <input
               type="email"
               value={clientInfo?.email || ''}
@@ -1009,11 +1009,11 @@ function ClientDetails({ theme, clientInfo, onClientInfoUpdate, errors }: Client
         </div>
 
         <div>
-          <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
+          <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-[#8B92A5]' : 'text-gray-700'}`}>
             Phone Number *
           </label>
           <div className="relative">
-            <PhoneIcon className={`absolute left-3 top-3 w-5 h-5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
+            <PhoneIcon className={`absolute left-3 top-3 w-5 h-5 ${theme === 'dark' ? 'text-[#8B92A5]' : 'text-gray-500'}`} />
             <input
               type="tel"
               value={clientInfo?.phone || ''}
@@ -1032,7 +1032,7 @@ function ClientDetails({ theme, clientInfo, onClientInfoUpdate, errors }: Client
         </div>
 
         <div>
-          <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
+          <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-[#8B92A5]' : 'text-gray-700'}`}>
             Special Requests
           </label>
           <textarea
@@ -1041,7 +1041,7 @@ function ClientDetails({ theme, clientInfo, onClientInfoUpdate, errors }: Client
             rows={3}
             className={`w-full px-4 py-3 rounded-lg border transition-colors ${
               theme === 'dark'
-                ? 'bg-gray-800 border-gray-700 text-white focus:border-violet-500'
+                ? 'bg-[#24252E] border-[#2C2D3A] text-[#FFFFFF] focus:border-[#20D9D2]'
                 : 'bg-white border-gray-300 text-gray-900 focus:border-violet-500'
             }`}
             placeholder="Any special requests or notes for your appointment..."
@@ -1073,25 +1073,25 @@ function BookingConfirmation({ theme, bookingData, isLoading }: BookingConfirmat
   return (
     <div className="space-y-6">
       <div>
-        <h3 className={`text-lg font-semibold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+        <h3 className={`text-lg font-semibold mb-2 ${theme === 'dark' ? 'text-[#FFFFFF]' : 'text-gray-900'}`}>
           Confirm Your Appointment
         </h3>
-        <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+        <p className={`text-sm ${theme === 'dark' ? 'text-[#8B92A5]' : 'text-gray-600'}`}>
           Please review your appointment details before confirming
         </p>
       </div>
 
-      <div className={`rounded-lg border p-6 ${theme === 'dark' ? 'border-gray-700 bg-gray-800/30' : 'border-gray-200 bg-gray-50'}`}>
+      <div className={`rounded-lg border p-6 ${theme === 'dark' ? 'border-[#2C2D3A] bg-[#24252E]' : 'border-gray-200 bg-gray-50'}`}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Service Details */}
           <div>
-            <h4 className={`text-md font-semibold mb-3 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+            <h4 className={`text-md font-semibold mb-3 ${theme === 'dark' ? 'text-[#FFFFFF]' : 'text-gray-900'}`}>
               Service Details
             </h4>
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
                 <ScissorsIcon className="w-5 h-5 text-violet-600" />
-                <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                <span className={`font-medium ${theme === 'dark' ? 'text-[#FFFFFF]' : 'text-gray-900'}`}>
                   {bookingData.service?.name}
                 </span>
               </div>
@@ -1112,7 +1112,7 @@ function BookingConfirmation({ theme, bookingData, isLoading }: BookingConfirmat
 
           {/* Barber Details */}
           <div>
-            <h4 className={`text-md font-semibold mb-3 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+            <h4 className={`text-md font-semibold mb-3 ${theme === 'dark' ? 'text-[#FFFFFF]' : 'text-gray-900'}`}>
               Your Barber
             </h4>
             <div className="flex items-center space-x-3">
@@ -1135,7 +1135,7 @@ function BookingConfirmation({ theme, bookingData, isLoading }: BookingConfirmat
 
           {/* Date & Time */}
           <div>
-            <h4 className={`text-md font-semibold mb-3 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+            <h4 className={`text-md font-semibold mb-3 ${theme === 'dark' ? 'text-[#FFFFFF]' : 'text-gray-900'}`}>
               Date & Time
             </h4>
             <div className="space-y-2">
@@ -1156,7 +1156,7 @@ function BookingConfirmation({ theme, bookingData, isLoading }: BookingConfirmat
 
           {/* Client Details */}
           <div>
-            <h4 className={`text-md font-semibold mb-3 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+            <h4 className={`text-md font-semibold mb-3 ${theme === 'dark' ? 'text-[#FFFFFF]' : 'text-gray-900'}`}>
               Contact Information
             </h4>
             <div className="space-y-2">
@@ -1195,13 +1195,13 @@ function BookingConfirmation({ theme, bookingData, isLoading }: BookingConfirmat
       </div>
 
       {/* Security Notice */}
-      <div className={`flex items-start space-x-3 p-4 rounded-lg ${theme === 'dark' ? 'bg-green-900/20 border border-green-800' : 'bg-green-50 border border-green-200'}`}>
+      <div className={`flex items-start space-x-3 p-4 rounded-lg ${theme === 'dark' ? 'bg-[#20D9D2]/10 border border-[#20D9D2]/30' : 'bg-green-50 border border-green-200'}`}>
         <ShieldCheckIcon className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
         <div>
-          <h5 className={`font-medium mb-1 ${theme === 'dark' ? 'text-green-400' : 'text-green-800'}`}>
+          <h5 className={`font-medium mb-1 ${theme === 'dark' ? 'text-[#20D9D2]' : 'text-green-800'}`}>
             Secure Booking
           </h5>
-          <p className={`text-sm ${theme === 'dark' ? 'text-green-300' : 'text-green-700'}`}>
+          <p className={`text-sm ${theme === 'dark' ? 'text-[#8B92A5]' : 'text-green-700'}`}>
             Your appointment details are encrypted and secure. You'll receive a confirmation email shortly.
           </p>
         </div>

@@ -274,8 +274,8 @@ export default function ServiceSelectionModal({
         className={`
           relative p-6 border-2 rounded-xl cursor-pointer transition-all duration-200 group
           ${isSelected
-            ? 'border-teal-500 bg-teal-50 shadow-lg'
-            : 'border-gray-200 hover:border-teal-300 hover:bg-teal-50 hover:shadow-md'
+            ? 'border-[#20D9D2] bg-teal-50 dark:bg-[#20D9D2]/10 shadow-lg'
+            : 'border-gray-200 dark:border-[#2C2D3A] hover:border-teal-300 dark:hover:border-[#20D9D2]/50 hover:bg-teal-50 dark:hover:bg-[#24252E] hover:shadow-md'
           }
         `}
       >
@@ -302,13 +302,13 @@ export default function ServiceSelectionModal({
             </div>
 
             {/* Service Name */}
-            <h3 className="text-lg font-semibold text-gray-900 mb-1 group-hover:text-teal-700 transition-colors">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-[#FFFFFF] mb-1 group-hover:text-teal-700 dark:group-hover:text-[#20D9D2] transition-colors">
               {service.name}
             </h3>
 
             {/* Description */}
             {service.description && (
-              <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+              <p className="text-sm text-gray-600 dark:text-[#8B92A5] mb-3 line-clamp-2">
                 {service.description}
               </p>
             )}
@@ -319,13 +319,13 @@ export default function ServiceSelectionModal({
                 {service.features.slice(0, 3).map((feature, index) => (
                   <span
                     key={index}
-                    className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700"
+                    className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-[#24252E] text-gray-700 dark:text-[#8B92A5]"
                   >
                     {feature}
                   </span>
                 ))}
                 {service.features.length > 3 && (
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-[#24252E] text-gray-500 dark:text-[#8B92A5]">
                     +{service.features.length - 3} more
                   </span>
                 )}
@@ -342,7 +342,7 @@ export default function ServiceSelectionModal({
               </div>
 
               <div className="text-right">
-                <div className="text-2xl font-bold text-gray-900">${service.price}</div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-[#FFFFFF]">${service.price}</div>
               </div>
             </div>
           </div>
@@ -350,7 +350,7 @@ export default function ServiceSelectionModal({
           {/* Selection Indicator */}
           {isSelected && (
             <div className="ml-4">
-              <CheckCircleIcon className="h-6 w-6 text-teal-600" />
+              <CheckCircleIcon className="h-6 w-6 text-[#20D9D2]" />
             </div>
           )}
         </div>
@@ -387,8 +387,8 @@ export default function ServiceSelectionModal({
             className={`
               px-4 py-2 rounded-lg text-sm font-medium transition-colors
               ${!selectedCategoryId
-                ? 'bg-slate-100 text-slate-700 border-2 border-slate-200'
-                : 'bg-gray-100 text-gray-700 border-2 border-transparent hover:bg-gray-200'
+                ? 'bg-slate-100 dark:bg-[#24252E] text-slate-700 dark:text-[#8B92A5] border-2 border-slate-200 dark:border-[#2C2D3A]'
+                : 'bg-gray-100 dark:bg-[#24252E] text-gray-700 dark:text-[#8B92A5] border-2 border-transparent hover:bg-gray-200 dark:hover:bg-[#2C2D3A]'
               }
             `}
           >
@@ -401,8 +401,8 @@ export default function ServiceSelectionModal({
               className={`
                 flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border-2
                 ${selectedCategoryId === category.id
-                  ? `bg-${category.color}-100 text-${category.color}-700 border-${category.color}-200`
-                  : 'bg-gray-100 text-gray-700 border-transparent hover:bg-gray-200'
+                  ? `bg-${category.color}-100 dark:bg-[#20D9D2]/10 text-${category.color}-700 dark:text-[#20D9D2] border-${category.color}-200 dark:border-[#20D9D2]/30`
+                  : 'bg-gray-100 dark:bg-[#24252E] text-gray-700 dark:text-[#8B92A5] border-transparent hover:bg-gray-200 dark:hover:bg-[#2C2D3A]'
                 }
               `}
             >
@@ -419,8 +419,8 @@ export default function ServiceSelectionModal({
               <div key={categoryName}>
                 <div className="flex items-center space-x-2 mb-4">
                   {getCategoryIcon(categoryName)}
-                  <h3 className="text-lg font-semibold text-gray-900">{categoryName}</h3>
-                  <span className="text-sm text-gray-500">({categoryServices.length})</span>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-[#FFFFFF]">{categoryName}</h3>
+                  <span className="text-sm text-gray-500 dark:text-[#8B92A5]">({categoryServices.length})</span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -436,9 +436,9 @@ export default function ServiceSelectionModal({
             ))
           ) : (
             <div className="text-center py-12">
-              <ScissorsIcon className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-semibold text-gray-900">No services found</h3>
-              <p className="mt-1 text-sm text-gray-500">
+              <ScissorsIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-[#8B92A5]" />
+              <h3 className="mt-2 text-sm font-semibold text-gray-900 dark:text-[#FFFFFF]">No services found</h3>
+              <p className="mt-1 text-sm text-gray-500 dark:text-[#8B92A5]">
                 {searchTerm
                   ? 'No services match your search criteria.'
                   : 'No services available for the selected filters.'
@@ -449,8 +449,8 @@ export default function ServiceSelectionModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-          <div className="text-sm text-gray-500">
+        <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-[#2C2D3A]">
+          <div className="text-sm text-gray-500 dark:text-[#8B92A5]">
             {filteredServices.length} service{filteredServices.length !== 1 ? 's' : ''} available
           </div>
           <div className="flex items-center space-x-3">

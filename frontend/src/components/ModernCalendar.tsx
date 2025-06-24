@@ -109,7 +109,8 @@ export default function ModernCalendar({
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
   const [selectedDate, setSelectedDate] = useState<string>('')
   const [selectedTime, setSelectedTime] = useState<string>('')
-  const { theme } = useTheme()
+  const { theme, getThemeColors } = useTheme()
+  const colors = getThemeColors()
 
   // Fetch calendar events from demo API
   useEffect(() => {

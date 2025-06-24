@@ -1,16 +1,18 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useStripe, useElements, PaymentElement } from '@stripe/react-stripe-js'
-import { CreditCardIcon, ShieldCheckIcon, LockClosedIcon } from '@heroicons/react/24/outline'
+import { ShieldCheckIcon, LockClosedIcon } from '@heroicons/react/24/outline'
 import { paymentIntentsApi, formatAmount } from '@/lib/api/payments'
+import { UnifiedPaymentForm } from '@/components/payments'
 
 interface PaymentStepProps {
   theme?: 'light' | 'dark'
   appointmentId: number
   amount: number
-  onPaymentComplete: (paymentId: number) => void
+  onPaymentComplete: (paymentId: number, method?: 'stripe' | 'square') => void
   onError: (error: string) => void
+  enabledMethods?: ('stripe' | 'square')[]
+  customerEmail?: string
 }
 
 export default function PaymentStep({
@@ -18,21 +20,26 @@ export default function PaymentStep({
   appointmentId,
   amount,
   onPaymentComplete,
-  onError
+  onError,
+  enabledMethods = ['stripe'],
+  customerEmail
 }: PaymentStepProps) {
-  const stripe = useStripe()
-  const elements = useElements()
   const [clientSecret, setClientSecret] = useState<string>('')
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [paymentError, setPaymentError] = useState<string | null>(null)
+  const [isInitializing, setIsInitializing] = useState(true)
+  const [initError, setInitError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Create payment intent when component mounts
-    createPaymentIntent()
-  }, [appointmentId, amount])
+    // Create payment intent for Stripe if enabled
+    if (enabledMethods.includes('stripe')) {
+      createPaymentIntent()
+    } else {
+      setIsInitializing(false)
+    }
+  }, [appointmentId, amount, enabledMethods])
 
   const createPaymentIntent = async () => {
     try {
+      setIsInitializing(true)
       const intent = await paymentIntentsApi.create(
         appointmentId,
         amount,
@@ -43,45 +50,15 @@ export default function PaymentStep({
       setClientSecret(intent.client_secret)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to initialize payment'
-      setPaymentError(errorMessage)
+      setInitError(errorMessage)
       onError(errorMessage)
+    } finally {
+      setIsInitializing(false)
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!stripe || !elements || !clientSecret) {
-      return
-    }
-
-    setIsProcessing(true)
-    setPaymentError(null)
-
-    try {
-      const result = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: `${window.location.origin}/payments/success?appointment_id=${appointmentId}`,
-        },
-        redirect: 'if_required',
-      })
-
-      if (result.error) {
-        setPaymentError(result.error.message || 'Payment failed')
-        onError(result.error.message || 'Payment failed')
-      } else if (result.paymentIntent) {
-        // Payment succeeded
-        const paymentId = parseInt(result.paymentIntent.metadata?.payment_id || '0')
-        onPaymentComplete(paymentId)
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An error occurred'
-      setPaymentError(errorMessage)
-      onError(errorMessage)
-    } finally {
-      setIsProcessing(false)
-    }
+  const handlePaymentSuccess = (paymentId: number, method: 'stripe' | 'square') => {
+    onPaymentComplete(paymentId, method)
   }
 
   return (
@@ -126,99 +103,67 @@ export default function PaymentStep({
       </div>
 
       {/* Payment Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className={`rounded-lg p-6 ${
-          theme === 'dark' ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
-        }`}>
-          <div className="flex items-center mb-4">
-            <CreditCardIcon className={`w-5 h-5 mr-2 ${
-              theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-            }`} />
-            <h3 className={`text-lg font-semibold ${
-              theme === 'dark' ? 'text-white' : 'text-gray-900'
-            }`}>
-              Payment Details
-            </h3>
+      <div className={`rounded-lg p-6 ${
+        theme === 'dark' ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+      }`}>
+        {initError && (
+          <div className="mb-4 p-3 rounded-lg bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800">
+            <p className="text-sm text-red-800 dark:text-red-300">
+              {initError}
+            </p>
           </div>
+        )}
 
-          {clientSecret && (
-            <PaymentElement
-              options={{
-                layout: 'tabs',
-                paymentMethodOrder: ['card'],
-                fields: {
-                  billingDetails: {
-                    address: 'auto',
-                  },
-                },
-                wallets: {
-                  applePay: 'auto',
-                  googlePay: 'auto',
-                },
-              }}
-            />
-          )}
-
-          {paymentError && (
-            <div className="mt-4 p-3 rounded-lg bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800">
-              <p className="text-sm text-red-800 dark:text-red-300">
-                {paymentError}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Security Badge */}
-        <div className={`flex items-center justify-center space-x-4 text-sm ${
-          theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-        }`}>
-          <div className="flex items-center">
-            <LockClosedIcon className="w-4 h-4 mr-1" />
-            <span>Secure Payment</span>
-          </div>
-          <div className="flex items-center">
-            <ShieldCheckIcon className="w-4 h-4 mr-1" />
-            <span>SSL Encrypted</span>
-          </div>
-        </div>
-
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={!stripe || isProcessing}
-          className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
-            isProcessing || !stripe
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-teal-600 hover:bg-teal-700 text-white'
-          }`}
-        >
-          {isProcessing ? (
-            <span className="flex items-center justify-center">
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Processing Payment...
+        {isInitializing ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+            <span className={`ml-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+              Initializing payment...
             </span>
-          ) : (
-            `Pay ${formatAmount(amount)}`
-          )}
-        </button>
+          </div>
+        ) : (
+          <UnifiedPaymentForm
+            amount={amount}
+            appointmentId={appointmentId}
+            clientSecret={clientSecret}
+            customerEmail={customerEmail}
+            enabledMethods={enabledMethods}
+            onSuccess={handlePaymentSuccess}
+            onError={onError}
+            // TODO: Add Square configuration when needed
+            // squareApplicationId={process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID}
+            // squareLocationId={process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID}
+          />
+        )}
+      </div>
 
-        {/* Terms */}
-        <p className={`text-xs text-center ${
-          theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
-        }`}>
-          By completing this payment, you agree to our{' '}
-          <a href="/terms" className="underline hover:no-underline">
-            Terms of Service
-          </a>{' '}
-          and{' '}
-          <a href="/privacy" className="underline hover:no-underline">
-            Privacy Policy
-          </a>
-        </p>
-      </form>
+      {/* Security Badge */}
+      <div className={`flex items-center justify-center space-x-4 text-sm ${
+        theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+      }`}>
+        <div className="flex items-center">
+          <LockClosedIcon className="w-4 h-4 mr-1" />
+          <span>Secure Payment</span>
+        </div>
+        <div className="flex items-center">
+          <ShieldCheckIcon className="w-4 h-4 mr-1" />
+          <span>SSL Encrypted</span>
+        </div>
+      </div>
+
+      {/* Terms */}
+      <p className={`text-xs text-center ${
+        theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
+      }`}>
+        By completing this payment, you agree to our{' '}
+        <a href="/terms" className="underline hover:no-underline">
+          Terms of Service
+        </a>{' '}
+        and{' '}
+        <a href="/privacy" className="underline hover:no-underline">
+          Privacy Policy
+        </a>
+      </p>
     </div>
   )
 }

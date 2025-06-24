@@ -12,8 +12,6 @@ import { calendarBookingIntegration, CalendarHelpers, type CalendarAppointment }
 import type { Booking } from '@/lib/api/bookings'
 import type { Service } from '@/lib/api/services'
 import type { BarberProfile } from '@/lib/api/barbers'
-import { useTheme } from '@/contexts/ThemeContext'
-import ThemeSelector from '@/components/ThemeSelector'
 
 // Use the CalendarAppointment interface from the integration layer
 
@@ -55,10 +53,7 @@ export default function CalendarPage() {
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  // Global theme management
-  const { theme, getThemeColors } = useTheme()
-  const colors = getThemeColors()
+  const [darkMode, setDarkMode] = useState(true)
 
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -143,7 +138,6 @@ export default function CalendarPage() {
       console.error('Error fetching services:', err)
     }
   }, [])
-
 
   // Initial data load
   useEffect(() => {
@@ -344,9 +338,7 @@ export default function CalendarPage() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{
-        backgroundColor: colors.background
-      }}>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
       </div>
     )
@@ -366,56 +358,45 @@ export default function CalendarPage() {
   const availableBarbers = barbers.filter(b => b.status === 'online').length
 
   return (
-    <div className="min-h-screen" style={{
-      backgroundColor: colors.background
-    }}>
+    <div className="min-h-screen bg-gray-50">
       <div className="p-4 sm:p-6 lg:p-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold mb-2" style={{
-                color: colors.textPrimary
-              }}>
+              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
                 Calendar
               </h1>
-              <p className="text-lg" style={{
-                color: colors.textSecondary
-              }}>
+              <p className="text-lg text-gray-600">
                 Manage your appointments and schedule
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
-              <ThemeSelector variant="button" showLabel={false} />
               <button
                 onClick={handleNewAppointment}
                 className="px-6 py-3 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 transition-colors duration-200"
               >
                 New Appointment
               </button>
-              <div className="flex rounded-lg p-1" style={{
-                backgroundColor: theme === 'dark' ? '#374151' : '#f3f4f6'
-              }}>
+              <div className="flex bg-gray-100 rounded-lg p-1">
                 <button
                   onClick={() => setViewMode('week')}
-                  className="px-4 py-2 rounded-md font-medium transition-colors duration-200"
-                  style={{
-                    backgroundColor: viewMode === 'week' ? colors.cardBackground : 'transparent',
-                    color: colors.textPrimary,
-                    boxShadow: viewMode === 'week' ? colors.shadow : 'none'
-                  }}
+                  className={`px-4 py-2 rounded-md font-medium transition-colors duration-200 ${
+                    viewMode === 'week'
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
                 >
                   Week
                 </button>
                 <button
                   onClick={() => setViewMode('day')}
-                  className="px-4 py-2 rounded-md font-medium transition-colors duration-200"
-                  style={{
-                    backgroundColor: viewMode === 'day' ? colors.cardBackground : 'transparent',
-                    color: colors.textPrimary,
-                    boxShadow: viewMode === 'day' ? colors.shadow : 'none'
-                  }}
+                  className={`px-4 py-2 rounded-md font-medium transition-colors duration-200 ${
+                    viewMode === 'day'
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
                 >
                   Day
                 </button>
@@ -426,24 +407,15 @@ export default function CalendarPage() {
 
         {/* Error Notification */}
         {error && (
-          <div className="mb-6 rounded-lg p-4 border" style={{
-            backgroundColor: theme === 'dark' ? 'rgba(127, 29, 29, 0.3)' : '#fef2f2',
-            borderColor: theme === 'dark' ? '#991b1b' : '#fecaca',
-            color: theme === 'dark' ? '#fca5a5' : '#b91c1c'
-          }}>
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
             <div className="flex items-center">
-              <svg className="w-5 h-5 mr-2 flex-shrink-0" style={{
-                color: theme === 'dark' ? '#f87171' : '#dc2626'
-              }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-red-600 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <p className="text-sm">{error}</p>
+              <p className="text-sm text-red-700">{error}</p>
               <button
                 onClick={() => setError(null)}
-                className="ml-auto hover:opacity-75"
-                style={{
-                  color: theme === 'dark' ? '#f87171' : '#dc2626'
-                }}
+                className="ml-auto text-red-600 hover:text-red-500"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -455,49 +427,27 @@ export default function CalendarPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
-          <div className="rounded-lg border shadow-sm p-6" style={{
-            backgroundColor: colors.cardBackground,
-            borderColor: colors.border,
-            boxShadow: colors.shadow
-          }}>
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium" style={{
-                  color: colors.textSecondary
-                }}>Today's Appointments</p>
-                <p className="text-2xl font-bold mt-1" style={{
-                  color: colors.textPrimary
-                }}>{todayAppointments.length}</p>
+                <p className="text-sm font-medium text-gray-600">Today's Appointments</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">{todayAppointments.length}</p>
               </div>
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{
-                backgroundColor: theme === 'dark' ? '#4b5563' : '#f3f4f6'
-              }}>
-                <svg className="w-5 h-5" style={{
-                  color: colors.textSecondary
-                }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
             </div>
           </div>
 
-          <div className="rounded-lg border shadow-sm p-6" style={{
-            backgroundColor: colors.cardBackground,
-            borderColor: colors.border,
-            boxShadow: colors.shadow
-          }}>
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium" style={{
-                  color: colors.textSecondary
-                }}>Week Revenue</p>
-                <p className="text-2xl font-bold mt-1" style={{
-                  color: colors.textPrimary
-                }}>${weekRevenue}</p>
+                <p className="text-sm font-medium text-gray-600">Week Revenue</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">${weekRevenue}</p>
               </div>
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{
-                backgroundColor: theme === 'dark' ? 'rgba(13, 148, 136, 0.3)' : '#f0fdfa'
-              }}>
+              <div className="w-10 h-10 bg-teal-50 rounded-lg flex items-center justify-center">
                 <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                 </svg>
@@ -505,52 +455,28 @@ export default function CalendarPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border shadow-sm p-6" style={{
-            backgroundColor: colors.cardBackground,
-            borderColor: colors.border,
-            boxShadow: colors.shadow
-          }}>
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium" style={{
-                  color: colors.textSecondary
-                }}>Available Barbers</p>
-                <p className="text-2xl font-bold mt-1" style={{
-                  color: colors.textPrimary
-                }}>{availableBarbers}</p>
+                <p className="text-sm font-medium text-gray-600">Available Barbers</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">{availableBarbers}</p>
               </div>
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{
-                backgroundColor: theme === 'dark' ? '#4b5563' : '#f3f4f6'
-              }}>
-                <svg className="w-5 h-5" style={{
-                  color: colors.textSecondary
-                }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
             </div>
           </div>
 
-          <div className="rounded-lg border shadow-sm p-6" style={{
-            backgroundColor: colors.cardBackground,
-            borderColor: colors.border,
-            boxShadow: colors.shadow
-          }}>
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium" style={{
-                  color: colors.textSecondary
-                }}>Completion Rate</p>
-                <p className="text-2xl font-bold mt-1" style={{
-                  color: colors.textPrimary
-                }}>98%</p>
+                <p className="text-sm font-medium text-gray-600">Completion Rate</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">98%</p>
               </div>
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{
-                backgroundColor: theme === 'dark' ? '#4b5563' : '#f3f4f6'
-              }}>
-                <svg className="w-5 h-5" style={{
-                  color: colors.textSecondary
-                }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 00-2-2z" />
                 </svg>
               </div>
@@ -559,11 +485,7 @@ export default function CalendarPage() {
         </div>
 
         {/* Modern Calendar */}
-        <div className="rounded-lg border shadow-sm p-6 mb-8" style={{
-          backgroundColor: colors.cardBackground,
-          borderColor: colors.border,
-          boxShadow: colors.shadow
-        }}>
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-8">
           <ModernCalendar
             appointments={appointments.map(mapToModernCalendarFormat)}
             onAppointmentClick={(appointment) => {
@@ -581,34 +503,23 @@ export default function CalendarPage() {
         </div>
 
         {/* Team Status */}
-        <div className="rounded-lg border shadow-sm p-6" style={{
-          backgroundColor: colors.cardBackground,
-          borderColor: colors.border,
-          boxShadow: colors.shadow
-        }}>
-          <h3 className="text-lg font-semibold mb-4" style={{
-            color: colors.textPrimary
-          }}>Team Status</h3>
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Team Status</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {barbers.map((barber) => (
-              <div key={barber.id} className="flex items-center justify-between p-4 rounded-lg border" style={{
-                backgroundColor: theme === 'dark' ? '#4b5563' : '#f9fafb',
-                borderColor: colors.border
-              }}>
+              <div key={barber.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <div className="flex items-center space-x-3">
                   <div className={`w-3 h-3 rounded-full ${
                     barber.status === 'online' ? 'bg-teal-500' :
                     barber.status === 'busy' ? 'bg-gray-400' : 'bg-gray-600'
                   }`}></div>
-                  <span className="font-medium" style={{
-                    color: colors.textPrimary
-                  }}>{barber.name}</span>
+                  <span className="font-medium text-gray-900">{barber.name}</span>
                 </div>
-                <span className="text-sm font-medium" style={{
-                  color: barber.status === 'online'
-                    ? '#0d9488'
-                    : colors.textSecondary
-                }}>
+                <span className={`text-sm font-medium ${
+                  barber.status === 'online'
+                    ? 'text-teal-600'
+                    : 'text-gray-500'
+                }`}>
                   {barber.status}
                 </span>
               </div>

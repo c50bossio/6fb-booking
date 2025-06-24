@@ -91,6 +91,7 @@ from api.v1.endpoints import (
     google_calendar,
     security_admin,
     health,
+    availability_check,
 )
 
 # Import logging setup
@@ -307,6 +308,11 @@ app.include_router(
     health.router,
     prefix="/api/v1",
     tags=["Health Monitoring"],
+)
+app.include_router(
+    availability_check.router,
+    prefix="/api/v1/availability",
+    tags=["Availability Check"],
 )
 
 # Add authentication system (disabled for now)

@@ -20,7 +20,8 @@ import {
   ChevronRightIcon,
   UsersIcon,
   BuildingLibraryIcon,
-  ClipboardDocumentListIcon
+  ClipboardDocumentListIcon,
+  ScissorsIcon
 } from '@heroicons/react/24/outline'
 
 interface SidebarProps {
@@ -51,6 +52,12 @@ const navigationItems = [
     href: '/appointments',
     icon: ClipboardDocumentListIcon,
     description: 'Schedule Management'
+  },
+  {
+    name: 'Services',
+    href: '/dashboard/services',
+    icon: ScissorsIcon,
+    description: 'Service Catalog'
   },
   {
     name: 'Barbers',
