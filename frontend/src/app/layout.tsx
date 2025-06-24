@@ -87,7 +87,7 @@ export default function RootLayout({
             </AuthProvider>
             <ExtensionDetector />
             <ExtensionErrorHandler />
-            <HighContrastEnforcer />
+            {/* <HighContrastEnforcer /> Temporarily disabled due to dark background conflicts */}
           </ThemeProvider>
         </ErrorBoundary>
       </body>
