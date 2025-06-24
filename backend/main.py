@@ -134,46 +134,8 @@ app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(RateLimitMiddleware)
 # app.add_middleware(SecurityHeadersEnhancedMiddleware)
 
-# Configure CORS with Security Enhancements
-# Get allowed origins with production safety
-if (
-    settings.ENVIRONMENT == "production"
-    and hasattr(settings, "CORS_STRICT_MODE")
-    and settings.CORS_STRICT_MODE
-):
-    # Production: Only allow specific domains
-    cors_origins = settings.production_cors_origins
-else:
-    # Development: Allow broader access
-    env_origins = (
-        os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
-        if os.getenv("CORS_ALLOWED_ORIGINS")
-        else []
-    )
-
-    default_origins = [
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://localhost:8081",  # 6FB Dashboard
-        "http://localhost:8082",  # Bossio Dashboard
-        "http://localhost:8083",  # Alternative dashboard
-        "https://sixfb-frontend.onrender.com",
-        "https://sixfb-frontend-paby.onrender.com",
-        "https://bookbarber.com",  # Production domain
-        "https://app.bookbarber.com",  # App subdomain
-    ]
-
-    # Only allow wildcards in development
-    if settings.ENVIRONMENT == "development":
-        default_origins.extend(
-            [
-                "https://bookbarber-dkbwc7iez-6fb.vercel.app",
-                "https://*.vercel.app",  # Preview deployments (dev only)
-            ]
-        )
-
-    cors_origins = list(set(env_origins + default_origins))
-    cors_origins = [origin.strip() for origin in cors_origins if origin.strip()]
+# Configure CORS - Use origins from settings which handles environment variable parsing
+cors_origins = settings.CORS_ORIGINS
 
 app.add_middleware(
     CORSMiddleware,
