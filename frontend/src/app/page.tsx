@@ -317,12 +317,73 @@ export default function LandingPage() {
           min-color-contrast: 7;
         }
 
-        /* Force white text on dark backgrounds */
+        /* NUCLEAR OPTION: Force white text on ALL dark backgrounds */
+        .bg-slate-800,
         .bg-slate-800 *,
+        .bg-slate-900,
         .bg-slate-900 *,
+        .bg-gray-900,
         .bg-gray-900 *,
+        .bg-slate-700,
+        .bg-slate-700 *,
+        .bg-slate-600,
+        .bg-slate-600 *,
+        [class*="from-slate-900"],
         [class*="from-slate-900"] *,
-        [class*="from-slate-800"] * {
+        [class*="from-slate-800"],
+        [class*="from-slate-800"] *,
+        [class*="from-slate-700"],
+        [class*="from-slate-700"] *,
+        [class*="from-slate-600"],
+        [class*="from-slate-600"] *,
+        [class*="via-slate-800"],
+        [class*="via-slate-800"] *,
+        [class*="to-slate-900"],
+        [class*="to-slate-900"] *,
+        [class*="to-slate-800"],
+        [class*="to-slate-800"] *,
+        [class*="to-slate-700"],
+        [class*="to-slate-700"] *,
+        [class*="bg-gradient-to-br"],
+        [class*="bg-gradient-to-br"] *,
+        [class*="bg-gradient-to-r"],
+        [class*="bg-gradient-to-r"] *,
+        .premium-button,
+        .premium-button *,
+        [class*="premium-button"],
+        [class*="premium-button"] *,
+        footer,
+        footer * {
+          color: white !important;
+          opacity: 1 !important;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        /* Force white text on buttons with dark backgrounds */
+        button[class*="bg-slate"],
+        button[class*="bg-slate"] *,
+        a[class*="bg-slate"],
+        a[class*="bg-slate"] *,
+        .bg-slate-700,
+        .bg-slate-700 *,
+        [class*="premium-button"],
+        [class*="premium-button"] * {
+          color: white !important;
+          opacity: 1 !important;
+        }
+
+        /* Override any remaining inline styles on dark backgrounds */
+        .bg-slate-800 [style*="color"],
+        .bg-slate-900 [style*="color"],
+        .bg-gray-900 [style*="color"],
+        .bg-slate-700 [style*="color"],
+        .bg-slate-600 [style*="color"],
+        section[class*="bg-slate"] [style*="color"],
+        [class*="from-slate"] [style*="color"],
+        [class*="to-slate"] [style*="color"],
+        [class*="via-slate"] [style*="color"],
+        [class*="premium-button"] [style*="color"],
+        footer [style*="color"] {
           color: white !important;
         }
 
@@ -559,7 +620,7 @@ export default function LandingPage() {
                   </div>
                   <div>
                     <div className="font-semibold text-white">{testimonial.name}</div>
-                    <div className="text-slate-200 text-sm font-semibold">{testimonial.title}</div>
+                    <div className="text-slate-100 text-sm font-semibold">{testimonial.title}</div>
                   </div>
                 </div>
               </div>
@@ -569,23 +630,23 @@ export default function LandingPage() {
           {/* Success Metrics */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             <div className="text-center glass-card-enhanced p-6 hover-lift">
-              <div className="text-4xl font-bold mb-2" style={{color: 'white'}}>$2.5M+</div>
-              <div className="font-medium" style={{color: 'white', fontWeight: '500'}}>Paid Out Monthly</div>
+              <div className="text-4xl font-bold mb-2 text-white">$2.5M+</div>
+              <div className="font-medium text-white">Paid Out Monthly</div>
               <div className="mt-3 w-10 h-1 bg-gradient-to-r from-teal-500 to-teal-600 rounded-full mx-auto"></div>
             </div>
             <div className="text-center glass-card-enhanced p-6 hover-lift">
-              <div className="text-4xl font-bold mb-2" style={{color: 'white'}}>45K+</div>
-              <div className="font-medium" style={{color: 'white', fontWeight: '500'}}>Appointments Tracked</div>
+              <div className="text-4xl font-bold mb-2 text-white">45K+</div>
+              <div className="font-medium text-white">Appointments Tracked</div>
               <div className="mt-3 w-10 h-1 bg-gradient-to-r from-slate-400 to-slate-500 rounded-full mx-auto"></div>
             </div>
             <div className="text-center glass-card-enhanced p-6 hover-lift">
-              <div className="text-4xl font-bold mb-2" style={{color: 'white'}}>98%</div>
-              <div className="font-medium" style={{color: 'white', fontWeight: '500'}}>On-Time Payouts</div>
+              <div className="text-4xl font-bold mb-2 text-white">98%</div>
+              <div className="font-medium text-white">On-Time Payouts</div>
               <div className="mt-3 w-10 h-1 bg-gradient-to-r from-teal-500 to-teal-600 rounded-full mx-auto"></div>
             </div>
             <div className="text-center glass-card-enhanced p-6 hover-lift">
-              <div className="text-4xl font-bold mb-2" style={{color: 'white'}}>30 sec</div>
-              <div className="font-medium" style={{color: 'white', fontWeight: '500'}}>Instant Transfers</div>
+              <div className="text-4xl font-bold mb-2 text-white">30 sec</div>
+              <div className="font-medium text-white">Instant Transfers</div>
               <div className="mt-3 w-10 h-1 bg-gradient-to-r from-slate-400 to-slate-500 rounded-full mx-auto"></div>
             </div>
           </div>
