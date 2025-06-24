@@ -264,18 +264,27 @@ export default function LandingPage() {
           opacity: 1 !important;
         }
 
-        /* Header navigation - FORCED DARK */
+        /* Header navigation - FORCED PURE BLACK */
         .header-nav-link,
         header a:not([class*="premium"]),
-        nav a {
-          color: var(--force-text-gray-900) !important;
-          font-weight: 600 !important;
+        header a[href="/app"],
+        header a[href="/login"],
+        nav a,
+        .sticky a:not([class*="premium"]) {
+          color: #000000 !important;
+          font-weight: 700 !important;
           opacity: 1 !important;
+          text-decoration: none !important;
         }
         .header-nav-link:hover,
-        header a:not([class*="premium"]):hover {
-          color: var(--force-text-dark) !important;
-          opacity: 1 !important;
+        header a:not([class*="premium"]):hover,
+        header a[href="/app"]:hover,
+        header a[href="/login"]:hover,
+        nav a:hover,
+        .sticky a:not([class*="premium"]):hover {
+          color: #000000 !important;
+          opacity: 0.8 !important;
+          text-decoration: underline !important;
         }
 
         /* Footer - LIGHT ON DARK */
@@ -366,11 +375,11 @@ export default function LandingPage() {
               <Link
                 href="/app"
                 className="header-nav-link transition-colors"
-                style={{color: '#111827', fontWeight: '600', opacity: 1}}
+                style={{color: '#000000 !important', fontWeight: '700 !important', opacity: '1 !important'}}
               >
                 Live Demo
               </Link>
-              <Link href="/login" className="header-nav-link transition-colors" style={{color: '#111827', fontWeight: '600', opacity: 1}}>
+              <Link href="/login" className="header-nav-link transition-colors" style={{color: '#000000 !important', fontWeight: '700 !important', opacity: '1 !important'}}>
                 Sign In
               </Link>
               <Link
