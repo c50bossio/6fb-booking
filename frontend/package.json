@@ -24,12 +24,14 @@
     "rollback:create": "node scripts/rollback-plan.js --create",
     "rollback:checkpoint": "node scripts/rollback-plan.js --checkpoint",
     "rollback:execute": "node scripts/rollback-plan.js --execute",
-    "predeploy": "npm run validate:deployment && npm run rollback:checkpoint"
+    "predeploy": "npm run validate:deployment && npm run rollback:checkpoint",
+    "postinstall": "node scripts/verify-contact-page.js"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",
     "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.1.1",
+    "@radix-ui/react-avatar": "^1.1.2",
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-dropdown-menu": "^2.1.15",
     "@radix-ui/react-progress": "^1.1.7",
