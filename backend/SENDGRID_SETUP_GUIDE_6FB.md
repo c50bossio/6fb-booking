@@ -25,7 +25,7 @@ This guide helps Six Figure Barber set up a **company-level email service** that
 
 ### Step 1: Create SendGrid Account
 1. Go to [sendgrid.com](https://sendgrid.com)
-2. Click "Start for Free" 
+2. Click "Start for Free"
 3. Sign up with Six Figure Barber business email
 4. Choose the plan that fits your email volume:
    - **Free**: 100 emails/day (good for testing)
@@ -55,7 +55,7 @@ This guide helps Six Figure Barber set up a **company-level email service** that
 4. Permissions: **"Restricted Access"**
 5. Select these permissions:
    - Mail Send: **FULL ACCESS**
-   - Template Engine: **FULL ACCESS** 
+   - Template Engine: **FULL ACCESS**
    - Suppressions: **FULL ACCESS**
    - Stats: **READ ACCESS**
 6. Copy the API key (starts with `SG.`)
@@ -101,7 +101,7 @@ Instead of `noreply@sixfigurebarber.com`, you can use:
 ### Multiple From Addresses
 Set up different email addresses for different purposes:
 - `appointments@sixfigurebarber.com` - Appointment emails
-- `marketing@sixfigurebarber.com` - Promotional campaigns  
+- `marketing@sixfigurebarber.com` - Promotional campaigns
 - `support@sixfigurebarber.com` - Customer service
 - `billing@sixfigurebarber.com` - Payment notifications
 

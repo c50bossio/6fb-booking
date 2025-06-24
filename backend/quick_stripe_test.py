@@ -21,36 +21,36 @@ if stripe.api_key:
         print("✅ Using LIVE mode Stripe key")
     else:
         print("⚠️  Invalid Stripe key format")
-    
+
     try:
         # Test API connection
         account = stripe.Account.retrieve()
         print(f"\n✅ Connected to Stripe Account:")
         print(f"   ID: {account.id}")
-        print(f"   Business: {account.business_profile.name if hasattr(account, 'business_profile') else 'Not set'}")
+        print(
+            f"   Business: {account.business_profile.name if hasattr(account, 'business_profile') else 'Not set'}"
+        )
         print(f"   Country: {account.country}")
-        
+
         # Check capabilities
         if hasattr(account, "capabilities"):
             print(f"\n📋 Account Capabilities:")
             print(f"   Card Payments: {account.capabilities.card_payments}")
             print(f"   Transfers: {account.capabilities.transfers}")
-        
+
         # Test creating a payment intent
         print("\n💳 Testing Payment Intent Creation...")
         test_intent = stripe.PaymentIntent.create(
-            amount=100,  # $1.00
-            currency="usd",
-            metadata={"test": "true"}
+            amount=100, currency="usd", metadata={"test": "true"}  # $1.00
         )
         print(f"✅ Created test payment intent: {test_intent.id}")
         print(f"   Amount: ${test_intent.amount/100:.2f}")
         print(f"   Status: {test_intent.status}")
-        
+
         # Cancel it
         stripe.PaymentIntent.cancel(test_intent.id)
         print("✅ Test payment intent cancelled")
-        
+
         # Check webhooks
         print("\n🔗 Checking Webhook Endpoints...")
         webhooks = stripe.WebhookEndpoint.list(limit=10)
@@ -62,13 +62,17 @@ if stripe.api_key:
                 print(f"     Events: {len(webhook.enabled_events)}")
         else:
             print("❌ No webhook endpoints configured")
-            print("   Run: python scripts/configure_stripe_webhooks.py --url <your-domain>/api/v1/webhooks/stripe")
-        
+            print(
+                "   Run: python scripts/configure_stripe_webhooks.py --url <your-domain>/api/v1/webhooks/stripe"
+            )
+
         # Check Connect settings
-        print(f"\n🔗 Stripe Connect Client ID: {os.getenv('STRIPE_CONNECT_CLIENT_ID', 'Not set')}")
-        
+        print(
+            f"\n🔗 Stripe Connect Client ID: {os.getenv('STRIPE_CONNECT_CLIENT_ID', 'Not set')}"
+        )
+
         print("\n✅ Stripe is properly configured and working!")
-        
+
     except stripe.error.StripeError as e:
         print(f"\n❌ Stripe API Error: {e}")
 else:
@@ -84,6 +88,18 @@ else:
     print("   Webhooks will not work without this!")
 
 print("\n📝 Summary:")
-print("   - Payment processing: ✅ READY" if stripe.api_key else "   - Payment processing: ❌ NOT CONFIGURED")
-print("   - Webhook processing: ✅ READY" if webhook_secret else "   - Webhook processing: ⚠️  NEEDS CONFIGURATION")
-print("   - Stripe Connect: ✅ READY" if os.getenv("STRIPE_CONNECT_CLIENT_ID") else "   - Stripe Connect: ❌ NOT CONFIGURED")
+print(
+    "   - Payment processing: ✅ READY"
+    if stripe.api_key
+    else "   - Payment processing: ❌ NOT CONFIGURED"
+)
+print(
+    "   - Webhook processing: ✅ READY"
+    if webhook_secret
+    else "   - Webhook processing: ⚠️  NEEDS CONFIGURATION"
+)
+print(
+    "   - Stripe Connect: ✅ READY"
+    if os.getenv("STRIPE_CONNECT_CLIENT_ID")
+    else "   - Stripe Connect: ❌ NOT CONFIGURED"
+)

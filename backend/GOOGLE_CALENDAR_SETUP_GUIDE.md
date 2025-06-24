@@ -87,20 +87,20 @@ GET /api/v1/calendar/events?start_date=2025-06-24&end_date=2025-06-30&include_go
 // Calendar settings section
 const CalendarSettings = () => {
   const [status, setStatus] = useState(null);
-  
+
   // Check connection status
   useEffect(() => {
     fetch('/api/v1/calendar/oauth/status')
       .then(res => res.json())
       .then(data => setStatus(data.google_calendar));
   }, []);
-  
+
   const connectCalendar = async () => {
     const res = await fetch('/api/v1/calendar/oauth/connect');
     const { authorization_url } = await res.json();
     window.location.href = authorization_url;
   };
-  
+
   return (
     <div>
       {status?.connected ? (
@@ -123,7 +123,7 @@ const CalendarSettings = () => {
 // Show Google Calendar events alongside appointments
 const CalendarView = () => {
   const [events, setEvents] = useState([]);
-  
+
   const loadEvents = async () => {
     const res = await fetch(
       `/api/v1/calendar/events?start_date=${startDate}&end_date=${endDate}&include_google_calendar=true`
@@ -131,7 +131,7 @@ const CalendarView = () => {
     const data = await res.json();
     setEvents(data);
   };
-  
+
   // Events include both appointments and Google Calendar items
 };
 ```

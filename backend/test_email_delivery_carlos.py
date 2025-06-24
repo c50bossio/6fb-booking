@@ -18,6 +18,7 @@ SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY", "")
 GMAIL_USERNAME = os.getenv("SMTP_USERNAME", "c50bossio@gmail.com")
 GMAIL_PASSWORD = os.getenv("SMTP_PASSWORD", "")
 
+
 def print_header():
     """Print test header"""
     print("=" * 80)
@@ -27,57 +28,72 @@ def print_header():
     print("🎯 Testing email delivery to c50bossio@gmail.com")
     print("=" * 80)
 
+
 def check_email_configurations():
     """Check available email delivery methods"""
     print("\n🔧 CHECKING EMAIL CONFIGURATIONS")
     print("-" * 50)
-    
-    sendgrid_available = SENDGRID_API_KEY and SENDGRID_API_KEY != "SG.demo-key-replace-with-real-sendgrid-api-key"
-    gmail_available = GMAIL_PASSWORD and GMAIL_PASSWORD != "demo-password-replace-with-real-gmail-app-password"
-    
-    print(f"📧 SendGrid API Key: {'✅ Configured' if sendgrid_available else '❌ Demo key (not configured)'}")
-    print(f"📨 Gmail SMTP: {'✅ Configured' if gmail_available else '❌ Demo password (not configured)'}")
+
+    sendgrid_available = (
+        SENDGRID_API_KEY
+        and SENDGRID_API_KEY != "SG.demo-key-replace-with-real-sendgrid-api-key"
+    )
+    gmail_available = (
+        GMAIL_PASSWORD
+        and GMAIL_PASSWORD != "demo-password-replace-with-real-gmail-app-password"
+    )
+
+    print(
+        f"📧 SendGrid API Key: {'✅ Configured' if sendgrid_available else '❌ Demo key (not configured)'}"
+    )
+    print(
+        f"📨 Gmail SMTP: {'✅ Configured' if gmail_available else '❌ Demo password (not configured)'}"
+    )
     print(f"📬 From Email: {os.getenv('FROM_EMAIL', 'noreply@sixfigurebarber.com')}")
     print(f"🎯 Test Target: c50bossio@gmail.com")
-    
+
     return sendgrid_available, gmail_available
+
 
 async def test_sendgrid_delivery():
     """Test email delivery using SendGrid"""
     print("\n📧 TESTING SENDGRID DELIVERY")
     print("-" * 50)
-    
+
     try:
         # Check if SendGrid is properly configured
-        if not SENDGRID_API_KEY or SENDGRID_API_KEY == "SG.demo-key-replace-with-real-sendgrid-api-key":
+        if (
+            not SENDGRID_API_KEY
+            or SENDGRID_API_KEY == "SG.demo-key-replace-with-real-sendgrid-api-key"
+        ):
             print("❌ SendGrid API key not configured")
             print("🔧 To configure:")
             print("   1. Get API key from SendGrid dashboard")
             print("   2. Update SENDGRID_API_KEY in .env file")
             print("   3. See SENDGRID_SETUP_GUIDE_6FB.md for details")
             return False
-            
+
         # Get email service
         service = get_email_campaign_service()
-        
+
         # Test Valentine's Day email
         print("💕 Testing Valentine's Day email via SendGrid...")
-        config = EmailCampaignConfigManager.get_config('valentines_with_discount')
-        
+        config = EmailCampaignConfigManager.get_config("valentines_with_discount")
+
         test_data = {
-            'client_first_name': 'Carlos',
-            'barbershop_name': 'Six Figure Barber - SendGrid Test',
+            "client_first_name": "Carlos",
+            "barbershop_name": "Six Figure Barber - SendGrid Test",
             **config.to_dict(),
-            'unsubscribe_link': 'https://sixfigurebarber.com/unsubscribe'
+            "unsubscribe_link": "https://sixfigurebarber.com/unsubscribe",
         }
-        
+
         # Send email using the campaign service
         success = await service.send_campaign_email(
             to_email="c50bossio@gmail.com",
             template_id="valentines_day_special",
-            template_data=test_data
+            template_data=test_data,
         )
-        
+
         if success:
             print("🎉 SendGrid email sent successfully!")
             print("📧 Check c50bossio@gmail.com inbox")
@@ -85,26 +101,30 @@ async def test_sendgrid_delivery():
         else:
             print("❌ SendGrid delivery failed")
             return False
-            
+
     except Exception as e:
         print(f"❌ SendGrid error: {e}")
         return False
+
 
 def test_gmail_smtp_delivery():
     """Test email delivery using Gmail SMTP"""
     print("\n📨 TESTING GMAIL SMTP DELIVERY")
     print("-" * 50)
-    
+
     try:
         # Check if Gmail SMTP is configured
-        if not GMAIL_PASSWORD or GMAIL_PASSWORD == "demo-password-replace-with-real-gmail-app-password":
+        if (
+            not GMAIL_PASSWORD
+            or GMAIL_PASSWORD == "demo-password-replace-with-real-gmail-app-password"
+        ):
             print("❌ Gmail app password not configured")
             print("🔧 To configure:")
             print("   1. Enable 2FA on c50bossio@gmail.com")
             print("   2. Generate App Password in Google Account settings")
             print("   3. Update SMTP_PASSWORD in .env file")
             return False
-            
+
         # Create test email content
         subject = "🎊 Six Figure Barber - Gmail SMTP Test"
         html_content = """
@@ -130,78 +150,87 @@ def test_gmail_smtp_delivery():
         </body>
         </html>
         """
-        
+
         text_content = """
         Six Figure Barber - Gmail SMTP Test
-        
+
         Hello Carlos,
-        
+
         This is a test email from the Six Figure Barber email system using Gmail SMTP delivery.
         If you're reading this, the email delivery is working perfectly!
-        
+
         Email System Status: WORKING ✅
-        
+
         Six Figure Barber | Company-Level Email Service
         """
-        
+
         # Send email via Gmail SMTP
         print("📤 Sending test email via Gmail SMTP...")
-        
+
         message = MIMEMultipart("alternative")
         message["From"] = GMAIL_USERNAME
         message["To"] = "c50bossio@gmail.com"
         message["Subject"] = subject
-        
+
         # Add text and HTML parts
         text_part = MIMEText(text_content, "plain")
         html_part = MIMEText(html_content, "html")
-        
+
         message.attach(text_part)
         message.attach(html_part)
-        
+
         # Send via SMTP
         server = smtplib.SMTP("smtp.gmail.com", 587)
         server.starttls()
         server.login(GMAIL_USERNAME, GMAIL_PASSWORD)
         server.sendmail(GMAIL_USERNAME, "c50bossio@gmail.com", message.as_string())
         server.quit()
-        
+
         print("🎉 Gmail SMTP email sent successfully!")
         print("📧 Check c50bossio@gmail.com inbox")
         return True
-        
+
     except Exception as e:
         print(f"❌ Gmail SMTP error: {e}")
         return False
+
 
 async def test_template_rendering():
     """Test email template rendering without delivery"""
     print("\n🎨 TESTING EMAIL TEMPLATE RENDERING")
     print("-" * 50)
-    
+
     try:
         service = get_email_campaign_service()
-        
+
         # Test multiple configurations
         test_configs = [
-            ("Valentine's with discount", "valentines_day_special", "valentines_with_discount"),
+            (
+                "Valentine's with discount",
+                "valentines_day_special",
+                "valentines_with_discount",
+            ),
             ("Valentine's no offer", "valentines_day_special", "valentines_no_offer"),
-            ("Father's Day family deal", "fathers_day_special", "fathers_day_family_deal")
+            (
+                "Father's Day family deal",
+                "fathers_day_special",
+                "fathers_day_family_deal",
+            ),
         ]
-        
+
         for name, template_id, config_name in test_configs:
             print(f"\n🎯 Testing: {name}")
             config = EmailCampaignConfigManager.get_config(config_name)
-            
+
             test_data = {
-                'client_first_name': 'Carlos',
-                'barbershop_name': 'Six Figure Barber',
+                "client_first_name": "Carlos",
+                "barbershop_name": "Six Figure Barber",
                 **config.to_dict(),
-                'unsubscribe_link': 'https://sixfigurebarber.com/unsubscribe'
+                "unsubscribe_link": "https://sixfigurebarber.com/unsubscribe",
             }
-            
+
             rendered = await service.render_template(template_id, test_data)
-            
+
             print(f"   📧 Subject: {rendered['subject']}")
             if config.has_offer:
                 print(f"   💰 Offer: {config.offer_details}")
@@ -209,12 +238,13 @@ async def test_template_rendering():
             else:
                 print(f"   💎 Focus: Premium experience")
             print(f"   ✅ Template rendered successfully")
-            
+
         return True
-        
+
     except Exception as e:
         print(f"❌ Template rendering error: {e}")
         return False
+
 
 def show_setup_instructions():
     """Show setup instructions for email delivery"""
@@ -241,7 +271,10 @@ def show_setup_instructions():
     print("      3. Generate new app password for 'Mail'")
     print("      4. Update SMTP_PASSWORD in .env file")
     print()
-    print("🎯 RECOMMENDED: Start with Gmail for testing, then add SendGrid for production")
+    print(
+        "🎯 RECOMMENDED: Start with Gmail for testing, then add SendGrid for production"
+    )
+
 
 def show_next_steps():
     """Show next steps after email setup"""
@@ -257,47 +290,55 @@ def show_next_steps():
     print("8. 🏢 Train franchise owners on email system")
     print("9. 🎯 Launch holiday email campaigns")
 
+
 async def main():
     """Main test function"""
     print_header()
-    
+
     # Check configurations
     sendgrid_available, gmail_available = check_email_configurations()
-    
+
     # Test template rendering (always works)
     template_success = await test_template_rendering()
-    
+
     # Test actual delivery based on what's configured
     delivery_success = False
-    
+
     if sendgrid_available:
         sendgrid_success = await test_sendgrid_delivery()
         delivery_success = delivery_success or sendgrid_success
-    
+
     if gmail_available:
         gmail_success = test_gmail_smtp_delivery()
         delivery_success = delivery_success or gmail_success
-    
+
     # Show results
     print("\n" + "=" * 80)
     print("📊 TEST RESULTS SUMMARY")
     print("=" * 80)
     print(f"🎨 Template Rendering: {'✅ WORKING' if template_success else '❌ FAILED'}")
-    print(f"📧 SendGrid Delivery: {'✅ WORKING' if sendgrid_available else '⚙️ NOT CONFIGURED'}")
-    print(f"📨 Gmail SMTP Delivery: {'✅ WORKING' if gmail_available else '⚙️ NOT CONFIGURED'}")
-    print(f"🎯 Overall Email System: {'✅ READY' if delivery_success else '🔧 NEEDS SETUP'}")
-    
+    print(
+        f"📧 SendGrid Delivery: {'✅ WORKING' if sendgrid_available else '⚙️ NOT CONFIGURED'}"
+    )
+    print(
+        f"📨 Gmail SMTP Delivery: {'✅ WORKING' if gmail_available else '⚙️ NOT CONFIGURED'}"
+    )
+    print(
+        f"🎯 Overall Email System: {'✅ READY' if delivery_success else '🔧 NEEDS SETUP'}"
+    )
+
     if not delivery_success:
         show_setup_instructions()
     else:
         print("\n🎉 Email system is working! Check c50bossio@gmail.com")
         print("📈 Ready for holiday email campaigns and production use")
-    
+
     show_next_steps()
-    
+
     print("\n" + "=" * 80)
     print("📧 Six Figure Barber Email Delivery Test Complete")
     print("=" * 80)
+
 
 if __name__ == "__main__":
     asyncio.run(main())
