@@ -2,6 +2,120 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import high contrast overrides - MUST be after tailwind imports */
+@import './high-contrast-overrides.css';
+
+/* NUCLEAR OPTION: Global contrast enforcement */
+@layer base {
+  /* Force maximum contrast on all text elements */
+  :root {
+    --tw-text-opacity: 1 !important;
+  }
+
+  /* Override any transparency on text */
+  body * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Force dark text on light backgrounds */
+  .bg-white *:not(.text-white):not([class*="text-white"]),
+  .bg-gray-50 *:not(.text-white):not([class*="text-white"]),
+  .bg-gray-100 *:not(.text-white):not([class*="text-white"]),
+  .bg-slate-50 *:not(.text-white):not([class*="text-white"]),
+  .bg-slate-100 *:not(.text-white):not([class*="text-white"]) {
+    color: rgb(17, 24, 39) !important; /* gray-900 */
+    opacity: 1 !important;
+  }
+
+  /* Ensure paragraphs and descriptions are readable */
+  p:not([class*="text-white"]):not(.on-dark-bg),
+  .description:not([class*="text-white"]),
+  [class*="description"]:not([class*="text-white"]) {
+    color: rgb(17, 24, 39) !important;
+    font-weight: 500 !important;
+    opacity: 1 !important;
+  }
+
+  /* Stats and metrics text */
+  [class*="stats"] div:last-child,
+  [class*="metric"] div:last-child,
+  .text-sm.font-medium:not([class*="text-white"]) {
+    color: rgb(0, 0, 0) !important;
+    font-weight: 600 !important;
+    opacity: 1 !important;
+  }
+
+  /* Navigation links */
+  nav a:not([class*="bg-"]):not([class*="text-white"]),
+  header a:not([class*="bg-"]):not([class*="text-white"]) {
+    color: rgb(17, 24, 39) !important;
+    font-weight: 600 !important;
+    opacity: 1 !important;
+  }
+
+  /* Feature and pricing text */
+  [class*="feature"] p:not([class*="text-white"]),
+  [class*="pricing"] p:not([class*="text-white"]),
+  [class*="plan"] p:not([class*="text-white"]) {
+    color: rgb(17, 24, 39) !important;
+    opacity: 1 !important;
+  }
+
+  /* List items */
+  li span:not([class*="text-white"]),
+  li:not([class*="text-white"]) {
+    color: rgb(17, 24, 39) !important;
+    opacity: 1 !important;
+  }
+
+  /* Dark backgrounds - force white text */
+  .bg-slate-800 *,
+  .bg-slate-900 *,
+  .bg-gray-800 *,
+  .bg-gray-900 *,
+  [class*="from-slate-800"] *,
+  [class*="from-slate-900"] *,
+  [class*="from-gray-800"] *,
+  [class*="from-gray-900"] * {
+    color: white !important;
+    opacity: 1 !important;
+  }
+
+  /* Footer specific overrides */
+  footer p,
+  footer a:not(h3),
+  footer span {
+    color: rgb(229, 231, 235) !important; /* gray-200 */
+    opacity: 1 !important;
+  }
+
+  footer a:hover {
+    color: white !important;
+    opacity: 1 !important;
+  }
+
+  /* Remove all text opacity modifiers */
+  .text-opacity-90,
+  .text-opacity-80,
+  .text-opacity-70,
+  .text-opacity-60,
+  .text-opacity-50 {
+    --tw-text-opacity: 1 !important;
+  }
+
+  /* High contrast mode for accessibility */
+  @media (prefers-contrast: high) {
+    * {
+      --tw-text-opacity: 1 !important;
+    }
+
+    p, span, div, li {
+      font-weight: 500 !important;
+    }
+  }
+}
+
 /* Premium animations */
 @keyframes blob {
   0% {

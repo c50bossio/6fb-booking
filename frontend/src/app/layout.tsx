@@ -8,6 +8,7 @@ import ClientOnly from "@/components/ClientOnly";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ExtensionDetector from "@/components/ExtensionDetector";
 import ExtensionErrorHandler from "@/components/ExtensionErrorHandler";
+import HighContrastEnforcer from "@/components/HighContrastEnforcer";
 import Script from "next/script";
 
 const geistSans = Geist({
@@ -83,6 +84,7 @@ export default function RootLayout({
             </AuthProvider>
             <ExtensionDetector />
             <ExtensionErrorHandler />
+            <HighContrastEnforcer />
           </ThemeProvider>
         </ErrorBoundary>
       </body>
