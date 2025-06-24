@@ -53,6 +53,7 @@ export default function CalendarPage() {
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [darkMode, setDarkMode] = useState(true)
 
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -341,10 +342,10 @@ export default function CalendarPage() {
         title="Calendar"
         description="Manage appointments and schedules"
       >
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
-          <div className="flex items-center justify-center h-96">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-500"></div>
-          </div>
+        <div className={`min-h-screen flex items-center justify-center transition-colors duration-300 ${
+          darkMode ? 'bg-gray-900' : 'bg-gray-50'
+        }`}>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
         </div>
       </div>
     )
@@ -368,12 +369,17 @@ export default function CalendarPage() {
       title="Calendar"
       description="Manage appointments and schedules"
     >
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
-        {/* Animated Background Blobs */}
+      <div className={`min-h-screen transition-colors duration-300 ${
+        darkMode ? 'bg-[#171717]' : 'bg-gray-50'
+      }`}>
+        {/* Subtle background texture */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-slate-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-slate-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-          <div className="absolute top-40 left-40 w-80 h-80 bg-teal-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+          <div className={`absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500 rounded-full filter blur-3xl ${
+            darkMode ? 'opacity-[0.03]' : 'opacity-[0.02]'
+          }`}></div>
+          <div className={`absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-400 rounded-full filter blur-3xl ${
+            darkMode ? 'opacity-[0.03]' : 'opacity-[0.02]'
+          }`}></div>
         </div>
 
         <div className="relative z-10 p-4 sm:p-6 lg:p-8">
@@ -381,38 +387,76 @@ export default function CalendarPage() {
           <div className="mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+                <h1 className={`text-3xl sm:text-4xl font-bold mb-2 ${
+                  darkMode ? 'text-white' : 'text-gray-900'
+                }`}>
                   Calendar
                 </h1>
-                <p className="text-gray-300 dark:text-gray-400 text-lg">
+                <p className={`text-lg ${
+                  darkMode ? 'text-gray-300' : 'text-gray-600'
+                }`}>
                   Manage your appointments and schedule
                 </p>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
+                  onClick={() => setDarkMode(!darkMode)}
+                  className={`px-4 py-3 font-medium rounded-lg border transition-all duration-200 ${
+                    darkMode
+                      ? 'bg-[#2a2a2a] hover:bg-[#333333] text-white border-[#404040] hover:border-emerald-500/50'
+                      : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-emerald-500/40 shadow-sm'
+                  }`}
+                >
+                  {darkMode ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                  )}
+                </button>
+                <button
                   onClick={handleNewAppointment}
-                  className="px-6 py-3 bg-gradient-to-r from-slate-600 to-slate-700 text-white font-semibold rounded-xl hover:from-slate-700 hover:to-slate-800 hover:shadow-lg hover:shadow-slate-500/25 transform hover:-translate-y-0.5 transition-all duration-200"
+                  className={`px-6 py-3 font-medium rounded-lg border transition-all duration-200 ${
+                    darkMode
+                      ? 'bg-[#2a2a2a] hover:bg-[#333333] text-white border-[#404040] hover:border-emerald-500/50'
+                      : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-emerald-500/40 shadow-sm'
+                  }`}
                 >
                   New Appointment
                 </button>
-                <div className="flex rounded-xl bg-gray-800/50 backdrop-blur-sm border border-gray-700 p-1">
+                <div className={`flex rounded-lg p-1 border transition-colors duration-200 ${
+                  darkMode
+                    ? 'bg-[#2a2a2a] border-[#404040]'
+                    : 'bg-gray-100 border-gray-200'
+                }`}>
                   <button
                     onClick={() => setViewMode('week')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
                       viewMode === 'week'
-                        ? 'bg-slate-600 text-white shadow-lg'
-                        : 'text-gray-400 hover:text-white'
+                        ? darkMode
+                          ? 'bg-[#333333] text-white border border-emerald-500/40'
+                          : 'bg-white text-gray-900 border border-emerald-500/30 shadow-sm'
+                        : darkMode
+                          ? 'text-gray-300 hover:text-white hover:bg-[#333333]'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
                   >
                     Week
                   </button>
                   <button
                     onClick={() => setViewMode('day')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
                       viewMode === 'day'
-                        ? 'bg-slate-600 text-white shadow-lg'
-                        : 'text-gray-400 hover:text-white'
+                        ? darkMode
+                          ? 'bg-[#333333] text-white border border-emerald-500/40'
+                          : 'bg-white text-gray-900 border border-emerald-500/30 shadow-sm'
+                        : darkMode
+                          ? 'text-gray-300 hover:text-white hover:bg-[#333333]'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
                   >
                     Day
@@ -424,15 +468,25 @@ export default function CalendarPage() {
 
           {/* Error Notification */}
           {error && (
-            <div className="mb-6 bg-red-900/20 border border-red-800/50 rounded-lg p-4">
+            <div className={`mb-6 rounded-lg p-4 border ${
+              darkMode
+                ? 'bg-red-900/20 border-red-800/50'
+                : 'bg-red-50 border-red-200'
+            }`}>
               <div className="flex items-center">
-                <svg className="w-5 h-5 text-red-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className={`w-5 h-5 mr-2 flex-shrink-0 ${
+                  darkMode ? 'text-red-400' : 'text-red-600'
+                }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <p className="text-red-300 text-sm">{error}</p>
+                <p className={`text-sm ${
+                  darkMode ? 'text-red-300' : 'text-red-700'
+                }`}>{error}</p>
                 <button
                   onClick={() => setError(null)}
-                  className="ml-auto text-red-400 hover:text-red-300"
+                  className={`ml-auto ${
+                    darkMode ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-500'
+                  }`}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -444,56 +498,106 @@ export default function CalendarPage() {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
-            <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 hover:scale-105 hover:bg-gray-800/40 transition-all duration-300 hover:shadow-lg hover:shadow-slate-500/10">
+            <div className={`rounded-lg p-6 border transition-all duration-200 ${
+              darkMode
+                ? 'bg-[#2a2a2a] border-[#404040] hover:bg-[#333333] hover:border-[#505050]'
+                : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300 shadow-sm hover:shadow-md'
+            }`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-300 dark:text-gray-400 text-sm font-medium">Today's Appointments</p>
-                  <p className="text-2xl font-bold text-white mt-1">{todayAppointments.length}</p>
+                  <p className={`text-sm font-medium ${
+                    darkMode ? 'text-gray-300' : 'text-gray-600'
+                  }`}>Today's Appointments</p>
+                  <p className={`text-2xl font-bold mt-1 ${
+                    darkMode ? 'text-white' : 'text-gray-900'
+                  }`}>{todayAppointments.length}</p>
                 </div>
-                <div className="w-10 h-10 bg-gradient-to-r from-slate-500 to-slate-600 rounded-lg flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                  darkMode ? 'bg-[#333333] border border-[#505050]' : 'bg-gray-100 border border-gray-200'
+                }`}>
+                  <svg className={`w-5 h-5 ${
+                    darkMode ? 'text-gray-300' : 'text-gray-600'
+                  }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
               </div>
             </div>
 
-            <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 hover:scale-105 hover:bg-gray-800/40 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10">
+            <div className={`rounded-lg p-6 border transition-all duration-200 ${
+              darkMode
+                ? 'bg-gray-800 border-gray-700 hover:bg-gray-750 hover:border-gray-600'
+                : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300 shadow-sm hover:shadow-md'
+            }`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-300 dark:text-gray-400 text-sm font-medium">Week Revenue</p>
-                  <p className="text-2xl font-bold text-white mt-1">${weekRevenue}</p>
+                  <p className={`text-sm font-medium ${
+                    darkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`}>Week Revenue</p>
+                  <p className={`text-2xl font-bold mt-1 ${
+                    darkMode ? 'text-gray-100' : 'text-gray-900'
+                  }`}>${weekRevenue}</p>
                 </div>
-                <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-green-500 rounded-lg flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                  darkMode
+                    ? 'bg-teal-500/10 border border-teal-500/20'
+                    : 'bg-teal-50 border border-teal-200'
+                }`}>
+                  <svg className={`w-5 h-5 ${
+                    darkMode ? 'text-teal-400' : 'text-teal-600'
+                  }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                   </svg>
                 </div>
               </div>
             </div>
 
-            <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 hover:scale-105 hover:bg-gray-800/40 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10">
+            <div className={`rounded-lg p-6 border transition-all duration-200 ${
+              darkMode
+                ? 'bg-gray-800 border-gray-700 hover:bg-gray-750 hover:border-gray-600'
+                : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300 shadow-sm hover:shadow-md'
+            }`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-300 dark:text-gray-400 text-sm font-medium">Available Barbers</p>
-                  <p className="text-2xl font-bold text-white mt-1">{availableBarbers}</p>
+                  <p className={`text-sm font-medium ${
+                    darkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`}>Available Barbers</p>
+                  <p className={`text-2xl font-bold mt-1 ${
+                    darkMode ? 'text-gray-100' : 'text-gray-900'
+                  }`}>{availableBarbers}</p>
                 </div>
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                  darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-100 border border-gray-200'
+                }`}>
+                  <svg className={`w-5 h-5 ${
+                    darkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                 </div>
               </div>
             </div>
 
-            <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 hover:scale-105 hover:bg-gray-800/40 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/10">
+            <div className={`rounded-lg p-6 border transition-all duration-200 ${
+              darkMode
+                ? 'bg-gray-800 border-gray-700 hover:bg-gray-750 hover:border-gray-600'
+                : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300 shadow-sm hover:shadow-md'
+            }`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-300 dark:text-gray-400 text-sm font-medium">Completion Rate</p>
-                  <p className="text-2xl font-bold text-white mt-1">98%</p>
+                  <p className={`text-sm font-medium ${
+                    darkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`}>Completion Rate</p>
+                  <p className={`text-2xl font-bold mt-1 ${
+                    darkMode ? 'text-gray-100' : 'text-gray-900'
+                  }`}>98%</p>
                 </div>
-                <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                  darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-100 border border-gray-200'
+                }`}>
+                  <svg className={`w-5 h-5 ${
+                    darkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 00-2-2z" />
                   </svg>
                 </div>
@@ -502,7 +606,11 @@ export default function CalendarPage() {
           </div>
 
           {/* Modern Calendar */}
-          <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 mb-8">
+          <div className={`rounded-lg p-6 mb-8 border ${
+            darkMode
+              ? 'bg-gray-800 border-gray-700'
+              : 'bg-white border-gray-200 shadow-sm'
+          }`}>
             <ModernCalendar
               appointments={appointments.map(mapToModernCalendarFormat)}
               onAppointmentClick={(appointment) => {
@@ -520,21 +628,34 @@ export default function CalendarPage() {
           </div>
 
           {/* Team Status */}
-          <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
-            <h3 className="text-lg font-semibold text-white mb-4">Team Status</h3>
+          <div className={`rounded-lg p-6 border ${
+            darkMode
+              ? 'bg-gray-800 border-gray-700'
+              : 'bg-white border-gray-200 shadow-sm'
+          }`}>
+            <h3 className={`text-lg font-semibold mb-4 ${
+              darkMode ? 'text-white' : 'text-gray-900'
+            }`}>Team Status</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {barbers.map((barber) => (
-                <div key={barber.id} className="flex items-center justify-between p-4 bg-gray-700/50 rounded-lg">
+                <div key={barber.id} className={`flex items-center justify-between p-4 rounded-lg border transition-colors duration-200 ${
+                  darkMode
+                    ? 'bg-gray-700 border-gray-600 hover:bg-gray-650'
+                    : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                }`}>
                   <div className="flex items-center space-x-3">
                     <div className={`w-3 h-3 rounded-full ${
-                      barber.status === 'online' ? 'bg-green-500' :
-                      barber.status === 'busy' ? 'bg-yellow-500' : 'bg-gray-500'
+                      barber.status === 'online' ? 'bg-teal-500' :
+                      barber.status === 'busy' ? 'bg-gray-400' : 'bg-gray-600'
                     }`}></div>
-                    <span className="text-white font-medium">{barber.name}</span>
+                    <span className={`font-medium ${
+                      darkMode ? 'text-white' : 'text-gray-900'
+                    }`}>{barber.name}</span>
                   </div>
                   <span className={`text-sm font-medium ${
-                    barber.status === 'online' ? 'text-green-400' :
-                    barber.status === 'busy' ? 'text-yellow-400' : 'text-gray-400'
+                    barber.status === 'online'
+                      ? darkMode ? 'text-teal-400' : 'text-teal-600'
+                      : darkMode ? 'text-gray-400' : 'text-gray-500'
                   }`}>
                     {barber.status}
                   </span>
@@ -552,7 +673,7 @@ export default function CalendarPage() {
         selectedDate={selectedSlot?.date}
         selectedTime={selectedSlot?.time}
         onComplete={handleAppointmentCreated}
-        theme='dark'
+        theme={darkMode ? 'dark' : 'light'}
         services={services}
         barbers={barbers.map(b => ({
           id: b.id,
@@ -598,15 +719,25 @@ export default function CalendarPage() {
       {/* Error Modal for backwards compatibility */}
       {error && (
         <div className="fixed bottom-4 right-4 z-50 max-w-md">
-          <div className="bg-red-900/20 border border-red-800/50 rounded-lg p-4">
+          <div className={`rounded-lg p-4 border ${
+            darkMode
+              ? 'bg-red-900/20 border-red-800/50'
+              : 'bg-red-50 border-red-200'
+          }`}>
             <div className="flex items-center">
-              <svg className="w-5 h-5 text-red-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-5 h-5 mr-2 flex-shrink-0 ${
+                darkMode ? 'text-red-400' : 'text-red-600'
+              }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <p className="text-red-300 text-sm">{error}</p>
+              <p className={`text-sm ${
+                darkMode ? 'text-red-300' : 'text-red-700'
+              }`}>{error}</p>
               <button
                 onClick={() => setError(null)}
-                className="ml-auto text-red-400 hover:text-red-300"
+                className={`ml-auto ${
+                  darkMode ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-500'
+                }`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
