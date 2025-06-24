@@ -286,6 +286,25 @@ class Settings(BaseSettings):
     )
     RATE_LIMIT_BURST: int = Field(default=100, description="Rate limit burst capacity")
 
+    # Login-specific rate limiting (environment-aware)
+    LOGIN_RATE_LIMIT_ATTEMPTS: int = Field(
+        default_factory=lambda: int(
+            os.getenv(
+                "LOGIN_RATE_LIMIT_ATTEMPTS",
+                (
+                    "20"
+                    if os.getenv("ENVIRONMENT", "development") == "development"
+                    else "5"
+                ),
+            )
+        ),
+        description="Maximum login attempts allowed",
+    )
+    LOGIN_RATE_LIMIT_WINDOW: int = Field(
+        default_factory=lambda: int(os.getenv("LOGIN_RATE_LIMIT_WINDOW", "300")),
+        description="Login rate limit window in seconds",
+    )
+
     # Security headers
     SECURITY_HEADERS_ENABLED: bool = Field(
         default=True, description="Enable security headers"
