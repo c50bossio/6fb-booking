@@ -6,6 +6,7 @@ Build version: v1.0.0-2025-06-23-deploy-fix
 
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from middleware.dynamic_cors import DynamicCORSMiddleware
 from fastapi.security import HTTPBearer
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, RedirectResponse
@@ -134,11 +135,11 @@ app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(RateLimitMiddleware)
 # app.add_middleware(SecurityHeadersEnhancedMiddleware)
 
-# Configure CORS - Use origins from settings which handles environment variable parsing
+# Configure CORS with dynamic origin validation for Vercel deployments
 cors_origins = settings.CORS_ORIGINS
 
 app.add_middleware(
-    CORSMiddleware,
+    DynamicCORSMiddleware,
     allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
@@ -151,6 +152,7 @@ app.add_middleware(
         "X-Requested-With",
         "Cache-Control",
     ],
+    settings=settings,  # Pass settings for dynamic origin checking
 )
 
 # Register exception handlers

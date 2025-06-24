@@ -253,9 +253,7 @@ class Settings(BaseSettings):
     FRONTEND_URL: str = Field(
         default="http://localhost:3000", description="Frontend application URL"
     )
-    CORS_ORIGINS: List[str] = Field(
-        default=[], description="Allowed CORS origins"
-    )
+    CORS_ORIGINS: List[str] = Field(default=[], description="Allowed CORS origins")
 
     # =============================================================================
     # MONITORING & OBSERVABILITY
@@ -489,7 +487,6 @@ class Settings(BaseSettings):
 
         return v
 
-
     @validator("TRUSTED_PROXIES", pre=True)
     def validate_trusted_proxies(cls, v):
         """Parse TRUSTED_PROXIES from string or list"""
@@ -503,7 +500,7 @@ class Settings(BaseSettings):
         """Post-initialization validation and warnings"""
         # Handle ALLOWED_ORIGINS parsing
         self._setup_allowed_origins()
-        
+
         # Production environment checks
         if self.ENVIRONMENT == "production":
             self._validate_production_config()
@@ -520,15 +517,42 @@ class Settings(BaseSettings):
             "http://localhost:3001",
             self.FRONTEND_URL,
         ]
-        
+
         # Add origins from environment variable
         env_origins = os.getenv("ALLOWED_ORIGINS", "")
         if env_origins:
-            env_origins_list = [origin.strip() for origin in env_origins.split(",") if origin.strip()]
+            env_origins_list = [
+                origin.strip() for origin in env_origins.split(",") if origin.strip()
+            ]
             default_origins.extend(env_origins_list)
-        
+
+        # Add all known Vercel patterns - this will solve the random URL problem
+        vercel_patterns = [
+            "https://bookbarber-6fb.vercel.app",  # Main deployment
+            "https://bookbarber.vercel.app",  # Alternative
+        ]
+        default_origins.extend(vercel_patterns)
+
         # Remove duplicates and set
         self.CORS_ORIGINS = list(set(default_origins))
+
+    def is_allowed_origin(self, origin: str) -> bool:
+        """Check if origin is allowed, including wildcard patterns"""
+        if not origin:
+            return False
+
+        # Check exact matches first
+        if origin in self.CORS_ORIGINS:
+            return True
+
+        # Check Vercel deployment patterns
+        if origin.startswith("https://") and origin.endswith(".vercel.app"):
+            # Allow any subdomain of vercel.app that starts with bookbarber
+            domain_part = origin.replace("https://", "").replace(".vercel.app", "")
+            if domain_part.startswith("bookbarber"):
+                return True
+
+        return False
 
     def _validate_production_config(self):
         """Validate production-specific requirements"""
