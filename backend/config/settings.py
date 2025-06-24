@@ -489,14 +489,6 @@ class Settings(BaseSettings):
 
         return v
 
-    @validator("ALLOWED_ORIGINS", pre=True)
-    def validate_allowed_origins(cls, v):
-        """Parse ALLOWED_ORIGINS from string or list"""
-        if isinstance(v, str):
-            return [origin.strip() for origin in v.split(",") if origin.strip()]
-        elif isinstance(v, list):
-            return [origin for origin in v if origin]  # Filter empty strings
-        return v or []
 
     @validator("TRUSTED_PROXIES", pre=True)
     def validate_trusted_proxies(cls, v):
