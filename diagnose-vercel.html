@@ -17,7 +17,7 @@
 
     <script>
         const results = document.getElementById('results');
-        
+
         async function runDiagnostics() {
             // Test 1: Check if we can reach Vercel frontend
             try {
@@ -35,11 +35,11 @@
             try {
                 const pageResponse = await fetch('https://bookbarber-6fb.vercel.app/');
                 const pageText = await pageResponse.text();
-                
+
                 // Look for API URL in the page
                 const apiUrlMatch = pageText.match(/NEXT_PUBLIC_API_URL['"]:?\s*['"]([^'"]+)['"]/);
                 const localhostMatch = pageText.includes('localhost:8000');
-                
+
                 if (apiUrlMatch) {
                     addResult('info', 'Frontend API URL Detection', `Found API URL: ${apiUrlMatch[1]}`);
                 } else if (localhostMatch) {

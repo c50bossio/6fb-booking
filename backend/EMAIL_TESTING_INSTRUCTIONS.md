@@ -34,7 +34,7 @@ The email automation system is **architecturally complete** and ready to send ho
 After setup, you'll get these test emails at c50bossio@gmail.com:
 
 1. **💕 Valentine's Day Special** - with 25% discount
-2. **💕 Valentine's Day Premium** - no discount, luxury focus  
+2. **💕 Valentine's Day Premium** - no discount, luxury focus
 3. **👨‍👦 Father's Day Family Deal** - 35% off father & son combo
 4. **🎨 Custom Weekend Warrior** - 40% off weekend special
 
