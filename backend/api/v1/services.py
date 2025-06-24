@@ -4,7 +4,8 @@ Services API endpoints - Manage barbershop services
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session, joinedload
-from typing import List, Optional
+from sqlalchemy import func
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 
 from config.database import get_db
@@ -22,13 +23,33 @@ router = APIRouter()
 class ServiceCategoryResponse(BaseModel):
     id: int
     name: str
+    slug: str
     description: Optional[str]
     display_order: Optional[int]
+    icon: Optional[str]
+    color: Optional[str]
     is_active: bool
-    color: Optional[str]  # Changed from color_code to match the database model
 
     class Config:
         from_attributes = True
+
+
+class ServiceCategoryCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    display_order: Optional[int] = 0
+    icon: Optional[str] = None
+    color: Optional[str] = None
+    is_active: bool = True
+
+
+class ServiceCategoryUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    display_order: Optional[int] = None
+    icon: Optional[str] = None
+    color: Optional[str] = None
+    is_active: Optional[bool] = None
 
 
 class ServiceResponse(BaseModel):
@@ -95,6 +116,18 @@ class ServiceUpdate(BaseModel):
     tags: Optional[List[str]] = None
 
 
+class ServiceStatsResponse(BaseModel):
+    total_services: int
+    active_services: int
+    categories_count: int
+    average_duration: float
+    average_price: float
+    price_range: Dict[str, float]
+
+    class Config:
+        from_attributes = True
+
+
 @router.get("/categories", response_model=List[ServiceCategoryResponse])
 async def get_service_categories(
     db: Session = Depends(get_db), is_active: Optional[bool] = True
@@ -111,6 +144,231 @@ async def get_service_categories(
     ).all()
 
     return categories
+
+
+@router.post("/categories", response_model=ServiceCategoryResponse)
+async def create_service_category(
+    category_data: ServiceCategoryCreate,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Create a new service category (authenticated endpoint)"""
+
+    # Create URL-friendly slug from name
+    import re
+
+    slug = re.sub(r"[^a-zA-Z0-9\s-]", "", category_data.name.lower())
+    slug = re.sub(r"\s+", "-", slug.strip())
+
+    # Check if category name already exists
+    existing_category = (
+        db.query(ServiceCategory)
+        .filter(ServiceCategory.name == category_data.name)
+        .first()
+    )
+
+    if existing_category:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Service category with this name already exists",
+        )
+
+    # Check if slug already exists
+    existing_slug = (
+        db.query(ServiceCategory).filter(ServiceCategory.slug == slug).first()
+    )
+
+    if existing_slug:
+        # Add a number suffix to make it unique
+        counter = 1
+        original_slug = slug
+        while existing_slug:
+            slug = f"{original_slug}-{counter}"
+            existing_slug = (
+                db.query(ServiceCategory).filter(ServiceCategory.slug == slug).first()
+            )
+            counter += 1
+
+    # Create new category
+    new_category = ServiceCategory(
+        name=category_data.name,
+        slug=slug,
+        description=category_data.description,
+        display_order=category_data.display_order,
+        icon=category_data.icon,
+        color=category_data.color,
+        is_active=category_data.is_active,
+    )
+
+    db.add(new_category)
+    db.commit()
+    db.refresh(new_category)
+
+    return new_category
+
+
+@router.put("/categories/{category_id}", response_model=ServiceCategoryResponse)
+async def update_service_category(
+    category_id: int,
+    category_data: ServiceCategoryUpdate,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Update a service category (authenticated endpoint)"""
+
+    category = (
+        db.query(ServiceCategory).filter(ServiceCategory.id == category_id).first()
+    )
+
+    if not category:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Service category not found"
+        )
+
+    # Update fields
+    update_data = category_data.model_dump(exclude_unset=True)
+
+    # If name is being updated, update slug as well
+    if "name" in update_data and update_data["name"]:
+        import re
+
+        new_slug = re.sub(r"[^a-zA-Z0-9\s-]", "", update_data["name"].lower())
+        new_slug = re.sub(r"\s+", "-", new_slug.strip())
+
+        # Check if new slug conflicts with existing categories (excluding current one)
+        existing_slug = (
+            db.query(ServiceCategory)
+            .filter(ServiceCategory.slug == new_slug, ServiceCategory.id != category_id)
+            .first()
+        )
+
+        if existing_slug:
+            # Add a number suffix to make it unique
+            counter = 1
+            original_slug = new_slug
+            while existing_slug:
+                new_slug = f"{original_slug}-{counter}"
+                existing_slug = (
+                    db.query(ServiceCategory)
+                    .filter(
+                        ServiceCategory.slug == new_slug,
+                        ServiceCategory.id != category_id,
+                    )
+                    .first()
+                )
+                counter += 1
+
+        update_data["slug"] = new_slug
+
+    for field, value in update_data.items():
+        setattr(category, field, value)
+
+    category.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(category)
+
+    return category
+
+
+@router.delete("/categories/{category_id}")
+async def delete_service_category(
+    category_id: int,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Delete a service category (authenticated endpoint)"""
+
+    category = (
+        db.query(ServiceCategory).filter(ServiceCategory.id == category_id).first()
+    )
+
+    if not category:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Service category not found"
+        )
+
+    # Check if category has associated services
+    services_count = (
+        db.query(Service).filter(Service.category_id == category_id).count()
+    )
+
+    if services_count > 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Cannot delete category with {services_count} associated services. Please reassign or delete the services first.",
+        )
+
+    # Soft delete by setting is_active to False
+    category.is_active = False
+    category.updated_at = datetime.utcnow()
+    db.commit()
+
+    return {"message": "Service category deleted successfully"}
+
+
+@router.get("/stats", response_model=ServiceStatsResponse)
+async def get_service_statistics(db: Session = Depends(get_db)):
+    """Get service statistics (public endpoint)"""
+
+    try:
+        # Get total count of services
+        total_services = db.query(Service).count()
+
+        # Get count of active services
+        active_services = db.query(Service).filter(Service.is_active == True).count()
+
+        # Get count of unique categories
+        categories_count = (
+            db.query(ServiceCategory).filter(ServiceCategory.is_active == True).count()
+        )
+
+        # Calculate average duration and price for active services
+        stats_query = db.query(
+            func.avg(Service.duration_minutes).label("avg_duration"),
+            func.avg(Service.base_price).label("avg_price"),
+            func.min(Service.base_price).label("min_price"),
+            func.max(Service.base_price).label("max_price"),
+        ).filter(Service.is_active == True)
+
+        stats_result = stats_query.first()
+
+        # Handle case where there are no active services
+        if stats_result and stats_result.avg_duration is not None:
+            average_duration = float(stats_result.avg_duration)
+            average_price = float(stats_result.avg_price)
+            min_price = float(stats_result.min_price)
+            max_price = float(stats_result.max_price)
+        else:
+            average_duration = 0.0
+            average_price = 0.0
+            min_price = 0.0
+            max_price = 0.0
+
+        return ServiceStatsResponse(
+            total_services=total_services,
+            active_services=active_services,
+            categories_count=categories_count,
+            average_duration=average_duration,
+            average_price=average_price,
+            price_range={"min": min_price, "max": max_price},
+        )
+
+    except Exception as e:
+        # Log the error for debugging
+        import logging
+
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error fetching service statistics: {str(e)}")
+
+        # Return empty stats if database has issues
+        return ServiceStatsResponse(
+            total_services=0,
+            active_services=0,
+            categories_count=0,
+            average_duration=0.0,
+            average_price=0.0,
+            price_range={"min": 0.0, "max": 0.0},
+        )
 
 
 class PaginatedServiceResponse(BaseModel):
@@ -372,7 +630,7 @@ async def update_service(
         )
 
     # Update fields
-    update_data = service_data.dict(exclude_unset=True)
+    update_data = service_data.model_dump(exclude_unset=True)
 
     for field, value in update_data.items():
         setattr(service, field, value)

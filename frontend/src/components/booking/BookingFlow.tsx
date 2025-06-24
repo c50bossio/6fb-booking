@@ -18,6 +18,10 @@ import {
   ShieldCheckIcon
 } from '@heroicons/react/24/outline'
 import PaymentStep from './PaymentStep'
+import SimplePaymentStep from './SimplePaymentStep'
+import { PaymentSuccess, PaymentFailure } from '@/components/payments'
+import { PaymentProcessor, PaymentValidator } from '@/lib/payment-utils'
+import type { Service } from '@/lib/api/services'
 
 interface Service {
   id: string
@@ -61,11 +65,20 @@ interface BookingData {
     phone: string
     notes?: string
   }
-  paymentMethod?: 'card' | 'cash' | 'online'
+  paymentMethod?: 'full' | 'deposit'
+  paymentDetails?: {
+    method: 'full' | 'deposit'
+    amount: number
+    currency: string
+    status: string
+    transaction_id: string
+    payment_method_id: string
+  }
   totalPrice?: number
   appointmentId?: number
   paymentId?: number
   paymentCompleted?: boolean
+  paymentError?: string
 }
 
 interface BookingFlowProps {
@@ -205,6 +218,8 @@ export default function BookingFlow({
   const [bookingData, setBookingData] = useState<BookingData>({})
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
+  const [paymentStep, setPaymentStep] = useState<'selection' | 'processing' | 'success' | 'failure'>('selection')
+  const [useSimplePayment, setUseSimplePayment] = useState(true)
   const [availableSlots, setAvailableSlots] = useState<{ [date: string]: TimeSlot[] }>({})
 
   // Initialize with selected date/time if provided
@@ -315,6 +330,13 @@ export default function BookingFlow({
       if (currentStep === 3) {
         setIsLoading(true)
         try {
+          // Validate client information before creating appointment
+          const validation = PaymentValidator.validateEmail(bookingData.clientInfo?.email)
+          if (!validation.valid) {
+            setErrors({ email: validation.error! })
+            return
+          }
+
           // Create appointment via API
           // For now, we'll simulate this with a mock appointment ID
           const mockAppointmentId = Math.floor(Math.random() * 10000) + 1
@@ -325,6 +347,7 @@ export default function BookingFlow({
             totalPrice
           })
 
+          setPaymentStep('selection')
           setCurrentStep(currentStep + 1)
         } catch (error) {
           console.error('Failed to create appointment:', error)
@@ -488,18 +511,127 @@ export default function BookingFlow({
             )}
 
             {currentStep === 4 && bookingData.appointmentId && (
-              <PaymentStep
-                theme={theme}
-                appointmentId={bookingData.appointmentId}
-                amount={(bookingData.totalPrice || 0) * 100} // Convert to cents
-                onPaymentComplete={(paymentId) => {
-                  updateBookingData({ paymentId, paymentCompleted: true })
-                  handleNext()
-                }}
-                onError={(error) => {
-                  setErrors({ payment: error })
-                }}
-              />
+              <div className="space-y-6">
+                {paymentStep === 'selection' && useSimplePayment && (
+                  <SimplePaymentStep
+                    service={bookingData.service}
+                    onPaymentSelect={(method, details) => {
+                      updateBookingData({
+                        paymentMethod: method,
+                        paymentDetails: details,
+                        paymentCompleted: details.status === 'succeeded'
+                      })
+                      if (details.status === 'succeeded') {
+                        setPaymentStep('success')
+                      } else {
+                        setPaymentStep('failure')
+                      }
+                    }}
+                    selectedMethod={bookingData.paymentMethod || 'full'}
+                    appointmentId={bookingData.appointmentId}
+                    customerEmail={bookingData.clientInfo?.email}
+                    onPaymentSuccess={(paymentId) => {
+                      updateBookingData({ paymentId, paymentCompleted: true })
+                      setPaymentStep('success')
+                    }}
+                    onPaymentError={(error) => {
+                      updateBookingData({ paymentError: error })
+                      setPaymentStep('failure')
+                      setErrors({ payment: error })
+                    }}
+                  />
+                )}
+
+                {paymentStep === 'selection' && !useSimplePayment && (
+                  <PaymentStep
+                    theme={theme}
+                    appointmentId={bookingData.appointmentId}
+                    amount={(bookingData.totalPrice || 0) * 100} // Convert to cents
+                    onPaymentComplete={(paymentId) => {
+                      updateBookingData({ paymentId, paymentCompleted: true })
+                      setPaymentStep('success')
+                    }}
+                    onError={(error) => {
+                      updateBookingData({ paymentError: error })
+                      setPaymentStep('failure')
+                      setErrors({ payment: error })
+                    }}
+                    customerEmail={bookingData.clientInfo?.email}
+                  />
+                )}
+
+                {paymentStep === 'success' && bookingData.paymentCompleted && (
+                  <div className="text-center space-y-6">
+                    <PaymentSuccess
+                      paymentDetails={{
+                        id: bookingData.paymentId || 0,
+                        amount: bookingData.totalPrice || 0,
+                        currency: 'USD',
+                        status: 'succeeded',
+                        created_at: new Date().toISOString(),
+                        transaction_id: bookingData.paymentDetails?.transaction_id || ''
+                      }}
+                      appointmentDetails={{
+                        service_name: bookingData.service?.name || '',
+                        barber_name: bookingData.barber?.name || '',
+                        date: bookingData.date || '',
+                        time: bookingData.time || '',
+                        duration_minutes: bookingData.service?.duration || 0
+                      }}
+                      customerDetails={{
+                        name: bookingData.clientInfo?.name || '',
+                        email: bookingData.clientInfo?.email || '',
+                        phone: bookingData.clientInfo?.phone || ''
+                      }}
+                    />
+                    <button
+                      onClick={() => setCurrentStep(currentStep + 1)}
+                      className="px-6 py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors"
+                    >
+                      Continue to Confirmation
+                    </button>
+                  </div>
+                )}
+
+                {paymentStep === 'failure' && (
+                  <div className="space-y-6">
+                    <PaymentFailure
+                      error={{
+                        type: 'payment_error',
+                        message: bookingData.paymentError || 'Payment failed',
+                        code: 'payment_failed'
+                      }}
+                      paymentAmount={bookingData.totalPrice || 0}
+                      appointmentDetails={{
+                        service_name: bookingData.service?.name || '',
+                        date: bookingData.date || '',
+                        time: bookingData.time || ''
+                      }}
+                      onRetryPayment={() => {
+                        setPaymentStep('selection')
+                        setErrors({})
+                        updateBookingData({ paymentError: undefined })
+                      }}
+                      onBackToBooking={() => {
+                        setCurrentStep(0)
+                        setPaymentStep('selection')
+                        setErrors({})
+                        updateBookingData({ paymentError: undefined })
+                      }}
+                    />
+                  </div>
+                )}
+
+                {/* Payment Method Toggle */}
+                <div className="text-center">
+                  <button
+                    onClick={() => setUseSimplePayment(!useSimplePayment)}
+                    className="text-sm text-gray-600 hover:text-gray-900 underline"
+                  >
+                    {useSimplePayment ? 'Use Advanced Payment Form' : 'Use Simple Payment Form'}
+                  </button>
+                </div>
+              </div>
             )}
 
             {currentStep === 5 && (
@@ -557,9 +689,14 @@ export default function BookingFlow({
                     <span>Proceed to Payment</span>
                     <CreditCardIcon className="w-4 h-4" />
                   </>
-                ) : currentStep === 4 ? (
+                ) : currentStep === 4 && paymentStep !== 'success' ? (
                   <>
                     <span>Complete Payment</span>
+                    <ChevronRightIcon className="w-4 h-4" />
+                  </>
+                ) : currentStep === 4 && paymentStep === 'success' ? (
+                  <>
+                    <span>Continue</span>
                     <ChevronRightIcon className="w-4 h-4" />
                   </>
                 ) : (

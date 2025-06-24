@@ -13,7 +13,7 @@ from config.database import get_db
 from services.availability_service import AvailabilityService
 from models.user import User
 from api.v1.auth import get_current_user
-from utils.logging import get_secure_logger
+from utils.secure_logging import get_secure_logger
 
 router = APIRouter()
 logger = get_secure_logger(__name__)

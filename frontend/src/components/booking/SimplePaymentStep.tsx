@@ -1,20 +1,29 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { Elements } from '@stripe/react-stripe-js'
 import { RadioGroup } from '@headlessui/react'
 import {
   CreditCardIcon,
   CheckIcon,
   ShieldCheckIcon,
   CurrencyDollarIcon,
-  ClockIcon
+  ClockIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import type { Service } from '@/lib/api/services'
+import { getStripe, formatAmountForStripe, stripeAppearance } from '@/lib/stripe'
+import { paymentIntentsApi } from '@/lib/api/payments'
+import { StripePaymentForm } from '@/components/payments/StripePaymentForm'
 
 interface PaymentStepProps {
   service: Service | null
   onPaymentSelect: (paymentMethod: 'full' | 'deposit', paymentDetails: any) => void
   selectedMethod: 'full' | 'deposit'
+  appointmentId?: number
+  customerEmail?: string
+  onPaymentSuccess?: (paymentId: number) => void
+  onPaymentError?: (error: string) => void
 }
 
 interface PaymentOption {
@@ -29,10 +38,19 @@ interface PaymentOption {
 export default function SimplePaymentStep({
   service,
   onPaymentSelect,
-  selectedMethod
+  selectedMethod,
+  appointmentId,
+  customerEmail,
+  onPaymentSuccess,
+  onPaymentError
 }: PaymentStepProps) {
   const [loading, setLoading] = useState(false)
   const [selectedOption, setSelectedOption] = useState<PaymentOption | null>(null)
+  const [clientSecret, setClientSecret] = useState<string>('')
+  const [paymentIntentId, setPaymentIntentId] = useState<string>('')
+  const [showPaymentForm, setShowPaymentForm] = useState(false)
+  const [stripeError, setStripeError] = useState<string>('')
+  const [stripePromise] = useState(() => getStripe())
 
   if (!service) {
     return (
@@ -83,31 +101,57 @@ export default function SimplePaymentStep({
     setSelectedOption(option)
   }
 
-  const handleContinue = async () => {
-    if (!selectedOption) return
-
-    setLoading(true)
+  const createPaymentIntent = async (amount: number) => {
+    if (!appointmentId) {
+      setStripeError('Appointment ID is required to process payment')
+      return
+    }
 
     try {
-      // Simulate payment processing delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      // Mock payment details - in real app, this would integrate with Stripe/Square
-      const paymentDetails = {
-        method: selectedOption.id,
-        amount: selectedOption.amount,
-        currency: 'USD',
-        status: 'confirmed',
-        transaction_id: `txn_${Date.now()}`,
-        payment_method_id: 'pm_mock_card'
-      }
-
-      onPaymentSelect(selectedOption.id, paymentDetails)
+      setLoading(true)
+      const intent = await paymentIntentsApi.create(
+        appointmentId,
+        formatAmountForStripe(amount),
+        undefined,
+        false,
+        {
+          payment_type: selectedOption?.id,
+          customer_email: customerEmail
+        }
+      )
+      setClientSecret(intent.client_secret)
+      setPaymentIntentId(intent.payment_id.toString())
+      setShowPaymentForm(true)
     } catch (error) {
-      console.error('Payment processing failed:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to initialize payment'
+      setStripeError(errorMessage)
+      onPaymentError?.(errorMessage)
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleContinue = async () => {
+    if (!selectedOption) return
+    await createPaymentIntent(selectedOption.amount)
+  }
+
+  const handlePaymentSuccess = (paymentId: number) => {
+    const paymentDetails = {
+      method: selectedOption?.id || 'full',
+      amount: selectedOption?.amount || 0,
+      currency: 'USD',
+      status: 'succeeded',
+      transaction_id: paymentIntentId,
+      payment_method_id: paymentId.toString()
+    }
+    onPaymentSelect(selectedOption?.id || 'full', paymentDetails)
+    onPaymentSuccess?.(paymentId)
+  }
+
+  const handlePaymentError = (error: string) => {
+    setStripeError(error)
+    onPaymentError?.(error)
   }
 
   return (
@@ -212,80 +256,63 @@ export default function SimplePaymentStep({
         </div>
       </div>
 
-      {/* Mock Payment Form */}
-      {selectedOption && (
-        <div className="space-y-4">
-          <h4 className="font-medium text-gray-900">Payment Information</h4>
-          <div className="bg-gray-50 rounded-lg p-6 space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Card Number
-              </label>
-              <input
-                type="text"
-                placeholder="1234 5678 9012 3456"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-                disabled={loading}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Expiry Date
-                </label>
-                <input
-                  type="text"
-                  placeholder="MM/YY"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-                  disabled={loading}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  CVV
-                </label>
-                <input
-                  type="text"
-                  placeholder="123"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-                  disabled={loading}
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Cardholder Name
-              </label>
-              <input
-                type="text"
-                placeholder="John Smith"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-                disabled={loading}
-              />
+      {/* Error Display */}
+      {stripeError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-start">
+            <ExclamationTriangleIcon className="h-5 w-5 text-red-600 mt-0.5 mr-3" />
+            <div className="text-sm">
+              <p className="text-red-800 font-medium">Payment Error</p>
+              <p className="text-red-700 mt-1">{stripeError}</p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Action Button */}
-      <button
-        onClick={handleContinue}
-        disabled={!selectedOption || loading}
-        className="w-full px-6 py-3 bg-slate-700 text-white text-lg font-semibold rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
-      >
-        {loading ? (
-          <>
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-            Processing Payment...
-          </>
-        ) : (
-          `Continue with ${selectedOption ? formatPrice(selectedOption.amount) : 'Payment'}`
-        )}
-      </button>
+      {/* Stripe Payment Form */}
+      {showPaymentForm && clientSecret && selectedOption && stripePromise && (
+        <div className="space-y-4">
+          <h4 className="font-medium text-gray-900">Payment Information</h4>
+          <Elements
+            stripe={stripePromise}
+            options={{
+              clientSecret,
+              appearance: stripeAppearance,
+              loader: 'auto'
+            }}
+          >
+            <StripePaymentForm
+              amount={selectedOption.amount}
+              clientSecret={clientSecret}
+              onSuccess={handlePaymentSuccess}
+              onError={handlePaymentError}
+              customerEmail={customerEmail}
+            />
+          </Elements>
+        </div>
+      )}
 
-      {/* Payment Info */}
+      {/* Action Button */}
+      {!showPaymentForm && (
+        <button
+          onClick={handleContinue}
+          disabled={!selectedOption || loading}
+          className="w-full px-6 py-3 bg-slate-700 text-white text-lg font-semibold rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+        >
+          {loading ? (
+            <>
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+              Initializing Payment...
+            </>
+          ) : (
+            `Proceed with ${selectedOption ? formatPrice(selectedOption.amount) : 'Payment'}`
+          )}
+        </button>
+      )}
+
+      {/* Secure Payment Info */}
       <div className="text-center text-sm text-gray-500">
-        <p>This is a demo payment form. No actual charges will be made.</p>
+        <p>Payments are processed securely through Stripe. Your card information is encrypted and never stored on our servers.</p>
       </div>
     </div>
   )

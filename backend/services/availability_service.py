@@ -12,10 +12,11 @@ import logging
 
 from models.appointment import Appointment
 from models.barber import Barber
-from models.automation import Availability
+
+# from models.automation import Availability  # TODO: Create Availability model
 from models.google_calendar_settings import GoogleCalendarSettings
 from services.google_calendar_service import GoogleCalendarService
-from utils.logging import get_secure_logger
+from utils.secure_logging import get_secure_logger
 
 logger = get_secure_logger(__name__)
 
@@ -134,17 +135,19 @@ class AvailabilityService:
         # Get barber's availability for this day of week
         day_of_week = appointment_date.weekday()  # 0 = Monday
 
-        availability = (
-            self.db.query(Availability)
-            .filter(
-                and_(
-                    Availability.barber_id == barber_id,
-                    Availability.day_of_week == day_of_week,
-                    Availability.is_available == True,
-                )
-            )
-            .first()
-        )
+        # TODO: Uncomment when Availability model is created
+        # availability = (
+        #     self.db.query(Availability)
+        #     .filter(
+        #         and_(
+        #             Availability.barber_id == barber_id,
+        #             Availability.day_of_week == day_of_week,
+        #             Availability.is_available == True,
+        #         )
+        #     )
+        #     .first()
+        # )
+        availability = True  # Temporary: assume barber is always available
 
         if not availability:
             conflicts.append(
@@ -339,17 +342,19 @@ class AvailabilityService:
 
         # Get barber availability for this day
         day_of_week = appointment_date.weekday()
-        availability = (
-            self.db.query(Availability)
-            .filter(
-                and_(
-                    Availability.barber_id == barber_id,
-                    Availability.day_of_week == day_of_week,
-                    Availability.is_available == True,
-                )
-            )
-            .first()
-        )
+        # TODO: Uncomment when Availability model is created
+        # availability = (
+        #     self.db.query(Availability)
+        #     .filter(
+        #         and_(
+        #             Availability.barber_id == barber_id,
+        #             Availability.day_of_week == day_of_week,
+        #             Availability.is_available == True,
+        #         )
+        #     )
+        #     .first()
+        # )
+        availability = True  # Temporary: assume barber is always available
 
         if not availability:
             return slots
