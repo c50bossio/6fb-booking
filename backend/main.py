@@ -34,6 +34,7 @@ from models import (
     barber_payment,
     booking,
     google_calendar_settings,
+    square_payment,
 )
 
 # Import security middleware
@@ -73,6 +74,7 @@ from api.v1.endpoints import (
     temp_reset,
     debug,
     square_integration,
+    square,
     location_payment_management,
     barber_payment_splits,
     barber_payroll,
@@ -230,6 +232,9 @@ app.include_router(temp_reset.router, prefix="/api/v1/temp", tags=["Temp"])
 app.include_router(debug.router, prefix="/api/v1/debug", tags=["Debug"])
 app.include_router(
     square_integration.router, prefix="/api/v1/square", tags=["Square Integration"]
+)
+app.include_router(
+    square.router, prefix="/api/v1/square-oauth", tags=["Square OAuth & Payouts"]
 )
 app.include_router(
     location_payment_management.router,

@@ -82,21 +82,25 @@ class Settings(BaseSettings):
         description="Stripe Connect client ID",
     )
 
-    # Square Integration (Optional)
-    SQUARE_ACCESS_TOKEN: Optional[str] = Field(
-        default_factory=lambda: os.getenv("SQUARE_ACCESS_TOKEN"),
-        description="Square access token",
-    )
+    # Square Integration (OAuth & Payouts)
     SQUARE_APPLICATION_ID: Optional[str] = Field(
         default_factory=lambda: os.getenv("SQUARE_APPLICATION_ID"),
-        description="Square application ID",
+        description="Square application ID for OAuth",
+    )
+    SQUARE_APPLICATION_SECRET: Optional[str] = Field(
+        default_factory=lambda: os.getenv("SQUARE_APPLICATION_SECRET"),
+        description="Square application secret for OAuth",
     )
     SQUARE_ENVIRONMENT: Literal["sandbox", "production"] = Field(
         default="sandbox", description="Square environment"
     )
-    SQUARE_WEBHOOK_SIGNATURE_KEY: Optional[str] = Field(
-        default_factory=lambda: os.getenv("SQUARE_WEBHOOK_SIGNATURE_KEY"),
-        description="Square webhook signature key",
+    SQUARE_WEBHOOK_SECRET: Optional[str] = Field(
+        default_factory=lambda: os.getenv("SQUARE_WEBHOOK_SECRET"),
+        description="Square webhook signature secret",
+    )
+    SQUARE_ACCESS_TOKEN: Optional[str] = Field(
+        default_factory=lambda: os.getenv("SQUARE_ACCESS_TOKEN"),
+        description="Square access token (for non-OAuth operations)",
     )
 
     # Tremendous Payouts (Optional)
@@ -597,6 +601,11 @@ class Settings(BaseSettings):
     def payment_enabled(self) -> bool:
         """Check if payment processing is configured"""
         return bool(self.STRIPE_SECRET_KEY and self.STRIPE_PUBLISHABLE_KEY)
+
+    @property
+    def square_enabled(self) -> bool:
+        """Check if Square integration is configured"""
+        return bool(self.SQUARE_APPLICATION_ID and self.SQUARE_APPLICATION_SECRET)
 
     @property
     def monitoring_enabled(self) -> bool:

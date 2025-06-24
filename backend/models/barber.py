@@ -57,6 +57,11 @@ class Barber(BaseModel):
     google_calendar_settings = relationship(
         "GoogleCalendarSettings", back_populates="barber", uselist=False
     )
+    
+    # Square integration relationships
+    square_account = relationship("SquareAccount", back_populates="barber", uselist=False)
+    square_payments = relationship("SquarePayment", back_populates="barber")
+    square_payouts = relationship("SquarePayout", back_populates="barber")
 
     def __repr__(self):
         return f"<Barber(email={self.email}, business_name={self.business_name})>"
