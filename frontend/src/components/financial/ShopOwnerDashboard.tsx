@@ -16,7 +16,8 @@ import {
   Calendar,
   BarChart3
 } from 'lucide-react';
-import { api } from '@/lib/api';
+import { financialService } from '@/lib/api/financial';
+import type { ShopMetrics as ImportedShopMetrics, BarberRevenue as ImportedBarberRevenue } from '@/lib/api/financial';
 import { formatCurrency, formatDate, formatPercent } from '@/lib/utils';
 import {
   BarChart,
@@ -31,37 +32,11 @@ import {
   Cell,
   Legend
 } from 'recharts';
+import Notification from '@/components/Notification';
 
-interface ShopMetrics {
-  total_revenue: number;
-  total_revenue_trend: number;
-  service_revenue: number;
-  product_revenue: number;
-  tips_total: number;
-  processing_fees: number;
-  net_revenue: number;
-  pending_payouts: number;
-  completed_payouts: number;
-  booth_rent_collected: number;
-  booth_rent_pending: number;
-  active_barbers: number;
-  total_appointments: number;
-  average_ticket: number;
-  utilization_rate: number;
-}
-
-interface BarberRevenue {
-  barber_id: string;
-  barber_name: string;
-  total_revenue: number;
-  service_revenue: number;
-  product_revenue: number;
-  tips: number;
-  appointments: number;
-  commission_owed: number;
-  booth_rent_status: string;
-  booth_rent_amount?: number;
-}
+// Use the imported types from financial API
+type ShopMetrics = ImportedShopMetrics;
+type BarberRevenue = ImportedBarberRevenue;
 
 interface RevenueBreakdown {
   category: string;
@@ -76,48 +51,150 @@ export function ShopOwnerDashboard() {
   const [revenueBreakdown, setRevenueBreakdown] = useState<RevenueBreakdown[]>([]);
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState<'week' | 'month' | 'quarter'>('month');
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error' | 'warning' | 'info';
+    title: string;
+    message?: string;
+  } | null>(null);
 
   useEffect(() => {
     fetchDashboardData();
   }, [dateRange]);
 
+  const handleExport = () => {
+    if (!barberRevenue.length) {
+      setNotification({
+        type: 'warning',
+        title: 'No data to export',
+        message: 'There is no barber revenue data available to export.'
+      });
+      return;
+    }
+
+    // Create CSV content
+    const headers = ['Barber', 'Total Revenue', 'Services', 'Products', 'Tips', 'Commission', 'Booth Rent Status'];
+    const rows = barberRevenue.map(barber => [
+      barber.barber_name,
+      barber.total_revenue.toFixed(2),
+      barber.service_revenue.toFixed(2),
+      barber.product_revenue.toFixed(2),
+      barber.tips.toFixed(2),
+      barber.commission_owed.toFixed(2),
+      financialService.getBoothRentStatusLabel(barber.booth_rent_status)
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+
+    // Create download link
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `barber-revenue-${dateRange}-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+
+    setNotification({
+      type: 'success',
+      title: 'Export successful',
+      message: 'Barber revenue data has been exported to CSV.'
+    });
+  };
+
+  const handleAction = (action: string) => {
+    switch (action) {
+      case 'process-payouts':
+        setNotification({
+          type: 'info',
+          title: 'Processing Payouts',
+          message: 'This feature is coming soon. Payouts will be processed automatically.'
+        });
+        break;
+      case 'tax-report':
+        setNotification({
+          type: 'info',
+          title: 'Generating Report',
+          message: 'Tax report generation will be available soon.'
+        });
+        break;
+      case 'payment-methods':
+        setNotification({
+          type: 'info',
+          title: 'Payment Methods',
+          message: 'Payment method management will be available in the settings.'
+        });
+        break;
+      case 'transactions':
+        setNotification({
+          type: 'info',
+          title: 'Transaction History',
+          message: 'Full transaction history view is coming soon.'
+        });
+        break;
+    }
+  };
+
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
+      // Map date range to API expected format
+      const apiDateRange = dateRange === 'week' ? 'last_7_days' : 
+                          dateRange === 'month' ? 'last_30_days' : 
+                          'last_90_days';
+
       const [metricsRes, barbersRes] = await Promise.all([
-        api.get(`/financial/shop-metrics?range=${dateRange}`),
-        api.get(`/financial/barber-revenue?range=${dateRange}`)
+        financialService.getShopMetrics(apiDateRange),
+        financialService.getBarberRevenue(apiDateRange)
       ]);
 
-      setMetrics(metricsRes.data);
-      setBarberRevenue(barbersRes.data);
-
-      // Calculate revenue breakdown for pie chart
       if (metricsRes.data) {
+        setMetrics(metricsRes.data);
+        
+        // Calculate revenue breakdown for pie chart
         const breakdown = [
           {
             category: 'Services',
             amount: metricsRes.data.service_revenue,
-            percentage: (metricsRes.data.service_revenue / metricsRes.data.total_revenue) * 100,
+            percentage: metricsRes.data.total_revenue > 0 
+              ? (metricsRes.data.service_revenue / metricsRes.data.total_revenue) * 100 
+              : 0,
             color: '#10b981'
           },
           {
             category: 'Products',
             amount: metricsRes.data.product_revenue,
-            percentage: (metricsRes.data.product_revenue / metricsRes.data.total_revenue) * 100,
+            percentage: metricsRes.data.total_revenue > 0 
+              ? (metricsRes.data.product_revenue / metricsRes.data.total_revenue) * 100 
+              : 0,
             color: '#3b82f6'
           },
           {
             category: 'Tips',
             amount: metricsRes.data.tips_total,
-            percentage: (metricsRes.data.tips_total / metricsRes.data.total_revenue) * 100,
+            percentage: metricsRes.data.total_revenue > 0 
+              ? (metricsRes.data.tips_total / metricsRes.data.total_revenue) * 100 
+              : 0,
             color: '#f59e0b'
           }
         ];
         setRevenueBreakdown(breakdown);
       }
+
+      if (barbersRes.data) {
+        setBarberRevenue(barbersRes.data);
+      }
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
+      setNotification({
+        type: 'error',
+        title: 'Failed to load dashboard data',
+        message: 'Please try again later or contact support if the issue persists.'
+      });
     } finally {
       setLoading(false);
     }
@@ -339,7 +416,7 @@ export function ShopOwnerDashboard() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Barber Revenue Details</CardTitle>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => handleExport()}>
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
@@ -369,9 +446,14 @@ export function ShopOwnerDashboard() {
                     <td className="text-right p-2">{formatCurrency(barber.commission_owed)}</td>
                     <td className="text-center p-2">
                       <Badge
-                        variant={barber.booth_rent_status === 'paid' ? 'success' : 'warning'}
+                        variant={barber.booth_rent_status === 'paid' ? 'default' : 
+                                barber.booth_rent_status === 'overdue' ? 'destructive' : 
+                                'secondary'}
+                        className={barber.booth_rent_status === 'paid' ? 'bg-green-100 text-green-800' : 
+                                  barber.booth_rent_status === 'overdue' ? 'bg-red-100 text-red-800' : 
+                                  'bg-yellow-100 text-yellow-800'}
                       >
-                        {barber.booth_rent_status}
+                        {financialService.getBoothRentStatusLabel(barber.booth_rent_status)}
                       </Badge>
                     </td>
                   </tr>
@@ -389,13 +471,26 @@ export function ShopOwnerDashboard() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
-            <Button>Process Payouts</Button>
-            <Button variant="outline">Generate Tax Report</Button>
-            <Button variant="outline">Manage Payment Methods</Button>
-            <Button variant="outline">View All Transactions</Button>
+            <Button onClick={() => handleAction('process-payouts')}>Process Payouts</Button>
+            <Button variant="outline" onClick={() => handleAction('tax-report')}>
+              <Download className="h-4 w-4 mr-2" />
+              Generate Tax Report
+            </Button>
+            <Button variant="outline" onClick={() => handleAction('payment-methods')}>Manage Payment Methods</Button>
+            <Button variant="outline" onClick={() => handleAction('transactions')}>View All Transactions</Button>
           </div>
         </CardContent>
       </Card>
+
+      {/* Notification */}
+      {notification && (
+        <Notification
+          type={notification.type}
+          title={notification.title}
+          message={notification.message}
+          onClose={() => setNotification(null)}
+        />
+      )}
     </div>
   );
 }

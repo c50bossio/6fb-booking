@@ -32,10 +32,15 @@ class User(Base):
     last_name = Column(String(100), nullable=False)
 
     # Authentication
-    hashed_password = Column(String(255), nullable=False)
+    hashed_password = Column(String(255), nullable=True)  # Nullable for Google OAuth users
     is_active = Column(Boolean, default=True)
     is_verified = Column(Boolean, default=False)
     last_login = Column(DateTime, nullable=True)
+    
+    # OAuth Authentication
+    google_id = Column(String(255), unique=True, index=True, nullable=True)
+    auth_provider = Column(String(50), default="native")  # native, google
+    profile_image_url = Column(String(500), nullable=True)  # Store Google profile picture
 
     # Role and Permissions
     role = Column(

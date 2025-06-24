@@ -203,6 +203,20 @@ class Settings(BaseSettings):
     # =============================================================================
     # GOOGLE INTEGRATIONS
     # =============================================================================
+    # Google OAuth Authentication
+    GOOGLE_OAUTH_CLIENT_ID: Optional[str] = Field(
+        default_factory=lambda: os.getenv("GOOGLE_OAUTH_CLIENT_ID"),
+        description="Google OAuth client ID for authentication",
+    )
+    GOOGLE_OAUTH_CLIENT_SECRET: Optional[str] = Field(
+        default_factory=lambda: os.getenv("GOOGLE_OAUTH_CLIENT_SECRET"),
+        description="Google OAuth client secret for authentication",
+    )
+    GOOGLE_OAUTH_REDIRECT_URI: str = Field(
+        default="http://localhost:8000/api/v1/auth/google/callback",
+        description="Google OAuth redirect URI for authentication",
+    )
+    
     # Google Calendar Integration
     GOOGLE_CALENDAR_CLIENT_ID: Optional[str] = Field(
         default_factory=lambda: os.getenv("GOOGLE_CALENDAR_CLIENT_ID"),

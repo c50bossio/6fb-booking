@@ -31,14 +31,10 @@ export const authService = {
    * Login user
    */
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    const formData = new FormData()
-    formData.append('username', credentials.username)
-    formData.append('password', credentials.password)
-
-    const response = await apiClient.post<LoginResponse>('/auth/token', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+    // Use JSON format for the /auth/login endpoint
+    const response = await apiClient.post<LoginResponse>('/auth/login', {
+      email: credentials.username, // The backend expects 'email' field
+      password: credentials.password,
     })
 
     // Store token and user data with safe storage

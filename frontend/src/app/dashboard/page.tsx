@@ -84,19 +84,32 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!mounted) return
 
-    // DEMO MODE: Skip authentication checks
-    const demoUser = {
-      id: '1',
-      email: 'demo@6fb.com',
-      first_name: 'Demo',
-      last_name: 'User',
-      role: 'admin'
+    // Check for authentication
+    const token = localStorage.getItem('access_token')
+    const storedUser = localStorage.getItem('user')
+
+    if (!token || !storedUser) {
+      router.push('/login')
+      return
     }
 
-    setUser(demoUser)
-    fetchDashboardData('demo-token')
-    setLoading(false)
-  }, [mounted])
+    try {
+      const parsedUser = JSON.parse(storedUser)
+      setUser({
+        id: parsedUser.id.toString(),
+        email: parsedUser.email,
+        first_name: parsedUser.first_name || parsedUser.full_name?.split(' ')[0] || 'User',
+        last_name: parsedUser.last_name || parsedUser.full_name?.split(' ')[1] || '',
+        role: parsedUser.role
+      })
+      fetchDashboardData(token)
+    } catch (error) {
+      console.error('Failed to parse user data:', error)
+      router.push('/login')
+    } finally {
+      setLoading(false)
+    }
+  }, [mounted, router])
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -120,7 +133,7 @@ export default function DashboardPage() {
 
   const fetchDashboardData = async (token: string) => {
     try {
-      // Try to fetch authenticated data first
+      // Fetch authenticated data
       const appointmentsResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/dashboard/appointments/today`,
         {
@@ -153,7 +166,7 @@ export default function DashboardPage() {
       ).length
       setActiveBarbers(activeBarbersCount)
 
-      // Set weekly stats (mock for now)
+      // Set weekly stats (mock for now - replace with real data when available)
       setWeeklyStats({
         payout_amount: 1200,
         payout_date: 'Thursday',
@@ -162,54 +175,24 @@ export default function DashboardPage() {
       })
 
     } catch (error) {
-      console.error('Failed to fetch authenticated data, trying demo endpoints...')
-
-      // Use demo endpoints when authentication fails
-      try {
-        const demoAppointmentsResponse = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/dashboard/demo/appointments/today`
-        )
-
-        if (demoAppointmentsResponse.data.stats) {
-          const stats = demoAppointmentsResponse.data.stats
-          setTodayStats({
-            total_appointments: stats.total,
-            upcoming_appointments: stats.upcoming,
-            completed_appointments: stats.completed,
-            cancelled_appointments: stats.cancelled,
-            today_revenue: stats.revenue
-          })
-        }
-
-        const demoBarbersResponse = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/dashboard/demo/barbers`
-        )
-
-        const activeBarbersCount = demoBarbersResponse.data.filter(
-          (barber: BarberInfo) => barber.is_active
-        ).length
-        setActiveBarbers(activeBarbersCount)
-
-      } catch (demoError) {
-        console.error('Demo endpoints also failed, using fallback data:', demoError)
-        // Use fallback mock data when everything fails
-        setTodayStats({
-          total_appointments: 8,
-          upcoming_appointments: 2,
-          completed_appointments: 6,
-          cancelled_appointments: 0,
-          today_revenue: 0
-        })
-        setActiveBarbers(3)
-      }
-
-      // Set weekly stats (mock for now)
-      setWeeklyStats({
-        payout_amount: 1200,
-        payout_date: 'Thursday',
-        total_appointments: 45,
-        revenue_change: 12.5
+      console.error('Failed to fetch dashboard data:', error)
+      
+      // Set default values on error
+      setTodayStats({
+        total_appointments: 0,
+        upcoming_appointments: 0,
+        completed_appointments: 0,
+        cancelled_appointments: 0,
+        today_revenue: 0
       })
+      setActiveBarbers(0)
+      
+      // If it's a 401 error, redirect to login
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('user')
+        router.push('/login')
+      }
     }
   }
 
@@ -277,7 +260,7 @@ export default function DashboardPage() {
                       </button>
                       <button
                         onClick={() => {
-                          router.push('/clients')
+                          router.push('/dashboard/clients')
                           setShowQuickActions(false)
                         }}
                         className="w-full flex items-center space-x-3 px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -594,7 +577,7 @@ export default function DashboardPage() {
           </a>
 
           <a
-            href="/barber-payments"
+            href="/payouts"
             className="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-4 hover:border-orange-500/50 transition-all duration-200"
           >
             <div className="flex items-center space-x-3">

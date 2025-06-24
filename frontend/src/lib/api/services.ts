@@ -5,6 +5,312 @@
 import apiClient from './client'
 import type { ApiResponse, PaginatedResponse } from './client'
 
+// === DEMO MODE CONFIGURATION ===
+const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
+
+// === MOCK DATA FOR DEMO MODE ===
+const MOCK_CATEGORIES: ServiceCategory[] = [
+  {
+    id: 1,
+    name: "Haircuts",
+    slug: "haircuts",
+    description: "Professional haircut services",
+    display_order: 1,
+    icon: "scissors",
+    color: "#3b82f6",
+    is_active: true,
+    services_count: 8,
+    created_at: "2024-01-01T00:00:00Z",
+    updated_at: "2024-01-01T00:00:00Z"
+  },
+  {
+    id: 2,
+    name: "Beard Services",
+    slug: "beard-services",
+    description: "Beard trimming and styling",
+    display_order: 2,
+    icon: "razor",
+    color: "#10b981",
+    is_active: true,
+    services_count: 5,
+    created_at: "2024-01-01T00:00:00Z",
+    updated_at: "2024-01-01T00:00:00Z"
+  },
+  {
+    id: 3,
+    name: "Hair Treatments",
+    slug: "hair-treatments",
+    description: "Specialized hair care treatments",
+    display_order: 3,
+    icon: "sparkles",
+    color: "#8b5cf6",
+    is_active: true,
+    services_count: 4,
+    created_at: "2024-01-01T00:00:00Z",
+    updated_at: "2024-01-01T00:00:00Z"
+  },
+  {
+    id: 4,
+    name: "Styling",
+    slug: "styling",
+    description: "Hair styling and finishing",
+    display_order: 4,
+    icon: "brush",
+    color: "#f59e0b",
+    is_active: true,
+    services_count: 3,
+    created_at: "2024-01-01T00:00:00Z",
+    updated_at: "2024-01-01T00:00:00Z"
+  }
+]
+
+const MOCK_SERVICES: Service[] = [
+  // Haircuts
+  {
+    id: 1,
+    name: "Classic Cut",
+    description: "Traditional haircut with scissor work and styling",
+    category_id: 1,
+    category_name: "Haircuts",
+    base_price: 35,
+    duration_minutes: 30,
+    buffer_minutes: 5,
+    requires_deposit: false,
+    is_addon: false,
+    can_overlap: false,
+    max_advance_days: 30,
+    min_advance_hours: 2,
+    display_order: 1,
+    is_active: true,
+    is_featured: true,
+    tags: ["popular", "classic"],
+    booking_count: 245,
+    total_revenue: 8575,
+    average_rating: 4.8,
+    created_at: "2024-01-01T00:00:00Z",
+    updated_at: "2024-01-01T00:00:00Z"
+  },
+  {
+    id: 2,
+    name: "Fade Master",
+    description: "Precision fade with multiple gradient levels",
+    category_id: 1,
+    category_name: "Haircuts",
+    base_price: 40,
+    duration_minutes: 45,
+    buffer_minutes: 5,
+    requires_deposit: false,
+    is_addon: false,
+    can_overlap: false,
+    max_advance_days: 30,
+    min_advance_hours: 2,
+    display_order: 2,
+    is_active: true,
+    is_featured: true,
+    tags: ["fade", "precision", "popular"],
+    booking_count: 312,
+    total_revenue: 12480,
+    average_rating: 4.9,
+    created_at: "2024-01-01T00:00:00Z",
+    updated_at: "2024-01-01T00:00:00Z"
+  },
+  {
+    id: 3,
+    name: "Executive Package",
+    description: "Premium cut with hot towel service and styling",
+    category_id: 1,
+    category_name: "Haircuts",
+    base_price: 65,
+    duration_minutes: 60,
+    buffer_minutes: 10,
+    requires_deposit: true,
+    deposit_type: "percentage",
+    deposit_amount: 25,
+    is_addon: false,
+    can_overlap: false,
+    max_advance_days: 30,
+    min_advance_hours: 4,
+    display_order: 3,
+    is_active: true,
+    is_featured: false,
+    tags: ["premium", "executive"],
+    booking_count: 89,
+    total_revenue: 5785,
+    average_rating: 5.0,
+    created_at: "2024-01-01T00:00:00Z",
+    updated_at: "2024-01-01T00:00:00Z"
+  },
+  // Beard Services
+  {
+    id: 4,
+    name: "Beard Trim",
+    description: "Professional beard shaping and trimming",
+    category_id: 2,
+    category_name: "Beard Services",
+    base_price: 25,
+    duration_minutes: 20,
+    buffer_minutes: 5,
+    requires_deposit: false,
+    is_addon: false,
+    can_overlap: false,
+    max_advance_days: 30,
+    min_advance_hours: 1,
+    display_order: 1,
+    is_active: true,
+    is_featured: false,
+    tags: ["beard", "trim"],
+    booking_count: 178,
+    total_revenue: 4450,
+    average_rating: 4.7,
+    created_at: "2024-01-01T00:00:00Z",
+    updated_at: "2024-01-01T00:00:00Z"
+  },
+  {
+    id: 5,
+    name: "Beard Design",
+    description: "Custom beard styling with line work",
+    category_id: 2,
+    category_name: "Beard Services",
+    base_price: 35,
+    duration_minutes: 30,
+    buffer_minutes: 5,
+    requires_deposit: false,
+    is_addon: false,
+    can_overlap: false,
+    max_advance_days: 30,
+    min_advance_hours: 2,
+    display_order: 2,
+    is_active: true,
+    is_featured: false,
+    tags: ["beard", "design", "styling"],
+    booking_count: 134,
+    total_revenue: 4690,
+    average_rating: 4.8,
+    created_at: "2024-01-01T00:00:00Z",
+    updated_at: "2024-01-01T00:00:00Z"
+  },
+  // Hair Treatments
+  {
+    id: 6,
+    name: "Deep Conditioning",
+    description: "Intensive hair treatment for damaged hair",
+    category_id: 3,
+    category_name: "Hair Treatments",
+    base_price: 30,
+    duration_minutes: 30,
+    buffer_minutes: 5,
+    requires_deposit: false,
+    is_addon: true,
+    can_overlap: true,
+    max_advance_days: 30,
+    min_advance_hours: 2,
+    display_order: 1,
+    is_active: true,
+    is_featured: false,
+    tags: ["treatment", "conditioning"],
+    booking_count: 67,
+    total_revenue: 2010,
+    average_rating: 4.6,
+    created_at: "2024-01-01T00:00:00Z",
+    updated_at: "2024-01-01T00:00:00Z"
+  },
+  {
+    id: 7,
+    name: "Scalp Treatment",
+    description: "Therapeutic scalp massage and treatment",
+    category_id: 3,
+    category_name: "Hair Treatments",
+    base_price: 40,
+    duration_minutes: 40,
+    buffer_minutes: 5,
+    requires_deposit: false,
+    is_addon: true,
+    can_overlap: true,
+    max_advance_days: 30,
+    min_advance_hours: 3,
+    display_order: 2,
+    is_active: false,
+    is_featured: false,
+    tags: ["treatment", "scalp", "therapeutic"],
+    booking_count: 45,
+    total_revenue: 1800,
+    average_rating: 4.9,
+    created_at: "2024-01-01T00:00:00Z",
+    updated_at: "2024-01-01T00:00:00Z"
+  },
+  // Styling
+  {
+    id: 8,
+    name: "Event Styling",
+    description: "Special occasion hair styling",
+    category_id: 4,
+    category_name: "Styling",
+    base_price: 50,
+    duration_minutes: 45,
+    buffer_minutes: 10,
+    requires_deposit: true,
+    deposit_type: "fixed",
+    deposit_amount: 20,
+    is_addon: false,
+    can_overlap: false,
+    max_advance_days: 60,
+    min_advance_hours: 24,
+    display_order: 1,
+    is_active: true,
+    is_featured: false,
+    tags: ["styling", "event", "special"],
+    booking_count: 23,
+    total_revenue: 1150,
+    average_rating: 5.0,
+    created_at: "2024-01-01T00:00:00Z",
+    updated_at: "2024-01-01T00:00:00Z"
+  }
+]
+
+const MOCK_SERVICE_STATS: ServiceStats = {
+  total_services: 20,
+  active_services: 15,
+  featured_services: 3,
+  addon_services: 5,
+  categories_count: 4,
+  average_price: 38.5,
+  average_duration: 35,
+  price_range: { min: 15, max: 85 },
+  most_popular_service: {
+    id: 2,
+    name: "Fade Master",
+    booking_count: 312
+  },
+  highest_revenue_service: {
+    id: 2,
+    name: "Fade Master",
+    revenue: 12480
+  },
+  booking_distribution: [
+    {
+      service_id: 2,
+      service_name: "Fade Master",
+      booking_count: 312,
+      revenue: 12480,
+      percentage: 28.5
+    },
+    {
+      service_id: 1,
+      service_name: "Classic Cut",
+      booking_count: 245,
+      revenue: 8575,
+      percentage: 22.3
+    },
+    {
+      service_id: 4,
+      service_name: "Beard Trim",
+      booking_count: 178,
+      revenue: 4450,
+      percentage: 16.2
+    }
+  ]
+}
+
 // === TYPE DEFINITIONS ===
 
 export interface ServiceCategory {
@@ -169,6 +475,7 @@ export interface ServiceStats {
   categories_count: number
   average_price: number
   average_duration: number
+  price_range?: { min: number; max: number }
   most_popular_service: {
     id: number
     name: string
@@ -238,6 +545,39 @@ export const servicesService = {
    * Get list of services with filtering and pagination
    */
   async getServices(filters?: ServiceFilter): Promise<PaginatedResponse<Service>> {
+    if (DEMO_MODE) {
+      console.log('Demo mode active - returning mock services')
+      let filteredServices = [...MOCK_SERVICES]
+      
+      // Apply filters
+      if (filters?.category_id) {
+        filteredServices = filteredServices.filter(s => s.category_id === filters.category_id)
+      }
+      if (filters?.is_active !== undefined) {
+        filteredServices = filteredServices.filter(s => s.is_active === filters.is_active)
+      }
+      if (filters?.search) {
+        const search = filters.search.toLowerCase()
+        filteredServices = filteredServices.filter(s => 
+          s.name.toLowerCase().includes(search) || 
+          s.description?.toLowerCase().includes(search)
+        )
+      }
+      
+      const limit = filters?.limit || 20
+      const skip = filters?.skip || 0
+      const paginatedServices = filteredServices.slice(skip, skip + limit)
+      
+      return {
+        data: paginatedServices,
+        total: filteredServices.length,
+        page: Math.floor(skip / limit) + 1,
+        totalPages: Math.ceil(filteredServices.length / limit),
+        hasNext: skip + limit < filteredServices.length,
+        hasPrev: skip > 0
+      }
+    }
+
     const params = new URLSearchParams()
 
     if (filters?.category_id) params.append('category_id', filters.category_id.toString())
@@ -290,6 +630,16 @@ export const servicesService = {
    * Delete service
    */
   async deleteService(serviceId: number): Promise<ApiResponse<void>> {
+    if (DEMO_MODE) {
+      const index = MOCK_SERVICES.findIndex(s => s.id === serviceId)
+      if (index > -1) {
+        MOCK_SERVICES.splice(index, 1)
+        console.log(`Demo mode: Deleted service ${serviceId}`)
+        return { data: undefined }
+      }
+      throw new Error('Service not found')
+    }
+    
     const response = await apiClient.delete(`/services/${serviceId}`)
     return { data: response.data }
   },
@@ -298,6 +648,16 @@ export const servicesService = {
    * Toggle service active status
    */
   async toggleServiceStatus(serviceId: number): Promise<ApiResponse<Service>> {
+    if (DEMO_MODE) {
+      const service = MOCK_SERVICES.find(s => s.id === serviceId)
+      if (service) {
+        service.is_active = !service.is_active
+        console.log(`Demo mode: Toggled service ${serviceId} status to ${service.is_active}`)
+        return { data: { ...service } }
+      }
+      throw new Error('Service not found')
+    }
+    
     const response = await apiClient.post<Service>(`/services/${serviceId}/toggle-status`)
     return { data: response.data }
   },
@@ -308,6 +668,11 @@ export const servicesService = {
    * Get all service categories
    */
   async getCategories(includeStats = false): Promise<ApiResponse<ServiceCategory[]>> {
+    if (DEMO_MODE) {
+      console.log('Demo mode active - returning mock categories')
+      return { data: MOCK_CATEGORIES }
+    }
+    
     const params = includeStats ? '?include_stats=true' : ''
     const response = await apiClient.get<ServiceCategory[]>(`/services/categories${params}`)
     return { data: response.data }
@@ -537,6 +902,11 @@ export const servicesService = {
     locationId?: number,
     barberId?: number
   ): Promise<ApiResponse<ServiceStats>> {
+    if (DEMO_MODE) {
+      console.log('Demo mode active - returning mock service stats')
+      return { data: MOCK_SERVICE_STATS }
+    }
+    
     const params = new URLSearchParams()
     if (startDate) params.append('start_date', startDate)
     if (endDate) params.append('end_date', endDate)

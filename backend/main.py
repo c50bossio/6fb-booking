@@ -93,6 +93,7 @@ from api.v1.endpoints import (
     security_admin,
     health,
     availability_check,
+    financial_dashboard,
 )
 
 # Import logging setup
@@ -231,6 +232,7 @@ app.include_router(
     public_status.router, prefix="/api/v1/public", tags=["Public Status"]
 )
 app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["Dashboard"])
+app.include_router(financial_dashboard.router, prefix="/api/v1/financial", tags=["Financial Dashboard"])
 app.include_router(temp_reset.router, prefix="/api/v1/temp", tags=["Temp"])
 app.include_router(debug.router, prefix="/api/v1/debug", tags=["Debug"])
 app.include_router(
