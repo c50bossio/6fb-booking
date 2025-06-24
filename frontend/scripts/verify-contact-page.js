@@ -25,10 +25,14 @@ export default function ContactPage() {
 }`;
 
 console.log('🔍 Checking contact page...');
+console.log('Script running from:', __dirname);
+console.log('Contact page path:', contactPath);
+
+// Always ensure directory exists
+fs.mkdirSync(path.dirname(contactPath), { recursive: true });
 
 if (!fs.existsSync(contactPath)) {
   console.log('⚠️  Contact page not found, creating...');
-  fs.mkdirSync(path.dirname(contactPath), { recursive: true });
   fs.writeFileSync(contactPath, expectedContent);
   console.log('✅ Contact page created');
 } else {
