@@ -17,6 +17,7 @@ import {
   CreditCardIcon,
   ShieldCheckIcon
 } from '@heroicons/react/24/outline'
+import PaymentStep from './PaymentStep'
 
 interface Service {
   id: string
@@ -62,6 +63,9 @@ interface BookingData {
   }
   paymentMethod?: 'card' | 'cash' | 'online'
   totalPrice?: number
+  appointmentId?: number
+  paymentId?: number
+  paymentCompleted?: boolean
 }
 
 interface BookingFlowProps {
@@ -181,6 +185,7 @@ const STEPS = [
   { id: 'barber', title: 'Select Barber', description: 'Choose your preferred barber' },
   { id: 'datetime', title: 'Pick Date & Time', description: 'Select your appointment slot' },
   { id: 'details', title: 'Your Details', description: 'Provide contact information' },
+  { id: 'payment', title: 'Payment', description: 'Secure payment' },
   { id: 'confirmation', title: 'Confirmation', description: 'Review and confirm booking' }
 ]
 
@@ -295,15 +300,39 @@ export default function BookingFlow({
           newErrors.phone = 'Phone number is required'
         }
         break
+      case 4: // Payment
+        // Payment validation is handled within the payment component
+        break
     }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (validateStep(currentStep)) {
-      if (currentStep < STEPS.length - 1) {
+      // If we're on the details step and moving to payment, create the appointment first
+      if (currentStep === 3) {
+        setIsLoading(true)
+        try {
+          // Create appointment via API
+          // For now, we'll simulate this with a mock appointment ID
+          const mockAppointmentId = Math.floor(Math.random() * 10000) + 1
+          const totalPrice = bookingData.service?.price || 0
+          
+          updateBookingData({ 
+            appointmentId: mockAppointmentId,
+            totalPrice 
+          })
+          
+          setCurrentStep(currentStep + 1)
+        } catch (error) {
+          console.error('Failed to create appointment:', error)
+          setErrors({ general: 'Failed to create appointment. Please try again.' })
+        } finally {
+          setIsLoading(false)
+        }
+      } else if (currentStep < STEPS.length - 1) {
         setCurrentStep(currentStep + 1)
       } else {
         handleComplete()
@@ -458,7 +487,22 @@ export default function BookingFlow({
               />
             )}
 
-            {currentStep === 4 && (
+            {currentStep === 4 && bookingData.appointmentId && (
+              <PaymentStep
+                theme={theme}
+                appointmentId={bookingData.appointmentId}
+                amount={(bookingData.totalPrice || 0) * 100} // Convert to cents
+                onPaymentComplete={(paymentId) => {
+                  updateBookingData({ paymentId, paymentCompleted: true })
+                  handleNext()
+                }}
+                onError={(error) => {
+                  setErrors({ payment: error })
+                }}
+              />
+            )}
+
+            {currentStep === 5 && (
               <BookingConfirmation
                 theme={theme}
                 bookingData={bookingData}
@@ -507,6 +551,16 @@ export default function BookingFlow({
                   <>
                     <span>Confirm Booking</span>
                     <CheckIcon className="w-4 h-4" />
+                  </>
+                ) : currentStep === 3 ? (
+                  <>
+                    <span>Proceed to Payment</span>
+                    <CreditCardIcon className="w-4 h-4" />
+                  </>
+                ) : currentStep === 4 ? (
+                  <>
+                    <span>Complete Payment</span>
+                    <ChevronRightIcon className="w-4 h-4" />
                   </>
                 ) : (
                   <>
