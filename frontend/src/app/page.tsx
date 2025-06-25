@@ -350,11 +350,17 @@ export default function LandingPage() {
         [class*="bg-gradient-to-r"] *,
         .premium-button,
         .premium-button *,
+        .premium-button span,
+        .premium-button svg,
         [class*="premium-button"],
         [class*="premium-button"] *,
+        [class*="premium-button"] span,
+        [class*="premium-button"] svg,
         footer,
         footer * {
           color: white !important;
+          color: #FFFFFF !important;
+          fill: white !important;
           opacity: 1 !important;
           text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
         }
@@ -474,9 +480,10 @@ export default function LandingPage() {
             <Link
               href="/app"
               className="premium-button text-lg px-10 py-4 hover-lift bg-gradient-to-r from-slate-700 to-slate-800"
+              style={{ color: '#FFFFFF !important' }}
             >
-              <PlayIcon className="mr-2 h-5 w-5" />
-              Try Full Demo Now
+              <PlayIcon className="mr-2 h-5 w-5" style={{ color: '#FFFFFF' }} />
+              <span style={{ color: '#FFFFFF' }}>Try Full Demo Now</span>
             </Link>
             <Link
               href="#pricing"
