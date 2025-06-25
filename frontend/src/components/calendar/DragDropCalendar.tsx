@@ -202,7 +202,8 @@ export default function DragDropCalendar({
         y: event.clientY - rect.top
       }
 
-      setDragState({
+      // Store initial state for the drag operation
+      let currentDragState = {
         isDragging: true,
         draggedAppointment: appointment,
         dragOffset: offset,
@@ -213,18 +214,26 @@ export default function DragDropCalendar({
         isValidDrop: true,
         snapGuides: { x: 0, y: 0, visible: false },
         dragHandle: { visible: false, appointmentId: null }
-      })
+      }
+
+      setDragState(currentDragState)
 
       // Add drag class to the appointment element
       const appointmentElement = event.target as HTMLElement
       appointmentElement.classList.add('dragging')
 
+      console.log('🐭 Drag started for:', appointment.client, appointment.service)
+
       // Global mouse events for dragging
       const handleMouseMove = (e: MouseEvent) => {
-        setDragState(prev => ({
-          ...prev,
-          currentPosition: { x: e.clientX, y: e.clientY }
-        }))
+        setDragState(prev => {
+          const newState = {
+            ...prev,
+            currentPosition: { x: e.clientX, y: e.clientY }
+          }
+          currentDragState = newState
+          return newState
+        })
 
         // Find potential drop target
         const elementBelow = document.elementFromPoint(e.clientX, e.clientY)
@@ -247,14 +256,18 @@ export default function DragDropCalendar({
               visible: true
             }
 
-            setDragState(prev => ({
-              ...prev,
-              dropTarget: { date, time },
-              snapTarget: { date, time: snappedTime },
-              conflictingAppointments: conflicts,
-              isValidDrop,
-              snapGuides
-            }))
+            setDragState(prev => {
+              const newState = {
+                ...prev,
+                dropTarget: { date, time },
+                snapTarget: { date, time: snappedTime },
+                conflictingAppointments: conflicts,
+                isValidDrop,
+                snapGuides
+              }
+              currentDragState = newState
+              return newState
+            })
 
             // Update visual feedback with enhanced classes
             document.querySelectorAll('[data-time-slot]').forEach(slot => {
@@ -269,14 +282,20 @@ export default function DragDropCalendar({
           }
         } else {
           // Clear snap guides when not over a valid drop target
-          setDragState(prev => ({
-            ...prev,
-            snapGuides: { ...prev.snapGuides, visible: false }
-          }))
+          setDragState(prev => {
+            const newState = {
+              ...prev,
+              snapGuides: { ...prev.snapGuides, visible: false }
+            }
+            currentDragState = newState
+            return newState
+          })
         }
       }
 
       const handleMouseUp = async (e: MouseEvent) => {
+        console.log('🐭 Mouse up - checking drop target...')
+        
         // Remove dragging class
         document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'))
         document.querySelectorAll('.drop-target, .conflict-target, .drop-target-valid, .drop-target-invalid').forEach(el => {
@@ -286,21 +305,29 @@ export default function DragDropCalendar({
         const elementBelow = document.elementFromPoint(e.clientX, e.clientY)
         const timeSlot = elementBelow?.closest('[data-time-slot]')
 
-        if (timeSlot && dragState.draggedAppointment && onAppointmentMove) {
+        if (timeSlot && currentDragState.draggedAppointment && onAppointmentMove) {
           const newDate = timeSlot.getAttribute('data-date')
           const newTime = timeSlot.getAttribute('data-time')
 
+          console.log('🎯 Drop target found:', { newDate, newTime })
+
           if (newDate && newTime) {
             const snappedTime = snapToInterval(newTime)
-            const conflicts = findConflicts(dragState.draggedAppointment, newDate, snappedTime)
+            const conflicts = findConflicts(currentDragState.draggedAppointment, newDate, snappedTime)
+
+            console.log('⚡ Processing drop:', {
+              from: `${currentDragState.draggedAppointment.date} ${currentDragState.draggedAppointment.startTime}`,
+              to: `${newDate} ${snappedTime}`,
+              conflicts: conflicts.length
+            })
 
             // Handle conflicts with smart resolution
             if (conflicts.length === 0) {
               // No conflicts - proceed with normal confirmation
-              if (newDate !== dragState.draggedAppointment.date ||
-                  snappedTime !== dragState.draggedAppointment.startTime) {
+              if (newDate !== currentDragState.draggedAppointment.date ||
+                  snappedTime !== currentDragState.draggedAppointment.startTime) {
                 setPendingMove({
-                  appointment: dragState.draggedAppointment,
+                  appointment: currentDragState.draggedAppointment,
                   newDate,
                   newTime: snappedTime
                 })
@@ -310,16 +337,16 @@ export default function DragDropCalendar({
               // Show conflict resolution modal
               const conflictingAppointments = ConflictResolutionService.analyzeConflicts(
                 appointments,
-                dragState.draggedAppointment,
+                currentDragState.draggedAppointment,
                 newDate,
                 snappedTime
               )
 
               const suggestions = conflictService.generateSuggestions(
-                dragState.draggedAppointment,
+                currentDragState.draggedAppointment,
                 newDate,
                 snappedTime,
-                dragState.draggedAppointment.barberId
+                currentDragState.draggedAppointment.barberId
               )
 
               setConflictState({
@@ -331,10 +358,10 @@ export default function DragDropCalendar({
               })
             } else if (allowConflicts) {
               // Allow conflicts if explicitly enabled
-              if (newDate !== dragState.draggedAppointment.date ||
-                  snappedTime !== dragState.draggedAppointment.startTime) {
+              if (newDate !== currentDragState.draggedAppointment.date ||
+                  snappedTime !== currentDragState.draggedAppointment.startTime) {
                 setPendingMove({
-                  appointment: dragState.draggedAppointment,
+                  appointment: currentDragState.draggedAppointment,
                   newDate,
                   newTime: snappedTime
                 })
@@ -365,7 +392,7 @@ export default function DragDropCalendar({
       document.addEventListener('mousemove', handleMouseMove)
       document.addEventListener('mouseup', handleMouseUp)
     },
-    [enableDragDrop, onAppointmentMove, snapToInterval, findConflicts, allowConflicts, dragState.draggedAppointment]
+    [enableDragDrop, onAppointmentMove, snapToInterval, findConflicts, allowConflicts, enableSmartConflictResolution, appointments, conflictService]
   )
 
   // Touch event handlers for mobile support
@@ -1268,6 +1295,21 @@ export default function DragDropCalendar({
           opacity: ${enableDragDrop ? 1 : 0};
           transition: opacity 0.2s ease;
           z-index: 1;
+        }
+
+        .calendar-container .appointment-block {
+          position: relative;
+        }
+
+        .calendar-container .appointment-block::after {
+          content: '🖱️';
+          position: absolute;
+          top: 2px;
+          right: 2px;
+          font-size: 10px;
+          opacity: ${enableDragDrop ? 0.7 : 0};
+          transition: opacity 0.2s ease;
+          pointer-events: none;
         }
 
         .calendar-container .appointment-block:active {
