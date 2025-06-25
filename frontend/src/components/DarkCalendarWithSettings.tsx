@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { generateMockCalendarData, generateTodayAppointments } from '../utils/mockCalendarData'
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -57,32 +58,25 @@ const accentColors = [
   { name: 'Cyan', value: 'cyan', gradient: 'from-cyan-600 to-sky-600' }
 ]
 
-const mockAppointments: Appointment[] = [
-  {
-    id: '1',
-    title: 'Haircut & Beard Trim',
-    client: 'John Smith',
-    barber: 'Marcus Johnson',
-    startTime: '09:00',
-    endTime: '10:00',
-    service: 'Premium Cut',
-    price: 65,
-    status: 'confirmed',
-    date: '2024-06-21'
-  },
-  {
-    id: '2',
-    title: 'Fade Cut',
-    client: 'David Rodriguez',
-    barber: 'James Wilson',
-    startTime: '10:30',
-    endTime: '11:30',
-    service: 'Fade Cut',
-    price: 45,
-    status: 'pending',
-    date: '2024-06-21'
-  }
-]
+// Generate rich mock appointments for the demo
+const generateMockAppointments = (): Appointment[] => {
+  const mockData = generateMockCalendarData(25)
+  const todayData = generateTodayAppointments()
+
+  // Convert to the format expected by this component
+  return [...todayData, ...mockData].map(appointment => ({
+    id: appointment.id,
+    title: appointment.service,
+    client: appointment.client,
+    barber: appointment.barber,
+    startTime: appointment.startTime,
+    endTime: appointment.endTime,
+    service: appointment.service,
+    price: appointment.price,
+    status: appointment.status,
+    date: appointment.date
+  }))
+}
 
 export default function DarkCalendarWithSettings() {
   const [showSettings, setShowSettings] = useState(false)
@@ -103,6 +97,7 @@ export default function DarkCalendarWithSettings() {
 
   const [currentDate, setCurrentDate] = useState(new Date())
   const [currentView, setCurrentView] = useState<'day' | 'week' | 'month'>(settings.defaultView)
+  const [mockAppointments] = useState<Appointment[]>(() => generateMockAppointments())
 
   const updateSetting = <K extends keyof CalendarSettings>(key: K, value: CalendarSettings[K]) => {
     setSettings(prev => ({ ...prev, [key]: value }))
@@ -204,24 +199,49 @@ export default function DarkCalendarWithSettings() {
                 <div className="p-3 text-sm font-medium text-gray-400 bg-gray-800/30">
                   {time}
                 </div>
-                {weekDays.map((_, dayIndex) => (
-                  <div
-                    key={`${time}-${dayIndex}`}
-                    className={`relative border-r border-gray-800 transition-all hover:bg-gray-800/50 cursor-pointer ${densityStyles[settings.density]}`}
-                  >
-                    {/* Sample Appointments */}
-                    {hourIndex === 1 && dayIndex === 2 && (
-                      <motion.div
-                        initial={settings.animations ? { opacity: 0, scale: 0.9 } : {}}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className={`absolute inset-x-1 ${getStatusStyle('confirmed')} text-white rounded-lg p-2 shadow-lg cursor-pointer`}
-                      >
-                        <div className="text-xs font-medium">John Smith</div>
-                        <div className="text-xs opacity-90">Premium Cut</div>
-                      </motion.div>
-                    )}
-                  </div>
-                ))}
+                {weekDays.map((_, dayIndex) => {
+                  // Get appointments for this time slot and day
+                  const currentHour = hourIndex + 8; // Start from 8 AM
+                  const appointmentsForSlot = mockAppointments.filter(appointment => {
+                    const appointmentHour = parseInt(appointment.startTime.split(':')[0]);
+                    const appointmentDate = new Date(appointment.date);
+                    const today = new Date();
+
+                    // Calculate which day this slot represents (0 = today, 1 = tomorrow, etc.)
+                    const slotDate = new Date(today);
+                    slotDate.setDate(today.getDate() + dayIndex);
+
+                    return appointmentHour === currentHour &&
+                           appointmentDate.toDateString() === slotDate.toDateString();
+                  });
+
+                  return (
+                    <div
+                      key={`${time}-${dayIndex}`}
+                      className={`relative border-r border-gray-800 transition-all hover:bg-gray-800/50 cursor-pointer ${densityStyles[settings.density]}`}
+                    >
+                      {/* Render appointments for this slot */}
+                      {appointmentsForSlot.map((appointment, index) => (
+                        <motion.div
+                          key={appointment.id}
+                          initial={settings.animations ? { opacity: 0, scale: 0.9 } : {}}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: index * 0.1 }}
+                          className={`absolute inset-x-1 ${getStatusStyle(appointment.status)} text-white rounded-lg p-2 shadow-lg cursor-pointer ${
+                            index > 0 ? 'mt-2' : ''
+                          }`}
+                          style={{ top: index * 30 }}
+                        >
+                          <div className="text-xs font-medium truncate">{appointment.client}</div>
+                          <div className="text-xs opacity-90 truncate">{appointment.service}</div>
+                          {settings.density !== 'compact' && (
+                            <div className="text-xs opacity-75">${appointment.price}</div>
+                          )}
+                        </motion.div>
+                      ))}
+                    </div>
+                  );
+                })}
               </div>
             ))}
           </div>
