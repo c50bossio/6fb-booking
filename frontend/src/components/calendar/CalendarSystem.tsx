@@ -11,6 +11,7 @@ import { bookingService } from '../../lib/api/bookings'
 import {
   generateMockCalendarData,
   generateTodayAppointments,
+  generateComprehensiveDemoData,
   isDemoMode,
   getMockBarbers,
   getMockServices
@@ -150,17 +151,9 @@ export default function CalendarSystem({
     try {
       // Check if we're in demo mode
       if (isDemoMode()) {
-        // Generate rich demo data
-        const mockAppointments = generateMockCalendarData(30)
-        const todayAppointments = generateTodayAppointments()
-
-        // Combine and deduplicate appointments
-        const allMockAppointments = [...todayAppointments, ...mockAppointments]
-        const uniqueAppointments = allMockAppointments.filter((appointment, index, self) =>
-          index === self.findIndex(a => a.id === appointment.id)
-        )
-
-        setAppointments(uniqueAppointments)
+        // Generate comprehensive demo data including drag & drop test scenarios
+        const comprehensiveData = generateComprehensiveDemoData()
+        setAppointments(comprehensiveData)
         return
       }
 

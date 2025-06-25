@@ -101,6 +101,11 @@ export default function DragDropCalendar({
   const [isSaving, setIsSaving] = useState(false)
   const [successAnimation, setSuccessAnimation] = useState<{ visible: boolean; appointmentId: string | null }>({ visible: false, appointmentId: null })
   const [hoveredAppointment, setHoveredAppointment] = useState<string | null>(null)
+  const [appointmentPreview, setAppointmentPreview] = useState<{
+    visible: boolean
+    appointment: CalendarAppointment | null
+    position: { x: number; y: number }
+  }>({ visible: false, appointment: null, position: { x: 0, y: 0 } })
 
   // Conflict resolution state
   const [conflictState, setConflictState] = useState<ConflictState>({
@@ -847,16 +852,26 @@ export default function DragDropCalendar({
     [calendarProps.onTimeSlotClick, dragState.isDragging]
   )
 
-  // Hover handlers for drag handle visibility
-  const handleAppointmentMouseEnter = useCallback((appointmentId: string) => {
+  // Hover handlers for drag handle visibility and appointment preview
+  const handleAppointmentMouseEnter = useCallback((appointmentId: string, event?: React.MouseEvent) => {
     if (enableDragDrop && !dragState.isDragging) {
+      const appointment = appointments.find(apt => apt.id === appointmentId)
       setHoveredAppointment(appointmentId)
       setDragState(prev => ({
         ...prev,
         dragHandle: { visible: true, appointmentId }
       }))
+
+      // Show appointment preview
+      if (appointment && event) {
+        setAppointmentPreview({
+          visible: true,
+          appointment,
+          position: { x: event.clientX, y: event.clientY }
+        })
+      }
     }
-  }, [enableDragDrop, dragState.isDragging])
+  }, [enableDragDrop, dragState.isDragging, appointments])
 
   const handleAppointmentMouseLeave = useCallback(() => {
     if (enableDragDrop && !dragState.isDragging) {
@@ -865,8 +880,24 @@ export default function DragDropCalendar({
         ...prev,
         dragHandle: { visible: false, appointmentId: null }
       }))
+
+      // Hide appointment preview
+      setAppointmentPreview({
+        visible: false,
+        appointment: null,
+        position: { x: 0, y: 0 }
+      })
     }
   }, [enableDragDrop, dragState.isDragging])
+
+  const handleAppointmentMouseMove = useCallback((event: React.MouseEvent) => {
+    if (appointmentPreview.visible && !dragState.isDragging) {
+      setAppointmentPreview(prev => ({
+        ...prev,
+        position: { x: event.clientX, y: event.clientY }
+      }))
+    }
+  }, [appointmentPreview.visible, dragState.isDragging])
 
   // Wrap appointments to add drag functionality
   const enhancedAppointments = useMemo(() => {
@@ -875,8 +906,9 @@ export default function DragDropCalendar({
       __dragProps: enableDragDrop ? {
         onMouseDown: (e: React.MouseEvent) => handleAppointmentMouseDown(appointment, e),
         onTouchStart: (e: React.TouchEvent) => handleAppointmentTouchStart(appointment, e),
-        onMouseEnter: () => handleAppointmentMouseEnter(appointment.id),
+        onMouseEnter: (e: React.MouseEvent) => handleAppointmentMouseEnter(appointment.id, e),
         onMouseLeave: handleAppointmentMouseLeave,
+        onMouseMove: handleAppointmentMouseMove,
         onDragStart: (e: React.DragEvent) => e.preventDefault(), // Prevent HTML5 drag
         style: {
           cursor: 'grab',
@@ -885,7 +917,7 @@ export default function DragDropCalendar({
         }
       } : null
     }))
-  }, [appointments, handleAppointmentMouseDown, handleAppointmentTouchStart, handleAppointmentMouseEnter, handleAppointmentMouseLeave, enableDragDrop])
+  }, [appointments, handleAppointmentMouseDown, handleAppointmentTouchStart, handleAppointmentMouseEnter, handleAppointmentMouseLeave, handleAppointmentMouseMove, enableDragDrop])
 
   return (
     <div
@@ -940,8 +972,9 @@ export default function DragDropCalendar({
               top: dragState.snapGuides.y - 2,
             }}
           >
-            <div className="w-4 h-4 border-2 border-blue-400 bg-blue-100 rounded-full animate-pulse" />
+            <div className="w-4 h-4 border-2 border-blue-400 bg-blue-100 rounded-full animate-pulse shadow-lg" />
             <div className="absolute -top-1 -left-1 w-6 h-6 border-2 border-blue-300 rounded-full animate-ping" />
+            <div className="absolute -top-2 -left-2 w-8 h-8 border border-blue-200 rounded-full opacity-50" />
           </motion.div>
         )}
       </AnimatePresence>
@@ -990,8 +1023,9 @@ export default function DragDropCalendar({
                   animate={{ opacity: 1, y: 0 }}
                   className="mt-2 pt-2 border-t border-white/20"
                 >
-                  <div className="text-xs">
-                    New time: {dragState.snapTarget.time}
+                  <div className="text-xs flex items-center gap-1">
+                    <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                    <span>New time: {dragState.snapTarget.time}</span>
                   </div>
                   {dragState.conflictingAppointments.length > 0 && showConflicts && (
                     <motion.div
@@ -1011,6 +1045,79 @@ export default function DragDropCalendar({
                 </motion.div>
               )}
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Appointment Preview Tooltip */}
+      <AnimatePresence>
+        {appointmentPreview.visible && appointmentPreview.appointment && !dragState.isDragging && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 10 }}
+            transition={{ duration: 0.2 }}
+            className="fixed pointer-events-none z-50"
+            style={{
+              left: appointmentPreview.position.x + 10,
+              top: appointmentPreview.position.y - 10,
+              transform: 'translateY(-100%)'
+            }}
+          >
+            <div className="bg-gray-900 text-white px-4 py-3 rounded-lg shadow-2xl border border-gray-700 max-w-xs">
+              <div className="flex items-center gap-2 mb-2">
+                <div className={`w-3 h-3 rounded-full ${
+                  appointmentPreview.appointment.status === 'confirmed' ? 'bg-green-500' :
+                  appointmentPreview.appointment.status === 'pending' ? 'bg-yellow-500' :
+                  appointmentPreview.appointment.status === 'completed' ? 'bg-blue-500' :
+                  'bg-red-500'
+                }`} />
+                <span className="font-semibold text-sm">{appointmentPreview.appointment.service}</span>
+              </div>
+
+              <div className="space-y-1 text-xs text-gray-300">
+                <div className="flex items-center gap-2">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  <span>{appointmentPreview.appointment.client}</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>{appointmentPreview.appointment.startTime} - {appointmentPreview.appointment.endTime}</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293H15M13 16h-1a2 2 0 01-2-2V7a2 2 0 012-2h1m0 11V7m0 11a2 2 0 002-2V7a2 2 0 00-2-2m0 0H9a2 2 0 00-2 2v7a2 2 0 002 2" />
+                  </svg>
+                  <span>{appointmentPreview.appointment.barber}</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                  </svg>
+                  <span>${appointmentPreview.appointment.price}</span>
+                </div>
+
+                {appointmentPreview.appointment.notes && (
+                  <div className="flex items-start gap-2 mt-2 pt-2 border-t border-gray-700">
+                    <svg className="w-3 h-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span className="text-gray-400">{appointmentPreview.appointment.notes}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-2 text-xs text-gray-500">
+                {appointmentPreview.appointment.duration} minutes
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

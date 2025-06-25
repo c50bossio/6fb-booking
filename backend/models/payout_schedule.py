@@ -8,13 +8,14 @@ from sqlalchemy import (
     String,
     Boolean,
     DateTime,
-    Decimal,
+    DECIMAL,
     Text,
     ForeignKey,
     Enum,
 )
 from sqlalchemy.orm import relationship
 from datetime import datetime
+from decimal import Decimal
 import enum
 
 from models.base import Base
@@ -62,7 +63,7 @@ class PayoutSchedule(Base):
     custom_interval_days = Column(Integer)  # For custom frequencies
 
     # Payout Settings
-    minimum_payout_amount = Column(Decimal(10, 2), default=25.00)  # $25 minimum
+    minimum_payout_amount = Column(DECIMAL(10, 2), default=25.00)  # $25 minimum
     auto_payout_enabled = Column(Boolean, default=True)
 
     # Notification Settings
@@ -81,7 +82,7 @@ class PayoutSchedule(Base):
     last_payout_date = Column(DateTime)
     next_payout_date = Column(DateTime)
     total_payouts_sent = Column(Integer, default=0)
-    total_amount_paid = Column(Decimal(12, 2), default=0.00)
+    total_amount_paid = Column(DECIMAL(12, 2), default=0.00)
 
     # Relationships
     barber = relationship("Barber", back_populates="payout_schedule")
@@ -106,7 +107,7 @@ class ScheduledPayout(Base):
     payout_type = Column(
         Enum(PayoutType), nullable=False, default=PayoutType.COMMISSION
     )
-    amount = Column(Decimal(10, 2), nullable=False)
+    amount = Column(DECIMAL(10, 2), nullable=False)
     currency = Column(String(3), default="USD")
 
     # Date Range for Earnings
@@ -124,8 +125,8 @@ class ScheduledPayout(Base):
     platform_transfer_id = Column(String(255))  # Transfer ID if applicable
 
     # Fee Information
-    platform_fee = Column(Decimal(8, 2), default=0.00)
-    net_amount = Column(Decimal(10, 2))  # Amount after fees
+    platform_fee = Column(DECIMAL(8, 2), default=0.00)
+    net_amount = Column(DECIMAL(10, 2))  # Amount after fees
 
     # Error Handling
     failure_reason = Column(Text)
@@ -165,9 +166,9 @@ class PayoutEarning(Base):
     earning_type = Column(
         String(50)
     )  # service_commission, product_commission, tip, bonus
-    gross_amount = Column(Decimal(10, 2), nullable=False)
-    commission_rate = Column(Decimal(5, 4))  # e.g., 0.3000 for 30%
-    commission_amount = Column(Decimal(10, 2), nullable=False)
+    gross_amount = Column(DECIMAL(10, 2), nullable=False)
+    commission_rate = Column(DECIMAL(5, 4))  # e.g., 0.3000 for 30%
+    commission_amount = Column(DECIMAL(10, 2), nullable=False)
 
     # Date and Metadata
     earned_date = Column(DateTime, nullable=False)
