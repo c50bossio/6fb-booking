@@ -75,11 +75,11 @@ export default function RootLayout({
             <NotificationProvider>
               <AuthProvider>
                 <NavigationProvider>
-                  <StripeProvider>
+                  {/* <StripeProvider> */}
                     {/* <ClientOnly> */}
                       {children}
                     {/* </ClientOnly> */}
-                  </StripeProvider>
+                  {/* </StripeProvider> */}
                 </NavigationProvider>
               </AuthProvider>
               <ExtensionDetector />

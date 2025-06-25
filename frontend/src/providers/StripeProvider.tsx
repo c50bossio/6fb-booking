@@ -5,15 +5,21 @@ import { loadStripe } from '@stripe/stripe-js'
 import { Elements } from '@stripe/react-stripe-js'
 
 // Initialize Stripe outside of component to avoid recreating on every render
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+const stripePromise = stripeKey ? loadStripe(stripeKey) : null
 
 interface StripeProviderProps {
   children: React.ReactNode
 }
 
 export function StripeProvider({ children }: StripeProviderProps) {
-  if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
-    console.error('Stripe publishable key is not configured')
+  if (!stripeKey) {
+    console.warn('Stripe publishable key not found in environment variables')
+    return <>{children}</>
+  }
+
+  if (!stripePromise) {
+    console.warn('Stripe failed to initialize')
     return <>{children}</>
   }
 

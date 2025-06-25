@@ -456,10 +456,10 @@ export default function LandingPage() {
 
         <div className="max-w-7xl mx-auto text-center relative">
           {/* Trust Badge */}
-          <div className="inline-flex items-center bg-white/90 backdrop-blur-sm border border-slate-200/50 rounded-full px-6 py-3 mb-8 shadow-lg hover:shadow-xl transition-all duration-300">
-            <ShieldCheckIcon className="h-4 w-4 text-emerald-500 mr-2" />
-            <span className="text-sm font-medium trust-badge-text" style={{color: '#000000', fontWeight: '600'}}>Trusted by 1,200+ barbers nationwide</span>
-            <div className="ml-2 w-2 h-2 bg-slate-500 rounded-full animate-pulse"></div>
+          <div className="inline-flex items-center bg-white border border-slate-300 rounded-full px-6 py-3 mb-8 shadow-lg hover:shadow-xl transition-all duration-300">
+            <ShieldCheckIcon className="h-4 w-4 text-emerald-600 mr-2" />
+            <span className="text-sm font-bold trust-badge-text" style={{color: '#000000', fontWeight: '800', textShadow: '0 1px 2px rgba(255,255,255,0.8)'}}>Trusted by 1,200+ barbers nationwide</span>
+            <div className="ml-2 w-2 h-2 bg-emerald-600 rounded-full animate-pulse"></div>
           </div>
 
           <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-8 tracking-tight leading-tight">
