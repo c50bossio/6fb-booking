@@ -338,6 +338,9 @@ export default function PremiumCalendar({
             className={`min-h-[120px] p-2 border-b border-r border-gray-700 last:border-r-0 hover:bg-gray-800/50 transition-colors cursor-pointer ${
               !isCurrentMonthDate ? 'bg-gray-900/50 text-gray-600' : 'bg-gray-900/20'
             } ${isTodayDate ? 'bg-violet-900/30' : ''}`}
+            data-time-slot="true"
+            data-date={date.toISOString().split('T')[0]}
+            data-time="all-day"
             onClick={() => setSelectedDate(date)}
           >
             <div className={`text-sm font-medium mb-2 ${
@@ -358,6 +361,7 @@ export default function PremiumCalendar({
                     e.stopPropagation()
                     onAppointmentClick?.(appointment)
                   }}
+                  {...((appointment as any).__dragProps || {})}
                 >
                   <div className="font-medium truncate">{appointment.service}</div>
                   <div className="opacity-90 truncate">{appointment.client}</div>
@@ -432,6 +436,9 @@ export default function PremiumCalendar({
                     className={`relative p-2 border-r border-gray-700 last:border-r-0 min-h-[60px] cursor-pointer transition-all duration-200 ${
                       isHovered ? 'bg-violet-900/20 border-violet-500' : 'hover:bg-gray-800/40'
                     }`}
+                    data-time-slot="true"
+                    data-date={dateStr}
+                    data-time={time}
                     onClick={() => handleTimeSlotClick(date, time)}
                     onMouseEnter={() => handleTimeSlotHover(date, time, true)}
                     onMouseLeave={() => handleTimeSlotHover(date, time, false)}
@@ -450,6 +457,7 @@ export default function PremiumCalendar({
                           e.stopPropagation()
                           onAppointmentClick?.(appointmentForTime)
                         }}
+                        {...((appointmentForTime as any).__dragProps || {})}
                       >
                         <div className="flex items-start justify-between mb-2">
                           <span className="text-xs font-bold truncate">

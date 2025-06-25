@@ -95,6 +95,7 @@ from api.v1.endpoints import (
     health,
     availability_check,
     emergency_login,
+    stripe_health,
 )
 
 # Import logging setup
@@ -286,6 +287,11 @@ app.include_router(
     prefix="/api/v1",
     tags=["Emergency Login"],
 )
+app.include_router(
+    stripe_health.router,
+    prefix="/api/v1",
+    tags=["Stripe Health"],
+)
 
 # Add authentication system (disabled for now)
 # app = add_auth_to_sixfb_backend(app)
@@ -472,4 +478,4 @@ def trigger_error():
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)  # nosec B104
