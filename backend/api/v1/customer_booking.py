@@ -3,7 +3,7 @@ Customer Booking API endpoints
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
 from sqlalchemy import and_, desc, func
 from datetime import datetime, timedelta
 from typing import Optional, List
@@ -12,9 +12,6 @@ import logging
 from config.database import get_db
 from models.customer import Customer
 from models.appointment import Appointment
-from models.user import User
-from models.location import Location
-from models.booking import Service
 from api.v1.customer_auth import get_current_customer
 from pydantic import BaseModel
 from utils.logging import log_user_action
@@ -84,25 +81,23 @@ def format_appointment_response(
     return CustomerAppointmentResponse(
         id=appointment.id,
         barber_id=appointment.barber_id,
-        barber_name=(
-            f"{appointment.barber.first_name} {appointment.barber.last_name}"
-            if appointment.barber
-            else "Unknown"
-        ),
-        service_id=appointment.service_id,
-        service_name=(
-            appointment.service.name if appointment.service else "Unknown Service"
-        ),
+        barber_name="Barber",  # Simplified since no relationship
+        service_id=0,  # Default since no service_id in current schema
+        service_name=appointment.service_name or "Service",
         appointment_date=appointment.appointment_date.strftime("%Y-%m-%d"),
-        appointment_time=appointment.appointment_time.strftime("%H:%M:%S"),
-        location_id=appointment.location_id,
-        location_name=(
-            appointment.location.name if appointment.location else "Unknown Location"
+        appointment_time=(
+            appointment.appointment_time.strftime("%H:%M:%S")
+            if appointment.appointment_time
+            else "00:00:00"
         ),
-        location_address=appointment.location.address if appointment.location else "",
+        location_id=0,  # Default since no location_id in current schema
+        location_name="Location",  # Simplified since no relationship
+        location_address="",  # Simplified since no relationship
         status=appointment.status,
-        total_amount=appointment.total_amount,
-        notes=appointment.notes,
+        total_amount=(appointment.service_revenue or 0)
+        + (appointment.tip_amount or 0)
+        + (appointment.product_revenue or 0),
+        notes=appointment.barber_notes,
         created_at=appointment.created_at,
         updated_at=appointment.updated_at,
     )
@@ -121,16 +116,8 @@ async def get_customer_appointments(
 ):
     """Get customer appointments with filtering"""
 
-    # Build query
-    query = (
-        db.query(Appointment)
-        .options(
-            joinedload(Appointment.barber),
-            joinedload(Appointment.service),
-            joinedload(Appointment.location),
-        )
-        .filter(Appointment.customer_id == current_customer.id)
-    )
+    # Build query (removed joinedload options to work with current schema)
+    query = db.query(Appointment).filter(Appointment.customer_id == current_customer.id)
 
     # Apply filters
     if status_filter:
@@ -199,11 +186,6 @@ async def get_customer_appointment(
 
     appointment = (
         db.query(Appointment)
-        .options(
-            joinedload(Appointment.barber),
-            joinedload(Appointment.service),
-            joinedload(Appointment.location),
-        )
         .filter(
             and_(
                 Appointment.id == appointment_id,
@@ -267,14 +249,19 @@ async def get_customer_stats(
         .count()
     )
 
-    # Total spent
+    # Total spent (calculated from service_revenue + tip_amount + product_revenue)
     total_spent_result = (
-        db.query(func.sum(Appointment.total_amount))
+        db.query(
+            func.sum(
+                func.coalesce(Appointment.service_revenue, 0)
+                + func.coalesce(Appointment.tip_amount, 0)
+                + func.coalesce(Appointment.product_revenue, 0)
+            )
+        )
         .filter(
             and_(
                 Appointment.customer_id == current_customer.id,
                 Appointment.status == "completed",
-                Appointment.total_amount.isnot(None),
             )
         )
         .scalar()
@@ -282,49 +269,48 @@ async def get_customer_stats(
 
     total_spent = float(total_spent_result) if total_spent_result else 0.0
 
-    # Favorite barber (most frequent)
+    # Favorite barber (simplified - just return most used barber ID)
     favorite_barber_result = (
         db.query(
-            User.first_name,
-            User.last_name,
+            Appointment.barber_id,
             func.count(Appointment.id).label("appointment_count"),
         )
-        .join(Appointment, User.id == Appointment.barber_id)
         .filter(
             and_(
                 Appointment.customer_id == current_customer.id,
                 Appointment.status == "completed",
             )
         )
-        .group_by(User.id, User.first_name, User.last_name)
+        .group_by(Appointment.barber_id)
         .order_by(desc("appointment_count"))
         .first()
     )
 
     favorite_barber = "None yet"
     if favorite_barber_result:
-        favorite_barber = (
-            f"{favorite_barber_result.first_name} {favorite_barber_result.last_name}"
-        )
+        favorite_barber = f"Barber #{favorite_barber_result.barber_id}"
 
-    # Favorite service (most frequent)
+    # Favorite service (simplified - use service_name from appointments)
     favorite_service_result = (
-        db.query(Service.name, func.count(Appointment.id).label("appointment_count"))
-        .join(Appointment, Service.id == Appointment.service_id)
+        db.query(
+            Appointment.service_name,
+            func.count(Appointment.id).label("appointment_count"),
+        )
         .filter(
             and_(
                 Appointment.customer_id == current_customer.id,
                 Appointment.status == "completed",
+                Appointment.service_name.isnot(None),
             )
         )
-        .group_by(Service.id, Service.name)
+        .group_by(Appointment.service_name)
         .order_by(desc("appointment_count"))
         .first()
     )
 
     favorite_service = "None yet"
     if favorite_service_result:
-        favorite_service = favorite_service_result.name
+        favorite_service = favorite_service_result.service_name
 
     return CustomerStatsResponse(
         totalAppointments=total_appointments,
@@ -431,17 +417,8 @@ async def reschedule_appointment(
         },
     )
 
-    # Reload with relationships
-    appointment = (
-        db.query(Appointment)
-        .options(
-            joinedload(Appointment.barber),
-            joinedload(Appointment.service),
-            joinedload(Appointment.location),
-        )
-        .filter(Appointment.id == appointment_id)
-        .first()
-    )
+    # Reload appointment
+    appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
 
     return format_appointment_response(appointment)
 

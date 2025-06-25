@@ -33,6 +33,17 @@ class Appointment(BaseModel):
     client_id = Column(Integer, ForeignKey("clients.id"), nullable=False)
     client = relationship("Client", back_populates="appointments")
 
+    # Customer relationship (for customer portal access)
+    customer_id = Column(Integer, ForeignKey("customers.id"), nullable=True)
+    customer = relationship("Customer", back_populates="appointments")
+
+    # Service and Location relationships (commented out - not in current schema)
+    # service_id = Column(Integer, ForeignKey("services.id"), nullable=True)
+    # service = relationship("Service", foreign_keys=[service_id])
+
+    # location_id = Column(Integer, ForeignKey("locations.id"), nullable=False)
+    # location = relationship("Location", foreign_keys=[location_id])
+
     # Payment relationships
     payments = relationship("Payment", back_populates="appointment")
     square_payments = relationship("SquarePayment", back_populates="appointment")
@@ -69,11 +80,13 @@ class Appointment(BaseModel):
     payment_method = Column(String(50))  # cash, card, digital
     payment_status = Column(String(20), default="pending")  # pending, paid, refunded
     deposit_amount = Column(Float, default=0.0)
-    payment_processor = Column(String(50))  # stripe, square
+    # total_amount = Column(Float, default=0.0)  # Total appointment cost - not in current schema
+    # payment_processor = Column(String(50))  # stripe, square - not in current schema
 
     # Notes and Tags
     barber_notes = Column(Text)
     client_notes = Column(Text)
+    # notes = Column(Text)  # General appointment notes (for customer API) - not in current schema
     tags = Column(String(500))  # Comma-separated tags
 
     # Booking Metadata

@@ -70,6 +70,13 @@ from .revenue_analytics import (
     PerformanceBenchmark,
     RevenueOptimizationGoal,
 )
+from .customer import Customer, CustomerPaymentMethod
+from .gift_certificate import (
+    GiftCertificate,
+    GiftCertificateRedemption,
+    GiftCertificateStatus,
+)
+from .payout_schedule import PayoutSchedule
 
 # Export all models for easy importing
 __all__ = [
@@ -146,4 +153,13 @@ __all__ = [
     "RevenueInsight",
     "PerformanceBenchmark",
     "RevenueOptimizationGoal",
+    # Customer models
+    "Customer",
+    "CustomerPaymentMethod",
+    # Gift Certificate models
+    "GiftCertificate",
+    "GiftCertificateRedemption",
+    "GiftCertificateStatus",
+    # Payout Schedule models
+    "PayoutSchedule",
 ]

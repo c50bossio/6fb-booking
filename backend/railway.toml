@@ -1,0 +1,27 @@
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+[environments.production]
+[environments.production.variables]
+PORT = "8000"
+HOST = "0.0.0.0"
+PYTHONUNBUFFERED = "1"
+PYTHONDONTWRITEBYTECODE = "1"
+
+# Deployment settings
+[environments.production.services.backend]
+source = "."
+buildCommand = "pip install --no-cache-dir -r requirements.txt"
+startCommand = "uvicorn main:app --host 0.0.0.0 --port $PORT"
+
+# Health check endpoint
+[environments.production.deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+replicas = 1

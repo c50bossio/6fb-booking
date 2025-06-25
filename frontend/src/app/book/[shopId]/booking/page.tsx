@@ -243,15 +243,11 @@ export default function BookingFlowPage() {
         barber_id: form.barber_id!,
         appointment_date: form.date,
         appointment_time: form.time,
-        location_id: parseInt(shopId),
-        client_info: {
-          name: form.client_name,
-          email: form.client_email,
-          phone: form.client_phone
-        },
-        notes: form.notes,
-        payment_method: form.payment_method,
-        payment_details: form.payment_details
+        client_first_name: form.client_name.split(' ')[0],
+        client_last_name: form.client_name.split(' ').slice(1).join(' ') || form.client_name.split(' ')[0],
+        client_email: form.client_email,
+        client_phone: form.client_phone,
+        notes: form.notes
       }
 
       const response = await bookingService.createBooking(bookingData)

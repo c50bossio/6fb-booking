@@ -8,24 +8,24 @@ The following environment variables must be set in Railway for the frontend to w
 ```bash
 NEXT_PUBLIC_API_URL=https://sixfb-backend.onrender.com/api/v1
 ```
-**Status**: Currently missing or set to invalid value  
-**Impact**: Causes 404 errors like "/undefined/dashboard/appointments/today"  
+**Status**: Currently missing or set to invalid value
+**Impact**: Causes 404 errors like "/undefined/dashboard/appointments/today"
 **Fix**: Set this exact value in Railway environment variables
 
 ### 2. Stripe Configuration
 ```bash
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_51xxxxxxxxxxxxx
 ```
-**Status**: Missing (causes console warnings)  
-**Impact**: Stripe payment integration will not work  
+**Status**: Missing (causes console warnings)
+**Impact**: Stripe payment integration will not work
 **Fix**: Add your actual Stripe publishable key from Stripe Dashboard
 
 ### 3. Environment Indicator
 ```bash
 NEXT_PUBLIC_ENVIRONMENT=production
 ```
-**Status**: Recommended for production deployments  
-**Impact**: Affects CORS behavior and error handling  
+**Status**: Recommended for production deployments
+**Impact**: Affects CORS behavior and error handling
 **Fix**: Add this to identify production environment
 
 ## How to Set Variables in Railway
@@ -37,7 +37,7 @@ NEXT_PUBLIC_ENVIRONMENT=production
    - **Variable**: `NEXT_PUBLIC_API_URL`
    - **Value**: `https://sixfb-backend.onrender.com/api/v1`
 5. Click "New Variable" and add:
-   - **Variable**: `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`  
+   - **Variable**: `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
    - **Value**: Your actual Stripe publishable key (starts with `pk_test_` or `pk_live_`)
 6. Click "New Variable" and add:
    - **Variable**: `NEXT_PUBLIC_ENVIRONMENT`

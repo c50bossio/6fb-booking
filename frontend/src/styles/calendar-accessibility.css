@@ -1,0 +1,329 @@
+/* Calendar Accessibility Styles */
+
+/* Focus Management */
+.keyboard-mode *:focus {
+  outline: 3px solid #8b5cf6 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2);
+}
+
+.keyboard-mode *:focus-visible {
+  outline: 3px solid #8b5cf6 !important;
+  outline-offset: 2px !important;
+}
+
+/* Remove focus styles when using mouse */
+.keyboard-mode *:focus:not(:focus-visible) {
+  outline: none !important;
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high), [data-high-contrast="true"] {
+  /* Increase contrast for all text */
+  * {
+    --contrast-multiplier: 1.5;
+  }
+
+  /* Focus indicators */
+  *:focus {
+    outline: 4px solid #000 !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 0 6px #fff, 0 0 0 8px #000;
+  }
+
+  /* Appointments */
+  .appointment-block {
+    border: 2px solid #000 !important;
+    font-weight: bold;
+  }
+
+  /* Buttons */
+  button {
+    border: 2px solid currentColor !important;
+  }
+
+  /* Time slots */
+  [data-time-slot] {
+    border: 1px solid #000 !important;
+  }
+
+  /* Status badges */
+  .status-confirmed {
+    background: #000 !important;
+    color: #fff !important;
+  }
+
+  .status-pending {
+    background: #fff !important;
+    color: #000 !important;
+    border: 2px solid #000 !important;
+  }
+
+  .status-cancelled {
+    background: #000 !important;
+    color: #fff !important;
+    text-decoration: line-through;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce), [data-reduced-motion="true"] {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Disable transforms */
+  .hover\:scale-105:hover {
+    transform: none !important;
+  }
+
+  /* Disable motion components */
+  [data-reduced-motion="true"] .motion-safe\:animate-* {
+    animation: none !important;
+  }
+}
+
+/* Focus Indicators for Different Elements */
+[data-time-slot]:focus {
+  background-color: rgba(139, 92, 246, 0.1);
+  border-color: #8b5cf6;
+}
+
+[data-appointment-id]:focus {
+  transform: scale(1.02);
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4);
+  z-index: 10;
+}
+
+[data-control-id]:focus {
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+}
+
+/* Screen Reader Only Content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.focus\:not-sr-only:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* Skip Links */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #000;
+  color: #fff;
+  padding: 8px;
+  text-decoration: none;
+  z-index: 100;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Focus Trap for Modals */
+.focus-trap {
+  position: relative;
+}
+
+.focus-trap::before,
+.focus-trap::after {
+  content: '';
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.focus-trap::before {
+  top: 0;
+  left: 0;
+}
+
+.focus-trap::after {
+  bottom: 0;
+  right: 0;
+}
+
+/* Keyboard Navigation Hints */
+.keyboard-hint {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.keyboard-mode *:focus .keyboard-hint {
+  opacity: 1;
+}
+
+/* Visual Keyboard Indicators */
+.keyboard-indicator {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #8b5cf6;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.keyboard-indicator kbd {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+/* Command Palette Styles */
+.command-palette {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.command-palette-item:focus {
+  background: rgba(139, 92, 246, 0.1);
+  outline: none;
+}
+
+.command-palette-item[aria-selected="true"] {
+  background: rgba(139, 92, 246, 0.2);
+}
+
+/* Help Overlay Styles */
+.keyboard-help-overlay {
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(8px);
+}
+
+.keyboard-shortcut {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.keyboard-shortcut kbd {
+  background: #374151;
+  color: #d1d5db;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid #4b5563;
+  font-family: monospace;
+  font-size: 12px;
+  box-shadow: 0 2px 0 #1f2937;
+}
+
+/* Focus Ring Animation */
+@keyframes focus-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(139, 92, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
+  }
+}
+
+.keyboard-mode *:focus {
+  animation: focus-pulse 1.5s infinite;
+}
+
+/* Announcement Region */
+#calendar-live-region {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* High Contrast Calendar Grid */
+@media (prefers-contrast: high) {
+  .calendar-grid {
+    border-width: 2px;
+  }
+
+  .calendar-header {
+    background: #000;
+    color: #fff;
+  }
+
+  .calendar-cell {
+    border: 1px solid #000;
+  }
+
+  .calendar-cell:hover {
+    background: #000;
+    color: #fff;
+  }
+
+  .appointment-block {
+    border: 2px solid #000;
+    font-weight: bold;
+  }
+}
+
+/* Focus Visible Polyfill for Older Browsers */
+.js-focus-visible :focus:not(.focus-visible) {
+  outline: none;
+}
+
+/* Forced Colors Mode Support */
+@media (forced-colors: active) {
+  .appointment-block {
+    forced-color-adjust: none;
+    border: 1px solid;
+  }
+
+  button {
+    border: 1px solid;
+  }
+
+  *:focus {
+    outline: 3px solid;
+    outline-offset: 2px;
+  }
+}

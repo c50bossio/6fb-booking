@@ -166,7 +166,7 @@ const testimonials = [
 function PremiumDemoButton() {
   const [isHovered, setIsHovered] = useState(false)
   const [isClicked, setIsClicked] = useState(false)
-  
+
   const x = useMotionValue(0)
   const y = useMotionValue(0)
   const rotateX = useTransform(y, [-100, 100], [30, -30])
@@ -197,15 +197,15 @@ function PremiumDemoButton() {
         <motion.div
           className="demo-button text-lg px-10 py-4 relative overflow-hidden group cursor-pointer"
           initial={{ scale: 1 }}
-          whileHover={{ 
+          whileHover={{
             scale: 1.05,
             boxShadow: "0 20px 40px rgba(20, 184, 166, 0.4)",
           }}
           whileTap={{ scale: 0.98 }}
-          transition={{ 
-            type: "spring", 
-            stiffness: 400, 
-            damping: 17 
+          transition={{
+            type: "spring",
+            stiffness: 400,
+            damping: 17
           }}
           onTapStart={() => setIsClicked(true)}
           onTap={() => setTimeout(() => setIsClicked(false), 150)}
@@ -248,19 +248,19 @@ function PremiumDemoButton() {
           {/* Button Content */}
           <div className="relative z-10 flex items-center justify-center text-black font-semibold">
             <motion.div
-              animate={{ 
+              animate={{
                 rotate: isHovered ? 360 : 0,
                 scale: isHovered ? 1.1 : 1
               }}
-              transition={{ 
-                duration: 0.5, 
-                ease: "easeInOut" 
+              transition={{
+                duration: 0.5,
+                ease: "easeInOut"
               }}
               className="mr-2"
             >
               <PlayIcon className="h-5 w-5" />
             </motion.div>
-            
+
             <motion.span
               animate={{
                 y: isHovered ? [-1, 1, -1] : 0

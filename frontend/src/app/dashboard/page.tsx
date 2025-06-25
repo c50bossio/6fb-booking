@@ -84,18 +84,47 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!mounted) return
 
-    // DEMO MODE: Skip authentication checks
-    const demoUser = {
-      id: '1',
-      email: 'demo@6fb.com',
-      first_name: 'Demo',
-      last_name: 'User',
-      role: 'admin'
-    }
+    console.log('🔧 Dashboard useEffect triggered')
+    console.log('🔧 Environment check:', {
+      NODE_ENV: process.env.NODE_ENV,
+      API_URL: process.env.NEXT_PUBLIC_API_URL,
+      DEMO_MODE: process.env.NEXT_PUBLIC_DEMO_MODE
+    })
 
-    setUser(demoUser)
-    fetchDashboardData('demo-token')
-    setLoading(false)
+    // Check if we're in demo mode
+    const sessionDemo = sessionStorage.getItem('demo_mode')
+    const urlDemo = window.location.search.includes('demo=true')
+    const isDemo = sessionDemo === 'true' || urlDemo
+
+    console.log('🔧 Demo mode detection:', {
+      sessionStorage: sessionDemo,
+      urlParameter: urlDemo,
+      finalIsDemo: isDemo,
+      currentURL: window.location.href,
+      search: window.location.search
+    })
+
+    if (isDemo) {
+      console.log('✅ DEMO MODE ACTIVATED - Using demo data')
+      // DEMO MODE: Skip authentication checks and use demo data
+      const demoUser = {
+        id: '1',
+        email: 'demo@6fb.com',
+        first_name: 'Demo',
+        last_name: 'User',
+        role: 'admin'
+      }
+
+      setUser(demoUser)
+      console.log('🚀 Calling fetchDemoData...')
+      fetchDemoData()
+      setLoading(false)
+    } else {
+      console.log('🔐 REGULAR MODE - Using authentication flow')
+      // Regular authentication flow
+      fetchDashboardData('demo-token')
+      setLoading(false)
+    }
   }, [mounted])
 
   useEffect(() => {
@@ -117,6 +146,107 @@ export default function DashboardPage() {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [showQuickActions])
+
+  const fetchDemoData = async () => {
+    console.log('🔥 fetchDemoData called!')
+    console.log('🔥 API URL:', process.env.NEXT_PUBLIC_API_URL)
+
+    try {
+      const appointmentsUrl = `${process.env.NEXT_PUBLIC_API_URL}/dashboard/demo/appointments/today`
+      console.log('📡 Making request to:', appointmentsUrl)
+
+      const startTime = Date.now()
+
+      // Fetch demo appointments data with explicit timeout
+      const demoAppointmentsResponse = await axios.get(appointmentsUrl, {
+        timeout: 10000, // 10 second timeout
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      })
+
+      const appointmentsTime = Date.now() - startTime
+      console.log(`✅ Appointments API success in ${appointmentsTime}ms:`, {
+        status: demoAppointmentsResponse.status,
+        dataKeys: Object.keys(demoAppointmentsResponse.data),
+        stats: demoAppointmentsResponse.data.stats
+      })
+
+      if (demoAppointmentsResponse.data.stats) {
+        const stats = demoAppointmentsResponse.data.stats
+        console.log('💰 Setting revenue to:', stats.revenue)
+        setTodayStats({
+          total_appointments: stats.total,
+          upcoming_appointments: stats.upcoming,
+          completed_appointments: stats.completed,
+          cancelled_appointments: stats.cancelled,
+          today_revenue: stats.revenue
+        })
+      }
+
+      // Fetch demo barbers data
+      const barbersUrl = `${process.env.NEXT_PUBLIC_API_URL}/dashboard/demo/barbers`
+      console.log('📡 Making request to:', barbersUrl)
+
+      const barbersStartTime = Date.now()
+      const demoBarbersResponse = await axios.get(barbersUrl, {
+        timeout: 10000, // 10 second timeout
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      })
+
+      const barbersTime = Date.now() - barbersStartTime
+      console.log(`✅ Barbers API success in ${barbersTime}ms:`, {
+        status: demoBarbersResponse.status,
+        count: demoBarbersResponse.data.length,
+        activeCount: demoBarbersResponse.data.filter((b: BarberInfo) => b.is_active).length
+      })
+
+      const activeBarbersCount = demoBarbersResponse.data.filter(
+        (barber: BarberInfo) => barber.is_active
+      ).length
+      setActiveBarbers(activeBarbersCount)
+
+      // Set weekly stats (mock for now)
+      setWeeklyStats({
+        payout_amount: 1200,
+        payout_date: 'Thursday',
+        total_appointments: 45,
+        revenue_change: 12.5
+      })
+
+      console.log('🎉 All demo data loaded successfully!')
+
+    } catch (error: any) {
+      console.error('❌ Failed to fetch demo data:', {
+        error: error.message,
+        code: error.code,
+        response: error.response?.status,
+        responseData: error.response?.data,
+        config: error.config?.url
+      })
+
+      // Use fallback mock data when demo endpoints fail
+      console.log('🔄 Using fallback data...')
+      setTodayStats({
+        total_appointments: 8,
+        upcoming_appointments: 2,
+        completed_appointments: 6,
+        cancelled_appointments: 0,
+        today_revenue: 425
+      })
+      setActiveBarbers(3)
+      setWeeklyStats({
+        payout_amount: 1200,
+        payout_date: 'Thursday',
+        total_appointments: 45,
+        revenue_change: 12.5
+      })
+    }
+  }
 
   const fetchDashboardData = async (token: string) => {
     try {
@@ -162,54 +292,8 @@ export default function DashboardPage() {
       })
 
     } catch (error) {
-      console.error('Failed to fetch authenticated data, trying demo endpoints...')
-
-      // Use demo endpoints when authentication fails
-      try {
-        const demoAppointmentsResponse = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/dashboard/demo/appointments/today`
-        )
-
-        if (demoAppointmentsResponse.data.stats) {
-          const stats = demoAppointmentsResponse.data.stats
-          setTodayStats({
-            total_appointments: stats.total,
-            upcoming_appointments: stats.upcoming,
-            completed_appointments: stats.completed,
-            cancelled_appointments: stats.cancelled,
-            today_revenue: stats.revenue
-          })
-        }
-
-        const demoBarbersResponse = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/dashboard/demo/barbers`
-        )
-
-        const activeBarbersCount = demoBarbersResponse.data.filter(
-          (barber: BarberInfo) => barber.is_active
-        ).length
-        setActiveBarbers(activeBarbersCount)
-
-      } catch (demoError) {
-        console.error('Demo endpoints also failed, using fallback data:', demoError)
-        // Use fallback mock data when everything fails
-        setTodayStats({
-          total_appointments: 8,
-          upcoming_appointments: 2,
-          completed_appointments: 6,
-          cancelled_appointments: 0,
-          today_revenue: 0
-        })
-        setActiveBarbers(3)
-      }
-
-      // Set weekly stats (mock for now)
-      setWeeklyStats({
-        payout_amount: 1200,
-        payout_date: 'Thursday',
-        total_appointments: 45,
-        revenue_change: 12.5
-      })
+      console.error('Failed to fetch authenticated data, falling back to demo data...')
+      fetchDemoData()
     }
   }
 
