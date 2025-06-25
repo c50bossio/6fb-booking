@@ -61,6 +61,11 @@ export default function CalendarPage() {
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
+
+  // Debug modal state changes
+  useEffect(() => {
+    console.log('🎭 Modal states changed:', { showCreateModal, showDetailsModal })
+  }, [showCreateModal, showDetailsModal])
   const [showBookingFlow, setShowBookingFlow] = useState(false)
   const [selectedAppointment, setSelectedAppointment] = useState<CalendarAppointment | null>(null)
   const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string } | null>(null)
@@ -200,18 +205,24 @@ export default function CalendarPage() {
 
   // Handler functions for modal interactions
   const handleNewAppointment = () => {
+    console.log('🆕 New Appointment button clicked')
     setSelectedSlot(null)
     setShowCreateModal(true)
+    console.log('🆕 showCreateModal set to true')
   }
 
   const handleAppointmentClick = (appointment: CalendarAppointment) => {
+    console.log('📅 Calendar page received appointment click:', appointment.id, appointment.client)
     setSelectedAppointment(appointment)
     setShowDetailsModal(true)
+    console.log('📅 showDetailsModal set to true')
   }
 
   const handleTimeSlotClick = (date: string, time: string) => {
+    console.log('🕐 Calendar page received time slot click:', date, time)
     setSelectedSlot({ date, time })
     setShowCreateModal(true)
+    console.log('🕐 showCreateModal set to true with slot:', { date, time })
   }
 
   const handleDateClick = (date: string) => {

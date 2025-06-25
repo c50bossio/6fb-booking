@@ -394,7 +394,11 @@ export default function PremiumCalendar({
             data-time-slot="true"
             data-date={formatDateString(date)}
             data-time="all-day"
-            onClick={() => setSelectedDate(date)}
+            onClick={(e) => {
+              console.log('🖱️ Month day clicked:', formatDateString(date))
+              setSelectedDate(date)
+              handleTimeSlotClick(date, '09:00')
+            }}
           >
             <div className="text-sm font-medium mb-2" style={{
               color: isTodayDate
@@ -418,10 +422,8 @@ export default function PremiumCalendar({
                   className={`text-xs p-1 rounded cursor-pointer hover:scale-105 transition-transform ${getAppointmentStyle(appointment.status)}`}
                   onClick={(e) => {
                     e.stopPropagation()
-                    // Only trigger click if not dragging
-                    if (!(appointment as any).__dragProps) {
-                      onAppointmentClick?.(appointment)
-                    }
+                    console.log('🖱️ Appointment clicked (month view):', appointment.id, appointment.client)
+                    onAppointmentClick?.(appointment)
                   }}
                   {...((appointment as any).__dragProps || {})}
                   draggable={!!(appointment as any).__dragProps}
@@ -535,7 +537,12 @@ export default function PremiumCalendar({
                     data-time-slot="true"
                     data-date={dateStr}
                     data-time={time}
-                    onClick={() => handleTimeSlotClick(date, time)}
+                    onClick={(e) => {
+                      if (!appointmentForTime) {
+                        console.log('🖱️ Time slot clicked:', dateStr, time)
+                        handleTimeSlotClick(date, time)
+                      }
+                    }}
                     onMouseEnter={() => handleTimeSlotHover(date, time, true)}
                     onMouseLeave={() => handleTimeSlotHover(date, time, false)}
                   >
@@ -551,10 +558,8 @@ export default function PremiumCalendar({
                         className={`${getAppointmentStyle(appointmentForTime.status, appointmentForTime.barberId)} p-3 rounded-lg h-full`}
                         onClick={(e) => {
                           e.stopPropagation()
-                          // Only trigger click if not dragging
-                          if (!(appointmentForTime as any).__dragProps) {
-                            onAppointmentClick?.(appointmentForTime)
-                          }
+                          console.log('🖱️ Appointment clicked (week/day view):', appointmentForTime.id, appointmentForTime.client)
+                          onAppointmentClick?.(appointmentForTime)
                         }}
                         {...((appointmentForTime as any).__dragProps || {})}
                         draggable={!!(appointmentForTime as any).__dragProps}
