@@ -61,6 +61,14 @@ export interface CalendarProps {
 const DEFAULT_WORKING_HOURS = { start: '08:00', end: '20:00' }
 const DEFAULT_TIME_SLOT_DURATION = 30
 
+// Helper function to format date as YYYY-MM-DD without timezone conversion
+const formatDateString = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  const day = date.getDate().toString().padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 // Generate time slots based on working hours and duration
 const generateTimeSlots = (start: string, end: string, duration: number = 30): string[] => {
   const slots: string[] = []
@@ -178,19 +186,28 @@ export default function PremiumCalendar({
     [workingHours, timeSlotDuration]
   )
 
-  // Get the current week dates
+  // Get the current week dates (timezone-safe version)
   const weekDates = useMemo(() => {
-    const start = new Date(currentDate)
-    const day = start.getDay()
-    const diff = start.getDate() - day + (day === 0 ? -6 : 1) // Start from Monday
-    start.setDate(diff)
+    // Use a more robust method that avoids setDate() issues
+    const baseDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate())
+    const day = baseDate.getDay()
+    const mondayOffset = day === 0 ? -6 : 1 - day // Get Monday of this week
 
     const dates = []
     for (let i = 0; i < 7; i++) {
-      const date = new Date(start)
-      date.setDate(start.getDate() + i)
+      // Create each date explicitly to avoid setDate() timezone issues
+      const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + mondayOffset + i)
       dates.push(date)
     }
+
+    // Debug logging to see what dates are being generated
+    console.log('📅 Week dates generated:', dates.map(d => ({
+      date: d,
+      formatted: formatDateString(d),
+      dayName: d.toLocaleDateString('en-US', { weekday: 'long' }),
+      dayOfWeek: d.getDay()
+    })))
+
     return dates
   }, [currentDate])
 
@@ -240,7 +257,7 @@ export default function PremiumCalendar({
   }
 
   const getAppointmentsForDate = useCallback((date: Date) => {
-    const dateStr = date.toISOString().split('T')[0]
+    const dateStr = formatDateString(date)
     return appointments.filter(apt => apt.date === dateStr)
   }, [appointments])
 
@@ -303,14 +320,14 @@ export default function PremiumCalendar({
   }
 
   const handleTimeSlotClick = (date: Date, time: string) => {
-    const dateStr = date.toISOString().split('T')[0]
+    const dateStr = formatDateString(date)
     onTimeSlotClick?.(dateStr, time)
     onCreateAppointment?.(dateStr, time)
   }
 
   const handleTimeSlotHover = (date: Date, time: string, isHovering: boolean) => {
     if (isHovering) {
-      setHoveredTimeSlot({ date: date.toISOString().split('T')[0], time })
+      setHoveredTimeSlot({ date: formatDateString(date), time })
     } else {
       setHoveredTimeSlot(null)
     }
@@ -339,7 +356,7 @@ export default function PremiumCalendar({
               !isCurrentMonthDate ? 'bg-gray-900/50 text-gray-600' : 'bg-gray-900/20'
             } ${isTodayDate ? 'bg-violet-900/30' : ''}`}
             data-time-slot="true"
-            data-date={date.toISOString().split('T')[0]}
+            data-date={formatDateString(date)}
             data-time="all-day"
             onClick={() => setSelectedDate(date)}
           >
@@ -431,7 +448,7 @@ export default function PremiumCalendar({
               {displayDates.map((date, dateIndex) => {
                 const dayAppointments = getAppointmentsForDate(date)
                 const appointmentForTime = dayAppointments.find(apt => apt.startTime === time)
-                const dateStr = date.toISOString().split('T')[0]
+                const dateStr = formatDateString(date)
                 const isHovered = hoveredTimeSlot?.date === dateStr && hoveredTimeSlot?.time === time
 
                 return (
@@ -586,7 +603,7 @@ export default function PremiumCalendar({
 
           <button
             className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center space-x-2"
-            onClick={() => onCreateAppointment?.(new Date().toISOString().split('T')[0], '09:00')}
+            onClick={() => onCreateAppointment?.(formatDateString(new Date()), '09:00')}
           >
             <PlusIcon className="h-4 w-4" />
             <span>New Appointment</span>

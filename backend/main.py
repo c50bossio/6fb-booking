@@ -416,6 +416,25 @@ async def health_check_redirect():
     return RedirectResponse(url="/api/v1/health", status_code=301)
 
 
+@app.get("/api/v1/settings")
+async def get_settings():
+    """Basic settings endpoint for frontend compatibility"""
+    return {
+        "business": {
+            "name": "6FB Booking Platform",
+            "address": "123 Main St",
+            "phone": "555-123-4567",
+            "email": "admin@bookedbarber.com",
+        },
+        "notifications": {
+            "email_enabled": True,
+            "sms_enabled": True,
+            "push_enabled": True,
+        },
+        "security": {"two_factor_enabled": False, "session_timeout": 1440},
+    }
+
+
 @app.get("/cors-test")
 async def cors_test(request: Request):
     """Test CORS configuration and return origin information"""

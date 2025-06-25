@@ -29,7 +29,7 @@ from models.settings import (
 )
 from models.user import User
 from models.location import Location
-from utils.auth import get_current_user, check_permission
+from api.v1.auth import get_current_user
 from utils.encryption import encrypt_sensitive_field, decrypt_sensitive_field
 
 
