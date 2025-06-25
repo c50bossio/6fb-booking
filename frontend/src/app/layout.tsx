@@ -76,9 +76,9 @@ export default function RootLayout({
               <AuthProvider>
                 <NavigationProvider>
                   <StripeProvider>
-                    <ClientOnly>
+                    {/* <ClientOnly> */}
                       {children}
-                    </ClientOnly>
+                    {/* </ClientOnly> */}
                   </StripeProvider>
                 </NavigationProvider>
               </AuthProvider>
