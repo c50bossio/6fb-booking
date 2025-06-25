@@ -38,9 +38,35 @@ export default function AppointmentMoveConfirmation({
 
   const formatDate = (dateStr: string) => {
     try {
-      const date = new Date(dateStr)
-      return format(date, 'EEEE, MMMM d, yyyy')
-    } catch {
+      // Parse date string directly without any Date object creation to avoid timezone issues
+      const [year, month, day] = dateStr.split('-').map(Number)
+
+      // Debug logging to verify correct date parsing
+      console.log('🗓️ Formatting date:', { input: dateStr, parsed: { year, month, day } })
+
+      // Manual date formatting to avoid timezone conversion
+      const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+      ]
+
+      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
+      // Calculate day of week using Zeller's congruence (timezone-safe)
+      let m = month
+      let y = year
+      if (month < 3) {
+        m += 12
+        y -= 1
+      }
+      const dayOfWeek = (day + Math.floor((13 * (m + 1)) / 5) + y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400)) % 7
+
+      const formatted = `${dayNames[dayOfWeek]}, ${monthNames[month - 1]} ${day}, ${year}`
+      console.log('📅 Formatted date result:', formatted)
+
+      return formatted
+    } catch (error) {
+      console.error('❌ Date formatting error:', error, 'for input:', dateStr)
       return dateStr
     }
   }

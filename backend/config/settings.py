@@ -551,6 +551,16 @@ class Settings(BaseSettings):
             ]
             default_origins.extend(env_origins_list)
 
+        # Add BookedBarber.com domains - PRODUCTION DOMAINS
+        bookbarber_domains = [
+            "https://app.bookbarber.com",  # Frontend application
+            "https://api.bookbarber.com",  # Backend API
+            "https://admin.bookbarber.com",  # Admin dashboard
+            "https://bookbarber.com",  # Main domain
+            "https://www.bookbarber.com",  # WWW redirect
+        ]
+        default_origins.extend(bookbarber_domains)
+
         # Add all known Vercel patterns - this will solve the random URL problem
         vercel_patterns = [
             "https://bookbarber-6fb.vercel.app",  # Main deployment
@@ -614,6 +624,19 @@ class Settings(BaseSettings):
         if origin in ["null", "file://", ""]:
             logger.info(f"Allowing local testing origin: {origin}")
             return True
+
+        # Check BookedBarber.com domains - PRODUCTION DOMAIN MATCHING
+        if origin.startswith("https://") and "bookbarber.com" in origin:
+            # Allow any BookedBarber.com subdomain
+            allowed_subdomains = ["app", "api", "admin", "www", ""]
+            domain = origin.replace("https://", "")
+            if domain == "bookbarber.com" or any(
+                domain.startswith(f"{sub}.bookbarber.com")
+                for sub in allowed_subdomains
+                if sub
+            ):
+                logger.info(f"Allowing BookedBarber.com domain: {origin}")
+                return True
 
         # Check Vercel deployment patterns - more flexible matching
         if origin.startswith("https://") and origin.endswith(".vercel.app"):

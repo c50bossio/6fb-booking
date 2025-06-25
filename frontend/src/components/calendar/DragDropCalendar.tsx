@@ -62,6 +62,14 @@ interface DragDropCalendarProps extends CalendarProps {
   onConflictResolution?: (resolution: ConflictResolution) => Promise<void>
 }
 
+// Helper function to format date as YYYY-MM-DD without timezone conversion
+const formatDateString = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  const day = date.getDate().toString().padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 export default function DragDropCalendar({
   appointments = [],
   onAppointmentMove,
@@ -295,7 +303,7 @@ export default function DragDropCalendar({
 
       const handleMouseUp = async (e: MouseEvent) => {
         console.log('🐭 Mouse up - checking drop target...')
-        
+
         // Remove dragging class
         document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'))
         document.querySelectorAll('.drop-target, .conflict-target, .drop-target-valid, .drop-target-invalid').forEach(el => {
@@ -319,6 +327,13 @@ export default function DragDropCalendar({
               from: `${currentDragState.draggedAppointment.date} ${currentDragState.draggedAppointment.startTime}`,
               to: `${newDate} ${snappedTime}`,
               conflicts: conflicts.length
+            })
+
+            console.log('📋 Date values being passed to confirmation:', {
+              originalDate: currentDragState.draggedAppointment.date,
+              originalTime: currentDragState.draggedAppointment.startTime,
+              newDate: newDate,
+              newTime: snappedTime
             })
 
             // Handle conflicts with smart resolution
@@ -676,7 +691,7 @@ export default function DragDropCalendar({
         const dependentDateTime = new Date(`${dependentApt.date} ${dependentApt.startTime}`)
         const newDependentDateTime = new Date(dependentDateTime.getTime() + timeDiff)
 
-        const newDependentDate = newDependentDateTime.toISOString().split('T')[0]
+        const newDependentDate = formatDateString(newDependentDateTime)
         const newDependentTime = `${newDependentDateTime.getHours().toString().padStart(2, '0')}:${newDependentDateTime.getMinutes().toString().padStart(2, '0')}`
 
         // Snap to interval

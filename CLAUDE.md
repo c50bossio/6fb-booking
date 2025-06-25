@@ -333,7 +333,7 @@ git clean -xfd
 # Backend health
 cd backend && python scripts/health-check.py
 
-# Frontend health  
+# Frontend health
 cd frontend && npm run validate-build
 
 # Full system check

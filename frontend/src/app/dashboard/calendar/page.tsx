@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import ModernCalendar from '@/components/ModernCalendar'
+import UnifiedCalendar from '@/components/calendar/UnifiedCalendar'
 import BookingFlow from '@/components/booking/BookingFlow'
 import { NewAppointmentModal, EditAppointmentModal, DeleteAppointmentModal } from '@/components/modals'
 import EnhancedCreateAppointmentModal from '@/components/modals/EnhancedCreateAppointmentModal'
@@ -38,19 +38,7 @@ const mapAppointmentStatus = (status: string): CalendarAppointment['status'] => 
   return statusMap[status] || 'scheduled'
 }
 
-// Map CalendarAppointment to ModernCalendar format
-const mapToModernCalendarFormat = (appointment: CalendarAppointment): any => ({
-  id: appointment.id,
-  title: appointment.title,
-  client: appointment.client,
-  barber: appointment.barber,
-  startTime: appointment.startTime,
-  endTime: appointment.endTime,
-  service: appointment.service,
-  price: appointment.price,
-  status: appointment.status === 'scheduled' || appointment.status === 'in_progress' || appointment.status === 'no_show' ? 'confirmed' : appointment.status as any,
-  date: appointment.date
-})
+// Note: mapToModernCalendarFormat removed - UnifiedCalendar uses appointments directly
 
 export default function CalendarPage() {
   const router = useRouter()
@@ -91,8 +79,28 @@ export default function CalendarPage() {
     }
   })
 
+  // Check if we're in demo mode
+  const [isDemoMode, setIsDemoMode] = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const demoMode = window.location.search.includes('demo=true') ||
+                       sessionStorage?.getItem('demo_mode') === 'true'
+      setIsDemoMode(demoMode)
+      console.log('📱 Calendar page demo mode check:', demoMode)
+    }
+  }, [])
+
   // Fetch appointments from API using the integration layer with enhanced error handling
   const fetchAppointments = useCallback(async () => {
+    // Skip API calls in demo mode - let UnifiedCalendar handle mock data
+    if (isDemoMode) {
+      console.log('📱 Demo mode: Skipping API call, UnifiedCalendar will use mock data')
+      setAppointments([])
+      setLoading(false)
+      return
+    }
+
     try {
       setLoading(true)
       setError(null)
@@ -117,6 +125,18 @@ export default function CalendarPage() {
 
   // Fetch barbers from API
   const fetchBarbers = useCallback(async () => {
+    // Use mock barbers in demo mode
+    if (isDemoMode) {
+      console.log('📱 Demo mode: Using mock barbers')
+      setBarbers([
+        { id: 1, name: 'Marcus Johnson', status: 'online' },
+        { id: 2, name: 'Sarah Mitchell', status: 'online' },
+        { id: 3, name: 'Tony Rodriguez', status: 'offline' },
+        { id: 4, name: 'Amanda Chen', status: 'online' }
+      ])
+      return
+    }
+
     try {
       const response = await barbersService.getBarbers({ is_active: true })
       // Handle both paginated response and direct array response (for mock data)
@@ -157,13 +177,19 @@ export default function CalendarPage() {
   }, [])
 
 
-  // Initial data load
+  // Initial data load - wait for demo mode to be determined
   useEffect(() => {
     setMounted(true)
-    fetchAppointments()
-    fetchBarbers()
-    fetchServices()
   }, [])
+
+  // Fetch data after demo mode is determined
+  useEffect(() => {
+    if (mounted && isDemoMode !== undefined) {
+      fetchAppointments()
+      fetchBarbers()
+      fetchServices()
+    }
+  }, [mounted, isDemoMode])
 
   // Refresh appointments when date range changes
   useEffect(() => {
@@ -623,19 +649,21 @@ export default function CalendarPage() {
           borderColor: colors.border,
           boxShadow: colors.shadow
         }}>
-          <ModernCalendar
-            appointments={appointments.map(mapToModernCalendarFormat)}
+          <UnifiedCalendar
+            appointments={appointments}
             onAppointmentClick={(appointment) => {
-              // Find the original appointment with full data
-              const fullAppointment = appointments.find(a => a.id === appointment.id)
-              if (fullAppointment) {
-                handleAppointmentClick(fullAppointment)
-              }
+              handleAppointmentClick(appointment)
             }}
             onTimeSlotClick={handleTimeSlotClick}
-            onDateClick={handleDateClick}
-            view={calendarView === 'agenda' ? 'week' : calendarView as any}
-            showCreateModal={showCreateModal}
+            onAppointmentMove={handleAppointmentDrop}
+            enableDragDrop={true}
+            enableSearch={true}
+            enableExport={true}
+            enableKeyboardNavigation={true}
+            showConflicts={true}
+            allowConflicts={false}
+            workingHours={{ start: '08:00', end: '20:00' }}
+            initialView={calendarView === 'agenda' ? 'week' : calendarView as any}
           />
         </div>
 
