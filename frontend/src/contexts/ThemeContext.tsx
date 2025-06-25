@@ -147,6 +147,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     if (mounted) {
       localStorage.setItem('bookbarber-theme', theme)
 
+      // Check if we're on the landing page - don't apply theme text colors there
+      const isLandingPage = window.location.pathname === '/' || window.location.pathname === ''
+
       // Update document class for global theme
       // Remove all theme classes first
       document.documentElement.classList.remove('dark', 'light', 'soft-light', 'charcoal')

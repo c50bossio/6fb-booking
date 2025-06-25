@@ -16,7 +16,7 @@ export default function EmergencyLogin() {
 
     try {
       console.log('🚨 Using emergency login route')
-      
+
       const formData = new FormData()
       formData.append('username', credentials.username)
       formData.append('password', credentials.password)
@@ -30,11 +30,19 @@ export default function EmergencyLogin() {
 
       if (response.ok && data.access_token) {
         console.log('✅ Emergency login successful!')
-        
+
+        // IMPORTANT: Clear demo mode when performing actual admin login
+        try {
+          sessionStorage.removeItem('demo_mode')
+          console.log('🔧 Emergency login: Cleared demo mode for admin login')
+        } catch (e) {
+          console.log('Cannot clear sessionStorage')
+        }
+
         // Store token
         localStorage.setItem('access_token', data.access_token)
         localStorage.setItem('user', JSON.stringify(data.user))
-        
+
         // Redirect to dashboard
         router.push('/dashboard')
       } else {
