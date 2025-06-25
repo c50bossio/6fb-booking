@@ -1,295 +1,275 @@
 #!/usr/bin/env python3
 """
-Test Barber Onboarding Flow
-This script helps test the Stripe Connect onboarding process
+Simple Test Script for Barber Onboarding with Stripe Connect
+Tests the specific /payment-splits/connect-account endpoint
 """
 
-import requests
+import os
+import sys
 import json
+import httpx
 from datetime import datetime
-from colorama import init, Fore, Style
+from dotenv import load_dotenv
 
-# Initialize colorama
-init(autoreset=True)
+# Load environment variables
+load_dotenv()
 
 # Configuration
-API_URL = "http://localhost:8000/api/v1"
-TEST_USER = {"email": "admin@6fb.com", "password": "admin123"}
+BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
+API_ENDPOINT = "/api/v1/payment-splits/connect-account"
 
 
-class BarberOnboardingTest:
-    def __init__(self):
-        self.session = requests.Session()
-        self.access_token = None
+def print_header(text: str):
+    """Print formatted header"""
+    print("\n" + "=" * 60)
+    print(f"🔧 {text}")
+    print("=" * 60)
 
-    def print_header(self, text):
-        print(f"\n{Fore.CYAN}{'='*60}")
-        print(f"{text.center(60)}")
-        print(f"{'='*60}{Style.RESET_ALL}\n")
 
-    def print_success(self, message):
-        print(f"{Fore.GREEN}✅ {message}{Style.RESET_ALL}")
+def print_success(text: str):
+    """Print success message"""
+    print(f"✅ {text}")
 
-    def print_error(self, message):
-        print(f"{Fore.RED}❌ {message}{Style.RESET_ALL}")
 
-    def print_info(self, message):
-        print(f"{Fore.BLUE}ℹ️  {message}{Style.RESET_ALL}")
+def print_error(text: str):
+    """Print error message"""
+    print(f"❌ {text}")
 
-    def print_warning(self, message):
-        print(f"{Fore.YELLOW}⚠️  {message}{Style.RESET_ALL}")
 
-    def authenticate(self):
-        """Authenticate and get access token"""
-        self.print_header("AUTHENTICATION")
+def print_info(text: str):
+    """Print info message"""
+    print(f"ℹ️  {text}")
 
-        response = self.session.post(
-            f"{API_URL}/auth/token",
-            data={"username": TEST_USER["email"], "password": TEST_USER["password"]},
+
+def test_environment_setup():
+    """Test that required environment variables are set"""
+    print_header("Checking Environment Setup")
+
+    required_vars = ["STRIPE_SECRET_KEY", "STRIPE_CONNECT_CLIENT_ID"]
+
+    all_good = True
+    for var in required_vars:
+        value = os.getenv(var)
+        if not value:
+            print_error(f"{var} is not set in environment")
+            all_good = False
+        else:
+            # Show partial value for verification
+            if var == "STRIPE_SECRET_KEY":
+                print_success(
+                    f"{var} is set (sk_{'live' if value.startswith('sk_live') else 'test'}...)"
+                )
+            elif var == "STRIPE_CONNECT_CLIENT_ID":
+                print_success(f"{var} is set ({value[:10]}...)")
+
+    if not all_good:
+        print_error("\nPlease set the missing environment variables in your .env file")
+        print_info(
+            "You need both STRIPE_SECRET_KEY and STRIPE_CONNECT_CLIENT_ID for Stripe Connect"
         )
+        return False
 
+    return True
+
+
+def test_backend_connection():
+    """Test if the backend is running"""
+    print_header("Testing Backend Connection")
+
+    try:
+        response = httpx.get(f"{BASE_URL}/health", timeout=30.0)
         if response.status_code == 200:
-            self.access_token = response.json()["access_token"]
-            self.session.headers.update(
-                {"Authorization": f"Bearer {self.access_token}"}
-            )
-            self.print_success("Authentication successful")
+            print_success(f"Backend is running at {BASE_URL}")
             return True
         else:
-            self.print_error(f"Authentication failed: {response.text}")
+            print_error(f"Backend responded with status {response.status_code}")
             return False
+    except httpx.RequestError as e:
+        print_error(f"Cannot connect to backend at {BASE_URL}")
+        print_info(
+            "Make sure the backend is running with: cd backend && uvicorn main:app --reload"
+        )
+        return False
 
-    def list_barbers(self):
-        """List all barbers"""
-        self.print_header("AVAILABLE BARBERS")
 
-        response = self.session.get(f"{API_URL}/barbers")
+def test_connect_account_endpoint():
+    """Test the /payment-splits/connect-account endpoint"""
+    print_header("Testing Connect Account Endpoint")
 
-        if response.status_code == 200:
-            barbers = response.json()
+    url = f"{BASE_URL}{API_ENDPOINT}"
+    print_info(f"Testing endpoint: {url}")
 
-            if not barbers:
-                self.print_warning("No barbers found. Creating test barber...")
-                return self.create_test_barber()
+    # Test data for a barber
+    test_data = {"barber_id": 1, "platform": "stripe"}
 
-            print(f"Found {len(barbers)} barber(s):\n")
-            for barber in barbers:
-                stripe_status = (
-                    "✅ Connected"
-                    if barber.get("stripe_account_id")
-                    else "❌ Not Connected"
-                )
-                print(f"ID: {barber['id']} - {barber['full_name']}")
-                print(f"   Email: {barber.get('email', 'No email')}")
-                print(f"   Commission: {barber.get('commission_rate', 0)}%")
-                print(f"   Stripe: {stripe_status}")
-                print()
+    print_info(f"Request payload: {json.dumps(test_data, indent=2)}")
 
-            return barbers[0]["id"]  # Return first barber ID
-        else:
-            self.print_error(f"Failed to list barbers: {response.text}")
-            return None
+    try:
+        with httpx.Client(timeout=30.0) as client:
+            response = client.post(url, json=test_data)
 
-    def create_test_barber(self):
-        """Create a test barber"""
-        barber_data = {
-            "full_name": "Test Barber",
-            "email": f"barber_{datetime.now().strftime('%Y%m%d%H%M%S')}@example.com",
-            "phone": "555-0123",
-            "location_id": 1,
-            "commission_rate": 60.0,
-            "is_active": True,
-        }
-
-        response = self.session.post(f"{API_URL}/barbers", json=barber_data)
-
-        if response.status_code in [200, 201]:
-            barber = response.json()
-            self.print_success(
-                f"Created test barber: {barber['full_name']} (ID: {barber['id']})"
-            )
-            return barber["id"]
-        else:
-            self.print_error(f"Failed to create barber: {response.text}")
-            return None
-
-    def check_barber_status(self, barber_id):
-        """Check Stripe Connect status for a barber"""
-        self.print_header("STRIPE CONNECT STATUS")
-
-        response = self.session.get(f"{API_URL}/stripe-connect/status/{barber_id}")
-
-        if response.status_code == 200:
-            status = response.json()
-
-            print(f"Barber ID: {barber_id}")
-            print(f"Connected: {'✅ Yes' if status.get('connected') else '❌ No'}")
-
-            if status.get("connected"):
-                print(f"Account ID: {status.get('stripe_account_id')}")
-                print(
-                    f"Charges Enabled: {'✅' if status.get('charges_enabled') else '❌'}"
-                )
-                print(
-                    f"Payouts Enabled: {'✅' if status.get('payouts_enabled') else '❌'}"
-                )
-
-                if status.get("dashboard_url"):
-                    print(f"\nDashboard URL: {status['dashboard_url']}")
-
-            return status
-        else:
-            self.print_error(f"Failed to check status: {response.text}")
-            return None
-
-    def generate_connect_url(self, barber_id):
-        """Generate Stripe Connect OAuth URL"""
-        self.print_header("GENERATE CONNECT URL")
-
-        response = self.session.get(f"{API_URL}/stripe-connect/connect/{barber_id}")
+        print_info(f"Response status: {response.status_code}")
 
         if response.status_code == 200:
             data = response.json()
+            print_success("OAuth URL generated successfully!")
 
-            self.print_success("Connect URL generated successfully!")
-            print(f"\nState Token: {data.get('state_token', 'N/A')}")
-            print(f"\n{Fore.YELLOW}OAuth URL:{Style.RESET_ALL}")
-            print(f"{data.get('connect_url') or data.get('url')}")
+            # Display the response
+            print_info("\nResponse data:")
+            print(json.dumps(data, indent=2))
 
-            print(f"\n{Fore.GREEN}Instructions:{Style.RESET_ALL}")
-            print("1. Click the OAuth URL above")
-            print("2. You'll be redirected to Stripe")
-            print("3. Create or sign in to a Stripe account")
-            print("4. Authorize the connection")
-            print("5. You'll be redirected back to complete the process")
+            # Validate the OAuth URL
+            oauth_url = data.get("oauth_url", "")
+            if oauth_url and oauth_url.startswith(
+                "https://connect.stripe.com/oauth/authorize"
+            ):
+                print_success("\nOAuth URL format is correct")
 
-            return data
-        else:
-            error = response.json()
-            if "already connected" in str(error.get("detail", "")).lower():
-                self.print_warning("Barber already has a connected Stripe account")
+                # Show the URL for manual testing
+                print_info("\n🔗 To test the barber onboarding flow:")
+                print_info("1. Copy this URL and open it in a browser:")
+                print(f"\n{oauth_url}\n")
+
+                print_info("2. Complete the Stripe Connect onboarding process")
+                print_info("3. You'll be redirected back to your application")
+                print_info("4. The barber's account will be connected automatically")
+
+                return True
             else:
-                self.print_error(
-                    f"Failed to generate URL: {error.get('detail', response.text)}"
-                )
-            return None
+                print_error("OAuth URL format is incorrect or missing")
+                return False
 
-    def simulate_callback(self, barber_id, state_token):
-        """Simulate OAuth callback (for testing)"""
-        self.print_header("SIMULATE OAUTH CALLBACK")
-
-        self.print_warning(
-            "Note: This is a simulation. In real flow, Stripe redirects with auth code."
-        )
-
-        # In real flow, Stripe would redirect with:
-        # /callback?code=ac_xxxx&state=<state_token>
-
-        callback_data = {
-            "code": "ac_test_simulation",
-            "state": f"{barber_id}:{state_token}",
-        }
-
-        print(f"Simulated callback data:")
-        print(f"  Code: {callback_data['code']}")
-        print(f"  State: {callback_data['state']}")
-
-        response = self.session.post(
-            f"{API_URL}/stripe-connect/callback", json=callback_data
-        )
-
-        if response.status_code == 200:
-            self.print_success("Callback processed (simulation)")
-        else:
-            self.print_info("Callback simulation failed (expected with test code)")
-
-    def test_payout_calculation(self, barber_id):
-        """Test payout calculation for the barber"""
-        self.print_header("PAYOUT CALCULATION TEST")
-
-        # Test different scenarios
-        scenarios = [
-            {
-                "service": 50.00,
-                "tip": 10.00,
-                "description": "Standard haircut with tip",
-            },
-            {"service": 100.00, "tip": 20.00, "description": "Premium service"},
-            {"service": 25.00, "tip": 5.00, "description": "Quick trim"},
-        ]
-
-        for scenario in scenarios:
-            print(f"\n{scenario['description']}:")
-            print(f"  Service: ${scenario['service']:.2f}")
-            print(f"  Tip: ${scenario['tip']:.2f}")
-            print(f"  Total: ${scenario['service'] + scenario['tip']:.2f}")
-
-            # In a real implementation, we'd call the payout calculation endpoint
-            # For now, we'll calculate based on 60% commission
-            commission_rate = 60
-            barber_service = scenario["service"] * (commission_rate / 100)
-            barber_total = barber_service + scenario["tip"]
-            shop_total = scenario["service"] - barber_service
-
-            print(f"  → Barber gets: ${barber_total:.2f} ({commission_rate}% + tips)")
-            print(f"  → Shop gets: ${shop_total:.2f}")
-
-    def run_complete_test(self):
-        """Run complete onboarding test flow"""
-        self.print_header("BARBER ONBOARDING TEST SUITE")
-        print(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-
-        # Authenticate
-        if not self.authenticate():
-            return
-
-        # List barbers and select one
-        barber_id = self.list_barbers()
-        if not barber_id:
-            return
-
-        # Check current status
-        status = self.check_barber_status(barber_id)
-
-        if not status or not status.get("connected"):
-            # Generate Connect URL
-            connect_data = self.generate_connect_url(barber_id)
-
-            if connect_data:
-                # Simulate callback (optional)
-                print(
-                    f"\n{Fore.YELLOW}Would you like to simulate the OAuth callback? (y/n):{Style.RESET_ALL} ",
-                    end="",
-                )
-                # In automated mode, skip user input
-                print("n (automated mode)")
+        elif response.status_code == 422:
+            print_error("Validation error - check your request data")
+            try:
+                error_data = response.json()
+                print_info(f"Error details: {json.dumps(error_data, indent=2)}")
+            except:
+                print_info(f"Error response: {response.text}")
+            return False
 
         else:
-            self.print_info("Barber already connected. Testing payout calculations...")
+            print_error(f"Request failed with status {response.status_code}")
+            try:
+                error_data = response.json()
+                print_info(f"Error details: {json.dumps(error_data, indent=2)}")
+            except:
+                print_info(f"Error response: {response.text}")
+            return False
 
-        # Test payout calculations
-        self.test_payout_calculation(barber_id)
+    except httpx.RequestError as e:
+        print_error(f"Request failed: {str(e)}")
+        return False
 
-        # Summary
-        self.print_header("TEST COMPLETE")
-        print("✅ Authentication working")
-        print("✅ Barber management working")
-        print("✅ Stripe Connect URL generation working")
-        print("✅ Status checking working")
-        print("✅ Payout calculations ready")
 
-        print(f"\n{Fore.GREEN}Next Steps:{Style.RESET_ALL}")
-        print("1. Click the OAuth URL to complete real onboarding")
-        print("2. Authorize the Stripe connection")
-        print("3. Test actual payouts with connected account")
+def test_with_different_platforms():
+    """Test the endpoint with different platform values"""
+    print_header("Testing Different Platforms")
+
+    platforms = ["stripe", "square"]
+
+    for platform in platforms:
+        print_info(f"\nTesting with platform: {platform}")
+
+        test_data = {"barber_id": 1, "platform": platform}
+
+        try:
+            with httpx.Client(timeout=30.0) as client:
+                response = client.post(f"{BASE_URL}{API_ENDPOINT}", json=test_data)
+
+            if response.status_code == 200:
+                data = response.json()
+                print_success(f"✅ {platform.capitalize()} OAuth URL generated")
+                print_info(f"Platform: {data.get('platform', 'N/A')}")
+                print_info(f"State token: {data.get('state_token', 'N/A')[:20]}...")
+            else:
+                print_error(
+                    f"❌ {platform.capitalize()} failed with status {response.status_code}"
+                )
+
+        except Exception as e:
+            print_error(f"❌ {platform.capitalize()} request failed: {str(e)}")
+
+
+def test_invalid_inputs():
+    """Test the endpoint with invalid inputs"""
+    print_header("Testing Invalid Inputs")
+
+    test_cases = [
+        {
+            "description": "Invalid platform",
+            "data": {"barber_id": 1, "platform": "paypal"},
+        },
+        {"description": "Missing barber_id", "data": {"platform": "stripe"}},
+        {
+            "description": "Invalid barber_id type",
+            "data": {"barber_id": "not_a_number", "platform": "stripe"},
+        },
+        {
+            "description": "Negative barber_id",
+            "data": {"barber_id": -1, "platform": "stripe"},
+        },
+    ]
+
+    for test_case in test_cases:
+        print_info(f"\nTesting: {test_case['description']}")
+
+        try:
+            with httpx.Client(timeout=30.0) as client:
+                response = client.post(
+                    f"{BASE_URL}{API_ENDPOINT}", json=test_case["data"]
+                )
+
+            if response.status_code == 400:
+                print_success("✅ Correctly rejected invalid input")
+            elif response.status_code == 422:
+                print_success("✅ Validation error returned as expected")
+            else:
+                print_error(f"❌ Unexpected status code: {response.status_code}")
+
+        except Exception as e:
+            print_error(f"❌ Request failed: {str(e)}")
 
 
 def main():
-    print("🚀 Starting Barber Onboarding Test")
-    print("This will test the Stripe Connect flow for barber payouts\n")
+    """Main function to run all tests"""
+    print_header("Barber Onboarding Test Suite")
+    print_info(f"Target URL: {BASE_URL}")
+    print_info(f"Test time: {datetime.now().isoformat()}")
 
-    tester = BarberOnboardingTest()
-    tester.run_complete_test()
+    # Run tests in sequence
+    if not test_environment_setup():
+        print_error("\n🚫 Environment setup failed. Please fix the issues above.")
+        return False
+
+    if not test_backend_connection():
+        print_error("\n🚫 Backend connection failed. Please start the backend server.")
+        return False
+
+    # Main test
+    success = test_connect_account_endpoint()
+
+    if success:
+        # Additional tests
+        test_with_different_platforms()
+        test_invalid_inputs()
+
+        print_header("✅ All Tests Completed Successfully")
+        print_info("\nNext steps:")
+        print_info("1. Use the OAuth URL above to connect a test Stripe account")
+        print_info("2. Check that the callback is handled correctly")
+        print_info("3. Verify the barber's account is saved in the database")
+        print_info("4. Test payment processing with the connected account")
+
+    else:
+        print_header("❌ Tests Failed")
+        print_info("\nTroubleshooting:")
+        print_info("1. Check that your .env file has the correct Stripe keys")
+        print_info("2. Ensure the backend server is running")
+        print_info("3. Verify the database is set up correctly")
+        print_info("4. Check the backend logs for detailed error messages")
+
+    return success
 
 
 if __name__ == "__main__":
