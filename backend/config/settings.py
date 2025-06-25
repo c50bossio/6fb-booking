@@ -554,6 +554,9 @@ class Settings(BaseSettings):
             "https://sixfb-booking-frontend.vercel.app",  # Another variation
         ]
         default_origins.extend(vercel_patterns)
+        
+        # Add null origin for local file testing and development
+        default_origins.extend(["null", "file://"])
 
         # Remove duplicates and set
         self.CORS_ORIGINS = list(set(default_origins))
@@ -563,8 +566,18 @@ class Settings(BaseSettings):
         if not origin:
             return False
 
+        # EMERGENCY: Allow all origins temporarily for debugging
+        if self.ENVIRONMENT != "production":
+            logger.info(f"Development mode: Allowing all origins including: {origin}")
+            return True
+
         # Check exact matches first
         if origin in self.CORS_ORIGINS:
+            return True
+
+        # Allow null origin for local file testing (even in production for debugging)
+        if origin in ["null", "file://", ""]:
+            logger.info(f"Allowing local testing origin: {origin}")
             return True
 
         # Check Vercel deployment patterns - more flexible matching
