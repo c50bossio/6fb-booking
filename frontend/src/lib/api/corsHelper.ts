@@ -23,7 +23,7 @@ interface CorsStatus {
 
 let corsStatus: CorsStatus = {
   isWorking: false,  // Force proxy usage due to intermittent CORS preflight issues
-  lastChecked: 0,
+  lastChecked: Date.now() - 3 * 60 * 1000,  // Pretend we checked 3 minutes ago to reduce initial requests
   testResults: {
     health: false,
     auth: false,
@@ -135,8 +135,8 @@ export async function testCors(): Promise<CorsStatus> {
  * Check if CORS testing is needed (throttled to avoid spam)
  */
 export function shouldTestCors(): boolean {
-  const fiveMinutes = 5 * 60 * 1000;
-  return Date.now() - corsStatus.lastChecked > fiveMinutes;
+  const fifteenMinutes = 15 * 60 * 1000;  // Increased from 5 to 15 minutes
+  return Date.now() - corsStatus.lastChecked > fifteenMinutes;
 }
 
 /**
@@ -269,6 +269,6 @@ export const corsConfig = {
 
 // Auto-initialize CORS checking on module load
 if (typeof window !== 'undefined') {
-  // Delay initialization to avoid blocking initial render
-  setTimeout(initializeCors, 1000);
+  // Delay initialization more to avoid rate limiting
+  setTimeout(initializeCors, 5000);  // Increased from 1s to 5s
 }
