@@ -177,9 +177,123 @@ export default function LandingPage() {
     setEmail('')
   }
 
+  // Force contrast after mount
+  useEffect(() => {
+    const enforceContrast = () => {
+      const container = document.querySelector('.landing-page-container')
+      if (container) {
+        // Force container color
+        container.style.setProperty('color', '#000000', 'important')
+
+        // Force all text elements
+        const textElements = container.querySelectorAll('p, span, div, h1, h2, h3, h4, h5, h6, li, td, th')
+        textElements.forEach(el => {
+          if (!el.closest('.bg-slate-800, .bg-slate-900, .bg-gray-900, footer')) {
+            el.style.setProperty('color', '#000000', 'important')
+          }
+        })
+      }
+    }
+
+    // Run immediately
+    enforceContrast()
+
+    // Run after any potential theme changes
+    const timer1 = setTimeout(enforceContrast, 100)
+    const timer2 = setTimeout(enforceContrast, 500)
+    const timer3 = setTimeout(enforceContrast, 1000)
+
+    // Also listen for DOM changes
+    const observer = new MutationObserver(enforceContrast)
+    if (document.querySelector('.landing-page-container')) {
+      observer.observe(document.querySelector('.landing-page-container'), {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['style', 'class']
+      })
+    }
+
+    return () => {
+      clearTimeout(timer1)
+      clearTimeout(timer2)
+      clearTimeout(timer3)
+      observer.disconnect()
+    }
+  }, [])
+
   return (
     <>
-      <div className="min-h-screen bg-gray-50">
+      <style jsx global>{`
+        /* NUCLEAR OPTION: Maximum specificity landing page contrast fix */
+
+        body .landing-page-container,
+        html body .landing-page-container,
+        html body div .landing-page-container {
+          color: #000000 !important;
+        }
+
+        /* Override ALL text elements with maximum specificity */
+        body .landing-page-container p,
+        body .landing-page-container span,
+        body .landing-page-container div,
+        body .landing-page-container h1,
+        body .landing-page-container h2,
+        body .landing-page-container h3,
+        body .landing-page-container h4,
+        body .landing-page-container h5,
+        body .landing-page-container h6,
+        body .landing-page-container li,
+        body .landing-page-container td,
+        body .landing-page-container th {
+          color: #000000 !important;
+        }
+
+        /* Define premium-button-secondary style with max specificity */
+        body .landing-page-container .premium-button-secondary {
+          background-color: white !important;
+          border: 2px solid #d1d5db !important;
+          color: #374151 !important;
+          font-weight: 600 !important;
+          border-radius: 0.75rem !important;
+          transition: all 0.3s ease !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          text-decoration: none !important;
+        }
+
+        body .landing-page-container .premium-button-secondary:hover {
+          background-color: #f9fafb !important;
+          border-color: #9ca3af !important;
+          transform: translateY(-2px) !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        /* Dark backgrounds need white text with max specificity */
+        body .landing-page-container .bg-slate-800 *,
+        body .landing-page-container .bg-slate-900 *,
+        body .landing-page-container .bg-gray-900 *,
+        body .landing-page-container footer * {
+          color: white !important;
+        }
+
+        /* But preserve button colors even on dark backgrounds */
+        body .landing-page-container .bg-slate-800 .premium-button-secondary,
+        body .landing-page-container .bg-slate-900 .premium-button-secondary,
+        body .landing-page-container .bg-gray-900 .premium-button-secondary,
+        body .landing-page-container footer .premium-button-secondary {
+          background-color: white !important;
+          color: #374151 !important;
+        }
+
+        /* Prevent ANY theme classes from overriding on landing page */
+        body.text-gray-900 .landing-page-container *:not(.bg-slate-800 *):not(.bg-slate-900 *):not(.bg-gray-900 *):not(footer *),
+        body.text-white .landing-page-container *:not(.bg-slate-800 *):not(.bg-slate-900 *):not(.bg-gray-900 *):not(footer *) {
+          color: #000000 !important;
+        }
+      `}</style>
+      <div className="min-h-screen bg-gray-50 landing-page-container" style={{ color: '#000000' }}>
       {/* Demo Banner */}
       <div className="bg-gradient-to-r from-slate-700 to-slate-800 text-white py-3">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
