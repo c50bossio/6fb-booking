@@ -326,8 +326,10 @@
 
     <script>
         // Configuration
+        // IMPORTANT: Replace with your actual Stripe publishable key
+        // Get it from: https://dashboard.stripe.com/apikeys
         const API_URL = 'http://localhost:8000/api/v1';
-        const STRIPE_PK = 'pk_test_51OUIw0AV7WL65KS1JQnX9W2zWrU2XaGi2QBzPMiFpiXTvrMorSi9zWgcNj7R6cRgEYCbHxVaoklsdM0xvIeyKY1g000LyKZE2b';
+        const STRIPE_PK = 'pk_test_YOUR_STRIPE_PUBLISHABLE_KEY_HERE';
 
         // Initialize Stripe
         const stripe = Stripe(STRIPE_PK);

@@ -8,7 +8,8 @@ import json
 from datetime import datetime, timedelta
 
 # Set environment variables
-os.environ["DATA_ENCRYPTION_KEY"] = "bu8Qx6fNbUKCJ_0Y4hcyCJfg1HlzYyZQ-6lw5odtplc="
+# TODO: Replace with actual encryption key from your .env file
+os.environ["DATA_ENCRYPTION_KEY"] = "YOUR_32_CHAR_ENCRYPTION_KEY_HERE"
 
 BASE_URL = "http://localhost:8000"
 

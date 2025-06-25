@@ -572,7 +572,7 @@ async def get_barbers_payment_info(
     """Get all barbers with their payment model information"""
     # Check permissions
     rbac = RBACService(db)
-    if not rbac.has_permission(current_user, Permission.VIEW_BARBER_MANAGEMENT):
+    if not rbac.has_permission(current_user, Permission.VIEW_ALL_USERS):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to view barber payment information",
@@ -589,19 +589,22 @@ async def get_barbers_payment_info(
         )
         
         result.append({
-            "id": barber.id,
-            "name": f"{barber.first_name} {barber.last_name}",
+            "barber_id": barber.id,
+            "barber_name": f"{barber.first_name} {barber.last_name}",
             "email": barber.email,
             "phone": barber.phone,
-            "is_active": barber.is_active,
-            "payment_model": {
-                "type": payment_model.payment_type.value if payment_model else "commission",
-                "commission_rate": payment_model.service_commission_rate if payment_model else 0.3,
-                "booth_rent_amount": payment_model.booth_rent_amount if payment_model else 0,
-                "rent_frequency": payment_model.rent_frequency if payment_model else "weekly",
-                "stripe_connected": bool(payment_model.stripe_connect_account_id) if payment_model else False,
-                "square_connected": bool(payment_model.square_merchant_id) if payment_model else False,
-            } if payment_model else None,
+            "payment_type": payment_model.payment_type.value if payment_model else "commission",
+            "commission_rate": payment_model.service_commission_rate if payment_model else 0.3,
+            "booth_rent_amount": payment_model.booth_rent_amount if payment_model else 0,
+            "booth_rent_frequency": payment_model.rent_frequency if payment_model else "weekly",
+            "stripe_account_id": payment_model.stripe_connect_account_id if payment_model else None,
+            "square_merchant_id": payment_model.square_merchant_id if payment_model else None,
+            "stripe_connected": bool(payment_model.stripe_connect_account_id) if payment_model else False,
+            "square_connected": bool(payment_model.square_merchant_id) if payment_model else False,
+            "rentpedi_tenant_id": None,
+            "rentpedi_connected": False,
+            "created_at": barber.created_at.isoformat() if barber.created_at else None,
+            "updated_at": barber.updated_at.isoformat() if barber.updated_at else None,
         })
     
     return result
@@ -616,10 +619,10 @@ async def get_recent_payment_splits(
     """Get recent payment splits"""
     # Check permissions
     rbac = RBACService(db)
-    if not rbac.has_permission(current_user, Permission.VIEW_FINANCIAL_REPORTS):
+    if not rbac.has_permission(current_user, Permission.VIEW_REVENUE_DATA):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to view payment splits",
+            detail="Not authorized to view financial data",
         )
     
     # Get recent payments with appointment info
@@ -680,10 +683,10 @@ async def get_commission_payments(
     """Get commission payments for the period"""
     # Check permissions
     rbac = RBACService(db)
-    if not rbac.has_permission(current_user, Permission.VIEW_FINANCIAL_REPORTS):
+    if not rbac.has_permission(current_user, Permission.VIEW_REVENUE_DATA):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to view commission payments",
+            detail="Not authorized to view financial data",
         )
     
     # For now, calculate commissions from actual payments
@@ -753,10 +756,10 @@ async def get_booth_rent_payments(
     """Get booth rent payment status"""
     # Check permissions
     rbac = RBACService(db)
-    if not rbac.has_permission(current_user, Permission.VIEW_FINANCIAL_REPORTS):
+    if not rbac.has_permission(current_user, Permission.VIEW_REVENUE_DATA):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to view booth rent payments",
+            detail="Not authorized to view financial data",
         )
     
     # Get all barbers with booth rent payment model

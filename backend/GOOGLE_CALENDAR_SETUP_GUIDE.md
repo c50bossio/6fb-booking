@@ -188,12 +188,16 @@ python test_google_calendar_integration.py
 - No custom reminder settings per barber
 
 ### Google Cloud Console Setup
-The app is already configured with:
-- **Client ID**: 353647126065-f9nf8a9vjmpefo763ol6fj1morso4c7f.apps.googleusercontent.com
-- **Authorized redirect**: http://localhost:8000/api/v1/google-calendar/oauth/callback
+You need to configure OAuth 2.0 credentials:
 
-For production, add:
-- https://yourdomain.com/api/v1/google-calendar/oauth/callback
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create or select your project
+3. Enable the Google Calendar API
+4. Create OAuth 2.0 Client ID credentials
+5. Add authorized redirect URIs:
+   - **Development**: http://localhost:8000/api/v1/google-calendar/oauth/callback
+   - **Production**: https://yourdomain.com/api/v1/google-calendar/oauth/callback
+6. Copy your Client ID and Client Secret to your .env file
 
 ## 🎯 Next Steps
 
