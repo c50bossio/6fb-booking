@@ -353,6 +353,31 @@ export default function CalendarSystem({
     originalTime: string
   ) => {
     try {
+      console.log('🚀 Moving appointment:', { appointmentId, from: `${originalDate} ${originalTime}`, to: `${newDate} ${newTime}` })
+
+      // In demo mode, skip API call and just update local state
+      if (isDemoMode()) {
+        console.log('📋 Demo mode: updating local state only')
+        
+        setAppointments(prev =>
+          prev.map(apt => {
+            if (apt.id === appointmentId) {
+              return {
+                ...apt,
+                date: newDate,
+                startTime: newTime,
+                endTime: calculateEndTime(newTime, apt.duration)
+              }
+            }
+            return apt
+          })
+        )
+
+        toast.success('Appointment moved successfully! (Demo Mode)')
+        return
+      }
+
+      // Production mode: call API
       const updateData = {
         appointment_date: newDate,
         appointment_time: newTime
