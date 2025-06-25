@@ -18,6 +18,7 @@ import {
   ViewColumnsIcon,
   Squares2X2Icon
 } from '@heroicons/react/24/solid'
+import { useTheme } from '@/contexts/ThemeContext'
 
 // Types for appointments and calendar
 export interface CalendarAppointment {
@@ -54,7 +55,7 @@ export interface CalendarProps {
   barbers?: Array<{ id: number; name: string; color?: string }>
   services?: Array<{ id: number; name: string; duration: number; price: number }>
   isLoading?: boolean
-  darkMode?: boolean
+  darkMode?: boolean // Deprecated - use theme context instead
 }
 
 // Default working hours and time slots
@@ -173,8 +174,12 @@ export default function PremiumCalendar({
   ],
   services = [],
   isLoading = false,
-  darkMode = true
+  darkMode = true // Deprecated - now using theme context
 }: CalendarProps) {
+  // Use theme context for dynamic theming
+  const { theme, getThemeColors } = useTheme()
+  const colors = getThemeColors()
+
   const [currentDate, setCurrentDate] = useState<Date>(initialDate)
   const [selectedView, setSelectedView] = useState<'month' | 'week' | 'day'>(initialView)
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
@@ -335,11 +340,17 @@ export default function PremiumCalendar({
 
   // Month View Component
   const MonthView = () => (
-    <div className="grid grid-cols-7 gap-0 border border-gray-700 rounded-xl overflow-hidden bg-gray-900/95 backdrop-blur-sm">
+    <div className="grid grid-cols-7 gap-0 border rounded-xl overflow-hidden backdrop-blur-sm transition-colors duration-200" style={{
+      borderColor: colors.border,
+      backgroundColor: colors.cardBackground
+    }}>
       {/* Day Headers */}
       {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-        <div key={day} className="bg-gray-800/80 p-4 text-center border-b border-gray-700">
-          <div className="text-sm font-semibold text-gray-300">{day}</div>
+        <div key={day} className="p-4 text-center border-b transition-colors duration-200" style={{
+          backgroundColor: theme === 'light' || theme === 'soft-light' ? '#f9fafb' : '#374151',
+          borderColor: colors.border
+        }}>
+          <div className="text-sm font-semibold" style={{ color: colors.textSecondary }}>{day}</div>
         </div>
       ))}
 
@@ -352,20 +363,44 @@ export default function PremiumCalendar({
         return (
           <div
             key={index}
-            className={`min-h-[120px] p-2 border-b border-r border-gray-700 last:border-r-0 hover:bg-gray-800/50 transition-colors cursor-pointer ${
-              !isCurrentMonthDate ? 'bg-gray-900/50 text-gray-600' : 'bg-gray-900/20'
-            } ${isTodayDate ? 'bg-violet-900/30' : ''}`}
+            className="min-h-[120px] p-2 border-b border-r last:border-r-0 transition-colors cursor-pointer"
+            style={{
+              borderColor: colors.border,
+              backgroundColor: isTodayDate
+                ? (theme === 'soft-light' ? '#7c9885' + '20' : theme === 'charcoal' ? '#4b5563' + '30' : '#8b5cf6' + '20')
+                : !isCurrentMonthDate
+                  ? (theme === 'light' || theme === 'soft-light' ? '#f9fafb' : colors.background)
+                  : colors.cardBackground,
+              color: !isCurrentMonthDate ? colors.textSecondary + '80' : colors.textPrimary
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = theme === 'light' || theme === 'soft-light' ? '#f3f4f6' : '#374151'
+            }}
+            onMouseLeave={(e) => {
+              const bgColor = isTodayDate
+                ? (theme === 'soft-light' ? '#7c9885' + '20' : theme === 'charcoal' ? '#4b5563' + '30' : '#8b5cf6' + '20')
+                : !isCurrentMonthDate
+                  ? (theme === 'light' || theme === 'soft-light' ? '#f9fafb' : colors.background)
+                  : colors.cardBackground
+              e.currentTarget.style.backgroundColor = bgColor
+            }}
             data-time-slot="true"
             data-date={formatDateString(date)}
             data-time="all-day"
             onClick={() => setSelectedDate(date)}
           >
-            <div className={`text-sm font-medium mb-2 ${
-              isTodayDate ? 'text-violet-400' : isCurrentMonthDate ? 'text-gray-200' : 'text-gray-600'
-            }`}>
+            <div className="text-sm font-medium mb-2" style={{
+              color: isTodayDate
+                ? (theme === 'soft-light' ? '#7c9885' : theme === 'charcoal' ? '#9ca3af' : '#8b5cf6')
+                : isCurrentMonthDate
+                  ? colors.textPrimary
+                  : colors.textSecondary
+            }}>
               {date.getDate()}
               {isTodayDate && (
-                <div className="w-2 h-2 bg-violet-500 rounded-full mt-1"></div>
+                <div className="w-2 h-2 rounded-full mt-1" style={{
+                  backgroundColor: theme === 'soft-light' ? '#7c9885' : theme === 'charcoal' ? '#9ca3af' : '#8b5cf6'
+                }}></div>
               )}
             </div>
 
@@ -407,29 +442,46 @@ export default function PremiumCalendar({
     const displayDates = selectedView === 'week' ? weekDates : [currentDate]
 
     return (
-      <div className="border border-gray-700 rounded-xl overflow-hidden bg-gray-900/95 backdrop-blur-sm">
+      <div className="border rounded-xl overflow-hidden backdrop-blur-sm transition-colors duration-200" style={{
+        borderColor: colors.border,
+        backgroundColor: colors.cardBackground
+      }}>
         {/* Day Headers */}
-        <div className={`grid ${selectedView === 'week' ? 'grid-cols-8' : 'grid-cols-2'} border-b border-gray-700 bg-gray-800/80`}>
-          <div className="p-4 text-sm font-semibold text-gray-300 border-r border-gray-700">
+        <div className={`grid ${selectedView === 'week' ? 'grid-cols-8' : 'grid-cols-2'} border-b transition-colors duration-200`} style={{
+          borderColor: colors.border,
+          backgroundColor: theme === 'light' || theme === 'soft-light' ? '#f9fafb' : '#374151'
+        }}>
+          <div className="p-4 text-sm font-semibold border-r transition-colors duration-200" style={{
+            color: colors.textSecondary,
+            borderColor: colors.border
+          }}>
             Time
           </div>
           {displayDates.map((date, index) => (
             <div
               key={index}
-              className={`p-4 text-center border-r border-gray-700 last:border-r-0 ${
-                isToday(date) ? 'bg-violet-900/30' : ''
-              }`}
+              className="p-4 text-center border-r last:border-r-0 transition-colors duration-200"
+              style={{
+                borderColor: colors.border,
+                backgroundColor: isToday(date)
+                  ? (theme === 'soft-light' ? '#7c9885' + '20' : theme === 'charcoal' ? '#4b5563' + '30' : '#8b5cf6' + '20')
+                  : 'transparent'
+              }}
             >
-              <div className="text-sm font-semibold text-gray-200">
+              <div className="text-sm font-semibold" style={{ color: colors.textPrimary }}>
                 {date.toLocaleDateString('en-US', { weekday: 'short' })}
               </div>
-              <div className={`text-lg font-bold mt-1 ${
-                isToday(date) ? 'text-violet-400' : 'text-gray-300'
-              }`}>
+              <div className="text-lg font-bold mt-1" style={{
+                color: isToday(date)
+                  ? (theme === 'soft-light' ? '#7c9885' : theme === 'charcoal' ? '#9ca3af' : '#8b5cf6')
+                  : colors.textPrimary
+              }}>
                 {date.getDate()}
               </div>
               {isToday(date) && (
-                <div className="w-2 h-2 bg-violet-500 rounded-full mx-auto mt-1"></div>
+                <div className="w-2 h-2 rounded-full mx-auto mt-1" style={{
+                  backgroundColor: theme === 'soft-light' ? '#7c9885' : theme === 'charcoal' ? '#9ca3af' : '#8b5cf6'
+                }}></div>
               )}
             </div>
           ))}
@@ -438,9 +490,15 @@ export default function PremiumCalendar({
         {/* Time Slots and Appointments */}
         <div className="max-h-[600px] overflow-y-auto custom-scrollbar">
           {timeSlots.map((time) => (
-            <div key={time} className={`grid ${selectedView === 'week' ? 'grid-cols-8' : 'grid-cols-2'} border-b border-gray-700/50 hover:bg-gray-800/30 transition-colors`}>
+            <div key={time} className={`grid ${selectedView === 'week' ? 'grid-cols-8' : 'grid-cols-2'} border-b transition-colors`} style={{
+              borderColor: colors.border + '80'
+            }}>
               {/* Time Column */}
-              <div className="p-3 text-sm font-medium text-gray-400 border-r border-gray-700 bg-gray-800/40 flex items-center">
+              <div className="p-3 text-sm font-medium border-r flex items-center transition-colors duration-200" style={{
+                color: colors.textSecondary,
+                borderColor: colors.border,
+                backgroundColor: theme === 'light' || theme === 'soft-light' ? '#f9fafb' : '#374151'
+              }}>
                 {time}
               </div>
 
@@ -454,9 +512,19 @@ export default function PremiumCalendar({
                 return (
                   <div
                     key={dateIndex}
-                    className={`relative p-2 border-r border-gray-700 last:border-r-0 min-h-[60px] cursor-pointer transition-all duration-200 ${
-                      isHovered ? 'bg-violet-900/20 border-violet-500' : 'hover:bg-gray-800/40'
-                    }`}
+                    className="relative p-2 border-r last:border-r-0 min-h-[60px] cursor-pointer transition-all duration-200"
+                    style={{
+                      borderColor: colors.border,
+                      backgroundColor: isHovered
+                        ? (theme === 'soft-light' ? '#7c9885' + '20' : theme === 'charcoal' ? '#4b5563' + '30' : '#8b5cf6' + '20')
+                        : 'transparent'
+                    }}
+                    onMouseEnter={() => {
+                      setHoveredTimeSlot({ date: dateStr, time })
+                    }}
+                    onMouseLeave={() => {
+                      setHoveredTimeSlot(null)
+                    }}
                     data-time-slot="true"
                     data-date={dateStr}
                     data-time={time}
@@ -529,7 +597,11 @@ export default function PremiumCalendar({
   }
 
   return (
-    <div className={`p-6 ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'} rounded-xl shadow-2xl`}>
+    <div className="p-6 rounded-xl transition-colors duration-300" style={{
+      backgroundColor: colors.cardBackground,
+      color: colors.textPrimary,
+      boxShadow: colors.shadow
+    }}>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-4">
@@ -545,18 +617,42 @@ export default function PremiumCalendar({
           <div className="flex items-center space-x-2">
             <button
               onClick={() => navigatePeriod('prev')}
-              className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-all duration-200 hover:scale-110"
+              className="p-2 rounded-lg transition-all duration-200 hover:scale-110"
+              style={{
+                color: colors.textSecondary,
+                backgroundColor: 'transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = colors.textPrimary
+                e.currentTarget.style.backgroundColor = theme === 'light' || theme === 'soft-light' ? '#f3f4f6' : '#374151'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = colors.textSecondary
+                e.currentTarget.style.backgroundColor = 'transparent'
+              }}
             >
               <ChevronLeftIcon className="h-5 w-5" />
             </button>
 
-            <span className="text-lg font-semibold text-gray-200 min-w-max px-4">
+            <span className="text-lg font-semibold min-w-max px-4" style={{ color: colors.textPrimary }}>
               {getCurrentPeriodText()}
             </span>
 
             <button
               onClick={() => navigatePeriod('next')}
-              className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-all duration-200 hover:scale-110"
+              className="p-2 rounded-lg transition-all duration-200 hover:scale-110"
+              style={{
+                color: colors.textSecondary,
+                backgroundColor: 'transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = colors.textPrimary
+                e.currentTarget.style.backgroundColor = theme === 'light' || theme === 'soft-light' ? '#f3f4f6' : '#374151'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = colors.textSecondary
+                e.currentTarget.style.backgroundColor = 'transparent'
+              }}
             >
               <ChevronRightIcon className="h-5 w-5" />
             </button>
@@ -565,36 +661,54 @@ export default function PremiumCalendar({
 
         <div className="flex items-center space-x-3">
           {/* View Toggle */}
-          <div className="bg-gray-800 rounded-lg p-1 flex border border-gray-700">
+          <div className="rounded-lg p-1 flex border transition-colors duration-200" style={{
+            backgroundColor: theme === 'light' || theme === 'soft-light' ? '#f3f4f6' : '#374151',
+            borderColor: colors.border
+          }}>
             <button
               onClick={() => setSelectedView('month')}
-              className={`px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 flex items-center space-x-2 ${
-                selectedView === 'month'
-                  ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-lg'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-700'
-              }`}
+              className="px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 flex items-center space-x-2"
+              style={{
+                backgroundColor: selectedView === 'month'
+                  ? (theme === 'soft-light' ? '#7c9885' : theme === 'charcoal' ? '#4b5563' : '#8b5cf6')
+                  : 'transparent',
+                color: selectedView === 'month'
+                  ? '#ffffff'
+                  : colors.textSecondary,
+                boxShadow: selectedView === 'month' ? colors.shadow : 'none'
+              }}
             >
               <Squares2X2Icon className="h-4 w-4" />
               <span>Month</span>
             </button>
             <button
               onClick={() => setSelectedView('week')}
-              className={`px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 flex items-center space-x-2 ${
-                selectedView === 'week'
-                  ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-lg'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-700'
-              }`}
+              className="px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 flex items-center space-x-2"
+              style={{
+                backgroundColor: selectedView === 'week'
+                  ? (theme === 'soft-light' ? '#7c9885' : theme === 'charcoal' ? '#4b5563' : '#8b5cf6')
+                  : 'transparent',
+                color: selectedView === 'week'
+                  ? '#ffffff'
+                  : colors.textSecondary,
+                boxShadow: selectedView === 'week' ? colors.shadow : 'none'
+              }}
             >
               <ViewColumnsIcon className="h-4 w-4" />
               <span>Week</span>
             </button>
             <button
               onClick={() => setSelectedView('day')}
-              className={`px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 flex items-center space-x-2 ${
-                selectedView === 'day'
-                  ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-lg'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-700'
-              }`}
+              className="px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 flex items-center space-x-2"
+              style={{
+                backgroundColor: selectedView === 'day'
+                  ? (theme === 'soft-light' ? '#7c9885' : theme === 'charcoal' ? '#4b5563' : '#8b5cf6')
+                  : 'transparent',
+                color: selectedView === 'day'
+                  ? '#ffffff'
+                  : colors.textSecondary,
+                boxShadow: selectedView === 'day' ? colors.shadow : 'none'
+              }}
             >
               <CalendarIcon className="h-4 w-4" />
               <span>Day</span>
@@ -602,7 +716,12 @@ export default function PremiumCalendar({
           </div>
 
           <button
-            className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center space-x-2"
+            className="font-semibold py-2 px-4 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center space-x-2"
+            style={{
+              backgroundColor: theme === 'soft-light' ? '#7c9885' : theme === 'charcoal' ? '#4b5563' : '#8b5cf6',
+              color: '#ffffff',
+              boxShadow: colors.shadow
+            }}
             onClick={() => onCreateAppointment?.(formatDateString(new Date()), '09:00')}
           >
             <PlusIcon className="h-4 w-4" />
