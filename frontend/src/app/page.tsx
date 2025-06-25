@@ -185,7 +185,7 @@ export default function LandingPage() {
       <div className="bg-gradient-to-r from-slate-700 to-slate-800 text-white py-3">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-sm font-medium">
-            🚀 Experience the full 6FB Platform now - no sign up required!{' '}
+            🚀 Experience the full Booked Barber Platform now - no sign up required!{' '}
             <Link href="/app" className="underline font-semibold hover:text-slate-300">
               Try Live Demo →
             </Link>
@@ -204,7 +204,7 @@ export default function LandingPage() {
                   <CurrencyDollarIcon className="h-6 w-6 text-white" />
                 </div>
               </div>
-              <span className="ml-3 text-2xl font-bold text-slate-900">6FB Payouts</span>
+              <span className="ml-3 text-2xl font-bold text-slate-900">Booked Barber</span>
             </div>
             <div className="flex items-center space-x-4">
               <Link
@@ -385,7 +385,7 @@ export default function LandingPage() {
               Join 1,200+ Successful Barbers
             </h2>
             <p className="text-xl text-white max-w-3xl mx-auto leading-relaxed">
-              See why top barbers across the country trust 6FB Payouts to manage their business and earnings.
+              See why top barbers across the country trust Booked Barber to manage their business and earnings.
             </p>
           </div>
 
@@ -587,7 +587,7 @@ export default function LandingPage() {
             <div>
               <div className="flex items-center mb-4">
                 <CurrencyDollarIcon className="h-6 w-6 text-teal-500" />
-                <span className="ml-2 text-xl font-bold text-white">6FB Payouts</span>
+                <span className="ml-2 text-xl font-bold text-white">Booked Barber</span>
               </div>
               <p className="brand-tagline" style={{color: '#D1D5DB', fontWeight: '500'}}>
                 Automated payout solutions for modern barbers.
@@ -623,7 +623,7 @@ export default function LandingPage() {
           </div>
 
           <div className="border-t border-gray-800 mt-12 pt-8 text-center">
-            <p className="footer-copyright" style={{color: '#D1D5DB', fontWeight: '500'}}>&copy; 2024 6FB Payouts. All rights reserved.</p>
+            <p className="footer-copyright" style={{color: '#D1D5DB', fontWeight: '500'}}>&copy; 2024 Booked Barber. All rights reserved.</p>
           </div>
         </div>
       </footer>

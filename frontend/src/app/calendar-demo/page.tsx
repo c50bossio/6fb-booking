@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Toaster } from 'react-hot-toast'
-import CalendarSystem from '@/components/calendar/CalendarSystem'
+import UnifiedCalendar from '@/components/calendar/UnifiedCalendar'
 import { generateDragDropTestData, generateConflictTestScenarios } from '@/utils/mockCalendarData'
 import {
   DRAG_DROP_TEST_SCENARIOS,
@@ -215,18 +215,19 @@ export default function CalendarDemoPage() {
 
         {/* Calendar System */}
         <div className="bg-gray-900/30 border border-gray-700 rounded-lg p-6">
-          <CalendarSystem
+          <UnifiedCalendar
             initialView="week"
             enableDragDrop={true}
             darkMode={true}
-            onAppointmentCreate={(appointment) => {
-              console.log('Appointment created:', appointment)
+            onAppointmentClick={(appointment) => {
+              console.log('Appointment clicked:', appointment)
             }}
-            onAppointmentUpdate={(appointment) => {
-              console.log('Appointment updated:', appointment)
+            onTimeSlotClick={(date, time) => {
+              console.log('Time slot clicked:', date, time)
             }}
-            onAppointmentDelete={(appointmentId) => {
-              console.log('Appointment deleted:', appointmentId)
+            onAppointmentMove={(appointmentId, newDate, newTime, originalDate, originalTime) => {
+              console.log('Appointment moved:', appointmentId, 'from', originalDate, originalTime, 'to', newDate, newTime)
+              return Promise.resolve()
             }}
           />
         </div>
@@ -400,7 +401,7 @@ export default function CalendarDemoPage() {
       </div>
 
       {/* Toast notifications */}
-      <Toaster 
+      <Toaster
         position="top-right"
         toastOptions={{
           style: {
@@ -418,7 +419,7 @@ export default function CalendarDemoPage() {
           error: {
             style: {
               background: '#7f1d1d',
-              color: '#fecaca', 
+              color: '#fecaca',
               border: '1px solid #ef4444'
             }
           }

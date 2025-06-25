@@ -728,12 +728,33 @@ export default function UnifiedCalendar({
         />
       )}
 
-      {/* Drag Visual Feedback */}
-      {dragState.isDragging && (
-        <div className="fixed top-4 left-4 z-50 bg-violet-600 text-white px-4 py-2 rounded-lg shadow-lg animate-pulse">
-          🔄 Moving: {dragState.draggedAppointment?.client} - {dragState.draggedAppointment?.service}
-        </div>
-      )}
+      {/* Enhanced Drag Visual Feedback */}
+      <AnimatePresence>
+        {dragState.isDragging && dragState.draggedAppointment && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: -20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: -20 }}
+            className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50"
+          >
+            <div className="bg-gradient-to-r from-violet-600 to-purple-600 text-white px-6 py-3 rounded-xl shadow-2xl border border-violet-400/20 backdrop-blur-sm">
+              <div className="flex items-center space-x-3">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                  className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+                />
+                <div>
+                  <div className="font-semibold text-sm">Moving Appointment</div>
+                  <div className="text-xs opacity-90">
+                    {dragState.draggedAppointment.client} - {dragState.draggedAppointment.service}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Success Animation */}
       <AnimatePresence>
@@ -753,6 +774,116 @@ export default function UnifiedCalendar({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Enhanced Drag & Drop Styles */}
+      <style jsx global>{`
+        /* Enhanced drop zone visual feedback */
+        .calendar-container [data-time-slot] {
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .calendar-container [data-time-slot]:hover {
+          background-color: rgba(139, 92, 246, 0.1);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
+        }
+
+        .calendar-container [data-time-slot].drop-target-valid {
+          background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(139, 92, 246, 0.2));
+          border: 2px solid rgb(34, 197, 94);
+          box-shadow:
+            inset 0 0 0 1px rgba(34, 197, 94, 0.5),
+            0 4px 12px rgba(34, 197, 94, 0.3),
+            0 0 0 4px rgba(34, 197, 94, 0.1);
+          animation: validPulse 2s infinite;
+        }
+
+        .calendar-container [data-time-slot].drop-target-invalid {
+          background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.2));
+          border: 2px solid rgb(239, 68, 68);
+          box-shadow:
+            inset 0 0 0 1px rgba(239, 68, 68, 0.5),
+            0 4px 12px rgba(239, 68, 68, 0.3),
+            0 0 0 4px rgba(239, 68, 68, 0.1);
+          animation: invalidShake 0.6s ease-in-out;
+        }
+
+        @keyframes validPulse {
+          0%, 100% {
+            box-shadow:
+              inset 0 0 0 1px rgba(34, 197, 94, 0.5),
+              0 4px 12px rgba(34, 197, 94, 0.3),
+              0 0 0 4px rgba(34, 197, 94, 0.1);
+          }
+          50% {
+            box-shadow:
+              inset 0 0 0 1px rgba(34, 197, 94, 0.8),
+              0 8px 20px rgba(34, 197, 94, 0.4),
+              0 0 0 8px rgba(34, 197, 94, 0.2);
+          }
+        }
+
+        @keyframes invalidShake {
+          0%, 100% { transform: translateX(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-3px) rotateZ(-1deg); }
+          20%, 40%, 60%, 80% { transform: translateX(3px) rotateZ(1deg); }
+        }
+
+        /* Enhanced appointment dragging */
+        .calendar-container .appointment-block {
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          cursor: ${enableDragDrop ? 'grab' : 'pointer'};
+          touch-action: none;
+          position: relative;
+        }
+
+        .calendar-container .appointment-block:hover {
+          transform: scale(1.02) translateY(-2px);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+          z-index: 10;
+        }
+
+        .calendar-container .appointment-block:active {
+          cursor: ${enableDragDrop ? 'grabbing' : 'pointer'};
+          transform: scale(0.98);
+        }
+
+        .calendar-container .appointment-block[draggable="true"]::after {
+          content: '⋮⋮';
+          position: absolute;
+          top: 4px;
+          right: 4px;
+          color: rgba(255, 255, 255, 0.7);
+          font-size: 10px;
+          opacity: 0;
+          transition: opacity 0.2s ease;
+        }
+
+        .calendar-container .appointment-block[draggable="true"]:hover::after {
+          opacity: 1;
+        }
+
+        /* Mobile touch optimizations */
+        @media (pointer: coarse) {
+          .calendar-container .appointment-block {
+            min-height: 44px;
+            padding: 8px;
+          }
+
+          .calendar-container [data-time-slot] {
+            min-height: 50px;
+          }
+        }
+
+        /* Focus indicators for accessibility */
+        .calendar-container [data-time-slot]:focus,
+        .calendar-container .appointment-block:focus {
+          outline: 2px solid #8b5cf6;
+          outline-offset: 2px;
+        }
+      `}</style>
     </div>
   )
 }

@@ -21,7 +21,7 @@ export default function ServerLandingPage() {
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
               <CurrencyDollarIcon className="h-8 w-8 text-slate-700" />
-              <span className="ml-3 text-2xl font-bold text-slate-900">6FB Payouts</span>
+              <span className="ml-3 text-2xl font-bold text-slate-900">Booked Barber</span>
             </div>
             <div className="flex items-center space-x-4">
               <Link href="/app" className="text-gray-700 hover:text-gray-900 font-medium">
@@ -232,7 +232,7 @@ export default function ServerLandingPage() {
       <footer className="bg-gray-900 text-gray-300 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <p>&copy; 2024 6FB Payouts. All rights reserved.</p>
+            <p>&copy; 2024 Booked Barber. All rights reserved.</p>
             <div className="mt-4 space-x-4">
               <Link href="/privacy" className="hover:text-white">Privacy</Link>
               <Link href="/terms" className="hover:text-white">Terms</Link>
