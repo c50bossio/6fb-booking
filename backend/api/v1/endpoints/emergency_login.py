@@ -10,7 +10,6 @@ from typing import Annotated
 
 from config.database import get_db
 from services.auth_service import AuthService
-from utils.security import verify_password, get_password_hash
 from models.user import User
 
 router = APIRouter()
@@ -54,7 +53,8 @@ async def emergency_login(
             )
         
         # Verify password
-        if not verify_password(password, user.hashed_password):
+        auth_service = AuthService()
+        if not auth_service.verify_password(password, user.hashed_password):
             raise HTTPException(
                 status_code=401,
                 detail="Incorrect email or password"
@@ -68,9 +68,10 @@ async def emergency_login(
             )
         
         # Create access token
-        auth_service = AuthService()
+        from datetime import timedelta
         access_token = auth_service.create_access_token(
-            data={"sub": user.email}
+            data={"sub": user.email},
+            expires_delta=timedelta(minutes=30)
         )
         
         # Return response with permissive CORS headers
