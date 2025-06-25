@@ -389,7 +389,7 @@ async def health_check_redirect():
 @app.options("/{path:path}")
 async def handle_options(path: str):
     """Handle CORS preflight requests for all paths"""
-    return {"message": "OK"}
+    return Response(content="OK", status_code=200)
 
 
 @app.get("/api/usage-summary")

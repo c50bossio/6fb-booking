@@ -22,7 +22,7 @@ interface CorsStatus {
 }
 
 let corsStatus: CorsStatus = {
-  isWorking: false,  // Default to false, forcing proxy usage until CORS is verified
+  isWorking: false,  // Force proxy usage due to intermittent CORS preflight issues
   lastChecked: 0,
   testResults: {
     health: false,
