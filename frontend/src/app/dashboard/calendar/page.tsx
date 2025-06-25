@@ -65,7 +65,15 @@ export default function CalendarPage() {
   // Debug modal state changes
   useEffect(() => {
     console.log('🎭 Modal states changed:', { showCreateModal, showDetailsModal })
-  }, [showCreateModal, showDetailsModal])
+    if (showCreateModal) {
+      console.log('✅ Create modal should be visible now!')
+      console.log('📍 Selected slot:', selectedSlot)
+    }
+    if (showDetailsModal) {
+      console.log('✅ Details modal should be visible now!')
+      console.log('📍 Selected appointment:', selectedAppointment)
+    }
+  }, [showCreateModal, showDetailsModal, selectedSlot, selectedAppointment])
   const [showBookingFlow, setShowBookingFlow] = useState(false)
   const [selectedAppointment, setSelectedAppointment] = useState<CalendarAppointment | null>(null)
   const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string } | null>(null)
@@ -464,7 +472,12 @@ export default function CalendarPage() {
               <button
                 onClick={(e) => {
                   console.log('🔍 DIAGNOSTIC: New Appointment button clicked!', e.target)
+                  console.log('🔍 Current modal state before click:', showCreateModal)
                   handleNewAppointment()
+                  // Force a re-render to ensure state update
+                  setTimeout(() => {
+                    console.log('🔍 Modal state after click:', showCreateModal)
+                  }, 100)
                 }}
                 style={{ pointerEvents: 'auto', zIndex: 1000 }}
                 className={`px-6 py-3 text-white font-medium rounded-lg transition-colors duration-200 ${
@@ -746,7 +759,10 @@ export default function CalendarPage() {
 
       <EnhancedCreateAppointmentModal
         isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
+        onClose={() => {
+          console.log('🚪 EnhancedCreateAppointmentModal closing')
+          setShowCreateModal(false)
+        }}
         selectedDate={selectedSlot?.date}
         selectedTime={selectedSlot?.time}
         onSuccess={handleAppointmentCreated}
