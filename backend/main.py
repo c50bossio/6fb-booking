@@ -94,6 +94,7 @@ from api.v1.endpoints import (
     security_admin,
     health,
     availability_check,
+    emergency_login,
 )
 
 # Import logging setup
@@ -279,6 +280,11 @@ app.include_router(
     availability_check.router,
     prefix="/api/v1/availability",
     tags=["Availability Check"],
+)
+app.include_router(
+    emergency_login.router,
+    prefix="/api/v1",
+    tags=["Emergency Login"],
 )
 
 # Add authentication system (disabled for now)
