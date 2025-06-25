@@ -163,8 +163,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         document.body.classList.add('dark', 'bg-slate-900')
         document.body.style.backgroundColor = '#111827'
 
-        // Only add text color classes if high contrast mode is not enabled
-        if (!highContrastMode) {
+        // Only add text color classes if high contrast mode is not enabled AND not on landing page
+        if (!highContrastMode && !isLandingPage) {
           document.body.classList.add('text-white')
           document.body.classList.remove('text-gray-900')
         }
@@ -173,8 +173,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         document.body.classList.add('light', 'bg-white')
         document.body.style.backgroundColor = '#ffffff'
 
-        // Only add text color classes if high contrast mode is not enabled
-        if (!highContrastMode) {
+        // Only add text color classes if high contrast mode is not enabled AND not on landing page
+        if (!highContrastMode && !isLandingPage) {
           document.body.classList.add('text-gray-900')
           document.body.classList.remove('text-white')
         }
@@ -183,8 +183,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         document.body.classList.add('soft-light')
         document.body.style.backgroundColor = '#f5f5f0'
 
-        // Only add text color classes if high contrast mode is not enabled
-        if (!highContrastMode) {
+        // Only add text color classes if high contrast mode is not enabled AND not on landing page
+        if (!highContrastMode && !isLandingPage) {
           document.body.classList.add('text-gray-900')
           document.body.classList.remove('text-white')
         }
@@ -193,8 +193,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         document.body.classList.add('charcoal')
         document.body.style.backgroundColor = '#1a1a1a'
 
-        // Only add text color classes if high contrast mode is not enabled
-        if (!highContrastMode) {
+        // Only add text color classes if high contrast mode is not enabled AND not on landing page
+        if (!highContrastMode && !isLandingPage) {
           document.body.classList.add('text-white')
           document.body.classList.remove('text-gray-900')
         }
