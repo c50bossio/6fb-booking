@@ -549,6 +549,9 @@ class Settings(BaseSettings):
         vercel_patterns = [
             "https://bookbarber-6fb.vercel.app",  # Main deployment
             "https://bookbarber.vercel.app",  # Alternative
+            "https://6fb-booking-frontend.vercel.app",  # Common pattern
+            "https://6fb-booking-frontend-production.vercel.app",  # Production pattern
+            "https://sixfb-booking-frontend.vercel.app",  # Another variation
         ]
         default_origins.extend(vercel_patterns)
 
@@ -564,13 +567,18 @@ class Settings(BaseSettings):
         if origin in self.CORS_ORIGINS:
             return True
 
-        # Check Vercel deployment patterns
+        # Check Vercel deployment patterns - more flexible matching
         if origin.startswith("https://") and origin.endswith(".vercel.app"):
-            # Allow any subdomain of vercel.app that starts with bookbarber
+            # Allow any Vercel deployment that contains our app identifiers
             domain_part = origin.replace("https://", "").replace(".vercel.app", "")
-            if domain_part.startswith("bookbarber"):
+            # Allow domains containing: bookbarber, 6fb, sixfb, or your specific deployment patterns
+            allowed_patterns = ["bookbarber", "6fb", "sixfb", "6fb-booking"]
+            if any(pattern in domain_part.lower() for pattern in allowed_patterns):
+                logger.info(f"Allowing dynamic Vercel origin: {origin}")
                 return True
 
+        # Log rejected origins for debugging
+        logger.warning(f"Rejected CORS origin: {origin}")
         return False
 
     def _validate_production_config(self):

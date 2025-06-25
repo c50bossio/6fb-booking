@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from middleware.dynamic_cors import DynamicCORSMiddleware
 from fastapi.security import HTTPBearer
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, RedirectResponse, Response
 from sqlalchemy.orm import Session
 import uvicorn
 import os
@@ -384,6 +384,12 @@ def read_root():
 async def health_check_redirect():
     """Redirect to the proper health endpoint for backward compatibility"""
     return RedirectResponse(url="/api/v1/health", status_code=301)
+
+
+@app.options("/{path:path}")
+async def handle_options(path: str):
+    """Handle CORS preflight requests for all paths"""
+    return {"message": "OK"}
 
 
 @app.get("/api/usage-summary")
