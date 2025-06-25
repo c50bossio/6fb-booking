@@ -41,8 +41,15 @@ const PUBLIC_ROUTES = [
   '/landing' // Server-rendered landing page
 ]
 
-// DEMO MODE: Set to true to bypass authentication
-const DEMO_MODE = false
+// DEMO MODE: Automatically detect based on route or authentication state
+const getDemoMode = (): boolean => {
+  if (typeof window !== 'undefined') {
+    const pathname = window.location.pathname
+    // Demo mode only on specific demo routes, not when logged in
+    return pathname.includes('/demo') || pathname.includes('/calendar-demo')
+  }
+  return false
+}
 
 // Demo user with full permissions for exploring the app
 const DEMO_USER: User = {
@@ -115,13 +122,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const timeoutId = setTimeout(() => {
       // Get the current pathname, with fallback
       const currentPath = pathname || window.location.pathname || '/'
-      
+
       // Double-check we're not on the landing page
       if (currentPath === '/') {
         console.log('[AuthProvider] Detected landing page in timeout, skipping redirect')
         return
       }
-      
+
       // Redirect to login if not authenticated and not on a public route
       const isPublicRoute = PUBLIC_ROUTES.some(route => {
         // Exact match
@@ -154,8 +161,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAuth = async () => {
     try {
+      // Check for demo mode based on current route
+      const currentDemoMode = getDemoMode()
+
       // In demo mode, automatically set the demo user
-      if (DEMO_MODE) {
+      if (currentDemoMode) {
         setUser(DEMO_USER)
         setLoading(false)
         return
@@ -194,8 +204,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      // In demo mode, just set the demo user and redirect
-      if (DEMO_MODE) {
+      // Check if we're in demo mode (should not happen on login page, but safety check)
+      const currentDemoMode = getDemoMode()
+      if (currentDemoMode) {
         setUser(DEMO_USER)
         router.push('/dashboard')
         return
@@ -212,7 +223,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     // In demo mode, just clear the user and redirect
-    if (DEMO_MODE) {
+    const currentDemoMode = getDemoMode()
+    if (currentDemoMode) {
       setUser(null)
       router.push('/login')
       return

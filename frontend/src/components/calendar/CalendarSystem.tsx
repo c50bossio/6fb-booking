@@ -8,6 +8,13 @@ import AppointmentDetailsModal from './AppointmentDetailsModal'
 import DragDropCalendar from './DragDropCalendar'
 import { appointmentsService } from '../../lib/api/appointments'
 import { bookingService } from '../../lib/api/bookings'
+import {
+  generateMockCalendarData,
+  generateTodayAppointments,
+  isDemoMode,
+  getMockBarbers,
+  getMockServices
+} from '../../utils/mockCalendarData'
 
 interface CalendarSystemProps {
   initialView?: 'month' | 'week' | 'day'
@@ -141,6 +148,22 @@ export default function CalendarSystem({
 
   const loadAppointments = async () => {
     try {
+      // Check if we're in demo mode
+      if (isDemoMode()) {
+        // Generate rich demo data
+        const mockAppointments = generateMockCalendarData(30)
+        const todayAppointments = generateTodayAppointments()
+
+        // Combine and deduplicate appointments
+        const allMockAppointments = [...todayAppointments, ...mockAppointments]
+        const uniqueAppointments = allMockAppointments.filter((appointment, index, self) =>
+          index === self.findIndex(a => a.id === appointment.id)
+        )
+
+        setAppointments(uniqueAppointments)
+        return
+      }
+
       // Get appointments for the current period
       const today = new Date()
       const startDate = new Date(today.getFullYear(), today.getMonth(), 1)
@@ -165,6 +188,12 @@ export default function CalendarSystem({
 
   const loadBarbers = async () => {
     try {
+      // Use mock data in demo mode
+      if (isDemoMode()) {
+        setBarbers(getMockBarbers())
+        return
+      }
+
       if (locationId) {
         const response = await bookingService.getBarbers(locationId)
         const barbersData = response.data.map((barber: any) => ({
@@ -193,6 +222,12 @@ export default function CalendarSystem({
 
   const loadServices = async () => {
     try {
+      // Use mock data in demo mode
+      if (isDemoMode()) {
+        setServices(getMockServices())
+        return
+      }
+
       const response = await bookingService.getServices({
         ...(barberId && { barber_id: barberId }),
         active_only: true
@@ -373,6 +408,18 @@ export default function CalendarSystem({
 
   return (
     <div className="space-y-4">
+      {/* Demo Mode Indicator */}
+      {isDemoMode() && (
+        <div className="bg-gradient-to-r from-violet-600/20 to-purple-600/20 border border-violet-400/30 rounded-lg p-3 mb-4">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-violet-400 rounded-full animate-pulse"></div>
+            <span className="text-violet-300 text-sm font-medium">
+              Demo Mode - Showing sample appointment data
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Calendar Component */}
       {enableDragDrop ? (
         <DragDropCalendar
