@@ -1,0 +1,12 @@
+Railway Deployment Marker
+========================
+Created: Wed Jun 25 00:46:05 EDT 2025
+Purpose: Force Railway to rebuild and include calendar demo pages
+
+Calendar Demo Pages:
+- /enhanced-calendar-demo
+- /simple-calendar-demo
+- /test-calendar
+- /calendar-demo
+
+This file can be safely deleted after deployment.

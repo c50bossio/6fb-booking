@@ -3,7 +3,8 @@
 import React, { useState, useMemo } from 'react'
 import DragDropCalendar from '@/components/calendar/DragDropCalendar'
 import { CalendarAppointment } from '@/components/calendar/PremiumCalendar'
-import SmartSchedulerPanel, { useSmartScheduler } from '@/components/calendar/SmartScheduler'
+// SmartScheduler components will be imported when available
+// import SmartSchedulerPanel, { useSmartScheduler } from '@/components/calendar/SmartScheduler'
 
 // Demo appointments with various statuses and times
 const demoAppointments: CalendarAppointment[] = [
@@ -92,28 +93,8 @@ export default function CalendarDemoPage() {
     return deps
   }, [])
 
-  // Use smart scheduler
-  const { findOptimalTimeSlots } = useSmartScheduler({
-    appointments,
-    workingHours: { start: '08:00', end: '20:00' },
-    preferredGapMinutes: 15,
-    barberPreferences: new Map([
-      [1, {
-        preferredBreakTime: '12:30',
-        preferredBreakDuration: 30,
-        maxConsecutiveAppointments: 3
-      }],
-      [2, {
-        preferredBreakTime: '13:00',
-        preferredBreakDuration: 45,
-        maxConsecutiveAppointments: 4
-      }]
-    ])
-  })
-
-  const smartSuggestions = useMemo(() => {
-    return findOptimalTimeSlots(selectedDuration, selectedBarber)
-  }, [findOptimalTimeSlots, selectedDuration, selectedBarber])
+  // Smart scheduler functionality (to be added)
+  const smartSuggestions = []
 
   const handleAppointmentMove = async (
     appointmentId: string,
@@ -265,13 +246,9 @@ export default function CalendarDemoPage() {
             </div>
           </div>
 
-          <SmartSchedulerPanel
-            suggestions={smartSuggestions}
-            onSelectSuggestion={(suggestion) => {
-              console.log('Selected smart suggestion:', suggestion)
-              // In a real app, this would open the booking modal with pre-filled data
-            }}
-          />
+          <div className="text-gray-400">
+            <p>Smart scheduling features coming soon...</p>
+          </div>
         </div>
 
         {/* Instructions */}
