@@ -21,7 +21,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 const PUBLIC_ROUTES = ['/login', '/forgot-password', '/register', '/emergency-login', '/simple-login']
 
 // DEMO MODE: Set to true to bypass authentication
-const DEMO_MODE = true
+const DEMO_MODE = false
 
 // Demo user with full permissions for exploring the app
 const DEMO_USER: User = {
