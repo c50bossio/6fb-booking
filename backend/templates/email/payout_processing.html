@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="background-color: #f9fafb; padding: 40px 20px;">
+    <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);">
+        <!-- Header with Animation Effect -->
+        <div style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); padding: 40px 30px; text-align: center;">
+            <div style="display: inline-block; width: 60px; height: 60px; background-color: rgba(255, 255, 255, 0.2); border-radius: 50%; margin-bottom: 20px; position: relative;">
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 30px; height: 30px; border: 3px solid white; border-radius: 50%; border-top: 3px solid transparent;"></div>
+            </div>
+            <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 600;">Processing Your Payout</h1>
+            <p style="color: #D1FAE5; margin: 10px 0 0 0; font-size: 16px;">Your earnings are on the way!</p>
+        </div>
+
+        <!-- Content -->
+        <div style="padding: 40px 30px;">
+            <p style="font-size: 16px; color: #374151; margin-bottom: 20px;">
+                Hi {{ barber_name }},
+            </p>
+
+            <p style="font-size: 16px; color: #374151; margin-bottom: 30px;">
+                We're currently processing your payout. You'll receive another notification once it's complete.
+            </p>
+
+            <!-- Processing Status -->
+            <div style="background-color: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                    <div style="width: 8px; height: 8px; background-color: #10B981; border-radius: 50%; margin-right: 10px;"></div>
+                    <span style="color: #065F46; font-weight: 500; font-size: 16px;">Processing Started</span>
+                </div>
+                <p style="color: #047857; font-size: 14px; margin: 0 0 0 18px;">
+                    Your payout is being securely processed through our payment system.
+                </p>
+            </div>
+
+            <!-- Payout Details -->
+            <div style="background-color: #F3F4F6; border-radius: 8px; padding: 25px; margin-bottom: 30px;">
+                <h2 style="color: #1F2937; font-size: 20px; margin: 0 0 20px 0;">Payout Information</h2>
+
+                <div style="display: grid; gap: 15px;">
+                    <div style="display: flex; justify-content: space-between; padding-bottom: 15px; border-bottom: 1px solid #E5E7EB;">
+                        <span style="color: #6B7280; font-size: 14px;">Payout Amount</span>
+                        <span style="color: #1F2937; font-size: 18px; font-weight: 600;">${{ "%.2f"|format(amount) }}</span>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #6B7280; font-size: 14px;">Payment ID</span>
+                        <span style="color: #1F2937; font-size: 14px; font-family: monospace;">#{{ payment_id }}</span>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #6B7280; font-size: 14px;">Period</span>
+                        <span style="color: #1F2937; font-size: 14px;">{{ period_start }} - {{ period_end }}</span>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #6B7280; font-size: 14px;">Commissions Included</span>
+                        <span style="color: #1F2937; font-size: 14px;">{{ commission_count }}</span>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #6B7280; font-size: 14px;">Payment Method</span>
+                        <span style="color: #1F2937; font-size: 14px;">{{ payment_method }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: #1F2937; font-size: 18px; margin-bottom: 15px;">What Happens Next?</h3>
+                <div style="position: relative; padding-left: 30px;">
+                    <!-- Timeline Line -->
+                    <div style="position: absolute; left: 9px; top: 8px; bottom: 8px; width: 2px; background-color: #E5E7EB;"></div>
+
+                    <!-- Step 1 -->
+                    <div style="position: relative; margin-bottom: 20px;">
+                        <div style="position: absolute; left: -25px; top: 3px; width: 20px; height: 20px; background-color: #10B981; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 1px #E5E7EB;"></div>
+                        <div style="color: #374151;">
+                            <strong>Processing</strong> (Current)
+                            <p style="margin: 5px 0 0 0; font-size: 14px; color: #6B7280;">Verifying and preparing your payout</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div style="position: relative; margin-bottom: 20px;">
+                        <div style="position: absolute; left: -25px; top: 3px; width: 20px; height: 20px; background-color: #E5E7EB; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 1px #E5E7EB;"></div>
+                        <div style="color: #9CA3AF;">
+                            <strong>Transfer Initiated</strong>
+                            <p style="margin: 5px 0 0 0; font-size: 14px;">Funds will be sent to your account</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div style="position: relative;">
+                        <div style="position: absolute; left: -25px; top: 3px; width: 20px; height: 20px; background-color: #E5E7EB; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 1px #E5E7EB;"></div>
+                        <div style="color: #9CA3AF;">
+                            <strong>Funds Received</strong>
+                            <p style="margin: 5px 0 0 0; font-size: 14px;">Money arrives in your account</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA Buttons -->
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{ website_url }}/payouts/{{ payment_id }}" style="display: inline-block; background-color: #4F46E5; color: white; text-decoration: none; padding: 12px 30px; border-radius: 6px; font-weight: 500; font-size: 16px; margin-right: 10px;">
+                    Track Payout
+                </a>
+                <a href="{{ website_url }}/earnings" style="display: inline-block; background-color: #F3F4F6; color: #374151; text-decoration: none; padding: 12px 30px; border-radius: 6px; font-weight: 500; font-size: 16px;">
+                    View Earnings
+                </a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="background-color: #F9FAFB; padding: 30px; text-align: center; border-top: 1px solid #E5E7EB;">
+            <p style="color: #6B7280; font-size: 14px; margin: 0 0 10px 0;">
+                Processing typically takes a few minutes. We'll notify you once complete.
+            </p>
+            <p style="color: #6B7280; font-size: 14px; margin: 0;">
+                <a href="mailto:{{ support_email }}" style="color: #4F46E5; text-decoration: none;">{{ support_email }}</a> |
+                <a href="{{ website_url }}/help/payouts" style="color: #4F46E5; text-decoration: none;">Payout Help</a>
+            </p>
+
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #E5E7EB;">
+                <p style="color: #9CA3AF; font-size: 12px; margin: 0;">
+                    <a href="{{ unsubscribe_url }}" style="color: #9CA3AF; text-decoration: underline;">Unsubscribe</a> |
+                    <a href="{{ website_url }}/preferences" style="color: #9CA3AF; text-decoration: underline;">Update Preferences</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
