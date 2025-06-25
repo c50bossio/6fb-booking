@@ -359,9 +359,13 @@ export default function PremiumCalendar({
                   className={`text-xs p-1 rounded cursor-pointer hover:scale-105 transition-transform ${getAppointmentStyle(appointment.status)}`}
                   onClick={(e) => {
                     e.stopPropagation()
-                    onAppointmentClick?.(appointment)
+                    // Only trigger click if not dragging
+                    if (!(appointment as any).__dragProps) {
+                      onAppointmentClick?.(appointment)
+                    }
                   }}
                   {...((appointment as any).__dragProps || {})}
+                  draggable={!!(appointment as any).__dragProps}
                 >
                   <div className="font-medium truncate">{appointment.service}</div>
                   <div className="opacity-90 truncate">{appointment.client}</div>
@@ -455,9 +459,13 @@ export default function PremiumCalendar({
                         className={`${getAppointmentStyle(appointmentForTime.status, appointmentForTime.barberId)} p-3 rounded-lg h-full`}
                         onClick={(e) => {
                           e.stopPropagation()
-                          onAppointmentClick?.(appointmentForTime)
+                          // Only trigger click if not dragging
+                          if (!(appointmentForTime as any).__dragProps) {
+                            onAppointmentClick?.(appointmentForTime)
+                          }
                         }}
                         {...((appointmentForTime as any).__dragProps || {})}
+                        draggable={!!(appointmentForTime as any).__dragProps}
                       >
                         <div className="flex items-start justify-between mb-2">
                           <span className="text-xs font-bold truncate">
