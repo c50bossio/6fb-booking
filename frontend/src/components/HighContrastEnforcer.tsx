@@ -44,8 +44,8 @@ export default function HighContrastEnforcer() {
         const color = computedStyle.color;
 
         // Parse RGB values
-        const rgbMatch = color.match(/\d+/g);
-        if (rgbMatch) {
+        const rgbMatch = color?.match(/\d+/g);
+        if (rgbMatch && rgbMatch.length >= 3) {
           const [r, g, b] = rgbMatch.map(Number);
           const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 

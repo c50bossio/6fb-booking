@@ -25,6 +25,11 @@ export const metadata: Metadata = {
   keywords: "barber, booking, appointments, six figure barber, analytics",
   authors: [{ name: "6FB Platform Team" }],
   robots: "index, follow",
+  icons: {
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/icons/icon-144x144.png',
+  },
   other: {
     // Security headers
     'X-Content-Type-Options': 'nosniff',
