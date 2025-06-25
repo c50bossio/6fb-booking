@@ -247,7 +247,7 @@ export function getCorsFixInstructions(): {
   return {
     problem: 'CORS (Cross-Origin Resource Sharing) is blocking requests between your frontend and backend.',
     solutions: [
-      '1. Update Render environment variables: ALLOWED_ORIGINS=https://bookbarber-fz9nh51da-6fb.vercel.app',
+      '1. Update Render environment variables: ALLOWED_ORIGINS=https://web-production-92a6c.up.railway.app',
       '2. Restart your Render backend service (Manual Deploy → Deploy latest commit)',
       '3. Wait 2-3 minutes for changes to take effect',
       '4. Refresh this page to test again',

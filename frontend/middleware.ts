@@ -1,7 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Public routes that don't require authentication
+const PUBLIC_ROUTES = [
+  '/login',
+  '/forgot-password',
+  '/register',
+  '/emergency-login',
+  '/simple-login',
+  '/', // Landing page
+  '/book', // Public booking pages
+  '/demo', // Demo calendar pages
+  '/booking-demo',
+  '/calendar-demo',
+  '/simple-calendar-demo',
+  '/enhanced-calendar-demo',
+  '/demo-google-calendar',
+  '/contact',
+  '/about',
+  '/privacy',
+  '/terms',
+  '/security'
+];
+
 export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Check if the current route is public
+  const isPublicRoute = PUBLIC_ROUTES.some(route =>
+    pathname === route || pathname.startsWith(route + '/')
+  );
+
+  // For public routes, proceed without any auth checks
+  if (isPublicRoute) {
+    const response = NextResponse.next();
+    // Set a header to indicate this is a public route (for debugging)
+    response.headers.set('X-Public-Route', 'true');
+    setupSecurityHeaders(response, request);
+    return response;
+  }
+
+  // For protected routes, proceed normally (AuthProvider will handle client-side auth)
   const response = NextResponse.next();
+  setupSecurityHeaders(response, request);
+  return response;
+}
+
+function setupSecurityHeaders(response: NextResponse, request: NextRequest) {
   const isDevelopment = process.env.NODE_ENV === 'development';
 
   // Development-friendly CSP that allows browser extensions
@@ -53,8 +97,6 @@ export function middleware(request: NextRequest) {
     // Add header to help identify development mode in browser DevTools
     response.headers.set('X-Development-Mode', 'true');
   }
-
-  return response;
 }
 
 export const config = {
