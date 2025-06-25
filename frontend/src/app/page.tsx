@@ -177,143 +177,10 @@ export default function LandingPage() {
     setEmail('')
   }
 
-  // Force contrast after mount
-  useEffect(() => {
-    const enforceContrast = () => {
-      const container = document.querySelector('.landing-page-container')
-      if (container) {
-        // Force container color
-        container.style.setProperty('color', '#000000', 'important')
-
-        // Force all text elements
-        const textElements = container.querySelectorAll('p, span, div, h1, h2, h3, h4, h5, h6, li, td, th')
-        textElements.forEach(el => {
-          // Check if element is on a dark background
-          const isDarkBackground = el.closest('.bg-slate-800, .bg-slate-900, .bg-gray-900, footer') ||
-                                  el.closest('[class*="from-slate"]') ||
-                                  el.closest('[class*="to-slate"]') ||
-                                  el.closest('.bg-blue-600, .bg-blue-700')
-
-          if (isDarkBackground) {
-            el.style.setProperty('color', '#ffffff', 'important')
-          } else {
-            el.style.setProperty('color', '#000000', 'important')
-          }
-        })
-      }
-    }
-
-    // Run immediately
-    enforceContrast()
-
-    // Run after any potential theme changes
-    const timer1 = setTimeout(enforceContrast, 100)
-    const timer2 = setTimeout(enforceContrast, 500)
-    const timer3 = setTimeout(enforceContrast, 1000)
-
-    // Also listen for DOM changes
-    const observer = new MutationObserver(enforceContrast)
-    if (document.querySelector('.landing-page-container')) {
-      observer.observe(document.querySelector('.landing-page-container'), {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ['style', 'class']
-      })
-    }
-
-    return () => {
-      clearTimeout(timer1)
-      clearTimeout(timer2)
-      clearTimeout(timer3)
-      observer.disconnect()
-    }
-  }, [])
 
   return (
     <>
-      <style jsx global>{`
-        /* NUCLEAR OPTION: Maximum specificity landing page contrast fix */
-
-        body .landing-page-container,
-        html body .landing-page-container,
-        html body div .landing-page-container {
-          color: #000000 !important;
-        }
-
-        /* Override ALL text elements with maximum specificity */
-        body .landing-page-container p,
-        body .landing-page-container span,
-        body .landing-page-container div,
-        body .landing-page-container h1,
-        body .landing-page-container h2,
-        body .landing-page-container h3,
-        body .landing-page-container h4,
-        body .landing-page-container h5,
-        body .landing-page-container h6,
-        body .landing-page-container li,
-        body .landing-page-container td,
-        body .landing-page-container th {
-          color: #000000 !important;
-        }
-
-        /* Define premium-button-secondary style with max specificity */
-        body .landing-page-container .premium-button-secondary {
-          background-color: white !important;
-          border: 2px solid #d1d5db !important;
-          color: #374151 !important;
-          font-weight: 600 !important;
-          border-radius: 0.75rem !important;
-          transition: all 0.3s ease !important;
-          display: inline-flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          text-decoration: none !important;
-        }
-
-        body .landing-page-container .premium-button-secondary:hover {
-          background-color: #f9fafb !important;
-          border-color: #9ca3af !important;
-          transform: translateY(-2px) !important;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-        }
-
-        /* Dark backgrounds need white text with max specificity */
-        body .landing-page-container .bg-slate-800,
-        body .landing-page-container .bg-slate-800 *,
-        body .landing-page-container .bg-slate-900,
-        body .landing-page-container .bg-slate-900 *,
-        body .landing-page-container .bg-gray-900,
-        body .landing-page-container .bg-gray-900 *,
-        body .landing-page-container footer,
-        body .landing-page-container footer *,
-        body .landing-page-container [class*="from-slate"],
-        body .landing-page-container [class*="from-slate"] *,
-        body .landing-page-container [class*="to-slate"],
-        body .landing-page-container [class*="to-slate"] *,
-        body .landing-page-container .bg-blue-600,
-        body .landing-page-container .bg-blue-600 *,
-        body .landing-page-container .bg-blue-700,
-        body .landing-page-container .bg-blue-700 * {
-          color: white !important;
-        }
-
-        /* But preserve button colors even on dark backgrounds */
-        body .landing-page-container .bg-slate-800 .premium-button-secondary,
-        body .landing-page-container .bg-slate-900 .premium-button-secondary,
-        body .landing-page-container .bg-gray-900 .premium-button-secondary,
-        body .landing-page-container footer .premium-button-secondary {
-          background-color: white !important;
-          color: #374151 !important;
-        }
-
-        /* Prevent ANY theme classes from overriding on landing page */
-        body.text-gray-900 .landing-page-container *:not(.bg-slate-800 *):not(.bg-slate-900 *):not(.bg-gray-900 *):not(footer *),
-        body.text-white .landing-page-container *:not(.bg-slate-800 *):not(.bg-slate-900 *):not(.bg-gray-900 *):not(footer *) {
-          color: #000000 !important;
-        }
-      `}</style>
-      <div className="min-h-screen bg-gray-50 landing-page-container" style={{ color: '#000000' }}>
+      <div className="min-h-screen bg-gray-50">
       {/* Demo Banner */}
       <div className="bg-gradient-to-r from-slate-700 to-slate-800 text-white py-3">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -368,7 +235,7 @@ export default function LandingPage() {
           {/* Trust Badge */}
           <div className="inline-flex items-center bg-white border border-slate-300 rounded-full px-6 py-3 mb-8 shadow-lg hover:shadow-xl transition-all duration-300">
             <ShieldCheckIcon className="h-4 w-4 text-emerald-600 mr-2" />
-            <span className="text-sm font-bold trust-badge-text" style={{color: '#000000', fontWeight: '800', textShadow: '0 1px 2px rgba(255,255,255,0.8)'}}>Trusted by 1,200+ barbers nationwide</span>
+            <span className="text-sm font-bold text-gray-900">Trusted by 1,200+ barbers nationwide</span>
             <div className="ml-2 w-2 h-2 bg-emerald-600 rounded-full animate-pulse"></div>
           </div>
 
@@ -381,9 +248,9 @@ export default function LandingPage() {
             </span>
           </h1>
 
-          <p className="text-xl md:text-2xl mb-12 max-w-4xl mx-auto leading-relaxed main-description" style={{color: '#111827', fontWeight: '500'}}>
+          <p className="text-xl md:text-2xl mb-12 max-w-4xl mx-auto leading-relaxed text-gray-700">
             Automate payouts, track earnings, and manage appointments with the most trusted platform in the industry.
-            <span className="font-semibold" style={{color: '#000000', fontWeight: '700'}}> Join the barbers earning $100K+</span>
+            <span className="font-bold text-gray-900"> Join the barbers earning $100K+</span>
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-16">
@@ -395,32 +262,34 @@ export default function LandingPage() {
               <PlayIcon className="mr-2 h-5 w-5" style={{ color: '#FFFFFF' }} />
               <span style={{ color: '#FFFFFF' }}>Try Full Demo Now</span>
             </Link>
-            <Link
-              href="#pricing"
-              className="premium-button-secondary text-lg px-10 py-4 hover-lift"
+            <a
+              href="https://bookedbarber.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-white border-2 border-gray-300 text-gray-700 font-semibold text-lg px-10 py-4 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 inline-flex items-center shadow-lg hover:shadow-xl hover:-translate-y-1"
             >
               Start Free Trial
               <ArrowRightIcon className="ml-2 h-5 w-5" />
-            </Link>
+            </a>
           </div>
 
           {/* Social Proof Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 text-center">
               <div className="text-3xl font-bold text-slate-700 mb-2">$2.5M+</div>
-              <div className="text-sm font-medium stats-text" style={{color: '#000000', fontWeight: '600'}}>Paid Out Monthly</div>
+              <div className="text-sm font-semibold text-gray-700">Paid Out Monthly</div>
             </div>
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 text-center">
               <div className="text-3xl font-bold text-slate-700 mb-2">45K+</div>
-              <div className="text-sm font-medium stats-text" style={{color: '#000000', fontWeight: '600'}}>Appointments Tracked</div>
+              <div className="text-sm font-semibold text-gray-700">Appointments Tracked</div>
             </div>
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 text-center">
               <div className="text-3xl font-bold text-slate-700 mb-2">98%</div>
-              <div className="text-sm font-medium stats-text" style={{color: '#000000', fontWeight: '600'}}>On-Time Payouts</div>
+              <div className="text-sm font-semibold text-gray-700">On-Time Payouts</div>
             </div>
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 text-center">
               <div className="text-3xl font-bold text-slate-700 mb-2">30 sec</div>
-              <div className="text-sm font-medium stats-text" style={{color: '#000000', fontWeight: '600'}}>Instant Transfers</div>
+              <div className="text-sm font-semibold text-gray-700">Instant Transfers</div>
             </div>
           </div>
 
