@@ -18,7 +18,26 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const PUBLIC_ROUTES = ['/login', '/forgot-password', '/register', '/emergency-login', '/simple-login']
+const PUBLIC_ROUTES = [
+  '/login',
+  '/forgot-password',
+  '/register',
+  '/emergency-login',
+  '/simple-login',
+  '/', // Landing page
+  '/book', // Public booking pages
+  '/demo', // Demo calendar pages
+  '/booking-demo',
+  '/calendar-demo',
+  '/simple-calendar-demo',
+  '/enhanced-calendar-demo',
+  '/demo-google-calendar',
+  '/contact',
+  '/about',
+  '/privacy',
+  '/terms',
+  '/security'
+]
 
 // DEMO MODE: Set to true to bypass authentication
 const DEMO_MODE = false
@@ -85,7 +104,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (DEMO_MODE || !isClient) return
 
     // Redirect to login if not authenticated and not on a public route
-    if (!loading && !user && !PUBLIC_ROUTES.includes(pathname)) {
+    const isPublicRoute = PUBLIC_ROUTES.some(route =>
+      pathname === route || pathname.startsWith(route + '/')
+    )
+    if (!loading && !user && !isPublicRoute) {
       router.push('/login')
     }
   }, [user, loading, pathname, router, isClient])
