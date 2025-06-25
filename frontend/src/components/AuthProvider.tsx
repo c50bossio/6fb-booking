@@ -57,20 +57,21 @@ const getDemoMode = (): boolean => {
       return true
     }
     
-    // Check if we're on dashboard but came from demo
-    if (pathname === '/dashboard') {
-      // Check if there's a demo flag in sessionStorage (set by /app redirect)
-      try {
-        const isDemoSession = sessionStorage.getItem('demo_mode') === 'true'
-        if (isDemoSession) return true
-      } catch (e) {
-        // Fall back to checking referrer or URL params
-      }
-      
-      // Check URL parameters for demo flag
-      if (search.includes('demo=true')) {
+    // GLOBAL: Check if demo mode is active in sessionStorage for ANY route
+    try {
+      const isDemoSession = sessionStorage.getItem('demo_mode') === 'true'
+      if (isDemoSession) {
+        console.log('[AuthProvider] Demo mode active from sessionStorage for:', pathname)
         return true
       }
+    } catch (e) {
+      // SessionStorage blocked
+    }
+    
+    // Check URL parameters for demo flag on ANY route
+    if (search.includes('demo=true')) {
+      console.log('[AuthProvider] Demo mode active from URL parameter for:', pathname)
+      return true
     }
   }
   return false
@@ -129,9 +130,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (isClient) {
+      // Ensure demo mode persists across navigation
+      const currentDemoMode = getDemoMode()
+      if (currentDemoMode) {
+        try {
+          sessionStorage.setItem('demo_mode', 'true')
+        } catch (e) {
+          console.log('Cannot set sessionStorage')
+        }
+      }
       checkAuth()
     }
   }, [isClient])
+
+  useEffect(() => {
+    // Re-check demo mode on pathname changes
+    if (isClient) {
+      const currentDemoMode = getDemoMode()
+      if (currentDemoMode && !user) {
+        console.log('[AuthProvider] Pathname changed, re-setting demo user for:', pathname)
+        setUser(DEMO_USER)
+        setLoading(false)
+        return
+      }
+    }
+  }, [pathname, isClient])
 
   useEffect(() => {
     // Skip redirection in demo mode or during SSR
