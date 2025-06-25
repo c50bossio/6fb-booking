@@ -555,6 +555,13 @@ class Settings(BaseSettings):
         ]
         default_origins.extend(vercel_patterns)
         
+        # Add Railway deployment URLs
+        railway_patterns = [
+            "https://web-production-92a6c.up.railway.app",  # Current Railway deployment
+            "https://6fb-booking-frontend.up.railway.app",  # Alternative Railway pattern
+        ]
+        default_origins.extend(railway_patterns)
+        
         # Add null origin for local file testing and development
         default_origins.extend(["null", "file://"])
 
@@ -589,6 +596,21 @@ class Settings(BaseSettings):
             if any(pattern in domain_part.lower() for pattern in allowed_patterns):
                 logger.info(f"Allowing dynamic Vercel origin: {origin}")
                 return True
+
+        # Check Railway deployment patterns
+        if origin.startswith("https://") and origin.endswith(".railway.app"):
+            # Allow any Railway deployment URL
+            logger.info(f"Allowing Railway origin: {origin}")
+            return True
+            
+        # Specific Railway URLs
+        railway_urls = [
+            "https://web-production-92a6c.up.railway.app",
+            "https://6fb-booking-frontend.up.railway.app",
+        ]
+        if origin in railway_urls:
+            logger.info(f"Allowing specific Railway origin: {origin}")
+            return True
 
         # Log rejected origins for debugging
         logger.warning(f"Rejected CORS origin: {origin}")
