@@ -28,7 +28,7 @@ interface RegisterRequest {
 
 export const authService = {
   /**
-   * Login user
+   * Login user - Using emergency endpoint for production reliability
    */
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     // Use URL-encoded format for OAuth2 compatibility
@@ -36,17 +36,45 @@ export const authService = {
     params.append('username', credentials.username)
     params.append('password', credentials.password)
 
-    const response = await apiClient.post<LoginResponse>('/auth/token', params, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    })
+    try {
+      // Try the emergency endpoint first (bypasses CORS issues)
+      const response = await fetch('https://sixfb-backend.onrender.com/api/v1/emergency-login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json',
+        },
+        body: params,
+      })
 
-    // Store token and user data with safe storage
-    smartStorage.setItem('access_token', response.data.access_token)
-    smartStorage.setItem('user', JSON.stringify(response.data.user))
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`Login failed: ${errorText}`)
+      }
 
-    return response.data
+      const data = await response.json()
+
+      // Store token and user data with safe storage
+      smartStorage.setItem('access_token', data.access_token)
+      smartStorage.setItem('user', JSON.stringify(data.user))
+
+      return data
+    } catch (error) {
+      console.error('Emergency login failed, trying regular endpoint:', error)
+      
+      // Fallback to regular endpoint
+      const response = await apiClient.post<LoginResponse>('/auth/token', params, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      })
+
+      // Store token and user data with safe storage
+      smartStorage.setItem('access_token', response.data.access_token)
+      smartStorage.setItem('user', JSON.stringify(response.data.user))
+
+      return response.data
+    }
   },
 
   /**
