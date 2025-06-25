@@ -188,7 +188,15 @@ export default function LandingPage() {
         // Force all text elements
         const textElements = container.querySelectorAll('p, span, div, h1, h2, h3, h4, h5, h6, li, td, th')
         textElements.forEach(el => {
-          if (!el.closest('.bg-slate-800, .bg-slate-900, .bg-gray-900, footer')) {
+          // Check if element is on a dark background
+          const isDarkBackground = el.closest('.bg-slate-800, .bg-slate-900, .bg-gray-900, footer') ||
+                                  el.closest('[class*="from-slate"]') ||
+                                  el.closest('[class*="to-slate"]') ||
+                                  el.closest('.bg-blue-600, .bg-blue-700')
+
+          if (isDarkBackground) {
+            el.style.setProperty('color', '#ffffff', 'important')
+          } else {
             el.style.setProperty('color', '#000000', 'important')
           }
         })
@@ -271,10 +279,22 @@ export default function LandingPage() {
         }
 
         /* Dark backgrounds need white text with max specificity */
+        body .landing-page-container .bg-slate-800,
         body .landing-page-container .bg-slate-800 *,
+        body .landing-page-container .bg-slate-900,
         body .landing-page-container .bg-slate-900 *,
+        body .landing-page-container .bg-gray-900,
         body .landing-page-container .bg-gray-900 *,
-        body .landing-page-container footer * {
+        body .landing-page-container footer,
+        body .landing-page-container footer *,
+        body .landing-page-container [class*="from-slate"],
+        body .landing-page-container [class*="from-slate"] *,
+        body .landing-page-container [class*="to-slate"],
+        body .landing-page-container [class*="to-slate"] *,
+        body .landing-page-container .bg-blue-600,
+        body .landing-page-container .bg-blue-600 *,
+        body .landing-page-container .bg-blue-700,
+        body .landing-page-container .bg-blue-700 * {
           color: white !important;
         }
 
