@@ -21,7 +21,7 @@ def test_simple_booking():
         "barber_id": 1,
         "service_id": 1,
         "appointment_date": tomorrow,
-        "appointment_time": "10:00",
+        "appointment_time": "14:00",  # 2:00 PM should be available
         "client_first_name": "Test",
         "client_last_name": "Customer",
         "client_email": "test@example.com",  # pragma: allowlist secret

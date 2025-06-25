@@ -542,27 +542,25 @@ async def create_booking(booking: CreateBookingRequest, db: Session = Depends(ge
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
 
-    # TODO: Re-enable real-time availability check once availability service is fixed
-    # For now, we'll skip the availability check to test the basic booking flow
+    # Real-time availability check
+    availability_service = AvailabilityService(db)
+    is_available, conflicts = availability_service.check_real_time_availability(
+        barber_id=booking.barber_id,
+        appointment_date=booking.appointment_date,
+        start_time=booking.appointment_time,
+        duration_minutes=service.duration_minutes,
+    )
 
-    # availability_service = AvailabilityService(db)
-    # is_available, conflicts = availability_service.check_real_time_availability(
-    #     barber_id=booking.barber_id,
-    #     appointment_date=booking.appointment_date,
-    #     start_time=booking.appointment_time,
-    #     duration_minutes=service.duration_minutes,
-    # )
-    #
-    # if not is_available:
-    #     conflict_messages = [c.message for c in conflicts]
-    #     raise HTTPException(
-    #         status_code=409,
-    #         detail={
-    #             "message": "Time slot is not available",
-    #             "conflicts": conflict_messages,
-    #             "suggested_action": "Please select a different time slot",
-    #         },
-    #     )
+    if not is_available:
+        conflict_messages = [c.message for c in conflicts]
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "Time slot is not available",
+                "conflicts": conflict_messages,
+                "suggested_action": "Please select a different time slot",
+            },
+        )
 
     # Find or create client
     client = (
