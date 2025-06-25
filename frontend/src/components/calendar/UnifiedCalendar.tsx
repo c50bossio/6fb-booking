@@ -389,6 +389,21 @@ export default function UnifiedCalendar({
     }))
   }, [filteredAppointments, enableDragDrop])
 
+  // Pass through click handlers to PremiumCalendar with proper event handling
+  const handleAppointmentClickInternal = useCallback((appointment: CalendarAppointment) => {
+    console.log('🔥 UnifiedCalendar: Appointment clicked', appointment.id, appointment.client)
+    if (onAppointmentClick) {
+      onAppointmentClick(appointment)
+    }
+  }, [onAppointmentClick])
+
+  const handleTimeSlotClickInternal = useCallback((date: string, time: string) => {
+    console.log('🔥 UnifiedCalendar: Time slot clicked', date, time)
+    if (onTimeSlotClick) {
+      onTimeSlotClick(date, time)
+    }
+  }, [onTimeSlotClick])
+
   // Handle drop on time slots
   const handleTimeSlotDrop = useCallback((e: React.DragEvent, date: string, time: string) => {
     e.preventDefault()

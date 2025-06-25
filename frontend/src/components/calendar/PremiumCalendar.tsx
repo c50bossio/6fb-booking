@@ -399,6 +399,13 @@ export default function PremiumCalendar({
               setSelectedDate(date)
               handleTimeSlotClick(date, '09:00')
             }}
+            onTouchEnd={(e) => {
+              // Prevent double-firing on touch devices
+              e.preventDefault()
+              console.log('👆 Month day touched:', formatDateString(date))
+              setSelectedDate(date)
+              handleTimeSlotClick(date, '09:00')
+            }}
           >
             <div className="text-sm font-medium mb-2" style={{
               color: isTodayDate
@@ -423,6 +430,11 @@ export default function PremiumCalendar({
                   onClick={(e) => {
                     e.stopPropagation()
                     console.log('🖱️ Appointment clicked (month view):', appointment.id, appointment.client)
+                    onAppointmentClick?.(appointment)
+                  }}
+                  onTouchEnd={(e) => {
+                    e.stopPropagation()
+                    console.log('👆 Appointment touched (month view):', appointment.id, appointment.client)
                     onAppointmentClick?.(appointment)
                   }}
                   {...((appointment as any).__dragProps || {})}
@@ -543,6 +555,13 @@ export default function PremiumCalendar({
                         handleTimeSlotClick(date, time)
                       }
                     }}
+                    onTouchEnd={(e) => {
+                      if (!appointmentForTime) {
+                        e.preventDefault()
+                        console.log('👆 Time slot touched:', dateStr, time)
+                        handleTimeSlotClick(date, time)
+                      }
+                    }}
                     onMouseEnter={() => handleTimeSlotHover(date, time, true)}
                     onMouseLeave={() => handleTimeSlotHover(date, time, false)}
                   >
@@ -559,6 +578,11 @@ export default function PremiumCalendar({
                         onClick={(e) => {
                           e.stopPropagation()
                           console.log('🖱️ Appointment clicked (week/day view):', appointmentForTime.id, appointmentForTime.client)
+                          onAppointmentClick?.(appointmentForTime)
+                        }}
+                        onTouchEnd={(e) => {
+                          e.stopPropagation()
+                          console.log('👆 Appointment touched (week/day view):', appointmentForTime.id, appointmentForTime.client)
                           onAppointmentClick?.(appointmentForTime)
                         }}
                         {...((appointmentForTime as any).__dragProps || {})}
