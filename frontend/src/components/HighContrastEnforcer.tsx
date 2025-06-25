@@ -40,7 +40,7 @@ export default function HighContrastEnforcer() {
         if (element.dataset.contrastFixed === 'true') return;
 
         // Skip premium buttons and other dark background elements
-        if (element.classList.contains('premium-button') || 
+        if (element.classList.contains('premium-button') ||
             element.classList.contains('premium-button-sm') ||
             element.closest('.premium-button') ||
             element.closest('.premium-button-sm')) {
@@ -188,18 +188,18 @@ export default function HighContrastEnforcer() {
       }
 
       /* Ensure all text elements have good contrast - but exclude premium buttons */
-      p:not(.premium-button):not(.premium-button-sm), 
-      span:not(.premium-button):not(.premium-button-sm), 
-      div:not(.premium-button):not(.premium-button-sm), 
-      a:not(.premium-button):not(.premium-button-sm), 
-      button:not(.premium-button):not(.premium-button-sm), 
-      h1:not(.premium-button):not(.premium-button-sm), h2:not(.premium-button):not(.premium-button-sm), 
-      h3:not(.premium-button):not(.premium-button-sm), h4:not(.premium-button):not(.premium-button-sm), 
+      p:not(.premium-button):not(.premium-button-sm),
+      span:not(.premium-button):not(.premium-button-sm),
+      div:not(.premium-button):not(.premium-button-sm),
+      a:not(.premium-button):not(.premium-button-sm),
+      button:not(.premium-button):not(.premium-button-sm),
+      h1:not(.premium-button):not(.premium-button-sm), h2:not(.premium-button):not(.premium-button-sm),
+      h3:not(.premium-button):not(.premium-button-sm), h4:not(.premium-button):not(.premium-button-sm),
       h5:not(.premium-button):not(.premium-button-sm), h6:not(.premium-button):not(.premium-button-sm),
-      label:not(.premium-button):not(.premium-button-sm), 
-      td:not(.premium-button):not(.premium-button-sm), th:not(.premium-button):not(.premium-button-sm), 
-      li:not(.premium-button):not(.premium-button-sm), dt:not(.premium-button):not(.premium-button-sm), 
-      dd:not(.premium-button):not(.premium-button-sm), figcaption:not(.premium-button):not(.premium-button-sm), 
+      label:not(.premium-button):not(.premium-button-sm),
+      td:not(.premium-button):not(.premium-button-sm), th:not(.premium-button):not(.premium-button-sm),
+      li:not(.premium-button):not(.premium-button-sm), dt:not(.premium-button):not(.premium-button-sm),
+      dd:not(.premium-button):not(.premium-button-sm), figcaption:not(.premium-button):not(.premium-button-sm),
       caption:not(.premium-button):not(.premium-button-sm) {
         min-opacity: 1 !important;
       }

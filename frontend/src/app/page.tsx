@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import {
   CheckIcon,
   StarIcon,
@@ -161,6 +162,137 @@ const testimonials = [
   },
 ]
 
+// Premium Animated Demo Button Component
+function PremiumDemoButton() {
+  const [isHovered, setIsHovered] = useState(false)
+  const [isClicked, setIsClicked] = useState(false)
+  
+  const x = useMotionValue(0)
+  const y = useMotionValue(0)
+  const rotateX = useTransform(y, [-100, 100], [30, -30])
+  const rotateY = useTransform(x, [-100, 100], [-30, 30])
+
+  const handleMouse = (event: React.MouseEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect()
+    const centerX = rect.left + rect.width / 2
+    const centerY = rect.top + rect.height / 2
+    x.set(event.clientX - centerX)
+    y.set(event.clientY - centerY)
+  }
+
+  return (
+    <motion.div
+      style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+      onMouseMove={handleMouse}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => {
+        setIsHovered(false)
+        x.set(0)
+        y.set(0)
+      }}
+      whileTap={{ scale: 0.95 }}
+      className="perspective-1000"
+    >
+      <Link href="/app">
+        <motion.div
+          className="demo-button text-lg px-10 py-4 relative overflow-hidden group cursor-pointer"
+          initial={{ scale: 1 }}
+          whileHover={{ 
+            scale: 1.05,
+            boxShadow: "0 20px 40px rgba(20, 184, 166, 0.4)",
+          }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ 
+            type: "spring", 
+            stiffness: 400, 
+            damping: 17 
+          }}
+          onTapStart={() => setIsClicked(true)}
+          onTap={() => setTimeout(() => setIsClicked(false), 150)}
+        >
+          {/* Gradient Background with Animation */}
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-teal-500 via-cyan-500 to-teal-600"
+            animate={{
+              backgroundPosition: isHovered ? ["0% 50%", "100% 50%", "0% 50%"] : "0% 50%"
+            }}
+            transition={{
+              duration: 2,
+              repeat: isHovered ? Infinity : 0,
+              ease: "linear"
+            }}
+            style={{
+              backgroundSize: "200% 200%"
+            }}
+          />
+
+          {/* Shimmer Effect */}
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+            initial={{ x: "-100%" }}
+            animate={{ x: isHovered ? "100%" : "-100%" }}
+            transition={{ duration: 0.6, ease: "easeInOut" }}
+            style={{ transform: "skewX(-20deg)" }}
+          />
+
+          {/* Ripple Effect on Click */}
+          {isClicked && (
+            <motion.div
+              className="absolute inset-0 bg-white/20 rounded-xl"
+              initial={{ scale: 0, opacity: 1 }}
+              animate={{ scale: 2, opacity: 0 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+            />
+          )}
+
+          {/* Button Content */}
+          <div className="relative z-10 flex items-center justify-center text-black font-semibold">
+            <motion.div
+              animate={{ 
+                rotate: isHovered ? 360 : 0,
+                scale: isHovered ? 1.1 : 1
+              }}
+              transition={{ 
+                duration: 0.5, 
+                ease: "easeInOut" 
+              }}
+              className="mr-2"
+            >
+              <PlayIcon className="h-5 w-5" />
+            </motion.div>
+            
+            <motion.span
+              animate={{
+                y: isHovered ? [-1, 1, -1] : 0
+              }}
+              transition={{
+                duration: 0.5,
+                repeat: isHovered ? Infinity : 0,
+                ease: "easeInOut"
+              }}
+            >
+              Try Full Demo Now
+            </motion.span>
+          </div>
+
+          {/* Glow Effect */}
+          <motion.div
+            className="absolute -inset-1 bg-gradient-to-r from-teal-400 to-cyan-400 rounded-xl blur opacity-30"
+            animate={{
+              opacity: isHovered ? [0.3, 0.6, 0.3] : 0.3
+            }}
+            transition={{
+              duration: 1.5,
+              repeat: isHovered ? Infinity : 0,
+              ease: "easeInOut"
+            }}
+          />
+        </motion.div>
+      </Link>
+    </motion.div>
+  )
+}
+
 export default function LandingPage() {
   const [email, setEmail] = useState('')
   const [showDemo, setShowDemo] = useState(false)
@@ -254,13 +386,7 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-16">
-            <Link
-              href="/app"
-              className="demo-button text-lg px-10 py-4 hover-lift"
-            >
-              <PlayIcon className="mr-2 h-5 w-5" />
-              <span>Try Full Demo Now</span>
-            </Link>
+            <PremiumDemoButton />
             <a
               href="https://bookedbarber.com"
               target="_blank"

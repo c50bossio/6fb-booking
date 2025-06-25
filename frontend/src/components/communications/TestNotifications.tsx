@@ -27,7 +27,8 @@ export const TestNotifications: React.FC = () => {
     setEmailResult(null);
 
     try {
-      const response = await fetch('/api/v1/communications/test/email', {
+      const { corsAwareFetch } = await import('@/lib/api/corsHelper')
+      const response = await corsAwareFetch('/communications/test/email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -61,7 +62,8 @@ export const TestNotifications: React.FC = () => {
     setSmsResult(null);
 
     try {
-      const response = await fetch('/api/v1/communications/test/sms', {
+      const { corsAwareFetch } = await import('@/lib/api/corsHelper')
+      const response = await corsAwareFetch('/communications/test/sms', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

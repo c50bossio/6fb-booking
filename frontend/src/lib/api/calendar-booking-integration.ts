@@ -366,8 +366,9 @@ export class CalendarBookingIntegration {
     duration: number
   }) {
     try {
-      // Use the appointments API conflict checking endpoint
-      const response = await fetch('/api/v1/appointments/check-conflicts', {
+      // Use the corsAwareFetch helper to properly construct URLs
+      const { corsAwareFetch } = await import('../corsHelper')
+      const response = await corsAwareFetch('/appointments/check-conflicts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
