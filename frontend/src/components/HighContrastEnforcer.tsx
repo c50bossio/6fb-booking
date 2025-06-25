@@ -39,6 +39,14 @@ export default function HighContrastEnforcer() {
         // Skip if already fixed
         if (element.dataset.contrastFixed === 'true') return;
 
+        // Skip premium buttons and other dark background elements
+        if (element.classList.contains('premium-button') || 
+            element.classList.contains('premium-button-sm') ||
+            element.closest('.premium-button') ||
+            element.closest('.premium-button-sm')) {
+          return;
+        }
+
         // Check computed styles for low contrast
         const computedStyle = window.getComputedStyle(element);
         const color = computedStyle.color;
@@ -143,37 +151,56 @@ export default function HighContrastEnforcer() {
     style.id = 'high-contrast-enforcer';
     style.textContent = `
       /* Nuclear option: Override all low contrast text */
-      ${lowContrastClasses.map(cls => `.${cls}`).join(', ')} {
+      ${lowContrastClasses.map(cls => `.${cls}:not(.premium-button):not(.premium-button-sm)`).join(', ')} {
         color: #1a1a1a !important;
         opacity: 1 !important;
       }
 
-      /* Target common low contrast patterns */
-      [class*="text-gray-3"],
-      [class*="text-gray-4"],
-      [class*="text-gray-5"],
-      [class*="text-slate-3"],
-      [class*="text-slate-4"],
-      [class*="text-slate-5"],
-      [class*="text-zinc-3"],
-      [class*="text-zinc-4"],
-      [class*="text-zinc-5"],
-      [class*="text-neutral-3"],
-      [class*="text-neutral-4"],
-      [class*="text-neutral-5"],
-      [class*="text-stone-3"],
-      [class*="text-stone-4"],
-      [class*="text-stone-5"],
-      [class*="opacity-5"],
-      [class*="opacity-6"],
-      [class*="opacity-7"] {
+      /* Explicitly preserve premium button styles */
+      .premium-button,
+      .premium-button *,
+      .premium-button-sm,
+      .premium-button-sm * {
+        color: #ffffff !important;
+      }
+
+      /* Target common low contrast patterns - but exclude premium buttons */
+      [class*="text-gray-3"]:not(.premium-button):not(.premium-button-sm),
+      [class*="text-gray-4"]:not(.premium-button):not(.premium-button-sm),
+      [class*="text-gray-5"]:not(.premium-button):not(.premium-button-sm),
+      [class*="text-slate-3"]:not(.premium-button):not(.premium-button-sm),
+      [class*="text-slate-4"]:not(.premium-button):not(.premium-button-sm),
+      [class*="text-slate-5"]:not(.premium-button):not(.premium-button-sm),
+      [class*="text-zinc-3"]:not(.premium-button):not(.premium-button-sm),
+      [class*="text-zinc-4"]:not(.premium-button):not(.premium-button-sm),
+      [class*="text-zinc-5"]:not(.premium-button):not(.premium-button-sm),
+      [class*="text-neutral-3"]:not(.premium-button):not(.premium-button-sm),
+      [class*="text-neutral-4"]:not(.premium-button):not(.premium-button-sm),
+      [class*="text-neutral-5"]:not(.premium-button):not(.premium-button-sm),
+      [class*="text-stone-3"]:not(.premium-button):not(.premium-button-sm),
+      [class*="text-stone-4"]:not(.premium-button):not(.premium-button-sm),
+      [class*="text-stone-5"]:not(.premium-button):not(.premium-button-sm),
+      [class*="opacity-5"]:not(.premium-button):not(.premium-button-sm),
+      [class*="opacity-6"]:not(.premium-button):not(.premium-button-sm),
+      [class*="opacity-7"]:not(.premium-button):not(.premium-button-sm) {
         color: #1a1a1a !important;
         opacity: 1 !important;
       }
 
-      /* Ensure all text elements have good contrast */
-      p, span, div, a, button, h1, h2, h3, h4, h5, h6,
-      label, td, th, li, dt, dd, figcaption, caption {
+      /* Ensure all text elements have good contrast - but exclude premium buttons */
+      p:not(.premium-button):not(.premium-button-sm), 
+      span:not(.premium-button):not(.premium-button-sm), 
+      div:not(.premium-button):not(.premium-button-sm), 
+      a:not(.premium-button):not(.premium-button-sm), 
+      button:not(.premium-button):not(.premium-button-sm), 
+      h1:not(.premium-button):not(.premium-button-sm), h2:not(.premium-button):not(.premium-button-sm), 
+      h3:not(.premium-button):not(.premium-button-sm), h4:not(.premium-button):not(.premium-button-sm), 
+      h5:not(.premium-button):not(.premium-button-sm), h6:not(.premium-button):not(.premium-button-sm),
+      label:not(.premium-button):not(.premium-button-sm), 
+      td:not(.premium-button):not(.premium-button-sm), th:not(.premium-button):not(.premium-button-sm), 
+      li:not(.premium-button):not(.premium-button-sm), dt:not(.premium-button):not(.premium-button-sm), 
+      dd:not(.premium-button):not(.premium-button-sm), figcaption:not(.premium-button):not(.premium-button-sm), 
+      caption:not(.premium-button):not(.premium-button-sm) {
         min-opacity: 1 !important;
       }
 
@@ -183,14 +210,14 @@ export default function HighContrastEnforcer() {
         opacity: 1 !important;
       }
 
-      /* Fix disabled elements to still be readable */
-      :disabled {
+      /* Fix disabled elements to still be readable - but not premium buttons */
+      :disabled:not(.premium-button):not(.premium-button-sm) {
         opacity: 0.8 !important;
         color: #2a2a2a !important;
       }
 
-      /* Ensure links are visible */
-      a {
+      /* Ensure links are visible - but not premium button links */
+      a:not(.premium-button):not(.premium-button-sm) {
         opacity: 1 !important;
       }
 

@@ -312,7 +312,42 @@
 }
 
 .premium-button {
-  @apply px-6 py-3 bg-gradient-to-r from-slate-600 to-slate-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2;
+  @apply px-6 py-3 bg-gradient-to-r from-amber-500 to-yellow-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2;
+}
+
+/* Ultra-high specificity override to prevent ThemeContext body text color interference */
+body a.premium-button,
+body button.premium-button,
+body .premium-button,
+.text-gray-900 a.premium-button,
+.text-gray-900 button.premium-button,
+.text-gray-900 .premium-button,
+a.premium-button,
+button.premium-button,
+.premium-button {
+  color: #ffffff !important;
+  background: linear-gradient(to right, #f59e0b, #d97706) !important;
+  box-shadow: 0 4px 14px 0 rgba(245, 158, 11, 0.25) !important;
+}
+
+body a.premium-button:hover,
+body button.premium-button:hover,
+body .premium-button:hover,
+.text-gray-900 a.premium-button:hover,
+.text-gray-900 button.premium-button:hover,
+.text-gray-900 .premium-button:hover,
+a.premium-button:hover,
+button.premium-button:hover,
+.premium-button:hover {
+  color: #ffffff !important;
+  background: linear-gradient(to right, #d97706, #b45309) !important;
+  box-shadow: 0 8px 20px 0 rgba(245, 158, 11, 0.35) !important;
+}
+
+/* Additional protection against global text color classes */
+body.text-gray-900 .premium-button,
+body.text-white .premium-button {
+  color: #ffffff !important;
 }
 
 .hover-lift {
