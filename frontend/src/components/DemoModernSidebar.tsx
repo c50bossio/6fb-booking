@@ -363,9 +363,9 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
 
         {/* Settings */}
         <Link
-          href="/app/settings"
+          href="/settings"
           className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 ${
-            pathname === '/app/settings'
+            pathname === '/settings'
               ? theme === 'dark'
                 ? 'bg-teal-600 text-white'
                 : theme === 'soft-light'
@@ -386,7 +386,7 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
             <div className="flex-1 min-w-0">
               <p className="font-medium">Settings</p>
               <p className={`text-xs ${
-                pathname === '/app/settings'
+                pathname === '/settings'
                   ? theme === 'dark' ? 'text-violet-200' :
                     theme === 'charcoal' ? 'text-gray-300' : 'text-violet-600'
                   : theme === 'dark' || theme === 'charcoal' ? 'text-gray-400' : 'text-gray-500'
