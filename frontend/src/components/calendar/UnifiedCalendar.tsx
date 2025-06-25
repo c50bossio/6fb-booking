@@ -614,7 +614,7 @@ export default function UnifiedCalendar({
       )}
 
       {/* Debug Information */}
-      {true && (
+      {false && (
         <div className="bg-gray-800 p-2 rounded text-xs text-gray-300 mb-4">
           <strong>Debug Info:</strong> Demo Mode: {isDemoMode ? 'ON' : 'OFF'} |
           Effective Appointments: {effectiveAppointments.length} |

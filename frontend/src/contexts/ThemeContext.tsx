@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react'
 
 type Theme = 'light' | 'soft-light' | 'dark' | 'charcoal'
 
@@ -31,8 +31,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [highContrastMode, setHighContrastModeState] = useState(false)
   const [mounted, setMounted] = useState(false)
 
-  // Define color palettes for each theme
-  const getThemeColors = (): ThemeColors => {
+  // Define color palettes for each theme (memoized to prevent re-renders)
+  const getThemeColors = useCallback((): ThemeColors => {
     switch (theme) {
       case 'light':
         return {
@@ -71,9 +71,17 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           shadow: '0 8px 16px -4px rgba(0, 0, 0, 0.5)'
         }
       default:
-        return getThemeColors() // fallback to current theme
+        // Fallback to light theme to prevent infinite recursion
+        return {
+          background: '#ffffff',
+          cardBackground: '#f0f0f0',
+          textPrimary: '#000000',
+          textSecondary: '#4a5568',
+          border: '#cccccc',
+          shadow: '0 4px 6px -1px rgba(0, 0, 0, 0.15), 0 2px 4px -2px rgba(0, 0, 0, 0.15)'
+        }
     }
-  }
+  }, [theme])
 
   // Function to detect if high contrast is needed based on user preferences
   const isHighContrastNeeded = (): boolean => {
