@@ -340,7 +340,9 @@ async def get_version():
 # Dashboard route - Redirect to Next.js frontend
 @app.get("/dashboard")
 async def redirect_to_frontend_dashboard():
-    return RedirectResponse(url="http://localhost:3000/dashboard", status_code=302)
+    return RedirectResponse(
+        url="https://app.bookedbarber.com/dashboard", status_code=302
+    )
 
 
 @app.on_event("startup")
