@@ -65,13 +65,12 @@ class SquareOAuthService:
 
         # Initialize services
         self.notification_service = NotificationService()
-        self.monitoring_service = MonitoringService()
+        self.monitoring_service = MonitoringService(SessionLocal)
         self.email_service = EmailService()
 
         # Initialize Redis for caching and rate limiting
-        self.redis_client = Redis(
-            host=self.settings.REDIS_HOST,
-            port=self.settings.REDIS_PORT,
+        self.redis_client = Redis.from_url(
+            self.settings.REDIS_URL,
             decode_responses=True,
         )
 

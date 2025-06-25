@@ -253,7 +253,7 @@ frontend/
 
 - **Environment Variables**: See `.env.template` for complete list
 - **Database**: PostgreSQL recommended for production
-- **Hosting**: Currently on Render, supports Docker/Railway/Vercel
+- **Hosting**: Currently on Railway for production, also supports Render and Docker
 - **Monitoring**: Sentry integration for error tracking
 - **Security Keys**: Generate with `python -c 'import secrets; print(secrets.token_urlsafe(64))'`
 

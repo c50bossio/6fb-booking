@@ -460,6 +460,11 @@ export class TimeHelper {
    * Parse time string to components
    */
   static parseTime(timeStr: string): { hours: number; minutes: number; seconds: number } {
+    // Handle null, undefined, or empty string inputs
+    if (!timeStr || typeof timeStr !== 'string') {
+      return { hours: 0, minutes: 0, seconds: 0 }
+    }
+
     const parts = timeStr.split(':').map(Number)
     return {
       hours: parts[0] || 0,
@@ -492,6 +497,11 @@ export class TimeHelper {
    * Convert 12-hour time to 24-hour time
    */
   static to24Hour(timeStr: string): string {
+    // Handle null, undefined, or empty string inputs
+    if (!timeStr || typeof timeStr !== 'string') {
+      return '00:00'
+    }
+
     const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
     if (!match) return timeStr
 

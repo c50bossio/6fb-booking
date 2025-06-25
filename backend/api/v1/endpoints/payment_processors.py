@@ -9,7 +9,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from config.database import get_db
-from api.v1.dependencies.auth import get_current_user, require_barber_role
+from api.v1.auth import get_current_user
+from utils.auth_decorators import require_role
 from models.user import User
 from models.barber import Barber
 from models.payment_processor_preference import PaymentProcessor

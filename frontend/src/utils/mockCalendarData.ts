@@ -202,3 +202,322 @@ export function getMockServices() {
     ...service
   }))
 }
+
+// Generate specific test scenarios for drag & drop testing
+export function generateDragDropTestData(): CalendarAppointment[] {
+  const today = new Date().toISOString().split('T')[0]
+  const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+
+  const testScenarios: CalendarAppointment[] = [
+    // Scenario 1: Conflicting appointments - same barber, overlapping times
+    {
+      id: 'conflict-test-1',
+      title: 'Signature Fade',
+      client: 'John Conflict',
+      clientId: 3001,
+      barber: 'Marcus Johnson',
+      barberId: 1,
+      startTime: '10:00',
+      endTime: '10:45',
+      service: 'Signature Fade',
+      serviceId: 1,
+      price: 45,
+      status: 'confirmed',
+      date: today,
+      notes: 'Test conflict scenario',
+      duration: 45,
+      clientPhone: '+1-555-TEST1',
+      clientEmail: 'john.conflict@test.com'
+    },
+    {
+      id: 'conflict-test-2',
+      title: 'Classic Cut',
+      client: 'Mike Overlap',
+      clientId: 3002,
+      barber: 'Marcus Johnson',
+      barberId: 1,
+      startTime: '10:30',
+      endTime: '11:00',
+      service: 'Classic Cut',
+      serviceId: 2,
+      price: 35,
+      status: 'pending',
+      date: today,
+      notes: 'Will create conflict if moved',
+      duration: 30,
+      clientPhone: '+1-555-TEST2',
+      clientEmail: 'mike.overlap@test.com'
+    },
+
+    // Scenario 2: Back-to-back appointments - test precise scheduling
+    {
+      id: 'backtoback-1',
+      title: 'Beard Trim',
+      client: 'Alex Sequential',
+      clientId: 3003,
+      barber: 'Sarah Mitchell',
+      barberId: 2,
+      startTime: '14:00',
+      endTime: '14:20',
+      service: 'Beard Trim',
+      serviceId: 3,
+      price: 25,
+      status: 'confirmed',
+      date: today,
+      notes: 'Back-to-back test 1',
+      duration: 20,
+      clientPhone: '+1-555-TEST3',
+      clientEmail: 'alex.sequential@test.com'
+    },
+    {
+      id: 'backtoback-2',
+      title: 'Line Up',
+      client: 'Sam Following',
+      clientId: 3004,
+      barber: 'Sarah Mitchell',
+      barberId: 2,
+      startTime: '14:20',
+      endTime: '14:40',
+      service: 'Line Up',
+      serviceId: 9,
+      price: 30,
+      status: 'confirmed',
+      date: today,
+      notes: 'Back-to-back test 2',
+      duration: 20,
+      clientPhone: '+1-555-TEST4',
+      clientEmail: 'sam.following@test.com'
+    },
+
+    // Scenario 3: Long appointment - test edge cases
+    {
+      id: 'long-appointment',
+      title: 'Premium Cut & Style',
+      client: 'David Lengthy',
+      clientId: 3005,
+      barber: 'Tony Rivera',
+      barberId: 3,
+      startTime: '16:00',
+      endTime: '17:15',
+      service: 'Premium Cut & Style',
+      serviceId: 10,
+      price: 85,
+      status: 'confirmed',
+      date: today,
+      notes: 'Long appointment for testing',
+      duration: 75,
+      clientPhone: '+1-555-TEST5',
+      clientEmail: 'david.lengthy@test.com'
+    },
+
+    // Scenario 4: Multiple barbers at same time - test barber-specific conflicts
+    {
+      id: 'multi-barber-1',
+      title: 'Buzz Cut',
+      client: 'Chris Parallel',
+      clientId: 3006,
+      barber: 'Lisa Chen',
+      barberId: 4,
+      startTime: '11:00',
+      endTime: '11:15',
+      service: 'Buzz Cut',
+      serviceId: 6,
+      price: 25,
+      status: 'confirmed',
+      date: today,
+      notes: 'Different barber same time',
+      duration: 15,
+      clientPhone: '+1-555-TEST6',
+      clientEmail: 'chris.parallel@test.com'
+    },
+    {
+      id: 'multi-barber-2',
+      title: 'Hot Towel Shave',
+      client: 'Ryan Concurrent',
+      clientId: 3007,
+      barber: 'Tony Rivera',
+      barberId: 3,
+      startTime: '11:00',
+      endTime: '11:30',
+      service: 'Hot Towel Shave',
+      serviceId: 4,
+      price: 40,
+      status: 'confirmed',
+      date: today,
+      notes: 'Different barber same time',
+      duration: 30,
+      clientPhone: '+1-555-TEST7',
+      clientEmail: 'ryan.concurrent@test.com'
+    },
+
+    // Scenario 5: Cross-day testing - tomorrow's appointments
+    {
+      id: 'tomorrow-1',
+      title: 'Skin Fade',
+      client: 'Jake Tomorrow',
+      clientId: 3008,
+      barber: 'Marcus Johnson',
+      barberId: 1,
+      startTime: '09:00',
+      endTime: '09:40',
+      service: 'Skin Fade',
+      serviceId: 7,
+      price: 42,
+      status: 'pending',
+      date: tomorrow,
+      notes: 'Next day appointment',
+      duration: 40,
+      clientPhone: '+1-555-TEST8',
+      clientEmail: 'jake.tomorrow@test.com'
+    },
+
+    // Scenario 6: Edge time slots - early morning and late evening
+    {
+      id: 'early-morning',
+      title: 'Classic Cut',
+      client: 'Early Bird',
+      clientId: 3009,
+      barber: 'Sarah Mitchell',
+      barberId: 2,
+      startTime: '09:00',
+      endTime: '09:30',
+      service: 'Classic Cut',
+      serviceId: 2,
+      price: 35,
+      status: 'confirmed',
+      date: today,
+      notes: 'Early morning slot',
+      duration: 30,
+      clientPhone: '+1-555-TEST9',
+      clientEmail: 'early.bird@test.com'
+    },
+    {
+      id: 'late-evening',
+      title: 'Mustache Trim',
+      client: 'Night Owl',
+      clientId: 3010,
+      barber: 'Lisa Chen',
+      barberId: 4,
+      startTime: '18:00',
+      endTime: '18:15',
+      service: 'Mustache Trim',
+      serviceId: 8,
+      price: 20,
+      status: 'confirmed',
+      date: today,
+      notes: 'Late evening slot',
+      duration: 15,
+      clientPhone: '+1-555-TEST10',
+      clientEmail: 'night.owl@test.com'
+    },
+
+    // Scenario 7: Different status types for testing
+    {
+      id: 'cancelled-apt',
+      title: 'Cut & Beard Combo',
+      client: 'Cancel Client',
+      clientId: 3011,
+      barber: 'Tony Rivera',
+      barberId: 3,
+      startTime: '13:00',
+      endTime: '14:00',
+      service: 'Cut & Beard Combo',
+      serviceId: 5,
+      price: 65,
+      status: 'cancelled',
+      date: today,
+      notes: 'Cancelled appointment',
+      duration: 60,
+      clientPhone: '+1-555-TEST11',
+      clientEmail: 'cancel.client@test.com'
+    },
+    {
+      id: 'completed-apt',
+      title: 'Signature Fade',
+      client: 'Done Client',
+      clientId: 3012,
+      barber: 'Marcus Johnson',
+      barberId: 1,
+      startTime: '08:00',
+      endTime: '08:45',
+      service: 'Signature Fade',
+      serviceId: 1,
+      price: 45,
+      status: 'completed',
+      date: today,
+      notes: 'Completed appointment',
+      duration: 45,
+      clientPhone: '+1-555-TEST12',
+      clientEmail: 'done.client@test.com'
+    }
+  ]
+
+  return testScenarios
+}
+
+// Generate comprehensive demo data including test scenarios
+export function generateComprehensiveDemoData(): CalendarAppointment[] {
+  const regularData = generateMockCalendarData(20)
+  const todayData = generateTodayAppointments()
+  const testData = generateDragDropTestData()
+
+  // Combine all data and remove duplicates by ID
+  const allData = [...regularData, ...todayData, ...testData]
+  const uniqueData = allData.filter((appointment, index, self) =>
+    index === self.findIndex(a => a.id === appointment.id)
+  )
+
+  // Sort by date and time for better UX
+  return uniqueData.sort((a, b) => {
+    const dateCompare = a.date.localeCompare(b.date)
+    if (dateCompare !== 0) return dateCompare
+    return a.startTime.localeCompare(b.startTime)
+  })
+}
+
+// Generate specific conflict test scenarios for a given date and barber
+export function generateConflictTestScenarios(targetDate: string, barberId: number): CalendarAppointment[] {
+  const barber = MOCK_BARBERS.find(b => b.id === barberId) || MOCK_BARBERS[0]
+
+  return [
+    // Overlapping appointments
+    {
+      id: `conflict-${barberId}-1`,
+      title: 'Test Conflict 1',
+      client: 'Conflict Tester A',
+      clientId: 4001 + barberId,
+      barber: barber.name,
+      barberId: barber.id,
+      startTime: '15:00',
+      endTime: '15:45',
+      service: 'Signature Fade',
+      serviceId: 1,
+      price: 45,
+      status: 'confirmed',
+      date: targetDate,
+      notes: 'Conflict test scenario',
+      duration: 45,
+      clientPhone: '+1-555-CONF1',
+      clientEmail: 'conflict.a@test.com'
+    },
+    {
+      id: `conflict-${barberId}-2`,
+      title: 'Test Conflict 2',
+      client: 'Conflict Tester B',
+      clientId: 4002 + barberId,
+      barber: barber.name,
+      barberId: barber.id,
+      startTime: '15:30',
+      endTime: '16:00',
+      service: 'Classic Cut',
+      serviceId: 2,
+      price: 35,
+      status: 'pending',
+      date: targetDate,
+      notes: 'Will overlap if moved',
+      duration: 30,
+      clientPhone: '+1-555-CONF2',
+      clientEmail: 'conflict.b@test.com'
+    }
+  ]
+}
