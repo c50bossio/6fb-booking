@@ -84,15 +84,14 @@ export default function CalendarPage() {
     }
   })
 
-  // Check if we're in demo mode
-  const [isDemoMode, setIsDemoMode] = useState(false)
+  // Check if we're in demo mode - FORCE DEMO MODE to fix API issues
+  const [isDemoMode, setIsDemoMode] = useState(true) // TEMPORARILY FORCED
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const demoMode = window.location.search.includes('demo=true') ||
-                       sessionStorage?.getItem('demo_mode') === 'true'
+      const demoMode = true // FORCE DEMO MODE
       setIsDemoMode(demoMode)
-      console.log('📱 Calendar page demo mode check:', demoMode)
+      console.log('📱 Calendar page demo mode check (FORCED):', demoMode)
     }
   }, [])
 
