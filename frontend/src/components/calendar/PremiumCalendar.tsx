@@ -178,10 +178,14 @@ export default function PremiumCalendar({
 }: CalendarProps) {
   // Use theme context for dynamic theming
   const { theme, getThemeColors } = useTheme()
-  const colors = getThemeColors()
 
-  // Debug theme integration
-  console.log('🎨 PremiumCalendar Theme Debug:', { theme, colors })
+  // Memoize colors to prevent unnecessary re-renders
+  const colors = useMemo(() => getThemeColors(), [theme, getThemeColors])
+
+  // Debug theme integration (only log once per theme change)
+  React.useEffect(() => {
+    console.log('🎨 PremiumCalendar Theme:', { theme, background: colors.background, textPrimary: colors.textPrimary })
+  }, [theme, colors.background, colors.textPrimary])
 
   const [currentDate, setCurrentDate] = useState<Date>(initialDate)
   const [selectedView, setSelectedView] = useState<'month' | 'week' | 'day'>(initialView)
