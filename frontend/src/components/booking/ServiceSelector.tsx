@@ -47,7 +47,7 @@ export default function ServiceSelector({
   }
 
   // Group services by category
-  const servicesByCategory = services.reduce((acc, service) => {
+  const servicesByCategory = (services || []).reduce((acc, service) => {
     const category = service.category_name || 'Other'
     if (!acc[category]) {
       acc[category] = []

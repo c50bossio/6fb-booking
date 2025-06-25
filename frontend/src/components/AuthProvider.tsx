@@ -46,29 +46,33 @@ const getDemoMode = (): boolean => {
   if (typeof window !== 'undefined') {
     const pathname = window.location.pathname
     const search = window.location.search
-    
+
     // Demo mode on specific demo routes
     if (pathname.includes('/demo') || pathname.includes('/calendar-demo')) {
       return true
     }
-    
+
     // Demo mode when coming from /app or with demo parameter
     if (pathname === '/app' || search.includes('demo=true')) {
       return true
     }
-    
-    // GLOBAL: Check if demo mode is active in sessionStorage for ANY route
-    try {
-      const isDemoSession = sessionStorage.getItem('demo_mode') === 'true'
-      if (isDemoSession) {
-        console.log('[AuthProvider] Demo mode active from sessionStorage for:', pathname)
-        return true
+
+    // RESTRICTED: Only check sessionStorage demo mode for specific demo routes
+    // This prevents demo mode from persisting globally after actual login
+    const isDemoRoute = pathname.includes('/demo') || pathname.includes('/calendar-demo') || pathname === '/app'
+    if (isDemoRoute) {
+      try {
+        const isDemoSession = sessionStorage.getItem('demo_mode') === 'true'
+        if (isDemoSession) {
+          console.log('[AuthProvider] Demo mode active from sessionStorage for demo route:', pathname)
+          return true
+        }
+      } catch (e) {
+        // SessionStorage blocked
       }
-    } catch (e) {
-      // SessionStorage blocked
     }
-    
-    // Check URL parameters for demo flag on ANY route
+
+    // Check URL parameters for demo flag
     if (search.includes('demo=true')) {
       console.log('[AuthProvider] Demo mode active from URL parameter for:', pathname)
       return true
@@ -252,12 +256,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      // Check if we're in demo mode (should not happen on login page, but safety check)
-      const currentDemoMode = getDemoMode()
-      if (currentDemoMode) {
-        setUser(DEMO_USER)
-        router.push('/dashboard')
-        return
+      // IMPORTANT: Clear demo mode when performing actual login
+      try {
+        sessionStorage.removeItem('demo_mode')
+        console.log('[AuthProvider] Cleared demo mode for actual login')
+      } catch (e) {
+        console.log('Cannot clear sessionStorage')
       }
 
       const response = await authService.login({ username: email, password })
@@ -270,6 +274,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const logout = async () => {
+    // Clear demo mode on logout
+    try {
+      sessionStorage.removeItem('demo_mode')
+      console.log('[AuthProvider] Cleared demo mode on logout')
+    } catch (e) {
+      console.log('Cannot clear sessionStorage')
+    }
+
     // In demo mode, just clear the user and redirect
     const currentDemoMode = getDemoMode()
     if (currentDemoMode) {
