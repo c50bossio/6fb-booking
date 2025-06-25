@@ -12,8 +12,7 @@ import logging
 
 from models.appointment import Appointment
 from models.barber import Barber
-
-# from models.automation import Availability  # TODO: Create Availability model
+from models.booking import BarberAvailability, DayOfWeek
 from models.google_calendar_settings import GoogleCalendarSettings
 from services.google_calendar_service import GoogleCalendarService
 from utils.secure_logging import get_secure_logger
@@ -133,21 +132,27 @@ class AvailabilityService:
         conflicts = []
 
         # Get barber's availability for this day of week
-        day_of_week = appointment_date.weekday()  # 0 = Monday
+        day_of_week = DayOfWeek(appointment_date.weekday())  # Convert to enum
 
-        # TODO: Uncomment when Availability model is created
-        # availability = (
-        #     self.db.query(Availability)
-        #     .filter(
-        #         and_(
-        #             Availability.barber_id == barber_id,
-        #             Availability.day_of_week == day_of_week,
-        #             Availability.is_available == True,
-        #         )
-        #     )
-        #     .first()
-        # )
-        availability = True  # Temporary: assume barber is always available
+        availability = (
+            self.db.query(BarberAvailability)
+            .filter(
+                and_(
+                    BarberAvailability.barber_id == barber_id,
+                    BarberAvailability.day_of_week == day_of_week,
+                    BarberAvailability.is_available == True,
+                    or_(
+                        BarberAvailability.effective_from == None,
+                        BarberAvailability.effective_from <= appointment_date,
+                    ),
+                    or_(
+                        BarberAvailability.effective_until == None,
+                        BarberAvailability.effective_until >= appointment_date,
+                    ),
+                )
+            )
+            .first()
+        )
 
         if not availability:
             conflicts.append(
@@ -341,20 +346,27 @@ class AvailabilityService:
         slots = []
 
         # Get barber availability for this day
-        day_of_week = appointment_date.weekday()
-        # TODO: Uncomment when Availability model is created
-        # availability = (
-        #     self.db.query(Availability)
-        #     .filter(
-        #         and_(
-        #             Availability.barber_id == barber_id,
-        #             Availability.day_of_week == day_of_week,
-        #             Availability.is_available == True,
-        #         )
-        #     )
-        #     .first()
-        # )
-        availability = True  # Temporary: assume barber is always available
+        day_of_week = DayOfWeek(appointment_date.weekday())
+        
+        availability = (
+            self.db.query(BarberAvailability)
+            .filter(
+                and_(
+                    BarberAvailability.barber_id == barber_id,
+                    BarberAvailability.day_of_week == day_of_week,
+                    BarberAvailability.is_available == True,
+                    or_(
+                        BarberAvailability.effective_from == None,
+                        BarberAvailability.effective_from <= appointment_date,
+                    ),
+                    or_(
+                        BarberAvailability.effective_until == None,
+                        BarberAvailability.effective_until >= appointment_date,
+                    ),
+                )
+            )
+            .first()
+        )
 
         if not availability:
             return slots
