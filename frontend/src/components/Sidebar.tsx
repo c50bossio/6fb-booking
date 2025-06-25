@@ -112,7 +112,7 @@ export default function Sidebar({ user }: SidebarProps) {
       {/* Brand Header */}
       <div className="flex h-16 items-center justify-center border-b border-[#2a2a2a]">
         <h1 className="text-xl font-bold text-white">
-          6FB <span className="text-blue-500">Platform</span>
+          Booked <span className="text-blue-500">Barber</span>
         </h1>
       </div>
 

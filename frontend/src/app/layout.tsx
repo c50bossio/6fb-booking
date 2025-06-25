@@ -20,10 +20,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "6FB Booking Platform",
+  title: "Booked Barber Platform",
   description: "Six Figure Barber booking and analytics platform",
   keywords: "barber, booking, appointments, six figure barber, analytics",
-  authors: [{ name: "6FB Platform Team" }],
+  authors: [{ name: "Booked Barber Team" }],
   robots: "index, follow",
   icons: {
     icon: '/favicon.png',
