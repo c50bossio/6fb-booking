@@ -103,13 +103,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Skip redirection in demo mode or during SSR
     if (DEMO_MODE || !isClient) return
 
-    // Redirect to login if not authenticated and not on a public route
-    const isPublicRoute = PUBLIC_ROUTES.some(route =>
-      pathname === route || pathname.startsWith(route + '/')
-    )
-    if (!loading && !user && !isPublicRoute) {
-      router.push('/login')
-    }
+    // Add extra safety: only redirect after a small delay to ensure hydration is complete
+    const timeoutId = setTimeout(() => {
+      // Redirect to login if not authenticated and not on a public route
+      const isPublicRoute = PUBLIC_ROUTES.some(route =>
+        pathname === route || pathname.startsWith(route + '/')
+      )
+
+      // Extra safety: check if we're still on the same pathname
+      if (!loading && !user && !isPublicRoute && window.location.pathname === pathname) {
+        router.push('/login')
+      }
+    }, 100) // Small delay to prevent hydration race conditions
+
+    return () => clearTimeout(timeoutId)
   }, [user, loading, pathname, router, isClient])
 
   const checkAuth = async () => {

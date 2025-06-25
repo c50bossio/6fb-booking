@@ -6,7 +6,9 @@
     "dev": "next dev",
     "dev:fresh": "npm run clean && npm run dev",
     "build": "node scripts/verify-contact-page.js && next build",
-    "start": "next start",
+    "start": "next start -p ${PORT:-3000}",
+    "start:railway": "next start -p $PORT",
+    "build:railway": "next build",
     "lint": "next lint",
     "clean": "rm -rf .next node_modules/.cache",
     "kill-port": "lsof -ti:3000 | xargs kill -9 2>/dev/null || echo 'No processes on port 3000'",
@@ -79,7 +81,6 @@
     "jest": "^30.0.0",
     "jest-environment-jsdom": "^30.0.0",
     "puppeteer": "^24.10.2",
-    "typescript": "^5.8.3",
-    "vercel": "^43.3.0"
+    "typescript": "^5.8.3"
   }
 }
