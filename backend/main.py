@@ -125,8 +125,8 @@ logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="6FB Booking Platform API",
-    description="Six Figure Barber booking and analytics platform",
+    title="Booked Barber Platform API",
+    description="Booked Barber booking and analytics platform",
     version="1.0.0",
 )
 
@@ -405,7 +405,7 @@ async def shutdown_event():
 def read_root():
     """Root endpoint"""
     return {
-        "message": "Welcome to 6FB Booking Platform API",
+        "message": "Welcome to Booked Barber Platform API",
         "version": "1.0.0",
         "docs": "/docs",
         "health": "/api/v1/health",
@@ -423,7 +423,7 @@ async def get_settings():
     """Basic settings endpoint for frontend compatibility"""
     return {
         "business": {
-            "name": "6FB Booking Platform",
+            "name": "Booked Barber Platform",
             "address": "123 Main St",
             "phone": "555-123-4567",
             "email": "admin@bookedbarber.com",

@@ -145,7 +145,7 @@ export default function DemoSidebar({ onNavigate }: DemoSidebarProps) {
                 <BanknotesIcon className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-white font-bold text-lg">6FB Platform</h1>
+                <h1 className="text-white font-bold text-lg">Booked Barber</h1>
                 <div className="flex items-center space-x-2">
                   <p className="text-gray-400 text-xs">Demo Mode</p>
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">

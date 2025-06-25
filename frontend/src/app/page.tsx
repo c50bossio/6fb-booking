@@ -144,7 +144,7 @@ const testimonials = [
   {
     name: 'Marcus Johnson',
     title: 'Master Barber, Atlanta',
-    quote: 'The automated payouts changed my life. I focus on cutting hair while 6FB handles my money. My income went up 40% in 6 months.',
+    quote: 'The automated payouts changed my life. I focus on cutting hair while Booked Barber handles my money. My income went up 40% in 6 months.',
     rating: 5,
   },
   {
