@@ -256,11 +256,10 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-16">
             <Link
               href="/app"
-              className="premium-button text-lg px-10 py-4 hover-lift bg-gradient-to-r from-slate-700 to-slate-800"
-              style={{ color: '#FFFFFF !important' }}
+              className="demo-button text-lg px-10 py-4 hover-lift"
             >
-              <PlayIcon className="mr-2 h-5 w-5" style={{ color: '#FFFFFF' }} />
-              <span style={{ color: '#FFFFFF' }}>Try Full Demo Now</span>
+              <PlayIcon className="mr-2 h-5 w-5" />
+              <span>Try Full Demo Now</span>
             </Link>
             <a
               href="https://bookedbarber.com"

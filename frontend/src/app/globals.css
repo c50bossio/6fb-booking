@@ -315,6 +315,10 @@
   @apply px-6 py-3 bg-gradient-to-r from-amber-500 to-yellow-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2;
 }
 
+.demo-button {
+  @apply px-6 py-3 bg-gradient-to-r from-teal-500 to-cyan-600 text-black font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2;
+}
+
 /* Ultra-high specificity override to prevent ThemeContext body text color interference */
 body a.premium-button,
 body button.premium-button,
@@ -346,8 +350,37 @@ button.premium-button:hover,
 
 /* Additional protection against global text color classes */
 body.text-gray-900 .premium-button,
-body.text-white .premium-button {
+body .premium-button {
   color: #ffffff !important;
+}
+
+/* Demo button overrides for teal with black text */
+body a.demo-button,
+body button.demo-button,
+body .demo-button,
+.text-gray-900 a.demo-button,
+.text-gray-900 button.demo-button,
+.text-gray-900 .demo-button,
+a.demo-button,
+button.demo-button,
+.demo-button {
+  color: #000000 !important;
+  background: linear-gradient(to right, #14b8a6, #0891b2) !important;
+  box-shadow: 0 4px 14px 0 rgba(20, 184, 166, 0.25) !important;
+}
+
+body a.demo-button:hover,
+body button.demo-button:hover,
+body .demo-button:hover,
+.text-gray-900 a.demo-button:hover,
+.text-gray-900 button.demo-button:hover,
+.text-gray-900 .demo-button:hover,
+a.demo-button:hover,
+button.demo-button:hover,
+.demo-button:hover {
+  color: #000000 !important;
+  background: linear-gradient(to right, #0891b2, #0e7490) !important;
+  box-shadow: 0 8px 20px 0 rgba(20, 184, 166, 0.35) !important;
 }
 
 .hover-lift {
