@@ -19,16 +19,29 @@ const PUBLIC_ROUTES = [
   '/about',
   '/privacy',
   '/terms',
-  '/security'
+  '/security',
+  '/test-public', // Test page for debugging
+  '/landing' // Server-rendered landing page
 ];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Special handling for root path
+  if (pathname === '/' || pathname === '') {
+    const response = NextResponse.next();
+    response.headers.set('X-Public-Route', 'true');
+    response.headers.set('X-Is-Landing-Page', 'true');
+    setupSecurityHeaders(response, request);
+    return response;
+  }
+
   // Check if the current route is public
-  const isPublicRoute = PUBLIC_ROUTES.some(route =>
-    pathname === route || pathname.startsWith(route + '/')
-  );
+  const isPublicRoute = PUBLIC_ROUTES.some(route => {
+    if (pathname === route) return true;
+    if (pathname.startsWith(route + '/')) return true;
+    return false;
+  });
 
   // For public routes, proceed without any auth checks
   if (isPublicRoute) {
@@ -107,7 +120,10 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * 
+     * This includes the root path '/'
      */
     '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/',
   ],
 };

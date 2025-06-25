@@ -36,7 +36,9 @@ const PUBLIC_ROUTES = [
   '/about',
   '/privacy',
   '/terms',
-  '/security'
+  '/security',
+  '/test-public', // Test page for debugging
+  '/landing' // Server-rendered landing page
 ]
 
 // DEMO MODE: Set to true to bypass authentication
@@ -103,18 +105,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Skip redirection in demo mode or during SSR
     if (DEMO_MODE || !isClient) return
 
+    // CRITICAL: Never redirect from the landing page
+    if (pathname === '/' || window.location.pathname === '/') {
+      console.log('[AuthProvider] On landing page, skipping auth redirect')
+      return
+    }
+
     // Add extra safety: only redirect after a small delay to ensure hydration is complete
     const timeoutId = setTimeout(() => {
+      // Get the current pathname, with fallback
+      const currentPath = pathname || window.location.pathname || '/'
+      
+      // Double-check we're not on the landing page
+      if (currentPath === '/') {
+        console.log('[AuthProvider] Detected landing page in timeout, skipping redirect')
+        return
+      }
+      
       // Redirect to login if not authenticated and not on a public route
-      const isPublicRoute = PUBLIC_ROUTES.some(route =>
-        pathname === route || pathname.startsWith(route + '/')
-      )
+      const isPublicRoute = PUBLIC_ROUTES.some(route => {
+        // Exact match
+        if (currentPath === route) return true
+        // Prefix match with trailing slash
+        if (currentPath.startsWith(route + '/')) return true
+        return false
+      })
+
+      // Debug logging for Railway deployment
+      console.log('[AuthProvider] Route check:', {
+        pathname: currentPath,
+        isPublicRoute,
+        loading,
+        hasUser: !!user,
+        windowPathname: window.location.pathname,
+        publicRoutes: PUBLIC_ROUTES
+      })
 
       // Extra safety: check if we're still on the same pathname
-      if (!loading && !user && !isPublicRoute && window.location.pathname === pathname) {
+      // Only redirect if ALL conditions are met
+      if (!loading && !user && !isPublicRoute && window.location.pathname === currentPath) {
+        console.log('[AuthProvider] Redirecting to login from:', currentPath)
         router.push('/login')
       }
-    }, 100) // Small delay to prevent hydration race conditions
+    }, 500) // Increased delay to ensure proper hydration
 
     return () => clearTimeout(timeoutId)
   }, [user, loading, pathname, router, isClient])
