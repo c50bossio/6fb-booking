@@ -1,291 +1,278 @@
 /**
- * Payment API client for Stripe integration
+ * Payment API Integration
+ *
+ * This module handles all payment-related API calls for the calendar system.
  */
-import apiClient from './client';
 
-// Types
-export interface PaymentMethod {
-  id: number;
-  type: 'card' | 'bank_account' | 'apple_pay' | 'google_pay';
-  last_four?: string;
-  brand?: string;
-  exp_month?: number;
-  exp_year?: number;
-  bank_name?: string;
-  account_last_four?: string;
-  is_default: boolean;
-  is_active: boolean;
-  created_at: string;
+import apiClient from './client'
+import {
+  PaymentDetails,
+  PaymentIntent,
+  SavedPaymentMethod,
+  RefundRequest,
+  PaymentStatistics,
+  PaymentStatus
+} from '@/types/payment'
+
+// Payment endpoints
+const PAYMENT_ENDPOINTS = {
+  CREATE_INTENT: '/api/v1/payments/create-intent',
+  CONFIRM_PAYMENT: '/api/v1/payments/confirm',
+  CANCEL_PAYMENT: '/api/v1/payments/cancel',
+  REFUND: '/api/v1/payments/refund',
+  GET_PAYMENT: '/api/v1/payments',
+  LIST_PAYMENTS: '/api/v1/payments/list',
+  SAVED_METHODS: '/api/v1/payments/saved-methods',
+  STATISTICS: '/api/v1/payments/statistics',
+  UPDATE_STATUS: '/api/v1/payments/status',
+  SEND_INVOICE: '/api/v1/payments/invoice',
+  PROCESS_WEBHOOK: '/api/v1/payments/webhook'
 }
 
-export interface PaymentIntent {
-  payment_id: number;
-  client_secret: string;
-  amount: number;
-  status: PaymentStatus;
-  requires_action: boolean;
-}
-
-export interface Payment {
-  id: number;
-  appointment_id: number;
-  amount: number;
-  amount_decimal: number;
-  currency: string;
-  status: PaymentStatus;
-  description?: string;
-  created_at: string;
-  paid_at?: string;
-  refunded_amount: number;
-  refundable_amount: number;
-}
-
-export interface Refund {
-  id: number;
-  payment_id: number;
-  amount: number;
-  reason?: string;
-  status: RefundStatus;
-  created_at: string;
-  refunded_at?: string;
-}
-
-export interface PaymentReport {
-  id: number;
-  report_type: 'daily' | 'weekly' | 'monthly' | 'custom';
-  start_date: string;
-  end_date: string;
-  total_revenue: number;
-  total_refunds: number;
-  net_revenue: number;
-  transaction_count: number;
-  refund_count: number;
-  breakdown_by_barber: Record<string, { revenue: number; count: number }>;
-  breakdown_by_service: Record<string, { revenue: number; count: number }>;
-  breakdown_by_payment_method: Record<string, { revenue: number; count: number }>;
-  file_path?: string;
-  created_at: string;
-}
-
-export type PaymentStatus = 
-  | 'pending'
-  | 'processing'
-  | 'succeeded'
-  | 'failed'
-  | 'cancelled'
-  | 'refunded'
-  | 'partially_refunded'
-  | 'requires_action';
-
-export type RefundStatus = 'pending' | 'succeeded' | 'failed' | 'cancelled';
-
-// API Functions
-
-/**
- * Payment Methods
- */
-export const paymentMethodsApi = {
-  /**
-   * Add a new payment method
-   */
-  async add(paymentMethodId: string, setAsDefault = false): Promise<PaymentMethod> {
-    const response = await apiClient.post<PaymentMethod>('/payments/payment-methods', {
-      payment_method_id: paymentMethodId,
-      set_as_default: setAsDefault,
-    });
-    return response.data;
-  },
-
-  /**
-   * Get all payment methods
-   */
-  async list(activeOnly = true): Promise<PaymentMethod[]> {
-    const response = await apiClient.get<PaymentMethod[]>('/payments/payment-methods', {
-      params: { active_only: activeOnly },
-    });
-    return response.data;
-  },
-
-  /**
-   * Set a payment method as default
-   */
-  async setDefault(paymentMethodId: number): Promise<void> {
-    await apiClient.put(`/payments/payment-methods/${paymentMethodId}/default`);
-  },
-
-  /**
-   * Remove a payment method
-   */
-  async remove(paymentMethodId: number): Promise<void> {
-    await apiClient.delete(`/payments/payment-methods/${paymentMethodId}`);
-  },
-};
-
-/**
- * Payment Intents
- */
-export const paymentIntentsApi = {
+export const paymentsAPI = {
   /**
    * Create a payment intent for an appointment
    */
-  async create(
-    appointmentId: number,
-    amount: number,
-    paymentMethodId?: number,
-    savePaymentMethod = false,
+  async createPaymentIntent(data: {
+    appointmentId: string
+    amount: number
+    currency?: string
+    saveMethod?: boolean
     metadata?: Record<string, any>
-  ): Promise<PaymentIntent> {
-    const response = await apiClient.post<PaymentIntent>('/payments/payment-intents', {
-      appointment_id: appointmentId,
-      amount,
-      payment_method_id: paymentMethodId,
-      save_payment_method: savePaymentMethod,
-      metadata,
-    });
-    return response.data;
+  }): Promise<PaymentIntent> {
+    const response = await apiClient.post<PaymentIntent>(PAYMENT_ENDPOINTS.CREATE_INTENT, {
+      appointment_id: data.appointmentId,
+      amount: data.amount,
+      currency: data.currency || 'usd',
+      save_method: data.saveMethod,
+      metadata: data.metadata
+    })
+    return response
   },
 
   /**
-   * Confirm a payment intent
+   * Confirm a payment
    */
-  async confirm(
-    paymentIntentId: string,
-    paymentMethodId?: string
-  ): Promise<Payment> {
-    const response = await apiClient.post<Payment>('/payments/payments/confirm', {
+  async confirmPayment(paymentIntentId: string, paymentMethodId?: string): Promise<PaymentDetails> {
+    const response = await apiClient.post<PaymentDetails>(PAYMENT_ENDPOINTS.CONFIRM_PAYMENT, {
       payment_intent_id: paymentIntentId,
-      payment_method_id: paymentMethodId,
-    });
-    return response.data;
+      payment_method_id: paymentMethodId
+    })
+    return response
   },
 
   /**
    * Cancel a payment
    */
-  async cancel(paymentId: number): Promise<Payment> {
-    const response = await apiClient.post<Payment>(
-      `/payments/payments/${paymentId}/cancel`
-    );
-    return response.data;
+  async cancelPayment(paymentId: string, reason?: string): Promise<PaymentDetails> {
+    const response = await apiClient.post<PaymentDetails>(PAYMENT_ENDPOINTS.CANCEL_PAYMENT, {
+      payment_id: paymentId,
+      reason
+    })
+    return response
   },
-};
 
-/**
- * Payments
- */
-export const paymentsApi = {
   /**
-   * Get payment history
+   * Process a refund
    */
-  async getHistory(params?: {
-    status?: PaymentStatus;
-    start_date?: string;
-    end_date?: string;
-    limit?: number;
-    offset?: number;
-  }): Promise<Payment[]> {
-    const response = await apiClient.get<Payment[]>('/payments/payments', {
-      params,
-    });
-    return response.data;
+  async refundPayment(data: RefundRequest): Promise<PaymentDetails> {
+    const response = await apiClient.post<PaymentDetails>(PAYMENT_ENDPOINTS.REFUND, {
+      payment_id: data.paymentId,
+      amount: data.amount,
+      reason: data.reason
+    })
+    return response
   },
 
   /**
    * Get payment details
    */
-  async getById(paymentId: number): Promise<Payment> {
-    const response = await apiClient.get<Payment>(`/payments/payments/${paymentId}`);
-    return response.data;
+  async getPayment(paymentId: string): Promise<PaymentDetails> {
+    const response = await apiClient.get<PaymentDetails>(`${PAYMENT_ENDPOINTS.GET_PAYMENT}/${paymentId}`)
+    return response
   },
-};
 
-/**
- * Refunds
- */
-export const refundsApi = {
   /**
-   * Create a refund
+   * Get payment by appointment ID
    */
-  async create(
-    paymentId: number,
-    amount?: number,
-    reason?: string
-  ): Promise<Refund> {
-    const response = await apiClient.post<Refund>('/payments/refunds', {
+  async getPaymentByAppointment(appointmentId: string): Promise<PaymentDetails | null> {
+    try {
+      const response = await apiClient.get<PaymentDetails>(
+        `${PAYMENT_ENDPOINTS.GET_PAYMENT}/appointment/${appointmentId}`
+      )
+      return response
+    } catch (error) {
+      return null
+    }
+  },
+
+  /**
+   * List payments with filters
+   */
+  async listPayments(filters?: {
+    status?: PaymentStatus
+    startDate?: string
+    endDate?: string
+    barberId?: number
+    clientId?: number
+    page?: number
+    limit?: number
+  }): Promise<{
+    payments: PaymentDetails[]
+    total: number
+    page: number
+    pages: number
+  }> {
+    const params = new URLSearchParams()
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined) {
+          params.append(key, String(value))
+        }
+      })
+    }
+
+    const response = await apiClient.get<{
+      payments: PaymentDetails[]
+      total: number
+      page: number
+      pages: number
+    }>(`${PAYMENT_ENDPOINTS.LIST_PAYMENTS}?${params}`)
+
+    return response
+  },
+
+  /**
+   * Get saved payment methods for a customer
+   */
+  async getSavedMethods(customerId: string): Promise<SavedPaymentMethod[]> {
+    const response = await apiClient.get<SavedPaymentMethod[]>(
+      `${PAYMENT_ENDPOINTS.SAVED_METHODS}/${customerId}`
+    )
+    return response
+  },
+
+  /**
+   * Delete a saved payment method
+   */
+  async deleteSavedMethod(methodId: string): Promise<void> {
+    await apiClient.delete(`${PAYMENT_ENDPOINTS.SAVED_METHODS}/${methodId}`)
+  },
+
+  /**
+   * Set default payment method
+   */
+  async setDefaultMethod(methodId: string): Promise<void> {
+    await apiClient.put(`${PAYMENT_ENDPOINTS.SAVED_METHODS}/${methodId}/default`)
+  },
+
+  /**
+   * Get payment statistics
+   */
+  async getStatistics(filters?: {
+    startDate?: string
+    endDate?: string
+    barberId?: number
+    groupBy?: 'day' | 'week' | 'month'
+  }): Promise<PaymentStatistics> {
+    const params = new URLSearchParams()
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined) {
+          params.append(key, String(value))
+        }
+      })
+    }
+
+    const response = await apiClient.get<PaymentStatistics>(
+      `${PAYMENT_ENDPOINTS.STATISTICS}?${params}`
+    )
+    return response
+  },
+
+  /**
+   * Update payment status (for cash/check payments)
+   */
+  async updatePaymentStatus(
+    paymentId: string,
+    status: PaymentStatus,
+    metadata?: Record<string, any>
+  ): Promise<PaymentDetails> {
+    const response = await apiClient.put<PaymentDetails>(PAYMENT_ENDPOINTS.UPDATE_STATUS, {
       payment_id: paymentId,
-      amount,
-      reason,
-    });
-    return response.data;
+      status,
+      metadata
+    })
+    return response
   },
 
   /**
-   * Get refund details
+   * Send invoice via email
    */
-  async getById(refundId: number): Promise<Refund> {
-    const response = await apiClient.get<Refund>(`/payments/refunds/${refundId}`);
-    return response.data;
-  },
-};
-
-/**
- * Reports
- */
-export const paymentReportsApi = {
-  /**
-   * Create a payment report
-   */
-  async create(
-    reportType: 'daily' | 'weekly' | 'monthly' | 'custom',
-    startDate: string,
-    endDate: string
-  ): Promise<PaymentReport> {
-    const response = await apiClient.post<PaymentReport>('/payments/reports', {
-      report_type: reportType,
-      start_date: startDate,
-      end_date: endDate,
-    });
-    return response.data;
+  async sendInvoice(paymentId: string, email?: string): Promise<void> {
+    await apiClient.post(PAYMENT_ENDPOINTS.SEND_INVOICE, {
+      payment_id: paymentId,
+      email
+    })
   },
 
   /**
-   * Get payment reports
+   * Process payment webhook (for internal use)
    */
-  async list(params?: {
-    report_type?: string;
-    limit?: number;
-    offset?: number;
-  }): Promise<PaymentReport[]> {
-    const response = await apiClient.get<PaymentReport[]>('/payments/reports', {
-      params,
-    });
-    return response.data;
-  },
-};
-
-/**
- * Format amount for display
- */
-export function formatAmount(amountInCents: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amountInCents / 100);
+  async processWebhook(event: any): Promise<void> {
+    await apiClient.post(PAYMENT_ENDPOINTS.PROCESS_WEBHOOK, event)
+  }
 }
 
-/**
- * Get payment status color
- */
-export function getPaymentStatusColor(status: PaymentStatus): string {
-  const statusColors: Record<PaymentStatus, string> = {
-    pending: 'text-yellow-600 bg-yellow-100',
-    processing: 'text-blue-600 bg-blue-100',
-    succeeded: 'text-green-600 bg-green-100',
-    failed: 'text-red-600 bg-red-100',
-    cancelled: 'text-gray-600 bg-gray-100',
-    refunded: 'text-purple-600 bg-purple-100',
-    partially_refunded: 'text-purple-600 bg-purple-100',
-    requires_action: 'text-orange-600 bg-orange-100',
-  };
-  return statusColors[status] || 'text-gray-600 bg-gray-100';
+// Helper functions for payment calculations
+export const paymentHelpers = {
+  /**
+   * Calculate deposit amount based on service price
+   */
+  calculateDeposit(servicePrice: number, depositPercentage: number = 30): number {
+    return Math.ceil(servicePrice * (depositPercentage / 100))
+  },
+
+  /**
+   * Calculate installment schedule
+   */
+  calculateInstallments(
+    totalAmount: number,
+    numberOfInstallments: number,
+    startDate: Date = new Date()
+  ): Array<{ amount: number; dueDate: string }> {
+    const installmentAmount = Math.ceil(totalAmount / numberOfInstallments)
+    const installments = []
+
+    for (let i = 0; i < numberOfInstallments; i++) {
+      const dueDate = new Date(startDate)
+      dueDate.setMonth(dueDate.getMonth() + i)
+
+      installments.push({
+        amount: i === numberOfInstallments - 1
+          ? totalAmount - (installmentAmount * (numberOfInstallments - 1))
+          : installmentAmount,
+        dueDate: dueDate.toISOString().split('T')[0]
+      })
+    }
+
+    return installments
+  },
+
+  /**
+   * Format amount for display
+   */
+  formatAmount(amount: number, currency: string = 'USD'): string {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency
+    }).format(amount / 100)
+  },
+
+  /**
+   * Check if payment is overdue
+   */
+  isPaymentOverdue(dueDate: string): boolean {
+    return new Date(dueDate) < new Date()
+  }
 }

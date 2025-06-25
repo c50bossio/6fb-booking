@@ -174,7 +174,7 @@ export default function UnifiedCalendar({
 }: UnifiedCalendarProps) {
   // Prevent SSR issues by checking for client-side rendering
   const [mounted, setMounted] = useState(false)
-  
+
   useEffect(() => {
     setMounted(true)
   }, [])
@@ -261,13 +261,20 @@ export default function UnifiedCalendar({
       console.log('📱 SSR: Returning empty appointments for server rendering')
       return []
     }
-    
-    // Always use mock appointments for testing
-    console.log('📱 ALWAYS using mock appointments for testing')
-    const mockAppts = generateMockAppointments()
-    console.log('🎭 Generated mock appointments:', mockAppts.length, mockAppts.slice(0, 3))
-    return mockAppts
-  }, [])
+
+    // Use real appointments if available, otherwise show demo appointments
+    if (appointments && appointments.length > 0) {
+      console.log('📅 Using real appointments:', appointments.length)
+      return appointments
+    } else if (isDemoMode) {
+      console.log('🎭 Demo mode: Using mock appointments')
+      const mockAppts = generateMockAppointments()
+      return mockAppts
+    }
+
+    console.log('📅 No appointments available')
+    return []
+  }, [appointments, isDemoMode])
 
   // Filter appointments based on search criteria
   const filteredAppointments = useMemo(() => {
@@ -316,9 +323,129 @@ export default function UnifiedCalendar({
 
   // Export functionality
   const handleExport = useCallback((format: 'csv' | 'pdf' | 'ical') => {
-    console.log(`Exporting calendar data as ${format}`)
-    // Implementation will be added later
-  }, [])
+    const appointmentsToExport = filteredAppointments.length > 0 ? filteredAppointments : effectiveAppointments
+
+    if (format === 'csv') {
+      // Generate CSV content
+      const headers = ['Date', 'Time', 'Client', 'Service', 'Barber', 'Status', 'Price', 'Notes']
+      const rows = appointmentsToExport.map(apt => [
+        apt.date,
+        apt.time,
+        apt.client,
+        apt.service,
+        apt.barber,
+        apt.status,
+        `$${apt.price || 0}`,
+        apt.notes || ''
+      ])
+
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+      ].join('\n')
+
+      // Download CSV
+      const blob = new Blob([csvContent], { type: 'text/csv' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `appointments-${new Date().toISOString().split('T')[0]}.csv`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } else if (format === 'pdf') {
+      // Generate simple PDF using print functionality
+      const printContent = `
+        <html>
+          <head>
+            <title>Appointments Export</title>
+            <style>
+              body { font-family: Arial, sans-serif; }
+              h1 { color: #333; }
+              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+              th { background-color: #f4f4f4; font-weight: bold; }
+              @media print { body { margin: 20px; } }
+            </style>
+          </head>
+          <body>
+            <h1>Appointments Export - ${new Date().toLocaleDateString()}</h1>
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Time</th>
+                  <th>Client</th>
+                  <th>Service</th>
+                  <th>Barber</th>
+                  <th>Status</th>
+                  <th>Price</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${appointmentsToExport.map(apt => `
+                  <tr>
+                    <td>${apt.date}</td>
+                    <td>${apt.time}</td>
+                    <td>${apt.client}</td>
+                    <td>${apt.service}</td>
+                    <td>${apt.barber}</td>
+                    <td>${apt.status}</td>
+                    <td>$${apt.price || 0}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </body>
+        </html>
+      `
+
+      const printWindow = window.open('', '_blank')
+      if (printWindow) {
+        printWindow.document.write(printContent)
+        printWindow.document.close()
+        printWindow.print()
+      }
+    } else if (format === 'ical') {
+      // Generate iCal format
+      const icalEvents = appointmentsToExport.map(apt => {
+        const startDate = new Date(`${apt.date}T${apt.time}`)
+        const endDate = new Date(startDate.getTime() + (apt.duration || 60) * 60000)
+
+        return [
+          'BEGIN:VEVENT',
+          `UID:${apt.id}@bookedbarber.com`,
+          `DTSTART:${startDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}`,
+          `DTEND:${endDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}`,
+          `SUMMARY:${apt.client} - ${apt.service}`,
+          `DESCRIPTION:Barber: ${apt.barber}\\nStatus: ${apt.status}${apt.notes ? `\\nNotes: ${apt.notes}` : ''}`,
+          `STATUS:${apt.status === 'cancelled' ? 'CANCELLED' : 'CONFIRMED'}`,
+          'END:VEVENT'
+        ].join('\r\n')
+      }).join('\r\n')
+
+      const icalContent = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Booked Barber//Calendar Export//EN',
+        'CALSCALE:GREGORIAN',
+        icalEvents,
+        'END:VCALENDAR'
+      ].join('\r\n')
+
+      // Download iCal file
+      const blob = new Blob([icalContent], { type: 'text/calendar' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `appointments-${new Date().toISOString().split('T')[0]}.ics`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    }
+  }, [filteredAppointments, effectiveAppointments])
 
   // Print functionality
   const handlePrint = useCallback(() => {

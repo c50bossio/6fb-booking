@@ -56,7 +56,6 @@ class Customer(Base):
 
     # Payment relationships
     payment_methods = relationship("CustomerPaymentMethod", back_populates="customer")
-    payments = relationship("Payment", foreign_keys="Payment.customer_id")
 
     def __repr__(self):
         return (

@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic'
 // Dynamically import calendar to prevent SSR issues
 const UnifiedCalendar = dynamic(
   () => import('@/components/calendar/UnifiedCalendar'),
-  { 
+  {
     ssr: false,
     loading: () => (
       <div className="flex items-center justify-center h-96 bg-gray-800 border border-gray-700 rounded-lg">

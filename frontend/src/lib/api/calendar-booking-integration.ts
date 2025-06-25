@@ -367,7 +367,7 @@ export class CalendarBookingIntegration {
   }) {
     try {
       // Use the corsAwareFetch helper to properly construct URLs
-      const { corsAwareFetch } = await import('../corsHelper')
+      const { corsAwareFetch } = await import('./corsHelper')
       const response = await corsAwareFetch('/appointments/check-conflicts', {
         method: 'POST',
         headers: {

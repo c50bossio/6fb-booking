@@ -23,6 +23,7 @@ from models import (
     appointment,
     barber,
     client,
+    customer,
     location,
     user,
     analytics,
@@ -66,6 +67,8 @@ from api.v1 import (
     calendar,
     services,
     payouts,
+    customer_auth,
+    customer_booking,
 )
 from api.v1.endpoints import (
     payments,
@@ -99,6 +102,7 @@ from api.v1.endpoints import (
     stripe_health,
     payout_schedules,
     payment_processors,
+    gift_certificates,
 )
 
 # Import logging setup
@@ -309,6 +313,23 @@ app.include_router(
     square_oauth.router,
     prefix="/api/v1/square-oauth",
     tags=["Square OAuth Complete"],
+)
+app.include_router(
+    gift_certificates.router,
+    prefix="/api/v1",
+    tags=["Gift Certificates"],
+)
+
+# Customer API routes
+app.include_router(
+    customer_auth.router,
+    prefix="/api/v1/customer/auth",
+    tags=["Customer Authentication"],
+)
+app.include_router(
+    customer_booking.router,
+    prefix="/api/v1/customer",
+    tags=["Customer Booking"],
 )
 
 # Add authentication system (disabled for now)

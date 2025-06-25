@@ -267,31 +267,63 @@ export default function ShopBookingPage() {
         <div className="bg-white py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-900">Meet Our Team</h2>
-              <p className="text-gray-600 mt-2">Skilled professionals ready to serve you</p>
+              <h2 className="text-2xl font-bold text-gray-900">Choose Your Barber</h2>
+              <p className="text-gray-600 mt-2">Select a specific barber or let us choose the best available professional for you</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* No Preference Option */}
+              <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-6 text-center border-2 border-dashed border-slate-300 hover:border-slate-400 hover:bg-gradient-to-br hover:from-slate-100 hover:to-slate-200 transition-all">
+                <div className="w-20 h-20 bg-slate-300 rounded-full mx-auto mb-4 flex items-center justify-center">
+                  <UserGroupIcon className="h-10 w-10 text-slate-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  No Preference
+                </h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  Let us match you with the best available barber based on your service and schedule
+                </p>
+                <div className="text-xs text-slate-500 mb-4 px-2">
+                  ✨ We'll select based on availability, expertise, and current workload
+                </div>
+                <button
+                  onClick={() => handleBookNow()}
+                  className="px-4 py-2 bg-slate-600 text-white rounded-lg text-sm font-medium hover:bg-slate-700 transition-colors border border-slate-600"
+                >
+                  Book with Any Barber
+                </button>
+              </div>
+
               {barbers.map((barber) => (
-                <div key={barber.id} className="bg-gray-50 rounded-lg p-6 text-center hover:bg-gray-100 transition-colors">
+                <div key={barber.id} className="bg-gray-50 rounded-lg p-6 text-center hover:bg-gray-100 transition-colors border border-gray-200">
                   <div className="w-20 h-20 bg-slate-200 rounded-full mx-auto mb-4 flex items-center justify-center">
                     <UserGroupIcon className="h-10 w-10 text-slate-600" />
                   </div>
                   <h3 className="font-semibold text-gray-900">
                     {barber.first_name} {barber.last_name}
                   </h3>
-                  {barber.specialties && barber.specialties.length > 0 && (
+                  {barber.specialties && barber.specialties.length > 0 ? (
                     <p className="text-gray-600 text-sm mt-1">{barber.specialties[0]}</p>
+                  ) : (
+                    <p className="text-gray-600 text-sm mt-1">Professional Barber</p>
                   )}
-                  {barber.average_rating && (
+                  {barber.average_rating ? (
                     <div className="flex items-center justify-center mt-2">
                       <StarIcon className="h-4 w-4 text-yellow-400 mr-1" />
                       <span className="text-sm text-gray-600">{formatRating(barber.average_rating)}</span>
                     </div>
+                  ) : (
+                    <div className="flex items-center justify-center mt-2">
+                      <StarIcon className="h-4 w-4 text-gray-300 mr-1" />
+                      <span className="text-sm text-gray-500">New team member</span>
+                    </div>
                   )}
+                  <div className="text-xs text-gray-500 mt-2 mb-3">
+                    Choose this barber specifically for your appointment
+                  </div>
                   <button
                     onClick={() => handleBookNow(barber.id)}
-                    className={`mt-4 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    className={`w-full px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                       preselectedBarber === barber.id.toString()
                         ? 'bg-slate-700 text-white'
                         : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'

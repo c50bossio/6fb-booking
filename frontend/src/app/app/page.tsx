@@ -7,17 +7,26 @@ export default function AppPage() {
   const router = useRouter()
 
   useEffect(() => {
+    console.log('🔄 App page useEffect running...')
+
     // Set demo mode flag in sessionStorage
     try {
       sessionStorage.setItem('demo_mode', 'true')
+      console.log('✅ Demo mode set in sessionStorage')
     } catch (e) {
       // Fallback if sessionStorage is blocked
-      console.log('SessionStorage blocked, using URL parameter')
+      console.log('⚠️ SessionStorage blocked, using URL parameter')
     }
-    
-    // Redirect to the real dashboard with demo parameter
-    router.replace('/dashboard?demo=true')
-  }, [router])
+
+    console.log('🚀 Attempting redirect to dashboard...')
+    // Use setTimeout to ensure DOM is ready and force a hard navigation
+    const timer = setTimeout(() => {
+      console.log('🔄 Executing redirect now...')
+      window.location.href = '/dashboard?demo=true'
+    }, 100)
+
+    return () => clearTimeout(timer)
+  }, [])
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
