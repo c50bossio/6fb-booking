@@ -97,6 +97,24 @@ apiClient.interceptors.response.use(
 
     console.error('API Error:', errorInfo)
 
+    // Handle 429 Too Many Requests
+    if (error.response?.status === 429) {
+      console.warn('Rate limit exceeded. Waiting before retry...')
+      
+      // Get retry-after header if available
+      const retryAfter = error.response.headers['retry-after']
+      const delay = retryAfter ? parseInt(retryAfter) * 1000 : 5000 // Default 5 seconds
+      
+      // Only retry once to avoid infinite loops
+      if (!originalRequest._retry) {
+        originalRequest._retry = true
+        
+        // Wait and retry
+        await new Promise(resolve => setTimeout(resolve, delay))
+        return apiClient(originalRequest)
+      }
+    }
+
     // Handle 401 Unauthorized - redirect to login
     if (error.response?.status === 401) {
       // Clear stored tokens
