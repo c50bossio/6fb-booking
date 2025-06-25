@@ -57,7 +57,8 @@ export const CommunicationHistory: React.FC = () => {
   const fetchEmailHistory = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/v1/communications/email/history?limit=${limit}&offset=${page * limit}`, {
+      const { corsAwareFetch } = await import('@/lib/api/corsHelper')
+      const response = await corsAwareFetch(`/communications/email/history?limit=${limit}&offset=${page * limit}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -80,7 +81,8 @@ export const CommunicationHistory: React.FC = () => {
   const fetchSMSHistory = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/v1/communications/sms/history?limit=${limit}&offset=${page * limit}`, {
+      const { corsAwareFetch } = await import('@/lib/api/corsHelper')
+      const response = await corsAwareFetch(`/communications/sms/history?limit=${limit}&offset=${page * limit}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

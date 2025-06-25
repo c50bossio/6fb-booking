@@ -2,7 +2,20 @@
 
 import { useState, useEffect } from 'react'
 import { Toaster } from 'react-hot-toast'
-import UnifiedCalendar from '@/components/calendar/UnifiedCalendar'
+import dynamic from 'next/dynamic'
+
+// Dynamically import calendar to prevent SSR issues
+const UnifiedCalendar = dynamic(
+  () => import('@/components/calendar/UnifiedCalendar'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96 bg-gray-900/30 border border-gray-700 rounded-lg">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-400"></div>
+      </div>
+    )
+  }
+)
 import { generateDragDropTestData, generateConflictTestScenarios } from '@/utils/mockCalendarData'
 import {
   DRAG_DROP_TEST_SCENARIOS,
@@ -18,11 +31,25 @@ import {
 } from '@/utils/mobileTestUtils'
 
 export default function CalendarDemoPage() {
+  const [mounted, setMounted] = useState(false)
   const [testMode, setTestMode] = useState<'comprehensive' | 'conflicts' | 'basic' | 'mobile'>('comprehensive')
   const [showInstructions, setShowInstructions] = useState(true)
   const [activeTest, setActiveTest] = useState<string | null>(null)
   const [testResults, setTestResults] = useState(testRunner.getResults())
   const [mobileEnv, setMobileEnv] = useState<any>(null)
+
+  // Prevent SSR issues
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-[#0F1014] text-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-400"></div>
+      </div>
+    )
+  }
 
   // Initialize test environment
   useEffect(() => {

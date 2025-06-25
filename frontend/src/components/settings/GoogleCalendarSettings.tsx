@@ -88,7 +88,8 @@ export default function GoogleCalendarSettings() {
       const token = getAuthToken();
       if (!token) return;
 
-      const response = await fetch('/api/v1/google-calendar/status', {
+      const { corsAwareFetch } = await import('@/lib/api/corsHelper')
+      const response = await corsAwareFetch('/google-calendar/status', {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -108,7 +109,8 @@ export default function GoogleCalendarSettings() {
       const token = getAuthToken();
       if (!token) return;
 
-      const response = await fetch('/api/v1/google-calendar/settings', {
+      const { corsAwareFetch } = await import('@/lib/api/corsHelper')
+      const response = await corsAwareFetch('/google-calendar/settings', {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -131,7 +133,8 @@ export default function GoogleCalendarSettings() {
       const token = getAuthToken();
       if (!token) return;
 
-      const response = await fetch('/api/v1/google-calendar/connect', {
+      const { corsAwareFetch } = await import('@/lib/api/corsHelper')
+      const response = await corsAwareFetch('/google-calendar/connect', {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -158,7 +161,8 @@ export default function GoogleCalendarSettings() {
       const token = getAuthToken();
       if (!token) return;
 
-      const response = await fetch('/api/v1/google-calendar/disconnect', {
+      const { corsAwareFetch } = await import('@/lib/api/corsHelper')
+      const response = await corsAwareFetch('/google-calendar/disconnect', {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -181,7 +185,8 @@ export default function GoogleCalendarSettings() {
       const token = getAuthToken();
       if (!token) return;
 
-      const response = await fetch('/api/v1/google-calendar/sync', {
+      const { corsAwareFetch } = await import('@/lib/api/corsHelper')
+      const response = await corsAwareFetch('/google-calendar/sync', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -216,7 +221,8 @@ export default function GoogleCalendarSettings() {
       const token = getAuthToken();
       if (!token) return;
 
-      const response = await fetch('/api/v1/google-calendar/settings', {
+      const { corsAwareFetch } = await import('@/lib/api/corsHelper')
+      const response = await corsAwareFetch('/google-calendar/settings', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

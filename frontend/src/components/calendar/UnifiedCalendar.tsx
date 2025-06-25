@@ -154,6 +154,8 @@ const generateMockAppointments = (): CalendarAppointment[] => {
 export default function UnifiedCalendar({
   appointments = [],
   onAppointmentMove,
+  onAppointmentClick,
+  onTimeSlotClick,
   enableDragDrop = true,
   snapInterval = 15,
   showConflicts = true,
@@ -170,6 +172,13 @@ export default function UnifiedCalendar({
   enableStatistics = false,
   ...calendarProps
 }: UnifiedCalendarProps) {
+  // Prevent SSR issues by checking for client-side rendering
+  const [mounted, setMounted] = useState(false)
+  
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   const [dragState, setDragState] = useState<DragState>({
     isDragging: false,
     draggedAppointment: null,
@@ -245,11 +254,18 @@ export default function UnifiedCalendar({
     return appointments.length === 0
   }, [appointments.length])
 
-  // TEMPORARY: Always use mock appointments to test the timezone fix
+  // Client-side only mock appointments to prevent SSR issues
   const effectiveAppointments = useMemo(() => {
+    // Only generate mock data on client-side to prevent SSR errors
+    if (typeof window === 'undefined') {
+      console.log('📱 SSR: Returning empty appointments for server rendering')
+      return []
+    }
+    
+    // Always use mock appointments for testing
     console.log('📱 ALWAYS using mock appointments for testing')
     const mockAppts = generateMockAppointments()
-    console.log('📱 Generated appointments:', mockAppts.length, mockAppts.slice(0, 2))
+    console.log('🎭 Generated mock appointments:', mockAppts.length, mockAppts.slice(0, 3))
     return mockAppts
   }, [])
 
@@ -501,6 +517,15 @@ export default function UnifiedCalendar({
     }
   }, [pendingMove, onAppointmentMove, handleDemoAppointmentMove])
 
+  // Early return for SSR to prevent initialization errors
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-400"></div>
+      </div>
+    )
+  }
+
   // Rest of the DragDropCalendar functionality continues here...
   // (I'll include the rest of the drag/drop logic in the next part)
 
@@ -689,12 +714,16 @@ export default function UnifiedCalendar({
           {...calendarProps}
           appointments={enhancedAppointments}
           onAppointmentClick={(appointment) => {
-            console.log('🖱️ UnifiedCalendar received appointment click:', appointment.id)
-            calendarProps.onAppointmentClick?.(appointment)
+            if (typeof window !== 'undefined') {
+              console.log('🖱️ UnifiedCalendar received appointment click:', appointment.id)
+              onAppointmentClick?.(appointment)
+            }
           }}
           onTimeSlotClick={(date, time) => {
-            console.log('🖱️ UnifiedCalendar received time slot click:', date, time)
-            calendarProps.onTimeSlotClick?.(date, time)
+            if (typeof window !== 'undefined') {
+              console.log('🖱️ UnifiedCalendar received time slot click:', date, time)
+              onTimeSlotClick?.(date, time)
+            }
           }}
           workingHours={workingHours}
           initialView={calendarProps.initialView || 'week'}

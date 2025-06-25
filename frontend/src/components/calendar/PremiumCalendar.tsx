@@ -429,13 +429,17 @@ export default function PremiumCalendar({
                   className={`text-xs p-1 rounded cursor-pointer hover:scale-105 transition-transform ${getAppointmentStyle(appointment.status)}`}
                   onClick={(e) => {
                     e.stopPropagation()
-                    console.log('🖱️ Appointment clicked (month view):', appointment.id, appointment.client)
-                    onAppointmentClick?.(appointment)
+                    if (typeof window !== 'undefined' && onAppointmentClick) {
+                      console.log('🖱️ Appointment clicked (month view):', appointment.id, appointment.client)
+                      onAppointmentClick(appointment)
+                    }
                   }}
                   onTouchEnd={(e) => {
                     e.stopPropagation()
-                    console.log('👆 Appointment touched (month view):', appointment.id, appointment.client)
-                    onAppointmentClick?.(appointment)
+                    if (typeof window !== 'undefined' && onAppointmentClick) {
+                      console.log('👆 Appointment touched (month view):', appointment.id, appointment.client)
+                      onAppointmentClick(appointment)
+                    }
                   }}
                   {...((appointment as any).__dragProps || {})}
                   draggable={!!(appointment as any).__dragProps}
@@ -577,13 +581,17 @@ export default function PremiumCalendar({
                         className={`${getAppointmentStyle(appointmentForTime.status, appointmentForTime.barberId)} p-3 rounded-lg h-full`}
                         onClick={(e) => {
                           e.stopPropagation()
-                          console.log('🖱️ Appointment clicked (week/day view):', appointmentForTime.id, appointmentForTime.client)
-                          onAppointmentClick?.(appointmentForTime)
+                          if (typeof window !== 'undefined' && onAppointmentClick) {
+                            console.log('🖱️ Appointment clicked (week/day view):', appointmentForTime.id, appointmentForTime.client)
+                            onAppointmentClick(appointmentForTime)
+                          }
                         }}
                         onTouchEnd={(e) => {
                           e.stopPropagation()
-                          console.log('👆 Appointment touched (week/day view):', appointmentForTime.id, appointmentForTime.client)
-                          onAppointmentClick?.(appointmentForTime)
+                          if (typeof window !== 'undefined' && onAppointmentClick) {
+                            console.log('👆 Appointment touched (week/day view):', appointmentForTime.id, appointmentForTime.client)
+                            onAppointmentClick(appointmentForTime)
+                          }
                         }}
                         {...((appointmentForTime as any).__dragProps || {})}
                         draggable={!!(appointmentForTime as any).__dragProps}

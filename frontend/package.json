@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:nodemon": "nodemon --exec \"next dev\" --watch \"src/**/*\" --ext \"js,jsx,ts,tsx,json,css,scss\"",
     "dev:fresh": "npm run clean && npm run dev",
     "build": "node scripts/verify-contact-page.js && next build",
     "start": "next start -p ${PORT:-3000}",
@@ -72,6 +73,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@next/bundle-analyzer": "^15.3.4",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
@@ -80,7 +82,9 @@
     "eslint-config-next": "14.2.14",
     "jest": "^30.0.0",
     "jest-environment-jsdom": "^30.0.0",
+    "nodemon": "^3.1.10",
     "puppeteer": "^24.10.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "webpack-bundle-analyzer": "^4.10.2"
   }
 }

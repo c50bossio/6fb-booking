@@ -55,7 +55,8 @@ export const NotificationPreferences: React.FC = () => {
 
   const fetchPreferences = async () => {
     try {
-      const response = await fetch('/api/v1/communications/preferences', {
+      const { corsAwareFetch } = await import('@/lib/api/corsHelper')
+      const response = await corsAwareFetch('/communications/preferences', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -81,7 +82,8 @@ export const NotificationPreferences: React.FC = () => {
     setError(null);
 
     try {
-      const response = await fetch('/api/v1/communications/preferences', {
+      const { corsAwareFetch } = await import('@/lib/api/corsHelper')
+      const response = await corsAwareFetch('/communications/preferences', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -1,7 +1,20 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
-import UnifiedCalendar from '@/components/calendar/UnifiedCalendar'
+import React, { useState, useMemo, useEffect } from 'react'
+import dynamic from 'next/dynamic'
+
+// Dynamically import calendar to prevent SSR issues
+const UnifiedCalendar = dynamic(
+  () => import('@/components/calendar/UnifiedCalendar'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-96 bg-gray-800 border border-gray-700 rounded-lg">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-400"></div>
+      </div>
+    )
+  }
+)
 import { CalendarAppointment } from '@/components/calendar/PremiumCalendar'
 // SmartScheduler components will be imported when available
 // import SmartSchedulerPanel, { useSmartScheduler } from '@/components/calendar/SmartScheduler'
@@ -78,6 +91,7 @@ const demoAppointments: CalendarAppointment[] = [
 ]
 
 export default function CalendarDemoPage() {
+  const [mounted, setMounted] = useState(false)
   const [appointments, setAppointments] = useState<CalendarAppointment[]>(demoAppointments)
   const [showConflicts, setShowConflicts] = useState(true)
   const [allowConflicts, setAllowConflicts] = useState(false)
@@ -85,6 +99,19 @@ export default function CalendarDemoPage() {
   const [enableCascade, setEnableCascade] = useState(false)
   const [selectedBarber, setSelectedBarber] = useState(1)
   const [selectedDuration, setSelectedDuration] = useState(60)
+
+  // Prevent SSR issues
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-400"></div>
+      </div>
+    )
+  }
 
   // Demo dependencies - appointment 2 depends on appointment 1
   const appointmentDependencies = useMemo(() => {
