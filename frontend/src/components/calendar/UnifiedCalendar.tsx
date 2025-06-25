@@ -340,6 +340,145 @@ export default function UnifiedCalendar({
     return Promise.resolve()
   }, [])
 
+  // Enhance appointments with drag & drop handlers
+  const enhancedAppointments = useMemo(() => {
+    if (!enableDragDrop) return filteredAppointments
+
+    return filteredAppointments.map(appointment => ({
+      ...appointment,
+      __dragProps: {
+        draggable: true,
+        onDragStart: (e: React.DragEvent) => {
+          console.log('🔥 Drag started for appointment:', appointment.id)
+
+          // Set drag data
+          e.dataTransfer.setData('text/plain', JSON.stringify({
+            appointmentId: appointment.id,
+            originalDate: appointment.date,
+            originalTime: appointment.startTime
+          }))
+
+          // Update drag state
+          setDragState(prev => ({
+            ...prev,
+            isDragging: true,
+            draggedAppointment: appointment,
+            dragOffset: { x: 0, y: 0 },
+            currentPosition: { x: e.clientX, y: e.clientY }
+          }))
+
+          // Add visual feedback
+          e.dataTransfer.effectAllowed = 'move'
+          const dragImage = document.createElement('div')
+          dragImage.textContent = `${appointment.client} - ${appointment.service}`
+          dragImage.style.cssText = 'position: absolute; top: -1000px; background: #8b5cf6; color: white; padding: 8px; border-radius: 4px; font-size: 12px;'
+          document.body.appendChild(dragImage)
+          e.dataTransfer.setDragImage(dragImage, 0, 0)
+          setTimeout(() => document.body.removeChild(dragImage), 0)
+        },
+        onDragEnd: (e: React.DragEvent) => {
+          console.log('🔥 Drag ended')
+          setDragState(prev => ({
+            ...prev,
+            isDragging: false,
+            draggedAppointment: null,
+            dropTarget: null
+          }))
+        }
+      }
+    }))
+  }, [filteredAppointments, enableDragDrop])
+
+  // Handle drop on time slots
+  const handleTimeSlotDrop = useCallback((e: React.DragEvent, date: string, time: string) => {
+    e.preventDefault()
+
+    try {
+      const dragData = JSON.parse(e.dataTransfer.getData('text/plain'))
+      const { appointmentId, originalDate, originalTime } = dragData
+
+      console.log('🎯 Drop detected:', {
+        appointmentId,
+        originalDate,
+        originalTime,
+        newDate: date,
+        newTime: time
+      })
+
+      // Find the appointment being moved
+      const appointment = filteredAppointments.find(apt => apt.id === appointmentId)
+      if (!appointment) {
+        console.error('Appointment not found:', appointmentId)
+        return
+      }
+
+      // Check if it's actually a move (not dropping on same slot)
+      if (originalDate === date && originalTime === time) {
+        console.log('Same slot drop, ignoring')
+        return
+      }
+
+      // Set up the pending move for confirmation
+      setPendingMove({
+        appointment,
+        newDate: date,
+        newTime: time
+      })
+      setIsConfirmationOpen(true)
+
+    } catch (error) {
+      console.error('Error handling drop:', error)
+    }
+  }, [filteredAppointments])
+
+  // Handle confirmed move
+  const handleConfirmedMove = useCallback(async (notifyCustomer: boolean, note?: string) => {
+    if (!pendingMove) return
+
+    try {
+      setIsSaving(true)
+
+      const { appointment, newDate, newTime } = pendingMove
+
+      // Call the appropriate move handler
+      if (onAppointmentMove) {
+        await onAppointmentMove(
+          appointment.id,
+          newDate,
+          newTime,
+          appointment.date,
+          appointment.startTime
+        )
+      } else {
+        // Fallback to demo handler
+        await handleDemoAppointmentMove(
+          appointment.id,
+          newDate,
+          newTime,
+          appointment.date,
+          appointment.startTime
+        )
+      }
+
+      // Update the appointment in our local state for immediate feedback
+      // (In a real app, this would be handled by refetching data)
+      console.log('✅ Move completed successfully')
+
+      // Show success animation
+      setSuccessAnimation({ visible: true, appointmentId: appointment.id })
+      setTimeout(() => {
+        setSuccessAnimation({ visible: false, appointmentId: null })
+      }, 2000)
+
+    } catch (error) {
+      console.error('❌ Error confirming move:', error)
+    } finally {
+      setIsSaving(false)
+      setIsConfirmationOpen(false)
+      setPendingMove(null)
+    }
+  }, [pendingMove, onAppointmentMove, handleDemoAppointmentMove])
+
   // Rest of the DragDropCalendar functionality continues here...
   // (I'll include the rest of the drag/drop logic in the next part)
 
@@ -489,10 +628,31 @@ export default function UnifiedCalendar({
       )}
 
       {/* Enhanced Calendar with all drag & drop functionality */}
-      <div className="calendar-container" data-drag-drop-enabled={enableDragDrop}>
+      <div
+        className="calendar-container"
+        data-drag-drop-enabled={enableDragDrop}
+        onDragOver={(e) => {
+          if (enableDragDrop) {
+            e.preventDefault()
+            e.dataTransfer.dropEffect = 'move'
+          }
+        }}
+        onDrop={(e) => {
+          if (enableDragDrop) {
+            const timeSlot = (e.target as HTMLElement).closest('[data-time-slot]')
+            if (timeSlot) {
+              const date = timeSlot.getAttribute('data-date')
+              const time = timeSlot.getAttribute('data-time')
+              if (date && time) {
+                handleTimeSlotDrop(e, date, time)
+              }
+            }
+          }
+        }}
+      >
         <PremiumCalendar
           {...calendarProps}
-          appointments={filteredAppointments}
+          appointments={enhancedAppointments}
           onAppointmentClick={calendarProps.onAppointmentClick}
           onTimeSlotClick={calendarProps.onTimeSlotClick}
           workingHours={workingHours}
@@ -510,12 +670,7 @@ export default function UnifiedCalendar({
             setIsConfirmationOpen(false)
             setPendingMove(null)
           }}
-          onConfirm={(notifyCustomer, note) => {
-            // handleConfirmedMove implementation
-            console.log('Move confirmed:', { notifyCustomer, note })
-            setIsConfirmationOpen(false)
-            setPendingMove(null)
-          }}
+          onConfirm={handleConfirmedMove}
           appointment={{
             id: pendingMove.appointment.id,
             client: pendingMove.appointment.client,
@@ -532,6 +687,32 @@ export default function UnifiedCalendar({
           isLoading={isSaving}
         />
       )}
+
+      {/* Drag Visual Feedback */}
+      {dragState.isDragging && (
+        <div className="fixed top-4 left-4 z-50 bg-violet-600 text-white px-4 py-2 rounded-lg shadow-lg animate-pulse">
+          🔄 Moving: {dragState.draggedAppointment?.client} - {dragState.draggedAppointment?.service}
+        </div>
+      )}
+
+      {/* Success Animation */}
+      <AnimatePresence>
+        {successAnimation.visible && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.5, y: 50 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.5, y: -50 }}
+            className="fixed top-4 right-4 z-50 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2"
+          >
+            <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center">
+              <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <span className="font-medium">Appointment moved successfully!</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
