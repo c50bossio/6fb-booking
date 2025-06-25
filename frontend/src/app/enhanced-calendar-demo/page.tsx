@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
-import DragDropCalendar from '@/components/calendar/DragDropCalendar'
+import UnifiedCalendar from '@/components/calendar/UnifiedCalendar'
 import { CalendarAppointment } from '@/components/calendar/PremiumCalendar'
 // SmartScheduler components will be imported when available
 // import SmartSchedulerPanel, { useSmartScheduler } from '@/components/calendar/SmartScheduler'
@@ -284,7 +284,7 @@ export default function CalendarDemoPage() {
 
         {/* Calendar */}
         <div className="bg-gray-800 rounded-xl shadow-2xl border border-gray-700">
-          <DragDropCalendar
+          <UnifiedCalendar
             appointments={appointments}
             onAppointmentMove={handleAppointmentMove}
             onAppointmentClick={handleAppointmentClick}

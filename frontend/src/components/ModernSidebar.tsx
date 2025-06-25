@@ -140,7 +140,7 @@ export default function ModernSidebar({ user, onLogout }: SidebarProps) {
                 <BanknotesIcon className={`h-6 w-6 ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`} />
               </div>
               <div>
-                <h1 className={`font-bold text-lg ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>6FB Payouts</h1>
+                <h1 className={`font-bold text-lg ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Booked Barber</h1>
                 <p className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Professional Platform</p>
               </div>
             </div>

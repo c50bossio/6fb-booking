@@ -358,7 +358,7 @@ export default function CalendarSystem({
       // In demo mode, skip API call and just update local state
       if (isDemoMode()) {
         console.log('📋 Demo mode: updating local state only')
-        
+
         setAppointments(prev =>
           prev.map(apt => {
             if (apt.id === appointmentId) {

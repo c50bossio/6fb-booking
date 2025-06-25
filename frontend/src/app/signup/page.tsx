@@ -96,9 +96,9 @@ export default function SignupPage() {
     if (!formData.email.trim()) newErrors.email = 'Email is required'
     if (!formData.email.includes('@')) newErrors.email = 'Please enter a valid email'
     if (!formData.phone.trim()) newErrors.phone = 'Phone number is required'
-    if (!formData.password) newErrors.password = 'Password is required'
-    if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters'
-    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match'
+    if (!formData.password) newErrors.password = 'Password is required' // pragma: allowlist secret
+    if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters' // pragma: allowlist secret
+    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match' // pragma: allowlist secret
     if (!formData.agreeToTerms) newErrors.agreeToTerms = 'You must agree to the terms and conditions'
 
     setErrors(newErrors)
@@ -189,7 +189,7 @@ export default function SignupPage() {
             </Link>
             <div className="flex items-center">
               <CurrencyDollarIcon className="h-8 w-8 text-teal-600" />
-              <span className="ml-2 text-2xl font-bold text-gray-900">6FB Payouts</span>
+              <span className="ml-2 text-2xl font-bold text-gray-900">Booked Barber</span>
             </div>
             <Link href="/login" className="text-gray-500 hover:text-gray-900">
               Sign In
@@ -449,7 +449,7 @@ export default function SignupPage() {
               <div className="text-center">
                 <div className="bg-green-50 border border-green-200 rounded-lg p-8 mb-8">
                   <CheckIcon className="h-16 w-16 text-green-600 mx-auto mb-4" />
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Welcome to 6FB Payouts!</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Welcome to Booked Barber!</h2>
                   <p className="text-gray-600 mb-6">
                     Your {selectedPlanData.name} plan is ready. You have 14 days to explore all features risk-free.
                   </p>
