@@ -3,20 +3,32 @@
  */
 import axios from 'axios'
 import { smartStorage } from '../utils/storage'
+import { getApiBaseUrl, initializeCors } from './corsHelper'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
+// Initialize CORS checking
+if (typeof window !== 'undefined') {
+  initializeCors()
+}
+
+// Get dynamic API URL based on CORS status
+const getBaseURL = () => {
+  const url = getApiBaseUrl()
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Using API URL:', url)
+  }
+  return url
+}
 
 // Log API configuration in development
 if (process.env.NODE_ENV === 'development') {
   console.log('API Configuration:', {
-    baseURL: API_BASE_URL,
+    baseURL: getBaseURL(),
     environment: process.env.NEXT_PUBLIC_ENVIRONMENT || 'development'
   })
 }
 
-// Create axios instance
+// Create axios instance with dynamic base URL
 const apiClient = axios.create({
-  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -26,6 +38,9 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     try {
+      // Set dynamic base URL
+      config.baseURL = getBaseURL()
+
       // Use safe storage to get token
       const token = smartStorage.getItem('access_token')
       if (token) {
@@ -40,6 +55,7 @@ apiClient.interceptors.request.use(
         console.log('API Request:', {
           method: config.method?.toUpperCase(),
           url: config.url,
+          baseURL: config.baseURL,
           hasAuth: !!token,
           timestamp: new Date().toISOString()
         })
@@ -238,7 +254,7 @@ export const apiUtils = {
    */
   getConfig() {
     return {
-      baseURL: API_BASE_URL,
+      baseURL: getBaseURL(),
       hasToken: !!smartStorage.getItem('access_token'),
       environment: process.env.NEXT_PUBLIC_ENVIRONMENT || 'development'
     }

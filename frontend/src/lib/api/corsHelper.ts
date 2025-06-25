@@ -22,7 +22,7 @@ interface CorsStatus {
 }
 
 let corsStatus: CorsStatus = {
-  isWorking: false,
+  isWorking: false,  // Default to false, forcing proxy usage until CORS is verified
   lastChecked: 0,
   testResults: {
     health: false,
@@ -103,7 +103,7 @@ export async function testCors(): Promise<CorsStatus> {
         },
         body: JSON.stringify({
           username: 'cors-test@example.com',
-          password: 'cors-test-password'
+          password: 'cors-test-pass' // pragma: allowlist secret
         })
       });
       // 422 is expected for invalid credentials, but means CORS is working
