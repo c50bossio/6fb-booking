@@ -56,6 +56,20 @@ from .square_payment import (
     SquarePaymentStatus,
     SquarePayoutStatus,
 )
+from .payment_processor_preference import (
+    ProcessorPreference,
+    ProcessorMetrics,
+    PaymentProcessor,
+)
+from .revenue_analytics import (
+    RevenuePattern,
+    RevenuePrediction,
+    PricingOptimization,
+    ClientSegment,
+    RevenueInsight,
+    PerformanceBenchmark,
+    RevenueOptimizationGoal,
+)
 
 # Export all models for easy importing
 __all__ = [
@@ -120,4 +134,16 @@ __all__ = [
     "SquareWebhookEvent",
     "SquarePaymentStatus",
     "SquarePayoutStatus",
+    # Payment Processor models
+    "ProcessorPreference",
+    "ProcessorMetrics",
+    "PaymentProcessor",
+    # Revenue Analytics models
+    "RevenuePattern",
+    "RevenuePrediction",
+    "PricingOptimization",
+    "ClientSegment",
+    "RevenueInsight",
+    "PerformanceBenchmark",
+    "RevenueOptimizationGoal",
 ]

@@ -69,6 +69,7 @@ class Appointment(BaseModel):
     payment_method = Column(String(50))  # cash, card, digital
     payment_status = Column(String(20), default="pending")  # pending, paid, refunded
     deposit_amount = Column(Float, default=0.0)
+    payment_processor = Column(String(50))  # stripe, square
 
     # Notes and Tags
     barber_notes = Column(Text)

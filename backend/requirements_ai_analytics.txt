@@ -1,0 +1,24 @@
+# AI and Analytics dependencies for revenue optimization
+
+# Data science and machine learning
+numpy==1.26.4
+pandas==2.2.2
+scikit-learn==1.5.1
+scipy==1.13.1
+
+# Time series analysis
+statsmodels==0.14.2
+prophet==1.1.5
+
+# Data visualization (for potential future use)
+matplotlib==3.9.0
+seaborn==0.13.2
+
+# ML model persistence
+joblib==1.4.2
+
+# Additional analytics utilities
+python-dateutil==2.9.0
+
+# Note: Add these to your main requirements.txt or install separately:
+# pip install -r requirements_ai_analytics.txt

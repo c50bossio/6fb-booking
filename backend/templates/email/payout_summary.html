@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="background-color: #f9fafb; padding: 40px 20px;">
+    <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);">
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%); padding: 40px 30px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 600;">Your {{ period|title }} Payout Summary</h1>
+            <p style="color: #E0E7FF; margin: 10px 0 0 0; font-size: 16px;">{{ period_start }} - {{ period_end }}</p>
+        </div>
+
+        <!-- Content -->
+        <div style="padding: 40px 30px;">
+            <p style="font-size: 16px; color: #374151; margin-bottom: 20px;">
+                Hi {{ barber_name }},
+            </p>
+
+            <p style="font-size: 16px; color: #374151; margin-bottom: 30px;">
+                Here's your {{ period }} earnings summary. Great work this period!
+            </p>
+
+            <!-- Key Metrics -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px;">
+                <div style="background-color: #F0F9FF; border-radius: 8px; padding: 20px; text-align: center;">
+                    <p style="color: #075985; font-size: 14px; margin: 0 0 5px 0;">Total Earnings</p>
+                    <p style="color: #0C4A6E; font-size: 28px; font-weight: 600; margin: 0;">${{ "%.2f"|format(total_amount) }}</p>
+                </div>
+                <div style="background-color: #F0FDF4; border-radius: 8px; padding: 20px; text-align: center;">
+                    <p style="color: #14532D; font-size: 14px; margin: 0 0 5px 0;">Payouts Received</p>
+                    <p style="color: #166534; font-size: 28px; font-weight: 600; margin: 0;">{{ total_payouts }}</p>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div style="background-color: #F3F4F6; border-radius: 8px; padding: 25px; margin-bottom: 30px;">
+                <h3 style="color: #1F2937; font-size: 18px; margin: 0 0 20px 0;">Period Statistics</h3>
+
+                <div style="display: grid; gap: 15px;">
+                    <div style="display: flex; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid #E5E7EB;">
+                        <span style="color: #6B7280; font-size: 14px;">Average Payout</span>
+                        <span style="color: #1F2937; font-size: 15px; font-weight: 500;">${{ "%.2f"|format(average_payout) }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid #E5E7EB;">
+                        <span style="color: #6B7280; font-size: 14px;">Largest Payout</span>
+                        <span style="color: #1F2937; font-size: 15px; font-weight: 500;">${{ "%.2f"|format(largest_payout) }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #6B7280; font-size: 14px;">Total Commissions</span>
+                        <span style="color: #1F2937; font-size: 15px; font-weight: 500;">{{ commission_count }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payout History -->
+            {% if payouts %}
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: #1F2937; font-size: 18px; margin-bottom: 15px;">Payout Details</h3>
+
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background-color: #F9FAFB;">
+                            <th style="padding: 10px; text-align: left; color: #6B7280; font-size: 12px; font-weight: 600; text-transform: uppercase;">Date</th>
+                            <th style="padding: 10px; text-align: right; color: #6B7280; font-size: 12px; font-weight: 600; text-transform: uppercase;">Amount</th>
+                            <th style="padding: 10px; text-align: right; color: #6B7280; font-size: 12px; font-weight: 600; text-transform: uppercase;">Method</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payout in payouts[:5] %}
+                        <tr style="border-bottom: 1px solid #E5E7EB;">
+                            <td style="padding: 12px 10px; color: #374151; font-size: 14px;">{{ payout.date }}</td>
+                            <td style="padding: 12px 10px; color: #374151; font-size: 14px; text-align: right; font-weight: 500;">${{ "%.2f"|format(payout.amount) }}</td>
+                            <td style="padding: 12px 10px; color: #6B7280; font-size: 14px; text-align: right;">{{ payout.method }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if payouts|length > 5 %}
+                <p style="text-align: center; margin-top: 15px; color: #6B7280; font-size: 14px;">
+                    ... and {{ payouts|length - 5 }} more payouts
+                </p>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Earnings Insight -->
+            <div style="background-color: #EFF6FF; border-left: 4px solid #3B82F6; padding: 15px 20px; margin-bottom: 30px; border-radius: 4px;">
+                <h4 style="color: #1E40AF; font-size: 16px; margin: 0 0 8px 0;">💡 Earnings Insight</h4>
+                <p style="color: #3730A3; font-size: 14px; margin: 0;">
+                    {% if average_payout > 500 %}
+                    Outstanding performance! Your average payout of ${{ "%.2f"|format(average_payout) }} is well above average. Keep up the excellent work!
+                    {% elif average_payout > 300 %}
+                    Great job! You're maintaining solid earnings with an average payout of ${{ "%.2f"|format(average_payout) }}.
+                    {% else %}
+                    Your earnings are growing! Focus on increasing bookings and upselling services to boost your payouts.
+                    {% endif %}
+                </p>
+            </div>
+
+            <!-- CTA Buttons -->
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{ website_url }}/payouts/history" style="display: inline-block; background-color: #4F46E5; color: white; text-decoration: none; padding: 12px 30px; border-radius: 6px; font-weight: 500; font-size: 16px; margin-right: 10px;">
+                    View Full History
+                </a>
+                <a href="{{ website_url }}/analytics/earnings" style="display: inline-block; background-color: #F3F4F6; color: #374151; text-decoration: none; padding: 12px 30px; border-radius: 6px; font-weight: 500; font-size: 16px;">
+                    Earnings Analytics
+                </a>
+            </div>
+
+            <!-- Tax Reminder -->
+            <div style="background-color: #FEF3C7; padding: 20px; border-radius: 8px; margin-top: 30px;">
+                <h4 style="color: #92400E; font-size: 16px; margin: 0 0 8px 0;">📊 Tax Season Reminder</h4>
+                <p style="color: #92400E; font-size: 14px; margin: 0 0 10px 0;">
+                    Don't forget to save approximately 25-30% of your earnings for taxes.
+                </p>
+                <p style="color: #92400E; font-size: 14px; margin: 0;">
+                    You can download all your payout statements and 1099 forms from your dashboard.
+                </p>
+                <div style="text-align: center; margin-top: 15px;">
+                    <a href="{{ website_url }}/tax-documents" style="display: inline-block; background-color: #92400E; color: white; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-size: 14px;">
+                        Access Tax Documents
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="background-color: #F9FAFB; padding: 30px; text-align: center; border-top: 1px solid #E5E7EB;">
+            <p style="color: #6B7280; font-size: 14px; margin: 0 0 10px 0;">
+                Keep up the great work! Here's to even better earnings next {{ period }}.
+            </p>
+            <p style="color: #6B7280; font-size: 14px; margin: 0;">
+                <a href="mailto:{{ support_email }}" style="color: #4F46E5; text-decoration: none;">{{ support_email }}</a> |
+                <a href="{{ website_url }}/help" style="color: #4F46E5; text-decoration: none;">Help Center</a>
+            </p>
+
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #E5E7EB;">
+                <p style="color: #9CA3AF; font-size: 12px; margin: 0;">
+                    <a href="{{ unsubscribe_url }}" style="color: #9CA3AF; text-decoration: underline;">Unsubscribe from summaries</a> |
+                    <a href="{{ website_url }}/preferences" style="color: #9CA3AF; text-decoration: underline;">Update Preferences</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

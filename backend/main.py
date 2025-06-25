@@ -77,6 +77,7 @@ from api.v1.endpoints import (
     debug,
     square_integration,
     square,
+    square_oauth,  # New comprehensive Square OAuth module
     location_payment_management,
     barber_payment_splits,
     barber_payroll,
@@ -96,6 +97,8 @@ from api.v1.endpoints import (
     availability_check,
     emergency_login,
     stripe_health,
+    payout_schedules,
+    payment_processors,
 )
 
 # Import logging setup
@@ -292,6 +295,21 @@ app.include_router(
     prefix="/api/v1",
     tags=["Stripe Health"],
 )
+app.include_router(
+    payout_schedules.router,
+    prefix="/api/v1/payout-schedules",
+    tags=["Payout Schedules"],
+)
+app.include_router(
+    payment_processors.router,
+    prefix="/api/v1",
+    tags=["Payment Processors"],
+)
+app.include_router(
+    square_oauth.router,
+    prefix="/api/v1/square-oauth",
+    tags=["Square OAuth Complete"],
+)
 
 # Add authentication system (disabled for now)
 # app = add_auth_to_sixfb_backend(app)
@@ -403,7 +421,7 @@ async def cors_test(request: Request):
     """Test CORS configuration and return origin information"""
     origin = request.headers.get("origin", "")
     user_agent = request.headers.get("user-agent", "")
-    
+
     return {
         "message": "CORS test endpoint",
         "origin": origin,
@@ -411,7 +429,9 @@ async def cors_test(request: Request):
         "user_agent": user_agent,
         "timestamp": datetime.utcnow().isoformat(),
         "allowed_origins_count": len(settings.CORS_ORIGINS),
-        "railway_origin": ".railway.app" in origin or ".up.railway.app" in origin if origin else False
+        "railway_origin": (
+            ".railway.app" in origin or ".up.railway.app" in origin if origin else False
+        ),
     }
 
 
@@ -419,23 +439,25 @@ async def cors_test(request: Request):
 async def handle_options(path: str, request: Request):
     """Handle CORS preflight requests for all paths with proper origin validation"""
     origin = request.headers.get("origin", "")
-    
+
     # Use settings to validate origin
     allowed_origin = "*"  # Default fallback
-    
+
     if origin and settings.is_allowed_origin(origin):
         allowed_origin = origin
         logger.info(f"OPTIONS: Allowed origin {origin} for path {path}")
     elif origin:
         # Check if it's a Railway domain
-        if (".railway.app" in origin or ".up.railway.app" in origin):
+        if ".railway.app" in origin or ".up.railway.app" in origin:
             allowed_origin = origin
             logger.info(f"OPTIONS: Allowed Railway origin {origin} for path {path}")
         else:
-            logger.warning(f"OPTIONS: Origin {origin} not in allowed list for path {path}")
-    
+            logger.warning(
+                f"OPTIONS: Origin {origin} not in allowed list for path {path}"
+            )
+
     return Response(
-        content="", 
+        content="",
         status_code=200,
         headers={
             "Access-Control-Allow-Origin": allowed_origin,
@@ -443,8 +465,8 @@ async def handle_options(path: str, request: Request):
             "Access-Control-Allow-Headers": "Accept,Accept-Language,Content-Language,Content-Type,Authorization,X-Requested-With,Cache-Control,X-API-Key",
             "Access-Control-Allow-Credentials": "true",
             "Access-Control-Max-Age": "86400",  # 24 hours
-            "Vary": "Origin"
-        }
+            "Vary": "Origin",
+        },
     )
 
 
@@ -522,4 +544,6 @@ def trigger_error():
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)  # nosec B104
+    # Use PORT environment variable for Railway compatibility
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)  # nosec B104
