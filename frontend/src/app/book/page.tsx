@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
   CalendarIcon,
@@ -34,7 +34,7 @@ interface BookingForm {
   notes: string
 }
 
-export default function BookingPage() {
+function BookingPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -610,5 +610,20 @@ export default function BookingPage() {
         />
       )}
     </div>
+  )
+}
+
+export default function BookingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-700 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading booking form...</p>
+        </div>
+      </div>
+    }>
+      <BookingPageContent />
+    </Suspense>
   )
 }
