@@ -425,10 +425,11 @@ export default function DragDropCalendar({
   const enhancedAppointments = useMemo(() => {
     return appointments.map(appointment => ({
       ...appointment,
-      __dragProps: {
+      __dragProps: enableDragDrop ? {
         onMouseDown: (e: React.MouseEvent) => handleAppointmentMouseDown(appointment, e),
-        style: { cursor: enableDragDrop ? 'grab' : 'pointer' }
-      }
+        onDragStart: (e: React.DragEvent) => e.preventDefault(), // Prevent HTML5 drag
+        style: { cursor: 'grab', userSelect: 'none' }
+      } : null
     }))
   }, [appointments, handleAppointmentMouseDown, enableDragDrop])
 
