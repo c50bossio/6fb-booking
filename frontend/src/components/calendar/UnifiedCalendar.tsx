@@ -392,10 +392,17 @@ export default function UnifiedCalendar({
   // Handle drop on time slots
   const handleTimeSlotDrop = useCallback((e: React.DragEvent, date: string, time: string) => {
     e.preventDefault()
+    e.stopPropagation()
 
     try {
-      const dragData = JSON.parse(e.dataTransfer.getData('text/plain'))
-      const { appointmentId, originalDate, originalTime } = dragData
+      const dragData = e.dataTransfer.getData('text/plain')
+      if (!dragData) {
+        console.log('⚠️ No drag data found, ignoring drop')
+        return
+      }
+
+      const parsedData = JSON.parse(dragData)
+      const { appointmentId, originalDate, originalTime } = parsedData
 
       console.log('🎯 Drop detected:', {
         appointmentId,
@@ -644,12 +651,14 @@ export default function UnifiedCalendar({
           }
         }}
         onDrop={(e) => {
-          if (enableDragDrop) {
+          if (enableDragDrop && dragState.isDragging) {
+            console.log('📦 Drop event triggered')
             const timeSlot = (e.target as HTMLElement).closest('[data-time-slot]')
             if (timeSlot) {
               const date = timeSlot.getAttribute('data-date')
               const time = timeSlot.getAttribute('data-time')
               if (date && time) {
+                console.log('📦 Handling drop on time slot:', date, time)
                 handleTimeSlotDrop(e, date, time)
               }
             }
@@ -659,8 +668,14 @@ export default function UnifiedCalendar({
         <PremiumCalendar
           {...calendarProps}
           appointments={enhancedAppointments}
-          onAppointmentClick={calendarProps.onAppointmentClick}
-          onTimeSlotClick={calendarProps.onTimeSlotClick}
+          onAppointmentClick={(appointment) => {
+            console.log('🖱️ UnifiedCalendar received appointment click:', appointment.id)
+            calendarProps.onAppointmentClick?.(appointment)
+          }}
+          onTimeSlotClick={(date, time) => {
+            console.log('🖱️ UnifiedCalendar received time slot click:', date, time)
+            calendarProps.onTimeSlotClick?.(date, time)
+          }}
           workingHours={workingHours}
           initialView={calendarProps.initialView || 'week'}
         />

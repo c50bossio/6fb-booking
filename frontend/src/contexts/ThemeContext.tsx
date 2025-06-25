@@ -67,7 +67,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           cardBackground: '#242424',
           textPrimary: '#ffffff',
           textSecondary: '#a8a8a8',
-          border: '#2a2a2a',
+          border: '#404040',
           shadow: '0 8px 16px -4px rgba(0, 0, 0, 0.5)'
         }
       default:
