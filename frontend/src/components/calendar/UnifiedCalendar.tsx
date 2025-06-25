@@ -618,10 +618,16 @@ export default function UnifiedCalendar({
         <div className="bg-gray-800 p-2 rounded text-xs text-gray-300 mb-4">
           <strong>Debug Info:</strong> Demo Mode: {isDemoMode ? 'ON' : 'OFF'} |
           Effective Appointments: {effectiveAppointments.length} |
-          Filtered Appointments: {filteredAppointments.length}
+          Filtered Appointments: {filteredAppointments.length} |
+          Enhanced Appointments: {enhancedAppointments.length} |
+          Drag & Drop: {enableDragDrop ? 'ON' : 'OFF'} |
+          Initial View: {calendarProps.initialView || 'week'}
           {filteredAppointments.length > 0 && (
             <div className="mt-1">
               <strong>Sample:</strong> {filteredAppointments[0].client} - {filteredAppointments[0].service} on {filteredAppointments[0].date}
+              {enhancedAppointments.length > 0 && enhancedAppointments[0].__dragProps && (
+                <span className="ml-2 text-green-400">✓ Drag Props</span>
+              )}
             </div>
           )}
         </div>
@@ -656,8 +662,7 @@ export default function UnifiedCalendar({
           onAppointmentClick={calendarProps.onAppointmentClick}
           onTimeSlotClick={calendarProps.onTimeSlotClick}
           workingHours={workingHours}
-          initialView="week"
-          darkMode={true}
+          initialView={calendarProps.initialView || 'week'}
         />
       </div>
 
