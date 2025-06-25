@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Touch Drag Test for DragDropCalendar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .appointment-block {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px;
+            margin: 10px;
+            border-radius: 6px;
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .appointment-block:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .appointment-block.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        .time-slot {
+            border: 2px dashed #ddd;
+            padding: 20px;
+            margin: 10px;
+            border-radius: 6px;
+            background: #f9f9f9;
+            transition: all 0.2s ease;
+        }
+
+        .time-slot.drop-target {
+            background-color: rgba(139, 92, 246, 0.2);
+            border-color: rgb(139, 92, 246);
+            box-shadow: inset 0 0 0 2px rgba(139, 92, 246, 0.5);
+        }
+
+        .time-slot.conflict-target {
+            background-color: rgba(239, 68, 68, 0.2);
+            border-color: rgb(239, 68, 68);
+            box-shadow: inset 0 0 0 2px rgba(239, 68, 68, 0.5);
+        }
+
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .success {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .drag-preview {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1000;
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-size: 14px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Touch Drag & Drop Test</h1>
+
+        <div class="info">
+            <strong>Instructions:</strong>
+            <ul>
+                <li>On mobile/tablet: Touch and drag the appointment blocks to move them</li>
+                <li>On desktop: Click and drag the appointment blocks</li>
+                <li>The page should not scroll while dragging</li>
+                <li>Drop zones will highlight when you drag over them</li>
+            </ul>
+        </div>
+
+        <h3>📅 Appointments</h3>
+        <div class="appointment-block" data-appointment="1">
+            <strong>John Doe - Haircut</strong><br>
+            <small>10:00 AM - 11:00 AM</small>
+        </div>
+
+        <div class="appointment-block" data-appointment="2">
+            <strong>Jane Smith - Beard Trim</strong><br>
+            <small>2:00 PM - 2:30 PM</small>
+        </div>
+
+        <h3>🎯 Drop Zones</h3>
+        <div class="time-slot" data-time="09:00">
+            <strong>9:00 AM</strong><br>
+            <small>Available slot</small>
+        </div>
+
+        <div class="time-slot" data-time="11:00">
+            <strong>11:00 AM</strong><br>
+            <small>Available slot</small>
+        </div>
+
+        <div class="time-slot" data-time="15:00">
+            <strong>3:00 PM</strong><br>
+            <small>Available slot</small>
+        </div>
+
+        <div class="success" id="success-message">
+            ✅ <strong>Success!</strong> Touch drag and drop is working correctly!
+        </div>
+
+        <div class="drag-preview" id="drag-preview">
+            Dragging appointment...
+        </div>
+    </div>
+
+    <script>
+        let isDragging = false;
+        let draggedElement = null;
+        let dragPreview = document.getElementById('drag-preview');
+        let successMessage = document.getElementById('success-message');
+
+        // Mouse events
+        document.querySelectorAll('.appointment-block').forEach(appointment => {
+            appointment.addEventListener('mousedown', handleMouseDown);
+        });
+
+        // Touch events
+        document.querySelectorAll('.appointment-block').forEach(appointment => {
+            appointment.addEventListener('touchstart', handleTouchStart);
+        });
+
+        function handleMouseDown(e) {
+            e.preventDefault();
+            startDrag(e.target, e.clientX, e.clientY);
+
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        }
+
+        function handleTouchStart(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            startDrag(e.target, touch.clientX, touch.clientY);
+
+            // Prevent body scroll on mobile
+            document.body.style.overflow = 'hidden';
+
+            document.addEventListener('touchmove', handleTouchMove, { passive: false });
+            document.addEventListener('touchend', handleTouchEnd);
+        }
+
+        function startDrag(element, x, y) {
+            isDragging = true;
+            draggedElement = element;
+            element.classList.add('dragging');
+
+            dragPreview.style.display = 'block';
+            dragPreview.style.left = (x + 10) + 'px';
+            dragPreview.style.top = (y + 10) + 'px';
+            dragPreview.textContent = element.querySelector('strong').textContent;
+        }
+
+        function handleMouseMove(e) {
+            if (!isDragging) return;
+            updateDrag(e.clientX, e.clientY);
+        }
+
+        function handleTouchMove(e) {
+            if (!isDragging) return;
+            e.preventDefault(); // Prevent scrolling
+            const touch = e.touches[0];
+            updateDrag(touch.clientX, touch.clientY);
+        }
+
+        function updateDrag(x, y) {
+            dragPreview.style.left = (x + 10) + 'px';
+            dragPreview.style.top = (y + 10) + 'px';
+
+            const elementBelow = document.elementFromPoint(x, y);
+            const timeSlot = elementBelow?.closest('.time-slot');
+
+            // Remove all drop target classes
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.classList.remove('drop-target', 'conflict-target');
+            });
+
+            if (timeSlot) {
+                timeSlot.classList.add('drop-target');
+            }
+        }
+
+        function handleMouseUp(e) {
+            endDrag(e.clientX, e.clientY);
+
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        }
+
+        function handleTouchEnd(e) {
+            const touch = e.changedTouches[0];
+            endDrag(touch.clientX, touch.clientY);
+
+            // Re-enable body scroll
+            document.body.style.overflow = '';
+
+            document.removeEventListener('touchmove', handleTouchMove);
+            document.removeEventListener('touchend', handleTouchEnd);
+        }
+
+        function endDrag(x, y) {
+            if (!isDragging) return;
+
+            isDragging = false;
+            dragPreview.style.display = 'none';
+
+            if (draggedElement) {
+                draggedElement.classList.remove('dragging');
+            }
+
+            // Remove all drop target classes
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.classList.remove('drop-target', 'conflict-target');
+            });
+
+            const elementBelow = document.elementFromPoint(x, y);
+            const timeSlot = elementBelow?.closest('.time-slot');
+
+            if (timeSlot && draggedElement) {
+                // Show success message
+                successMessage.style.display = 'block';
+                setTimeout(() => {
+                    successMessage.style.display = 'none';
+                }, 3000);
+
+                console.log('Dropped appointment on time slot:', timeSlot.dataset.time);
+            }
+
+            draggedElement = null;
+        }
+
+        // Prevent default drag behavior
+        document.querySelectorAll('.appointment-block').forEach(appointment => {
+            appointment.addEventListener('dragstart', e => e.preventDefault());
+        });
+    </script>
+</body>
+</html>

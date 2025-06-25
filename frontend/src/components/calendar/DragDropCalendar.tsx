@@ -1,7 +1,11 @@
 'use client'
 
-import React, { useState, useCallback, useRef, useEffect } from 'react'
+import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import PremiumCalendar, { CalendarAppointment, CalendarProps } from './PremiumCalendar'
+import AppointmentMoveConfirmation from '../modals/AppointmentMoveConfirmation'
+import ConflictResolutionModal, { ConflictResolution, TimeSlotSuggestion, ConflictingAppointment } from '../modals/ConflictResolutionModal'
+import ConflictResolutionService from './ConflictResolutionService'
 
 interface DragDropData {
   appointmentId: string
@@ -17,6 +21,17 @@ interface DragState {
   dropTarget: { date: string; time: string } | null
   conflictingAppointments: CalendarAppointment[]
   snapTarget: { date: string; time: string } | null
+  isValidDrop: boolean
+  snapGuides: { x: number; y: number; visible: boolean }
+  dragHandle: { visible: boolean; appointmentId: string | null }
+}
+
+interface ConflictState {
+  isResolutionOpen: boolean
+  conflictingAppointments: ConflictingAppointment[]
+  suggestions: TimeSlotSuggestion[]
+  targetDate: string
+  targetTime: string
 }
 
 // Undo/Redo action tracking
@@ -42,6 +57,9 @@ interface DragDropCalendarProps extends CalendarProps {
   allowConflicts?: boolean
   enableCascadeRescheduling?: boolean
   appointmentDependencies?: Map<string, string[]> // appointmentId -> dependentIds
+  enableSmartConflictResolution?: boolean
+  workingHours?: { start: string; end: string }
+  onConflictResolution?: (resolution: ConflictResolution) => Promise<void>
 }
 
 export default function DragDropCalendar({
@@ -53,6 +71,9 @@ export default function DragDropCalendar({
   allowConflicts = false,
   enableCascadeRescheduling = false,
   appointmentDependencies = new Map(),
+  enableSmartConflictResolution = true,
+  workingHours = { start: '08:00', end: '20:00' },
+  onConflictResolution,
   ...calendarProps
 }: DragDropCalendarProps) {
   const [dragState, setDragState] = useState<DragState>({
@@ -62,12 +83,44 @@ export default function DragDropCalendar({
     currentPosition: { x: 0, y: 0 },
     dropTarget: null,
     conflictingAppointments: [],
-    snapTarget: null
+    snapTarget: null,
+    isValidDrop: true,
+    snapGuides: { x: 0, y: 0, visible: false },
+    dragHandle: { visible: false, appointmentId: null }
   })
 
   // Undo/Redo stacks
   const [undoStack, setUndoStack] = useState<MoveAction[]>([])
   const [redoStack, setRedoStack] = useState<MoveAction[]>([])
+  const [pendingMove, setPendingMove] = useState<{
+    appointment: CalendarAppointment
+    newDate: string
+    newTime: string
+  } | null>(null)
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [successAnimation, setSuccessAnimation] = useState<{ visible: boolean; appointmentId: string | null }>({ visible: false, appointmentId: null })
+  const [hoveredAppointment, setHoveredAppointment] = useState<string | null>(null)
+
+  // Conflict resolution state
+  const [conflictState, setConflictState] = useState<ConflictState>({
+    isResolutionOpen: false,
+    conflictingAppointments: [],
+    suggestions: [],
+    targetDate: '',
+    targetTime: ''
+  })
+
+  // Initialize conflict resolution service
+  const conflictService = useMemo(() =>
+    new ConflictResolutionService(appointments, {
+      workingHoursStart: workingHours.start,
+      workingHoursEnd: workingHours.end,
+      slotInterval: snapInterval,
+      maxSuggestions: 12,
+      prioritizeSameDay: true,
+      prioritizeNearbyTimes: true
+    }), [appointments, workingHours, snapInterval])
 
   const dragImageRef = useRef<HTMLDivElement>(null)
   const calendarRef = useRef<HTMLDivElement>(null)
@@ -151,7 +204,10 @@ export default function DragDropCalendar({
         currentPosition: { x: event.clientX, y: event.clientY },
         dropTarget: null,
         conflictingAppointments: [],
-        snapTarget: null
+        snapTarget: null,
+        isValidDrop: true,
+        snapGuides: { x: 0, y: 0, visible: false },
+        dragHandle: { visible: false, appointmentId: null }
       })
 
       // Add drag class to the appointment element
@@ -176,29 +232,50 @@ export default function DragDropCalendar({
           if (date && time) {
             const snappedTime = snapToInterval(time)
             const conflicts = findConflicts(appointment, date, snappedTime)
+            const isValidDrop = conflicts.length === 0 || allowConflicts
+
+            // Calculate snap guides position
+            const rect = timeSlot.getBoundingClientRect()
+            const snapGuides = {
+              x: rect.left + rect.width / 2,
+              y: rect.top + rect.height / 2,
+              visible: true
+            }
 
             setDragState(prev => ({
               ...prev,
               dropTarget: { date, time },
               snapTarget: { date, time: snappedTime },
-              conflictingAppointments: conflicts
+              conflictingAppointments: conflicts,
+              isValidDrop,
+              snapGuides
             }))
 
-            // Update visual feedback
+            // Update visual feedback with enhanced classes
             document.querySelectorAll('[data-time-slot]').forEach(slot => {
-              slot.classList.remove('drop-target', 'conflict-target')
+              slot.classList.remove('drop-target', 'conflict-target', 'drop-target-valid', 'drop-target-invalid')
             })
 
-            timeSlot.classList.add(conflicts.length > 0 && !allowConflicts ? 'conflict-target' : 'drop-target')
+            if (isValidDrop) {
+              timeSlot.classList.add('drop-target', 'drop-target-valid')
+            } else {
+              timeSlot.classList.add('conflict-target', 'drop-target-invalid')
+            }
           }
+        } else {
+          // Clear snap guides when not over a valid drop target
+          setDragState(prev => ({
+            ...prev,
+            snapGuides: { ...prev.snapGuides, visible: false }
+          }))
         }
       }
 
       const handleMouseUp = async (e: MouseEvent) => {
         // Remove dragging class
         document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'))
-        document.querySelectorAll('.drop-target, .conflict-target').forEach(el => {
-          el.classList.remove('drop-target', 'conflict-target')
+        document.querySelectorAll('.drop-target, .conflict-target, .drop-target-valid, .drop-target-invalid').forEach(el => {
+          el.classList.remove('drop-target', 'conflict-target', 'drop-target-valid', 'drop-target-invalid')
         })
 
         const elementBelow = document.elementFromPoint(e.clientX, e.clientY)
@@ -212,46 +289,51 @@ export default function DragDropCalendar({
             const snappedTime = snapToInterval(newTime)
             const conflicts = findConflicts(dragState.draggedAppointment, newDate, snappedTime)
 
-            // Only allow move if no conflicts or conflicts are allowed
-            if (conflicts.length === 0 || allowConflicts) {
+            // Handle conflicts with smart resolution
+            if (conflicts.length === 0) {
+              // No conflicts - proceed with normal confirmation
               if (newDate !== dragState.draggedAppointment.date ||
                   snappedTime !== dragState.draggedAppointment.startTime) {
-                try {
-                  // Move the main appointment
-                  await onAppointmentMove(
-                    dragState.draggedAppointment.id,
-                    newDate,
-                    snappedTime,
-                    dragState.draggedAppointment.date,
-                    dragState.draggedAppointment.startTime
-                  )
+                setPendingMove({
+                  appointment: dragState.draggedAppointment,
+                  newDate,
+                  newTime: snappedTime
+                })
+                setIsConfirmationOpen(true)
+              }
+            } else if (enableSmartConflictResolution) {
+              // Show conflict resolution modal
+              const conflictingAppointments = ConflictResolutionService.analyzeConflicts(
+                appointments,
+                dragState.draggedAppointment,
+                newDate,
+                snappedTime
+              )
 
-                  // Handle cascade rescheduling
-                  if (enableCascadeRescheduling) {
-                    const dependentIds = appointmentDependencies.get(dragState.draggedAppointment.id) || []
-                    if (dependentIds.length > 0) {
-                      await handleCascadeRescheduling(
-                        dragState.draggedAppointment,
-                        newDate,
-                        snappedTime,
-                        dependentIds
-                      )
-                    }
-                  }
+              const suggestions = conflictService.generateSuggestions(
+                dragState.draggedAppointment,
+                newDate,
+                snappedTime,
+                dragState.draggedAppointment.barberId
+              )
 
-                  // Add to undo stack
-                  const moveAction: MoveAction = {
-                    appointmentId: dragState.draggedAppointment.id,
-                    fromDate: dragState.draggedAppointment.date,
-                    fromTime: dragState.draggedAppointment.startTime,
-                    toDate: newDate,
-                    toTime: snappedTime
-                  }
-                  setUndoStack(prev => [...prev, moveAction])
-                  setRedoStack([]) // Clear redo stack on new action
-                } catch (error) {
-                  console.error('Error moving appointment:', error)
-                }
+              setConflictState({
+                isResolutionOpen: true,
+                conflictingAppointments,
+                suggestions,
+                targetDate: newDate,
+                targetTime: snappedTime
+              })
+            } else if (allowConflicts) {
+              // Allow conflicts if explicitly enabled
+              if (newDate !== dragState.draggedAppointment.date ||
+                  snappedTime !== dragState.draggedAppointment.startTime) {
+                setPendingMove({
+                  appointment: dragState.draggedAppointment,
+                  newDate,
+                  newTime: snappedTime
+                })
+                setIsConfirmationOpen(true)
               }
             }
           }
@@ -265,7 +347,10 @@ export default function DragDropCalendar({
           currentPosition: { x: 0, y: 0 },
           dropTarget: null,
           conflictingAppointments: [],
-          snapTarget: null
+          snapTarget: null,
+          isValidDrop: true,
+          snapGuides: { x: 0, y: 0, visible: false },
+          dragHandle: { visible: false, appointmentId: null }
         })
 
         document.removeEventListener('mousemove', handleMouseMove)
@@ -274,6 +359,202 @@ export default function DragDropCalendar({
 
       document.addEventListener('mousemove', handleMouseMove)
       document.addEventListener('mouseup', handleMouseUp)
+    },
+    [enableDragDrop, onAppointmentMove, snapToInterval, findConflicts, allowConflicts, dragState.draggedAppointment]
+  )
+
+  // Touch event handlers for mobile support
+  const handleAppointmentTouchStart = useCallback(
+    (appointment: CalendarAppointment, event: React.TouchEvent) => {
+      if (!enableDragDrop) return
+
+      event.preventDefault()
+      event.stopPropagation()
+
+      const touch = event.touches[0]
+      const rect = (event.target as HTMLElement).getBoundingClientRect()
+      const offset = {
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top
+      }
+
+      setDragState({
+        isDragging: true,
+        draggedAppointment: appointment,
+        dragOffset: offset,
+        currentPosition: { x: touch.clientX, y: touch.clientY },
+        dropTarget: null,
+        conflictingAppointments: [],
+        snapTarget: null,
+        isValidDrop: true,
+        snapGuides: { x: 0, y: 0, visible: false },
+        dragHandle: { visible: false, appointmentId: null }
+      })
+
+      // Add drag class to the appointment element
+      const appointmentElement = event.target as HTMLElement
+      appointmentElement.classList.add('dragging')
+
+      // Prevent body scroll on mobile while dragging
+      document.body.classList.add('dragging-active')
+
+      // Global touch events for dragging
+      const handleTouchMove = (e: TouchEvent) => {
+        e.preventDefault() // Prevent scrolling while dragging
+        const touch = e.touches[0]
+
+        setDragState(prev => ({
+          ...prev,
+          currentPosition: { x: touch.clientX, y: touch.clientY }
+        }))
+
+        // Find potential drop target
+        const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY)
+        const timeSlot = elementBelow?.closest('[data-time-slot]')
+
+        if (timeSlot) {
+          const date = timeSlot.getAttribute('data-date')
+          const time = timeSlot.getAttribute('data-time')
+
+          if (date && time) {
+            const snappedTime = snapToInterval(time)
+            const conflicts = findConflicts(appointment, date, snappedTime)
+            const isValidDrop = conflicts.length === 0 || allowConflicts
+
+            // Calculate snap guides position
+            const rect = timeSlot.getBoundingClientRect()
+            const snapGuides = {
+              x: rect.left + rect.width / 2,
+              y: rect.top + rect.height / 2,
+              visible: true
+            }
+
+            setDragState(prev => ({
+              ...prev,
+              dropTarget: { date, time },
+              snapTarget: { date, time: snappedTime },
+              conflictingAppointments: conflicts,
+              isValidDrop,
+              snapGuides
+            }))
+
+            // Update visual feedback with enhanced classes
+            document.querySelectorAll('[data-time-slot]').forEach(slot => {
+              slot.classList.remove('drop-target', 'conflict-target', 'drop-target-valid', 'drop-target-invalid')
+            })
+
+            if (isValidDrop) {
+              timeSlot.classList.add('drop-target', 'drop-target-valid')
+            } else {
+              timeSlot.classList.add('conflict-target', 'drop-target-invalid')
+            }
+          }
+        } else {
+          // Clear snap guides when not over a valid drop target
+          setDragState(prev => ({
+            ...prev,
+            snapGuides: { ...prev.snapGuides, visible: false }
+          }))
+        }
+      }
+
+      const handleTouchEnd = async (e: TouchEvent) => {
+        e.preventDefault()
+
+        // Remove dragging class
+        document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'))
+        document.querySelectorAll('.drop-target, .conflict-target, .drop-target-valid, .drop-target-invalid').forEach(el => {
+          el.classList.remove('drop-target', 'conflict-target', 'drop-target-valid', 'drop-target-invalid')
+        })
+
+        // Re-enable body scroll
+        document.body.classList.remove('dragging-active')
+
+        // Get the last touch position
+        const touch = e.changedTouches[0]
+        const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY)
+        const timeSlot = elementBelow?.closest('[data-time-slot]')
+
+        if (timeSlot && dragState.draggedAppointment && onAppointmentMove) {
+          const newDate = timeSlot.getAttribute('data-date')
+          const newTime = timeSlot.getAttribute('data-time')
+
+          if (newDate && newTime) {
+            const snappedTime = snapToInterval(newTime)
+            const conflicts = findConflicts(dragState.draggedAppointment, newDate, snappedTime)
+
+            // Handle conflicts with smart resolution
+            if (conflicts.length === 0) {
+              // No conflicts - proceed with normal confirmation
+              if (newDate !== dragState.draggedAppointment.date ||
+                  snappedTime !== dragState.draggedAppointment.startTime) {
+                setPendingMove({
+                  appointment: dragState.draggedAppointment,
+                  newDate,
+                  newTime: snappedTime
+                })
+                setIsConfirmationOpen(true)
+              }
+            } else if (enableSmartConflictResolution) {
+              // Show conflict resolution modal
+              const conflictingAppointments = ConflictResolutionService.analyzeConflicts(
+                appointments,
+                dragState.draggedAppointment,
+                newDate,
+                snappedTime
+              )
+
+              const suggestions = conflictService.generateSuggestions(
+                dragState.draggedAppointment,
+                newDate,
+                snappedTime,
+                dragState.draggedAppointment.barberId
+              )
+
+              setConflictState({
+                isResolutionOpen: true,
+                conflictingAppointments,
+                suggestions,
+                targetDate: newDate,
+                targetTime: snappedTime
+              })
+            } else if (allowConflicts) {
+              // Allow conflicts if explicitly enabled
+              if (newDate !== dragState.draggedAppointment.date ||
+                  snappedTime !== dragState.draggedAppointment.startTime) {
+                setPendingMove({
+                  appointment: dragState.draggedAppointment,
+                  newDate,
+                  newTime: snappedTime
+                })
+                setIsConfirmationOpen(true)
+              }
+            }
+          }
+        }
+
+        // Clean up
+        setDragState({
+          isDragging: false,
+          draggedAppointment: null,
+          dragOffset: { x: 0, y: 0 },
+          currentPosition: { x: 0, y: 0 },
+          dropTarget: null,
+          conflictingAppointments: [],
+          snapTarget: null,
+          isValidDrop: true,
+          snapGuides: { x: 0, y: 0, visible: false },
+          dragHandle: { visible: false, appointmentId: null }
+        })
+
+        document.removeEventListener('touchmove', handleTouchMove, { passive: false } as EventListenerOptions)
+        document.removeEventListener('touchend', handleTouchEnd)
+        document.removeEventListener('touchcancel', handleTouchEnd)
+      }
+
+      document.addEventListener('touchmove', handleTouchMove, { passive: false })
+      document.addEventListener('touchend', handleTouchEnd)
+      document.addEventListener('touchcancel', handleTouchEnd)
     },
     [enableDragDrop, onAppointmentMove, snapToInterval, findConflicts, allowConflicts, dragState.draggedAppointment]
   )
@@ -385,6 +666,151 @@ export default function DragDropCalendar({
     [appointments, findConflicts, snapToInterval, allowConflicts, onAppointmentMove]
   )
 
+  // Handle confirmed appointment move
+  const handleConfirmedMove = useCallback(
+    async (notifyCustomer: boolean, note?: string) => {
+      if (!pendingMove || !onAppointmentMove) return
+
+      setIsSaving(true)
+      try {
+        // Move the main appointment
+        await onAppointmentMove(
+          pendingMove.appointment.id,
+          pendingMove.newDate,
+          pendingMove.newTime,
+          pendingMove.appointment.date,
+          pendingMove.appointment.startTime
+        )
+
+        // Handle cascade rescheduling
+        if (enableCascadeRescheduling) {
+          const dependentIds = appointmentDependencies.get(pendingMove.appointment.id) || []
+          if (dependentIds.length > 0) {
+            await handleCascadeRescheduling(
+              pendingMove.appointment,
+              pendingMove.newDate,
+              pendingMove.newTime,
+              dependentIds
+            )
+          }
+        }
+
+        // Add to undo stack
+        const moveAction: MoveAction = {
+          appointmentId: pendingMove.appointment.id,
+          fromDate: pendingMove.appointment.date,
+          fromTime: pendingMove.appointment.startTime,
+          toDate: pendingMove.newDate,
+          toTime: pendingMove.newTime
+        }
+        setUndoStack(prev => [...prev, moveAction])
+        setRedoStack([]) // Clear redo stack on new action
+
+        // Show success animation
+        setSuccessAnimation({ visible: true, appointmentId: pendingMove.appointment.id })
+        setTimeout(() => {
+          setSuccessAnimation({ visible: false, appointmentId: null })
+        }, 2000)
+
+        // Log notification preference and note
+        console.log('Move confirmed:', {
+          notifyCustomer,
+          note,
+          appointment: pendingMove.appointment.id
+        })
+
+        // Close modal and reset
+        setIsConfirmationOpen(false)
+        setPendingMove(null)
+      } catch (error) {
+        console.error('Error moving appointment:', error)
+      } finally {
+        setIsSaving(false)
+      }
+    },
+    [pendingMove, onAppointmentMove, enableCascadeRescheduling, appointmentDependencies, handleCascadeRescheduling]
+  )
+
+  // Handle conflict resolution
+  const handleConflictResolution = useCallback(
+    async (resolution: ConflictResolution) => {
+      if (!dragState.draggedAppointment) return
+
+      setIsSaving(true)
+      try {
+        switch (resolution.type) {
+          case 'accept_suggestion':
+            if (resolution.selectedSuggestion) {
+              await onAppointmentMove?.(
+                dragState.draggedAppointment.id,
+                resolution.selectedSuggestion.date,
+                resolution.selectedSuggestion.time,
+                dragState.draggedAppointment.date,
+                dragState.draggedAppointment.startTime
+              )
+            }
+            break
+
+          case 'bump_appointments':
+            // First move the dragged appointment
+            await onAppointmentMove?.(
+              dragState.draggedAppointment.id,
+              conflictState.targetDate,
+              conflictState.targetTime,
+              dragState.draggedAppointment.date,
+              dragState.draggedAppointment.startTime
+            )
+
+            // Then move the bumped appointments
+            if (resolution.appointmentsToBump) {
+              for (const bump of resolution.appointmentsToBump) {
+                const originalApt = appointments.find(apt => apt.id === bump.appointmentId)
+                if (originalApt) {
+                  await onAppointmentMove?.(
+                    bump.appointmentId,
+                    bump.newDate,
+                    bump.newTime,
+                    originalApt.date,
+                    originalApt.startTime
+                  )
+                }
+              }
+            }
+            break
+
+          case 'allow_overlap':
+            await onAppointmentMove?.(
+              dragState.draggedAppointment.id,
+              conflictState.targetDate,
+              conflictState.targetTime,
+              dragState.draggedAppointment.date,
+              dragState.draggedAppointment.startTime
+            )
+            break
+        }
+
+        // Call custom conflict resolution handler if provided
+        if (onConflictResolution) {
+          await onConflictResolution(resolution)
+        }
+
+        // Close modal and reset
+        setConflictState({
+          isResolutionOpen: false,
+          conflictingAppointments: [],
+          suggestions: [],
+          targetDate: '',
+          targetTime: ''
+        })
+      } catch (error) {
+        console.error('Error resolving conflict:', error)
+      } finally {
+        setIsSaving(false)
+      }
+    },
+    [dragState.draggedAppointment, onAppointmentMove, onConflictResolution, conflictState, appointments]
+  )
+
   // Keyboard shortcuts for undo/redo
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -421,17 +847,45 @@ export default function DragDropCalendar({
     [calendarProps.onTimeSlotClick, dragState.isDragging]
   )
 
+  // Hover handlers for drag handle visibility
+  const handleAppointmentMouseEnter = useCallback((appointmentId: string) => {
+    if (enableDragDrop && !dragState.isDragging) {
+      setHoveredAppointment(appointmentId)
+      setDragState(prev => ({
+        ...prev,
+        dragHandle: { visible: true, appointmentId }
+      }))
+    }
+  }, [enableDragDrop, dragState.isDragging])
+
+  const handleAppointmentMouseLeave = useCallback(() => {
+    if (enableDragDrop && !dragState.isDragging) {
+      setHoveredAppointment(null)
+      setDragState(prev => ({
+        ...prev,
+        dragHandle: { visible: false, appointmentId: null }
+      }))
+    }
+  }, [enableDragDrop, dragState.isDragging])
+
   // Wrap appointments to add drag functionality
   const enhancedAppointments = useMemo(() => {
     return appointments.map(appointment => ({
       ...appointment,
       __dragProps: enableDragDrop ? {
         onMouseDown: (e: React.MouseEvent) => handleAppointmentMouseDown(appointment, e),
+        onTouchStart: (e: React.TouchEvent) => handleAppointmentTouchStart(appointment, e),
+        onMouseEnter: () => handleAppointmentMouseEnter(appointment.id),
+        onMouseLeave: handleAppointmentMouseLeave,
         onDragStart: (e: React.DragEvent) => e.preventDefault(), // Prevent HTML5 drag
-        style: { cursor: 'grab', userSelect: 'none' }
+        style: {
+          cursor: 'grab',
+          userSelect: 'none',
+          touchAction: 'none' // Prevent default touch behaviors
+        }
       } : null
     }))
-  }, [appointments, handleAppointmentMouseDown, enableDragDrop])
+  }, [appointments, handleAppointmentMouseDown, handleAppointmentTouchStart, handleAppointmentMouseEnter, handleAppointmentMouseLeave, enableDragDrop])
 
   return (
     <div
@@ -473,104 +927,361 @@ export default function DragDropCalendar({
         />
       </div>
 
-      {/* Enhanced Drag Preview with conflict info */}
-      {dragState.isDragging && dragState.draggedAppointment && (
-        <div
-          ref={dragImageRef}
-          className="fixed pointer-events-none z-50 transform"
-          style={{
-            left: dragState.currentPosition.x + 10,
-            top: dragState.currentPosition.y + 10,
-          }}
-        >
-          <div className={`${
-            dragState.conflictingAppointments.length > 0 && !allowConflicts
-              ? 'bg-red-600'
-              : 'bg-violet-600'
-          } text-white p-3 rounded-lg shadow-2xl border ${
-            dragState.conflictingAppointments.length > 0 && !allowConflicts
-              ? 'border-red-400'
-              : 'border-violet-400'
-          } max-w-xs`}>
-            <div className="font-semibold text-sm mb-1">
-              {dragState.draggedAppointment.service}
-            </div>
-            <div className="text-xs opacity-90">
-              {dragState.draggedAppointment.client}
-            </div>
-            <div className="text-xs opacity-75">
-              {dragState.draggedAppointment.startTime} - {dragState.draggedAppointment.endTime}
-            </div>
-            {dragState.snapTarget && (
-              <div className="mt-2 pt-2 border-t border-white/20">
-                <div className="text-xs">
-                  New time: {dragState.snapTarget.time}
-                </div>
-                {dragState.conflictingAppointments.length > 0 && showConflicts && (
-                  <div className="text-xs text-red-200 mt-1">
-                    ⚠️ Conflicts with {dragState.conflictingAppointments.length} appointment(s)
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Snap-to-grid guides */}
+      <AnimatePresence>
+        {dragState.snapGuides.visible && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="fixed pointer-events-none z-40"
+            style={{
+              left: dragState.snapGuides.x - 2,
+              top: dragState.snapGuides.y - 2,
+            }}
+          >
+            <div className="w-4 h-4 border-2 border-blue-400 bg-blue-100 rounded-full animate-pulse" />
+            <div className="absolute -top-1 -left-1 w-6 h-6 border-2 border-blue-300 rounded-full animate-ping" />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Global styles for drag and drop visual feedback */}
+      {/* Enhanced Drag Preview with smooth animations */}
+      <AnimatePresence>
+        {dragState.isDragging && dragState.draggedAppointment && (
+          <motion.div
+            ref={dragImageRef}
+            initial={{ opacity: 0, scale: 0.9, rotate: -5 }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+              rotate: 0,
+              x: dragState.currentPosition.x + 10,
+              y: dragState.currentPosition.y + 10
+            }}
+            exit={{ opacity: 0, scale: 0.9, rotate: 5 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="fixed pointer-events-none z-50"
+          >
+            <motion.div
+              animate={{
+                scale: dragState.isValidDrop ? 1 : 0.95,
+                rotate: dragState.isValidDrop ? 0 : [0, -2, 2, 0]
+              }}
+              transition={{ duration: 0.2 }}
+              className={`${
+                !dragState.isValidDrop
+                  ? 'bg-red-600 border-red-400'
+                  : 'bg-violet-600 border-violet-400'
+              } text-white p-3 rounded-lg shadow-2xl border max-w-xs backdrop-blur-sm`}
+            >
+              <div className="font-semibold text-sm mb-1">
+                {dragState.draggedAppointment.service}
+              </div>
+              <div className="text-xs opacity-90">
+                {dragState.draggedAppointment.client}
+              </div>
+              <div className="text-xs opacity-75">
+                {dragState.draggedAppointment.startTime} - {dragState.draggedAppointment.endTime}
+              </div>
+              {dragState.snapTarget && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-2 pt-2 border-t border-white/20"
+                >
+                  <div className="text-xs">
+                    New time: {dragState.snapTarget.time}
+                  </div>
+                  {dragState.conflictingAppointments.length > 0 && showConflicts && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-xs text-red-200 mt-1 flex items-center gap-1"
+                    >
+                      <motion.span
+                        animate={{ rotate: [0, 10, -10, 0] }}
+                        transition={{ duration: 0.5, repeat: Infinity }}
+                      >
+                        ⚠️
+                      </motion.span>
+                      Conflicts with {dragState.conflictingAppointments.length} appointment(s)
+                    </motion.div>
+                  )}
+                </motion.div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Success Animation */}
+      <AnimatePresence>
+        {successAnimation.visible && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: 50 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: -50 }}
+            transition={{ type: "spring", damping: 15, stiffness: 300 }}
+            className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50"
+          >
+            <div className="bg-green-600 text-white px-6 py-3 rounded-lg shadow-2xl flex items-center gap-3">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: "spring", damping: 10 }}
+                className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center"
+              >
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </motion.div>
+              <span className="font-medium">Appointment moved successfully!</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Enhanced global styles for drag and drop visual feedback */}
       <style jsx global>{`
         .calendar-container [data-time-slot] {
-          transition: all 0.2s ease;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          overflow: hidden;
         }
 
         .calendar-container [data-time-slot]:hover {
           background-color: rgba(139, 92, 246, 0.1);
+          transform: translateY(-1px);
         }
 
-        .calendar-container [data-time-slot].drop-target {
-          background-color: rgba(139, 92, 246, 0.2);
-          border-color: rgb(139, 92, 246);
-          box-shadow: inset 0 0 0 2px rgba(139, 92, 246, 0.5);
+        .calendar-container [data-time-slot].drop-target-valid {
+          background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(139, 92, 246, 0.2));
+          border: 2px solid rgb(34, 197, 94);
+          box-shadow:
+            inset 0 0 0 1px rgba(34, 197, 94, 0.5),
+            0 4px 12px rgba(34, 197, 94, 0.3),
+            0 0 0 4px rgba(34, 197, 94, 0.1);
+          animation: validPulse 2s infinite;
         }
 
-        .calendar-container [data-time-slot].conflict-target {
-          background-color: rgba(239, 68, 68, 0.2);
-          border-color: rgb(239, 68, 68);
-          box-shadow: inset 0 0 0 2px rgba(239, 68, 68, 0.5);
+        .calendar-container [data-time-slot].drop-target-invalid {
+          background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.2));
+          border: 2px solid rgb(239, 68, 68);
+          box-shadow:
+            inset 0 0 0 1px rgba(239, 68, 68, 0.5),
+            0 4px 12px rgba(239, 68, 68, 0.3),
+            0 0 0 4px rgba(239, 68, 68, 0.1);
+          animation: invalidShake 0.6s ease-in-out;
+        }
+
+        .calendar-container [data-time-slot].drop-target-valid::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(34, 197, 94, 0.4),
+            transparent
+          );
+          animation: shimmer 2s infinite;
+        }
+
+        @keyframes validPulse {
+          0%, 100% {
+            box-shadow:
+              inset 0 0 0 1px rgba(34, 197, 94, 0.5),
+              0 4px 12px rgba(34, 197, 94, 0.3),
+              0 0 0 4px rgba(34, 197, 94, 0.1);
+          }
+          50% {
+            box-shadow:
+              inset 0 0 0 1px rgba(34, 197, 94, 0.8),
+              0 8px 20px rgba(34, 197, 94, 0.4),
+              0 0 0 8px rgba(34, 197, 94, 0.2);
+          }
+        }
+
+        @keyframes invalidShake {
+          0%, 100% { transform: translateX(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-3px) rotateZ(-1deg); }
+          20%, 40%, 60%, 80% { transform: translateX(3px) rotateZ(1deg); }
+        }
+
+        @keyframes shimmer {
+          0% { left: -100%; }
+          100% { left: 100%; }
         }
 
         .calendar-container .appointment-block {
-          transition: all 0.2s ease;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           cursor: ${enableDragDrop ? 'grab' : 'pointer'};
+          touch-action: none;
+          -webkit-touch-callout: none;
+          -webkit-user-select: none;
+          position: relative;
+          overflow: hidden;
         }
 
         .calendar-container .appointment-block:hover {
-          transform: ${enableDragDrop ? 'scale(1.02)' : 'scale(1.05)'};
-          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+          transform: ${enableDragDrop ? 'scale(1.02) translateY(-2px)' : 'scale(1.05) translateY(-2px)'};
+          box-shadow:
+            0 10px 30px rgba(0, 0, 0, 0.2),
+            0 4px 8px rgba(0, 0, 0, 0.1);
+          z-index: 10;
+        }
+
+        .calendar-container .appointment-block:hover::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          right: 4px;
+          transform: translateY(-50%);
+          width: 16px;
+          height: 16px;
+          background: rgba(255, 255, 255, 0.3);
+          border-radius: 2px;
+          opacity: ${enableDragDrop ? 1 : 0};
+          transition: opacity 0.2s ease;
+        }
+
+        .calendar-container .appointment-block:hover::before {
+          content: '⋮⋮';
+          position: absolute;
+          top: 50%;
+          right: 6px;
+          transform: translateY(-50%);
+          color: rgba(255, 255, 255, 0.8);
+          font-size: 12px;
+          line-height: 1;
+          opacity: ${enableDragDrop ? 1 : 0};
+          transition: opacity 0.2s ease;
+          z-index: 1;
         }
 
         .calendar-container .appointment-block:active {
           cursor: ${enableDragDrop ? 'grabbing' : 'pointer'};
-          transform: scale(0.98);
+          transform: scale(0.98) translateY(1px);
         }
 
         .calendar-container .appointment-block.dragging {
-          opacity: 0.5;
+          opacity: 0.3;
           transform: scale(0.95);
+          touch-action: none;
+          filter: blur(1px);
         }
 
-        .calendar-container .time-slot.drag-over {
-          background-color: rgba(139, 92, 246, 0.15);
-          border: 2px dashed rgb(139, 92, 246);
+        .calendar-container .appointment-block.dragging::after,
+        .calendar-container .appointment-block.dragging::before {
+          display: none;
         }
 
-        /* Smooth drag animations */
+        /* Enhanced touch-specific styles */
+        @media (pointer: coarse) {
+          .calendar-container .appointment-block {
+            min-height: 44px;
+          }
+
+          .calendar-container [data-time-slot] {
+            min-height: 40px;
+          }
+
+          .calendar-container .appointment-block:hover {
+            transform: ${enableDragDrop ? 'scale(1.05)' : 'scale(1.08)'};
+          }
+        }
+
+        /* Prevent body scroll when dragging on mobile */
+        body.dragging-active {
+          overflow: hidden;
+          position: fixed;
+          width: 100%;
+        }
+
+        /* Loading state for appointments */
+        .calendar-container .appointment-block.loading {
+          opacity: 0.6;
+          animation: loadingPulse 1.5s infinite;
+        }
+
+        @keyframes loadingPulse {
+          0%, 100% { opacity: 0.6; }
+          50% { opacity: 1; }
+        }
+
+        /* Success state animation */
+        .calendar-container .appointment-block.success {
+          animation: successBounce 0.6s ease-out;
+        }
+
+        @keyframes successBounce {
+          0% { transform: scale(1); }
+          25% { transform: scale(1.05); }
+          50% { transform: scale(0.95); }
+          75% { transform: scale(1.02); }
+          100% { transform: scale(1); }
+        }
+
+        /* Enhanced smooth animations */
         .calendar-container * {
-          transition-property: background-color, border-color, transform, box-shadow;
+          transition-property: background-color, border-color, transform, box-shadow, opacity;
           transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-          transition-duration: 200ms;
+          transition-duration: 300ms;
         }
       `}</style>
+
+      {/* Appointment Move Confirmation Modal */}
+      {pendingMove && (
+        <AppointmentMoveConfirmation
+          isOpen={isConfirmationOpen}
+          onClose={() => {
+            setIsConfirmationOpen(false)
+            setPendingMove(null)
+          }}
+          onConfirm={handleConfirmedMove}
+          appointment={{
+            id: pendingMove.appointment.id,
+            client: pendingMove.appointment.client,
+            clientPhone: pendingMove.appointment.clientPhone,
+            clientEmail: pendingMove.appointment.clientEmail,
+            service: pendingMove.appointment.service,
+            barber: pendingMove.appointment.barber,
+            originalDate: pendingMove.appointment.date,
+            originalTime: pendingMove.appointment.startTime,
+            newDate: pendingMove.newDate,
+            newTime: pendingMove.newTime,
+            duration: pendingMove.appointment.duration
+          }}
+          isLoading={isSaving}
+        />
+      )}
+
+      {/* Conflict Resolution Modal */}
+      {dragState.draggedAppointment && conflictState.isResolutionOpen && (
+        <ConflictResolutionModal
+          isOpen={conflictState.isResolutionOpen}
+          onClose={() => setConflictState({ ...conflictState, isResolutionOpen: false })}
+          conflictingAppointments={conflictState.conflictingAppointments}
+          draggedAppointment={{
+            id: dragState.draggedAppointment.id,
+            client: dragState.draggedAppointment.client,
+            service: dragState.draggedAppointment.service,
+            barber: dragState.draggedAppointment.barber,
+            duration: dragState.draggedAppointment.duration,
+            originalDate: dragState.draggedAppointment.date,
+            originalTime: dragState.draggedAppointment.startTime
+          }}
+          targetDate={conflictState.targetDate}
+          targetTime={conflictState.targetTime}
+          suggestions={conflictState.suggestions}
+          onResolveConflict={handleConflictResolution}
+          isLoading={isSaving}
+        />
+      )}
     </div>
   )
 }
@@ -590,7 +1301,13 @@ export const useDragDrop = (
     isDragging: false,
     draggedAppointment: null,
     dragOffset: { x: 0, y: 0 },
-    dropTarget: null
+    currentPosition: { x: 0, y: 0 },
+    dropTarget: null,
+    conflictingAppointments: [],
+    snapTarget: null,
+    isValidDrop: true,
+    snapGuides: { x: 0, y: 0, visible: false },
+    dragHandle: { visible: false, appointmentId: null }
   })
 
   const startDrag = useCallback((appointment: CalendarAppointment, offset: { x: number; y: number }) => {
@@ -598,7 +1315,13 @@ export const useDragDrop = (
       isDragging: true,
       draggedAppointment: appointment,
       dragOffset: offset,
-      dropTarget: null
+      currentPosition: { x: 0, y: 0 },
+      dropTarget: null,
+      conflictingAppointments: [],
+      snapTarget: null,
+      isValidDrop: true,
+      snapGuides: { x: 0, y: 0, visible: false },
+      dragHandle: { visible: false, appointmentId: null }
     })
   }, [])
 
@@ -633,7 +1356,13 @@ export const useDragDrop = (
       isDragging: false,
       draggedAppointment: null,
       dragOffset: { x: 0, y: 0 },
-      dropTarget: null
+      currentPosition: { x: 0, y: 0 },
+      dropTarget: null,
+      conflictingAppointments: [],
+      snapTarget: null,
+      isValidDrop: true,
+      snapGuides: { x: 0, y: 0, visible: false },
+      dragHandle: { visible: false, appointmentId: null }
     })
   }, [dragState.draggedAppointment, onAppointmentMove])
 

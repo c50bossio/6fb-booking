@@ -4,6 +4,8 @@ export { default as EditAppointmentModal } from './EditAppointmentModal'
 export { default as DeleteAppointmentModal } from './DeleteAppointmentModal'
 export { default as CreateAppointmentModal } from './CreateAppointmentModal'
 export { default as AppointmentDetailsModal } from './AppointmentDetailsModal'
+export { default as AppointmentMoveConfirmation } from './AppointmentMoveConfirmation'
+export { default as ConflictResolutionModal } from './ConflictResolutionModal'
 
 // Base and Utility Modals
 export { default as BaseModal } from './BaseModal'
