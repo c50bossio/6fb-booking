@@ -213,16 +213,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      // Check for demo mode based on current route
-      const currentDemoMode = getDemoMode()
-
-      // In demo mode, automatically set the demo user
-      if (currentDemoMode) {
-        setUser(DEMO_USER)
-        setLoading(false)
-        return
-      }
-
       let token = null
       try {
         // Safely access localStorage with error handling for browser extension conflicts
@@ -232,13 +222,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Continue without token - app will work in demo mode
       }
 
-      if (!token) {
+      // If we have a valid access token, prioritize real auth over demo mode
+      // This ensures admin logins work even if demo mode sessionStorage exists
+      if (token) {
+        console.log('[AuthProvider] Found access token, attempting real authentication')
+        const currentUser = await authService.getCurrentUser()
+        setUser(currentUser)
+
+        // Clear any stray demo mode if real auth succeeds
+        try {
+          sessionStorage.removeItem('demo_mode')
+          console.log('[AuthProvider] Cleared demo mode after successful real auth')
+        } catch (e) {
+          console.log('Cannot clear sessionStorage')
+        }
+
         setLoading(false)
         return
       }
 
-      const currentUser = await authService.getCurrentUser()
-      setUser(currentUser)
+      // Check for demo mode based on current route (only if no real auth token)
+      const currentDemoMode = getDemoMode()
+
+      // In demo mode, automatically set the demo user
+      if (currentDemoMode) {
+        console.log('[AuthProvider] No access token found, using demo mode')
+        setUser(DEMO_USER)
+        setLoading(false)
+        return
+      }
+
+      // No token and no demo mode
+      setLoading(false)
     } catch (error) {
       console.error('Auth check failed:', error)
       try {

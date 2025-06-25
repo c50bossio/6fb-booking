@@ -44,6 +44,14 @@ export default function SimpleLogin() {
         if (data.access_token) {
           setStatus('✅ SUCCESS! Got access token. Storing and redirecting...')
 
+          // IMPORTANT: Clear demo mode when performing actual admin login
+          try {
+            sessionStorage.removeItem('demo_mode')
+            console.log('🔧 Simple login: Cleared demo mode for admin login')
+          } catch (e) {
+            console.log('Cannot clear sessionStorage')
+          }
+
           localStorage.setItem('access_token', data.access_token)
           localStorage.setItem('user', JSON.stringify(data.user))
 

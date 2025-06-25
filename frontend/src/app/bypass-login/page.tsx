@@ -30,9 +30,18 @@ export default function BypassLogin() {
 
       if (response.ok) {
         const data = await response.json()
+
+        // IMPORTANT: Clear demo mode when performing actual admin login
+        try {
+          sessionStorage.removeItem('demo_mode')
+          console.log('🔧 Bypass login: Cleared demo mode for admin login')
+        } catch (e) {
+          console.log('Cannot clear sessionStorage')
+        }
+
         localStorage.setItem('access_token', data.access_token)
         localStorage.setItem('user', JSON.stringify(data.user))
-        setResult('✅ SUCCESS! Token stored in localStorage. Go to /dashboard')
+        setResult('✅ SUCCESS! Token stored in localStorage. Demo mode cleared. Go to /dashboard')
       } else {
         const error = await response.text()
         setResult(`❌ Error: ${error}`)
