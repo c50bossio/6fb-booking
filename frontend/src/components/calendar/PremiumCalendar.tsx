@@ -180,6 +180,9 @@ export default function PremiumCalendar({
   const { theme, getThemeColors } = useTheme()
   const colors = getThemeColors()
 
+  // Debug theme integration
+  console.log('🎨 PremiumCalendar Theme Debug:', { theme, colors })
+
   const [currentDate, setCurrentDate] = useState<Date>(initialDate)
   const [selectedView, setSelectedView] = useState<'month' | 'week' | 'day'>(initialView)
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
