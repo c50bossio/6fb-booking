@@ -1,0 +1,8 @@
+Force deploy marker
+Created: 2025-06-25 00:50:00
+Purpose: Force Railway to rebuild and recognize new pages
+
+If you're seeing 404 errors on new pages, Railway might be caching the build.
+This file forces a change that Railway will detect.
+
+Random value to ensure change: ${Date.now()}

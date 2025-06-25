@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Force rebuild: 2025-06-25-00-50
   reactStrictMode: false, // Disable to prevent double renders and improve stability
   // Enable standalone for production deployment
   output: process.env.NODE_ENV === 'production' ? 'standalone' : undefined,
