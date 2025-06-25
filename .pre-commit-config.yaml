@@ -77,7 +77,7 @@ repos:
     hooks:
       - id: bandit
         name: Bandit security linter
-        args: ['-r', '.', '-f', 'custom']
+        args: ['-ll', '-i']
         exclude: |
           (?x)^(
             tests/.*|

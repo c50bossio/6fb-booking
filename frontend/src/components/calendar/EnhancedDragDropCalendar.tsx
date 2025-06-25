@@ -2,6 +2,8 @@
 
 import React, { useState, useCallback, useRef, useEffect } from 'react'
 import PremiumCalendar, { CalendarAppointment, CalendarProps } from './PremiumCalendar'
+import { appointmentAPI } from '@/lib/api/appointments'
+import { format } from 'date-fns'
 
 interface DragDropData {
   appointmentId: string
@@ -19,15 +21,6 @@ interface DragState {
   snapTarget: { date: string; time: string } | null
 }
 
-// Undo/Redo action tracking
-interface MoveAction {
-  appointmentId: string
-  fromDate: string
-  fromTime: string
-  toDate: string
-  toTime: string
-}
-
 interface DragDropCalendarProps extends CalendarProps {
   onAppointmentMove?: (
     appointmentId: string,
@@ -40,19 +33,24 @@ interface DragDropCalendarProps extends CalendarProps {
   snapInterval?: 15 | 30 // minutes
   showConflicts?: boolean
   allowConflicts?: boolean
-  enableCascadeRescheduling?: boolean
-  appointmentDependencies?: Map<string, string[]> // appointmentId -> dependentIds
 }
 
-export default function DragDropCalendar({
+// Undo/Redo state management
+interface MoveAction {
+  appointmentId: string
+  fromDate: string
+  fromTime: string
+  toDate: string
+  toTime: string
+}
+
+export default function EnhancedDragDropCalendar({
   appointments = [],
   onAppointmentMove,
   enableDragDrop = true,
   snapInterval = 15,
   showConflicts = true,
   allowConflicts = false,
-  enableCascadeRescheduling = false,
-  appointmentDependencies = new Map(),
   ...calendarProps
 }: DragDropCalendarProps) {
   const [dragState, setDragState] = useState<DragState>({
@@ -131,6 +129,7 @@ export default function DragDropCalendar({
     [snapInterval]
   )
 
+  // Enhanced mouse down handler with collision detection
   const handleAppointmentMouseDown = useCallback(
     (appointment: CalendarAppointment, event: React.MouseEvent) => {
       if (!enableDragDrop) return
@@ -217,7 +216,6 @@ export default function DragDropCalendar({
               if (newDate !== dragState.draggedAppointment.date ||
                   snappedTime !== dragState.draggedAppointment.startTime) {
                 try {
-                  // Move the main appointment
                   await onAppointmentMove(
                     dragState.draggedAppointment.id,
                     newDate,
@@ -225,19 +223,6 @@ export default function DragDropCalendar({
                     dragState.draggedAppointment.date,
                     dragState.draggedAppointment.startTime
                   )
-
-                  // Handle cascade rescheduling
-                  if (enableCascadeRescheduling) {
-                    const dependentIds = appointmentDependencies.get(dragState.draggedAppointment.id) || []
-                    if (dependentIds.length > 0) {
-                      await handleCascadeRescheduling(
-                        dragState.draggedAppointment,
-                        newDate,
-                        snappedTime,
-                        dependentIds
-                      )
-                    }
-                  }
 
                   // Add to undo stack
                   const moveAction: MoveAction = {
@@ -275,29 +260,8 @@ export default function DragDropCalendar({
       document.addEventListener('mousemove', handleMouseMove)
       document.addEventListener('mouseup', handleMouseUp)
     },
-    [enableDragDrop, onAppointmentMove, snapToInterval, findConflicts, allowConflicts, dragState.draggedAppointment]
+    [enableDragDrop, onAppointmentMove, snapToInterval, findConflicts, allowConflicts]
   )
-
-  const handleTimeSlotMouseEnter = useCallback(
-    (date: string, time: string) => {
-      if (dragState.isDragging) {
-        setDragState(prev => ({
-          ...prev,
-          dropTarget: { date, time }
-        }))
-      }
-    },
-    [dragState.isDragging]
-  )
-
-  const handleTimeSlotMouseLeave = useCallback(() => {
-    if (dragState.isDragging) {
-      setDragState(prev => ({
-        ...prev,
-        dropTarget: null
-      }))
-    }
-  }, [dragState.isDragging])
 
   // Undo functionality
   const undo = useCallback(async () => {
@@ -341,50 +305,6 @@ export default function DragDropCalendar({
     }
   }, [redoStack, onAppointmentMove])
 
-  // Handle cascade rescheduling for dependent appointments
-  const handleCascadeRescheduling = useCallback(
-    async (
-      movedAppointment: CalendarAppointment,
-      newDate: string,
-      newTime: string,
-      dependentIds: string[]
-    ) => {
-      // Calculate time difference
-      const originalDateTime = new Date(`${movedAppointment.date} ${movedAppointment.startTime}`)
-      const newDateTime = new Date(`${newDate} ${newTime}`)
-      const timeDiff = newDateTime.getTime() - originalDateTime.getTime()
-
-      // Move each dependent appointment
-      for (const dependentId of dependentIds) {
-        const dependentApt = appointments.find(apt => apt.id === dependentId)
-        if (!dependentApt) continue
-
-        // Calculate new time for dependent appointment
-        const dependentDateTime = new Date(`${dependentApt.date} ${dependentApt.startTime}`)
-        const newDependentDateTime = new Date(dependentDateTime.getTime() + timeDiff)
-
-        const newDependentDate = newDependentDateTime.toISOString().split('T')[0]
-        const newDependentTime = `${newDependentDateTime.getHours().toString().padStart(2, '0')}:${newDependentDateTime.getMinutes().toString().padStart(2, '0')}`
-
-        // Snap to interval
-        const snappedDependentTime = snapToInterval(newDependentTime)
-
-        // Check for conflicts
-        const conflicts = findConflicts(dependentApt, newDependentDate, snappedDependentTime)
-        if (conflicts.length === 0 || allowConflicts) {
-          await onAppointmentMove?.(
-            dependentId,
-            newDependentDate,
-            snappedDependentTime,
-            dependentApt.date,
-            dependentApt.startTime
-          )
-        }
-      }
-    },
-    [appointments, findConflicts, snapToInterval, allowConflicts, onAppointmentMove]
-  )
-
   // Keyboard shortcuts for undo/redo
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -401,36 +321,58 @@ export default function DragDropCalendar({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [undo, redo])
 
-  // Enhanced appointment click handler that includes drag support
+  // Enhanced appointment click handler
   const enhancedAppointmentClick = useCallback(
     (appointment: CalendarAppointment) => {
       if (!dragState.isDragging) {
         calendarProps.onAppointmentClick?.(appointment)
       }
     },
-    [calendarProps.onAppointmentClick, dragState.isDragging]
+    [calendarProps, dragState.isDragging]
   )
 
-  // Enhanced time slot click handler with drop target visual feedback
+  // Enhanced time slot click handler
   const enhancedTimeSlotClick = useCallback(
     (date: string, time: string) => {
       if (!dragState.isDragging) {
         calendarProps.onTimeSlotClick?.(date, time)
       }
     },
-    [calendarProps.onTimeSlotClick, dragState.isDragging]
+    [calendarProps, dragState.isDragging]
   )
 
-  // Wrap appointments to add drag functionality
-  const enhancedAppointments = useMemo(() => {
-    return appointments.map(appointment => ({
-      ...appointment,
-      __dragProps: {
-        onMouseDown: (e: React.MouseEvent) => handleAppointmentMouseDown(appointment, e),
-        style: { cursor: enableDragDrop ? 'grab' : 'pointer' }
-      }
-    }))
-  }, [appointments, handleAppointmentMouseDown, enableDragDrop])
+  // Custom appointment render with drag handlers
+  const customAppointmentRender = useCallback(
+    (appointment: CalendarAppointment) => {
+      const isConflicting = dragState.conflictingAppointments.some(a => a.id === appointment.id)
+      const isDragging = dragState.draggedAppointment?.id === appointment.id
+
+      return (
+        <div
+          key={appointment.id}
+          className={`appointment-block ${isDragging ? 'dragging' : ''} ${isConflicting ? 'conflicting' : ''}`}
+          onMouseDown={(e) => handleAppointmentMouseDown(appointment, e)}
+          style={{
+            opacity: isDragging ? 0.5 : 1,
+            transform: isDragging ? 'scale(0.95)' : 'scale(1)',
+            outline: isConflicting ? '2px solid #ef4444' : 'none',
+            outlineOffset: '2px'
+          }}
+        >
+          {calendarProps.customAppointmentRender?.(appointment) || (
+            <div className="default-appointment-content">
+              <div className="font-semibold">{appointment.service}</div>
+              <div className="text-sm">{appointment.client}</div>
+              <div className="text-xs opacity-75">
+                {appointment.startTime} - {appointment.endTime}
+              </div>
+            </div>
+          )}
+        </div>
+      )
+    },
+    [dragState, handleAppointmentMouseDown, calendarProps]
+  )
 
   return (
     <div
@@ -438,7 +380,7 @@ export default function DragDropCalendar({
       className={`relative ${dragState.isDragging ? 'select-none' : ''}`}
       style={{ cursor: dragState.isDragging ? 'grabbing' : 'default' }}
     >
-      {/* Undo/Redo controls - only buttons added, no style changes */}
+      {/* Undo/Redo controls */}
       <div className="absolute top-4 right-4 z-20 flex gap-2">
         <button
           onClick={undo}
@@ -462,17 +404,18 @@ export default function DragDropCalendar({
         </button>
       </div>
 
-      {/* Enhanced Calendar with Drag & Drop Support */}
-      <div className="calendar-container" data-drag-drop-enabled={enableDragDrop}>
+      {/* Enhanced Calendar */}
+      <div className="calendar-container">
         <PremiumCalendar
           {...calendarProps}
-          appointments={enhancedAppointments as CalendarAppointment[]}
+          appointments={appointments}
           onAppointmentClick={enhancedAppointmentClick}
           onTimeSlotClick={enhancedTimeSlotClick}
+          customAppointmentRender={customAppointmentRender}
         />
       </div>
 
-      {/* Enhanced Drag Preview with conflict info */}
+      {/* Drag Preview with enhanced information */}
       {dragState.isDragging && dragState.draggedAppointment && (
         <div
           ref={dragImageRef}
@@ -482,19 +425,15 @@ export default function DragDropCalendar({
             top: dragState.currentPosition.y + 10,
           }}
         >
-          <div className={`${
+          <div className={`bg-gradient-to-br ${
             dragState.conflictingAppointments.length > 0 && !allowConflicts
-              ? 'bg-red-600'
-              : 'bg-violet-600'
-          } text-white p-3 rounded-lg shadow-2xl border ${
-            dragState.conflictingAppointments.length > 0 && !allowConflicts
-              ? 'border-red-400'
-              : 'border-violet-400'
-          } max-w-xs`}>
+              ? 'from-red-600 to-red-700'
+              : 'from-violet-600 to-violet-700'
+          } text-white p-4 rounded-lg shadow-2xl border border-white/20 max-w-xs`}>
             <div className="font-semibold text-sm mb-1">
               {dragState.draggedAppointment.service}
             </div>
-            <div className="text-xs opacity-90">
+            <div className="text-xs opacity-90 mb-2">
               {dragState.draggedAppointment.client}
             </div>
             <div className="text-xs opacity-75">
@@ -516,130 +455,78 @@ export default function DragDropCalendar({
         </div>
       )}
 
-      {/* Global styles for drag and drop visual feedback */}
+      {/* Enhanced styles for drag and drop */}
       <style jsx global>{`
         .calendar-container [data-time-slot] {
           transition: all 0.2s ease;
+          position: relative;
         }
 
         .calendar-container [data-time-slot]:hover {
-          background-color: rgba(139, 92, 246, 0.1);
+          background-color: rgba(139, 92, 246, 0.05);
         }
 
         .calendar-container [data-time-slot].drop-target {
-          background-color: rgba(139, 92, 246, 0.2);
-          border-color: rgb(139, 92, 246);
-          box-shadow: inset 0 0 0 2px rgba(139, 92, 246, 0.5);
+          background-color: rgba(139, 92, 246, 0.15);
+          border: 2px solid rgb(139, 92, 246);
+          box-shadow: inset 0 0 0 1px rgba(139, 92, 246, 0.3);
         }
 
         .calendar-container [data-time-slot].conflict-target {
-          background-color: rgba(239, 68, 68, 0.2);
-          border-color: rgb(239, 68, 68);
-          box-shadow: inset 0 0 0 2px rgba(239, 68, 68, 0.5);
+          background-color: rgba(239, 68, 68, 0.1);
+          border: 2px solid rgb(239, 68, 68);
+          box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.3);
         }
 
         .calendar-container .appointment-block {
-          transition: all 0.2s ease;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           cursor: ${enableDragDrop ? 'grab' : 'pointer'};
+          user-select: none;
         }
 
         .calendar-container .appointment-block:hover {
-          transform: ${enableDragDrop ? 'scale(1.02)' : 'scale(1.05)'};
-          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+          transform: ${enableDragDrop ? 'translateY(-2px)' : 'scale(1.02)'};
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
 
         .calendar-container .appointment-block:active {
           cursor: ${enableDragDrop ? 'grabbing' : 'pointer'};
-          transform: scale(0.98);
         }
 
         .calendar-container .appointment-block.dragging {
-          opacity: 0.5;
+          opacity: 0.3;
           transform: scale(0.95);
         }
 
-        .calendar-container .time-slot.drag-over {
-          background-color: rgba(139, 92, 246, 0.15);
-          border: 2px dashed rgb(139, 92, 246);
+        .calendar-container .appointment-block.conflicting {
+          animation: pulse-red 1s ease-in-out infinite;
         }
 
-        /* Smooth drag animations */
-        .calendar-container * {
-          transition-property: background-color, border-color, transform, box-shadow;
-          transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-          transition-duration: 200ms;
+        @keyframes pulse-red {
+          0%, 100% {
+            outline-color: rgba(239, 68, 68, 0.5);
+          }
+          50% {
+            outline-color: rgba(239, 68, 68, 1);
+          }
+        }
+
+        /* Snap indicator */
+        .calendar-container [data-time-slot]::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border: 2px dashed transparent;
+          border-radius: 4px;
+          transition: all 0.2s ease;
+          pointer-events: none;
+        }
+
+        .calendar-container [data-time-slot].snap-target::after {
+          border-color: rgb(139, 92, 246);
+          background-color: rgba(139, 92, 246, 0.05);
         }
       `}</style>
     </div>
   )
-}
-
-// Enhanced hook for handling drag and drop state
-export const useDragDrop = (
-  appointments: CalendarAppointment[],
-  onAppointmentMove?: (
-    appointmentId: string,
-    newDate: string,
-    newTime: string,
-    originalDate: string,
-    originalTime: string
-  ) => Promise<void>
-) => {
-  const [dragState, setDragState] = useState<DragState>({
-    isDragging: false,
-    draggedAppointment: null,
-    dragOffset: { x: 0, y: 0 },
-    dropTarget: null
-  })
-
-  const startDrag = useCallback((appointment: CalendarAppointment, offset: { x: number; y: number }) => {
-    setDragState({
-      isDragging: true,
-      draggedAppointment: appointment,
-      dragOffset: offset,
-      dropTarget: null
-    })
-  }, [])
-
-  const updateDrag = useCallback((dropTarget: { date: string; time: string } | null) => {
-    setDragState(prev => ({
-      ...prev,
-      dropTarget
-    }))
-  }, [])
-
-  const endDrag = useCallback(async (finalDropTarget?: { date: string; time: string }) => {
-    if (dragState.draggedAppointment && finalDropTarget && onAppointmentMove) {
-      const { date: newDate, time: newTime } = finalDropTarget
-      const { date: originalDate, startTime: originalTime } = dragState.draggedAppointment
-
-      if (newDate !== originalDate || newTime !== originalTime) {
-        try {
-          await onAppointmentMove(
-            dragState.draggedAppointment.id,
-            newDate,
-            newTime,
-            originalDate,
-            originalTime
-          )
-        } catch (error) {
-          console.error('Error moving appointment:', error)
-        }
-      }
-    }
-
-    setDragState({
-      isDragging: false,
-      draggedAppointment: null,
-      dragOffset: { x: 0, y: 0 },
-      dropTarget: null
-    })
-  }, [dragState.draggedAppointment, onAppointmentMove])
-
-  return {
-    dragState,
-    startDrag,
-    updateDrag,
-    endDrag
-  }
 }
