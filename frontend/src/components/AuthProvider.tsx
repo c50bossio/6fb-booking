@@ -110,7 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Skip redirection in demo mode or during SSR
-    if (DEMO_MODE || !isClient) return
+    if (getDemoMode() || !isClient) return
 
     // CRITICAL: Never redirect from the landing page
     if (pathname === '/' || window.location.pathname === '/') {
