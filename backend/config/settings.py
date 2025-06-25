@@ -555,12 +555,32 @@ class Settings(BaseSettings):
         ]
         default_origins.extend(vercel_patterns)
         
-        # Add Railway deployment URLs
+        # Add Railway deployment URLs - be more comprehensive
         railway_patterns = [
             "https://web-production-92a6c.up.railway.app",  # Current Railway deployment
             "https://6fb-booking-frontend.up.railway.app",  # Alternative Railway pattern
+            "https://6fb-booking-frontend-production.up.railway.app",  # Production frontend
+            "https://sixfb-frontend.up.railway.app",  # Alternative naming
+            "https://6fb-booking-backend.up.railway.app",  # Backend deployment
+            "https://6fb-booking-backend-production.up.railway.app",  # Backend production
         ]
         default_origins.extend(railway_patterns)
+        
+        # Add current Railway backend URL if present in environment
+        railway_backend_url = os.getenv("RAILWAY_STATIC_URL")
+        if railway_backend_url:
+            default_origins.append(railway_backend_url)
+            
+        # Add Railway public URL if present
+        railway_public_url = os.getenv("RAILWAY_PUBLIC_DOMAIN")
+        if railway_public_url:
+            default_origins.append(f"https://{railway_public_url}")
+            
+        # Add any additional Railway URLs from environment
+        additional_railway_urls = os.getenv("RAILWAY_ADDITIONAL_URLS", "")
+        if additional_railway_urls:
+            additional_urls = [url.strip() for url in additional_railway_urls.split(",") if url.strip()]
+            default_origins.extend(additional_urls)
         
         # Add null origin for local file testing and development
         default_origins.extend(["null", "file://"])
@@ -597,16 +617,33 @@ class Settings(BaseSettings):
                 logger.info(f"Allowing dynamic Vercel origin: {origin}")
                 return True
 
-        # Check Railway deployment patterns
-        if origin.startswith("https://") and origin.endswith(".railway.app"):
-            # Allow any Railway deployment URL
-            logger.info(f"Allowing Railway origin: {origin}")
-            return True
+        # Check Railway deployment patterns - comprehensive matching
+        if origin.startswith("https://") and (".railway.app" in origin or ".up.railway.app" in origin):
+            # Extract domain for pattern matching
+            domain_part = origin.replace("https://", "").replace(".railway.app", "").replace(".up.railway.app", "")
             
-        # Specific Railway URLs
+            # Allow any Railway deployment that contains our app identifiers
+            allowed_railway_patterns = ["6fb", "sixfb", "booking", "web-production"]
+            
+            # Also allow exact known deployment IDs
+            known_railway_ids = ["web-production-92a6c"]
+            
+            if (any(pattern in domain_part.lower() for pattern in allowed_railway_patterns) or 
+                any(rail_id in domain_part for rail_id in known_railway_ids)):
+                logger.info(f"Allowing Railway pattern match origin: {origin}")
+                return True
+            else:
+                logger.info(f"Allowing Railway origin (general Railway domain): {origin}")
+                return True  # Allow all Railway domains for now due to dynamic nature
+            
+        # Specific Railway URLs for backward compatibility
         railway_urls = [
             "https://web-production-92a6c.up.railway.app",
             "https://6fb-booking-frontend.up.railway.app",
+            "https://6fb-booking-frontend-production.up.railway.app",
+            "https://sixfb-frontend.up.railway.app",
+            "https://6fb-booking-backend.up.railway.app",
+            "https://6fb-booking-backend-production.up.railway.app",
         ]
         if origin in railway_urls:
             logger.info(f"Allowing specific Railway origin: {origin}")

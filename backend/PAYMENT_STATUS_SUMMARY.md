@@ -3,12 +3,12 @@
 ## ✅ What's Already Working
 
 ### 1. **Stripe Integration**
-- **API Keys**: Test keys configured and working
-  - Secret Key: `sk_test_51OUIw0AV7WL65KS1...`
-  - Publishable Key: `pk_test_51OUIw0AV7WL65KS1...`
-  - Connect Client ID: `ca_RRMupb4KLKQkF8fXyQ7R9ygzKcdTVQu9`
-- **Account Status**: Active with card payments and transfers enabled
-- **Payment Intents**: Successfully creating and managing payment intents
+- **API Keys**: Test keys need to be configured from Stripe Dashboard
+  - Get your Secret Key from: https://dashboard.stripe.com/test/apikeys
+  - Get your Publishable Key from: https://dashboard.stripe.com/test/apikeys  
+  - Get your Connect Client ID from: https://dashboard.stripe.com/settings/connect
+- **Account Status**: Ready for configuration
+- **Payment Intents**: Implementation ready for testing once keys are configured
 
 ### 2. **Backend Implementation**
 All payment endpoints are implemented and ready:

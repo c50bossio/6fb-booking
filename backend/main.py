@@ -4,7 +4,7 @@ Force deployment trigger - Updated: 2025-06-23 14:30:00 UTC
 Build version: v1.0.0-2025-06-23-deploy-fix
 """
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from middleware.dynamic_cors import DynamicCORSMiddleware
 from fastapi.security import HTTPBearer
@@ -398,10 +398,54 @@ async def health_check_redirect():
     return RedirectResponse(url="/api/v1/health", status_code=301)
 
 
+@app.get("/cors-test")
+async def cors_test(request: Request):
+    """Test CORS configuration and return origin information"""
+    origin = request.headers.get("origin", "")
+    user_agent = request.headers.get("user-agent", "")
+    
+    return {
+        "message": "CORS test endpoint",
+        "origin": origin,
+        "origin_allowed": settings.is_allowed_origin(origin) if origin else False,
+        "user_agent": user_agent,
+        "timestamp": datetime.utcnow().isoformat(),
+        "allowed_origins_count": len(settings.CORS_ORIGINS),
+        "railway_origin": ".railway.app" in origin or ".up.railway.app" in origin if origin else False
+    }
+
+
 @app.options("/{path:path}")
-async def handle_options(path: str):
-    """Handle CORS preflight requests for all paths"""
-    return Response(content="OK", status_code=200)
+async def handle_options(path: str, request: Request):
+    """Handle CORS preflight requests for all paths with proper origin validation"""
+    origin = request.headers.get("origin", "")
+    
+    # Use settings to validate origin
+    allowed_origin = "*"  # Default fallback
+    
+    if origin and settings.is_allowed_origin(origin):
+        allowed_origin = origin
+        logger.info(f"OPTIONS: Allowed origin {origin} for path {path}")
+    elif origin:
+        # Check if it's a Railway domain
+        if (".railway.app" in origin or ".up.railway.app" in origin):
+            allowed_origin = origin
+            logger.info(f"OPTIONS: Allowed Railway origin {origin} for path {path}")
+        else:
+            logger.warning(f"OPTIONS: Origin {origin} not in allowed list for path {path}")
+    
+    return Response(
+        content="", 
+        status_code=200,
+        headers={
+            "Access-Control-Allow-Origin": allowed_origin,
+            "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS,PATCH",
+            "Access-Control-Allow-Headers": "Accept,Accept-Language,Content-Language,Content-Type,Authorization,X-Requested-With,Cache-Control,X-API-Key",
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Max-Age": "86400",  # 24 hours
+            "Vary": "Origin"
+        }
+    )
 
 
 @app.get("/api/usage-summary")
