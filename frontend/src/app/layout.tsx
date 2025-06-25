@@ -8,6 +8,7 @@ import { NotificationProvider } from "@/contexts/NotificationContext";
 import { StripeProvider } from "@/providers/StripeProvider";
 import ClientOnly from "@/components/ClientOnly";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { CustomerAuthProvider } from "@/components/customer/CustomerAuthProvider";
 import ExtensionDetector from "@/components/ExtensionDetector";
 import ExtensionErrorHandler from "@/components/ExtensionErrorHandler";
 import HighContrastEnforcer from "@/components/HighContrastEnforcer";
@@ -74,13 +75,15 @@ export default function RootLayout({
           <ThemeProvider>
             <NotificationProvider>
               <AuthProvider>
-                <NavigationProvider>
-                  {/* <StripeProvider> */}
-                    {/* <ClientOnly> */}
-                      {children}
-                    {/* </ClientOnly> */}
-                  {/* </StripeProvider> */}
-                </NavigationProvider>
+                <CustomerAuthProvider>
+                  <NavigationProvider>
+                    <StripeProvider>
+                      {/* <ClientOnly> */}
+                        {children}
+                      {/* </ClientOnly> */}
+                    </StripeProvider>
+                  </NavigationProvider>
+                </CustomerAuthProvider>
               </AuthProvider>
               <ExtensionDetector />
               <ExtensionErrorHandler />

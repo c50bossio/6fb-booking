@@ -102,6 +102,9 @@ export default function CalendarPage() {
       console.log('📱 Demo mode: Skipping API call, UnifiedCalendar will use mock data')
       setAppointments([])
       setLoading(false)
+      // Clear any existing error state when in demo mode
+      setError(null)
+      setErrorType(null)
       return
     }
 
@@ -189,11 +192,16 @@ export default function CalendarPage() {
   // Fetch data after demo mode is determined
   useEffect(() => {
     if (mounted && isDemoMode !== undefined) {
+      // Clear error state immediately when demo mode is confirmed
+      if (isDemoMode) {
+        setError(null)
+        setErrorType(null)
+      }
       fetchAppointments()
       fetchBarbers()
       fetchServices()
     }
-  }, [mounted, isDemoMode])
+  }, [mounted, isDemoMode, fetchAppointments])
 
   // Refresh appointments when date range changes
   useEffect(() => {
