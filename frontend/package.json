@@ -26,8 +26,7 @@
     "rollback:create": "node scripts/rollback-plan.js --create",
     "rollback:checkpoint": "node scripts/rollback-plan.js --checkpoint",
     "rollback:execute": "node scripts/rollback-plan.js --execute",
-    "predeploy": "npm run validate:deployment && npm run rollback:checkpoint",
-    "postinstall": "node scripts/verify-contact-page.js"
+    "predeploy": "npm run validate:deployment && npm run rollback:checkpoint"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",
