@@ -642,8 +642,13 @@ export default function UnifiedCalendar({
 
       {/* Enhanced Calendar with all drag & drop functionality */}
       <div
-        className="calendar-container"
+        className="calendar-container relative z-10"
+        style={{ pointerEvents: 'auto' }}
         data-drag-drop-enabled={enableDragDrop}
+        onClick={(e) => {
+          console.log('🔍 DIAGNOSTIC: Click reached calendar container!', e.target)
+          console.log('🔍 Target element:', (e.target as HTMLElement).tagName, (e.target as HTMLElement).className)
+        }}
         onDragOver={(e) => {
           if (enableDragDrop) {
             e.preventDefault()

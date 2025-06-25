@@ -455,7 +455,11 @@ export default function CalendarPage() {
             <div className="flex flex-col sm:flex-row gap-3">
               <ThemeSelector variant="button" showLabel={false} />
               <button
-                onClick={handleNewAppointment}
+                onClick={(e) => {
+                  console.log('🔍 DIAGNOSTIC: New Appointment button clicked!', e.target)
+                  handleNewAppointment()
+                }}
+                style={{ pointerEvents: 'auto', zIndex: 1000 }}
                 className={`px-6 py-3 text-white font-medium rounded-lg transition-colors duration-200 ${
                   theme === 'soft-light'
                     ? 'bg-[#7c9885] hover:bg-[#6a8574]'
