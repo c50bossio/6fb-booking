@@ -16,9 +16,11 @@ import {
   EyeIcon,
   EyeSlashIcon,
   CheckCircleIcon,
-  XMarkIcon
+  XMarkIcon,
+  CalendarIcon
 } from '@heroicons/react/24/outline'
 import ModernLayout from '@/components/ModernLayout'
+import GoogleCalendarSettings from '@/components/settings/GoogleCalendarSettings'
 import axios from 'axios'
 
 interface BusinessSettings {
@@ -198,6 +200,7 @@ export default function SettingsPage() {
     { id: 'business', name: 'Business', icon: BuildingStorefrontIcon },
     { id: 'notifications', name: 'Notifications', icon: BellIcon },
     { id: 'payments', name: 'Payments', icon: CreditCardIcon },
+    { id: 'integrations', name: 'Integrations', icon: GlobeAltIcon },
     { id: 'security', name: 'Security', icon: ShieldCheckIcon }
   ]
 
@@ -555,6 +558,65 @@ export default function SettingsPage() {
                 >
                   {saving ? 'Saving...' : 'Save Payment Settings'}
                 </button>
+              </div>
+            )}
+
+            {/* Integrations */}
+            {activeTab === 'integrations' && (
+              <div className="space-y-6">
+                <div className="border-b border-gray-200 pb-4">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Third-Party Integrations</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    Connect external services to enhance your workflow and automate tasks.
+                  </p>
+                </div>
+
+                {/* Google Calendar Integration */}
+                <div className="border border-gray-200 rounded-lg p-1">
+                  <div className="flex items-center space-x-3 p-4 border-b border-gray-100">
+                    <div className="flex-shrink-0">
+                      <CalendarIcon className="h-8 w-8 text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-sm font-medium text-gray-900 dark:text-white">Google Calendar</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Sync appointments with your Google Calendar automatically
+                      </p>
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <GoogleCalendarSettings />
+                  </div>
+                </div>
+
+                {/* Additional Integration Placeholders */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="border border-gray-200 rounded-lg p-4 opacity-50">
+                    <div className="flex items-center space-x-3 mb-3">
+                      <div className="w-8 h-8 bg-green-600 rounded flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">$</span>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-900">QuickBooks</h4>
+                        <p className="text-sm text-gray-500">Coming Soon</p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-400">Sync financial data with QuickBooks for accounting</p>
+                  </div>
+
+                  <div className="border border-gray-200 rounded-lg p-4 opacity-50">
+                    <div className="flex items-center space-x-3 mb-3">
+                      <div className="w-8 h-8 bg-purple-600 rounded flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">S</span>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-900">Shopify</h4>
+                        <p className="text-sm text-gray-500">Coming Soon</p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-400">Integrate with your online store for product sales</p>
+                  </div>
+                </div>
               </div>
             )}
 
