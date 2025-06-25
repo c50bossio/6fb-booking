@@ -1,0 +1,12 @@
+Railway deployment marker - Force rebuild
+Timestamp: 2025-06-25T01:55:00Z
+Purpose: Deploy authentication fix and Railway configuration
+Changes:
+- Added railway.toml for frontend
+- Removed Vercel references and dependencies
+- Fixed middleware.ts for server-side route protection
+- Fixed AuthProvider.tsx hydration timing
+- Updated CORS configurations for Railway
+- Cleaned up conflicting deployment configurations
+
+This marker forces Railway to rebuild and deploy the authentication fix that prevents login redirects on public pages.

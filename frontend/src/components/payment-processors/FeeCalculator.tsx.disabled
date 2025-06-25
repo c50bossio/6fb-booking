@@ -1,0 +1,327 @@
+'use client'
+
+import React, { useState, useEffect } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  Calculator,
+  DollarSign,
+  CreditCard,
+  Building2,
+  Zap,
+  Clock,
+  TrendingDown
+} from 'lucide-react'
+import { paymentProcessorsApi, FeeCalculation, PaymentProcessor } from '@/lib/api/payment-processors'
+import { formatCurrency } from '@/lib/utils'
+
+export default function FeeCalculator() {
+  const [amount, setAmount] = useState('100')
+  const [instantPayout, setInstantPayout] = useState(false)
+  const [calculation, setCalculation] = useState<FeeCalculation | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    calculateFees()
+  }, [amount, instantPayout])
+
+  const calculateFees = async () => {
+    const numAmount = parseFloat(amount)
+    if (isNaN(numAmount) || numAmount <= 0) {
+      setCalculation(null)
+      return
+    }
+
+    try {
+      setLoading(true)
+      const result = await paymentProcessorsApi.calculateFees(
+        numAmount,
+        'both' as PaymentProcessor,
+        instantPayout
+      )
+      setCalculation(result)
+    } catch (error) {
+      console.error('Failed to calculate fees:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getNetAmount = (processor: 'stripe' | 'square') => {
+    if (!calculation) return 0
+    const fees = processor === 'stripe' ? calculation.stripe : calculation.square
+    if (!fees) return 0
+    return calculation.amount - fees.total_fee
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Calculator className="h-5 w-5 mr-2" />
+            Fee Calculator
+          </CardTitle>
+          <CardDescription>
+            Calculate and compare processing fees between Stripe and Square
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Input Controls */}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="amount">Transaction Amount</Label>
+              <div className="relative">
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="amount"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="pl-9"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="instant-payout">Instant Payout</Label>
+                <p className="text-sm text-muted-foreground">
+                  Get funds within 30 minutes (additional fees apply)
+                </p>
+              </div>
+              <Switch
+                id="instant-payout"
+                checked={instantPayout}
+                onCheckedChange={setInstantPayout}
+              />
+            </div>
+          </div>
+
+          {/* Results */}
+          {calculation && calculation.stripe && calculation.square && (
+            <div className="space-y-4">
+              <Tabs defaultValue="comparison" className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="comparison">Comparison</TabsTrigger>
+                  <TabsTrigger value="stripe">Stripe Details</TabsTrigger>
+                  <TabsTrigger value="square">Square Details</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="comparison" className="space-y-4">
+                  <ComparisonView
+                    amount={calculation.amount}
+                    stripe={calculation.stripe}
+                    square={calculation.square}
+                    savings={calculation.savings}
+                    instantPayout={instantPayout}
+                  />
+                </TabsContent>
+
+                <TabsContent value="stripe" className="space-y-4">
+                  <ProcessorDetails
+                    name="Stripe"
+                    icon={<CreditCard className="h-5 w-5" />}
+                    amount={calculation.amount}
+                    fees={calculation.stripe}
+                    netAmount={getNetAmount('stripe')}
+                    instantPayout={instantPayout}
+                  />
+                </TabsContent>
+
+                <TabsContent value="square" className="space-y-4">
+                  <ProcessorDetails
+                    name="Square"
+                    icon={<Building2 className="h-5 w-5" />}
+                    amount={calculation.amount}
+                    fees={calculation.square}
+                    netAmount={getNetAmount('square')}
+                    instantPayout={instantPayout}
+                  />
+                </TabsContent>
+              </Tabs>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+interface ComparisonViewProps {
+  amount: number
+  stripe: any
+  square: any
+  savings?: { processor: string; amount: number }
+  instantPayout: boolean
+}
+
+function ComparisonView({ amount, stripe, square, savings, instantPayout }: ComparisonViewProps) {
+  const stripeNet = amount - stripe.total_fee
+  const squareNet = amount - square.total_fee
+
+  return (
+    <div className="space-y-4">
+      {/* Winner Card */}
+      {savings && savings.amount > 0 && (
+        <div className="p-4 bg-primary/10 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <TrendingDown className="h-5 w-5 text-primary" />
+              <span className="font-medium">
+                {savings.processor === 'stripe' ? 'Stripe' : 'Square'} saves you
+              </span>
+            </div>
+            <span className="text-lg font-bold text-primary">
+              {formatCurrency(savings.amount)}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Side by Side Comparison */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center text-base">
+              <CreditCard className="h-4 w-4 mr-2" />
+              Stripe
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <FeeRow label="Payment Fee" value={stripe.payment_fee} />
+            <FeeRow label="Payout Fee" value={stripe.payout_fee} />
+            <div className="pt-2 border-t">
+              <FeeRow label="Total Fees" value={stripe.total_fee} bold />
+              <FeeRow label="You Receive" value={stripeNet} bold positive />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center text-base">
+              <Building2 className="h-4 w-4 mr-2" />
+              Square
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <FeeRow label="Payment Fee" value={square.payment_fee} />
+            <FeeRow label="Payout Fee" value={square.payout_fee} />
+            <div className="pt-2 border-t">
+              <FeeRow label="Total Fees" value={square.total_fee} bold />
+              <FeeRow label="You Receive" value={squareNet} bold positive />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Payout Speed Info */}
+      <div className="flex items-center justify-center space-x-4 p-3 bg-muted rounded-lg text-sm">
+        {instantPayout ? (
+          <>
+            <Zap className="h-4 w-4 text-yellow-500" />
+            <span>Funds available within 30 minutes</span>
+          </>
+        ) : (
+          <>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            <span>Funds available next business day</span>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+interface ProcessorDetailsProps {
+  name: string
+  icon: React.ReactNode
+  amount: number
+  fees: any
+  netAmount: number
+  instantPayout: boolean
+}
+
+function ProcessorDetails({ name, icon, amount, fees, netAmount, instantPayout }: ProcessorDetailsProps) {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center space-x-2">
+        {icon}
+        <h3 className="text-lg font-semibold">{name} Fee Breakdown</h3>
+      </div>
+
+      <div className="space-y-3">
+        <div className="p-4 bg-muted rounded-lg space-y-2">
+          <div className="flex justify-between">
+            <span className="text-sm">Transaction Amount</span>
+            <span className="font-medium">{formatCurrency(amount)}</span>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-sm font-medium">Payment Processing Fee</p>
+              <p className="text-xs text-muted-foreground">2.9% + $0.30</p>
+            </div>
+            <span className="text-sm">{formatCurrency(fees.payment_fee)}</span>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-sm font-medium">Payout Fee</p>
+              <p className="text-xs text-muted-foreground">
+                {instantPayout ? (
+                  name === 'Stripe' ? '1% for instant' : '1.5% for instant'
+                ) : (
+                  name === 'Stripe' ? '$0.25 standard' : 'Free standard'
+                )}
+              </p>
+            </div>
+            <span className="text-sm">{formatCurrency(fees.payout_fee)}</span>
+          </div>
+        </div>
+
+        <div className="pt-3 border-t space-y-2">
+          <div className="flex justify-between font-medium">
+            <span>Total Fees</span>
+            <span className="text-red-600">{formatCurrency(fees.total_fee)}</span>
+          </div>
+          <div className="flex justify-between text-lg font-bold">
+            <span>Net Amount</span>
+            <span className="text-green-600">{formatCurrency(netAmount)}</span>
+          </div>
+          <div className="flex justify-between text-sm text-muted-foreground">
+            <span>Effective Rate</span>
+            <span>{fees.effective_rate}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+interface FeeRowProps {
+  label: string
+  value: number
+  bold?: boolean
+  positive?: boolean
+}
+
+function FeeRow({ label, value, bold = false, positive = false }: FeeRowProps) {
+  return (
+    <div className={`flex justify-between items-center ${bold ? 'font-medium' : ''}`}>
+      <span className="text-sm">{label}</span>
+      <span className={`text-sm ${positive ? 'text-green-600' : ''}`}>
+        {formatCurrency(value)}
+      </span>
+    </div>
+  )
+}

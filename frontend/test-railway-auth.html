@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Railway Authentication Test</title>
+    <script>
+        async function testAuthentication() {
+            const results = document.getElementById('results');
+
+            // Test 1: Check if landing page loads without redirect
+            results.innerHTML += '<h3>Test 1: Landing Page</h3>';
+            try {
+                const response = await fetch('https://web-production-92a6c.up.railway.app/');
+                results.innerHTML += `Status: ${response.status}<br>`;
+                results.innerHTML += `Headers: ${JSON.stringify(Object.fromEntries(response.headers))}<br>`;
+                const text = await response.text();
+                results.innerHTML += `Content length: ${text.length} bytes<br>`;
+                results.innerHTML += `Has redirect: ${text.includes('window.location') || text.includes('router.push')}<br>`;
+                results.innerHTML += `Title found: ${text.includes('6FB Booking Platform')}<br><br>`;
+            } catch (error) {
+                results.innerHTML += `Error: ${error.message}<br><br>`;
+            }
+
+            // Test 2: Check public route headers
+            results.innerHTML += '<h3>Test 2: Check for X-Public-Route header</h3>';
+            try {
+                const response = await fetch('https://web-production-92a6c.up.railway.app/', {
+                    method: 'HEAD'
+                });
+                results.innerHTML += `X-Public-Route header: ${response.headers.get('X-Public-Route') || 'Not found'}<br><br>`;
+            } catch (error) {
+                results.innerHTML += `Error: ${error.message}<br><br>`;
+            }
+
+            // Test 3: Check demo routes
+            results.innerHTML += '<h3>Test 3: Demo Routes</h3>';
+            const demoRoutes = ['/demo', '/book', '/demo/book', '/booking-demo'];
+            for (const route of demoRoutes) {
+                try {
+                    const response = await fetch(`https://web-production-92a6c.up.railway.app${route}`);
+                    results.innerHTML += `${route}: Status ${response.status}<br>`;
+                } catch (error) {
+                    results.innerHTML += `${route}: Error - ${error.message}<br>`;
+                }
+            }
+            results.innerHTML += '<br>';
+
+            // Test 4: Check if auth check happens on client
+            results.innerHTML += '<h3>Test 4: Auth JavaScript Detection</h3>';
+            try {
+                const response = await fetch('https://web-production-92a6c.up.railway.app/');
+                const text = await response.text();
+                results.innerHTML += `Contains useAuth: ${text.includes('useAuth')}<br>`;
+                results.innerHTML += `Contains AuthProvider: ${text.includes('AuthProvider')}<br>`;
+                results.innerHTML += `Contains checkAuth: ${text.includes('checkAuth')}<br>`;
+                results.innerHTML += `Contains /login redirect: ${text.includes('/login')}<br><br>`;
+            } catch (error) {
+                results.innerHTML += `Error: ${error.message}<br><br>`;
+            }
+
+            // Test 5: Load page in iframe to see actual behavior
+            results.innerHTML += '<h3>Test 5: IFrame Test</h3>';
+            results.innerHTML += 'Check the iframe below to see if the page loads or redirects:<br>';
+            results.innerHTML += '<iframe src="https://web-production-92a6c.up.railway.app/" width="100%" height="400" style="border: 1px solid #ccc;"></iframe>';
+        }
+
+        window.onload = () => {
+            testAuthentication();
+        };
+    </script>
+</head>
+<body>
+    <h1>Railway Deployment Authentication Test</h1>
+    <div id="results"></div>
+</body>
+</html>
