@@ -126,6 +126,10 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         # Enhanced security for documentation endpoints
         settings = request.app.state.settings
 
+        # Always skip rate limiting for OPTIONS requests (CORS preflight)
+        if request.method == "OPTIONS":
+            return await call_next(request)
+
         # In production, apply rate limiting to docs endpoints
         if (
             settings.ENVIRONMENT == "production"
