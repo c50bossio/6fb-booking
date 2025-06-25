@@ -45,8 +45,33 @@ const PUBLIC_ROUTES = [
 const getDemoMode = (): boolean => {
   if (typeof window !== 'undefined') {
     const pathname = window.location.pathname
-    // Demo mode only on specific demo routes, not when logged in
-    return pathname.includes('/demo') || pathname.includes('/calendar-demo')
+    const search = window.location.search
+    
+    // Demo mode on specific demo routes
+    if (pathname.includes('/demo') || pathname.includes('/calendar-demo')) {
+      return true
+    }
+    
+    // Demo mode when coming from /app or with demo parameter
+    if (pathname === '/app' || search.includes('demo=true')) {
+      return true
+    }
+    
+    // Check if we're on dashboard but came from demo
+    if (pathname === '/dashboard') {
+      // Check if there's a demo flag in sessionStorage (set by /app redirect)
+      try {
+        const isDemoSession = sessionStorage.getItem('demo_mode') === 'true'
+        if (isDemoSession) return true
+      } catch (e) {
+        // Fall back to checking referrer or URL params
+      }
+      
+      // Check URL parameters for demo flag
+      if (search.includes('demo=true')) {
+        return true
+      }
+    }
   }
   return false
 }

@@ -7,8 +7,16 @@ export default function AppPage() {
   const router = useRouter()
 
   useEffect(() => {
-    // Redirect to the real dashboard
-    router.replace('/dashboard')
+    // Set demo mode flag in sessionStorage
+    try {
+      sessionStorage.setItem('demo_mode', 'true')
+    } catch (e) {
+      // Fallback if sessionStorage is blocked
+      console.log('SessionStorage blocked, using URL parameter')
+    }
+    
+    // Redirect to the real dashboard with demo parameter
+    router.replace('/dashboard?demo=true')
   }, [router])
 
   return (
