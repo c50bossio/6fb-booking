@@ -5,6 +5,8 @@ import { useRouter, usePathname } from 'next/navigation'
 import { authService } from '@/lib/api/auth'
 import type { User } from '@/lib/api/client'
 import { smartStorage } from '@/lib/utils/storage'
+import { authMigration } from '@/lib/utils/auth-migration'
+import { debugAuthState, debugRedirect } from '@/lib/utils/auth-debug'
 
 interface AuthContextType {
   user: User | null
@@ -26,7 +28,6 @@ const PUBLIC_ROUTES = [
   '/simple-login',
   '/', // Landing page
   '/book', // Public booking pages
-  '/customer', // Customer portal routes
   '/demo', // Demo calendar pages
   '/booking-demo',
   '/calendar-demo',
@@ -42,86 +43,6 @@ const PUBLIC_ROUTES = [
   '/landing' // Server-rendered landing page
 ]
 
-// DEMO MODE: Automatically detect based on route or authentication state
-const getDemoMode = (): boolean => {
-  if (typeof window !== 'undefined') {
-    const pathname = window.location.pathname
-    const search = window.location.search
-
-    // Demo mode on specific demo routes
-    if (pathname.includes('/demo') || pathname.includes('/calendar-demo')) {
-      return true
-    }
-
-    // Demo mode when coming from /app or with demo parameter
-    if (pathname === '/app' || search.includes('demo=true')) {
-      return true
-    }
-
-    // RESTRICTED: Only check sessionStorage demo mode for specific demo routes
-    // This prevents demo mode from persisting globally after actual login
-    const isDemoRoute = pathname.includes('/demo') || pathname.includes('/calendar-demo') || pathname === '/app'
-    if (isDemoRoute) {
-      try {
-        const isDemoSession = sessionStorage.getItem('demo_mode') === 'true'
-        if (isDemoSession) {
-          console.log('[AuthProvider] Demo mode active from sessionStorage for demo route:', pathname)
-          return true
-        }
-      } catch (e) {
-        // SessionStorage blocked
-      }
-    }
-
-    // Check URL parameters for demo flag
-    if (search.includes('demo=true')) {
-      console.log('[AuthProvider] Demo mode active from URL parameter for:', pathname)
-      return true
-    }
-  }
-  return false
-}
-
-// Demo user with full permissions for exploring the app
-const DEMO_USER: User = {
-  id: 1,
-  email: 'demo@6fb.com',
-  username: 'demo@6fb.com',
-  first_name: 'Demo',
-  last_name: 'User',
-  full_name: 'Demo User',
-  role: 'super_admin',
-  is_active: true,
-  is_verified: true,
-  created_at: '2024-01-01T00:00:00Z',
-  updated_at: '2024-01-01T00:00:00Z',
-  permissions: [
-    'view_all',
-    'edit_all',
-    'delete_all',
-    'manage_barbers',
-    'manage_appointments',
-    'manage_clients',
-    'manage_payments',
-    'manage_locations',
-    'view_analytics',
-    'manage_settings',
-    'view_calendar',
-    'create_appointments',
-    'edit_appointments',
-    'delete_appointments',
-    'view_revenue',
-    'manage_compensation',
-    'access_booking',
-    'access_dashboard',
-    'access_payments'
-  ],
-  phone_number: '+1234567890',
-  profile_image_url: null,
-  location_id: 1,
-  barber_id: 1
-}
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
@@ -135,35 +56,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (isClient) {
-      // Ensure demo mode persists across navigation
-      const currentDemoMode = getDemoMode()
-      if (currentDemoMode) {
-        try {
-          sessionStorage.setItem('demo_mode', 'true')
-        } catch (e) {
-          console.log('Cannot set sessionStorage')
-        }
-      }
       checkAuth()
     }
   }, [isClient])
 
   useEffect(() => {
-    // Re-check demo mode on pathname changes
-    if (isClient) {
-      const currentDemoMode = getDemoMode()
-      if (currentDemoMode && !user) {
-        console.log('[AuthProvider] Pathname changed, re-setting demo user for:', pathname)
-        setUser(DEMO_USER)
-        setLoading(false)
-        return
-      }
-    }
-  }, [pathname, isClient])
-
-  useEffect(() => {
-    // Skip redirection in demo mode or during SSR
-    if (getDemoMode() || !isClient) return
+    // Skip redirection during SSR
+    if (!isClient) return
 
     // CRITICAL: Never redirect from the landing page
     if (pathname === '/' || window.location.pathname === '/') {
@@ -171,7 +70,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return
     }
 
-    // Add extra safety: only redirect after a small delay to ensure hydration is complete
+    // CRITICAL: Skip customer routes - let CustomerAuthProvider handle them
+    if (pathname?.startsWith('/customer')) {
+      console.log('[AuthProvider] On customer route, skipping auth redirect:', pathname)
+      return
+    }
+
+    // Add stability check to prevent redirect loops
     const timeoutId = setTimeout(() => {
       // Get the current pathname, with fallback
       const currentPath = pathname || window.location.pathname || '/'
@@ -191,7 +96,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return false
       })
 
-      // Debug logging for Railway deployment
+      // Debug logging for deployment
       console.log('[AuthProvider] Route check:', {
         pathname: currentPath,
         isPublicRoute,
@@ -201,88 +106,67 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         publicRoutes: PUBLIC_ROUTES
       })
 
-      // Extra safety: check if we're still on the same pathname
-      // Only redirect if ALL conditions are met
-      if (!loading && !user && !isPublicRoute && window.location.pathname === currentPath) {
+      // Enhanced safety: check if we're still on the same pathname AND not in loading state
+      // Only redirect if ALL conditions are met and we're not already redirecting
+      if (!loading && !user && !isPublicRoute && window.location.pathname === currentPath && !window.location.pathname.includes('/login')) {
         console.log('[AuthProvider] Redirecting to login from:', currentPath)
+        debugRedirect('AuthProvider', currentPath, '/login', 'User not authenticated on protected route')
+
+        // Store redirect path for after login
+        smartStorage.setItem('redirect_after_login', currentPath)
         router.push('/login')
       }
-    }, 500) // Increased delay to ensure proper hydration
+    }, 1000) // Delay to ensure proper hydration and stability
 
     return () => clearTimeout(timeoutId)
   }, [user, loading, pathname, router, isClient])
 
   const checkAuth = async () => {
     try {
-      let token = null
-      try {
-        // Safely access localStorage with error handling for browser extension conflicts
-        token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
-      } catch (e) {
-        console.warn('Unable to access localStorage (possibly blocked by extension):', e)
-        // Continue without token - app will work in demo mode
-      }
+      // Perform auth migration from localStorage to cookies
+      authMigration.migrate()
 
-      // If we have a valid access token, prioritize real auth over demo mode
-      // This ensures admin logins work even if demo mode sessionStorage exists
-      if (token) {
-        console.log('[AuthProvider] Found access token, attempting real authentication')
-        const currentUser = await authService.getCurrentUser()
-        setUser(currentUser)
-
-        // Clear any stray demo mode if real auth succeeds
+      // Check if user is authenticated (has user data and CSRF token)
+      if (authService.isAuthenticated()) {
+        console.log('[AuthProvider] User is authenticated, fetching current user')
         try {
-          sessionStorage.removeItem('demo_mode')
-          console.log('[AuthProvider] Cleared demo mode after successful real auth')
-        } catch (e) {
-          console.log('Cannot clear sessionStorage')
+          const currentUser = await authService.getCurrentUser()
+          setUser(currentUser)
+        } catch (error) {
+          console.error('Failed to get current user:', error)
+          // Clear user data if fetching fails
+          smartStorage.removeItem('user')
         }
-
-        setLoading(false)
-        return
+      } else {
+        // Check if we have stored user data but no CSRF token
+        // This might happen after server restart or cookie expiration
+        const storedUser = authService.getStoredUser()
+        if (storedUser) {
+          console.log('[AuthProvider] Found stored user but no valid session')
+          smartStorage.removeItem('user')
+        }
       }
 
-      // Check for demo mode based on current route (only if no real auth token)
-      const currentDemoMode = getDemoMode()
-
-      // In demo mode, automatically set the demo user
-      if (currentDemoMode) {
-        console.log('[AuthProvider] No access token found, using demo mode')
-        setUser(DEMO_USER)
-        setLoading(false)
-        return
-      }
-
-      // No token and no demo mode
       setLoading(false)
     } catch (error) {
       console.error('Auth check failed:', error)
-      try {
-        // Safely remove token if auth fails
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('access_token')
-        }
-      } catch (e) {
-        console.warn('Unable to clear localStorage:', e)
-      }
-    } finally {
       setLoading(false)
     }
   }
 
   const login = async (email: string, password: string) => {
     try {
-      // IMPORTANT: Clear demo mode when performing actual login
-      try {
-        sessionStorage.removeItem('demo_mode')
-        console.log('[AuthProvider] Cleared demo mode for actual login')
-      } catch (e) {
-        console.log('Cannot clear sessionStorage')
-      }
-
       const response = await authService.login({ username: email, password })
       setUser(response.user)
-      router.push('/dashboard')
+
+      // Check for redirect after login
+      const redirectPath = smartStorage.getItem('redirect_after_login')
+      if (redirectPath) {
+        smartStorage.removeItem('redirect_after_login')
+        router.push(redirectPath)
+      } else {
+        router.push('/dashboard')
+      }
     } catch (error: any) {
       console.error('Login failed:', error)
       throw error
@@ -290,22 +174,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const logout = async () => {
-    // Clear demo mode on logout
-    try {
-      sessionStorage.removeItem('demo_mode')
-      console.log('[AuthProvider] Cleared demo mode on logout')
-    } catch (e) {
-      console.log('Cannot clear sessionStorage')
-    }
-
-    // In demo mode, just clear the user and redirect
-    const currentDemoMode = getDemoMode()
-    if (currentDemoMode) {
-      setUser(null)
-      router.push('/login')
-      return
-    }
-
     await authService.logout()
     setUser(null)
     router.push('/login')
@@ -332,6 +200,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     hasPermission,
     hasRole,
   }
+
+  // Debug authentication state changes
+  useEffect(() => {
+    if (isClient) {
+      debugAuthState('AuthProvider', {
+        hasUser: !!user,
+        isLoading: loading,
+        pathname: pathname
+      })
+    }
+  }, [user, loading, pathname, isClient])
 
   return (
     <AuthContext.Provider value={value}>

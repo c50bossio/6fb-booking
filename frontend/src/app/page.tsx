@@ -12,7 +12,6 @@ import {
   ChartBarIcon,
   UserGroupIcon,
   ArrowRightIcon,
-  PlayIcon,
   BanknotesIcon,
   CalendarDaysIcon,
   UsersIcon,
@@ -136,7 +135,7 @@ const pricing = [
       'SMS notifications',
       'Dedicated account manager'
     ],
-    buttonText: 'Schedule Demo',
+    buttonText: 'Start Free Trial',
     popular: false,
   },
 ]
@@ -162,8 +161,8 @@ const testimonials = [
   },
 ]
 
-// Premium Animated Demo Button Component
-function PremiumDemoButton() {
+// Premium Animated Trial Button Component
+function PremiumTrialButton() {
   const [isHovered, setIsHovered] = useState(false)
   const [isClicked, setIsClicked] = useState(false)
 
@@ -193,7 +192,7 @@ function PremiumDemoButton() {
       whileTap={{ scale: 0.95 }}
       className="perspective-1000"
     >
-      <Link href="/app">
+      <Link href="/signup">
         <motion.div
           className="demo-button text-lg px-10 py-4 relative overflow-hidden group cursor-pointer"
           initial={{ scale: 1 }}
@@ -258,7 +257,7 @@ function PremiumDemoButton() {
               }}
               className="mr-2"
             >
-              <PlayIcon className="h-5 w-5" />
+              <ArrowRightIcon className="h-5 w-5" />
             </motion.div>
 
             <motion.span
@@ -271,7 +270,7 @@ function PremiumDemoButton() {
                 ease: "easeInOut"
               }}
             >
-              Try Full Demo Now
+              Start Free Trial
             </motion.span>
           </div>
 
@@ -295,7 +294,6 @@ function PremiumDemoButton() {
 
 export default function LandingPage() {
   const [email, setEmail] = useState('')
-  const [showDemo, setShowDemo] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
@@ -313,13 +311,13 @@ export default function LandingPage() {
   return (
     <>
       <div className="min-h-screen bg-gray-50">
-      {/* Demo Banner */}
+      {/* Free Trial Banner */}
       <div className="bg-gradient-to-r from-slate-700 to-slate-800 text-white py-3">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-sm font-medium">
-            🚀 Experience the full Booked Barber Platform now - no sign up required!{' '}
-            <Link href="/app" className="underline font-semibold hover:text-slate-300">
-              Try Live Demo →
+            🎉 Start your 30-day free trial today - no credit card required!{' '}
+            <Link href="/signup" className="underline font-semibold hover:text-slate-300">
+              Get Started Free →
             </Link>
           </p>
         </div>
@@ -339,21 +337,14 @@ export default function LandingPage() {
               <span className="ml-3 text-2xl font-bold text-slate-900">Booked Barber</span>
             </div>
             <div className="flex items-center space-x-4">
-              <Link
-                href="/app"
-                className="header-nav-link transition-colors"
-                style={{color: '#111827', fontWeight: '600', opacity: 1}}
-              >
-                Live Demo
-              </Link>
               <Link href="/login" className="header-nav-link transition-colors" style={{color: '#111827', fontWeight: '600', opacity: 1}}>
                 Sign In
               </Link>
               <Link
-                href="#pricing"
+                href="/signup"
                 className="premium-button hover-lift"
               >
-                Get Started
+                Start Free Trial
               </Link>
             </div>
           </div>
@@ -382,20 +373,18 @@ export default function LandingPage() {
 
           <p className="text-xl md:text-2xl mb-12 max-w-4xl mx-auto leading-relaxed text-gray-700">
             Automate payouts, track earnings, and manage appointments with the most trusted platform in the industry.
-            <span className="font-bold text-gray-900"> Join the barbers earning $100K+</span>
+            <span className="font-bold text-gray-900"> Start your 30-day free trial today - no credit card required.</span>
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-16">
-            <PremiumDemoButton />
-            <a
-              href="https://bookedbarber.com"
-              target="_blank"
-              rel="noopener noreferrer"
+            <PremiumTrialButton />
+            <Link
+              href="/login"
               className="bg-white border-2 border-gray-300 text-gray-700 font-semibold text-lg px-10 py-4 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 inline-flex items-center shadow-lg hover:shadow-xl hover:-translate-y-1"
             >
-              Start Free Trial
+              Sign In
               <ArrowRightIcon className="ml-2 h-5 w-5" />
-            </a>
+            </Link>
           </div>
 
           {/* Social Proof Stats */}
@@ -418,38 +407,6 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Demo Video Placeholder */}
-          {showDemo && (
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <div className="max-w-5xl w-full premium-card p-8 relative">
-                <button
-                  onClick={() => setShowDemo(false)}
-                  className="absolute top-4 right-4 text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-
-                <div className="aspect-video bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl flex items-center justify-center text-white relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-r from-slate-600/20 to-slate-700/20"></div>
-                  <div className="text-center relative z-10">
-                    <div className="bg-white/10 backdrop-blur-sm rounded-full p-6 mx-auto mb-6 w-fit">
-                      <PlayIcon className="h-16 w-16 text-white" />
-                    </div>
-                    <p className="text-2xl font-bold mb-2">Demo: Automated Payout System</p>
-                    <p className="text-white mb-6 font-medium">See how barbers save 5+ hours per week and increase earnings by 40%</p>
-                    <Link
-                      href="/app"
-                      className="premium-button-success hover-lift"
-                    >
-                      Try Live Demo →
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </section>
 
@@ -572,7 +529,7 @@ export default function LandingPage() {
               Choose Your Plan
             </h2>
             <p className="text-xl pricing-description" style={{color: '#000000', fontWeight: '500'}}>
-              Start with a 14-day free trial. No credit card required.
+              Start with a 30-day free trial. No credit card required.
             </p>
           </div>
 
@@ -700,7 +657,7 @@ export default function LandingPage() {
           </form>
 
           <p className="text-slate-200 text-sm mt-4 font-medium">
-            14-day free trial • No credit card required • Cancel anytime
+            30-day free trial • No credit card required • Cancel anytime
           </p>
         </div>
       </section>
@@ -724,7 +681,7 @@ export default function LandingPage() {
               <ul className="space-y-2">
                 <li><Link href="#features" className="footer-link transition-colors" style={{color: '#E5E7EB', fontWeight: '500'}}>Features</Link></li>
                 <li><Link href="#pricing" className="footer-link transition-colors" style={{color: '#E5E7EB', fontWeight: '500'}}>Pricing</Link></li>
-                <li><Link href="/app" className="footer-link transition-colors" style={{color: '#E5E7EB', fontWeight: '500'}}>Live Demo</Link></li>
+                <li><Link href="/signup" className="footer-link transition-colors" style={{color: '#E5E7EB', fontWeight: '500'}}>Start Free Trial</Link></li>
               </ul>
             </div>
 
