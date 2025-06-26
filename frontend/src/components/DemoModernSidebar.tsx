@@ -213,7 +213,7 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
                   BookBarber
                 </h1>
                 <p className={`text-xs ${theme === 'dark' || theme === 'charcoal' ? 'text-gray-400' : 'text-gray-500'}`}>
-                  Demo Mode
+                  Professional Platform
                 </p>
               </div>
             </div>

@@ -25,6 +25,7 @@ import {
 import axios from 'axios'
 import ModernCalendar from '@/components/ModernCalendar'
 import CreateAppointmentModal from '@/components/modals/CreateAppointmentModal'
+import { TrialCountdown } from '@/components/trial'
 
 interface User {
   id: string
@@ -32,6 +33,10 @@ interface User {
   first_name: string
   last_name: string
   role: string
+  subscription_status?: 'TRIAL' | 'ACTIVE' | 'CANCELLED' | 'EXPIRED' | 'PAST_DUE'
+  trial_start_date?: string
+  trial_end_date?: string
+  trial_used?: boolean
 }
 
 interface TodayStats {
@@ -112,7 +117,11 @@ export default function DashboardPage() {
         email: 'demo@6fb.com',
         first_name: 'Demo',
         last_name: 'User',
-        role: 'admin'
+        role: 'admin',
+        subscription_status: 'TRIAL' as const,
+        trial_start_date: new Date().toISOString(),
+        trial_end_date: new Date(Date.now() + 25 * 24 * 60 * 60 * 1000).toISOString(), // 25 days from now
+        trial_used: false
       }
 
       setUser(demoUser)
@@ -318,7 +327,11 @@ export default function DashboardPage() {
   const currentUser = user || {
     first_name: 'Admin',
     last_name: 'User',
-    role: 'admin'
+    role: 'admin',
+    subscription_status: 'TRIAL' as const,
+    trial_start_date: new Date().toISOString(),
+    trial_end_date: new Date(Date.now() + 27 * 24 * 60 * 60 * 1000).toISOString(), // 27 days from now
+    trial_used: false
   }
 
   return (
@@ -327,7 +340,7 @@ export default function DashboardPage() {
         {/* Welcome Section */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
-            <div>
+            <div className="flex-1">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                 Welcome back, {currentUser.first_name}!
               </h1>
@@ -403,6 +416,19 @@ export default function DashboardPage() {
               </button>
             </div>
           </div>
+
+          {/* Trial Status - Show for trial users */}
+          {currentUser.subscription_status === 'TRIAL' && currentUser.trial_end_date && (
+            <div className="mt-6">
+              <TrialCountdown
+                trialEndDate={new Date(currentUser.trial_end_date)}
+                subscriptionStatus={currentUser.subscription_status}
+                onUpgrade={() => router.push('/upgrade')}
+                onTrialInfoClick={() => router.push('/billing')}
+                compact
+              />
+            </div>
+          )}
         </div>
 
         {/* Key Metrics - Dark Theme Cards */}
