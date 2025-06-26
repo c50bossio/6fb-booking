@@ -75,6 +75,21 @@ export default function SignupPage() {
 
   const router = useRouter()
 
+  // Password validation utility
+  const validatePasswordStrength = (password: string) => {
+    const checks = {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /\d/.test(password),
+      special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    }
+
+    const isValid = Object.values(checks).every(Boolean)
+
+    return { isValid, checks }
+  }
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target
     setFormData(prev => ({
@@ -86,6 +101,27 @@ export default function SignupPage() {
     if (errors[name]) {
       setErrors((prev: any) => ({ ...prev, [name]: '' }))
     }
+
+    // Real-time password validation
+    if (name === 'password' && value) { // pragma: allowlist secret
+      const { isValid } = validatePasswordStrength(value)
+      if (!isValid) {
+        setErrors((prev: any) => ({
+          ...prev,
+          [name]: 'Password does not meet all requirements'
+        }))
+      }
+    }
+
+    // Real-time confirm password validation
+    if (name === 'confirmPassword' && value && formData.password) {
+      if (value !== formData.password) {
+        setErrors((prev: any) => ({
+          ...prev,
+          confirmPassword: 'Passwords do not match' // pragma: allowlist secret
+        }))
+      }
+    }
   }
 
   const validateStep2 = () => {
@@ -96,8 +132,24 @@ export default function SignupPage() {
     if (!formData.email.trim()) newErrors.email = 'Email is required'
     if (!formData.email.includes('@')) newErrors.email = 'Please enter a valid email'
     if (!formData.phone.trim()) newErrors.phone = 'Phone number is required'
-    if (!formData.password) newErrors.password = 'Password is required' // pragma: allowlist secret
-    if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters' // pragma: allowlist secret
+
+    // Enhanced password validation
+    if (!formData.password) { // pragma: allowlist secret
+      newErrors.password = 'Password is required' // pragma: allowlist secret
+    } else {
+      const { isValid, checks } = validatePasswordStrength(formData.password)
+      if (!isValid) {
+        const missingRequirements = []
+        if (!checks.length) missingRequirements.push('at least 8 characters')
+        if (!checks.uppercase) missingRequirements.push('an uppercase letter')
+        if (!checks.lowercase) missingRequirements.push('a lowercase letter')
+        if (!checks.number) missingRequirements.push('a number')
+        if (!checks.special) missingRequirements.push('a special character')
+
+        newErrors.password = `Password must contain ${missingRequirements.join(', ')}`
+      }
+    }
+
     if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match' // pragma: allowlist secret
     if (!formData.agreeToTerms) newErrors.agreeToTerms = 'You must agree to the terms and conditions'
 
@@ -392,6 +444,33 @@ export default function SignupPage() {
                         autoComplete="new-password"
                       />
                       {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+
+                      {/* Password strength indicator */}
+                      {formData.password && (
+                        <div className="mt-3">
+                          <div className="text-xs text-gray-600 mb-2">Password requirements:</div>
+                          <div className="space-y-1 text-xs">
+                            {[
+                              { key: 'length', label: '8+ characters', check: formData.password.length >= 8 },
+                              { key: 'uppercase', label: 'Uppercase letter', check: /[A-Z]/.test(formData.password) },
+                              { key: 'lowercase', label: 'Lowercase letter', check: /[a-z]/.test(formData.password) },
+                              { key: 'number', label: 'Number', check: /\d/.test(formData.password) },
+                              { key: 'special', label: 'Special character', check: /[!@#$%^&*(),.?":{}|<>]/.test(formData.password) }
+                            ].map(({ key, label, check }) => (
+                              <div key={key} className={`flex items-center space-x-2 ${
+                                check ? 'text-green-600' : 'text-gray-500'
+                              }`}>
+                                <span className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                                  check ? 'bg-green-100 border-green-500' : 'border-gray-300'
+                                }`}>
+                                  {check && <span className="text-green-600 text-xs">✓</span>}
+                                </span>
+                                <span>{label}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div>
