@@ -12,11 +12,23 @@ from sqlalchemy import (
     Text,
     ForeignKey,
     JSON,
+    Enum,
 )
+import enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from config.database import Base
-from utils.encryption import EncryptedString, SearchableEncryptedString
+from utils.encryption import EncryptedString, SearchableEncryptedString, EncryptedText
+
+
+class SubscriptionStatus(enum.Enum):
+    """User subscription status for trial and billing management"""
+
+    TRIAL = "trial"
+    ACTIVE = "active"
+    CANCELLED = "cancelled"
+    EXPIRED = "expired"
+    PAST_DUE = "past_due"
 
 
 class User(Base):
@@ -25,8 +37,10 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
 
     # Basic Information
-    # TEMPORARY: Use plain string for testing (should be encrypted in production)
-    email = Column(String(500), unique=True, index=True, nullable=False)
+    # ENCRYPTED: Email is searchable encrypted for login and searching
+    email = Column(
+        SearchableEncryptedString(500), unique=True, index=True, nullable=False
+    )
     username = Column(String(100), unique=True, index=True, nullable=True)
     first_name = Column(String(100), nullable=False)
     last_name = Column(String(100), nullable=False)
@@ -37,6 +51,18 @@ class User(Base):
     is_verified = Column(Boolean, default=False)
     last_login = Column(DateTime, nullable=True)
 
+    # Subscription and Trial Management
+    subscription_status = Column(
+        Enum(SubscriptionStatus), default=SubscriptionStatus.TRIAL, nullable=False
+    )
+    trial_start_date = Column(DateTime, nullable=True)
+    trial_end_date = Column(DateTime, nullable=True)
+    trial_used = Column(
+        Boolean, default=False, nullable=False
+    )  # Prevent multiple trials
+    subscription_id = Column(String(255), nullable=True)  # Stripe subscription ID
+    customer_id = Column(String(255), nullable=True)  # Stripe customer ID
+
     # Role and Permissions
     role = Column(
         String(50), nullable=False, default="barber"
@@ -44,15 +70,15 @@ class User(Base):
     permissions = Column(JSON, nullable=True)  # Custom permissions JSON
 
     # Contact Information
-    phone = Column(String(20), nullable=True)
-    address = Column(String(500), nullable=True)
-    city = Column(String(100), nullable=True)
-    state = Column(String(50), nullable=True)
-    zip_code = Column(String(20), nullable=True)
+    phone = Column(SearchableEncryptedString(100), nullable=True)
+    address = Column(EncryptedString(500), nullable=True)
+    city = Column(String(100), nullable=True)  # Keep unencrypted for filtering
+    state = Column(String(50), nullable=True)  # Keep unencrypted for filtering
+    zip_code = Column(String(20), nullable=True)  # Keep unencrypted for filtering
 
     # Profile
     profile_picture = Column(String(500), nullable=True)
-    bio = Column(Text, nullable=True)
+    bio = Column(EncryptedText, nullable=True)  # May contain personal information
 
     # 6FB Specific
     sixfb_certification_level = Column(
@@ -100,6 +126,10 @@ class User(Base):
         "NotificationPreference", back_populates="user", uselist=False
     )
 
+    # MFA relationships
+    mfa_settings = relationship("MFASettings", back_populates="user", uselist=False)
+    trusted_devices = relationship("TrustedDevice", back_populates="user")
+
     def __repr__(self):
         return f"<User(id={self.id}, email='{self.email}', role='{self.role}')>"
 
@@ -144,6 +174,77 @@ class User(Base):
 
         all_permissions = default_permissions + custom_permissions
         return permission in all_permissions
+
+    def is_mfa_required(self, db_session=None) -> bool:
+        """Check if MFA is required for this user based on role"""
+        # Super admins and admins should have MFA required by default
+        if self.role in ["super_admin", "admin"]:
+            return True
+
+        # Check if there's an enforcement policy for this role
+        if db_session:
+            from models.mfa_settings import MFAEnforcementPolicy
+
+            policy = (
+                db_session.query(MFAEnforcementPolicy)
+                .filter(MFAEnforcementPolicy.role == self.role)
+                .first()
+            )
+            if policy:
+                return policy.is_required
+
+        return False
+
+    def has_mfa_enabled(self) -> bool:
+        """Check if user has MFA enabled"""
+        return self.mfa_settings and self.mfa_settings.is_enabled
+
+    def is_trial_active(self) -> bool:
+        """Check if user's trial is currently active"""
+        if self.subscription_status != SubscriptionStatus.TRIAL:
+            return False
+
+        if not self.trial_end_date:
+            return False
+
+        from datetime import datetime, timezone
+
+        return datetime.now(timezone.utc) < self.trial_end_date
+
+    def is_subscription_active(self) -> bool:
+        """Check if user has an active subscription (including trial)"""
+        if self.subscription_status == SubscriptionStatus.ACTIVE:
+            return True
+        return self.is_trial_active()
+
+    def days_remaining_in_trial(self) -> int:
+        """Get number of days remaining in trial"""
+        if not self.is_trial_active():
+            return 0
+
+        from datetime import datetime, timezone
+
+        remaining = self.trial_end_date - datetime.now(timezone.utc)
+        return max(0, remaining.days)
+
+    def start_trial(self, trial_days: int = 30) -> None:
+        """Start a trial period for the user"""
+        from datetime import datetime, timezone, timedelta
+
+        if self.trial_used:
+            raise ValueError("User has already used their trial period")
+
+        now = datetime.now(timezone.utc)
+        self.trial_start_date = now
+        self.trial_end_date = now + timedelta(days=trial_days)
+        self.trial_used = True
+        self.subscription_status = SubscriptionStatus.TRIAL
+
+    def activate_subscription(self, stripe_subscription_id: str = None) -> None:
+        """Activate paid subscription"""
+        self.subscription_status = SubscriptionStatus.ACTIVE
+        if stripe_subscription_id:
+            self.subscription_id = stripe_subscription_id
 
 
 class UserSession(Base):
