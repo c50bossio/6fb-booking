@@ -252,17 +252,22 @@ export default function BookingFlowPage() {
 
       const response = await bookingService.createBooking(bookingData)
 
-      setBookingConfirmation({
-        ...response.data,
-        service_name: flowData.selectedService?.name,
-        barber_name: flowData.selectedBarber ?
-          `${flowData.selectedBarber.first_name} ${flowData.selectedBarber.last_name}` : '',
-        duration: flowData.selectedService?.duration_minutes,
-        price: flowData.selectedService?.base_price,
-        location: flowData.location
-      })
-
-      setShowConfirmation(true)
+      // Redirect to standalone confirmation page using the booking token
+      if (response.data.booking_token) {
+        router.push(`/book/confirmation/${response.data.booking_token}`)
+      } else {
+        // Fallback to modal if no token (should not happen)
+        setBookingConfirmation({
+          ...response.data,
+          service_name: flowData.selectedService?.name,
+          barber_name: flowData.selectedBarber ?
+            `${flowData.selectedBarber.first_name} ${flowData.selectedBarber.last_name}` : '',
+          duration: flowData.selectedService?.duration_minutes,
+          price: flowData.selectedService?.base_price,
+          location: flowData.location
+        })
+        setShowConfirmation(true)
+      }
     } catch (error: any) {
       console.error('Failed to create booking:', error)
       setError(error.response?.data?.detail || 'Failed to create booking. Please try again.')

@@ -91,6 +91,7 @@ from api.v1.endpoints import (
     test_payout,
     booking_public,
     booking_authenticated,
+    recurring_bookings,
     public_dashboard,
     test_email,
     clients,
@@ -246,8 +247,13 @@ app.include_router(
 )
 app.include_router(
     booking_public.router,
-    prefix="/api/v1/booking-public",
-    tags=["Booking Public"],
+    prefix="/api/v1/booking/public",
+    tags=["Public Booking"],
+)
+app.include_router(
+    recurring_bookings.router,
+    prefix="/api/v1/booking/recurring",
+    tags=["Recurring Bookings"],
 )
 app.include_router(
     booking_authenticated.router,

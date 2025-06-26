@@ -26,6 +26,7 @@ const PUBLIC_ROUTES = [
   '/simple-login',
   '/', // Landing page
   '/book', // Public booking pages
+  '/customer', // Customer portal routes
   '/demo', // Demo calendar pages
   '/booking-demo',
   '/calendar-demo',

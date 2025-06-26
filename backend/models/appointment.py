@@ -37,6 +37,10 @@ class Appointment(BaseModel):
     customer_id = Column(Integer, ForeignKey("customers.id"), nullable=True)
     customer = relationship("Customer", back_populates="appointments")
 
+    # Series relationship (for recurring appointments)
+    series_id = Column(Integer, ForeignKey("appointment_series.id"), nullable=True)
+    series = relationship("AppointmentSeries", back_populates="appointments")
+
     # Service and Location relationships (commented out - not in current schema)
     # service_id = Column(Integer, ForeignKey("services.id"), nullable=True)
     # service = relationship("Service", foreign_keys=[service_id])
