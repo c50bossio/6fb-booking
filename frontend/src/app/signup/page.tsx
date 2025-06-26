@@ -120,7 +120,7 @@ export default function SignupPage() {
 
     try {
       // Create account via API
-      const response = await fetch('http://localhost:8000/api/v1/auth/register', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -140,7 +140,7 @@ export default function SignupPage() {
       }
 
       // Account created successfully - now log them in
-      const loginResponse = await fetch('http://localhost:8000/api/v1/auth/token', {
+      const loginResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
