@@ -77,6 +77,13 @@ from .gift_certificate import (
     GiftCertificateStatus,
 )
 from .payout_schedule import PayoutSchedule
+from .appointment_series import (
+    AppointmentSeries,
+    SeriesExclusion,
+    SeriesChangeLog,
+    RecurrencePattern,
+    SeriesStatus,
+)
 
 # Export all models for easy importing
 __all__ = [
@@ -162,4 +169,10 @@ __all__ = [
     "GiftCertificateStatus",
     # Payout Schedule models
     "PayoutSchedule",
+    # Appointment Series models
+    "AppointmentSeries",
+    "SeriesExclusion",
+    "SeriesChangeLog",
+    "RecurrencePattern",
+    "SeriesStatus",
 ]

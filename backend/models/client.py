@@ -57,6 +57,7 @@ class Client(BaseModel):
     # Relationships
     appointments = relationship("Appointment", back_populates="client")
     reviews = relationship("Review", back_populates="client")
+    appointment_series = relationship("AppointmentSeries", back_populates="client")
 
     def __repr__(self):
         return f"<Client(name={self.first_name} {self.last_name}, type={self.customer_type})>"
