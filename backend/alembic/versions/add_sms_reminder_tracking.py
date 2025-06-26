@@ -20,6 +20,7 @@ depends_on = None
 def upgrade() -> None:
     # This migration was referenced but never existed
     # Creating empty migration to satisfy dependencies
+    # Force redeploy trigger
     pass
 
 
