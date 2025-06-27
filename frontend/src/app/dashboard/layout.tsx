@@ -1,20 +1,14 @@
-'use client'
-
-import DemoModernSidebar from "@/components/DemoModernSidebar";
+import { ReactNode } from 'react';
 
 interface DashboardLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
+/**
+ * Dashboard layout - simplified since ConditionalLayout in root layout
+ * now handles sidebar rendering for dashboard routes automatically.
+ * This layout just passes through children.
+ */
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  // Since ClientOnly is already in the root layout, we don't need another mounting check
-  return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Sidebar with explicit visibility */}
-      <DemoModernSidebar />
-      <main className="flex-1 transition-all duration-300 overflow-y-auto">
-        {children}
-      </main>
-    </div>
-  );
+  return <>{children}</>;
 }

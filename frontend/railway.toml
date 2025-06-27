@@ -3,7 +3,7 @@ builder = "NIXPACKS"
 buildCommand = "npm install && npm run build"
 
 [deploy]
-startCommand = "npm run start:railway"
+startCommand = "node .next/standalone/server.js"
 healthcheckPath = "/"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
@@ -12,7 +12,7 @@ restartPolicyMaxRetries = 10
 [environments.production.variables]
 NODE_ENV = "production"
 NEXT_TELEMETRY_DISABLED = "1"
-PORT = "3000"
+PORT = "8080"
 
 [environments.production.deploy]
 healthcheckPath = "/"

@@ -65,7 +65,7 @@ export default function CalendarKeyboardDemoPage() {
       title: appointment.service || 'New Appointment',
       client: 'New Client',
       clientId: 999,
-      barber: barbers.find(b => b.id === appointment.barberId)?.name || 'Unknown',
+      barber: mockBarbers.find(b => b.id === appointment.barberId)?.name || 'Unknown',
       barberId: appointment.barberId || 1,
       startTime: appointment.startTime || '09:00',
       endTime: appointment.endTime || '10:00',

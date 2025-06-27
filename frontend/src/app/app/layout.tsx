@@ -1,10 +1,5 @@
-'use client'
-
-import type { Metadata } from "next";
+import { ReactNode } from 'react';
 import { Inter, JetBrains_Mono } from "next/font/google";
-import "../globals.css";
-import { ThemeProvider } from "@/contexts/ThemeContext";
-import DemoModernSidebar from "@/components/DemoModernSidebar";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -17,20 +12,18 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 interface AppLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
+/**
+ * App layout - simplified since ConditionalLayout in root layout
+ * now handles sidebar rendering for dashboard routes automatically.
+ * This layout preserves the specific font configuration for the /app route.
+ */
 export default function AppLayout({ children }: AppLayoutProps) {
   return (
-    <ThemeProvider>
-      <div className={`${inter.variable} ${jetbrainsMono.variable} antialiased min-h-screen`}>
-        <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-          <DemoModernSidebar />
-          <main className="flex-1 transition-all duration-300 overflow-y-auto">
-            {children}
-          </main>
-        </div>
-      </div>
-    </ThemeProvider>
+    <div className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}>
+      {children}
+    </div>
   );
 }
