@@ -33,27 +33,28 @@ async def list_compensation_plans(
 ):
     """Get list of all compensation plans"""
     try:
-        plans = (
-            db.query(CompensationPlan)
-            .offset(skip)
-            .limit(limit)
-            .all()
-        )
-        
+        plans = db.query(CompensationPlan).offset(skip).limit(limit).all()
+
         result = []
         for plan in plans:
-            result.append({
-                "id": plan.id,
-                "barber_id": plan.barber_id,
-                "plan_name": plan.plan_name,
-                "compensation_type": plan.compensation_type.value if plan.compensation_type else None,
-                "is_active": plan.is_active,
-                "effective_date": plan.effective_date.isoformat() if plan.effective_date else None,
-                "end_date": plan.end_date.isoformat() if plan.end_date else None,
-            })
-        
+            result.append(
+                {
+                    "id": plan.id,
+                    "barber_id": plan.barber_id,
+                    "plan_name": plan.plan_name,
+                    "compensation_type": (
+                        plan.compensation_type.value if plan.compensation_type else None
+                    ),
+                    "is_active": plan.is_active,
+                    "effective_date": (
+                        plan.effective_date.isoformat() if plan.effective_date else None
+                    ),
+                    "end_date": plan.end_date.isoformat() if plan.end_date else None,
+                }
+            )
+
         return result
-        
+
     except Exception as e:
         logger.error(f"Error fetching compensation plans: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

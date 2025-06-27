@@ -15,7 +15,7 @@ const PerformanceMetrics = lazy(() => import('./PerformanceMetrics'))
 const ServiceAnalytics = lazy(() => import('./ServiceAnalytics'))
 
 interface LazyAnalyticsProps {
-  component: 'dashboard' | 'animated-dashboard' | 'revenue' | 'barber-comparison' | 
+  component: 'dashboard' | 'animated-dashboard' | 'revenue' | 'barber-comparison' |
             'booking-trends' | 'client-retention' | 'peak-hours' | 'performance' | 'service'
   [key: string]: any
 }

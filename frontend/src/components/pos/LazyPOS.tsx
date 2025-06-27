@@ -13,7 +13,7 @@ const ReceiptDisplayEnhanced = lazy(() => import('./ReceiptDisplayEnhanced'))
 const MobilePOSLayout = lazy(() => import('./MobilePOSLayout'))
 
 interface LazyPOSProps {
-  component: 'checkout' | 'checkout-enhanced' | 'products' | 'cart' | 
+  component: 'checkout' | 'checkout-enhanced' | 'products' | 'cart' |
             'receipt' | 'receipt-enhanced' | 'mobile-layout'
   [key: string]: any
 }

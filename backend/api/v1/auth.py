@@ -1288,21 +1288,21 @@ async def auth_health_check(db: Session = Depends(get_db)):
     try:
         # Test database connection
         user_count = db.query(User).count()
-        
+
         # Test if we can create JWT tokens
         test_token = create_access_token(data={"sub": "health_check"})
-        
+
         return {
             "status": "healthy",
             "service": "authentication",
             "database_connection": "ok",
             "total_users": user_count,
             "jwt_generation": "ok",
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.utcnow().isoformat(),
         }
     except Exception as e:
         logger.error(f"Auth health check failed: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"Authentication service unhealthy: {str(e)}"
+            detail=f"Authentication service unhealthy: {str(e)}",
         )

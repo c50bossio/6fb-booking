@@ -64,7 +64,7 @@ Successfully implemented comprehensive bundle optimization strategies to reduce 
 ### Webpack Cache Groups Priority
 1. **Framework** (Priority 20): React, Next.js core
 2. **Charts** (Priority 18): Recharts - async loaded
-3. **Payments** (Priority 17): Stripe - async loaded  
+3. **Payments** (Priority 17): Stripe - async loaded
 4. **UI** (Priority 16): Radix UI, Headless UI
 5. **Animations** (Priority 15): Framer Motion - async loaded
 6. **Utils** (Priority 14): Date-fns, clsx, etc.

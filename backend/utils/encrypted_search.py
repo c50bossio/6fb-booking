@@ -46,7 +46,7 @@ def exact_match_encrypted_field(
     try:
         # Get the field from the model
         field = getattr(model_class, field_name)
-        
+
         # For encrypted fields, we'll use direct comparison
         # The EncryptedString type should handle the encryption/decryption
         return query.filter(field == search_value)
