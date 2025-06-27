@@ -5,6 +5,7 @@ Authentication API endpoints
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from datetime import datetime, timedelta
 from typing import Optional
 import jwt
@@ -138,7 +139,15 @@ class UserResponse(BaseModel):
 
 # Helper functions
 def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
+    """Verify password using bcrypt only - consistent with registration hashing"""
+    try:
+        # Only use bcrypt for consistency with registration
+        is_valid = pwd_context.verify(plain_password, hashed_password)
+        logger.debug(f"Password verification result: {is_valid}")
+        return is_valid
+    except Exception as e:
+        logger.error(f"Password verification error: {str(e)}")
+        return False
 
 
 def get_password_hash(password):
@@ -255,7 +264,7 @@ async def get_current_user(
             raise credentials_exception
 
         # Check if token is blacklisted
-        if token_blacklist_service.is_token_blacklisted(token):
+        if token_blacklist_service.is_blacklisted(token):
             logger.warning("Blacklisted token usage attempt")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -423,6 +432,10 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
 
+    # Ensure the transaction is fully committed before proceeding
+    db.flush()
+    logger.debug(f"User {new_user.id} successfully committed to database")
+
     # Start 30-day trial for new user using subscription service
     subscription_service = SubscriptionService(db)
     try:
@@ -513,19 +526,47 @@ async def login(
     client_ip = get_client_ip(request)
     check_login_rate_limit(client_ip)
 
-    # Use encrypted search for email lookup
-    user_query = db.query(User)
-    user_query = exact_match_encrypted_field(
-        user_query, "email", form_data.username, User
-    )
-    user = user_query.first()
+    # Find user with simplified, consistent query approach
+    user = None
+    email = form_data.username
 
-    if not user or not verify_password(form_data.password, user.hashed_password):
+    logger.debug(f"Attempting login for email: {email}")
+
+    try:
+        # Use encrypted search since email field is SearchableEncryptedString
+        logger.debug(f"Searching for user with email: {email}")
+
+        user_query = db.query(User)
+        user_query = exact_match_encrypted_field(user_query, "email", email, User)
+        user = user_query.first()
+
+        if user:
+            logger.debug(f"User found via encrypted search - ID: {user.id}")
+        else:
+            logger.debug(f"User not found with encrypted search")
+
+    except Exception as e:
+        logger.error(f"Error during encrypted user lookup: {str(e)}")
+        user = None
+
+    # Enhanced debugging for authentication failures
+    if not user:
+        logger.warning(f"Login failed: User not found for email {email}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+    if not verify_password(form_data.password, user.hashed_password):
+        logger.warning(f"Login failed: Incorrect password for user {user.id} ({email})")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    logger.info(f"Login successful for user {user.id} ({email})")
 
     if not user.is_active:
         raise HTTPException(
@@ -538,7 +579,7 @@ async def login(
         data={"sub": user.email, "user_id": user.id}, expires_delta=access_token_expires
     )
 
-    refresh_token_expires = timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    refresh_token_expires = timedelta(days=int(REFRESH_TOKEN_EXPIRE_DAYS))
     refresh_token = create_refresh_token(
         data={"sub": user.email}, expires_delta=refresh_token_expires
     )
@@ -584,7 +625,26 @@ async def login(
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_info(current_user: User = Depends(get_current_user)):
     """Get current user information"""
-    return current_user
+    return UserResponse(
+        id=current_user.id,
+        email=current_user.email,
+        first_name=current_user.first_name,
+        last_name=current_user.last_name,
+        role=current_user.role,
+        is_active=current_user.is_active,
+        primary_location_id=current_user.primary_location_id,
+        permissions=None,  # Will be populated by RBAC if needed
+        created_at=current_user.created_at,
+        subscription_status=(
+            current_user.subscription_status.value
+            if current_user.subscription_status
+            else None
+        ),
+        trial_start_date=current_user.trial_start_date,
+        trial_end_date=current_user.trial_end_date,
+        is_trial_active=current_user.is_trial_active(),
+        days_remaining_in_trial=current_user.days_remaining_in_trial(),
+    )
 
 
 @router.post("/login", response_model=Token)
@@ -694,7 +754,7 @@ async def login_with_mfa(
         data={"sub": user.email, "user_id": user.id}, expires_delta=access_token_expires
     )
 
-    refresh_token_expires = timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    refresh_token_expires = timedelta(days=int(REFRESH_TOKEN_EXPIRE_DAYS))
     refresh_token = create_refresh_token(
         data={"sub": user.email}, expires_delta=refresh_token_expires
     )
@@ -773,7 +833,7 @@ async def refresh_token(
         data={"sub": user.email, "user_id": user.id}, expires_delta=access_token_expires
     )
 
-    refresh_token_expires = timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    refresh_token_expires = timedelta(days=int(REFRESH_TOKEN_EXPIRE_DAYS))
     new_refresh_token = create_refresh_token(
         data={"sub": user.email}, expires_delta=refresh_token_expires
     )
@@ -1061,7 +1121,7 @@ async def verify_magic_token(
             data={"sub": user.email}, expires_delta=access_token_expires
         )
 
-        refresh_token_expires = timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+        refresh_token_expires = timedelta(days=int(REFRESH_TOKEN_EXPIRE_DAYS))
         refresh_token = create_refresh_token(
             data={"sub": user.email}, expires_delta=refresh_token_expires
         )

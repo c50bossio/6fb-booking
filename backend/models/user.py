@@ -217,7 +217,12 @@ class User(Base):
 
         from datetime import datetime, timezone
 
-        return datetime.now(timezone.utc) < self.trial_end_date
+        # Ensure both datetimes are timezone-aware for comparison
+        trial_end = self.trial_end_date
+        if trial_end.tzinfo is None:
+            trial_end = trial_end.replace(tzinfo=timezone.utc)
+
+        return datetime.now(timezone.utc) < trial_end
 
     def is_subscription_active(self) -> bool:
         """Check if user has an active subscription (including trial)"""
@@ -232,7 +237,12 @@ class User(Base):
 
         from datetime import datetime, timezone
 
-        remaining = self.trial_end_date - datetime.now(timezone.utc)
+        # Ensure both datetimes are timezone-aware for comparison
+        trial_end = self.trial_end_date
+        if trial_end.tzinfo is None:
+            trial_end = trial_end.replace(tzinfo=timezone.utc)
+
+        remaining = trial_end - datetime.now(timezone.utc)
         return max(0, remaining.days)
 
     def start_trial(self, trial_days: int = 30) -> None:

@@ -97,8 +97,12 @@ class CreateBookingRequest(BaseModel):
     notes: Optional[str] = None
     timezone: str = "America/New_York"
     location_id: Optional[int] = None  # Location ID for "Any Professional" selection
-    payment_method: str = Field(default="online", description="Payment method: online, in_person")
-    payment_type: str = Field(default="full", description="Payment type: full, deposit, in_person")
+    payment_method: str = Field(
+        default="online", description="Payment method: online, in_person"
+    )
+    payment_type: str = Field(
+        default="full", description="Payment type: full, deposit, in_person"
+    )
 
     @validator("appointment_date")
     def validate_future_date(cls, v):
@@ -124,7 +128,9 @@ class BookingConfirmationResponse(BaseModel):
     appointment_id: int
     confirmation_message: str
     appointment_details: dict
-    assigned_barber: Optional[dict] = None  # Include assigned barber for "Any Professional"
+    assigned_barber: Optional[dict] = (
+        None  # Include assigned barber for "Any Professional"
+    )
 
 
 # Helper functions
@@ -143,7 +149,7 @@ def find_available_barbers(
     duration_minutes: int,
 ) -> List[Barber]:
     """Find all barbers available for a specific service at a given time"""
-    
+
     # Get all active barbers at the location who offer the service
     barbers = (
         db.query(Barber)
@@ -155,21 +161,21 @@ def find_available_barbers(
         )
         .all()
     )
-    
+
     # Filter by those who offer the service
     service = db.query(Service).filter(Service.id == service_id).first()
     if not service:
         return []
-    
+
     # If service is location-wide (no specific barber), all barbers can perform it
     # If service is barber-specific, only that barber can perform it
     if service.barber_id:
         barbers = [b for b in barbers if b.id == service.barber_id]
-    
+
     # Check availability for each barber
     availability_service = AvailabilityService(db)
     available_barbers = []
-    
+
     for barber in barbers:
         is_available, conflicts = availability_service.check_real_time_availability(
             barber_id=barber.id,
@@ -177,63 +183,61 @@ def find_available_barbers(
             start_time=appointment_time,
             duration_minutes=duration_minutes,
         )
-        
+
         if is_available:
             available_barbers.append(barber)
-    
+
     return available_barbers
 
 
 def generate_mock_availability_slots(
-    target_date: date,
-    service: Service,
-    timezone: str = "America/New_York"
+    target_date: date, service: Service, timezone: str = "America/New_York"
 ) -> List[TimeSlot]:
     """Generate mock availability slots for testing when no real availability exists"""
-    
+
     slots = []
-    
+
     # Define business hours (9 AM to 5 PM)
     start_hour = 9
     end_hour = 17  # 5 PM in 24-hour format
-    
+
     # Generate slots with 30-minute intervals
     current_time = datetime.combine(target_date, time(hour=start_hour, minute=0))
     end_time = datetime.combine(target_date, time(hour=end_hour, minute=0))
-    
+
     # Generate a lunch break (12 PM to 1 PM)
     lunch_start = datetime.combine(target_date, time(hour=12, minute=0))
     lunch_end = datetime.combine(target_date, time(hour=13, minute=0))
-    
+
     while current_time + timedelta(minutes=service.duration_minutes) <= end_time:
         slot_end_time = current_time + timedelta(minutes=service.duration_minutes)
-        
+
         # Skip lunch break
         if not (slot_end_time <= lunch_start or current_time >= lunch_end):
             current_time += timedelta(minutes=30)
             continue
-        
+
         # Randomly make some slots unavailable (30% chance)
         is_available = True
         reason = None
-        
+
         # Check if slot is in the past
-        min_advance_hours = getattr(service, 'min_advance_hours', 2) or 2
+        min_advance_hours = getattr(service, "min_advance_hours", 2) or 2
         min_booking_time = datetime.now() + timedelta(hours=min_advance_hours)
-        
+
         if current_time < min_booking_time:
             is_available = False
             reason = f"Must book at least {min_advance_hours} hours in advance"
         elif random.random() < 0.3:  # 30% chance of being booked
             is_available = False
             reason = "Already booked"
-        
+
         # Add some variety to unavailable slots
         if is_available and current_time.hour in [10, 14, 16] and random.random() < 0.5:
             # Popular times are more likely to be booked
             is_available = False
             reason = "Already booked"
-        
+
         slots.append(
             TimeSlot(
                 date=target_date,
@@ -243,9 +247,9 @@ def generate_mock_availability_slots(
                 reason=reason,
             )
         )
-        
+
         current_time += timedelta(minutes=30)  # 30-minute intervals
-    
+
     return slots
 
 
@@ -430,7 +434,7 @@ class LocationPublicInfo(BaseModel):
     operating_hours: Optional[dict]
     is_active: bool
     timezone: Optional[str] = "America/New_York"
-    
+
     class Config:
         from_attributes = True
 
@@ -440,23 +444,23 @@ async def get_all_shops(
     is_active: bool = Query(True, description="Filter by active status"),
     city: Optional[str] = Query(None, description="Filter by city"),
     state: Optional[str] = Query(None, description="Filter by state"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Get all public shops/locations"""
-    
+
     query = db.query(Location)
-    
+
     if is_active is not None:
         query = query.filter(Location.is_active == is_active)
-    
+
     if city:
         query = query.filter(Location.city == city)
-        
+
     if state:
         query = query.filter(Location.state == state)
-    
+
     locations = query.all()
-    
+
     result = []
     for location in locations:
         # Parse operating_hours if it's a string
@@ -464,27 +468,30 @@ async def get_all_shops(
         if isinstance(operating_hours, str):
             try:
                 import json
+
                 operating_hours = json.loads(operating_hours)
             except:
                 operating_hours = {}
         elif operating_hours is None:
             operating_hours = {}
-            
-        result.append(LocationPublicInfo(
-            id=location.id,
-            name=location.name,
-            location_code=location.location_code,
-            address=location.address,
-            city=location.city,
-            state=location.state,
-            zip_code=location.zip_code,
-            phone=location.phone,
-            email=location.email,
-            operating_hours=operating_hours,
-            is_active=location.is_active,
-            timezone=getattr(location, 'timezone', 'America/New_York')
-        ))
-    
+
+        result.append(
+            LocationPublicInfo(
+                id=location.id,
+                name=location.name,
+                location_code=location.location_code,
+                address=location.address,
+                city=location.city,
+                state=location.state,
+                zip_code=location.zip_code,
+                phone=location.phone,
+                email=location.email,
+                operating_hours=operating_hours,
+                is_active=location.is_active,
+                timezone=getattr(location, "timezone", "America/New_York"),
+            )
+        )
+
     return result
 
 
@@ -497,7 +504,7 @@ class LocationPaymentSettings(BaseModel):
     requires_deposit: bool
     deposit_percentage: Optional[float]
     deposit_fixed_amount: Optional[float]
-    
+
     class Config:
         from_attributes = True
 
@@ -505,14 +512,16 @@ class LocationPaymentSettings(BaseModel):
 @router.get("/shops/{shop_id}/payment-settings", response_model=LocationPaymentSettings)
 async def get_shop_payment_settings(shop_id: int, db: Session = Depends(get_db)):
     """Get payment settings for a specific shop/location"""
-    
-    location = db.query(Location).filter(
-        and_(Location.id == shop_id, Location.is_active == True)
-    ).first()
-    
+
+    location = (
+        db.query(Location)
+        .filter(and_(Location.id == shop_id, Location.is_active == True))
+        .first()
+    )
+
     if not location:
         raise HTTPException(status_code=404, detail="Shop not found or not active")
-    
+
     return LocationPaymentSettings(
         pay_in_person_enabled=location.pay_in_person_enabled,
         pay_in_person_message=location.pay_in_person_message,
@@ -521,32 +530,35 @@ async def get_shop_payment_settings(shop_id: int, db: Session = Depends(get_db))
         accepts_digital_wallet=location.accepts_digital_wallet,
         requires_deposit=location.requires_deposit,
         deposit_percentage=location.deposit_percentage,
-        deposit_fixed_amount=location.deposit_fixed_amount
+        deposit_fixed_amount=location.deposit_fixed_amount,
     )
 
 
 @router.get("/shops/{shop_id}", response_model=LocationPublicInfo)
 async def get_shop_info(shop_id: int, db: Session = Depends(get_db)):
     """Get public information about a shop/location"""
-    
-    location = db.query(Location).filter(
-        and_(Location.id == shop_id, Location.is_active == True)
-    ).first()
-    
+
+    location = (
+        db.query(Location)
+        .filter(and_(Location.id == shop_id, Location.is_active == True))
+        .first()
+    )
+
     if not location:
         raise HTTPException(status_code=404, detail="Shop not found or not active")
-    
+
     # Parse operating_hours if it's a string
     operating_hours = location.operating_hours
     if isinstance(operating_hours, str):
         try:
             import json
+
             operating_hours = json.loads(operating_hours)
         except:
             operating_hours = {}
     elif operating_hours is None:
         operating_hours = {}
-    
+
     return LocationPublicInfo(
         id=location.id,
         name=location.name,
@@ -559,7 +571,7 @@ async def get_shop_info(shop_id: int, db: Session = Depends(get_db)):
         email=location.email,
         operating_hours=operating_hours,
         is_active=location.is_active,
-        timezone=getattr(location, 'timezone', 'America/New_York')
+        timezone=getattr(location, "timezone", "America/New_York"),
     )
 
 
@@ -747,38 +759,46 @@ async def get_any_professional_availability(
     db: Session = Depends(get_db),
 ):
     """Get availability for 'Any Professional' at a location for a specific service and date"""
-    
+
     # Verify location exists
-    location = db.query(Location).filter(
-        and_(Location.id == location_id, Location.is_active == True)
-    ).first()
-    
+    location = (
+        db.query(Location)
+        .filter(and_(Location.id == location_id, Location.is_active == True))
+        .first()
+    )
+
     if not location:
         raise HTTPException(status_code=404, detail="Location not found")
-    
+
     # Get service
-    service = db.query(Service).filter(
-        and_(Service.id == service_id, Service.is_active == True)
-    ).first()
-    
+    service = (
+        db.query(Service)
+        .filter(and_(Service.id == service_id, Service.is_active == True))
+        .first()
+    )
+
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
-    
+
     # Get all barbers at the location
-    barbers = db.query(Barber).filter(
-        and_(
-            Barber.location_id == location_id,
-            Barber.is_active == True,
+    barbers = (
+        db.query(Barber)
+        .filter(
+            and_(
+                Barber.location_id == location_id,
+                Barber.is_active == True,
+            )
         )
-    ).all()
-    
+        .all()
+    )
+
     # If service is barber-specific, filter to only that barber
     if service.barber_id:
         barbers = [b for b in barbers if b.id == service.barber_id]
-    
+
     # Collect all available time slots across all barbers
     all_time_slots = {}
-    
+
     for barber in barbers:
         # Get availability for this barber
         slots = get_barber_availability_for_date(
@@ -788,11 +808,11 @@ async def get_any_professional_availability(
             target_date=date,
             timezone=timezone,
         )
-        
+
         # Merge slots - a time is available if ANY barber is available
         for slot in slots:
             slot_key = (slot.start_time, slot.end_time)
-            
+
             if slot_key not in all_time_slots:
                 all_time_slots[slot_key] = {
                     "date": slot.date,
@@ -802,27 +822,29 @@ async def get_any_professional_availability(
                     "available_barbers": [],
                     "reason": slot.reason,
                 }
-            
+
             # If this barber is available for this slot, mark it as available
             if slot.available:
                 all_time_slots[slot_key]["available"] = True
                 all_time_slots[slot_key]["available_barbers"].append(barber.id)
                 all_time_slots[slot_key]["reason"] = None
-    
+
     # Convert to list of TimeSlot objects
     result_slots = []
     for slot_data in all_time_slots.values():
-        result_slots.append(TimeSlot(
-            date=slot_data["date"],
-            start_time=slot_data["start_time"],
-            end_time=slot_data["end_time"],
-            available=slot_data["available"],
-            reason=slot_data["reason"] if not slot_data["available"] else None,
-        ))
-    
+        result_slots.append(
+            TimeSlot(
+                date=slot_data["date"],
+                start_time=slot_data["start_time"],
+                end_time=slot_data["end_time"],
+                available=slot_data["available"],
+                reason=slot_data["reason"] if not slot_data["available"] else None,
+            )
+        )
+
     # Sort by start time
     result_slots.sort(key=lambda x: x.start_time)
-    
+
     return {
         "location_id": location_id,
         "service_id": service_id,
@@ -846,7 +868,7 @@ async def get_barber_availability(
     db: Session = Depends(get_db),
 ):
     """Get available booking slots for a barber
-    
+
     Returns mock data if no real availability is configured for testing purposes.
     Mock data includes:
     - Business hours: 9 AM to 5 PM
@@ -910,25 +932,25 @@ async def create_booking(booking: CreateBookingRequest, db: Session = Depends(ge
 
     # Handle "Any Professional" selection
     assigned_barber_info = None
-    
+
     if booking.barber_id is None:
         # "Any Professional" selected - need to find and assign a barber
         if not booking.location_id:
             raise HTTPException(
-                status_code=400, 
-                detail="Location ID is required when selecting 'Any Professional'"
+                status_code=400,
+                detail="Location ID is required when selecting 'Any Professional'",
             )
-        
+
         # Get service to check duration
         service = (
             db.query(Service)
             .filter(and_(Service.id == booking.service_id, Service.is_active == True))
             .first()
         )
-        
+
         if not service:
             raise HTTPException(status_code=404, detail="Service not found")
-        
+
         # Find available barbers
         available_barbers = find_available_barbers(
             db=db,
@@ -938,7 +960,7 @@ async def create_booking(booking: CreateBookingRequest, db: Session = Depends(ge
             appointment_time=booking.appointment_time,
             duration_minutes=service.duration_minutes,
         )
-        
+
         if not available_barbers:
             raise HTTPException(
                 status_code=409,
@@ -947,19 +969,19 @@ async def create_booking(booking: CreateBookingRequest, db: Session = Depends(ge
                     "suggested_action": "Please select a different time or choose a specific professional",
                 },
             )
-        
+
         # Randomly select one of the available barbers
         selected_barber = random.choice(available_barbers)
         booking.barber_id = selected_barber.id
-        
+
         # Store info about the assigned barber for the response
         assigned_barber_info = {
             "id": selected_barber.id,
             "name": f"{selected_barber.first_name} {selected_barber.last_name}",
             "business_name": selected_barber.business_name,
-            "message": "We've assigned you a great professional!"
+            "message": "We've assigned you a great professional!",
         }
-    
+
     # Verify barber exists (for both specific selection and auto-assignment)
     barber = (
         db.query(Barber)
@@ -1038,7 +1060,7 @@ async def create_booking(booking: CreateBookingRequest, db: Session = Depends(ge
         payment_status = "pending_in_person"
     elif booking.payment_type == "deposit":
         payment_status = "deposit_pending"
-    
+
     appointment = Appointment(
         appointment_date=booking.appointment_date,
         appointment_time=appointment_datetime,
@@ -1185,6 +1207,7 @@ async def confirm_booking(booking_token: str, db: Session = Depends(get_db)):
 # Public Payment Schemas
 class PublicPaymentIntentCreate(BaseModel):
     """Schema for creating a payment intent in public booking flow"""
+
     appointment_id: int
     amount: int = Field(..., gt=0, description="Amount in cents")
     metadata: Optional[dict] = Field(default_factory=dict)
@@ -1192,6 +1215,7 @@ class PublicPaymentIntentCreate(BaseModel):
 
 class PublicPaymentIntentResponse(BaseModel):
     """Schema for public payment intent response"""
+
     client_secret: str
     payment_intent_id: str
     amount: int
@@ -1201,12 +1225,14 @@ class PublicPaymentIntentResponse(BaseModel):
 
 class PublicPaymentConfirm(BaseModel):
     """Schema for confirming a payment in public booking"""
+
     payment_intent_id: str
     payment_method_id: Optional[str] = None
 
 
 class PublicPaymentResponse(BaseModel):
     """Schema for public payment response"""
+
     payment_id: int
     status: str
     amount: int
@@ -1220,27 +1246,23 @@ async def create_public_payment_intent(
     db: Session = Depends(get_db),
 ):
     """Create a payment intent for public booking (no authentication required)"""
-    
+
     # Verify appointment exists
     appointment = (
         db.query(Appointment)
         .filter(Appointment.id == payment_data.appointment_id)
         .first()
     )
-    
+
     if not appointment:
-        raise HTTPException(
-            status_code=404, 
-            detail="Appointment not found"
-        )
-    
+        raise HTTPException(status_code=404, detail="Appointment not found")
+
     # Verify appointment is in correct status for payment
     if appointment.status not in ["scheduled"]:
         raise HTTPException(
-            status_code=400,
-            detail="Appointment is not in a valid state for payment"
+            status_code=400, detail="Appointment is not in a valid state for payment"
         )
-    
+
     # Check if payment already exists and is successful
     existing_payment = (
         db.query(Payment)
@@ -1250,80 +1272,77 @@ async def create_public_payment_intent(
         )
         .first()
     )
-    
+
     if existing_payment:
-        raise HTTPException(
-            status_code=400, 
-            detail="Appointment is already paid"
-        )
-    
+        raise HTTPException(status_code=400, detail="Appointment is already paid")
+
     # Validate payment amount matches service cost
-    expected_amount = int(appointment.service_revenue * 100) if appointment.service_revenue else 0
+    expected_amount = (
+        int(appointment.service_revenue * 100) if appointment.service_revenue else 0
+    )
     if payment_data.amount != expected_amount:
         raise HTTPException(
-            status_code=400,
-            detail=f"Payment amount must be ${expected_amount/100:.2f}"
+            status_code=400, detail=f"Payment amount must be ${expected_amount/100:.2f}"
         )
-    
+
     try:
         # Create a dummy user for the public payment
         # In real implementation, you might want to handle this differently
         stripe_service = StripeService(db)
-        
+
         # Create payment intent without user authentication
         import stripe
-        
+
         # Get the barber to access their Stripe account
         barber = appointment.barber
         if not barber:
             raise HTTPException(
                 status_code=400,
-                detail="Barber information not found for this appointment"
+                detail="Barber information not found for this appointment",
             )
-        
+
         # Create payment intent with Stripe
         payment_intent = stripe.PaymentIntent.create(
             amount=payment_data.amount,
-            currency='usd',
-            payment_method_types=['card'],
+            currency="usd",
+            payment_method_types=["card"],
             metadata={
-                'appointment_id': str(appointment.id),
-                'barber_id': str(barber.id),
-                'service_name': appointment.service_name or '',
-                'booking_type': 'public',
-                **payment_data.metadata
+                "appointment_id": str(appointment.id),
+                "barber_id": str(barber.id),
+                "service_name": appointment.service_name or "",
+                "booking_type": "public",
+                **payment_data.metadata,
             },
-            description=f"Payment for {appointment.service_name} appointment"
+            description=f"Payment for {appointment.service_name} appointment",
         )
-        
+
         # Create payment record in database
         payment = Payment(
             appointment_id=appointment.id,
             user_id=None,  # No user for public bookings
             amount=payment_data.amount,
-            currency='usd',
+            currency="usd",
             status=PaymentStatus.PENDING,
             stripe_payment_intent_id=payment_intent.id,
             description=f"Payment for {appointment.service_name}",
         )
-        
+
         db.add(payment)
         db.commit()
         db.refresh(payment)
-        
+
         return PublicPaymentIntentResponse(
             client_secret=payment_intent.client_secret,
             payment_intent_id=payment_intent.id,
             amount=payment_data.amount,
-            requires_action=payment_intent.status == 'requires_action',
-            status=payment_intent.status
+            requires_action=payment_intent.status == "requires_action",
+            status=payment_intent.status,
         )
-        
+
     except Exception as e:
         logger.error(f"Failed to create public payment intent: {str(e)}")
         raise HTTPException(
-            status_code=400,
-            detail="Unable to create payment intent. Please try again."
+            status_code=400, detail="Unable to create payment intent. Please try again."
         )
 
 
@@ -1333,7 +1352,7 @@ async def confirm_public_payment(
     db: Session = Depends(get_db),
 ):
     """Confirm a payment for public booking"""
-    
+
     try:
         # Find payment by Stripe payment intent ID
         payment = (
@@ -1341,59 +1360,55 @@ async def confirm_public_payment(
             .filter(Payment.stripe_payment_intent_id == confirm_data.payment_intent_id)
             .first()
         )
-        
+
         if not payment:
-            raise HTTPException(
-                status_code=404,
-                detail="Payment not found"
-            )
-        
+            raise HTTPException(status_code=404, detail="Payment not found")
+
         # Retrieve payment intent from Stripe to check status
         import stripe
+
         payment_intent = stripe.PaymentIntent.retrieve(confirm_data.payment_intent_id)
-        
-        if payment_intent.status == 'succeeded':
+
+        if payment_intent.status == "succeeded":
             payment.status = PaymentStatus.SUCCEEDED
             payment.paid_at = datetime.utcnow()
-            
+
             # Update appointment payment status
             if payment.appointment:
                 payment.appointment.payment_status = "completed"
-            
+
             db.commit()
             db.refresh(payment)
-            
+
             return PublicPaymentResponse(
                 payment_id=payment.id,
                 status=payment.status.value,
                 amount=payment.amount,
-                paid_at=payment.paid_at
+                paid_at=payment.paid_at,
             )
         else:
             # Payment not successful
-            if payment_intent.status == 'requires_action':
+            if payment_intent.status == "requires_action":
                 payment.status = PaymentStatus.REQUIRES_ACTION
             else:
                 payment.status = PaymentStatus.FAILED
-            
+
             db.commit()
-            
+
             raise HTTPException(
                 status_code=400,
-                detail=f"Payment not successful. Status: {payment_intent.status}"
+                detail=f"Payment not successful. Status: {payment_intent.status}",
             )
-            
+
     except stripe.error.StripeError as e:
         logger.error(f"Stripe error in payment confirmation: {str(e)}")
         raise HTTPException(
-            status_code=400,
-            detail="Payment confirmation failed. Please try again."
+            status_code=400, detail="Payment confirmation failed. Please try again."
         )
     except Exception as e:
         logger.error(f"Error confirming public payment: {str(e)}")
         raise HTTPException(
-            status_code=400,
-            detail="Payment confirmation failed. Please try again."
+            status_code=400, detail="Payment confirmation failed. Please try again."
         )
 
 
@@ -1403,19 +1418,12 @@ async def get_public_payment_status(
     db: Session = Depends(get_db),
 ):
     """Get payment status for an appointment"""
-    
-    appointment = (
-        db.query(Appointment)
-        .filter(Appointment.id == appointment_id)
-        .first()
-    )
-    
+
+    appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
+
     if not appointment:
-        raise HTTPException(
-            status_code=404,
-            detail="Appointment not found"
-        )
-    
+        raise HTTPException(status_code=404, detail="Appointment not found")
+
     # Find existing payment
     payment = (
         db.query(Payment)
@@ -1423,23 +1431,29 @@ async def get_public_payment_status(
         .order_by(Payment.created_at.desc())
         .first()
     )
-    
+
     # Determine if payment is required
-    payment_required = appointment.payment_status not in ["completed", "paid", "pending_in_person"]
-    
+    payment_required = appointment.payment_status not in [
+        "completed",
+        "paid",
+        "pending_in_person",
+    ]
+
     result = {
         "payment_required": payment_required,
         "payment_status": appointment.payment_status or "pending",
-        "appointment_id": appointment_id
+        "appointment_id": appointment_id,
     }
-    
+
     if payment:
-        result.update({
-            "amount": payment.amount,
-            "payment_intent": payment.stripe_payment_intent_id,
-            "payment_id": payment.id
-        })
+        result.update(
+            {
+                "amount": payment.amount,
+                "payment_intent": payment.stripe_payment_intent_id,
+                "payment_id": payment.id,
+            }
+        )
     elif appointment.service_revenue:
         result["amount"] = int(appointment.service_revenue * 100)
-    
+
     return result

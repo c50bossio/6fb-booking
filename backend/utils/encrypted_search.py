@@ -13,23 +13,22 @@ logger = logging.getLogger(__name__)
 
 
 def hash_for_search(value: str, salt: str = "6fb_search_salt") -> str:
-    """Create a hash of a value for encrypted field searching"""
+    """Create a hash of a value for encrypted field searching - matches EncryptionManager"""
     if not value:
         return ""
 
-    # Use HMAC-SHA256 for consistent hashing
-    return hmac.new(
-        salt.encode("utf-8"), value.lower().strip().encode("utf-8"), hashlib.sha256
-    ).hexdigest()
+    # Use same hashing as EncryptionManager.hash_for_search
+    # Must be exactly the same to match database storage
+    return hashlib.sha256(value.lower().encode()).hexdigest()[:16]
 
 
 def exact_match_encrypted_field(
     query, field_name: str, search_value: str, model_class: Any
 ):
     """
-    Filter a query for exact matches in encrypted fields
-    For now, this is a simplified version that just searches the plain field
-    since email encryption is handled by the EncryptedString type itself.
+    Filter a query for exact matches in SearchableEncryptedString fields
+    These fields store data as "encrypted_value|search_hash", so we need to
+    search using the hash portion for performance and security.
 
     Args:
         query: SQLAlchemy query object to filter
@@ -44,16 +43,35 @@ def exact_match_encrypted_field(
         return query
 
     try:
-        # Get the field from the model
-        field = getattr(model_class, field_name)
+        # Import here to avoid circular imports
+        from sqlalchemy import text
 
-        # For encrypted fields, we'll use direct comparison
-        # The EncryptedString type should handle the encryption/decryption
-        return query.filter(field == search_value)
+        # Create search hash for the value
+        search_hash = hash_for_search(search_value)
+
+        # For SearchableEncryptedString fields, we search using the hash portion
+        # The database stores: "encrypted_value|search_hash"
+        # We search for records where the field ends with "|{search_hash}"
+        #
+        # IMPORTANT: We must use text() to avoid SQLAlchemy automatically
+        # processing the LIKE pattern through process_bind_param, which would
+        # encrypt our search pattern instead of using it as a raw pattern
+        like_pattern = f"%|{search_hash}"
+
+        logger.debug(
+            f"Searching for {field_name} with hash {search_hash}, pattern: {like_pattern}"
+        )
+
+        # Use raw SQL comparison to avoid SQLAlchemy type processing
+        return query.filter(
+            text(f"{model_class.__tablename__}.{field_name} LIKE :pattern")
+        ).params(pattern=like_pattern)
 
     except Exception as e:
         logger.error(f"Error in encrypted field search: {str(e)}")
-        return query
+        # Fallback to direct comparison in case of error
+        field = getattr(model_class, field_name)
+        return query.filter(field == search_value)
 
 
 def create_search_hash(value: str) -> str:
