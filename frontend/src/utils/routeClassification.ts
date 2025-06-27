@@ -11,6 +11,7 @@ export const ROUTE_PATTERNS = {
   PUBLIC: [
     '/',
     '/login',
+    '/signup',
     '/register',
     '/forgot-password',
     '/emergency-login',

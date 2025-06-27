@@ -39,6 +39,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Backend: Run `pytest` before marking any backend task complete
 - Frontend: Run `npm test` before marking any frontend task complete
 - Full stack: Run `./scripts/test-integration.sh` for cross-system changes
+- **Note**: Demo mode has been removed. Authentication is required to access the platform.
 
 ## Project Overview
 

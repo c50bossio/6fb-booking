@@ -14,16 +14,17 @@ import {
   PaymentStatus
 } from '@/types/payment'
 
-// Payment endpoints
+// Payment endpoints (authenticated)
 const PAYMENT_ENDPOINTS = {
-  CREATE_INTENT: '/api/v1/payments/create-intent',
+  CREATE_INTENT: '/api/v1/payments/payment-intents',
   CONFIRM_PAYMENT: '/api/v1/payments/confirm',
   CANCEL_PAYMENT: '/api/v1/payments/cancel',
-  REFUND: '/api/v1/payments/refund',
+  REFUND: '/api/v1/payments/refunds',
   GET_PAYMENT: '/api/v1/payments',
-  LIST_PAYMENTS: '/api/v1/payments/list',
-  SAVED_METHODS: '/api/v1/payments/saved-methods',
-  STATISTICS: '/api/v1/payments/statistics',
+  LIST_PAYMENTS: '/api/v1/payments',
+  PAYMENT_METHODS: '/api/v1/payments/payment-methods',
+  SETUP_INTENT: '/api/v1/payments/setup-intent',
+  STATISTICS: '/api/v1/payments/reports',
   UPDATE_STATUS: '/api/v1/payments/status',
   SEND_INVOICE: '/api/v1/payments/invoice',
   PROCESS_WEBHOOK: '/api/v1/payments/webhook'
@@ -143,11 +144,36 @@ export const paymentsAPI = {
   },
 
   /**
-   * Get saved payment methods for a customer
+   * Create setup intent for adding payment method
    */
-  async getSavedMethods(customerId: string): Promise<SavedPaymentMethod[]> {
+  async createSetupIntent(): Promise<{ client_secret: string; setup_intent_id: string }> {
+    const response = await apiClient.post<{ client_secret: string; setup_intent_id: string }>(
+      PAYMENT_ENDPOINTS.SETUP_INTENT
+    )
+    return response
+  },
+
+  /**
+   * Get saved payment methods for current user
+   */
+  async getSavedMethods(activeOnly: boolean = true): Promise<SavedPaymentMethod[]> {
+    const params = activeOnly ? '?active_only=true' : ''
     const response = await apiClient.get<SavedPaymentMethod[]>(
-      `${PAYMENT_ENDPOINTS.SAVED_METHODS}/${customerId}`
+      `${PAYMENT_ENDPOINTS.PAYMENT_METHODS}${params}`
+    )
+    return response
+  },
+
+  /**
+   * Add a new payment method
+   */
+  async addPaymentMethod(data: {
+    payment_method_id: string
+    set_as_default?: boolean
+  }): Promise<SavedPaymentMethod> {
+    const response = await apiClient.post<SavedPaymentMethod>(
+      PAYMENT_ENDPOINTS.PAYMENT_METHODS,
+      data
     )
     return response
   },
@@ -156,14 +182,14 @@ export const paymentsAPI = {
    * Delete a saved payment method
    */
   async deleteSavedMethod(methodId: string): Promise<void> {
-    await apiClient.delete(`${PAYMENT_ENDPOINTS.SAVED_METHODS}/${methodId}`)
+    await apiClient.delete(`${PAYMENT_ENDPOINTS.PAYMENT_METHODS}/${methodId}`)
   },
 
   /**
    * Set default payment method
    */
   async setDefaultMethod(methodId: string): Promise<void> {
-    await apiClient.put(`${PAYMENT_ENDPOINTS.SAVED_METHODS}/${methodId}/default`)
+    await apiClient.put(`${PAYMENT_ENDPOINTS.PAYMENT_METHODS}/${methodId}/default`)
   },
 
   /**

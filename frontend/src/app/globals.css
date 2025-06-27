@@ -2,6 +2,250 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Enhanced Global Input Styles - Fix white text on white background issue with high specificity */
+@layer base {
+  /* High-specificity base rules for all form inputs */
+  body input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  body textarea,
+  body select,
+  html input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  html textarea,
+  html select,
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  textarea,
+  select {
+    color: #111827 !important; /* Dark gray text for high contrast */
+    background-color: #ffffff !important; /* White background */
+    border: 1px solid #d1d5db !important; /* Light gray border */
+  }
+  
+  /* Enhanced placeholder visibility with high specificity */
+  body input::placeholder,
+  body textarea::placeholder,
+  html input::placeholder,
+  html textarea::placeholder,
+  input::placeholder,
+  textarea::placeholder {
+    color: #6b7280 !important; /* Medium gray for placeholders */
+    opacity: 1 !important; /* Ensure visibility */
+  }
+
+  /* Focus states for better accessibility */
+  body input:focus:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  body textarea:focus,
+  body select:focus,
+  input:focus:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  textarea:focus,
+  select:focus {
+    outline: 2px solid #3b82f6 !important; /* Blue focus ring */
+    outline-offset: 2px !important;
+    border-color: #3b82f6 !important; /* Blue border on focus */
+  }
+
+  /* Disabled state styling */
+  body input:disabled:not([type="checkbox"]):not([type="radio"]),
+  body textarea:disabled,
+  body select:disabled,
+  input:disabled:not([type="checkbox"]):not([type="radio"]),
+  textarea:disabled,
+  select:disabled {
+    background-color: #f3f4f6 !important; /* Light gray background for disabled */
+    color: #6b7280 !important; /* Medium gray text for disabled */
+    cursor: not-allowed !important;
+  }
+  
+  /* Dark theme overrides with high specificity */
+  .dark body input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  .dark body textarea,
+  .dark body select,
+  .dark input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  .dark textarea,
+  .dark select {
+    color: #f9fafb !important; /* Light text for dark theme */
+    background-color: #374151 !important; /* Dark gray background */
+    border-color: #4b5563 !important; /* Medium gray border */
+  }
+  
+  .dark body input::placeholder,
+  .dark body textarea::placeholder,
+  .dark input::placeholder,
+  .dark textarea::placeholder {
+    color: #9ca3af !important; /* Light gray placeholders for dark theme */
+  }
+
+  .dark body input:focus:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  .dark body textarea:focus,
+  .dark body select:focus,
+  .dark input:focus:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  .dark textarea:focus,
+  .dark select:focus {
+    border-color: #10b981 !important; /* Green focus for dark theme */
+    outline-color: #10b981 !important;
+  }
+  
+  /* Charcoal theme overrides with high specificity */
+  .charcoal body input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  .charcoal body textarea,
+  .charcoal body select,
+  .charcoal input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  .charcoal textarea,
+  .charcoal select {
+    color: #ffffff !important; /* White text for charcoal theme */
+    background-color: #404040 !important; /* Medium gray background */
+    border-color: #525252 !important; /* Lighter gray border */
+  }
+  
+  .charcoal body input::placeholder,
+  .charcoal body textarea::placeholder,
+  .charcoal input::placeholder,
+  .charcoal textarea::placeholder {
+    color: #a3a3a3 !important; /* Light gray placeholders for charcoal theme */
+  }
+
+  .charcoal body input:focus:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  .charcoal body textarea:focus,
+  .charcoal body select:focus,
+  .charcoal input:focus:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  .charcoal textarea:focus,
+  .charcoal select:focus {
+    border-color: #14b8a6 !important; /* Teal focus for charcoal theme */
+    outline-color: #14b8a6 !important;
+  }
+
+  /* Soft light theme overrides */
+  .soft-light body input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  .soft-light body textarea,
+  .soft-light body select,
+  .soft-light input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  .soft-light textarea,
+  .soft-light select {
+    color: #1f2937 !important; /* Dark text for soft light theme */
+    background-color: #faf9f6 !important; /* Warm white background */
+    border-color: #d1d5db !important; /* Light gray border */
+  }
+  
+  .soft-light body input::placeholder,
+  .soft-light body textarea::placeholder,
+  .soft-light input::placeholder,
+  .soft-light textarea::placeholder {
+    color: #6b7280 !important; /* Medium gray placeholders for soft light theme */
+  }
+
+  /* Additional specificity for theme-specific pages */
+  .light body input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  .light body textarea,
+  .light body select,
+  .light input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  .light textarea,
+  .light select {
+    color: #111827 !important; /* Dark text for light theme */
+    background-color: #ffffff !important; /* White background */
+    border-color: #d1d5db !important; /* Light gray border */
+  }
+
+  /* Override any potential theme context interference */
+  .text-gray-900 input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  .text-gray-900 textarea,
+  .text-gray-900 select {
+    color: #111827 !important;
+    background-color: #ffffff !important;
+  }
+
+  /* Special handling for login page - preserve dark styling */
+  .min-h-screen.bg-black input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  .min-h-screen.bg-black textarea,
+  .min-h-screen.bg-black select,
+  .bg-black input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  .bg-black textarea,
+  .bg-black select {
+    color: #ffffff !important; /* White text for login page */
+    background-color: rgba(31, 41, 55, 0.5) !important; /* Semi-transparent dark background */
+    border-color: #374151 !important; /* Dark gray border */
+  }
+
+  .min-h-screen.bg-black input::placeholder,
+  .min-h-screen.bg-black textarea::placeholder,
+  .bg-black input::placeholder,
+  .bg-black textarea::placeholder {
+    color: #9ca3af !important; /* Light gray placeholders for login page */
+  }
+
+  .min-h-screen.bg-black input:focus:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  .min-h-screen.bg-black textarea:focus,
+  .min-h-screen.bg-black select:focus,
+  .bg-black input:focus:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  .bg-black textarea:focus,
+  .bg-black select:focus {
+    border-color: #14b8a6 !important; /* Teal focus for login page */
+    outline-color: #14b8a6 !important;
+  }
+
+  /* Emergency high-contrast fix - applies when no theme is detected or for problematic edge cases */
+  body:not(.dark):not(.charcoal):not(.soft-light):not(.light) input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]):not(.bg-gray-900):not(.bg-gray-800),
+  body:not(.dark):not(.charcoal):not(.soft-light):not(.light) textarea:not(.bg-gray-900):not(.bg-gray-800),
+  body:not(.dark):not(.charcoal):not(.soft-light):not(.light) select:not(.bg-gray-900):not(.bg-gray-800) {
+    color: #000000 !important; /* Black text as fallback */
+    background-color: #ffffff !important; /* White background as fallback */
+    border: 1px solid #d1d5db !important; /* Light border as fallback */
+  }
+
+  /* Component library overrides - highest specificity for Radix UI, Headless UI, etc. */
+  [data-radix-collection-item] input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  [role="textbox"],
+  [role="combobox"],
+  .text-input,
+  .form-input,
+  .input-field,
+  div input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  div textarea,
+  div select,
+  form input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  form textarea,
+  form select {
+    color: #111827 !important;
+    background-color: #ffffff !important;
+    border-color: #d1d5db !important;
+  }
+
+  /* Additional specificity for component library placeholders */
+  [data-radix-collection-item] input::placeholder,
+  [role="textbox"]::placeholder,
+  [role="combobox"]::placeholder,
+  .text-input::placeholder,
+  .form-input::placeholder,
+  .input-field::placeholder,
+  div input::placeholder,
+  div textarea::placeholder,
+  form input::placeholder,
+  form textarea::placeholder {
+    color: #6b7280 !important;
+    opacity: 1 !important;
+  }
+
+  /* Ensure form containers don't override our styles */
+  .form-container input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  .form-container textarea,
+  .form-container select,
+  .form-wrapper input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  .form-wrapper textarea,
+  .form-wrapper select {
+    color: #111827 !important;
+    background-color: #ffffff !important;
+    border-color: #d1d5db !important;
+  }
+
+  /* Override any CSS-in-JS or styled-components that might interfere */
+  [style*="color"] input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  [style*="background"] input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  [class*="input"] input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  [class*="form"] input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  [class*="Input"] input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  [class*="Form"] input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]) {
+    color: #111827 !important;
+    background-color: #ffffff !important;
+  }
+}
+
 /* Global Theme-Aware Scrollbars */
 
 /* Light Theme Scrollbars */

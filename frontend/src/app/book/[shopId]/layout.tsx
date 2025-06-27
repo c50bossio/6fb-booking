@@ -1,6 +1,5 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { locationsService } from '@/lib/api/locations'
 
 interface BookingLayoutProps {
   children: React.ReactNode
@@ -9,8 +8,15 @@ interface BookingLayoutProps {
 
 export async function generateMetadata({ params }: { params: { shopId: string } }): Promise<Metadata> {
   try {
-    const response = await locationsService.getLocation(parseInt(params.shopId))
-    const location = response.data
+    // For server-side rendering, we need to make a direct API call
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    const response = await fetch(`${apiBaseUrl}/api/v1/booking/public/shops/${params.shopId}`)
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch location')
+    }
+    
+    const location = await response.json()
 
     return {
       title: `Book Appointment - ${location.name} | Professional Barbershop`,

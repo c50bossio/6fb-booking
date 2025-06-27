@@ -11,14 +11,11 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon
 } from '@heroicons/react/24/outline'
-import { bookingService } from '@/lib/api/bookings'
-import { servicesService } from '@/lib/api/services'
-import { barbersService } from '@/lib/api/barbers'
-import { locationsService } from '@/lib/api/locations'
+import { publicBookingService } from '@/lib/api/publicBooking'
+import type { PublicLocationInfo, PublicBarberProfile, PublicServiceInfo } from '@/lib/api/publicBooking'
 import ServiceSelector from '@/components/booking/ServiceSelector'
 import TimeSlotSelector from '@/components/booking/TimeSlotSelector'
 import BookingConfirmationModal from '@/components/booking/BookingConfirmationModal'
-import type { Service, BarberProfile, Location } from '@/lib/api'
 
 type BookingStep = 'location' | 'service' | 'barber' | 'datetime' | 'details' | 'confirm'
 
@@ -44,13 +41,13 @@ function BookingPageContent() {
 
   const [currentStep, setCurrentStep] = useState<BookingStep>('location')
   const [loading, setLoading] = useState(false)
-  const [locations, setLocations] = useState<Location[]>([])
-  const [services, setServices] = useState<Service[]>([])
-  const [barbers, setBarbers] = useState<BarberProfile[]>([])
+  const [locations, setLocations] = useState<PublicLocationInfo[]>([])
+  const [services, setServices] = useState<PublicServiceInfo[]>([])
+  const [barbers, setBarbers] = useState<PublicBarberProfile[]>([])
   const [availableSlots, setAvailableSlots] = useState<any[]>([])
-  const [selectedService, setSelectedService] = useState<Service | null>(null)
-  const [selectedBarber, setSelectedBarber] = useState<BarberProfile | null>(null)
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
+  const [selectedService, setSelectedService] = useState<PublicServiceInfo | null>(null)
+  const [selectedBarber, setSelectedBarber] = useState<PublicBarberProfile | null>(null)
+  const [selectedLocation, setSelectedLocation] = useState<PublicLocationInfo | null>(null)
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [bookingConfirmation, setBookingConfirmation] = useState<any>(null)
 

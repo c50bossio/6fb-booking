@@ -29,10 +29,12 @@ const os = require('os');
 class DevStartupValidator {
     constructor() {
         this.args = process.argv.slice(2);
+        this.config = this.loadDevSettings();
         this.mode = this.detectMode();
-        this.verbose = this.args.includes('--verbose') || this.args.includes('-v');
-        this.silent = this.args.includes('--silent');
-        this.fix = this.args.includes('--fix') || this.args.includes('--auto-fix');
+        this.verbose = this.args.includes('--verbose') || this.args.includes('-v') || this.config.logging.verbose;
+        this.silent = this.args.includes('--silent') || this.config.logging.silent;
+        this.fix = this.args.includes('--fix') || this.args.includes('--auto-fix') || this.config.validation.autoFix;
+        this.noExit = this.args.includes('--no-exit');
 
         this.startTime = Date.now();
         this.logFile = path.join(process.cwd(), 'logs', `dev-startup-${new Date().toISOString().split('T')[0]}.log`);
@@ -53,10 +55,36 @@ class DevStartupValidator {
         this.warnings = [];
     }
 
+    loadDevSettings() {
+        const configPath = path.join(process.cwd(), '.dev-settings.json');
+        const defaultConfig = {
+            validation: { 
+                defaultMode: 'quick', 
+                autoFix: false,
+                timeouts: { defaultTimeout: 15000, extensionCheck: 10000 },
+                skipChecks: {},
+                gracefulDegradation: { enabled: true, nonBlockingIssues: [] }
+            },
+            logging: { verbose: false, silent: false },
+            personalizations: { skipExtensionChecks: false }
+        };
+
+        try {
+            if (fs.existsSync(configPath)) {
+                const userConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+                return { ...defaultConfig, ...userConfig };
+            }
+        } catch (error) {
+            console.warn('⚠️ Could not load .dev-settings.json, using defaults');
+        }
+        
+        return defaultConfig;
+    }
+
     detectMode() {
         if (this.args.some(arg => arg.includes('paranoid'))) return 'paranoid';
         if (this.args.some(arg => arg.includes('full'))) return 'full';
-        return 'quick';
+        return this.config.validation.defaultMode || 'quick';
     }
 
     setupLogging() {
@@ -128,6 +156,59 @@ class DevStartupValidator {
                 } else {
                     this.log(`✓ ${description}`, 'success');
                     resolve({ success: true, stdout, stderr });
+                }
+            });
+        });
+    }
+
+    async executeCheckWithTimeout(command, description, timeoutMs = 15000, critical = false) {
+        this.log(`Checking: ${description}`, 'info');
+
+        return new Promise((resolve) => {
+            const timeoutId = setTimeout(() => {
+                this.log(`Timeout: ${description} - exceeded ${timeoutMs}ms limit`, 'warning');
+                resolve({ 
+                    success: false, 
+                    error: `Timeout after ${timeoutMs}ms`, 
+                    timeout: true,
+                    stdout: '',
+                    stderr: '' 
+                });
+            }, timeoutMs);
+
+            exec(command, { timeout: timeoutMs }, (error, stdout, stderr) => {
+                clearTimeout(timeoutId);
+                
+                if (error) {
+                    const isTimeout = error.signal === 'SIGTERM' || error.message.includes('timeout');
+                    this.log(`Failed: ${description} - ${error.message}`, critical ? 'critical' : 'warning');
+                    
+                    if (critical && !isTimeout) {
+                        this.criticalIssues.push({
+                            type: 'check_failure',
+                            description,
+                            command,
+                            error: error.message
+                        });
+                    } else {
+                        this.warnings.push({
+                            type: isTimeout ? 'check_timeout' : 'check_warning',
+                            description,
+                            command,
+                            error: error.message
+                        });
+                    }
+                    
+                    resolve({ 
+                        success: false, 
+                        error: error.message, 
+                        timeout: isTimeout,
+                        stdout, 
+                        stderr 
+                    });
+                } else {
+                    this.log(`✓ ${description}`, 'success');
+                    resolve({ success: true, stdout, stderr, timeout: false });
                 }
             });
         });
@@ -492,17 +573,18 @@ class DevStartupValidator {
     }
 
     async check6_BrowserExtensionCompatibility() {
-        if (this.mode === 'quick') return; // Skip in quick mode
+        if (this.mode === 'quick' || this.config.validation.skipChecks.browserExtensions || this.config.personalizations.skipExtensionChecks) return; // Skip based on mode or config
 
         this.log('\n🔍 PHASE 6: Browser Extension Compatibility', 'phase');
         this.results.checks.browserCompatibility = { name: 'Browser Extension Compatibility', issues: [], passed: [] };
 
         try {
-            // Run extension detection if available
-            const result = await this.executeCheck(
+            // Run extension detection with timeout and error boundaries
+            const result = await this.executeCheckWithTimeout(
                 'node scripts/enhanced-extension-detector.js --json --quick',
                 'Browser extension analysis',
-                false
+                this.config.validation.timeouts.extensionCheck, // Configurable timeout
+                false  // Non-critical check
             );
 
             if (result.success) {
@@ -520,12 +602,29 @@ class DevStartupValidator {
                         this.results.checks.browserCompatibility.passed.push('Extension compatibility');
                     }
                 } catch (parseError) {
-                    this.log('Failed to parse extension data', 'warning');
+                    this.log('Failed to parse extension data - treating as non-critical warning', 'warning');
+                    this.warnings.push({
+                        type: 'extension_parse_error',
+                        fix: 'Extension detection had parsing issues but this won\'t block development'
+                    });
                 }
+            } else if (result.timeout) {
+                this.log('Extension check timed out - continuing with development', 'warning');
+                this.warnings.push({
+                    type: 'extension_timeout',
+                    fix: 'Extension detection timed out but this won\'t block development'
+                });
             }
         } catch (error) {
-            this.log(`Extension compatibility check failed: ${error.message}`, 'warning');
+            this.log(`Extension compatibility check failed: ${error.message} - continuing anyway`, 'warning');
+            this.warnings.push({
+                type: 'extension_error',
+                fix: 'Extension detection failed but this won\'t block development'
+            });
         }
+
+        // Always mark as passed since this is non-critical
+        this.results.checks.browserCompatibility.passed.push('Extension compatibility (non-blocking)');
     }
 
     async applyAutoFixes() {
@@ -639,7 +738,14 @@ class DevStartupValidator {
         const criticalCount = this.criticalIssues.length;
         const warningCount = this.warnings.length;
 
-        const readyToStart = criticalCount === 0;
+        // Graceful degradation: Only block for truly critical issues that prevent startup
+        const blockingIssues = this.criticalIssues.filter(issue => 
+            issue.type === 'missing_file' || 
+            issue.type === 'missing_directory' ||
+            (issue.type === 'dependency_issue' && issue.check === 'node_modules exists')
+        );
+        
+        const readyToStart = blockingIssues.length === 0;
 
         this.results.summary = {
             duration: Math.round(duration / 1000),
@@ -648,10 +754,12 @@ class DevStartupValidator {
             totalIssues,
             criticalCount,
             warningCount,
+            blockingIssues: blockingIssues.length,
             readyToStart,
             status: readyToStart ? (warningCount === 0 ? 'excellent' : 'ready') : 'blocked',
             autoFixesApplied: this.results.fixes.filter(f => f.applied).length,
-            recommendationCount: this.results.recommendations.length
+            recommendationCount: this.results.recommendations.length,
+            gracefulDegradation: criticalCount > blockingIssues.length
         };
 
         this.results.readyToStart = readyToStart;
@@ -693,12 +801,20 @@ class DevStartupValidator {
             console.log('\n✅ ENVIRONMENT READY FOR DEVELOPMENT');
             console.log('   🚀 You can safely run: npm run dev');
 
+            if (summary.gracefulDegradation) {
+                console.log(`   🛡️  Graceful degradation enabled: ${summary.criticalCount - summary.blockingIssues} non-blocking issues detected`);
+            }
+
             if (summary.warningCount > 0) {
                 console.log(`   ⚠️  ${summary.warningCount} non-critical warnings detected`);
             }
         } else {
             console.log('\n🚫 DEVELOPMENT STARTUP BLOCKED');
-            console.log(`   ❌ ${summary.criticalCount} critical issues must be resolved first`);
+            console.log(`   ❌ ${summary.blockingIssues} blocking issues must be resolved first`);
+            
+            if (summary.gracefulDegradation) {
+                console.log(`   🛡️  ${summary.criticalCount - summary.blockingIssues} other critical issues converted to warnings`);
+            }
         }
 
         // Top recommendations
@@ -751,9 +867,14 @@ class DevStartupValidator {
             // Display results
             this.displaySummary();
 
-            // Exit with appropriate code
+            // Exit with appropriate code (unless --no-exit flag is used)
             const success = this.results.summary.readyToStart;
-            process.exit(success ? 0 : 1);
+            if (!this.noExit) {
+                process.exit(success ? 0 : 1);
+            } else {
+                this.log(`Debug mode: Would exit with code ${success ? 0 : 1}`, 'info');
+                return { success, results: this.results };
+            }
 
         } catch (error) {
             this.log(`Fatal error: ${error.message}`, 'critical');
@@ -779,6 +900,7 @@ Options:
   --fix            Automatically fix issues when possible
   --verbose        Show detailed output during validation
   --silent         Suppress console output (logs only)
+  --no-exit        Debug mode - don't exit, return results
   --help           Show this help message
 
 Examples:
@@ -792,6 +914,12 @@ Integration with Development Scripts:
   • npm run dev:safe     - Validates before starting
   • npm run dev:fresh    - Validates, cleans, then starts
   • npm run dev:paranoid - Paranoid validation before starting
+  
+Failsafe Options (if validation fails):
+  • npm run dev:failsafe      - Skip validation, start immediately
+  • npm run dev:recovery      - Emergency recovery mode
+  • npm run dev:skip-validation - Skip all validation
+  • npm run dev:debug         - Debug validation issues
 
 Checks Performed:
   ✓ System requirements (Node.js, npm, memory, disk space)

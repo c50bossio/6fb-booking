@@ -75,6 +75,11 @@ class DevStartupOrchestrator extends EventEmitter {
             express: [
                 { name: 'validation', script: 'dev-startup-validator.js', args: ['--mode=quick', '--fix', '--silent'] },
                 { name: 'dev-server', command: 'next dev -p 3000' }
+            ],
+            emergency: [
+                { name: 'cleanup', command: 'lsof -ti:3000 | xargs kill -9 2>/dev/null || echo "No processes to kill"' },
+                { name: 'cache-clean', command: 'rm -rf .next node_modules/.cache' },
+                { name: 'dev-server', command: 'next dev -p 3000' }
             ]
         };
 
@@ -101,6 +106,7 @@ class DevStartupOrchestrator extends EventEmitter {
         this.on('phase_complete', (phase, result) => this.handlePhaseComplete(phase, result));
         this.on('phase_error', (phase, error) => this.handlePhaseError(phase, error));
         this.on('validation_issues', (issues) => this.handleValidationIssues(issues));
+        this.on('fallback_triggered', (data) => this.handleFallback(data));
 
         // Graceful shutdown
         process.on('SIGINT', () => this.shutdown());
@@ -305,6 +311,12 @@ class DevStartupOrchestrator extends EventEmitter {
 
         this.log(`❌ Phase failed: ${phase.name} - ${error.message}`, 'error');
         this.state.metrics.status = 'failed';
+
+        // Trigger automatic fallback for critical failures
+        if (phase.name === 'validation' && this.mode !== 'emergency') {
+            this.log('🔧 Attempting automatic fallback to emergency mode', 'warning');
+            this.emit('fallback_triggered', { failedPhase: phase.name, originalMode: this.mode });
+        }
     }
 
     handleValidationIssues(issues) {
@@ -319,6 +331,35 @@ class DevStartupOrchestrator extends EventEmitter {
                 this.log('Critical issues detected - escalating to safe mode', 'warning');
                 this.mode = 'safe';
             }
+        }
+    }
+
+    async handleFallback(data) {
+        this.log('🚨 Initiating emergency startup sequence', 'warning');
+        
+        try {
+            // Switch to emergency mode
+            const originalMode = this.mode;
+            this.mode = 'emergency';
+            const emergencyPhases = this.phases.emergency;
+            
+            this.log(`Falling back from ${originalMode} to emergency mode due to ${data.failedPhase} failure`, 'warning');
+            
+            for (const phase of emergencyPhases) {
+                this.log(`Emergency phase: ${phase.name}`, 'warning');
+                const result = await this.runPhase(phase);
+                
+                if (phase.name === 'dev-server') {
+                    this.log('✅ Emergency startup successful!', 'success');
+                    this.state.metrics.status = 'emergency_success';
+                    this.state.metrics.fallbackUsed = true;
+                    return { success: true, mode: 'emergency', fallback: true };
+                }
+            }
+        } catch (error) {
+            this.log(`Emergency startup failed: ${error.message}`, 'critical');
+            this.state.metrics.status = 'critical_failure';
+            throw new Error(`All startup methods failed. Last error: ${error.message}`);
         }
     }
 
