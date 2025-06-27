@@ -17,6 +17,7 @@ from services.barber_pin_service import (
     PINValidationError,
     PINLockoutError,
 )
+from services.pos_security_service import POSSecurityService
 from models.barber import Barber
 
 router = APIRouter(prefix="/barber-pin", tags=["Barber PIN Authentication"])
@@ -78,6 +79,7 @@ class PINAuthResponse(BaseModel):
     session_token: Optional[str] = None
     expires_at: Optional[datetime] = None
     message: Optional[str] = None
+    csrf_token: Optional[str] = None
 
 
 class PINStatusResponse(BaseModel):
@@ -97,6 +99,15 @@ class SessionInfoResponse(BaseModel):
     last_activity: Optional[datetime] = None
 
 
+class SessionTimeoutStatusResponse(BaseModel):
+    valid: bool
+    expired: bool
+    warning: bool
+    remaining_minutes: int
+    warning_threshold: Optional[int] = None
+    expires_at: Optional[str] = None
+
+
 class ActiveSessionsResponse(BaseModel):
     sessions: list
     count: int
@@ -110,6 +121,11 @@ def get_client_ip(request: Request) -> str:
 def get_pin_service(db: Session = Depends(get_db)) -> BarberPINService:
     """Dependency to get PIN service instance"""
     return BarberPINService(db)
+
+
+def get_security_service(db: Session = Depends(get_db)) -> POSSecurityService:
+    """Dependency to get POS security service instance"""
+    return POSSecurityService(db)
 
 
 @router.post("/setup", response_model=PINSetupResponse)
@@ -133,16 +149,46 @@ async def authenticate_pin(
     request: PINAuthRequest,
     http_request: Request,
     pin_service: BarberPINService = Depends(get_pin_service),
+    security_service: POSSecurityService = Depends(get_security_service),
 ):
     """
     Authenticate barber with PIN for POS access
     """
+    client_ip = get_client_ip(http_request)
+
+    # Check rate limit first
+    is_allowed, rate_limit_info = security_service.check_pin_rate_limit(
+        request.barber_id, client_ip
+    )
+
+    if not is_allowed:
+        # Log rate limit violation
+        security_service.log_pos_transaction(
+            "rate_limit_exceeded",
+            request.barber_id,
+            {"client_ip": client_ip, "attempts": rate_limit_info["attempts"]},
+            client_ip,
+        )
+
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Too many login attempts. Please try again in {rate_limit_info['retry_after']} seconds.",
+            headers={
+                "Retry-After": str(rate_limit_info["retry_after"]),
+                "X-RateLimit-Limit": str(rate_limit_info["max_attempts"]),
+                "X-RateLimit-Remaining": "0",
+                "X-RateLimit-Reset": rate_limit_info["reset_at"].isoformat(),
+            },
+        )
+
     try:
         success, error_message = pin_service.verify_pin(request.barber_id, request.pin)
 
         if success:
+            # Reset rate limit on successful authentication
+            security_service.reset_pin_rate_limit(request.barber_id, client_ip)
+
             # Create POS session
-            client_ip = get_client_ip(http_request)
             session_token = pin_service.create_pos_session(
                 barber_id=request.barber_id,
                 device_info=request.device_info,
@@ -152,13 +198,30 @@ async def authenticate_pin(
             # Get session info for response
             _, session_info = pin_service.validate_session(session_token)
 
+            # Generate CSRF token for session
+            csrf_token = security_service.generate_csrf_token(session_token)
+
+            # Log successful authentication
+            security_service.log_pos_transaction(
+                "login_success",
+                request.barber_id,
+                {"device_info": request.device_info, "session_created": True},
+                client_ip,
+            )
+
             return PINAuthResponse(
                 success=True,
                 session_token=session_token,
                 expires_at=session_info["expires_at"],
                 message="Authentication successful",
+                csrf_token=csrf_token,  # Include CSRF token in response
             )
         else:
+            # Log failed authentication
+            security_service.log_pos_transaction(
+                "login_failed", request.barber_id, {"reason": error_message}, client_ip
+            )
+
             return PINAuthResponse(success=False, message=error_message)
 
     except PINError as e:
@@ -337,6 +400,39 @@ async def reset_pin_attempts(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Barber not found"
         )
+
+
+@router.post("/check-timeout", response_model=SessionTimeoutStatusResponse)
+async def check_session_timeout(
+    request: SessionValidationRequest,
+    security_service: POSSecurityService = Depends(get_security_service),
+):
+    """
+    Check session timeout status and determine if warning should be shown
+    This endpoint should be called periodically by the POS frontend
+    """
+    timeout_status = security_service.check_session_timeout_status(
+        request.session_token
+    )
+
+    return SessionTimeoutStatusResponse(**timeout_status)
+
+
+@router.post("/extend-activity")
+async def extend_session_activity(
+    request: SessionValidationRequest,
+    security_service: POSSecurityService = Depends(get_security_service),
+):
+    """
+    Extend session based on user activity (sliding window)
+    Called when user performs actions in the POS
+    """
+    success = security_service.extend_session_with_activity(request.session_token)
+
+    if success:
+        return {"success": True, "message": "Session extended due to activity"}
+    else:
+        return {"success": False, "message": "Unable to extend session"}
 
 
 @router.post("/cleanup-sessions")

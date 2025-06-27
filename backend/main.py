@@ -42,6 +42,7 @@ from models import (
 
 # Import security middleware
 from middleware.security import SecurityHeadersMiddleware, RateLimitMiddleware
+from middleware.csrf_protection import CSRFProtectionMiddleware
 
 # from middleware.advanced_security import AdvancedSecurityMiddleware, SecurityHeadersEnhancedMiddleware
 from middleware.request_logging import RequestLoggingMiddleware
@@ -107,6 +108,9 @@ from api.v1.endpoints import (
     gift_certificates,
     shopify_integration,
     product_catalog,
+    barber_pin_auth,
+    sales,
+    pos_transactions,
 )
 
 # Import logging setup
@@ -144,6 +148,9 @@ app.state.settings = settings
 # Add middleware (order matters - error handling should be outermost)
 app.add_middleware(ErrorHandlingMiddleware)
 app.add_middleware(RequestLoggingMiddleware)
+app.add_middleware(
+    CSRFProtectionMiddleware, strict_mode=False
+)  # Set to True for production
 # app.add_middleware(AdvancedSecurityMiddleware, enable_monitoring=True)
 app.add_middleware(RateLimitMiddleware)
 # app.add_middleware(SecurityHeadersEnhancedMiddleware)
@@ -337,6 +344,21 @@ app.include_router(
     product_catalog.router,
     prefix="/api/v1/product-catalog",
     tags=["Product Catalog"],
+)
+app.include_router(
+    barber_pin_auth.router,
+    prefix="/api/v1",
+    tags=["Barber PIN Authentication"],
+)
+app.include_router(
+    pos_transactions.router,
+    prefix="/api/v1",
+    tags=["POS Transactions"],
+)
+app.include_router(
+    sales.router,
+    prefix="/api/v1/sales",
+    tags=["Sales"],
 )
 
 # Customer API routes
