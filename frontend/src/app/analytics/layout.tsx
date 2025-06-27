@@ -1,21 +1,14 @@
-'use client'
-
-import { ThemeProvider } from "@/contexts/ThemeContext";
-import DemoModernSidebar from "@/components/DemoModernSidebar";
+import { ReactNode } from 'react';
 
 interface AnalyticsLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
+/**
+ * Analytics layout - simplified since ConditionalLayout in root layout
+ * now handles sidebar rendering for dashboard routes automatically.
+ * This layout just passes through children.
+ */
 export default function AnalyticsLayout({ children }: AnalyticsLayoutProps) {
-  return (
-    <ThemeProvider>
-      <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-        <DemoModernSidebar />
-        <main className="flex-1 transition-all duration-300 overflow-y-auto">
-          {children}
-        </main>
-      </div>
-    </ThemeProvider>
-  );
+  return <>{children}</>;
 }

@@ -9,6 +9,7 @@ import { StripeProvider } from "@/providers/StripeProvider";
 import ClientOnly from "@/components/ClientOnly";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { CustomerAuthProvider } from "@/components/customer/CustomerAuthProvider";
+import LayoutWrapper from "@/components/LayoutWrapper";
 import ExtensionDetector from "@/components/ExtensionDetector";
 import ExtensionErrorHandler from "@/components/ExtensionErrorHandler";
 import HighContrastEnforcer from "@/components/HighContrastEnforcer";
@@ -83,9 +84,9 @@ export default function RootLayout({
                 <CustomerAuthProvider>
                   <NavigationProvider>
                     <StripeProvider>
-                      {/* <ClientOnly> */}
+                      <LayoutWrapper>
                         {children}
-                      {/* </ClientOnly> */}
+                      </LayoutWrapper>
                     </StripeProvider>
                   </NavigationProvider>
                 </CustomerAuthProvider>

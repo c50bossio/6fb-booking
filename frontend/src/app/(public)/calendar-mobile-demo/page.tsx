@@ -14,14 +14,15 @@ import MobileTimeSlotPicker, { generateTimeSlots, TimeSlotPresets } from '@/comp
 import MobileBottomSheet from '@/components/mobile/MobileBottomSheet'
 import { CalendarAppointment, Barber, Service } from '@/components/calendar/RobustCalendar'
 import { useTheme } from '@/contexts/ThemeContext'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   DevicePhoneMobileIcon,
   SparklesIcon,
   HandRaisedIcon,
   DeviceTabletIcon,
   ComputerDesktopIcon,
-  CheckIcon
+  CheckIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline'
 
 // Demo data
