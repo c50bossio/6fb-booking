@@ -379,6 +379,7 @@ class PaginatedServiceResponse(BaseModel):
 
 
 @router.get("/", response_model=PaginatedServiceResponse)
+@router.get("", response_model=PaginatedServiceResponse)  # Handle requests without trailing slash
 async def get_services(
     db: Session = Depends(get_db),
     category_id: Optional[int] = None,

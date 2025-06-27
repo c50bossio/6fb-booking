@@ -249,6 +249,7 @@ async def send_webhook_notification(event_type: str, data: Dict[str, Any]):
 
 # API Endpoints
 @router.get("/", response_model=List[AppointmentResponse])
+@router.get("", response_model=List[AppointmentResponse])  # Handle requests without trailing slash
 async def get_appointments(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),

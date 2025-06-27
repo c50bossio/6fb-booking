@@ -63,6 +63,9 @@ export default function CalendarPage() {
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const [showBookingFlow, setShowBookingFlow] = useState(false)
+  const [selectedAppointment, setSelectedAppointment] = useState<CalendarAppointment | null>(null)
+  const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string } | null>(null)
 
   // Debug modal state changes
   useEffect(() => {
@@ -76,9 +79,6 @@ export default function CalendarPage() {
       console.log('📍 Selected appointment:', selectedAppointment)
     }
   }, [showCreateModal, showDetailsModal, selectedSlot, selectedAppointment])
-  const [showBookingFlow, setShowBookingFlow] = useState(false)
-  const [selectedAppointment, setSelectedAppointment] = useState<CalendarAppointment | null>(null)
-  const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string } | null>(null)
   const [calendarView, setCalendarView] = useState<'month' | 'week' | 'day' | 'agenda'>('week')
 
   // Date range for fetching appointments
@@ -100,9 +100,15 @@ export default function CalendarPage() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const demoMode = window.location.search.includes('demo=true') ||
-                     sessionStorage.getItem('demo_mode') === 'true'
+                     sessionStorage.getItem('demo_mode') === 'true' ||
+                     window.location.pathname.includes('/app/')
       setIsDemoMode(demoMode)
       console.log('📱 Calendar page demo mode check:', demoMode)
+      
+      // If backend is not available, enable demo mode
+      if (demoMode) {
+        sessionStorage.setItem('demo_mode', 'true')
+      }
     }
   }, [])
 
@@ -132,10 +138,23 @@ export default function CalendarPage() {
       })
 
       setAppointments(calendarAppointments)
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching appointments:', err)
-      setError('Failed to load appointments')
-      setErrorType('system')
+      
+      // Check if it's a connection error (backend not running)
+      if (err.message?.includes('ERR_CONNECTION_TIMED_OUT') || 
+          err.message?.includes('Network Error') ||
+          err.code === 'ECONNREFUSED' ||
+          err.message?.includes('fetch')) {
+        console.log('🔄 Backend not available, switching to demo mode')
+        setIsDemoMode(true)
+        setAppointments([])
+        setError(null)
+        setErrorType(null)
+      } else {
+        setError('Failed to load appointments')
+        setErrorType('system')
+      }
     } finally {
       setLoading(false)
     }

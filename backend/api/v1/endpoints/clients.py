@@ -116,9 +116,9 @@ async def get_clients(
     customer_type: Optional[str] = None,
     barber_id: Optional[int] = None,
     sort_by: str = Query(
-        "last_visit", regex="^(last_visit|total_spent|total_visits|created_at)$"
+        "last_visit", pattern="^(last_visit|total_spent|total_visits|created_at)$"
     ),
-    order: str = Query("desc", regex="^(asc|desc)$"),
+    order: str = Query("desc", pattern="^(asc|desc)$"),
 ):
     """Get all clients with pagination and filtering"""
 
@@ -658,7 +658,7 @@ async def send_client_message(
 async def export_clients(
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
-    format: str = Query("csv", regex="^(csv|json)$"),
+    format: str = Query("csv", pattern="^(csv|json)$"),
     customer_type: Optional[str] = None,
 ):
     """Export clients data"""

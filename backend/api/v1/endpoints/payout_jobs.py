@@ -302,7 +302,7 @@ async def cancel_job(
 
 @router.get("/metrics", response_model=Dict[str, Any])
 async def get_job_metrics(
-    time_range: str = Query(default="24h", regex="^(1h|6h|24h|7d|30d)$"),
+    time_range: str = Query(default="24h", pattern="^(1h|6h|24h|7d|30d)$"),
     current_user: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):

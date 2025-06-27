@@ -14,7 +14,7 @@ import {
   AlertCircle,
   Lightbulb,
   BarChart3,
-  PieChart,
+  PieChart as PieChartIcon,
   Activity,
   Award,
   ChevronRight,
@@ -22,21 +22,7 @@ import {
   Calendar,
   Zap
 } from 'lucide-react'
-import { Line, Bar, Doughnut, Radar } from 'react-chartjs-2'
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  RadialLinearScale,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-} from 'chart.js'
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, RadarChart, Radar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts'
 import {
   aiAnalyticsAPI,
   AIAnalyticsDashboard,
@@ -52,20 +38,7 @@ import {
 import PricingOptimizationWidget from '@/components/ai-analytics/PricingOptimizationWidget'
 import ClientSegmentationWidget from '@/components/ai-analytics/ClientSegmentationWidget'
 
-// Register ChartJS components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  RadialLinearScale,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-)
+// Using recharts - no registration needed
 
 // Chart styling
 const chartOptions = {

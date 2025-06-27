@@ -485,7 +485,7 @@ async def get_payout_analytics(
 @router.post("/test-notification/{schedule_id}")
 async def test_payout_notification(
     schedule_id: int,
-    notification_type: str = Query(..., regex="^(advance|completed|failed)$"),
+    notification_type: str = Query(..., pattern="^(advance|completed|failed)$"),
     current_user: dict = Depends(require_role(["admin"])),
     db: AsyncSession = Depends(get_async_db),
 ):

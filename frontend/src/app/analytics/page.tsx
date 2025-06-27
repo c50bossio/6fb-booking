@@ -17,36 +17,11 @@ import {
   Award,
   AlertCircle
 } from 'lucide-react'
-import { Line, Bar, Doughnut } from 'react-chartjs-2'
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-} from 'chart.js'
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend } from 'recharts'
 import apiClient from '@/lib/api/client'
 import { format, startOfMonth, endOfMonth, subDays, addDays } from 'date-fns'
 
-// Register ChartJS components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-)
+// Using recharts - no registration needed
 
 // Chart default options
 const chartOptions = {

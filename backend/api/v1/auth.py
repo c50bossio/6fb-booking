@@ -47,16 +47,16 @@ from schemas.mfa import MFARequiredResponse, MFALoginRequest
 router = APIRouter()
 logger = get_secure_logger(__name__)
 
-# Security
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-# Replace OAuth2PasswordBearer with CookieJWTBearer for cookie-based auth
-cookie_scheme = CookieJWTBearer()
-
 # JWT settings
 SECRET_KEY = settings.JWT_SECRET_KEY.get_secret_value()
 ALGORITHM = settings.JWT_ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 REFRESH_TOKEN_EXPIRE_DAYS = settings.REFRESH_TOKEN_EXPIRE_DAYS
+
+# Security
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Replace OAuth2PasswordBearer with CookieJWTBearer for cookie-based auth
+cookie_scheme = CookieJWTBearer(secret_key=SECRET_KEY, algorithm=ALGORITHM)
 
 
 # Pydantic models
@@ -1280,3 +1280,29 @@ async def get_test_subscription_data():
         "test_payment_methods": SubscriptionService.get_test_payment_methods(),
         "note": "These are Stripe test IDs for development and testing only",
     }
+
+
+@router.get("/health")
+async def auth_health_check(db: Session = Depends(get_db)):
+    """Health check endpoint for authentication service"""
+    try:
+        # Test database connection
+        user_count = db.query(User).count()
+        
+        # Test if we can create JWT tokens
+        test_token = create_access_token(data={"sub": "health_check"})
+        
+        return {
+            "status": "healthy",
+            "service": "authentication",
+            "database_connection": "ok",
+            "total_users": user_count,
+            "jwt_generation": "ok",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Auth health check failed: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Authentication service unhealthy: {str(e)}"
+        )

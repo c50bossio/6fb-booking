@@ -15,7 +15,7 @@ import {
   AlertTriangle,
   UserCheck
 } from 'lucide-react'
-import { Doughnut } from 'react-chartjs-2'
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
 import { ClientSegment, AIAnalyticsUtils } from '@/lib/api/ai-analytics'
 
 interface ClientSegmentationWidgetProps {

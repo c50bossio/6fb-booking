@@ -91,6 +91,7 @@ class BarberSchedule(BaseModel):
 
 # API Endpoints
 @router.get("/", response_model=List[BarberResponse])
+@router.get("", response_model=List[BarberResponse])  # Handle requests without trailing slash
 async def get_barbers(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
