@@ -111,5 +111,8 @@ export type {
   UpdateLocationRequest
 } from './locations'
 
+// Gift certificates service
+export { giftCertificatesApi } from './gift-certificates'
+
 // Re-export utilities
 export { TimezoneHelper } from '../utils/datetime'

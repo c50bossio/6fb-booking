@@ -3,7 +3,7 @@
 import { ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
-import ModernSidebar from '@/components/ModernSidebar'
+import DemoModernSidebar from '@/components/DemoModernSidebar'
 import { useNavigation } from '@/components/NavigationProvider'
 
 interface AppLayoutProps {
@@ -83,7 +83,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-slate-900 layout-transition flex">
       {/* Fixed Sidebar */}
-      <ModernSidebar user={user} onLogout={logout} />
+      <DemoModernSidebar user={user} onLogout={logout} />
 
       {/* Main Content Area */}
       <div className="min-h-screen flex flex-col flex-1 page-content">

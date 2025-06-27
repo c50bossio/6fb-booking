@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircleIcon, ArrowLeftIcon, ReceiptRefundIcon } from '@heroicons/react/24/outline'
-import { paymentsApi, formatAmount } from '@/lib/api/payments'
+import { paymentsAPI, paymentHelpers } from '@/lib/api/payments'
 
 function PaymentSuccessContent() {
   const router = useRouter()
@@ -25,7 +25,7 @@ function PaymentSuccessContent() {
 
   const fetchPaymentDetails = async () => {
     try {
-      const paymentData = await paymentsApi.getById(parseInt(paymentId!))
+      const paymentData = await paymentsAPI.getPayment(paymentId!)
       setPayment(paymentData)
     } catch (error) {
       console.error('Failed to fetch payment details:', error)
@@ -63,7 +63,7 @@ function PaymentSuccessContent() {
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600 dark:text-gray-400">Amount</span>
                   <span className="font-medium text-gray-900 dark:text-white">
-                    {formatAmount(payment.amount)}
+                    {paymentHelpers.formatAmount(payment.amount)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">

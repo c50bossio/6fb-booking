@@ -20,7 +20,8 @@ import {
   Bell,
   User,
   LogOut,
-  CreditCard
+  CreditCard,
+  ShoppingCart
 } from 'lucide-react'
 
 const navigationItems = [
@@ -76,6 +77,13 @@ const navigationItems = [
     href: '/payments',
     icon: CreditCard,
     description: 'Payment methods and history'
+  },
+  {
+    name: 'Product Sales',
+    href: '/pos',
+    icon: ShoppingCart,
+    description: 'Point of Sale terminal',
+    roles: ['super_admin', 'admin', 'barber']
   }
 ]
 

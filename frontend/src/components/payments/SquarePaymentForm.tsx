@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useSquare } from '@/providers/SquareProvider'
-import { formatAmount } from '@/lib/api/payments'
+import { paymentHelpers } from '@/lib/api/payments'
 
 interface SquarePaymentFormProps {
   amount: number
@@ -125,7 +125,7 @@ export function SquarePaymentForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="bg-gray-50 p-4 rounded-lg">
         <p className="text-sm text-gray-600">Amount to pay</p>
-        <p className="text-2xl font-bold">{formatAmount(amount)}</p>
+        <p className="text-2xl font-bold">{paymentHelpers.formatAmount(amount)}</p>
       </div>
 
       <div className="space-y-4">
@@ -159,7 +159,7 @@ export function SquarePaymentForm({
             Processing Payment...
           </>
         ) : (
-          `Pay ${formatAmount(amount)} with Square`
+          `Pay ${paymentHelpers.formatAmount(amount)} with Square`
         )}
       </Button>
 

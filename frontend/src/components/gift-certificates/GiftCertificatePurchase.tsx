@@ -14,9 +14,10 @@ import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { AnimatedCard } from '@/components/ui/animated-card';
 import { SuccessAnimation } from '@/components/ui/success-animation';
 import { useAuth } from '@/hooks/useAuth';
-import { api } from '@/lib/api';
+import { giftCertificatesApi } from '@/lib/api';
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
 
 interface GiftCertificatePurchaseFormProps {
   onSuccess?: (certificate: any) => void;
@@ -74,7 +75,7 @@ const GiftCertificatePurchaseForm: React.FC<GiftCertificatePurchaseFormProps> = 
       }
 
       // Purchase gift certificate
-      const response = await api.post('/gift-certificates/purchase', {
+      const certificate = await giftCertificatesApi.purchase({
         recipient_name: recipientName,
         recipient_email: recipientEmail,
         amount: parseFloat(amount),
@@ -84,11 +85,11 @@ const GiftCertificatePurchaseForm: React.FC<GiftCertificatePurchaseFormProps> = 
         sender_email: senderEmail || undefined,
       });
 
-      setPurchasedCertificate(response.data);
+      setPurchasedCertificate(certificate);
       setSuccess(true);
 
       if (onSuccess) {
-        onSuccess(response.data);
+        onSuccess(certificate);
       }
     } catch (err: any) {
       setError(err.message || 'Failed to purchase gift certificate');

@@ -37,6 +37,7 @@ from models import (
     booking,
     google_calendar_settings,
     square_payment,
+    product,
 )
 
 # Import security middleware
@@ -104,6 +105,8 @@ from api.v1.endpoints import (
     payout_schedules,
     payment_processors,
     gift_certificates,
+    shopify_integration,
+    product_catalog,
 )
 
 # Import logging setup
@@ -324,6 +327,16 @@ app.include_router(
     gift_certificates.router,
     prefix="/api/v1",
     tags=["Gift Certificates"],
+)
+app.include_router(
+    shopify_integration.router,
+    prefix="/api/v1/shopify",
+    tags=["Shopify Integration"],
+)
+app.include_router(
+    product_catalog.router,
+    prefix="/api/v1/product-catalog",
+    tags=["Product Catalog"],
 )
 
 # Customer API routes

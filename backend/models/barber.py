@@ -1,4 +1,13 @@
-from sqlalchemy import Column, String, Boolean, Text, Float, Integer, ForeignKey
+from sqlalchemy import (
+    Column,
+    String,
+    Boolean,
+    Text,
+    Float,
+    Integer,
+    ForeignKey,
+    DateTime,
+)
 from sqlalchemy.orm import relationship
 from .base import BaseModel
 
@@ -39,6 +48,16 @@ class Barber(BaseModel):
     # Stripe Connect Integration
     stripe_account_id = Column(String(255), nullable=True)  # Stripe Express account ID
 
+    # PIN Authentication for POS Access
+    pin_hash = Column(String(255), nullable=True)  # Hashed PIN for POS access
+    pin_attempts = Column(Integer, default=0)  # Failed PIN attempts counter
+    pin_locked_until = Column(
+        DateTime(timezone=True), nullable=True
+    )  # PIN lockout timestamp
+    pin_last_used = Column(
+        DateTime(timezone=True), nullable=True
+    )  # Last successful PIN use
+
     # Relationships (temporarily simplified for Trafft integration)
     appointments = relationship("Appointment", back_populates="barber")
     clients = relationship("Client", back_populates="barber")
@@ -74,6 +93,9 @@ class Barber(BaseModel):
     processor_preference = relationship(
         "ProcessorPreference", back_populates="barber", uselist=False
     )
+
+    # POS session relationship
+    pos_sessions = relationship("POSSession", back_populates="barber")
 
     def __repr__(self):
         return f"<Barber(email={self.email}, business_name={self.business_name})>"

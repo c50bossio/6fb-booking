@@ -43,6 +43,8 @@ class RecurringAppointmentService:
         end_date: Optional[date] = None,
         max_appointments: Optional[int] = None,
         series_discount_percent: float = 0.0,
+        payment_frequency: str = "per_appointment",  # per_appointment, monthly, upfront
+        enable_subscription: bool = False,
         **kwargs,
     ) -> AppointmentSeries:
         """Create a new appointment series"""
@@ -54,6 +56,23 @@ class RecurringAppointmentService:
         service = self.db.query(Service).filter(Service.id == service_id).first()
         if not service:
             raise ValueError(f"Service {service_id} not found")
+
+        # Validate payment frequency
+        valid_payment_frequencies = ["per_appointment", "monthly", "upfront"]
+        if payment_frequency not in valid_payment_frequencies:
+            raise ValueError(
+                f"Invalid payment frequency. Must be one of: {valid_payment_frequencies}"
+            )
+
+        # Calculate total series price if upfront payment
+        total_series_price = None
+        if payment_frequency == "upfront" and enable_subscription:
+            # Calculate based on estimated appointments
+            estimated_appointments = self._estimate_appointments_in_series(
+                recurrence_pattern, start_date, end_date, max_appointments
+            )
+            discounted_price = service.base_price * (1 - series_discount_percent / 100)
+            total_series_price = discounted_price * estimated_appointments
 
         # Create the series
         series = AppointmentSeries(
@@ -69,6 +88,8 @@ class RecurringAppointmentService:
             max_appointments=max_appointments,
             duration_minutes=service.duration_minutes,
             series_discount_percent=series_discount_percent,
+            payment_frequency=payment_frequency,
+            total_series_price=total_series_price,
             **kwargs,
         )
 
@@ -554,4 +575,254 @@ class RecurringAppointmentService:
             "discounted_total": discounted_total,
             "total_savings": discount_amount,
             "savings_per_appointment": service.base_price * (discount_percent / 100),
+        }
+
+    def _estimate_appointments_in_series(
+        self,
+        recurrence_pattern: RecurrencePattern,
+        start_date: date,
+        end_date: Optional[date] = None,
+        max_appointments: Optional[int] = None,
+    ) -> int:
+        """Estimate total number of appointments in a series"""
+
+        if max_appointments:
+            return max_appointments
+
+        if not end_date:
+            # Default to 1 year if no end date specified
+            end_date = start_date + timedelta(days=365)
+
+        # Calculate appointments based on pattern
+        total_days = (end_date - start_date).days
+
+        appointments_per_year = {
+            RecurrencePattern.WEEKLY: 52,
+            RecurrencePattern.BIWEEKLY: 26,
+            RecurrencePattern.EVERY_4_WEEKS: 13,
+            RecurrencePattern.EVERY_6_WEEKS: 8.7,
+            RecurrencePattern.EVERY_8_WEEKS: 6.5,
+            RecurrencePattern.MONTHLY: 12,
+        }.get(recurrence_pattern, 12)
+
+        estimated_appointments = int((total_days / 365) * appointments_per_year)
+        return max(1, estimated_appointments)  # At least 1 appointment
+
+    def get_series_payment_info(self, series_id: int) -> Dict[str, Any]:
+        """Get payment information for a series"""
+
+        series = (
+            self.db.query(AppointmentSeries)
+            .filter(AppointmentSeries.id == series_id)
+            .first()
+        )
+
+        if not series:
+            raise ValueError(f"Series {series_id} not found")
+
+        # Get service for pricing
+        service = self.db.query(Service).filter(Service.id == series.service_id).first()
+        if not service:
+            raise ValueError("Service not found")
+
+        return {
+            "series_id": series.id,
+            "series_token": series.series_token,
+            "payment_frequency": series.payment_frequency,
+            "is_subscription_enabled": series.payment_frequency
+            in ["monthly", "upfront"],
+            "regular_price_per_appointment": float(service.base_price),
+            "discounted_price_per_appointment": float(
+                series.discounted_price_per_appointment
+            ),
+            "discount_percent": float(series.series_discount_percent),
+            "discount_amount_per_appointment": float(series.discount_amount),
+            "total_series_price": (
+                float(series.total_series_price) if series.total_series_price else None
+            ),
+            "estimated_appointments": self._estimate_appointments_in_series(
+                series.recurrence_pattern,
+                series.start_date,
+                series.end_date,
+                series.max_appointments,
+            ),
+            "payment_options": {
+                "per_appointment": {
+                    "enabled": True,
+                    "description": "Pay for each appointment individually",
+                    "price_per_appointment": float(
+                        series.discounted_price_per_appointment
+                    ),
+                    "benefits": [
+                        "No upfront commitment",
+                        "Cancel anytime",
+                        "Flexible scheduling",
+                    ],
+                },
+                "monthly_subscription": {
+                    "enabled": True,
+                    "description": "Monthly subscription with automatic booking",
+                    "monthly_price": self._calculate_monthly_subscription_price(series),
+                    "benefits": [
+                        "Guaranteed booking slots",
+                        "Additional 5% discount",
+                        "Priority scheduling",
+                    ],
+                },
+                "upfront_payment": {
+                    "enabled": True,
+                    "description": "Pay for entire series upfront",
+                    "total_price": (
+                        float(series.total_series_price)
+                        if series.total_series_price
+                        else None
+                    ),
+                    "benefits": [
+                        "Maximum discount",
+                        "Locked-in pricing",
+                        "No payment worries",
+                    ],
+                },
+            },
+        }
+
+    def _calculate_monthly_subscription_price(self, series: AppointmentSeries) -> float:
+        """Calculate monthly subscription price for a series"""
+
+        # Get appointments per month based on pattern
+        appointments_per_month = {
+            RecurrencePattern.WEEKLY: 4.33,  # ~52/12
+            RecurrencePattern.BIWEEKLY: 2.17,  # ~26/12
+            RecurrencePattern.EVERY_4_WEEKS: 1.08,  # ~13/12
+            RecurrencePattern.EVERY_6_WEEKS: 0.72,  # ~8.7/12
+            RecurrencePattern.EVERY_8_WEEKS: 0.54,  # ~6.5/12
+            RecurrencePattern.MONTHLY: 1.0,
+        }.get(series.recurrence_pattern, 1.0)
+
+        # Apply additional 5% discount for subscription
+        base_price = series.discounted_price_per_appointment * 0.95
+        return round(base_price * appointments_per_month, 2)
+
+    def update_series_payment_method(
+        self, series_id: int, payment_frequency: str, user_id: Optional[int] = None
+    ) -> AppointmentSeries:
+        """Update payment method for an existing series"""
+
+        series = (
+            self.db.query(AppointmentSeries)
+            .filter(AppointmentSeries.id == series_id)
+            .first()
+        )
+
+        if not series:
+            raise ValueError(f"Series {series_id} not found")
+
+        # Validate payment frequency
+        valid_payment_frequencies = ["per_appointment", "monthly", "upfront"]
+        if payment_frequency not in valid_payment_frequencies:
+            raise ValueError(
+                f"Invalid payment frequency. Must be one of: {valid_payment_frequencies}"
+            )
+
+        old_payment_frequency = series.payment_frequency
+        series.payment_frequency = payment_frequency
+
+        # Recalculate total series price if switching to upfront
+        if payment_frequency == "upfront":
+            estimated_appointments = self._estimate_appointments_in_series(
+                series.recurrence_pattern,
+                series.start_date,
+                series.end_date,
+                series.max_appointments,
+            )
+            series.total_series_price = (
+                series.discounted_price_per_appointment * estimated_appointments
+            )
+        elif payment_frequency == "per_appointment":
+            series.total_series_price = None
+
+        # Log the change
+        self._log_series_change(
+            series.id,
+            "payment_method_updated",
+            field_changed="payment_frequency",
+            old_value=old_payment_frequency,
+            new_value=payment_frequency,
+            change_reason="Payment method updated by user",
+            changed_by_type="customer" if user_id else "system",
+            changed_by_id=user_id,
+        )
+
+        self.db.commit()
+        return series
+
+    def get_series_by_token(self, series_token: str) -> Optional[AppointmentSeries]:
+        """Get a series by its token (for customer subscription management)"""
+
+        return (
+            self.db.query(AppointmentSeries)
+            .filter(AppointmentSeries.series_token == series_token)
+            .first()
+        )
+
+    def toggle_series_subscription(
+        self,
+        series_token: str,
+        enable_subscription: bool,
+        payment_frequency: str = "monthly",
+    ) -> Dict[str, Any]:
+        """Toggle subscription on/off for a series"""
+
+        series = self.get_series_by_token(series_token)
+        if not series:
+            raise ValueError("Series not found")
+
+        if enable_subscription:
+            # Enable subscription
+            if payment_frequency not in ["monthly", "upfront"]:
+                payment_frequency = "monthly"
+
+            old_frequency = series.payment_frequency
+            series.payment_frequency = payment_frequency
+
+            # Calculate pricing
+            if payment_frequency == "upfront":
+                estimated_appointments = self._estimate_appointments_in_series(
+                    series.recurrence_pattern,
+                    series.start_date,
+                    series.end_date,
+                    series.max_appointments,
+                )
+                series.total_series_price = (
+                    series.discounted_price_per_appointment * estimated_appointments
+                )
+
+            message = f"Subscription enabled with {payment_frequency} payment"
+        else:
+            # Disable subscription - switch to per appointment
+            old_frequency = series.payment_frequency
+            series.payment_frequency = "per_appointment"
+            series.total_series_price = None
+            message = "Switched to pay-per-appointment"
+
+        # Log the change
+        self._log_series_change(
+            series.id,
+            "subscription_toggled",
+            field_changed="payment_frequency",
+            old_value=old_frequency,
+            new_value=series.payment_frequency,
+            change_reason=message,
+            changed_by_type="customer",
+        )
+
+        self.db.commit()
+
+        return {
+            "success": True,
+            "message": message,
+            "payment_frequency": series.payment_frequency,
+            "is_subscription_enabled": series.payment_frequency
+            in ["monthly", "upfront"],
+            "payment_info": self.get_series_payment_info(series.id),
         }

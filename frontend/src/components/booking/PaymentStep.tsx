@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { ShieldCheckIcon, LockClosedIcon } from '@heroicons/react/24/outline'
-import { paymentIntentsApi, formatAmount } from '@/lib/api/payments'
+import { paymentsAPI, paymentHelpers } from '@/lib/api/payments'
 import { UnifiedPaymentForm } from '@/components/payments'
 
 interface PaymentStepProps {
@@ -40,13 +40,12 @@ export default function PaymentStep({
   const createPaymentIntent = async () => {
     try {
       setIsInitializing(true)
-      const intent = await paymentIntentsApi.create(
-        appointmentId,
-        amount,
-        undefined,
-        false,
-        { appointment_id: appointmentId }
-      )
+      const intent = await paymentsAPI.createPaymentIntent({
+        appointmentId: appointmentId.toString(),
+        amount: amount,
+        saveMethod: false,
+        metadata: { appointment_id: appointmentId }
+      })
       setClientSecret(intent.client_secret)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to initialize payment'
@@ -80,7 +79,7 @@ export default function PaymentStep({
             <span className={`font-medium ${
               theme === 'dark' ? 'text-white' : 'text-gray-900'
             }`}>
-              {formatAmount(amount)}
+              {paymentHelpers.formatAmount(amount)}
             </span>
           </div>
           <div className={`pt-2 border-t ${
@@ -95,7 +94,7 @@ export default function PaymentStep({
               <span className={`font-bold text-lg ${
                 theme === 'dark' ? 'text-white' : 'text-gray-900'
               }`}>
-                {formatAmount(amount)}
+                {paymentHelpers.formatAmount(amount)}
               </span>
             </div>
           </div>

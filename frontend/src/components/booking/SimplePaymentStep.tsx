@@ -13,7 +13,7 @@ import {
 } from '@heroicons/react/24/outline'
 import type { Service } from '@/lib/api/services'
 import { getStripe, formatAmountForStripe, stripeAppearance } from '@/lib/stripe'
-import { paymentIntentsApi } from '@/lib/api/payments'
+import { paymentsAPI } from '@/lib/api/payments'
 import { StripePaymentForm } from '@/components/payments/StripePaymentForm'
 
 interface PaymentStepProps {
@@ -109,18 +109,18 @@ export default function SimplePaymentStep({
 
     try {
       setLoading(true)
-      const intent = await paymentIntentsApi.create(
-        appointmentId,
-        formatAmountForStripe(amount),
-        undefined,
-        false,
-        {
+      const intent = await paymentsAPI.createPaymentIntent({
+        appointmentId: appointmentId.toString(),
+        amount: formatAmountForStripe(amount),
+        currency: 'usd',
+        saveMethod: false,
+        metadata: {
           payment_type: selectedOption?.id,
           customer_email: customerEmail
         }
-      )
-      setClientSecret(intent.client_secret)
-      setPaymentIntentId(intent.payment_id.toString())
+      })
+      setClientSecret(intent.clientSecret)
+      setPaymentIntentId(intent.id)
       setShowPaymentForm(true)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to initialize payment'

@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { PaymentMethodsList } from './PaymentMethodsList';
-import { formatAmount } from '@/lib/api/payments';
+import { paymentHelpers } from '@/lib/api/payments';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface PaymentFormProps {
@@ -102,7 +102,7 @@ export function PaymentForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="bg-gray-50 p-4 rounded-lg">
         <p className="text-sm text-gray-600">Amount to pay</p>
-        <p className="text-2xl font-bold">{formatAmount(amount)}</p>
+        <p className="text-2xl font-bold">{paymentHelpers.formatAmount(amount)}</p>
       </div>
 
       {showSavedMethods ? (
@@ -203,7 +203,7 @@ export function PaymentForm({
             Processing Payment...
           </>
         ) : (
-          `Pay ${formatAmount(amount)}`
+          `Pay ${paymentHelpers.formatAmount(amount)}`
         )}
       </Button>
     </form>

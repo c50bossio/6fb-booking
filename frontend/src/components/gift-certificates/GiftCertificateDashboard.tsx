@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Badge } from '@/components/ui/badge';
 import { AnimatedCard } from '@/components/ui/animated-card';
-import { api } from '@/lib/api';
+import { giftCertificatesApi } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 
 interface GiftCertificate {
@@ -37,8 +37,8 @@ export const GiftCertificateDashboard: React.FC = () => {
 
   const fetchCertificates = async () => {
     try {
-      const response = await api.get('/gift-certificates/my-certificates');
-      setCertificates(response.data);
+      const certificates = await giftCertificatesApi.getMyCertificates();
+      setCertificates(certificates);
     } catch (error) {
       console.error('Failed to fetch gift certificates:', error);
     } finally {

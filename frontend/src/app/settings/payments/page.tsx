@@ -11,15 +11,17 @@ import {
   CheckIcon,
   ArrowLeftIcon
 } from '@heroicons/react/24/outline'
-import { paymentMethodsApi, PaymentMethod } from '@/lib/api/payments'
+import { paymentsAPI } from '@/lib/api/payments'
+import { SavedPaymentMethod } from '@/types/payment'
 import { PaymentMethodsList } from '@/components/payments/PaymentMethodsList'
 import { loadStripe } from '@stripe/stripe-js'
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
 
 export default function PaymentSettingsPage() {
   const router = useRouter()
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([])
+  const [paymentMethods, setPaymentMethods] = useState<SavedPaymentMethod[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
   const [isAddingCard, setIsAddingCard] = useState(false)
@@ -30,8 +32,18 @@ export default function PaymentSettingsPage() {
 
   const fetchPaymentMethods = async () => {
     try {
-      const methods = await paymentMethodsApi.list(true)
-      setPaymentMethods(methods)
+      // Get the current user's customer ID from their profile
+      const userResponse = await fetch('/api/v1/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        }
+      })
+      const userData = await userResponse.json()
+
+      if (userData.stripe_customer_id) {
+        const methods = await paymentsAPI.getSavedMethods(userData.stripe_customer_id)
+        setPaymentMethods(methods)
+      }
     } catch (error) {
       console.error('Failed to fetch payment methods:', error)
     } finally {
@@ -55,7 +67,7 @@ export default function PaymentSettingsPage() {
           'Content-Type': 'application/json',
         },
       })
-      
+
       const { client_secret } = await response.json()
 
       // Collect card details
@@ -73,7 +85,8 @@ export default function PaymentSettingsPage() {
 
       if (setupIntent?.payment_method) {
         // Add the payment method via API
-        await paymentMethodsApi.add(setupIntent.payment_method as string, false)
+        // The payment method has been created via setup intent
+        // Just refresh the list
         await fetchPaymentMethods()
         setShowAddModal(false)
       }
@@ -85,19 +98,19 @@ export default function PaymentSettingsPage() {
     }
   }
 
-  const handleSetDefault = async (methodId: number) => {
+  const handleSetDefault = async (methodId: string) => {
     try {
-      await paymentMethodsApi.setDefault(methodId)
+      await paymentsAPI.setDefaultMethod(methodId)
       await fetchPaymentMethods()
     } catch (error) {
       console.error('Failed to set default payment method:', error)
     }
   }
 
-  const handleRemove = async (methodId: number) => {
+  const handleRemove = async (methodId: string) => {
     if (confirm('Are you sure you want to remove this payment method?')) {
       try {
-        await paymentMethodsApi.remove(methodId)
+        await paymentsAPI.deleteSavedMethod(methodId)
         await fetchPaymentMethods()
       } catch (error) {
         console.error('Failed to remove payment method:', error)
@@ -125,7 +138,7 @@ export default function PaymentSettingsPage() {
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
             Back to Settings
           </button>
-          
+
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Payment Methods
           </h1>
@@ -197,16 +210,16 @@ export default function PaymentSettingsPage() {
                         <CreditCardIcon className="h-8 w-8 text-gray-400 mr-4" />
                         <div>
                           <p className="text-sm font-medium text-gray-900 dark:text-white">
-                            {method.brand?.toUpperCase()} """" {method.last_four}
+                            {method.brand?.toUpperCase()} •••• {method.last4}
                           </p>
                           <p className="text-xs text-gray-500 dark:text-gray-400">
-                            Expires {method.exp_month}/{method.exp_year}
+                            Expires {method.expiryMonth}/{method.expiryYear}
                           </p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center space-x-2">
-                        {method.is_default ? (
+                        {method.isDefault ? (
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
                             <CheckIcon className="h-3 w-3 mr-1" />
                             Default
@@ -219,7 +232,7 @@ export default function PaymentSettingsPage() {
                             Set as Default
                           </button>
                         )}
-                        
+
                         <button
                           onClick={() => handleRemove(method.id)}
                           className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
@@ -252,16 +265,16 @@ export default function PaymentSettingsPage() {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
             <div className="fixed inset-0 bg-black/50" onClick={() => setShowAddModal(false)} />
-            
+
             <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 Add Payment Method
               </h3>
-              
+
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
                 This feature requires Stripe Elements integration for secure card collection.
               </p>
-              
+
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => setShowAddModal(false)}
