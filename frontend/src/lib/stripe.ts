@@ -7,7 +7,7 @@ import type { StripePaymentElementOptions } from '@stripe/stripe-js'
 // Initialize Stripe with publishable key
 const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 
-if (!stripePublishableKey) {
+if (!stripePublishableKey && process.env.NODE_ENV !== 'production') {
   console.warn('Stripe publishable key not found in environment variables')
 }
 

@@ -3,7 +3,7 @@
 import React, { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { PaymentSuccess } from '@/components/payments'
-import { paymentsApi } from '@/lib/api/payments'
+import { paymentsAPI } from '@/lib/api/payments'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
 function PaymentSuccessContent() {

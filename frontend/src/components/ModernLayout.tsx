@@ -2,7 +2,7 @@
 
 import { ReactNode, useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import ModernSidebar from './ModernSidebar'
+import DemoModernSidebar from './DemoModernSidebar'
 import {
   CalendarIcon,
   UserGroupIcon,
@@ -102,7 +102,7 @@ export default function ModernLayout({
   return (
     <div className="min-h-screen bg-slate-50 flex">
       {/* Sidebar */}
-      <ModernSidebar user={user} onLogout={handleLogout} />
+      <DemoModernSidebar user={user} onLogout={handleLogout} />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-h-screen">

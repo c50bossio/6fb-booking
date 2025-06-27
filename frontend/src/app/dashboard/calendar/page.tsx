@@ -15,6 +15,7 @@ import type { Service } from '@/lib/api/services'
 import type { BarberProfile } from '@/lib/api/barbers'
 import { useTheme } from '@/contexts/ThemeContext'
 import ThemeSelector from '@/components/ThemeSelector'
+import { CalendarIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 
 // Import new systems - temporarily commented out
 // import { errorManager, AppointmentError, SystemError } from '@/lib/error-handling'
@@ -43,6 +44,7 @@ const mapAppointmentStatus = (status: string): CalendarAppointment['status'] => 
 export default function CalendarPage() {
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
+  const [activeTab, setActiveTab] = useState<'calendar' | 'recurring'>('calendar')
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [viewMode, setViewMode] = useState<'week' | 'day'>('week')
   const [appointments, setAppointments] = useState<CalendarAppointment[]>([])
@@ -521,6 +523,47 @@ export default function CalendarPage() {
           </div>
         </div>
 
+        {/* Navigation Tabs */}
+        <div className="mb-6">
+          <div className="flex space-x-1 rounded-lg p-1" style={{
+            backgroundColor: colors.cardBackground,
+            border: `1px solid ${colors.border}`
+          }}>
+            <button
+              onClick={() => setActiveTab('calendar')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors duration-200 ${
+                activeTab === 'calendar'
+                  ? 'text-white shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+              style={{
+                backgroundColor: activeTab === 'calendar'
+                  ? (theme === 'soft-light' ? '#7c9885' : theme === 'dark' ? '#14b8a6' : '#0f766e')
+                  : 'transparent'
+              }}
+            >
+              <CalendarIcon className="w-4 h-4" />
+              Calendar View
+            </button>
+            <button
+              onClick={() => setActiveTab('recurring')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors duration-200 ${
+                activeTab === 'recurring'
+                  ? 'text-white shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+              style={{
+                backgroundColor: activeTab === 'recurring'
+                  ? (theme === 'soft-light' ? '#7c9885' : theme === 'dark' ? '#14b8a6' : '#0f766e')
+                  : 'transparent'
+              }}
+            >
+              <ArrowPathIcon className="w-4 h-4" />
+              Recurring Series
+            </button>
+          </div>
+        </div>
+
         {/* Enhanced Error Notification */}
         {error && (
           <div className="mb-6 rounded-lg p-4 border" style={{
@@ -572,8 +615,11 @@ export default function CalendarPage() {
           </div>
         )}
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+        {/* Tab Content */}
+        {activeTab === 'calendar' ? (
+          <>
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
           <div className="rounded-lg border shadow-sm p-6" style={{
             backgroundColor: colors.cardBackground,
             borderColor: colors.border,
@@ -738,6 +784,38 @@ export default function CalendarPage() {
             ))}
           </div>
         </div>
+          </>
+        ) : (
+          /* Recurring Bookings Content */
+          <div className="rounded-lg border shadow-sm p-6" style={{
+            backgroundColor: colors.cardBackground,
+            borderColor: colors.border,
+            boxShadow: colors.shadow
+          }}>
+            <div className="text-center py-12">
+              <ArrowPathIcon className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+              <h3 className="text-lg font-semibold mb-2" style={{ color: colors.textPrimary }}>
+                Recurring Appointment Series
+              </h3>
+              <p className="text-gray-500 mb-6">
+                Manage recurring bookings and subscription-based appointments
+              </p>
+              <button
+                onClick={() => router.push('/recurring-bookings')}
+                className="px-6 py-3 text-white font-medium rounded-lg transition-colors duration-200"
+                style={{
+                  backgroundColor: theme === 'soft-light'
+                    ? '#7c9885'
+                    : theme === 'dark'
+                      ? '#14b8a6'
+                      : '#0f766e'
+                }}
+              >
+                Open Recurring Bookings Manager
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modals */}

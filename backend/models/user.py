@@ -130,6 +130,14 @@ class User(Base):
     mfa_settings = relationship("MFASettings", back_populates="user", uselist=False)
     trusted_devices = relationship("TrustedDevice", back_populates="user")
 
+    # Product relationships
+    created_products = relationship(
+        "Product", foreign_keys="Product.created_by", back_populates="creator"
+    )
+    updated_products = relationship(
+        "Product", foreign_keys="Product.updated_by", back_populates="updater"
+    )
+
     def __repr__(self):
         return f"<User(id={self.id}, email='{self.email}', role='{self.role}')>"
 

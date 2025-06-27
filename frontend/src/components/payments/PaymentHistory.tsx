@@ -7,12 +7,11 @@ import { RefreshCw, Download, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import {
-  formatAmount,
-  getPaymentStatusColor,
-  PaymentStatus,
-} from '@/lib/api/payments';
+import { paymentHelpers } from '@/lib/api/payments';
+import { PaymentStatusManager } from '@/lib/payment-utils';
 import { usePaymentHistory } from '@/hooks/usePayments';
+
+type PaymentStatus = 'all' | 'pending' | 'succeeded' | 'failed' | 'refunded' | 'partially_refunded';
 
 interface PaymentHistoryProps {
   onViewDetails?: (paymentId: number) => void;
@@ -155,11 +154,11 @@ export function PaymentHistory({ onViewDetails }: PaymentHistoryProps) {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {formatAmount(payment.amount)}
+                      {paymentHelpers.formatAmount(payment.amount)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <Badge
-                        className={`${getPaymentStatusColor(payment.status)} border-0`}
+                        className={`${PaymentStatusManager.getStatusColor(payment.status)} border-0`}
                       >
                         {payment.status.replace('_', ' ')}
                       </Badge>
@@ -169,7 +168,7 @@ export function PaymentHistory({ onViewDetails }: PaymentHistoryProps) {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {payment.refunded_amount > 0
-                        ? formatAmount(payment.refunded_amount)
+                        ? paymentHelpers.formatAmount(payment.refunded_amount)
                         : '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -194,7 +193,7 @@ export function PaymentHistory({ onViewDetails }: PaymentHistoryProps) {
         <div className="bg-white p-4 rounded-lg shadow">
           <p className="text-sm text-gray-600">Total Payments</p>
           <p className="text-2xl font-bold">
-            {formatAmount(
+            {paymentHelpers.formatAmount(
               filteredPayments
                 .filter((p) => p.status === 'succeeded')
                 .reduce((sum, p) => sum + p.amount, 0)
@@ -204,7 +203,7 @@ export function PaymentHistory({ onViewDetails }: PaymentHistoryProps) {
         <div className="bg-white p-4 rounded-lg shadow">
           <p className="text-sm text-gray-600">Total Refunded</p>
           <p className="text-2xl font-bold">
-            {formatAmount(
+            {paymentHelpers.formatAmount(
               filteredPayments.reduce((sum, p) => sum + p.refunded_amount, 0)
             )}
           </p>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { Metadata } from 'next'
 import {
@@ -48,7 +48,7 @@ interface BookingFlowData {
   selectedBarber: BarberProfile | null
 }
 
-export default function BookingFlowPage() {
+function BookingFlowContent() {
   const params = useParams()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -715,5 +715,20 @@ export default function BookingFlowPage() {
         />
       )}
     </div>
+  )
+}
+
+export default function BookingFlowPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading booking flow...</p>
+        </div>
+      </div>
+    }>
+      <BookingFlowContent />
+    </Suspense>
   )
 }

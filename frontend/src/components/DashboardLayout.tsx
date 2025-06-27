@@ -1,7 +1,7 @@
 'use client'
 
 import { ReactNode, useState, useEffect } from 'react'
-import ModernSidebar from './ModernSidebar'
+import DemoModernSidebar from './DemoModernSidebar'
 import {
   BellIcon,
   MagnifyingGlassIcon,
@@ -75,14 +75,14 @@ export default function DashboardLayout({
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300" />
           <div className="fixed inset-y-0 left-0 z-50 w-72 mobile-sidebar transform transition-transform duration-300 ease-in-out">
-            <ModernSidebar user={user} onLogout={onLogout} />
+            <DemoModernSidebar user={user} onLogout={onLogout} />
           </div>
         </div>
       )}
 
       {/* Desktop Sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:z-40 lg:flex lg:w-72">
-        <ModernSidebar user={user} onLogout={onLogout} />
+        <DemoModernSidebar user={user} onLogout={onLogout} />
       </div>
 
       {/* Main Content */}

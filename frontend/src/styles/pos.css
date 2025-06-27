@@ -1,0 +1,147 @@
+/* POS System Styles - Mobile Optimized */
+
+/* Ensure touch targets are at least 44x44 pixels for accessibility */
+.pos-touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Prevent text selection on buttons for better touch experience */
+.pos-container button {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Smooth scrolling for product grid and cart */
+.pos-scrollable {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* PIN pad specific styles */
+.pin-pad-button {
+  font-variant-numeric: tabular-nums;
+  touch-action: manipulation;
+}
+
+/* Product grid responsive layout */
+@media (max-width: 640px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .shopping-cart {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 50vh;
+    z-index: 40;
+    transform: translateY(calc(100% - 80px));
+    transition: transform 0.3s ease;
+  }
+
+  .shopping-cart.expanded {
+    transform: translateY(0);
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .product-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Print styles for receipts */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .receipt-content,
+  .receipt-content * {
+    visibility: visible;
+  }
+
+  .receipt-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm;
+    font-size: 12px;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Loading states */
+.skeleton-loader {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Number input styling for cash payment */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Focus visible for accessibility */
+.pos-container *:focus {
+  outline: none;
+}
+
+.pos-container *:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Animations */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-in;
+}

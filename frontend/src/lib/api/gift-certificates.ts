@@ -1,4 +1,4 @@
-import { api } from './client';
+import apiClient from './client';
 
 export interface GiftCertificatePurchaseData {
   recipient_name: string;
@@ -42,26 +42,26 @@ export interface GiftCertificate {
 export const giftCertificatesApi = {
   // Purchase a gift certificate
   purchase: async (data: GiftCertificatePurchaseData) => {
-    const response = await api.post<GiftCertificate>('/gift-certificates/purchase', data);
+    const response = await apiClient.post<GiftCertificate>('/gift-certificates/purchase', data);
     return response.data;
   },
 
   // Validate a gift certificate code
   validate: async (code: string, amountToUse?: number) => {
     const params = amountToUse ? { amount_to_use: amountToUse } : {};
-    const response = await api.get(`/gift-certificates/validate/${code}`, { params });
+    const response = await apiClient.get(`/gift-certificates/validate/${code}`, { params });
     return response.data;
   },
 
   // Redeem a gift certificate
   redeem: async (data: GiftCertificateRedemptionData) => {
-    const response = await api.post('/gift-certificates/redeem', data);
+    const response = await apiClient.post('/gift-certificates/redeem', data);
     return response.data;
   },
 
   // Get user's gift certificates
   getMyCertificates: async (includeSent = true, includeReceived = true, activeOnly = false) => {
-    const response = await api.get<GiftCertificate[]>('/gift-certificates/my-certificates', {
+    const response = await apiClient.get<GiftCertificate[]>('/gift-certificates/my-certificates', {
       params: {
         include_sent: includeSent,
         include_received: includeReceived,
@@ -75,7 +75,7 @@ export const giftCertificatesApi = {
   admin: {
     // Get all gift certificates
     getAll: async (skip = 0, limit = 100, status?: string) => {
-      const response = await api.get('/gift-certificates/admin/all', {
+      const response = await apiClient.get('/gift-certificates/admin/all', {
         params: { skip, limit, status }
       });
       return response.data;
@@ -83,7 +83,7 @@ export const giftCertificatesApi = {
 
     // Cancel a gift certificate
     cancel: async (certificateId: number, reason: string) => {
-      const response = await api.post(`/gift-certificates/admin/${certificateId}/cancel`, {
+      const response = await apiClient.post(`/gift-certificates/admin/${certificateId}/cancel`, {
         reason
       });
       return response.data;
@@ -91,7 +91,7 @@ export const giftCertificatesApi = {
 
     // Get statistics
     getStatistics: async () => {
-      const response = await api.get('/gift-certificates/admin/statistics');
+      const response = await apiClient.get('/gift-certificates/admin/statistics');
       return response.data;
     }
   }

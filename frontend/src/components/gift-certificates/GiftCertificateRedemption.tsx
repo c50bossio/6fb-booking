@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { api } from '@/lib/api';
+import { giftCertificatesApi } from '@/lib/api';
 
 interface GiftCertificateRedemptionProps {
   appointmentId?: number;
@@ -56,19 +56,15 @@ export const GiftCertificateRedemption: React.FC<GiftCertificateRedemptionProps>
     setError(null);
 
     try {
-      const response = await api.get(`/gift-certificates/validate/${code}`, {
-        params: {
-          amount_to_use: totalAmount
-        }
-      });
+      const validationResult = await giftCertificatesApi.validate(code, totalAmount);
 
-      if (response.data.valid) {
-        setValidatedCertificate(response.data);
+      if (validationResult.valid) {
+        setValidatedCertificate(validationResult);
         // Set default amount to use (minimum of certificate balance or total amount)
-        const maxAmount = Math.min(response.data.remaining_balance, totalAmount);
+        const maxAmount = Math.min(validationResult.remaining_balance, totalAmount);
         setAmountToUse(maxAmount.toFixed(2));
       } else {
-        setError(response.data.error || 'Invalid gift certificate');
+        setError(validationResult.error || 'Invalid gift certificate');
       }
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to validate gift certificate');
@@ -102,7 +98,7 @@ export const GiftCertificateRedemption: React.FC<GiftCertificateRedemptionProps>
     setError(null);
 
     try {
-      const response = await api.post('/gift-certificates/redeem', {
+      await giftCertificatesApi.redeem({
         code: code,
         appointment_id: appointmentId,
         amount_to_use: amount

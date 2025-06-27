@@ -19,7 +19,8 @@ import {
   UserGroupIcon
 } from '@heroicons/react/24/outline'
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
 
 interface Payment {
   id: string
@@ -241,7 +242,7 @@ export default function PaymentsPage() {
                 <p className="text-xs text-gray-400">Secure Payment Processing</p>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <select
                 value={timeRange}
@@ -253,7 +254,7 @@ export default function PaymentsPage() {
                 <option value="90">Last 90 Days</option>
                 <option value="365">Last Year</option>
               </select>
-              
+
               <div className="text-right">
                 <p className="text-sm text-gray-400">
                   {currentTime.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}

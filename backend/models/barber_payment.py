@@ -32,6 +32,15 @@ class PaymentModelType(enum.Enum):
     PRODUCT_ONLY = "product_only"  # Only product commissions
 
 
+class SalesSource(enum.Enum):
+    """Source of product sales"""
+
+    SQUARE = "square"  # Square POS system
+    SHOPIFY = "shopify"  # Shopify online store
+    MANUAL = "manual"  # Manually recorded
+    IN_PERSON = "in_person"  # Direct cash/card sale
+
+
 class PaymentStatus(enum.Enum):
     """Payment status options"""
 
@@ -168,6 +177,9 @@ class ProductSale(Base):
     barber_id = Column(Integer, ForeignKey("barbers.id"), nullable=False)
 
     # Product details
+    product_id = Column(
+        Integer, ForeignKey("products.id"), nullable=True
+    )  # Link to unified catalog
     product_name = Column(String(200), nullable=False)
     product_sku = Column(String(100), nullable=True)
     category = Column(String(100), nullable=True)  # pomade, tools, accessories
@@ -183,10 +195,28 @@ class ProductSale(Base):
     commission_amount = Column(Numeric(10, 2), nullable=False)
     commission_paid = Column(Boolean, default=False)
 
+    # Sales source and integration
+    sales_source = Column(Enum(SalesSource), default=SalesSource.MANUAL)
+
     # Square integration
     square_transaction_id = Column(String(100), nullable=True)
     square_payment_id = Column(String(100), nullable=True)
     square_location_id = Column(String(100), nullable=True)
+
+    # Shopify integration
+    shopify_order_id = Column(String(100), nullable=True)
+    shopify_order_number = Column(String(50), nullable=True)
+    shopify_product_id = Column(String(100), nullable=True)
+    shopify_variant_id = Column(String(100), nullable=True)
+    shopify_fulfillment_status = Column(
+        String(50), nullable=True
+    )  # fulfilled, partial, unfulfilled
+
+    # Integration metadata
+    external_transaction_id = Column(String(100), nullable=True)  # Generic external ID
+    sync_status = Column(String(50), default="pending")  # pending, synced, failed
+    last_sync_attempt = Column(DateTime, nullable=True)
+    sync_error_message = Column(Text, nullable=True)
 
     # Customer info (optional)
     customer_name = Column(String(200), nullable=True)
@@ -200,6 +230,7 @@ class ProductSale(Base):
 
     # Relationships
     barber = relationship("Barber")
+    product = relationship("Product", back_populates="sales")
 
 
 class CommissionPayment(Base):
@@ -287,6 +318,16 @@ class PaymentIntegration(Base):
     square_access_token = Column(String(200), nullable=True)
     square_environment = Column(String(20), default="sandbox")  # sandbox, production
     square_webhook_signature_key = Column(String(200), nullable=True)
+    square_last_sync = Column(DateTime, nullable=True)
+
+    # Shopify configuration for online product sales
+    shopify_shop_domain = Column(String(200), nullable=True)  # store.myshopify.com
+    shopify_access_token = Column(String(200), nullable=True)
+    shopify_webhook_secret = Column(String(200), nullable=True)
+    shopify_environment = Column(
+        String(20), default="development"
+    )  # development, production
+    shopify_last_sync = Column(DateTime, nullable=True)
 
     # General settings
     auto_sync_enabled = Column(Boolean, default=True)

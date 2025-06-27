@@ -3,7 +3,8 @@
  */
 
 import { formatAmountForStripe, formatAmountFromStripe, getStripeErrorMessage } from './stripe'
-import { paymentIntentsApi, paymentsApi, type PaymentStatus } from './api/payments'
+import { paymentsAPI, type PaymentStatus } from './api/payments'
+import type { PaymentDetails as APIPaymentDetails } from '@/types/payment'
 
 // Payment types and interfaces
 export interface PaymentDetails {
@@ -27,7 +28,7 @@ export interface PaymentIntent {
 
 export interface PaymentResult {
   success: boolean
-  paymentId?: number
+  paymentId?: string
   error?: string
   details?: PaymentDetails
 }
@@ -47,23 +48,22 @@ export class PaymentProcessor {
    */
   static async createPaymentIntent(config: PaymentConfig): Promise<PaymentIntent> {
     try {
-      const intent = await paymentIntentsApi.create(
-        config.appointmentId,
-        formatAmountForStripe(config.amount),
-        undefined,
-        false,
-        {
+      const intent = await paymentsAPI.createPaymentIntent({
+        appointmentId: config.appointmentId.toString(),
+        amount: formatAmountForStripe(config.amount),
+        saveMethod: false,
+        metadata: {
           payment_type: config.paymentType,
           customer_email: config.customerEmail,
           ...config.metadata
         }
-      )
+      })
 
       return {
-        id: intent.payment_id.toString(),
-        client_secret: intent.client_secret,
+        id: intent.id,
+        client_secret: intent.clientSecret,
         amount: config.amount,
-        currency: 'USD',
+        currency: intent.currency || 'USD',
         status: intent.status,
         metadata: config.metadata
       }
@@ -84,17 +84,17 @@ export class PaymentProcessor {
     paymentMethodId?: string
   ): Promise<PaymentResult> {
     try {
-      const payment = await paymentIntentsApi.confirm(paymentIntentId, paymentMethodId)
+      const payment = await paymentsAPI.confirmPayment(paymentIntentId, paymentMethodId)
 
       return {
         success: true,
         paymentId: payment.id,
         details: {
-          method: payment.amount === payment.amount ? 'full' : 'deposit',
+          method: 'full',
           amount: formatAmountFromStripe(payment.amount),
           currency: payment.currency,
           status: payment.status,
-          transaction_id: payment.id.toString(),
+          transaction_id: payment.id,
           payment_method_id: paymentMethodId || '',
           metadata: {}
         }
@@ -110,9 +110,9 @@ export class PaymentProcessor {
   /**
    * Cancel a payment
    */
-  static async cancelPayment(paymentId: number): Promise<PaymentResult> {
+  static async cancelPayment(paymentId: string): Promise<PaymentResult> {
     try {
-      const payment = await paymentIntentsApi.cancel(paymentId)
+      const payment = await paymentsAPI.cancelPayment(paymentId)
 
       return {
         success: true,
@@ -122,7 +122,7 @@ export class PaymentProcessor {
           amount: formatAmountFromStripe(payment.amount),
           currency: payment.currency,
           status: payment.status,
-          transaction_id: payment.id.toString(),
+          transaction_id: payment.id,
           payment_method_id: '',
           metadata: {}
         }
@@ -138,9 +138,9 @@ export class PaymentProcessor {
   /**
    * Get payment details
    */
-  static async getPaymentDetails(paymentId: number) {
+  static async getPaymentDetails(paymentId: string) {
     try {
-      const payment = await paymentsApi.getById(paymentId)
+      const payment = await paymentsAPI.getPayment(paymentId)
       return {
         success: true,
         payment

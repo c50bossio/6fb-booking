@@ -3,19 +3,15 @@
  */
 import { useState, useCallback, useEffect } from 'react';
 import { loadStripe, Stripe, StripeElements } from '@stripe/stripe-js';
+import { paymentsAPI } from '@/lib/api/payments';
 import {
-  paymentMethodsApi,
-  paymentIntentsApi,
-  paymentsApi,
-  refundsApi,
-  paymentReportsApi,
-  PaymentMethod,
+  PaymentDetails,
   PaymentIntent,
-  Payment,
-  PaymentStatus,
-  Refund,
-  PaymentReport,
-} from '@/lib/api/payments';
+  SavedPaymentMethod,
+  RefundRequest,
+  PaymentStatistics,
+  PaymentStatus
+} from '@/types/payment';
 
 // Initialize Stripe (this should be in an environment variable)
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
@@ -24,15 +20,15 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY 
  * Hook for managing payment methods
  */
 export function usePaymentMethods() {
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [paymentMethods, setPaymentMethods] = useState<SavedPaymentMethod[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchPaymentMethods = useCallback(async (activeOnly = true) => {
+  const fetchPaymentMethods = useCallback(async (customerId: string) => {
     setLoading(true);
     setError(null);
     try {
-      const methods = await paymentMethodsApi.list(activeOnly);
+      const methods = await paymentsAPI.getSavedMethods(customerId);
       setPaymentMethods(methods);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch payment methods');
@@ -43,14 +39,20 @@ export function usePaymentMethods() {
 
   const addPaymentMethod = useCallback(async (
     paymentMethodId: string,
+    customerId: string,
     setAsDefault = false
   ) => {
     setLoading(true);
     setError(null);
     try {
-      const method = await paymentMethodsApi.add(paymentMethodId, setAsDefault);
-      setPaymentMethods(prev => [...prev, method]);
-      return method;
+      // Add payment method logic would be handled through Stripe API
+      // then refresh the saved methods
+      if (setAsDefault) {
+        await paymentsAPI.setDefaultMethod(paymentMethodId);
+      }
+      const methods = await paymentsAPI.getSavedMethods(customerId);
+      setPaymentMethods(methods);
+      return methods.find(m => m.id === paymentMethodId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add payment method');
       throw err;
@@ -59,15 +61,15 @@ export function usePaymentMethods() {
     }
   }, []);
 
-  const setDefaultPaymentMethod = useCallback(async (paymentMethodId: number) => {
+  const setDefaultPaymentMethod = useCallback(async (paymentMethodId: string) => {
     setLoading(true);
     setError(null);
     try {
-      await paymentMethodsApi.setDefault(paymentMethodId);
+      await paymentsAPI.setDefaultMethod(paymentMethodId);
       setPaymentMethods(prev =>
         prev.map(pm => ({
           ...pm,
-          is_default: pm.id === paymentMethodId,
+          isDefault: pm.id === paymentMethodId,
         }))
       );
     } catch (err) {
@@ -78,11 +80,11 @@ export function usePaymentMethods() {
     }
   }, []);
 
-  const removePaymentMethod = useCallback(async (paymentMethodId: number) => {
+  const removePaymentMethod = useCallback(async (paymentMethodId: string) => {
     setLoading(true);
     setError(null);
     try {
-      await paymentMethodsApi.remove(paymentMethodId);
+      await paymentsAPI.deleteSavedMethod(paymentMethodId);
       setPaymentMethods(prev => prev.filter(pm => pm.id !== paymentMethodId));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to remove payment method');
@@ -92,9 +94,8 @@ export function usePaymentMethods() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchPaymentMethods();
-  }, [fetchPaymentMethods]);
+  // Note: fetchPaymentMethods now requires customerId parameter
+  // It should be called from the component with the appropriate customerId
 
   return {
     paymentMethods,
@@ -120,22 +121,20 @@ export function usePaymentProcessing() {
   }, []);
 
   const createPaymentIntent = useCallback(async (
-    appointmentId: number,
+    appointmentId: string,
     amount: number,
-    paymentMethodId?: number,
-    savePaymentMethod = false,
+    saveMethod = false,
     metadata?: Record<string, any>
   ): Promise<PaymentIntent> => {
     setProcessing(true);
     setError(null);
     try {
-      const intent = await paymentIntentsApi.create(
+      const intent = await paymentsAPI.createPaymentIntent({
         appointmentId,
         amount,
-        paymentMethodId,
-        savePaymentMethod,
+        saveMethod,
         metadata
-      );
+      });
       return intent;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create payment intent');
@@ -149,7 +148,7 @@ export function usePaymentProcessing() {
     clientSecret: string,
     elements?: StripeElements,
     paymentMethodId?: string
-  ): Promise<Payment | null> => {
+  ): Promise<PaymentDetails | null> => {
     if (!stripe) {
       setError('Stripe not initialized');
       return null;
@@ -159,7 +158,7 @@ export function usePaymentProcessing() {
     setError(null);
     try {
       let result;
-      
+
       if (elements) {
         // Confirm with elements (new payment method)
         result = await stripe.confirmPayment({
@@ -190,7 +189,7 @@ export function usePaymentProcessing() {
       }
 
       // Confirm on backend
-      const payment = await paymentIntentsApi.confirm(paymentIntentId);
+      const payment = await paymentsAPI.confirmPayment(paymentIntentId, paymentMethodId);
       return payment;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Payment confirmation failed');
@@ -200,11 +199,11 @@ export function usePaymentProcessing() {
     }
   }, [stripe]);
 
-  const cancelPayment = useCallback(async (paymentId: number): Promise<void> => {
+  const cancelPayment = useCallback(async (paymentId: string, reason?: string): Promise<void> => {
     setProcessing(true);
     setError(null);
     try {
-      await paymentIntentsApi.cancel(paymentId);
+      await paymentsAPI.cancelPayment(paymentId, reason);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to cancel payment');
       throw err;
@@ -227,22 +226,34 @@ export function usePaymentProcessing() {
  * Hook for payment history
  */
 export function usePaymentHistory() {
-  const [payments, setPayments] = useState<Payment[]>([]);
+  const [payments, setPayments] = useState<PaymentDetails[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState<{
+    total: number;
+    page: number;
+    pages: number;
+  }>({ total: 0, page: 1, pages: 1 });
 
   const fetchPaymentHistory = useCallback(async (params?: {
     status?: PaymentStatus;
-    start_date?: string;
-    end_date?: string;
+    startDate?: string;
+    endDate?: string;
+    barberId?: number;
+    clientId?: number;
+    page?: number;
     limit?: number;
-    offset?: number;
   }) => {
     setLoading(true);
     setError(null);
     try {
-      const history = await paymentsApi.getHistory(params);
-      setPayments(history);
+      const response = await paymentsAPI.listPayments(params);
+      setPayments(response.payments);
+      setPagination({
+        total: response.total,
+        page: response.page,
+        pages: response.pages
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch payment history');
     } finally {
@@ -250,11 +261,11 @@ export function usePaymentHistory() {
     }
   }, []);
 
-  const getPaymentDetails = useCallback(async (paymentId: number): Promise<Payment | null> => {
+  const getPaymentDetails = useCallback(async (paymentId: string): Promise<PaymentDetails | null> => {
     setLoading(true);
     setError(null);
     try {
-      const payment = await paymentsApi.getById(paymentId);
+      const payment = await paymentsAPI.getPayment(paymentId);
       return payment;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch payment details');
@@ -270,6 +281,7 @@ export function usePaymentHistory() {
 
   return {
     payments,
+    pagination,
     loading,
     error,
     fetchPaymentHistory,
@@ -285,14 +297,19 @@ export function useRefunds() {
   const [error, setError] = useState<string | null>(null);
 
   const createRefund = useCallback(async (
-    paymentId: number,
+    paymentId: string,
     amount?: number,
     reason?: string
-  ): Promise<Refund | null> => {
+  ): Promise<PaymentDetails | null> => {
     setProcessing(true);
     setError(null);
     try {
-      const refund = await refundsApi.create(paymentId, amount, reason);
+      const refundRequest: RefundRequest = {
+        paymentId,
+        amount,
+        reason
+      };
+      const refund = await paymentsAPI.refundPayment(refundRequest);
       return refund;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create refund');
@@ -302,81 +319,46 @@ export function useRefunds() {
     }
   }, []);
 
-  const getRefundDetails = useCallback(async (refundId: number): Promise<Refund | null> => {
-    setProcessing(true);
-    setError(null);
-    try {
-      const refund = await refundsApi.getById(refundId);
-      return refund;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch refund details');
-      return null;
-    } finally {
-      setProcessing(false);
-    }
-  }, []);
+  // Note: getRefundDetails is removed as the paymentsAPI doesn't have a separate refund details endpoint
+  // Refund details would be part of the payment details
 
   return {
     processing,
     error,
     createRefund,
-    getRefundDetails,
   };
 }
 
 /**
- * Hook for payment reports
+ * Hook for payment statistics
  */
-export function usePaymentReports() {
-  const [reports, setReports] = useState<PaymentReport[]>([]);
+export function usePaymentStatistics() {
+  const [statistics, setStatistics] = useState<PaymentStatistics | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createReport = useCallback(async (
-    reportType: 'daily' | 'weekly' | 'monthly' | 'custom',
-    startDate: string,
-    endDate: string
-  ): Promise<PaymentReport | null> => {
-    setLoading(true);
-    setError(null);
-    try {
-      const report = await paymentReportsApi.create(reportType, startDate, endDate);
-      setReports(prev => [report, ...prev]);
-      return report;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create report');
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const fetchReports = useCallback(async (params?: {
-    report_type?: string;
-    limit?: number;
-    offset?: number;
+  const fetchStatistics = useCallback(async (filters?: {
+    startDate?: string;
+    endDate?: string;
+    barberId?: number;
+    groupBy?: 'day' | 'week' | 'month';
   }) => {
     setLoading(true);
     setError(null);
     try {
-      const reportsList = await paymentReportsApi.list(params);
-      setReports(reportsList);
+      const stats = await paymentsAPI.getStatistics(filters);
+      setStatistics(stats);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch reports');
+      setError(err instanceof Error ? err.message : 'Failed to fetch statistics');
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    fetchReports();
-  }, [fetchReports]);
-
   return {
-    reports,
+    statistics,
     loading,
     error,
-    createReport,
-    fetchReports,
+    fetchStatistics,
   };
 }

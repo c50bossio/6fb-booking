@@ -18,7 +18,9 @@ import {
   ChevronRightIcon,
   UsersIcon,
   ClipboardDocumentListIcon,
-  ScissorsIcon
+  ScissorsIcon,
+  EnvelopeIcon,
+  MapPinIcon
 } from '@heroicons/react/24/outline'
 import ThemeDropdown from './ThemeDropdown'
 
@@ -43,13 +45,13 @@ const navigationItems = [
     name: 'Calendar',
     href: '/dashboard/calendar',
     icon: CalendarDaysIcon,
-    description: 'Schedule Management'
+    description: 'Calendar & Recurring'
   },
   {
-    name: 'Appointments',
-    href: '/dashboard/appointments',
+    name: 'Schedule Management',
+    href: '/appointments',
     icon: ClipboardDocumentListIcon,
-    description: 'Booking Management'
+    description: 'Appointment Booking'
   },
   {
     name: 'Services',
@@ -64,10 +66,28 @@ const navigationItems = [
     description: 'Team Management'
   },
   {
+    name: 'Clients',
+    href: '/clients',
+    icon: UsersIcon,
+    description: 'Client Management'
+  },
+  {
     name: 'Analytics',
     href: '/analytics',
     icon: ChartBarIcon,
-    description: 'Performance Insights'
+    description: 'AI Insights'
+  },
+  {
+    name: 'Email Campaigns',
+    href: '/email-campaigns',
+    icon: EnvelopeIcon,
+    description: 'Marketing Automation'
+  },
+  {
+    name: 'Local SEO',
+    href: '/local-seo',
+    icon: MapPinIcon,
+    description: 'Search Optimization'
   },
   {
     name: 'Payments',
@@ -77,15 +97,9 @@ const navigationItems = [
   },
   {
     name: 'Payouts',
-    href: '/barber-payments',
+    href: '/payouts',
     icon: BanknotesIcon,
     description: 'Revenue Distribution'
-  },
-  {
-    name: 'Clients',
-    href: '/dashboard/clients',
-    icon: UsersIcon,
-    description: 'Client Management'
   },
 ]
 

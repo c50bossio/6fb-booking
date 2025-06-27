@@ -25,7 +25,12 @@ from models.payout_schedule import (
     PayoutType,
 )
 from models.barber import Barber
-from models.barber_payment import BarberPaymentModel, CommissionPayment
+from models.barber_payment import (
+    BarberPaymentModel,
+    CommissionPayment,
+    ProductSale,
+    SalesSource,
+)
 from models.payment import Payment
 from models.appointment import Appointment
 from models.user import User
@@ -180,6 +185,14 @@ class PayoutAnalytics(BaseModel):
     payouts_by_method: Dict[str, float]
     monthly_trend: List[Dict[str, Any]]
     next_scheduled_payouts: List[Dict[str, Any]]
+
+    # Product commission analytics
+    total_product_sales: float
+    total_product_commissions: float
+    product_sales_count: int
+    average_commission_rate: float
+    top_selling_products: List[Dict[str, Any]]
+    product_sales_trend: List[Dict[str, Any]]
 
 
 class ManualPayoutRequest(BaseModel):
@@ -1145,6 +1158,88 @@ async def get_payout_analytics(
         for barber_id, first_name, last_name, scheduled_date, amount in upcoming_payouts
     ]
 
+    # Product commission analytics
+    product_query = db.query(ProductSale)
+
+    # Apply permission filters for product sales
+    if not rbac.has_permission(current_user, Permission.VIEW_ALL_ANALYTICS):
+        barber = db.query(Barber).filter(Barber.user_id == current_user.id).first()
+        if barber:
+            product_query = product_query.filter(ProductSale.barber_id == barber.id)
+
+    # Apply filters for product sales
+    if barber_id:
+        product_query = product_query.filter(ProductSale.barber_id == barber_id)
+    if start_date:
+        product_query = product_query.filter(ProductSale.sale_date >= start_date)
+    if end_date:
+        product_query = product_query.filter(ProductSale.sale_date <= end_date)
+
+    # Calculate product sales totals (both Square and Shopify)
+    total_product_sales = (
+        product_query.with_entities(func.sum(ProductSale.total_amount)).scalar() or 0
+    )
+
+    total_product_commissions = (
+        product_query.with_entities(func.sum(ProductSale.commission_amount)).scalar()
+        or 0
+    )
+
+    product_sales_count = product_query.count()
+
+    average_commission_rate = (
+        product_query.with_entities(func.avg(ProductSale.commission_rate)).scalar() or 0
+    )
+
+    # Top selling products (aggregated across all sources)
+    top_products_data = (
+        product_query.with_entities(
+            ProductSale.product_name,
+            func.sum(ProductSale.quantity).label("total_quantity"),
+            func.sum(ProductSale.total_amount).label("total_revenue"),
+            func.sum(ProductSale.commission_amount).label("total_commission"),
+        )
+        .group_by(ProductSale.product_name)
+        .order_by(func.sum(ProductSale.total_amount).desc())
+        .limit(5)
+        .all()
+    )
+
+    # Convert to simple product data format
+    top_selling_products = [
+        {
+            "product_name": name,
+            "quantity_sold": int(quantity or 0),
+            "total_revenue": float(revenue or 0),
+            "total_commission": float(commission or 0),
+        }
+        for name, quantity, revenue, commission in top_products_data
+    ]
+
+    # Product sales trend (last 6 months) aggregated across all sources
+    six_months_ago = datetime.utcnow() - timedelta(days=180)
+    product_trend_data = (
+        product_query.filter(ProductSale.sale_date >= six_months_ago)
+        .with_entities(
+            func.date_trunc("month", ProductSale.sale_date).label("month"),
+            func.sum(ProductSale.total_amount).label("sales"),
+            func.sum(ProductSale.commission_amount).label("commissions"),
+        )
+        .group_by("month")
+        .order_by("month")
+        .all()
+    )
+
+    # Convert to simple trend data format
+    product_sales_trend = [
+        {
+            "month": month.strftime("%Y-%m"),
+            "total_sales": float(sales or 0),
+            "total_commissions": float(commissions or 0),
+        }
+        for month, sales, commissions in product_trend_data
+    ]
+
     return PayoutAnalytics(
         total_paid_out=float(total_paid_out),
         total_pending=float(total_pending),
@@ -1154,6 +1249,13 @@ async def get_payout_analytics(
         payouts_by_method=payouts_by_method,
         monthly_trend=monthly_trend,
         next_scheduled_payouts=next_scheduled,
+        # Product commission data
+        total_product_sales=float(total_product_sales),
+        total_product_commissions=float(total_product_commissions),
+        product_sales_count=product_sales_count,
+        average_commission_rate=float(average_commission_rate),
+        top_selling_products=top_selling_products,
+        product_sales_trend=product_sales_trend,
     )
 
 
@@ -1259,6 +1361,135 @@ async def get_payout_summary_report(
     )[:10]
 
     return summary
+
+
+@router.get("/barber/{barber_id}/total-earnings", response_model=Dict[str, Any])
+async def get_barber_total_earnings(
+    barber_id: int,
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Get comprehensive earnings breakdown for a specific barber.
+
+    Includes service revenue, product commissions, and total earnings.
+    """
+    rbac = RBACService(db)
+
+    # Permission check
+    if not rbac.has_permission(current_user, Permission.VIEW_ALL_ANALYTICS):
+        # Check if current user is the barber
+        barber = db.query(Barber).filter(Barber.user_id == current_user.id).first()
+        if not barber or barber.id != barber_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied"
+            )
+
+    # Verify barber exists
+    barber = db.query(Barber).filter(Barber.id == barber_id).first()
+    if not barber:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Barber not found"
+        )
+
+    # Default to last 30 days if no dates provided
+    if not end_date:
+        end_date = date.today()
+    if not start_date:
+        start_date = end_date - timedelta(days=30)
+
+    # Service revenue from completed payouts
+    service_payouts = (
+        db.query(ScheduledPayout)
+        .filter(
+            ScheduledPayout.barber_id == barber_id,
+            ScheduledPayout.status == PayoutStatus.COMPLETED,
+            ScheduledPayout.scheduled_date >= start_date,
+            ScheduledPayout.scheduled_date <= end_date,
+        )
+        .all()
+    )
+
+    service_revenue = sum(float(payout.amount) for payout in service_payouts)
+
+    # Product sales and commissions
+    product_sales = (
+        db.query(ProductSale)
+        .filter(
+            ProductSale.barber_id == barber_id,
+            ProductSale.sale_date >= start_date,
+            ProductSale.sale_date <= end_date,
+        )
+        .all()
+    )
+
+    product_revenue = sum(float(sale.total_amount) for sale in product_sales)
+    product_commissions = sum(float(sale.commission_amount) for sale in product_sales)
+
+    # Get barber's payment model for commission rate
+    payment_model = (
+        db.query(BarberPaymentModel)
+        .filter(
+            BarberPaymentModel.barber_id == barber_id, BarberPaymentModel.active == True
+        )
+        .first()
+    )
+
+    # Product sales breakdown
+    product_breakdown = {}
+    for sale in product_sales:
+        product_name = sale.product_name
+        if product_name not in product_breakdown:
+            product_breakdown[product_name] = {
+                "quantity": 0,
+                "revenue": 0,
+                "commission": 0,
+            }
+        product_breakdown[product_name]["quantity"] += sale.quantity
+        product_breakdown[product_name]["revenue"] += float(sale.total_amount)
+        product_breakdown[product_name]["commission"] += float(sale.commission_amount)
+
+    # Calculate totals
+    total_earnings = service_revenue + product_commissions
+
+    return {
+        "barber_id": barber_id,
+        "barber_name": (
+            f"{barber.first_name} {barber.last_name}"
+            if hasattr(barber, "first_name")
+            else "Unknown"
+        ),
+        "period": {
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+        },
+        "service_earnings": {
+            "revenue": service_revenue,
+            "payout_count": len(service_payouts),
+        },
+        "product_earnings": {
+            "sales_revenue": product_revenue,
+            "commission_earned": product_commissions,
+            "commission_rate": (
+                float(payment_model.product_commission_rate) if payment_model else 0.0
+            ),
+            "sales_count": len(product_sales),
+            "product_breakdown": product_breakdown,
+        },
+        "total_earnings": total_earnings,
+        "earnings_breakdown": {
+            "service_percentage": (
+                (service_revenue / total_earnings * 100) if total_earnings > 0 else 0
+            ),
+            "product_percentage": (
+                (product_commissions / total_earnings * 100)
+                if total_earnings > 0
+                else 0
+            ),
+        },
+    }
 
 
 # ========== Health Check Endpoint ==========

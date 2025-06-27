@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import RobustCalendar from '@/components/calendar/RobustCalendar'
 import { CalendarAppointment } from '@/components/calendar/PremiumCalendar'
@@ -52,7 +52,7 @@ const demoAppointments: CalendarAppointment[] = [
   }
 ]
 
-export default function CalendarGoogleDemoPage() {
+function CalendarGoogleDemoContent() {
   const searchParams = useSearchParams()
   const [appointments, setAppointments] = useState<CalendarAppointment[]>(demoAppointments)
   const [authCode, setAuthCode] = useState<string | null>(null)
@@ -273,6 +273,16 @@ export default function CalendarGoogleDemoPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function CalendarGoogleDemoPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="text-gray-400">Loading Google Calendar Demo...</div>
+    </div>}>
+      <CalendarGoogleDemoContent />
+    </Suspense>
   )
 }
 
