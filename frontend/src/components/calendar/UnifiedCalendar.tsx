@@ -218,17 +218,15 @@ export default function UnifiedCalendar({
     }
 
     const handleMouseUp = (e: MouseEvent) => {
-      // Cleanup drag state if mouse is released outside calendar
-      if (dragState.isDragging) {
-        console.log('🔧 Global mouse up - resetting drag state')
-        resetDragState()
-      }
+      // Don't interfere with drag operations
+      // The dragend event will handle cleanup for drag operations
+      // This is only for non-drag mouse operations
     }
 
     const handleDragEnd = (e: DragEvent) => {
-      // Global dragend fallback
-      if (dragState.isDragging) {
-        console.log('🔧 Global drag end - resetting drag state')
+      // Global dragend fallback - only reset if not handled by drop
+      if (dragState.isDragging && e.dataTransfer.dropEffect === 'none') {
+        console.log('🔧 Global drag end - no drop occurred, resetting drag state')
         resetDragState()
       }
     }
@@ -545,8 +543,17 @@ export default function UnifiedCalendar({
       ...appointment,
       __dragProps: {
         draggable: true,
+        style: { cursor: 'move' },
+        onMouseDown: (e: React.MouseEvent) => {
+          // Prevent text selection during drag
+          e.preventDefault()
+          console.log('🔥 Mouse down on appointment:', appointment.id)
+        },
         onDragStart: (e: React.DragEvent) => {
           console.log('🔥 Drag started for appointment:', appointment.id)
+
+          // Stop propagation to prevent click handlers from interfering
+          e.stopPropagation()
 
           // Set drag data
           e.dataTransfer.setData('text/plain', JSON.stringify({
@@ -573,21 +580,30 @@ export default function UnifiedCalendar({
           e.dataTransfer.setDragImage(dragImage, 0, 0)
           setTimeout(() => document.body.removeChild(dragImage), 0)
         },
+        onDrag: (e: React.DragEvent) => {
+          // Prevent default behavior during drag
+          e.stopPropagation()
+        },
         onDragEnd: (e: React.DragEvent) => {
-          console.log('🔥 Drag ended')
-          // Complete drag state reset
-          setDragState({
-            isDragging: false,
-            draggedAppointment: null,
-            dragOffset: { x: 0, y: 0 },
-            currentPosition: { x: 0, y: 0 },
-            dropTarget: null,
-            conflictingAppointments: [],
-            snapTarget: null,
-            isValidDrop: true,
-            snapGuides: { x: 0, y: 0, visible: false },
-            dragHandle: { visible: false, appointmentId: null }
-          })
+          console.log('🔥 Drag ended, drop effect:', e.dataTransfer.dropEffect)
+          e.stopPropagation()
+
+          // Only reset if drop didn't occur
+          if (e.dataTransfer.dropEffect === 'none') {
+            // Complete drag state reset
+            setDragState({
+              isDragging: false,
+              draggedAppointment: null,
+              dragOffset: { x: 0, y: 0 },
+              currentPosition: { x: 0, y: 0 },
+              dropTarget: null,
+              conflictingAppointments: [],
+              snapTarget: null,
+              isValidDrop: true,
+              snapGuides: { x: 0, y: 0, visible: false },
+              dragHandle: { visible: false, appointmentId: null }
+            })
+          }
         }
       }
     }))
@@ -911,12 +927,25 @@ export default function UnifiedCalendar({
           }
         }}
         onDrop={(e) => {
+          console.log('📦 Drop event triggered on calendar container', {
+            enableDragDrop,
+            isDragging: dragState.isDragging,
+            target: e.target,
+            currentTarget: e.currentTarget
+          })
+
           if (enableDragDrop && dragState.isDragging) {
-            console.log('📦 Drop event triggered')
+            e.preventDefault()
+            e.stopPropagation()
+
             const timeSlot = (e.target as HTMLElement).closest('[data-time-slot]')
+            console.log('📦 Looking for time slot:', timeSlot)
+
             if (timeSlot) {
               const date = timeSlot.getAttribute('data-date')
               const time = timeSlot.getAttribute('data-time')
+              console.log('📦 Time slot attributes:', { date, time })
+
               if (date && time) {
                 console.log('📦 Handling drop on time slot:', date, time)
                 handleTimeSlotDrop(e, date, time)

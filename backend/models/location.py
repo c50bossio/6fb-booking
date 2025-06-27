@@ -98,9 +98,11 @@ class Location(Base):
     accepts_credit_card = Column(Boolean, default=True)
     accepts_digital_wallet = Column(Boolean, default=True)  # Apple Pay, Google Pay
     accepts_crypto = Column(Boolean, default=False)
-    
+
     # Pay in Person Option
-    pay_in_person_enabled = Column(Boolean, default=True)  # Allow customers to pay at the shop
+    pay_in_person_enabled = Column(
+        Boolean, default=True
+    )  # Allow customers to pay at the shop
     pay_in_person_message = Column(Text)  # Custom message for pay in person option
 
     # Transaction Fees

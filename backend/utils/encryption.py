@@ -158,10 +158,24 @@ class SearchableEncryptedString(TypeDecorator):
         """Decrypt value (ignore search hash)"""
         if value is not None and "|" in value:
             encrypted_value = value.split("|")[0]
-            return get_encryption_manager().decrypt(encrypted_value)
+            decrypted = get_encryption_manager().decrypt(encrypted_value)
+            # If decryption failed (returns empty string), return a placeholder that indicates
+            # the user exists but email can't be decrypted (due to key mismatch)
+            if not decrypted and encrypted_value:
+                logger.warning(
+                    f"Email decryption failed for user, returning placeholder"
+                )
+                return "[ENCRYPTED_EMAIL_DECRYPTION_FAILED]"
+            return decrypted
         elif value is not None:
             # Handle legacy data without hash
-            return get_encryption_manager().decrypt(value)
+            decrypted = get_encryption_manager().decrypt(value)
+            if not decrypted and value:
+                logger.warning(
+                    f"Email decryption failed for legacy user, returning placeholder"
+                )
+                return "[ENCRYPTED_EMAIL_DECRYPTION_FAILED]"
+            return decrypted
         return value
 
 

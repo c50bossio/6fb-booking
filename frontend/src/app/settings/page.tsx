@@ -19,7 +19,6 @@ import {
   XMarkIcon,
   CalendarIcon
 } from '@heroicons/react/24/outline'
-import DemoModernSidebar from '@/components/DemoModernSidebar'
 import GoogleCalendarSettings from '@/components/settings/GoogleCalendarSettings'
 import axios from 'axios'
 
@@ -206,23 +205,15 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-        <DemoModernSidebar />
-        <main className="flex-1 transition-all duration-300 overflow-y-auto">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600"></div>
-          </div>
-        </main>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600"></div>
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-      <DemoModernSidebar />
-      <main className="flex-1 transition-all duration-300 overflow-y-auto">
-        <div className="p-6">
-          <div className="space-y-6">
+    <div className="p-6">
+      <div className="space-y-6">
         {/* Message Banner */}
         {message && (
           <div className={`p-4 rounded-lg flex items-center justify-between ${
@@ -767,10 +758,7 @@ export default function SettingsPage() {
               </div>
             )}
           </div>
-        </div>
-        </div>
-        </div>
-      </main>
+      </div>
     </div>
   )
 }
