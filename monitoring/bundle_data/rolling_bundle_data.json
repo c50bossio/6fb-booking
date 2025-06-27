@@ -1,0 +1,29 @@
+{
+  "metrics": [],
+  "comparisons": [
+    {
+      "timestamp": "2025-06-27T05:56:00.201010",
+      "overall_status": "error",
+      "comparisons": [],
+      "recommendations": [],
+      "alerts": [
+        {
+          "type": "build_error",
+          "message": "Build failed: Build failed"
+        }
+      ]
+    },
+    {
+      "timestamp": "2025-06-27T05:57:12.208706",
+      "overall_status": "error",
+      "comparisons": [],
+      "recommendations": [],
+      "alerts": [
+        {
+          "type": "build_error",
+          "message": "Build failed: Build failed"
+        }
+      ]
+    }
+  ]
+}

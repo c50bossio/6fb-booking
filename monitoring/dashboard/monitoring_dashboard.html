@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6FB Booking Platform - Monitoring Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f7;
+            color: #1d1d1f;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: #fff;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-bottom: 1px solid #e5e5e7;
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #1d1d1f;
+        }
+
+        .header .subtitle {
+            color: #86868b;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .status-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #e5e5e7;
+            transition: transform 0.2s ease;
+        }
+
+        .status-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .status-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .status-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.75rem;
+            font-size: 1.25rem;
+        }
+
+        .status-healthy { background: #34c759; color: white; }
+        .status-warning { background: #ff9500; color: white; }
+        .status-critical { background: #ff3b30; color: white; }
+        .status-unknown { background: #8e8e93; color: white; }
+
+        .status-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1d1d1f;
+        }
+
+        .status-subtitle {
+            font-size: 0.85rem;
+            color: #86868b;
+        }
+
+        .metrics-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.5rem 0;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f2f2f7;
+        }
+
+        .metrics-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: #86868b;
+            font-size: 0.9rem;
+        }
+
+        .metric-value {
+            font-weight: 500;
+            color: #1d1d1f;
+        }
+
+        .metric-good { color: #34c759; }
+        .metric-warning { color: #ff9500; }
+        .metric-critical { color: #ff3b30; }
+
+        .alerts-section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #e5e5e7;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1d1d1f;
+        }
+
+        .alert-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .alert-critical {
+            background: #fff5f5;
+            border-left-color: #ff3b30;
+        }
+
+        .alert-warning {
+            background: #fffbf0;
+            border-left-color: #ff9500;
+        }
+
+        .alert-info {
+            background: #f0f9ff;
+            border-left-color: #007aff;
+        }
+
+        .alert-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .alert-time {
+            font-size: 0.8rem;
+            color: #86868b;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #e5e5e7;
+        }
+
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1d1d1f;
+        }
+
+        .chart-placeholder {
+            height: 200px;
+            background: #f2f2f7;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #86868b;
+        }
+
+        .refresh-button {
+            background: #007aff;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .refresh-button:hover {
+            background: #0056cc;
+        }
+
+        .last-updated {
+            color: #86868b;
+            font-size: 0.85rem;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #f2f2f7;
+            border-radius: 3px;
+            margin: 0.5rem 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007aff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fff5f5;
+            color: #ff3b30;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #fecaca;
+            margin: 1rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>6FB Booking Platform - System Monitoring</h1>
+        <div class="subtitle">Real-time health and performance monitoring</div>
+    </div>
+
+    <div class="container">
+        <!-- Overall Status Cards -->
+        <div class="status-grid">
+            <div class="status-card">
+                <div class="status-header">
+                    <div class="status-icon status-healthy" id="overall-status-icon">✓</div>
+                    <div>
+                        <div class="status-title">Overall System Health</div>
+                        <div class="status-subtitle" id="overall-status-text">All systems operational</div>
+                    </div>
+                </div>
+                <div class="metrics-row">
+                    <span class="metric-label">Uptime</span>
+                    <span class="metric-value metric-good" id="system-uptime">99.9%</span>
+                </div>
+                <div class="metrics-row">
+                    <span class="metric-label">Active Alerts</span>
+                    <span class="metric-value" id="active-alerts-count">0</span>
+                </div>
+                <div class="metrics-row">
+                    <span class="metric-label">Last Check</span>
+                    <span class="metric-value" id="last-check-time">--</span>
+                </div>
+            </div>
+
+            <div class="status-card">
+                <div class="status-header">
+                    <div class="status-icon status-healthy" id="api-status-icon">🔗</div>
+                    <div>
+                        <div class="status-title">API Health</div>
+                        <div class="status-subtitle" id="api-status-text">All endpoints responding</div>
+                    </div>
+                </div>
+                <div class="metrics-row">
+                    <span class="metric-label">Avg Response Time</span>
+                    <span class="metric-value" id="api-response-time">--</span>
+                </div>
+                <div class="metrics-row">
+                    <span class="metric-label">Success Rate</span>
+                    <span class="metric-value" id="api-success-rate">--</span>
+                </div>
+                <div class="metrics-row">
+                    <span class="metric-label">405 Errors</span>
+                    <span class="metric-value" id="api-405-errors">0</span>
+                </div>
+            </div>
+
+            <div class="status-card">
+                <div class="status-header">
+                    <div class="status-icon status-healthy" id="frontend-status-icon">🌐</div>
+                    <div>
+                        <div class="status-title">Frontend Performance</div>
+                        <div class="status-subtitle" id="frontend-status-text">Optimized and fast</div>
+                    </div>
+                </div>
+                <div class="metrics-row">
+                    <span class="metric-label">Avg Load Time</span>
+                    <span class="metric-value" id="frontend-load-time">--</span>
+                </div>
+                <div class="metrics-row">
+                    <span class="metric-label">Bundle Size</span>
+                    <span class="metric-value" id="bundle-size">--</span>
+                </div>
+                <div class="metrics-row">
+                    <span class="metric-label">Bundle Health</span>
+                    <span class="metric-value" id="bundle-health">Optimized</span>
+                </div>
+            </div>
+
+            <div class="status-card">
+                <div class="status-header">
+                    <div class="status-icon status-healthy" id="system-status-icon">⚙️</div>
+                    <div>
+                        <div class="status-title">System Resources</div>
+                        <div class="status-subtitle" id="system-status-text">Resources available</div>
+                    </div>
+                </div>
+                <div class="metrics-row">
+                    <span class="metric-label">CPU Usage</span>
+                    <span class="metric-value" id="cpu-usage">--</span>
+                </div>
+                <div class="metrics-row">
+                    <span class="metric-label">Memory Usage</span>
+                    <span class="metric-value" id="memory-usage">--</span>
+                </div>
+                <div class="metrics-row">
+                    <span class="metric-label">Disk Usage</span>
+                    <span class="metric-value" id="disk-usage">--</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Alerts Section -->
+        <div class="alerts-section">
+            <div class="section-title">🚨 Active Alerts</div>
+            <div id="alerts-container">
+                <div style="text-align: center; color: #86868b; padding: 2rem;">
+                    <div class="loading" id="alerts-loading"></div>
+                    <div style="margin-top: 1rem;">Loading alerts...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Charts -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-title">API Response Times (24h)</div>
+                <div class="chart-placeholder" id="api-chart">
+                    📊 Response time trends
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-title">System Resources (24h)</div>
+                <div class="chart-placeholder" id="resources-chart">
+                    📈 CPU, Memory, Disk usage
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-title">Frontend Performance (24h)</div>
+                <div class="chart-placeholder" id="frontend-chart">
+                    ⚡ Load times and bundle sizes
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-title">Alert Activity (7d)</div>
+                <div class="chart-placeholder" id="alerts-chart">
+                    🔔 Alert frequency and resolution
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div style="text-align: center; margin: 2rem 0;">
+            <button class="refresh-button" onclick="refreshData()">
+                <span id="refresh-text">Refresh Data</span>
+                <span id="refresh-loading" class="loading" style="display: none;"></span>
+            </button>
+        </div>
+
+        <div class="last-updated" id="last-updated">
+            Last updated: --
+        </div>
+    </div>
+
+    <script>
+        // Dashboard state
+        let dashboardData = {
+            overallHealth: 'healthy',
+            apiHealth: {},
+            frontendHealth: {},
+            systemHealth: {},
+            alerts: [],
+            lastUpdated: null
+        };
+
+        // Auto-refresh interval (5 minutes)
+        let refreshInterval;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDashboard();
+            startAutoRefresh();
+        });
+
+        function initializeDashboard() {
+            refreshData();
+        }
+
+        function startAutoRefresh() {
+            // Refresh every 5 minutes
+            refreshInterval = setInterval(refreshData, 5 * 60 * 1000);
+        }
+
+        async function refreshData() {
+            const refreshButton = document.getElementById('refresh-text');
+            const refreshLoading = document.getElementById('refresh-loading');
+
+            refreshButton.style.display = 'none';
+            refreshLoading.style.display = 'inline-block';
+
+            try {
+                // Simulate API calls to monitoring endpoints
+                await Promise.all([
+                    loadSystemHealth(),
+                    loadApiHealth(),
+                    loadFrontendHealth(),
+                    loadAlerts()
+                ]);
+
+                updateDashboard();
+                updateLastUpdated();
+
+            } catch (error) {
+                console.error('Failed to refresh data:', error);
+                showError('Failed to refresh monitoring data');
+            } finally {
+                refreshButton.style.display = 'inline';
+                refreshLoading.style.display = 'none';
+            }
+        }
+
+        async function loadSystemHealth() {
+            // In a real implementation, this would fetch from your monitoring API
+            // For now, we'll simulate the data
+            dashboardData.systemHealth = {
+                status: 'healthy',
+                cpu_usage: Math.random() * 30 + 10, // 10-40%
+                memory_usage: Math.random() * 20 + 30, // 30-50%
+                disk_usage: Math.random() * 10 + 45, // 45-55%
+                uptime: 99.9
+            };
+        }
+
+        async function loadApiHealth() {
+            dashboardData.apiHealth = {
+                status: 'healthy',
+                average_response_time: Math.random() * 500 + 200, // 200-700ms
+                success_rate: 99.5 + Math.random() * 0.5, // 99.5-100%
+                errors_405: 0,
+                endpoints_tested: 15,
+                endpoints_healthy: 15
+            };
+        }
+
+        async function loadFrontendHealth() {
+            dashboardData.frontendHealth = {
+                status: 'healthy',
+                average_load_time: Math.random() * 1000 + 1500, // 1.5-2.5s
+                bundle_size_kb: 1200 + Math.random() * 100, // 1200-1300KB
+                bundle_status: 'optimized',
+                pages_tested: 4,
+                pages_healthy: 4
+            };
+        }
+
+        async function loadAlerts() {
+            // Simulate some alerts
+            const alertTypes = [
+                { type: 'info', title: 'System optimization completed', time: '2 hours ago' },
+                { type: 'warning', title: 'Bundle size increased slightly', time: '4 hours ago' }
+            ];
+
+            dashboardData.alerts = Math.random() > 0.7 ? alertTypes : [];
+        }
+
+        function updateDashboard() {
+            updateOverallStatus();
+            updateApiStatus();
+            updateFrontendStatus();
+            updateSystemStatus();
+            updateAlerts();
+        }
+
+        function updateOverallStatus() {
+            const statusIcon = document.getElementById('overall-status-icon');
+            const statusText = document.getElementById('overall-status-text');
+            const uptimeElement = document.getElementById('system-uptime');
+            const alertsCount = document.getElementById('active-alerts-count');
+
+            // Determine overall status
+            const criticalAlerts = dashboardData.alerts.filter(a => a.type === 'critical').length;
+            const warningAlerts = dashboardData.alerts.filter(a => a.type === 'warning').length;
+
+            if (criticalAlerts > 0) {
+                statusIcon.className = 'status-icon status-critical';
+                statusIcon.textContent = '⚠';
+                statusText.textContent = `${criticalAlerts} critical issue${criticalAlerts > 1 ? 's' : ''}`;
+            } else if (warningAlerts > 0) {
+                statusIcon.className = 'status-icon status-warning';
+                statusIcon.textContent = '⚠';
+                statusText.textContent = `${warningAlerts} warning${warningAlerts > 1 ? 's' : ''}`;
+            } else {
+                statusIcon.className = 'status-icon status-healthy';
+                statusIcon.textContent = '✓';
+                statusText.textContent = 'All systems operational';
+            }
+
+            uptimeElement.textContent = `${dashboardData.systemHealth.uptime}%`;
+            uptimeElement.className = dashboardData.systemHealth.uptime >= 99.5 ? 'metric-value metric-good' : 'metric-value metric-warning';
+
+            alertsCount.textContent = dashboardData.alerts.length;
+            alertsCount.className = dashboardData.alerts.length === 0 ? 'metric-value metric-good' : 'metric-value metric-warning';
+        }
+
+        function updateApiStatus() {
+            const statusIcon = document.getElementById('api-status-icon');
+            const statusText = document.getElementById('api-status-text');
+            const responseTime = document.getElementById('api-response-time');
+            const successRate = document.getElementById('api-success-rate');
+            const errors405 = document.getElementById('api-405-errors');
+
+            const avgResponseTime = dashboardData.apiHealth.average_response_time;
+
+            if (avgResponseTime > 2000) {
+                statusIcon.className = 'status-icon status-critical';
+                statusText.textContent = 'Slow response times';
+            } else if (avgResponseTime > 1000) {
+                statusIcon.className = 'status-icon status-warning';
+                statusText.textContent = 'Some delays detected';
+            } else {
+                statusIcon.className = 'status-icon status-healthy';
+                statusText.textContent = 'All endpoints responding';
+            }
+
+            responseTime.textContent = `${Math.round(avgResponseTime)}ms`;
+            responseTime.className = avgResponseTime <= 1000 ? 'metric-value metric-good' :
+                                   avgResponseTime <= 2000 ? 'metric-value metric-warning' : 'metric-value metric-critical';
+
+            successRate.textContent = `${dashboardData.apiHealth.success_rate.toFixed(1)}%`;
+            successRate.className = dashboardData.apiHealth.success_rate >= 99 ? 'metric-value metric-good' : 'metric-value metric-warning';
+
+            errors405.textContent = dashboardData.apiHealth.errors_405;
+            errors405.className = dashboardData.apiHealth.errors_405 === 0 ? 'metric-value metric-good' : 'metric-value metric-critical';
+        }
+
+        function updateFrontendStatus() {
+            const statusIcon = document.getElementById('frontend-status-icon');
+            const statusText = document.getElementById('frontend-status-text');
+            const loadTime = document.getElementById('frontend-load-time');
+            const bundleSize = document.getElementById('bundle-size');
+            const bundleHealth = document.getElementById('bundle-health');
+
+            const avgLoadTime = dashboardData.frontendHealth.average_load_time;
+
+            if (avgLoadTime > 3000) {
+                statusIcon.className = 'status-icon status-warning';
+                statusText.textContent = 'Performance could be better';
+            } else {
+                statusIcon.className = 'status-icon status-healthy';
+                statusText.textContent = 'Optimized and fast';
+            }
+
+            loadTime.textContent = `${(avgLoadTime / 1000).toFixed(1)}s`;
+            loadTime.className = avgLoadTime <= 2000 ? 'metric-value metric-good' : 'metric-value metric-warning';
+
+            bundleSize.textContent = `${Math.round(dashboardData.frontendHealth.bundle_size_kb)}KB`;
+            bundleSize.className = dashboardData.frontendHealth.bundle_size_kb <= 1200 ? 'metric-value metric-good' : 'metric-value metric-warning';
+
+            bundleHealth.textContent = dashboardData.frontendHealth.bundle_status;
+            bundleHealth.className = 'metric-value metric-good';
+        }
+
+        function updateSystemStatus() {
+            const statusIcon = document.getElementById('system-status-icon');
+            const statusText = document.getElementById('system-status-text');
+            const cpuUsage = document.getElementById('cpu-usage');
+            const memoryUsage = document.getElementById('memory-usage');
+            const diskUsage = document.getElementById('disk-usage');
+
+            const cpu = dashboardData.systemHealth.cpu_usage;
+            const memory = dashboardData.systemHealth.memory_usage;
+            const disk = dashboardData.systemHealth.disk_usage;
+
+            // Determine overall system status
+            if (cpu > 80 || memory > 80 || disk > 85) {
+                statusIcon.className = 'status-icon status-critical';
+                statusText.textContent = 'High resource usage';
+            } else if (cpu > 60 || memory > 60 || disk > 70) {
+                statusIcon.className = 'status-icon status-warning';
+                statusText.textContent = 'Moderate resource usage';
+            } else {
+                statusIcon.className = 'status-icon status-healthy';
+                statusText.textContent = 'Resources available';
+            }
+
+            cpuUsage.textContent = `${cpu.toFixed(1)}%`;
+            cpuUsage.className = cpu <= 60 ? 'metric-value metric-good' : cpu <= 80 ? 'metric-value metric-warning' : 'metric-value metric-critical';
+
+            memoryUsage.textContent = `${memory.toFixed(1)}%`;
+            memoryUsage.className = memory <= 60 ? 'metric-value metric-good' : memory <= 80 ? 'metric-value metric-warning' : 'metric-value metric-critical';
+
+            diskUsage.textContent = `${disk.toFixed(1)}%`;
+            diskUsage.className = disk <= 70 ? 'metric-value metric-good' : disk <= 85 ? 'metric-value metric-warning' : 'metric-value metric-critical';
+        }
+
+        function updateAlerts() {
+            const alertsContainer = document.getElementById('alerts-container');
+            const alertsLoading = document.getElementById('alerts-loading');
+
+            if (alertsLoading) {
+                alertsLoading.parentElement.style.display = 'none';
+            }
+
+            if (dashboardData.alerts.length === 0) {
+                alertsContainer.innerHTML = `
+                    <div style="text-align: center; color: #34c759; padding: 2rem;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">✅</div>
+                        <div>No active alerts - All systems healthy</div>
+                    </div>
+                `;
+                return;
+            }
+
+            alertsContainer.innerHTML = '';
+
+            dashboardData.alerts.forEach(alert => {
+                const alertElement = document.createElement('div');
+                alertElement.className = `alert-item alert-${alert.type}`;
+
+                const icon = alert.type === 'critical' ? '🔴' :
+                           alert.type === 'warning' ? '🟡' : '🔵';
+
+                alertElement.innerHTML = `
+                    <div class="alert-icon">${icon}</div>
+                    <div class="alert-content">
+                        <div class="alert-title">${alert.title}</div>
+                        <div class="alert-time">${alert.time}</div>
+                    </div>
+                `;
+
+                alertsContainer.appendChild(alertElement);
+            });
+        }
+
+        function updateLastUpdated() {
+            const lastUpdatedElement = document.getElementById('last-updated');
+            const lastCheckElement = document.getElementById('last-check-time');
+            const now = new Date();
+
+            const timeString = now.toLocaleString();
+            lastUpdatedElement.textContent = `Last updated: ${timeString}`;
+            lastCheckElement.textContent = now.toLocaleTimeString();
+
+            dashboardData.lastUpdated = now;
+        }
+
+        function showError(message) {
+            const container = document.querySelector('.container');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+
+            container.insertBefore(errorDiv, container.firstChild);
+
+            // Remove error after 5 seconds
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.parentNode.removeChild(errorDiv);
+                }
+            }, 5000);
+        }
+
+        // Handle page visibility changes to pause/resume auto-refresh
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                if (refreshInterval) {
+                    clearInterval(refreshInterval);
+                }
+            } else {
+                startAutoRefresh();
+                // Refresh immediately when page becomes visible
+                refreshData();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+{
+  "timestamp": "2025-06-27T05:56:00.975314",
+  "total_endpoints": 5,
+  "results": [
+    {
+      "endpoint": "/health",
+      "method": "GET",
+      "status_code": 200,
+      "response_time": 677.1957499440759,
+      "success": true,
+      "error_message": null,
+      "is_405_error": false,
+      "timestamp": "2025-06-27T05:56:00.284119"
+    },
+    {
+      "endpoint": "/",
+      "method": "GET",
+      "status_code": 200,
+      "response_time": 152.15037495363504,
+      "success": true,
+      "error_message": null,
+      "is_405_error": false,
+      "timestamp": "2025-06-27T05:56:00.289190"
+    },
+    {
+      "endpoint": "/docs",
+      "method": "GET",
+      "status_code": 200,
+      "response_time": 672.7517918916419,
+      "success": true,
+      "error_message": null,
+      "is_405_error": false,
+      "timestamp": "2025-06-27T05:56:00.289348"
+    },
+    {
+      "endpoint": "/openapi.json",
+      "method": "GET",
+      "status_code": 200,
+      "response_time": 681.7676669452339,
+      "success": true,
+      "error_message": null,
+      "is_405_error": false,
+      "timestamp": "2025-06-27T05:56:00.289384"
+    },
+    {
+      "endpoint": "/api/v1/auth/login",
+      "method": "POST",
+      "status_code": 401,
+      "response_time": 672.8013750398532,
+      "success": false,
+      "error_message": "Unexpected status code 401, expected one of [200, 400, 422]",
+      "is_405_error": false,
+      "timestamp": "2025-06-27T05:56:00.289416"
+    }
+  ],
+  "analysis": {
+    "summary": {
+      "total_endpoints": 5,
+      "successful": 4,
+      "failed": 1,
+      "success_rate": 80.0,
+      "method_not_allowed_count": 0,
+      "average_response_time": 545.9663959336467
+    },
+    "failure_analysis": {
+      "other_error": [
+        {
+          "endpoint": "/api/v1/auth/login",
+          "method": "POST",
+          "status_code": 401,
+          "error": "Unexpected status code 401, expected one of [200, 400, 422]"
+        }
+      ]
+    },
+    "slow_endpoints": [],
+    "critical_issues": {
+      "has_405_errors": false,
+      "high_failure_rate": false,
+      "slow_responses": false
+    }
+  }
+}

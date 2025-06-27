@@ -15,6 +15,9 @@ import type { Service } from '@/lib/api/services'
 import type { BarberProfile } from '@/lib/api/barbers'
 import { useTheme } from '@/contexts/ThemeContext'
 import ThemeSelector from '@/components/ThemeSelector'
+import HealthCheck from '@/components/HealthCheck'
+import AuthStatusBanner from '@/components/AuthStatusBanner'
+import { useAuth } from '@/components/AuthProvider'
 import { CalendarIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 
 // Import new systems - temporarily commented out
@@ -43,6 +46,7 @@ const mapAppointmentStatus = (status: string): CalendarAppointment['status'] => 
 
 export default function CalendarPage() {
   const router = useRouter()
+  const { isDemoMode, authError, backendAvailable, enableDemoMode, clearAuthError } = useAuth()
   const [mounted, setMounted] = useState(false)
   const [activeTab, setActiveTab] = useState<'calendar' | 'recurring'>('calendar')
   const [selectedDate, setSelectedDate] = useState(new Date())
@@ -94,21 +98,19 @@ export default function CalendarPage() {
     }
   })
 
-  // Check if we're in demo mode
-  const [isDemoMode, setIsDemoMode] = useState(false)
-
+  // Demo mode is now managed by AuthProvider
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const demoMode = window.location.search.includes('demo=true') ||
-                     sessionStorage.getItem('demo_mode') === 'true' ||
-                     window.location.pathname.includes('/app/')
-      setIsDemoMode(demoMode)
-      console.log('📱 Calendar page demo mode check:', demoMode)
+      // Check URL parameters for demo mode
+      const urlDemoMode = window.location.search.includes('demo=true') ||
+                         window.location.pathname.includes('/app/')
 
-      // If backend is not available, enable demo mode
-      if (demoMode) {
-        sessionStorage.setItem('demo_mode', 'true')
+      if (urlDemoMode && !isDemoMode) {
+        console.log('📱 Calendar page detected demo mode in URL')
+        enableDemoMode('Demo mode requested via URL')
       }
+
+      console.log('📱 Calendar page demo mode status:', isDemoMode)
     }
   }, [])
 
@@ -473,6 +475,9 @@ export default function CalendarPage() {
       backgroundColor: colors.background
     }}>
       <div className="p-4 sm:p-6 lg:p-8">
+        {/* Authentication Status Banner */}
+        <AuthStatusBanner />
+
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

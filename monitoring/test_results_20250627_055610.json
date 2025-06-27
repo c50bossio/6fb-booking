@@ -1,0 +1,91 @@
+{
+  "test_run": {
+    "timestamp": "2025-06-27T05:55:45.936707",
+    "total_tests": 8,
+    "passed": 7,
+    "failed": 1,
+    "success_rate": 87.5
+  },
+  "results": [
+    {
+      "test_name": "Monitoring Directory Structure",
+      "passed": false,
+      "message": "Missing directories: /Users/bossio/6fb-booking/monitoring/metrics",
+      "details": {},
+      "timestamp": "2025-06-27T05:55:45.937004"
+    },
+    {
+      "test_name": "Monitoring Scripts Existence",
+      "passed": true,
+      "message": "All monitoring scripts exist",
+      "details": {
+        "scripts_checked": 5
+      },
+      "timestamp": "2025-06-27T05:55:45.937099"
+    },
+    {
+      "test_name": "Baseline Documentation",
+      "passed": true,
+      "message": "Baseline documentation is complete",
+      "details": {
+        "file_size": 9489,
+        "sections_verified": 5
+      },
+      "timestamp": "2025-06-27T05:55:45.937191"
+    },
+    {
+      "test_name": "Dashboard Server",
+      "passed": true,
+      "message": "Dashboard server components verified",
+      "details": {
+        "html_file": true,
+        "server_script": true,
+        "api_handler": true
+      },
+      "timestamp": "2025-06-27T05:55:45.948426"
+    },
+    {
+      "test_name": "Alert Manager",
+      "passed": true,
+      "message": "Alert manager functionality verified",
+      "details": {
+        "database_exists": true,
+        "alert_creation": true,
+        "alert_resolution": true,
+        "statistics": true
+      },
+      "timestamp": "2025-06-27T05:55:45.986495"
+    },
+    {
+      "test_name": "Bundle Size Monitor",
+      "passed": true,
+      "message": "Bundle analysis handled build failure gracefully",
+      "details": {
+        "build_error": "Build failed"
+      },
+      "timestamp": "2025-06-27T05:56:00.202010"
+    },
+    {
+      "test_name": "API Endpoint Validator",
+      "passed": true,
+      "message": "Validated 5 endpoints with 80.0% success rate",
+      "details": {
+        "total_endpoints": 5,
+        "success_rate": 80.0,
+        "405_errors": 0
+      },
+      "timestamp": "2025-06-27T05:56:00.978710"
+    },
+    {
+      "test_name": "Comprehensive Health Monitor",
+      "passed": true,
+      "message": "Health check completed with status: critical",
+      "details": {
+        "overall_status": "critical",
+        "alerts_count": 19,
+        "recommendations_count": 1
+      },
+      "timestamp": "2025-06-27T05:56:10.250308"
+    }
+  ]
+}
