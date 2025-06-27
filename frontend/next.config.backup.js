@@ -28,11 +28,11 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'bookbarber.com',
+        hostname: 'bookedbarber.com',
       },
       {
         protocol: 'https',
-        hostname: '*.bookbarber.com',
+        hostname: '*.bookedbarber.com',
       },
     ],
   },

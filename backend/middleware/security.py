@@ -37,7 +37,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
                 "script-src 'self' https://js.stripe.com",
                 "style-src 'self' https://fonts.googleapis.com",
                 "font-src 'self' https://fonts.gstatic.com",
-                "img-src 'self' data: https://bookbarber.com https://app.bookbarber.com",
+                "img-src 'self' data: https://bookedbarber.com https://app.bookedbarber.com",
                 "connect-src 'self' https://api.stripe.com https://m.stripe.network https://*.sentry.io",
                 "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
                 "object-src 'none'",

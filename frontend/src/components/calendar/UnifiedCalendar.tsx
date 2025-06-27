@@ -2,11 +2,75 @@
 
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MagnifyingGlassIcon, FunnelIcon, ArrowDownTrayIcon, PrinterIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import PremiumCalendar, { CalendarAppointment, CalendarProps } from './PremiumCalendar'
+import {
+  MagnifyingGlassIcon,
+  FunnelIcon,
+  ArrowDownTrayIcon,
+  PrinterIcon,
+  XMarkIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CalendarDaysIcon,
+  ClockIcon,
+  UserIcon,
+  CurrencyDollarIcon,
+  PlusIcon
+} from '@heroicons/react/24/outline'
+import {
+  CalendarIcon,
+  ViewColumnsIcon,
+  Squares2X2Icon
+} from '@heroicons/react/24/solid'
 import AppointmentMoveConfirmation from '../modals/AppointmentMoveConfirmation'
 import ConflictResolutionModal, { ConflictResolution, TimeSlotSuggestion, ConflictingAppointment } from '../modals/ConflictResolutionModal'
 import ConflictResolutionService from './ConflictResolutionService'
+import { useTheme } from '@/contexts/ThemeContext'
+
+// Types for appointments and calendar
+export interface CalendarAppointment {
+  id: string
+  title: string
+  client: string
+  clientId?: number
+  barber: string
+  barberId: number
+  startTime: string
+  endTime: string
+  service: string
+  serviceId?: number
+  price: number
+  status: 'confirmed' | 'pending' | 'completed' | 'cancelled' | 'no_show'
+  date: string
+  notes?: string
+  duration: number // in minutes
+  clientPhone?: string
+  clientEmail?: string
+  __dragProps?: any // For drag and drop functionality
+  isGoogleEvent?: boolean // Google Calendar event indicator
+  __eventColors?: { // Custom event colors
+    color?: string
+    backgroundColor?: string
+    borderColor?: string
+    textColor?: string
+  }
+}
+
+export interface CalendarProps {
+  appointments?: CalendarAppointment[]
+  onAppointmentClick?: (appointment: CalendarAppointment) => void
+  onTimeSlotClick?: (date: string, time: string) => void
+  onCreateAppointment?: (date: string, time: string) => void
+  onUpdateAppointment?: (appointment: CalendarAppointment) => void
+  onDeleteAppointment?: (appointmentId: string) => void
+  initialView?: 'month' | 'week' | 'day'
+  initialDate?: Date
+  workingHours?: { start: string; end: string }
+  timeSlotDuration?: number // in minutes
+  barbers?: Array<{ id: number; name: string; color?: string }>
+  services?: Array<{ id: number; name: string; duration: number; price: number }>
+  isLoading?: boolean
+  darkMode?: boolean // Deprecated - use theme context instead
+}
 
 interface DragDropData {
   appointmentId: string
@@ -77,12 +141,31 @@ interface UnifiedCalendarProps extends CalendarProps {
   enableStatistics?: boolean
 }
 
+// Default working hours and time slots
+const DEFAULT_WORKING_HOURS = { start: '08:00', end: '20:00' }
+const DEFAULT_TIME_SLOT_DURATION = 30
+
 // Helper function to format date as YYYY-MM-DD without timezone conversion
 const formatDateString = (date: Date): string => {
   const year = date.getFullYear()
   const month = (date.getMonth() + 1).toString().padStart(2, '0')
   const day = date.getDate().toString().padStart(2, '0')
   return `${year}-${month}-${day}`
+}
+
+// Generate time slots based on working hours and duration
+const generateTimeSlots = (start: string, end: string, duration: number = 30): string[] => {
+  const slots: string[] = []
+  const startTime = new Date(`2024-01-01 ${start}`)
+  const endTime = new Date(`2024-01-01 ${end}`)
+
+  let current = new Date(startTime)
+  while (current < endTime) {
+    slots.push(current.toTimeString().slice(0, 5))
+    current.setMinutes(current.getMinutes() + duration)
+  }
+
+  return slots
 }
 
 // Generate mock appointments for demo purposes
@@ -170,8 +253,21 @@ export default function UnifiedCalendar({
   enableExport = true,
   enableKeyboardNavigation = true,
   enableStatistics = false,
+  // Calendar view props
+  initialView = 'week',
+  initialDate,
+  timeSlotDuration = DEFAULT_TIME_SLOT_DURATION,
   ...calendarProps
 }: UnifiedCalendarProps) {
+  // Theme context
+  const { theme, getThemeColors } = useTheme()
+  const colors = getThemeColors()
+
+  // Calendar navigation state
+  const [currentDate, setCurrentDate] = useState(initialDate || new Date())
+  const [selectedView, setSelectedView] = useState<'month' | 'week' | 'day'>(initialView)
+  const [selectedDate, setSelectedDate] = useState(currentDate)
+  const [hoveredTimeSlot, setHoveredTimeSlot] = useState<{ date: string; time: string } | null>(null)
   // Prevent SSR issues by checking for client-side rendering
   const [mounted, setMounted] = useState(false)
 
@@ -535,18 +631,39 @@ export default function UnifiedCalendar({
     return Promise.resolve()
   }, [])
 
-  // Enhance appointments with drag & drop handlers
+  // Enhance appointments with drag & drop handlers and custom styling
   const enhancedAppointments = useMemo(() => {
-    if (!enableDragDrop) return filteredAppointments
+    console.log('🔧 Enhancing appointments, enableDragDrop:', enableDragDrop)
 
-    return filteredAppointments.map(appointment => ({
-      ...appointment,
-      __dragProps: {
+    const enhanced = filteredAppointments.map(appointment => {
+      // Apply Google Calendar event colors if present
+      let customStyle = {}
+      if (appointment.__eventColors) {
+        customStyle = {
+          backgroundColor: appointment.__eventColors.backgroundColor,
+          borderColor: appointment.__eventColors.borderColor,
+          color: appointment.__eventColors.textColor,
+          borderWidth: '2px',
+          borderStyle: 'solid'
+        }
+      }
+
+      // Only add drag props if drag & drop is enabled
+      if (!enableDragDrop) {
+        return {
+          ...appointment,
+          __customStyle: customStyle
+        }
+      }
+
+      return {
+        ...appointment,
+        __customStyle: customStyle,
+        __dragProps: {
         draggable: true,
         style: { cursor: 'move' },
         onMouseDown: (e: React.MouseEvent) => {
-          // Prevent text selection during drag
-          e.preventDefault()
+          // Log mouse down for debugging
           console.log('🔥 Mouse down on appointment:', appointment.id)
         },
         onDragStart: (e: React.DragEvent) => {
@@ -606,7 +723,10 @@ export default function UnifiedCalendar({
           }
         }
       }
-    }))
+    })
+
+    console.log('🔧 Enhanced appointments sample:', enhanced[0]?.__dragProps ? 'Has __dragProps' : 'No __dragProps')
+    return enhanced
   }, [filteredAppointments, enableDragDrop])
 
   // Pass through click handlers to PremiumCalendar with proper event handling
@@ -748,6 +868,118 @@ export default function UnifiedCalendar({
     }
   }, [pendingMove, onAppointmentMove, handleDemoAppointmentMove])
 
+  // Calendar helper functions
+  const timeSlots = useMemo(() => generateTimeSlots(workingHours.start, workingHours.end, timeSlotDuration), [workingHours, timeSlotDuration])
+
+  // Get week dates for week view
+  const weekDates = useMemo(() => {
+    const dates = []
+    const startOfWeek = new Date(currentDate)
+    const day = startOfWeek.getDay()
+    startOfWeek.setDate(currentDate.getDate() - day)
+
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(startOfWeek)
+      date.setDate(startOfWeek.getDate() + i)
+      dates.push(date)
+    }
+    return dates
+  }, [currentDate])
+
+  // Get appointments for a specific date
+  const getAppointmentsForDate = useCallback((date: Date) => {
+    const dateStr = formatDateString(date)
+    return enhancedAppointments.filter(apt => apt.date === dateStr)
+  }, [enhancedAppointments])
+
+  // Handle navigation
+  const navigatePeriod = useCallback((direction: 'prev' | 'next') => {
+    const newDate = new Date(currentDate)
+
+    if (selectedView === 'month') {
+      newDate.setMonth(currentDate.getMonth() + (direction === 'next' ? 1 : -1))
+    } else if (selectedView === 'week') {
+      newDate.setDate(currentDate.getDate() + (direction === 'next' ? 7 : -7))
+    } else {
+      newDate.setDate(currentDate.getDate() + (direction === 'next' ? 1 : -1))
+    }
+
+    setCurrentDate(newDate)
+  }, [currentDate, selectedView])
+
+  // Get current period text for header
+  const getCurrentPeriodText = useCallback(() => {
+    const options: Intl.DateTimeFormatOptions = selectedView === 'month'
+      ? { year: 'numeric', month: 'long' }
+      : selectedView === 'week'
+      ? { month: 'short', day: 'numeric' }
+      : { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }
+
+    return currentDate.toLocaleDateString('en-US', options)
+  }, [currentDate, selectedView])
+
+  // Check if a date is today
+  const isToday = useCallback((date: Date) => {
+    const today = new Date()
+    return date.toDateString() === today.toDateString()
+  }, [])
+
+  // Appointment styling based on status
+  const getAppointmentStyle = useCallback((status: CalendarAppointment['status'], barberId?: number) => {
+    const baseClasses = 'text-white shadow-lg border border-white/20 backdrop-blur-sm'
+
+    switch (status) {
+      case 'confirmed':
+        return `${baseClasses} bg-gradient-to-br from-violet-500 to-purple-600`
+      case 'pending':
+        return `${baseClasses} bg-gradient-to-br from-amber-500 to-orange-600`
+      case 'completed':
+        return `${baseClasses} bg-gradient-to-br from-green-500 to-emerald-600`
+      case 'cancelled':
+        return `${baseClasses} bg-gradient-to-br from-gray-500 to-gray-600`
+      case 'no_show':
+        return `${baseClasses} bg-gradient-to-br from-red-500 to-red-600`
+      default:
+        return `${baseClasses} bg-gradient-to-br from-blue-500 to-indigo-600`
+    }
+  }, [])
+
+  // Status badge styling
+  const getStatusBadge = useCallback((status: CalendarAppointment['status']) => {
+    switch (status) {
+      case 'confirmed':
+        return 'bg-violet-100 text-violet-800 border-violet-200'
+      case 'pending':
+        return 'bg-amber-100 text-amber-800 border-amber-200'
+      case 'completed':
+        return 'bg-green-100 text-green-800 border-green-200'
+      case 'cancelled':
+        return 'bg-gray-100 text-gray-800 border-gray-200'
+      case 'no_show':
+        return 'bg-red-100 text-red-800 border-red-200'
+      default:
+        return 'bg-blue-100 text-blue-800 border-blue-200'
+    }
+  }, [])
+
+  // Handle time slot hover for drag feedback
+  const handleTimeSlotHover = useCallback((date: Date, time: string, isEntering: boolean) => {
+    if (isEntering && dragState.isDragging) {
+      setHoveredTimeSlot({ date: formatDateString(date), time })
+    } else if (!isEntering) {
+      setHoveredTimeSlot(null)
+    }
+  }, [dragState.isDragging])
+
+  // Handle time slot click
+  const handleTimeSlotClick = useCallback((date: Date, time: string) => {
+    const dateStr = formatDateString(date)
+    console.log('🖱️ Time slot clicked in UnifiedCalendar:', dateStr, time)
+    if (onTimeSlotClick) {
+      onTimeSlotClick(dateStr, time)
+    }
+  }, [onTimeSlotClick])
+
   // Early return for SSR to prevent initialization errors
   if (!mounted) {
     return (
@@ -768,7 +1000,10 @@ export default function UnifiedCalendar({
     >
       {/* Search and Filter Bar */}
       {enableSearch && (
-        <div className="bg-gray-800 border-b border-gray-700 p-4 space-y-4">
+        <div className="border-b p-4 space-y-4" style={{
+          backgroundColor: colors.cardBackground,
+          borderColor: colors.border
+        }}>
           {/* Search and Filter Toggle */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4 flex-1">
@@ -780,16 +1015,36 @@ export default function UnifiedCalendar({
                   placeholder="Search appointments..."
                   value={searchFilters.searchTerm}
                   onChange={(e) => setSearchFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
-                  className="w-full pl-10 pr-4 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                  style={{
+                    backgroundColor: theme === 'light' || theme === 'soft-light' ? '#ffffff' : '#374151',
+                    borderColor: colors.border,
+                    color: colors.textPrimary,
+                    border: `1px solid ${colors.border}`
+                  }}
                 />
               </div>
 
               {/* Filter Toggle Button */}
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className={`px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors ${
-                  showFilters ? 'bg-violet-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                }`}
+                className="px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                style={{
+                  backgroundColor: showFilters
+                    ? (theme === 'soft-light' ? '#7c9885' : '#8b5cf6')
+                    : (theme === 'light' || theme === 'soft-light' ? '#e5e7eb' : '#374151'),
+                  color: showFilters ? '#ffffff' : colors.textSecondary
+                }}
+                onMouseEnter={(e) => {
+                  if (!showFilters) {
+                    e.currentTarget.style.backgroundColor = theme === 'light' || theme === 'soft-light' ? '#d1d5db' : '#4b5563'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!showFilters) {
+                    e.currentTarget.style.backgroundColor = theme === 'light' || theme === 'soft-light' ? '#e5e7eb' : '#374151'
+                  }
+                }}
               >
                 <FunnelIcon className="h-5 w-5" />
                 <span>Filters</span>
@@ -801,7 +1056,17 @@ export default function UnifiedCalendar({
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => handleExport('csv')}
-                  className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg flex items-center space-x-2 transition-colors"
+                  className="px-3 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                  style={{
+                    backgroundColor: theme === 'light' || theme === 'soft-light' ? '#e5e7eb' : '#374151',
+                    color: colors.textSecondary
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = theme === 'light' || theme === 'soft-light' ? '#d1d5db' : '#4b5563'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = theme === 'light' || theme === 'soft-light' ? '#e5e7eb' : '#374151'
+                  }}
                   title="Export as CSV"
                 >
                   <ArrowDownTrayIcon className="h-4 w-4" />
@@ -809,7 +1074,17 @@ export default function UnifiedCalendar({
                 </button>
                 <button
                   onClick={handlePrint}
-                  className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg flex items-center space-x-2 transition-colors"
+                  className="px-3 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                  style={{
+                    backgroundColor: theme === 'light' || theme === 'soft-light' ? '#e5e7eb' : '#374151',
+                    color: colors.textSecondary
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = theme === 'light' || theme === 'soft-light' ? '#d1d5db' : '#4b5563'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = theme === 'light' || theme === 'soft-light' ? '#e5e7eb' : '#374151'
+                  }}
                   title="Print Calendar"
                 >
                   <PrinterIcon className="h-4 w-4" />
@@ -831,7 +1106,13 @@ export default function UnifiedCalendar({
               <select
                 value={searchFilters.selectedBarber}
                 onChange={(e) => setSearchFilters(prev => ({ ...prev, selectedBarber: e.target.value }))}
-                className="bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                style={{
+                  backgroundColor: theme === 'light' || theme === 'soft-light' ? '#ffffff' : '#374151',
+                  borderColor: colors.border,
+                  color: colors.textPrimary,
+                  border: `1px solid ${colors.border}`
+                }}
               >
                 <option value="">All Barbers</option>
                 {filterOptions.barbers.map(barber => (
@@ -843,7 +1124,13 @@ export default function UnifiedCalendar({
               <select
                 value={searchFilters.selectedStatus}
                 onChange={(e) => setSearchFilters(prev => ({ ...prev, selectedStatus: e.target.value }))}
-                className="bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                style={{
+                  backgroundColor: theme === 'light' || theme === 'soft-light' ? '#ffffff' : '#374151',
+                  borderColor: colors.border,
+                  color: colors.textPrimary,
+                  border: `1px solid ${colors.border}`
+                }}
               >
                 <option value="">All Statuses</option>
                 {filterOptions.statuses.map(status => (
@@ -855,7 +1142,13 @@ export default function UnifiedCalendar({
               <select
                 value={searchFilters.selectedService}
                 onChange={(e) => setSearchFilters(prev => ({ ...prev, selectedService: e.target.value }))}
-                className="bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                style={{
+                  backgroundColor: theme === 'light' || theme === 'soft-light' ? '#ffffff' : '#374151',
+                  borderColor: colors.border,
+                  color: colors.textPrimary,
+                  border: `1px solid ${colors.border}`
+                }}
               >
                 <option value="">All Services</option>
                 {filterOptions.services.map(service => (
@@ -866,7 +1159,16 @@ export default function UnifiedCalendar({
               {/* Clear Filters Button */}
               <button
                 onClick={clearFilters}
-                className="flex items-center justify-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                className="flex items-center justify-center space-x-2 px-4 py-2 text-white rounded-lg transition-colors"
+                style={{
+                  backgroundColor: '#ef4444'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#dc2626'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#ef4444'
+                }}
               >
                 <XMarkIcon className="h-4 w-4" />
                 <span>Clear</span>
@@ -878,14 +1180,24 @@ export default function UnifiedCalendar({
 
       {/* Demo Mode Indicator */}
       {true && (
-        <div className="bg-violet-900/20 border border-violet-500/30 rounded-lg p-4 mb-4">
+        <div className="rounded-lg p-4 mb-4" style={{
+          backgroundColor: theme === 'soft-light' ? 'rgba(124, 152, 133, 0.2)' : 'rgba(139, 92, 246, 0.2)',
+          borderColor: theme === 'soft-light' ? 'rgba(124, 152, 133, 0.3)' : 'rgba(139, 92, 246, 0.3)',
+          border: '1px solid'
+        }}>
           <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-violet-400 rounded-full animate-pulse"></div>
-            <span className="text-violet-300 text-sm font-medium">
+            <div className="w-2 h-2 rounded-full animate-pulse" style={{
+              backgroundColor: theme === 'soft-light' ? '#7c9885' : '#a78bfa'
+            }}></div>
+            <span className="text-sm font-medium" style={{
+              color: theme === 'soft-light' ? '#7c9885' : '#a78bfa'
+            }}>
               Demo Mode: Showing sample appointments
             </span>
           </div>
-          <p className="text-violet-400/80 text-xs mt-1">
+          <p className="text-xs mt-1" style={{
+            color: theme === 'soft-light' ? 'rgba(124, 152, 133, 0.8)' : 'rgba(167, 139, 250, 0.8)'
+          }}>
             Try dragging appointments to test the drag & drop functionality
           </p>
         </div>
@@ -893,7 +1205,10 @@ export default function UnifiedCalendar({
 
       {/* Debug Information */}
       {false && (
-        <div className="bg-gray-800 p-2 rounded text-xs text-gray-300 mb-4">
+        <div className="p-2 rounded text-xs mb-4" style={{
+          backgroundColor: colors.cardBackground,
+          color: colors.textSecondary
+        }}>
           <strong>Debug Info:</strong> Demo Mode: {isDemoMode ? 'ON' : 'OFF'} |
           Effective Appointments: {effectiveAppointments.length} |
           Filtered Appointments: {filteredAppointments.length} |
@@ -904,7 +1219,7 @@ export default function UnifiedCalendar({
             <div className="mt-1">
               <strong>Sample:</strong> {filteredAppointments[0].client} - {filteredAppointments[0].service} on {filteredAppointments[0].date}
               {enhancedAppointments.length > 0 && enhancedAppointments[0].__dragProps && (
-                <span className="ml-2 text-green-400">✓ Drag Props</span>
+                <span className="ml-2" style={{ color: '#22c55e' }}>✓ Drag Props</span>
               )}
             </div>
           )}
@@ -954,24 +1269,495 @@ export default function UnifiedCalendar({
           }
         }}
       >
-        <PremiumCalendar
-          {...calendarProps}
-          appointments={enhancedAppointments}
-          onAppointmentClick={(appointment) => {
-            if (typeof window !== 'undefined') {
-              console.log('🖱️ UnifiedCalendar received appointment click:', appointment.id)
-              onAppointmentClick?.(appointment)
-            }
-          }}
-          onTimeSlotClick={(date, time) => {
-            if (typeof window !== 'undefined') {
-              console.log('🖱️ UnifiedCalendar received time slot click:', date, time)
-              onTimeSlotClick?.(date, time)
-            }
-          }}
-          workingHours={workingHours}
-          initialView={calendarProps.initialView || 'week'}
-        />
+        {/* Inline Calendar Implementation with Drag & Drop */}
+        <div className="rounded-lg border overflow-hidden" style={{
+          backgroundColor: colors.cardBackground,
+          borderColor: colors.border
+        }}>
+          {/* Calendar Header */}
+          <div className="border-b p-4" style={{
+            backgroundColor: theme === 'light' || theme === 'soft-light' ? colors.background : colors.cardBackground,
+            borderColor: colors.border
+          }}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <button
+                  onClick={() => navigatePeriod('prev')}
+                  className="p-2 rounded-lg transition-colors"
+                  style={{
+                    ':hover': {
+                      backgroundColor: theme === 'light' || theme === 'soft-light' ? '#e5e7eb' : '#374151'
+                    }
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme === 'light' || theme === 'soft-light' ? '#e5e7eb' : '#374151'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  <ChevronLeftIcon className="h-5 w-5" style={{ color: colors.textSecondary }} />
+                </button>
+                <h2 className="text-xl font-semibold" style={{ color: colors.textPrimary }}>
+                  {getCurrentPeriodText()}
+                </h2>
+                <button
+                  onClick={() => navigatePeriod('next')}
+                  className="p-2 rounded-lg transition-colors"
+                  style={{
+                    ':hover': {
+                      backgroundColor: theme === 'light' || theme === 'soft-light' ? '#e5e7eb' : '#374151'
+                    }
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme === 'light' || theme === 'soft-light' ? '#e5e7eb' : '#374151'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  <ChevronRightIcon className="h-5 w-5" style={{ color: colors.textSecondary }} />
+                </button>
+              </div>
+
+              {/* View Toggle */}
+              <div className="flex rounded-lg p-1" style={{
+                backgroundColor: theme === 'light' || theme === 'soft-light' ? '#e5e7eb' : '#4b5563'
+              }}>
+                {(['day', 'week', 'month'] as const).map((view) => (
+                  <button
+                    key={view}
+                    onClick={() => setSelectedView(view)}
+                    className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${
+                      selectedView === view
+                        ? 'text-white shadow-sm'
+                        : ''
+                    }`}
+                    style={{
+                      backgroundColor: selectedView === view
+                        ? (theme === 'soft-light' ? '#7c9885' : theme === 'charcoal' ? '#6b7280' : '#8b5cf6')
+                        : 'transparent',
+                      color: selectedView === view
+                        ? '#ffffff'
+                        : colors.textSecondary
+                    }}
+                    onMouseEnter={(e) => {
+                      if (selectedView !== view) {
+                        e.currentTarget.style.backgroundColor = theme === 'light' || theme === 'soft-light' ? '#d1d5db' : '#374151'
+                        e.currentTarget.style.color = colors.textPrimary
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (selectedView !== view) {
+                        e.currentTarget.style.backgroundColor = 'transparent'
+                        e.currentTarget.style.color = colors.textSecondary
+                      }
+                    }}
+                  >
+                    {view.charAt(0).toUpperCase() + view.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Calendar Content */}
+          <div className="calendar-view">
+            {selectedView === 'week' && (
+              <div className="flex flex-col">
+                {/* Week Header */}
+                <div className="grid grid-cols-8 border-b" style={{ borderColor: colors.border }}>
+                  <div className="p-3 text-center text-sm font-medium border-r" style={{
+                    color: colors.textSecondary,
+                    borderColor: colors.border
+                  }}>
+                    Time
+                  </div>
+                  {weekDates.map((date, index) => (
+                    <div
+                      key={index}
+                      className={`p-3 text-center border-r last:border-r-0`}
+                      style={{
+                        borderColor: colors.border,
+                        backgroundColor: isToday(date)
+                          ? (theme === 'soft-light' ? 'rgba(124, 152, 133, 0.2)' : 'rgba(139, 92, 246, 0.2)')
+                          : 'transparent',
+                        color: isToday(date)
+                          ? (theme === 'soft-light' ? '#7c9885' : '#a78bfa')
+                          : colors.textSecondary
+                      }}
+                    >
+                      <div className="text-xs font-medium">
+                        {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                      </div>
+                      <div className="text-lg font-bold" style={{
+                        color: isToday(date)
+                          ? (theme === 'soft-light' ? '#7c9885' : '#a78bfa')
+                          : colors.textPrimary
+                      }}>
+                        {date.getDate()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Time Slots Grid */}
+                <div className="flex-1 overflow-y-auto max-h-[600px]">
+                  {timeSlots.map((timeSlot) => (
+                    <div key={timeSlot} className="grid grid-cols-8 border-b min-h-[60px]" style={{
+                      borderColor: colors.border + '80'
+                    }}>
+                      {/* Time Column */}
+                      <div className="p-2 text-right text-sm border-r flex items-center justify-end" style={{
+                        color: colors.textSecondary,
+                        borderColor: colors.border,
+                        backgroundColor: theme === 'light' || theme === 'soft-light' ? colors.background : 'transparent'
+                      }}>
+                        {timeSlot}
+                      </div>
+
+                      {/* Day Columns */}
+                      {weekDates.map((date, dayIndex) => {
+                        const dateStr = formatDateString(date)
+                        const dayAppointments = getAppointmentsForDate(date).filter(
+                          apt => apt.startTime === timeSlot
+                        )
+                        if (dayAppointments.length > 0 && dayIndex === 0 && timeSlot === timeSlots[0]) {
+                          console.log('🔍 Day appointment check:', {
+                            id: dayAppointments[0].id,
+                            hasDragProps: !!dayAppointments[0].__dragProps,
+                            dragPropsKeys: dayAppointments[0].__dragProps ? Object.keys(dayAppointments[0].__dragProps) : []
+                          })
+                        }
+                        const isHovered = hoveredTimeSlot?.date === dateStr && hoveredTimeSlot?.time === timeSlot
+
+                        return (
+                          <div
+                            key={`${dateStr}-${timeSlot}`}
+                            data-time-slot
+                            data-date={dateStr}
+                            data-time={timeSlot}
+                            className={`relative border-r last:border-r-0 min-h-[60px] p-1 transition-all duration-200`}
+                            style={{
+                              borderColor: colors.border,
+                              backgroundColor: isHovered && dragState.isDragging
+                                ? (theme === 'soft-light' ? 'rgba(124, 152, 133, 0.2)' : 'rgba(139, 92, 246, 0.2)')
+                                : 'transparent',
+                              borderWidth: isHovered && dragState.isDragging ? '2px' : '1px',
+                              borderStyle: 'solid'
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!dragState.isDragging) {
+                                e.currentTarget.style.backgroundColor = theme === 'light' ? '#f3f4f6' : theme === 'soft-light' ? '#f0efea' : 'rgba(55, 65, 81, 0.3)'
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!dragState.isDragging || !isHovered) {
+                                e.currentTarget.style.backgroundColor = 'transparent'
+                              }
+                            }}
+                            onDragOver={(e) => {
+                              if (enableDragDrop) {
+                                e.preventDefault()
+                                e.dataTransfer.dropEffect = 'move'
+                                handleTimeSlotHover(date, timeSlot, true)
+                              }
+                            }}
+                            onDragLeave={(e) => {
+                              if (enableDragDrop) {
+                                // Only clear if we're actually leaving this element
+                                const rect = e.currentTarget.getBoundingClientRect()
+                                const x = e.clientX
+                                const y = e.clientY
+                                if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+                                  handleTimeSlotHover(date, timeSlot, false)
+                                }
+                              }
+                            }}
+                            onDrop={(e) => {
+                              if (enableDragDrop) {
+                                console.log('📦 Drop on time slot:', dateStr, timeSlot)
+                                handleTimeSlotDrop(e, dateStr, timeSlot)
+                                handleTimeSlotHover(date, timeSlot, false)
+                              }
+                            }}
+                            onClick={() => {
+                              console.log('🖱️ Time slot clicked:', dateStr, timeSlot)
+                              handleTimeSlotClick(date, timeSlot)
+                            }}
+                          >
+                            {/* Time Slot Click Area */}
+                            {dayAppointments.length === 0 && (
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                <PlusIcon className="h-4 w-4" style={{ color: colors.textSecondary }} />
+                              </div>
+                            )}
+
+                            {/* Appointments in this time slot */}
+                            {dayAppointments.map((appointment) => (
+                              <div
+                                key={appointment.id}
+                                className={`appointment-block relative w-full rounded-md p-2 text-xs text-white cursor-pointer select-none ${getAppointmentStyle(appointment.status, appointment.barberId)}`}
+                                style={appointment.__customStyle || {}}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  console.log('🖱️ Appointment clicked:', appointment.id, appointment.client)
+                                  handleAppointmentClickInternal(appointment)
+                                }}
+                                onMouseEnter={() => setHoveredAppointment(appointment.id)}
+                                onMouseLeave={() => setHoveredAppointment(null)}
+                                draggable={true}
+                                onDragStart={(e) => {
+                                  console.log('🎯 DIRECT onDragStart fired!', appointment.id)
+                                  e.stopPropagation()
+                                  e.dataTransfer.setData('text/plain', JSON.stringify({
+                                    appointmentId: appointment.id,
+                                    originalDate: appointment.date,
+                                    originalTime: appointment.startTime
+                                  }))
+                                  setDragState(prev => ({
+                                    ...prev,
+                                    isDragging: true,
+                                    draggedAppointment: appointment
+                                  }))
+                                }}
+                                onDragEnd={(e) => {
+                                  console.log('🎯 DIRECT onDragEnd fired!')
+                                  setDragState(prev => ({
+                                    ...prev,
+                                    isDragging: false,
+                                    draggedAppointment: null
+                                  }))
+                                }}
+                                style={appointment.__customStyle ? { ...appointment.__customStyle, cursor: 'move' } : { cursor: 'move' }}
+                              >
+                                <div className="font-medium truncate">{appointment.client}</div>
+                                <div className="text-xs opacity-90 truncate">{appointment.service}</div>
+                                <div className="text-xs opacity-75 mt-1 flex items-center space-x-2">
+                                  <span className="flex items-center">
+                                    <UserIcon className="h-3 w-3 mr-1" />
+                                    {appointment.barber.split(' ')[0]}
+                                  </span>
+                                  <span className="flex items-center">
+                                    <ClockIcon className="h-3 w-3 mr-1" />
+                                    {appointment.duration}m
+                                  </span>
+                                  <span className="flex items-center">
+                                    <CurrencyDollarIcon className="h-3 w-3 mr-1" />
+                                    {appointment.price}
+                                  </span>
+                                </div>
+
+                                {/* Status Badge */}
+                                <div className={`absolute top-1 right-1 px-1 py-0.5 rounded text-xs font-medium border ${getStatusBadge(appointment.status)}`}>
+                                  {appointment.status}
+                                </div>
+
+                                {/* Google Calendar Indicator */}
+                                {appointment.isGoogleEvent && (
+                                  <div className="absolute top-1 left-1" title="Google Calendar Event">
+                                    <CalendarIconOutline className="h-3 w-3 text-white/80" />
+                                  </div>
+                                )}
+
+                                {/* Drag Handle Indicator */}
+                                {enableDragDrop && hoveredAppointment === appointment.id && (
+                                  <div className="absolute bottom-1 right-1 text-white/70">
+                                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                      <path d="M3 7a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 13a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"></path>
+                                    </svg>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {selectedView === 'day' && (
+              <div className="flex flex-col">
+                {/* Day Header */}
+                <div className="border-b p-4 text-center" style={{ borderColor: colors.border }}>
+                  <h3 className="text-lg font-semibold" style={{ color: colors.textPrimary }}>
+                    {currentDate.toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </h3>
+                </div>
+
+                {/* Day Time Slots */}
+                <div className="flex-1 overflow-y-auto max-h-[600px]">
+                  {timeSlots.map((timeSlot) => {
+                    const dateStr = formatDateString(currentDate)
+                    const slotAppointments = getAppointmentsForDate(currentDate).filter(
+                      apt => apt.startTime === timeSlot
+                    )
+                    const isHovered = hoveredTimeSlot?.date === dateStr && hoveredTimeSlot?.time === timeSlot
+
+                    return (
+                      <div
+                        key={timeSlot}
+                        className="flex border-b min-h-[80px]"
+                        style={{ borderColor: colors.border + '80' }}
+                      >
+                        {/* Time Column */}
+                        <div className="w-20 p-3 text-right text-sm border-r flex items-center justify-end" style={{
+                          color: colors.textSecondary,
+                          borderColor: colors.border,
+                          backgroundColor: theme === 'light' || theme === 'soft-light' ? colors.background : 'transparent'
+                        }}>
+                          {timeSlot}
+                        </div>
+
+                        {/* Appointment Area */}
+                        <div
+                          data-time-slot
+                          data-date={dateStr}
+                          data-time={timeSlot}
+                          className="flex-1 p-2 transition-all duration-200"
+                          style={{
+                            backgroundColor: isHovered && dragState.isDragging
+                              ? (theme === 'soft-light' ? 'rgba(124, 152, 133, 0.2)' : 'rgba(139, 92, 246, 0.2)')
+                              : 'transparent'
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!dragState.isDragging) {
+                              e.currentTarget.style.backgroundColor = theme === 'light' ? '#f3f4f6' : theme === 'soft-light' ? '#f0efea' : 'rgba(55, 65, 81, 0.3)'
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!dragState.isDragging || !isHovered) {
+                              e.currentTarget.style.backgroundColor = 'transparent'
+                            }
+                          }}
+                          onDragOver={(e) => {
+                            if (enableDragDrop) {
+                              e.preventDefault()
+                              e.dataTransfer.dropEffect = 'move'
+                              handleTimeSlotHover(currentDate, timeSlot, true)
+                            }
+                          }}
+                          onDragLeave={(e) => {
+                            if (enableDragDrop) {
+                              const rect = e.currentTarget.getBoundingClientRect()
+                              const x = e.clientX
+                              const y = e.clientY
+                              if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+                                handleTimeSlotHover(currentDate, timeSlot, false)
+                              }
+                            }
+                          }}
+                          onDrop={(e) => {
+                            if (enableDragDrop) {
+                              console.log('📦 Drop on day time slot:', dateStr, timeSlot)
+                              handleTimeSlotDrop(e, dateStr, timeSlot)
+                              handleTimeSlotHover(currentDate, timeSlot, false)
+                            }
+                          }}
+                          onClick={() => {
+                            console.log('🖱️ Day time slot clicked:', dateStr, timeSlot)
+                            handleTimeSlotClick(currentDate, timeSlot)
+                          }}
+                        >
+                          {slotAppointments.length === 0 && (
+                            <div className="flex items-center justify-center h-full opacity-0 hover:opacity-100 transition-opacity">
+                              <PlusIcon className="h-5 w-5" style={{ color: colors.textSecondary }} />
+                            </div>
+                          )}
+
+                          {slotAppointments.map((appointment) => (
+                            <div
+                              key={appointment.id}
+                              className={`appointment-block mb-2 rounded-lg p-3 text-sm text-white cursor-pointer select-none ${getAppointmentStyle(appointment.status, appointment.barberId)}`}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                console.log('🖱️ Day appointment clicked:', appointment.id, appointment.client)
+                                handleAppointmentClickInternal(appointment)
+                              }}
+                              onMouseEnter={() => setHoveredAppointment(appointment.id)}
+                              onMouseLeave={() => setHoveredAppointment(null)}
+                              draggable={true}
+                              onDragStart={(e) => {
+                                console.log('🎯 DIRECT DAY onDragStart fired!', appointment.id)
+                                e.stopPropagation()
+                                e.dataTransfer.setData('text/plain', JSON.stringify({
+                                  appointmentId: appointment.id,
+                                  originalDate: appointment.date,
+                                  originalTime: appointment.startTime
+                                }))
+                                setDragState(prev => ({
+                                  ...prev,
+                                  isDragging: true,
+                                  draggedAppointment: appointment
+                                }))
+                              }}
+                              onDragEnd={(e) => {
+                                console.log('🎯 DIRECT DAY onDragEnd fired!')
+                                setDragState(prev => ({
+                                  ...prev,
+                                  isDragging: false,
+                                  draggedAppointment: null
+                                }))
+                              }}
+                              style={appointment.__customStyle ? { ...appointment.__customStyle, cursor: 'move' } : { cursor: 'move' }}
+                            >
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center space-x-2">
+                                  <div className="font-semibold">{appointment.client}</div>
+                                  {appointment.isGoogleEvent && (
+                                    <CalendarIconOutline className="h-4 w-4" style={{ opacity: 0.8 }} title="Google Calendar Event" />
+                                  )}
+                                </div>
+                                <div className={`px-2 py-1 rounded text-xs font-medium border ${getStatusBadge(appointment.status)}`}>
+                                  {appointment.status}
+                                </div>
+                              </div>
+                              <div className="text-sm opacity-90 mb-2">{appointment.service}</div>
+                              <div className="flex items-center space-x-4 text-xs opacity-75">
+                                <span className="flex items-center">
+                                  <UserIcon className="h-3 w-3 mr-1" />
+                                  {appointment.barber}
+                                </span>
+                                <span className="flex items-center">
+                                  <ClockIcon className="h-3 w-3 mr-1" />
+                                  {appointment.duration} minutes
+                                </span>
+                                <span className="flex items-center">
+                                  <CurrencyDollarIcon className="h-3 w-3 mr-1" />
+                                  ${appointment.price}
+                                </span>
+                              </div>
+
+                              {/* Drag Handle Indicator */}
+                              {enableDragDrop && hoveredAppointment === appointment.id && (
+                                <div className="absolute top-2 right-2 text-white/70">
+                                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M3 7a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 13a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"></path>
+                                  </svg>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {selectedView === 'month' && (
+              <div className="p-4">
+                <div className="text-center py-8" style={{ color: colors.textSecondary }}>
+                  <CalendarIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <div className="text-lg font-medium">Month View</div>
+                  <div className="text-sm">Month view implementation coming soon</div>
+                  <div className="text-xs mt-2">Switch to Week or Day view for full functionality</div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* All the existing drag/drop modals and animations will be added here */}

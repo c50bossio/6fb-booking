@@ -100,7 +100,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const setHighContrastMode = (enabled: boolean) => {
     setHighContrastModeState(enabled)
     if (mounted) {
-      localStorage.setItem('bookbarber-high-contrast', enabled.toString())
+      localStorage.setItem('bookedbarber-high-contrast', enabled.toString())
 
       // Apply or remove high contrast classes
       if (enabled) {
@@ -115,7 +115,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setMounted(true)
 
     // Get theme from localStorage
-    const savedTheme = localStorage.getItem('bookbarber-theme') as Theme
+    const savedTheme = localStorage.getItem('bookedbarber-theme') as Theme
     if (savedTheme && ['light', 'soft-light', 'dark'].includes(savedTheme)) {
       setTheme(savedTheme)
     } else {
@@ -130,7 +130,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
 
     // Get high contrast preference from localStorage
-    const savedHighContrast = localStorage.getItem('bookbarber-high-contrast')
+    const savedHighContrast = localStorage.getItem('bookedbarber-high-contrast')
     if (savedHighContrast !== null) {
       setHighContrastModeState(savedHighContrast === 'true')
     } else {
@@ -138,14 +138,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       const needsHighContrast = isHighContrastNeeded()
       setHighContrastModeState(needsHighContrast)
       if (needsHighContrast) {
-        localStorage.setItem('bookbarber-high-contrast', 'true')
+        localStorage.setItem('bookedbarber-high-contrast', 'true')
       }
     }
   }, [])
 
   useEffect(() => {
     if (mounted) {
-      localStorage.setItem('bookbarber-theme', theme)
+      localStorage.setItem('bookedbarber-theme', theme)
 
       // Check if we're on the landing page - don't apply theme text colors there
       const isLandingPage = window.location.pathname === '/' || window.location.pathname === ''
@@ -229,7 +229,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     const handleContrastChange = (e: MediaQueryListEvent) => {
       // Only auto-enable if user hasn't manually set a preference
-      const savedHighContrast = localStorage.getItem('bookbarber-high-contrast')
+      const savedHighContrast = localStorage.getItem('bookedbarber-high-contrast')
       if (savedHighContrast === null && e.matches) {
         setHighContrastMode(true)
       }

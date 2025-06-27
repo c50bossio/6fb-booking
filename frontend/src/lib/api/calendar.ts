@@ -592,9 +592,9 @@ class CalendarService {
     startDate: Date,
     endDate: Date,
     filters?: CalendarFilters,
-    options?: CalendarViewOptions
+    options?: CalendarViewOptions & { includeGoogleEvents?: boolean }
   ): Promise<ApiResponse<CalendarEvent[]>> {
-    const cacheKey = `calendar_events_${startDate.toISOString()}_${endDate.toISOString()}_${JSON.stringify(filters)}`
+    const cacheKey = `calendar_events_${startDate.toISOString()}_${endDate.toISOString()}_${JSON.stringify(filters)}_${options?.includeGoogleEvents}`
     const cached = this.cache.get<CalendarEvent[]>(cacheKey)
     if (cached) {
       return { data: cached }
@@ -628,7 +628,18 @@ class CalendarService {
     const response = await apiClient.get(`/calendar/events?${params}`)
 
     // The response should already be in CalendarEvent format from the backend
-    const events = response.data
+    let events = response.data
+
+    // If includeGoogleEvents is true, fetch and merge Google Calendar events
+    if (options?.includeGoogleEvents) {
+      try {
+        const googleEvents = await this.getGoogleCalendarEvents(startDate, endDate)
+        events = this.mergeGoogleEvents(events, googleEvents.data)
+      } catch (error) {
+        console.warn('Failed to fetch Google Calendar events:', error)
+        // Continue with regular events even if Google Calendar fails
+      }
+    }
 
     this.cache.set(cacheKey, events)
     return { data: events }
@@ -918,6 +929,117 @@ class CalendarService {
 
   disconnectWebSocket(): void {
     this.websocket.disconnect()
+  }
+
+  // === GOOGLE CALENDAR INTEGRATION ===
+
+  async getGoogleCalendarEvents(
+    startDate: Date,
+    endDate: Date
+  ): Promise<ApiResponse<CalendarEvent[]>> {
+    const params = new URLSearchParams({
+      start_date: startDate.toISOString(),
+      end_date: endDate.toISOString()
+    })
+
+    const response = await apiClient.get(`/google-calendar/events?${params}`)
+
+    // Transform Google Calendar events to CalendarEvent format
+    const events: CalendarEvent[] = response.data.map((event: any) => {
+      const start = new Date(event.start)
+      const end = new Date(event.end)
+
+      // Parse event summary to extract client and service info if available
+      const summaryMatch = event.summary?.match(/^(.*?) - (.*)$/)
+      const clientName = summaryMatch ? summaryMatch[1] : event.summary || 'Google Event'
+      const serviceName = summaryMatch ? summaryMatch[2] : 'External Event'
+
+      return {
+        id: `google_${event.id}`,
+        title: event.summary || 'Google Calendar Event',
+        description: event.description,
+        start,
+        end,
+        allDay: false,
+        type: 'appointment' as const,
+        status: 'confirmed' as const,
+        color: '#4285f4', // Google blue
+        backgroundColor: '#e8f0fe',
+        borderColor: '#4285f4',
+        textColor: '#1a73e8',
+        appointment: {
+          id: 0, // Google events don't have appointment IDs
+          barberId: 0,
+          barberName: 'External',
+          clientName,
+          clientEmail: event.attendees?.[0] || '',
+          serviceId: 0,
+          serviceName,
+          serviceDuration: Math.round((end.getTime() - start.getTime()) / 60000),
+          servicePrice: 0,
+          paymentStatus: 'paid' as const,
+          source: 'app' as const,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        editable: false, // Google events are read-only in our system
+        deletable: false,
+        resizable: false,
+        movable: false
+      }
+    })
+
+    return { data: events }
+  }
+
+  private mergeGoogleEvents(
+    localEvents: CalendarEvent[],
+    googleEvents: CalendarEvent[]
+  ): CalendarEvent[] {
+    // Create a map of local appointments by their Google event ID (if synced)
+    const syncedGoogleIds = new Set<string>()
+
+    localEvents.forEach(event => {
+      if (event.appointment && 'googleEventId' in event.appointment) {
+        const googleId = (event.appointment as any).googleEventId
+        if (googleId) {
+          syncedGoogleIds.add(googleId)
+        }
+      }
+    })
+
+    // Filter out Google events that are already synced as appointments
+    const uniqueGoogleEvents = googleEvents.filter(event => {
+      const googleId = event.id.replace('google_', '')
+      return !syncedGoogleIds.has(googleId)
+    })
+
+    // Merge and sort all events
+    const allEvents = [...localEvents, ...uniqueGoogleEvents]
+    allEvents.sort((a, b) => a.start.getTime() - b.start.getTime())
+
+    return allEvents
+  }
+
+  async getGoogleCalendarStatus(): Promise<ApiResponse<{
+    connected: boolean
+    status: string
+    message: string
+    google_email?: string
+    last_sync_date?: string
+  }>> {
+    try {
+      const response = await apiClient.get('/google-calendar/status')
+      return { data: response.data }
+    } catch (error) {
+      return {
+        data: {
+          connected: false,
+          status: 'error',
+          message: 'Failed to check Google Calendar connection'
+        }
+      }
+    }
   }
 
   // === UTILITY METHODS ===

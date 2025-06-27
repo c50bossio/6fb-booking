@@ -22,7 +22,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Test credentials
 email = "demo@example.com"
-password = "DemoPass123!"
+password = "DemoPass123!"  # pragma: allowlist secret
 
 print("Creating demo user...")
 

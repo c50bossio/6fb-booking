@@ -85,7 +85,7 @@ export default function AppointmentCreationFallback({
                   )}
                 </button>
               </div>
-              
+
               <div className="flex items-center justify-between bg-white rounded-lg p-4 border border-blue-200">
                 <div>
                   <p className="font-medium text-blue-900">Choose Different Time</p>
@@ -134,7 +134,7 @@ export default function AppointmentCreationFallback({
         >
           {showDebugInfo ? 'Hide' : 'Show'} Debug Information
         </button>
-        
+
         {showDebugInfo && (
           <div className="mt-3 bg-gray-50 border border-gray-200 rounded-lg p-4">
             <p className="text-xs text-gray-600 font-mono">

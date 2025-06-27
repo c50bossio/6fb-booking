@@ -10,6 +10,7 @@ import {
   StarIcon,
   ArrowLeftIcon
 } from '@heroicons/react/24/outline'
+import { authService } from '../../lib/api/auth'
 
 const plans = {
   starter: {
@@ -56,6 +57,7 @@ const plans = {
   },
 }
 
+// Version: 2.0 - Fixed field names
 export default function SignupPage() {
   const [selectedPlan, setSelectedPlan] = useState('professional')
   const [step, setStep] = useState(1) // 1: Plan Selection, 2: Account Creation, 3: Payment
@@ -72,6 +74,7 @@ export default function SignupPage() {
   })
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<any>({})
+  const [isProcessing, setIsProcessing] = useState(false)
 
   const router = useRouter()
 
@@ -158,30 +161,68 @@ export default function SignupPage() {
   }
 
   const handleContinue = () => {
+    console.log('handleContinue called, current step:', step)
+    console.log('Current form data:', formData)
+
     if (step === 1) {
       setStep(2)
     } else if (step === 2) {
       if (validateStep2()) {
+        console.log('Validation passed, moving to step 3')
         setStep(3)
+      } else {
+        console.log('Validation failed, errors:', errors)
       }
     }
   }
 
-  const handleCreateAccount = async () => {
+  const handleCreateAccount = async (e?: React.MouseEvent) => {
+    // Prevent default and stop propagation
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+
+    // Prevent multiple submissions
+    if (loading || isProcessing) {
+      console.log('Registration already in progress, ignoring duplicate click')
+      return
+    }
+
     setLoading(true)
+    setIsProcessing(true)
     setErrors({}) // Clear any previous errors
 
     try {
-      // Use authService for better error handling
-      const { authService } = await import('../../lib/api/auth')
 
-      console.log('Attempting to register user...')
+      console.log('Attempting to register user with data:', {
+        email: formData.email,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        hasPassword: !!formData.password,
+        passwordLength: formData.password?.length
+      })
+
+      // Debug auth service call
+      console.log('Calling authService.register with:', {
+        email: formData.email,
+        password: '[HIDDEN]',
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        role: 'barber'
+      })
+
+      // Validate required fields before API call
+      if (!formData.email || !formData.password || !formData.firstName || !formData.lastName) {
+        throw new Error('Missing required fields. Please fill in all fields.')
+      }
 
       // Create account via authService
       const userData = await authService.register({
         email: formData.email,
         password: formData.password,
-        full_name: `${formData.firstName} ${formData.lastName}`,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
         role: 'barber',
       })
 
@@ -204,6 +245,12 @@ export default function SignupPage() {
       router.push('/dashboard')
     } catch (error: any) {
       console.error('Signup error:', error)
+      console.error('Error details:', {
+        response: error.response,
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      })
 
       // Check for specific error types
       if (error.response?.status === 400) {
@@ -235,8 +282,10 @@ export default function SignupPage() {
           general: errorMessage
         }))
       }
-
+    } finally {
+      // Always reset loading state
       setLoading(false)
+      setIsProcessing(false)
     }
   }
 
@@ -539,8 +588,15 @@ export default function SignupPage() {
 
             {step === 3 && (
               <div className="text-center">
+                {/* Debug info - remove in production */}
+                {process.env.NODE_ENV === 'development' && (
+                  <div className="text-xs text-gray-500 mb-4">
+                    Debug: Email={formData.email}, Name={formData.firstName} {formData.lastName}
+                  </div>
+                )}
+
                 {/* Display general error message if any */}
-                {errors.general && (
+                {errors.general && !loading && !isProcessing && (
                   <div className={`border rounded-lg p-4 mb-6 ${
                     errors.showManualLogin
                       ? 'bg-yellow-50 border-yellow-200'
@@ -613,11 +669,12 @@ export default function SignupPage() {
                   </div>
 
                   <button
-                    onClick={handleCreateAccount}
-                    disabled={loading}
+                    type="button"
+                    onClick={(e) => handleCreateAccount(e)}
+                    disabled={loading || isProcessing}
                     className="w-full bg-teal-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-teal-700 disabled:opacity-50"
                   >
-                    {loading ? 'Setting up your account...' : 'Complete Setup & Start Trial'}
+                    {loading || isProcessing ? 'Setting up your account...' : 'Complete Setup & Start Trial'}
                   </button>
                 </div>
               </div>

@@ -99,23 +99,56 @@ export async function POST(
       );
     }
 
-    // Try to parse as JSON
+    // Try to parse as JSON with better error handling
     let data;
     try {
       data = JSON.parse(responseText);
     } catch (parseError) {
       console.error('[API Proxy] Failed to parse response as JSON:', parseError);
-      console.error('[API Proxy] Full response text:', responseText);
 
-      // Try to extract just the error message if this is an error response
+      // For error responses, try to handle escaped JSON or extract error messages
       if (response.status >= 400) {
-        // For error responses, try to extract a simpler error message
-        const simpleError = responseText.includes('Email already registered')
-          ? 'Email already registered'
-          : `Server error: ${response.statusText}`;
+        // Try to extract error message from various formats
+        let errorMessage = `Server error: ${response.statusText}`;
 
+        // Handle specific validation errors
+        if (response.status === 422) {
+          // Try to parse the response text as JSON for validation errors
+          try {
+            const partialData = JSON.parse(responseText);
+            if (partialData?.detail && Array.isArray(partialData.detail)) {
+              const fieldErrors = partialData.detail.map((err: any) => {
+                const field = err.loc?.[1] || 'field';
+                const fieldName = field === 'first_name' ? 'First name' :
+                                 field === 'last_name' ? 'Last name' :
+                                 field === 'email' ? 'Email' :
+                                 field === 'password' ? 'Password' :
+                                 field.charAt(0).toUpperCase() + field.slice(1);
+                return `${fieldName}: ${err.msg || 'Invalid value'}`;
+              }).join(', ');
+              errorMessage = `Please fix the following: ${fieldErrors}`;
+            }
+          } catch (e) {
+            errorMessage = 'Please check your input and try again';
+          }
+        } else if (responseText.includes('Email already registered')) {
+          errorMessage = 'Email already registered';
+        } else if (responseText.includes('User with this email already exists')) {
+          errorMessage = 'Email already registered';
+        } else if (responseText.includes('"detail":"') || responseText.includes('"message":"')) {
+          // Try to extract detail or message from malformed JSON
+          const detailMatch = responseText.match(/"detail":"([^"]+)"/);
+          const messageMatch = responseText.match(/"message":"([^"]+)"/);
+          if (detailMatch) {
+            errorMessage = detailMatch[1];
+          } else if (messageMatch) {
+            errorMessage = messageMatch[1];
+          }
+        }
+
+        console.log('[API Proxy] Extracted error message:', errorMessage);
         return NextResponse.json(
-          { error: simpleError, message: simpleError },
+          { error: errorMessage, message: errorMessage, detail: errorMessage },
           { status: response.status }
         );
       }

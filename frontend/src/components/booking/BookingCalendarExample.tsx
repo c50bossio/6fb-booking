@@ -31,18 +31,18 @@ export default function BookingCalendarExample({
         // For demo purposes, generate random available dates
         const dates: string[] = []
         const today = new Date()
-        
+
         for (let i = 0; i < 90; i++) {
           const date = new Date(today)
           date.setDate(date.getDate() + i)
-          
+
           // Skip Sundays and randomly skip some other days
           if (date.getDay() !== 0 && Math.random() > 0.3) {
             const dateString = formatDateString(date)
             dates.push(dateString)
           }
         }
-        
+
         setAvailableDates(dates)
       } catch (error) {
         console.error('Error fetching available dates:', error)

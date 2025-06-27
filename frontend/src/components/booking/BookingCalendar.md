@@ -44,7 +44,7 @@ interface BookingCalendarProps {
   availableDates?: string[]
   minDate?: Date
   maxDate?: Date
-  
+
   // New time slot integration props
   availableSlots?: { [date: string]: TimeSlot[] }
   selectedTime?: string | null

@@ -1,0 +1,24 @@
+{
+  "preferred_startup_methods": [],
+  "skip_validation_conditions": [],
+  "optimal_work_times": {},
+  "environment_preferences": {
+    "memory_threshold": 70,
+    "port_preferences": [
+      3000,
+      3001,
+      3002
+    ],
+    "validation_mode_preference": "full"
+  },
+  "notification_preferences": {
+    "remind_cache_clear": true,
+    "suggest_port_changes": true,
+    "performance_warnings": true
+  },
+  "learning_settings": {
+    "auto_learn": true,
+    "confidence_threshold": 0.7,
+    "pattern_sensitivity": "medium"
+  }
+}

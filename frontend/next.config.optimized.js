@@ -11,7 +11,7 @@ const nextConfig = {
     optimizeCss: true,
     optimizePackageImports: [
       '@radix-ui/react-avatar',
-      '@radix-ui/react-dialog', 
+      '@radix-ui/react-dialog',
       '@radix-ui/react-dropdown-menu',
       '@radix-ui/react-progress',
       '@radix-ui/react-select',
@@ -43,11 +43,11 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'bookbarber.com',
+        hostname: 'bookedbarber.com',
       },
       {
         protocol: 'https',
-        hostname: '*.bookbarber.com',
+        hostname: '*.bookedbarber.com',
       },
     ],
   },
@@ -133,10 +133,10 @@ const nextConfig = {
       // Tree shaking optimization
       config.optimization.usedExports = true;
       config.optimization.sideEffects = false;
-      
+
       // Module concatenation
       config.optimization.concatenateModules = true;
-      
+
       // Remove console logs in production
       config.optimization.minimizer = config.optimization.minimizer || [];
     }

@@ -130,8 +130,24 @@ export default function DashboardPage() {
       setLoading(false)
     } else {
       console.log('🔐 REGULAR MODE - Using authentication flow')
-      // Regular authentication flow
-      fetchDashboardData('demo-token')
+      // Regular authentication flow - check for access token
+      const token = localStorage.getItem('access_token')
+      const userStr = localStorage.getItem('user')
+
+      if (token && userStr) {
+        try {
+          const userData = JSON.parse(userStr)
+          setUser(userData)
+          fetchDashboardData(token)
+        } catch (error) {
+          console.error('Error parsing user data:', error)
+          fetchDemoData()
+        }
+      } else {
+        // No token, use demo mode
+        console.log('No authentication token found, using demo mode')
+        fetchDemoData()
+      }
       setLoading(false)
     }
   }, [mounted])
@@ -161,7 +177,7 @@ export default function DashboardPage() {
     console.log('🔥 API URL:', process.env.NEXT_PUBLIC_API_URL)
 
     try {
-      const appointmentsUrl = `${process.env.NEXT_PUBLIC_API_URL}/dashboard/demo/appointments/today`
+      const appointmentsUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/dashboard/demo/appointments/today`
       console.log('📡 Making request to:', appointmentsUrl)
 
       const startTime = Date.now()
@@ -195,7 +211,7 @@ export default function DashboardPage() {
       }
 
       // Fetch demo barbers data
-      const barbersUrl = `${process.env.NEXT_PUBLIC_API_URL}/dashboard/demo/barbers`
+      const barbersUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/dashboard/demo/barbers`
       console.log('📡 Making request to:', barbersUrl)
 
       const barbersStartTime = Date.now()
@@ -259,38 +275,52 @@ export default function DashboardPage() {
 
   const fetchDashboardData = async (token: string) => {
     try {
-      // Try to fetch authenticated data first
+      // Fetch appointments with today's date filter
+      const today = new Date().toISOString().split('T')[0]
       const appointmentsResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/dashboard/appointments/today`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/appointments`,
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
+          params: {
+            start_date: today,
+            end_date: today
+          }
         }
       )
 
-      if (appointmentsResponse.data.stats) {
-        // Map backend stats to frontend format
-        const stats = appointmentsResponse.data.stats
+      if (appointmentsResponse.data && Array.isArray(appointmentsResponse.data)) {
+        // Calculate stats from appointments list
+        const appointments = appointmentsResponse.data
+        const upcoming = appointments.filter((apt: any) => apt.status === 'scheduled' || apt.status === 'confirmed').length
+        const completed = appointments.filter((apt: any) => apt.status === 'completed').length
+        const cancelled = appointments.filter((apt: any) => apt.status === 'cancelled').length
+        const revenue = appointments
+          .filter((apt: any) => apt.status === 'completed')
+          .reduce((sum: number, apt: any) => sum + (apt.total_amount || 0), 0)
+
         setTodayStats({
-          total_appointments: stats.total,
-          upcoming_appointments: stats.upcoming,
-          completed_appointments: stats.completed,
-          cancelled_appointments: stats.cancelled,
-          today_revenue: stats.revenue
+          total_appointments: appointments.length,
+          upcoming_appointments: upcoming,
+          completed_appointments: completed,
+          cancelled_appointments: cancelled,
+          today_revenue: revenue
         })
       }
 
       // Fetch barber list
       const barbersResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/barbers`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/barbers`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
       )
 
-      const activeBarbersCount = barbersResponse.data.filter(
-        (barber: BarberInfo) => barber.is_active
-      ).length
-      setActiveBarbers(activeBarbersCount)
+      if (barbersResponse.data && Array.isArray(barbersResponse.data)) {
+        const activeBarbersCount = barbersResponse.data.filter(
+          (barber: BarberInfo) => barber.is_active !== false
+        ).length
+        setActiveBarbers(activeBarbersCount)
+      }
 
       // Set weekly stats (mock for now)
       setWeeklyStats({
@@ -301,7 +331,7 @@ export default function DashboardPage() {
       })
 
     } catch (error) {
-      console.error('Failed to fetch authenticated data, falling back to demo data...')
+      console.error('Failed to fetch authenticated data, falling back to demo data...', error)
       fetchDemoData()
     }
   }
@@ -736,8 +766,13 @@ export default function DashboardPage() {
         onSuccess={(booking) => {
           console.log('New appointment created:', booking)
           setShowAppointmentModal(false)
-          // Optionally refresh the dashboard data
-          fetchDashboardData(localStorage.getItem('access_token') || 'demo-token')
+          // Refresh the dashboard data
+          const token = localStorage.getItem('access_token')
+          if (token) {
+            fetchDashboardData(token)
+          } else {
+            fetchDemoData()
+          }
         }}
       />
     </div>

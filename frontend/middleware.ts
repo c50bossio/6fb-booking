@@ -1,28 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { ROUTE_PATTERNS } from './src/utils/routeClassification';
 
-// Public routes that don't require authentication
-const PUBLIC_ROUTES = [
-  '/login',
-  '/forgot-password',
-  '/register',
-  '/emergency-login',
-  '/simple-login',
-  '/', // Landing page
-  '/book', // Public booking pages
-  '/demo', // Demo calendar pages
-  '/booking-demo',
-  '/calendar-demo',
-  '/simple-calendar-demo',
-  '/enhanced-calendar-demo',
-  '/demo-google-calendar',
-  '/contact',
-  '/about',
-  '/privacy',
-  '/terms',
-  '/security',
-  '/test-public', // Test page for debugging
-  '/landing' // Server-rendered landing page
-];
+// Use centralized route classification
+const PUBLIC_ROUTES = ROUTE_PATTERNS.PUBLIC;
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -54,6 +34,8 @@ export function middleware(request: NextRequest) {
 
   // For protected routes, proceed normally (AuthProvider will handle client-side auth)
   const response = NextResponse.next();
+  // Set a header to indicate this is a protected route (for debugging)
+  response.headers.set('X-Protected-Route', 'true');
   setupSecurityHeaders(response, request);
   return response;
 }

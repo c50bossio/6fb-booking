@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { XMarkIcon, CalendarIcon, ClockIcon, UserIcon, BellIcon } from '@heroicons/react/24/outline'
 import { format } from 'date-fns'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface AppointmentMoveConfirmationProps {
   isOpen: boolean
@@ -33,38 +34,18 @@ export default function AppointmentMoveConfirmation({
 }: AppointmentMoveConfirmationProps) {
   const [notifyCustomer, setNotifyCustomer] = useState(true)
   const [note, setNote] = useState('')
+  const { theme } = useTheme()
 
   if (!isOpen) return null
 
   const formatDate = (dateStr: string) => {
     try {
-      // Parse date string directly without any Date object creation to avoid timezone issues
-      const [year, month, day] = dateStr.split('-').map(Number)
+      // Parse the date string as UTC to avoid timezone issues
+      // Since the date is in YYYY-MM-DD format, we append 'T00:00:00' to make it a valid ISO string
+      const date = new Date(dateStr + 'T00:00:00')
 
-      // Debug logging to verify correct date parsing
-      console.log('🗓️ Formatting date:', { input: dateStr, parsed: { year, month, day } })
-
-      // Manual date formatting to avoid timezone conversion
-      const monthNames = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-      ]
-
-      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-
-      // Calculate day of week using Zeller's congruence (timezone-safe)
-      let m = month
-      let y = year
-      if (month < 3) {
-        m += 12
-        y -= 1
-      }
-      const dayOfWeek = (day + Math.floor((13 * (m + 1)) / 5) + y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400)) % 7
-
-      const formatted = `${dayNames[dayOfWeek]}, ${monthNames[month - 1]} ${day}, ${year}`
-      console.log('📅 Formatted date result:', formatted)
-
-      return formatted
+      // Use date-fns format which handles dates correctly
+      return format(date, 'EEEE, MMMM d, yyyy')
     } catch (error) {
       console.error('❌ Date formatting error:', error, 'for input:', dateStr)
       return dateStr
@@ -99,15 +80,27 @@ export default function AppointmentMoveConfirmation({
         />
 
         {/* Modal */}
-        <div className="relative bg-gray-800 rounded-2xl shadow-2xl border border-gray-700 max-w-md w-full p-6 transform transition-all">
+        <div className="relative rounded-2xl shadow-2xl border max-w-md w-full p-6 transform transition-all"
+          style={{
+            backgroundColor: theme === 'light' || theme === 'soft-light' ? '#ffffff' : '#1f2937',
+            borderColor: theme === 'light' || theme === 'soft-light' ? '#e5e7eb' : '#374151'
+          }}>
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-semibold text-white">
+            <h3 className="text-xl font-semibold"
+              style={{ color: theme === 'light' || theme === 'soft-light' ? '#111827' : '#ffffff' }}>
               Confirm Appointment Change
             </h3>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-white transition-colors"
+              className="transition-colors"
+              style={{ color: theme === 'light' || theme === 'soft-light' ? '#6b7280' : '#9ca3af' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = theme === 'light' || theme === 'soft-light' ? '#111827' : '#ffffff'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = theme === 'light' || theme === 'soft-light' ? '#6b7280' : '#9ca3af'
+              }}
             >
               <XMarkIcon className="h-6 w-6" />
             </button>
@@ -116,13 +109,20 @@ export default function AppointmentMoveConfirmation({
           {/* Content */}
           <div className="space-y-4">
             {/* Client Info */}
-            <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+            <div className="rounded-lg p-4 border"
+              style={{
+                backgroundColor: theme === 'light' || theme === 'soft-light' ? '#f9fafb' : 'rgba(17, 24, 39, 0.5)',
+                borderColor: theme === 'light' || theme === 'soft-light' ? '#e5e7eb' : '#374151'
+              }}>
               <div className="flex items-center space-x-2 mb-2">
                 <UserIcon className="h-5 w-5 text-violet-400" />
-                <span className="font-medium text-white">{appointment.client}</span>
+                <span className="font-medium"
+                  style={{ color: theme === 'light' || theme === 'soft-light' ? '#111827' : '#ffffff' }}>{appointment.client}</span>
               </div>
-              <p className="text-gray-400 text-sm">{appointment.service}</p>
-              <p className="text-gray-500 text-xs">with {appointment.barber}</p>
+              <p className="text-sm"
+                style={{ color: theme === 'light' || theme === 'soft-light' ? '#6b7280' : '#9ca3af' }}>{appointment.service}</p>
+              <p className="text-xs"
+                style={{ color: theme === 'light' || theme === 'soft-light' ? '#9ca3af' : '#6b7280' }}>with {appointment.barber}</p>
             </div>
 
             {/* Time Change */}
@@ -133,15 +133,19 @@ export default function AppointmentMoveConfirmation({
                   <CalendarIcon className="h-5 w-5 text-red-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-400">From</p>
-                  <p className="text-white font-medium">{formatDate(appointment.originalDate)}</p>
-                  <p className="text-gray-300 text-sm">{formatTime(appointment.originalTime, appointment.duration)}</p>
+                  <p className="text-sm"
+                    style={{ color: theme === 'light' || theme === 'soft-light' ? '#6b7280' : '#9ca3af' }}>From</p>
+                  <p className="font-medium"
+                    style={{ color: theme === 'light' || theme === 'soft-light' ? '#111827' : '#ffffff' }}>{formatDate(appointment.originalDate)}</p>
+                  <p className="text-sm"
+                    style={{ color: theme === 'light' || theme === 'soft-light' ? '#374151' : '#d1d5db' }}>{formatTime(appointment.originalTime, appointment.duration)}</p>
                 </div>
               </div>
 
               {/* Arrow */}
               <div className="flex justify-center">
-                <svg className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                style={{ color: theme === 'light' || theme === 'soft-light' ? '#9ca3af' : '#4b5563' }}>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                 </svg>
               </div>
@@ -152,49 +156,73 @@ export default function AppointmentMoveConfirmation({
                   <CalendarIcon className="h-5 w-5 text-green-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-400">To</p>
-                  <p className="text-white font-medium">{formatDate(appointment.newDate)}</p>
-                  <p className="text-gray-300 text-sm">{formatTime(appointment.newTime, appointment.duration)}</p>
+                  <p className="text-sm"
+                    style={{ color: theme === 'light' || theme === 'soft-light' ? '#6b7280' : '#9ca3af' }}>To</p>
+                  <p className="font-medium"
+                    style={{ color: theme === 'light' || theme === 'soft-light' ? '#111827' : '#ffffff' }}>{formatDate(appointment.newDate)}</p>
+                  <p className="text-sm"
+                    style={{ color: theme === 'light' || theme === 'soft-light' ? '#374151' : '#d1d5db' }}>{formatTime(appointment.newTime, appointment.duration)}</p>
                 </div>
               </div>
             </div>
 
             {/* Note Input */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium mb-2"
+                style={{ color: theme === 'light' || theme === 'soft-light' ? '#374151' : '#d1d5db' }}>
                 Add a note (optional)
               </label>
               <textarea
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder="Reason for rescheduling..."
-                className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none"
+                className="w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none"
+                style={{
+                  backgroundColor: theme === 'light' || theme === 'soft-light' ? '#f9fafb' : '#111827',
+                  borderColor: theme === 'light' || theme === 'soft-light' ? '#e5e7eb' : '#374151',
+                  color: theme === 'light' || theme === 'soft-light' ? '#111827' : '#ffffff',
+                  border: `1px solid ${theme === 'light' || theme === 'soft-light' ? '#e5e7eb' : '#374151'}`
+                }}
                 rows={3}
               />
             </div>
 
             {/* Notification Option */}
-            <div className="bg-violet-900/20 border border-violet-700/50 rounded-lg p-4">
+            <div className="rounded-lg p-4"
+              style={{
+                backgroundColor: theme === 'soft-light' ? 'rgba(124, 152, 133, 0.2)' : 'rgba(139, 92, 246, 0.2)',
+                borderColor: theme === 'soft-light' ? 'rgba(124, 152, 133, 0.5)' : 'rgba(139, 92, 246, 0.5)',
+                border: '1px solid'
+              }}>
               <label className="flex items-start space-x-3 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={notifyCustomer}
                   onChange={(e) => setNotifyCustomer(e.target.checked)}
-                  className="mt-1 h-4 w-4 rounded border-gray-600 bg-gray-700 text-violet-600 focus:ring-violet-500"
+                  className="mt-1 h-4 w-4 rounded focus:ring-violet-500"
+                  style={{
+                    backgroundColor: theme === 'light' || theme === 'soft-light' ? '#ffffff' : '#374151',
+                    borderColor: theme === 'light' || theme === 'soft-light' ? '#d1d5db' : '#4b5563',
+                    accentColor: theme === 'soft-light' ? '#7c9885' : '#8b5cf6'
+                  }}
                 />
                 <div className="flex-1">
                   <div className="flex items-center space-x-2">
                     <BellIcon className="h-5 w-5 text-violet-400" />
-                    <span className="font-medium text-white">Notify Customer</span>
+                    <span className="font-medium"
+                      style={{ color: theme === 'light' || theme === 'soft-light' ? '#111827' : '#ffffff' }}>Notify Customer</span>
                   </div>
-                  <p className="text-sm text-gray-400 mt-1">
+                  <p className="text-sm mt-1"
+                    style={{ color: theme === 'light' || theme === 'soft-light' ? '#6b7280' : '#9ca3af' }}>
                     Send SMS and email notification about the appointment change
                   </p>
                   {appointment.clientPhone && (
-                    <p className="text-xs text-gray-500 mt-1">SMS: {appointment.clientPhone}</p>
+                    <p className="text-xs mt-1"
+                      style={{ color: theme === 'light' || theme === 'soft-light' ? '#9ca3af' : '#6b7280' }}>SMS: {appointment.clientPhone}</p>
                   )}
                   {appointment.clientEmail && (
-                    <p className="text-xs text-gray-500">Email: {appointment.clientEmail}</p>
+                    <p className="text-xs"
+                      style={{ color: theme === 'light' || theme === 'soft-light' ? '#9ca3af' : '#6b7280' }}>Email: {appointment.clientEmail}</p>
                   )}
                 </div>
               </label>
@@ -206,7 +234,21 @@ export default function AppointmentMoveConfirmation({
             <button
               onClick={onClose}
               disabled={isLoading}
-              className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+              style={{
+                backgroundColor: theme === 'light' || theme === 'soft-light' ? '#e5e7eb' : '#374151',
+                color: theme === 'light' || theme === 'soft-light' ? '#111827' : '#ffffff'
+              }}
+              onMouseEnter={(e) => {
+                if (!isLoading) {
+                  e.currentTarget.style.backgroundColor = theme === 'light' || theme === 'soft-light' ? '#d1d5db' : '#4b5563'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isLoading) {
+                  e.currentTarget.style.backgroundColor = theme === 'light' || theme === 'soft-light' ? '#e5e7eb' : '#374151'
+                }
+              }}
             >
               Cancel
             </button>

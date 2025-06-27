@@ -1,0 +1,1550 @@
+{
+  "sessions": [
+    {
+      "id": "session_1751035459709_uajlzmcdj",
+      "timestamp": "2025-06-27T14:44:19.709Z",
+      "outcome": "success",
+      "details": {
+        "startup_method": "dev:safe",
+        "validation_mode": "full",
+        "duration": 4.2,
+        "error_type": null,
+        "resolution_method": null,
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:19.535Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 2650357760,
+            "usage_percent": 94.85762914021811
+          },
+          "load_average": [
+            5.076171875,
+            4.36767578125,
+            4.25
+          ],
+          "uptime": 931490
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 32.833
+        },
+        "processes": {
+          "count": 802
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035468163_eqb84i5j6",
+      "timestamp": "2025-06-27T14:44:28.163Z",
+      "outcome": "failure",
+      "details": {
+        "startup_method": "dev:raw",
+        "validation_mode": "unknown",
+        "duration": null,
+        "error_type": "port_conflict",
+        "resolution_method": "kill_port",
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:27.983Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 2641084416,
+            "usage_percent": 94.8756217956543
+          },
+          "load_average": [
+            4.90966796875,
+            4.3447265625,
+            4.24267578125
+          ],
+          "uptime": 931498
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 32.489
+        },
+        "processes": {
+          "count": 805
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035476352_2rixo06iy",
+      "timestamp": "2025-06-27T14:44:36.352Z",
+      "outcome": "success",
+      "details": {
+        "startup_method": "dev:safe",
+        "validation_mode": "quick",
+        "duration": 3.8,
+        "error_type": null,
+        "resolution_method": null,
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:36.183Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 4658823168,
+            "usage_percent": 90.960693359375
+          },
+          "load_average": [
+            4.4619140625,
+            4.26708984375,
+            4.21630859375
+          ],
+          "uptime": 931507
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 30.771
+        },
+        "processes": {
+          "count": 806
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035476533_iz6y9xp54",
+      "timestamp": "2025-06-27T14:44:36.533Z",
+      "outcome": "success",
+      "details": {
+        "startup_method": "dev:fresh",
+        "validation_mode": "full",
+        "duration": 8.1,
+        "error_type": null,
+        "resolution_method": null,
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:36.374Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 4664950784,
+            "usage_percent": 90.94880421956381
+          },
+          "load_average": [
+            4.4619140625,
+            4.26708984375,
+            4.21630859375
+          ],
+          "uptime": 931507
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 31.802
+        },
+        "processes": {
+          "count": 806
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035476712_n0ojapzbu",
+      "timestamp": "2025-06-27T14:44:36.712Z",
+      "outcome": "failure",
+      "details": {
+        "startup_method": "dev:raw",
+        "validation_mode": "unknown",
+        "duration": null,
+        "error_type": "dependency_issue",
+        "resolution_method": "npm_install",
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:36.554Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 4662706176,
+            "usage_percent": 90.95315933227539
+          },
+          "load_average": [
+            4.4619140625,
+            4.26708984375,
+            4.21630859375
+          ],
+          "uptime": 931507
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 31.685
+        },
+        "processes": {
+          "count": 806
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035476907_hfnvoylnf",
+      "timestamp": "2025-06-27T14:44:36.907Z",
+      "outcome": "success",
+      "details": {
+        "startup_method": "dev:safe",
+        "validation_mode": "full",
+        "duration": 4.5,
+        "error_type": null,
+        "resolution_method": null,
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:36.733Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 4662706176,
+            "usage_percent": 90.95315933227539
+          },
+          "load_average": [
+            4.4619140625,
+            4.26708984375,
+            4.21630859375
+          ],
+          "uptime": 931507
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 36.262
+        },
+        "processes": {
+          "count": 806
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035493305_guiav80jh",
+      "timestamp": "2025-06-27T14:44:53.305Z",
+      "outcome": "success",
+      "details": {
+        "startup_method": "dev:safe",
+        "validation_mode": "unknown",
+        "duration": 4,
+        "error_type": null,
+        "resolution_method": null,
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:53.133Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 4853612544,
+            "usage_percent": 90.5827522277832
+          },
+          "load_average": [
+            4.5732421875,
+            4.3017578125,
+            4.2294921875
+          ],
+          "uptime": 931524
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 36.144
+        },
+        "processes": {
+          "count": 802
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035493509_77s0azi24",
+      "timestamp": "2025-06-27T14:44:53.509Z",
+      "outcome": "success",
+      "details": {
+        "startup_method": "dev:safe",
+        "validation_mode": "unknown",
+        "duration": 5,
+        "error_type": null,
+        "resolution_method": null,
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:53.327Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 4853612544,
+            "usage_percent": 90.5827522277832
+          },
+          "load_average": [
+            4.5732421875,
+            4.3017578125,
+            4.2294921875
+          ],
+          "uptime": 931524
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 46.254
+        },
+        "processes": {
+          "count": 802
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035493696_whop1mg4b",
+      "timestamp": "2025-06-27T14:44:53.696Z",
+      "outcome": "failure",
+      "details": {
+        "startup_method": "dev:raw",
+        "validation_mode": "unknown",
+        "duration": null,
+        "error_type": "port_conflict",
+        "resolution_method": null,
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:53.532Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 4853612544,
+            "usage_percent": 90.5827522277832
+          },
+          "load_average": [
+            4.5732421875,
+            4.3017578125,
+            4.2294921875
+          ],
+          "uptime": 931524
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 31.089
+        },
+        "processes": {
+          "count": 801
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035493904_c9hgugy9s",
+      "timestamp": "2025-06-27T14:44:53.904Z",
+      "outcome": "success",
+      "details": {
+        "startup_method": "dev:safe",
+        "validation_mode": "unknown",
+        "duration": 7,
+        "error_type": null,
+        "resolution_method": null,
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:53.718Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 4853612544,
+            "usage_percent": 90.5827522277832
+          },
+          "load_average": [
+            4.5732421875,
+            4.3017578125,
+            4.2294921875
+          ],
+          "uptime": 931524
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 46.085
+        },
+        "processes": {
+          "count": 801
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035494092_plqv6xlft",
+      "timestamp": "2025-06-27T14:44:54.092Z",
+      "outcome": "success",
+      "details": {
+        "startup_method": "dev:fresh",
+        "validation_mode": "unknown",
+        "duration": 3,
+        "error_type": null,
+        "resolution_method": null,
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:53.928Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 4853612544,
+            "usage_percent": 90.5827522277832
+          },
+          "load_average": [
+            4.5732421875,
+            4.3017578125,
+            4.2294921875
+          ],
+          "uptime": 931524
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 33.095
+        },
+        "processes": {
+          "count": 804
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035494293_ydvhrohwo",
+      "timestamp": "2025-06-27T14:44:54.293Z",
+      "outcome": "failure",
+      "details": {
+        "startup_method": "dev:raw",
+        "validation_mode": "unknown",
+        "duration": null,
+        "error_type": "port_conflict",
+        "resolution_method": null,
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:54.116Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 4853612544,
+            "usage_percent": 90.5827522277832
+          },
+          "load_average": [
+            4.5732421875,
+            4.3017578125,
+            4.2294921875
+          ],
+          "uptime": 931525
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 38.511
+        },
+        "processes": {
+          "count": 804
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035494474_gmb7y7kjb",
+      "timestamp": "2025-06-27T14:44:54.474Z",
+      "outcome": "success",
+      "details": {
+        "startup_method": "dev:paranoid",
+        "validation_mode": "unknown",
+        "duration": 5,
+        "error_type": null,
+        "resolution_method": null,
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:54.316Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 4795940864,
+            "usage_percent": 90.69465001424155
+          },
+          "load_average": [
+            4.76708984375,
+            4.34619140625,
+            4.24560546875
+          ],
+          "uptime": 931525
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 26.369
+        },
+        "processes": {
+          "count": 802
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035494668_dp5z3lv6z",
+      "timestamp": "2025-06-27T14:44:54.668Z",
+      "outcome": "success",
+      "details": {
+        "startup_method": "dev:safe",
+        "validation_mode": "unknown",
+        "duration": 6,
+        "error_type": null,
+        "resolution_method": null,
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:54.496Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 4795940864,
+            "usage_percent": 90.69465001424155
+          },
+          "load_average": [
+            4.76708984375,
+            4.34619140625,
+            4.24560546875
+          ],
+          "uptime": 931525
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 33.11
+        },
+        "processes": {
+          "count": 802
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035494874_8glnelruq",
+      "timestamp": "2025-06-27T14:44:54.874Z",
+      "outcome": "failure",
+      "details": {
+        "startup_method": "dev:raw",
+        "validation_mode": "unknown",
+        "duration": null,
+        "error_type": "port_conflict",
+        "resolution_method": null,
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:54.691Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 4795940864,
+            "usage_percent": 90.69465001424155
+          },
+          "load_average": [
+            4.76708984375,
+            4.34619140625,
+            4.24560546875
+          ],
+          "uptime": 931525
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 52.443
+        },
+        "processes": {
+          "count": 802
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035495123_oyw4ykabx",
+      "timestamp": "2025-06-27T14:44:55.123Z",
+      "outcome": "success",
+      "details": {
+        "startup_method": "dev:fresh",
+        "validation_mode": "unknown",
+        "duration": 3,
+        "error_type": null,
+        "resolution_method": null,
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:54.898Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 4795940864,
+            "usage_percent": 90.69465001424155
+          },
+          "load_average": [
+            4.76708984375,
+            4.34619140625,
+            4.24560546875
+          ],
+          "uptime": 931525
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 79.629
+        },
+        "processes": {
+          "count": 805
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035495326_hggiv1x6m",
+      "timestamp": "2025-06-27T14:44:55.326Z",
+      "outcome": "success",
+      "details": {
+        "startup_method": "dev:safe",
+        "validation_mode": "unknown",
+        "duration": 4,
+        "error_type": null,
+        "resolution_method": null,
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:55.148Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 4795940864,
+            "usage_percent": 90.69465001424155
+          },
+          "load_average": [
+            4.76708984375,
+            4.34619140625,
+            4.24560546875
+          ],
+          "uptime": 931526
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 44.082
+        },
+        "processes": {
+          "count": 801
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035495523_hjbpdhj05",
+      "timestamp": "2025-06-27T14:44:55.523Z",
+      "outcome": "failure",
+      "details": {
+        "startup_method": "dev:raw",
+        "validation_mode": "unknown",
+        "duration": null,
+        "error_type": "port_conflict",
+        "resolution_method": null,
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:55.349Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 4929814528,
+            "usage_percent": 90.43490091959634
+          },
+          "load_average": [
+            4.76708984375,
+            4.34619140625,
+            4.24560546875
+          ],
+          "uptime": 931526
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 39.49
+        },
+        "processes": {
+          "count": 801
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035495725_4093zwk3q",
+      "timestamp": "2025-06-27T14:44:55.725Z",
+      "outcome": "success",
+      "details": {
+        "startup_method": "dev:safe",
+        "validation_mode": "unknown",
+        "duration": 6,
+        "error_type": null,
+        "resolution_method": null,
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:55.548Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 4929814528,
+            "usage_percent": 90.43490091959634
+          },
+          "load_average": [
+            4.76708984375,
+            4.34619140625,
+            4.24560546875
+          ],
+          "uptime": 931526
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 43.834
+        },
+        "processes": {
+          "count": 801
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035495910_u79sfk0qv",
+      "timestamp": "2025-06-27T14:44:55.910Z",
+      "outcome": "success",
+      "details": {
+        "startup_method": "dev:paranoid",
+        "validation_mode": "unknown",
+        "duration": 7,
+        "error_type": null,
+        "resolution_method": null,
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:55.749Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 4929814528,
+            "usage_percent": 90.43490091959634
+          },
+          "load_average": [
+            4.76708984375,
+            4.34619140625,
+            4.24560546875
+          ],
+          "uptime": 931526
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 29.422
+        },
+        "processes": {
+          "count": 801
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035496101_1l1bsvbk2",
+      "timestamp": "2025-06-27T14:44:56.101Z",
+      "outcome": "failure",
+      "details": {
+        "startup_method": "dev:raw",
+        "validation_mode": "unknown",
+        "duration": null,
+        "error_type": "port_conflict",
+        "resolution_method": null,
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:55.935Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 4929814528,
+            "usage_percent": 90.43490091959634
+          },
+          "load_average": [
+            4.76708984375,
+            4.34619140625,
+            4.24560546875
+          ],
+          "uptime": 931526
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 36.112
+        },
+        "processes": {
+          "count": 801
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035496292_xddt7mqwx",
+      "timestamp": "2025-06-27T14:44:56.292Z",
+      "outcome": "success",
+      "details": {
+        "startup_method": "dev:safe",
+        "validation_mode": "unknown",
+        "duration": 4,
+        "error_type": null,
+        "resolution_method": null,
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:56.123Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 4929814528,
+            "usage_percent": 90.43490091959634
+          },
+          "load_average": [
+            4.76708984375,
+            4.34619140625,
+            4.24560546875
+          ],
+          "uptime": 931527
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 31.282
+        },
+        "processes": {
+          "count": 801
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035496483_wpf0th2r3",
+      "timestamp": "2025-06-27T14:44:56.483Z",
+      "outcome": "success",
+      "details": {
+        "startup_method": "dev:safe",
+        "validation_mode": "unknown",
+        "duration": 5,
+        "error_type": null,
+        "resolution_method": null,
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:56.316Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 4929814528,
+            "usage_percent": 90.43490091959634
+          },
+          "load_average": [
+            4.76708984375,
+            4.34619140625,
+            4.24560546875
+          ],
+          "uptime": 931527
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 32.945
+        },
+        "processes": {
+          "count": 801
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035496677_xsk46si4d",
+      "timestamp": "2025-06-27T14:44:56.677Z",
+      "outcome": "failure",
+      "details": {
+        "startup_method": "dev:raw",
+        "validation_mode": "unknown",
+        "duration": null,
+        "error_type": "port_conflict",
+        "resolution_method": null,
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:56.507Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 4786913280,
+            "usage_percent": 90.71216583251953
+          },
+          "load_average": [
+            4.76708984375,
+            4.34619140625,
+            4.24560546875
+          ],
+          "uptime": 931527
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 32.835
+        },
+        "processes": {
+          "count": 801
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035497047_hrowkufi9",
+      "timestamp": "2025-06-27T14:44:57.047Z",
+      "outcome": "success",
+      "details": {
+        "startup_method": "dev:safe",
+        "validation_mode": "unknown",
+        "duration": 7,
+        "error_type": null,
+        "resolution_method": null,
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:56.700Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 4779769856,
+            "usage_percent": 90.72602589925131
+          },
+          "load_average": [
+            4.76708984375,
+            4.34619140625,
+            4.24560546875
+          ],
+          "uptime": 931527
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 203.161
+        },
+        "processes": {
+          "count": 801
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035497239_1ythzn74z",
+      "timestamp": "2025-06-27T14:44:57.239Z",
+      "outcome": "success",
+      "details": {
+        "startup_method": "dev:fresh",
+        "validation_mode": "unknown",
+        "duration": 3,
+        "error_type": null,
+        "resolution_method": null,
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:44:57.071Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 4837277696,
+            "usage_percent": 90.61444600423178
+          },
+          "load_average": [
+            4.76708984375,
+            4.34619140625,
+            4.24560546875
+          ],
+          "uptime": 931528
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 31.928
+        },
+        "processes": {
+          "count": 801
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    },
+    {
+      "id": "session_1751035661598_kibz3iyo0",
+      "timestamp": "2025-06-27T14:47:41.598Z",
+      "outcome": "success",
+      "details": {
+        "startup_method": "dev:safe",
+        "validation_mode": "unknown",
+        "duration": 52.295,
+        "error_type": null,
+        "resolution_method": null,
+        "user_intervention": false,
+        "auto_fix_applied": false
+      },
+      "environment": {
+        "timestamp": "2025-06-27T14:47:41.428Z",
+        "system": {
+          "platform": "darwin",
+          "arch": "arm64",
+          "memory": {
+            "total": 51539607552,
+            "free": 4655874048,
+            "usage_percent": 90.96641540527344
+          },
+          "load_average": [
+            3.92724609375,
+            4.19580078125,
+            4.20263671875
+          ],
+          "uptime": 931692
+        },
+        "time_context": {
+          "hour": 10,
+          "day_of_week": 5,
+          "day_of_month": 27,
+          "is_weekend": false,
+          "time_of_day": "morning"
+        },
+        "network": {
+          "connectivity": true,
+          "latency": 39.057
+        },
+        "processes": {
+          "count": 801
+        },
+        "disk_usage": {
+          "usage_percent": null,
+          "available": "ifree",
+          "used": "iused",
+          "total": "Capacity"
+        },
+        "port_usage": []
+      },
+      "learned_from": true
+    }
+  ],
+  "patterns": {
+    "startup_methods": {
+      "dev:safe": {
+        "total_attempts": 13,
+        "successes": 13,
+        "failures": 0,
+        "success_rate": 1,
+        "average_duration": 8.676538461538462,
+        "common_issues": [],
+        "optimal_conditions": []
+      },
+      "dev:raw": {
+        "total_attempts": 8,
+        "successes": 0,
+        "failures": 8,
+        "success_rate": 0,
+        "average_duration": 0,
+        "common_issues": [
+          {
+            "type": "port_conflict",
+            "count": 7,
+            "last_seen": "2025-06-27T14:44:28.163Z"
+          },
+          {
+            "type": "dependency_issue",
+            "count": 1,
+            "last_seen": "2025-06-27T14:44:36.712Z"
+          }
+        ],
+        "optimal_conditions": []
+      },
+      "dev:fresh": {
+        "total_attempts": 4,
+        "successes": 4,
+        "failures": 0,
+        "success_rate": 1,
+        "average_duration": 4.275,
+        "common_issues": [],
+        "optimal_conditions": []
+      },
+      "dev:paranoid": {
+        "total_attempts": 2,
+        "successes": 2,
+        "failures": 0,
+        "success_rate": 1,
+        "average_duration": 6,
+        "common_issues": [],
+        "optimal_conditions": []
+      }
+    },
+    "time_patterns": {
+      "5_10": {
+        "attempts": 27,
+        "successes": 19,
+        "success_rate": 0.7037037037037037
+      }
+    },
+    "environmental_correlations": {
+      "memory": {
+        "critical": {
+          "attempts": 27,
+          "successes": 19,
+          "success_rate": 0.7037037037037037
+        }
+      },
+      "time_of_day": {
+        "morning": {
+          "attempts": 27,
+          "successes": 19,
+          "success_rate": 0.7037037037037037
+        }
+      }
+    },
+    "failure_patterns": {},
+    "success_sequences": []
+  },
+  "statistics": {
+    "total_sessions": 27,
+    "success_rate": 0.7037037037037037,
+    "most_successful_method": "dev:safe",
+    "most_problematic_factors": [],
+    "learning_confidence": 0.38
+  },
+  "metadata": {
+    "created": "2025-06-27T14:44:19.534Z",
+    "last_updated": "2025-06-27T14:47:41.599Z",
+    "version": "1.0.0"
+  }
+}

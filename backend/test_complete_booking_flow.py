@@ -12,7 +12,7 @@ import json
 from datetime import datetime, date
 
 # Set environment variables
-os.environ["DATA_ENCRYPTION_KEY"] = "BcyOvTLRfOGPAUWZlxaeYHCMpwP9w391ZBFCMNy-TOQ="
+os.environ["DATA_ENCRYPTION_KEY"] = "BcyOvTLRfOGPAUWZlxaeYHCMpwP9w391ZBFCMNy-TOQ="  # pragma: allowlist secret
 
 BASE_URL = "http://localhost:8000"
 

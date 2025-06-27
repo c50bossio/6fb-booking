@@ -8,7 +8,7 @@ import json
 # Your Trafft details
 BASE_URL = "https://headlinesbarbershops.admin.wlbookings.com"
 CLIENT_ID = "cf0e541ffb9bb5a1ad777eff256f1f96"
-CLIENT_SECRET = "bdc3e1eb65cc5638fb89f0997e1e3858f0e021440e42c16a0e66f5984732599e"
+CLIENT_SECRET = "bdc3e1eb65cc5638fb89f0997e1e3858f0e021440e42c16a0e66f5984732599e"  # pragma: allowlist secret
 
 print("🔍 Testing Common Booking API Patterns")
 print("=" * 50)

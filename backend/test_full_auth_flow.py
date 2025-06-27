@@ -20,7 +20,7 @@ def generate_random_email():
 def test_full_auth_flow():
     # Generate random test user data
     test_email = generate_random_email()
-    test_password = "TestPassword123!"
+    test_password = "TestPassword123!"  # pragma: allowlist secret
 
     print("=" * 60)
     print("6FB PAYOUTS - AUTHENTICATION FLOW TEST")

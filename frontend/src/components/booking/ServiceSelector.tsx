@@ -2,12 +2,12 @@
 
 import { RadioGroup } from '@headlessui/react'
 import { CheckIcon, ClockIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline'
-import type { Service } from '@/lib/api/services'
+import type { PublicServiceInfo } from '@/lib/api/publicBooking'
 
 interface ServiceSelectorProps {
-  services: Service[]
-  selectedService: Service | null
-  onServiceSelect: (service: Service) => void
+  services: PublicServiceInfo[]
+  selectedService: PublicServiceInfo | null
+  onServiceSelect: (service: PublicServiceInfo) => void
   loading?: boolean
   disabled?: boolean
 }
@@ -97,7 +97,7 @@ export default function ServiceSelector({
                               <ClockIcon className="h-4 w-4 mr-1" />
                               {formatDuration(service.duration_minutes)}
                             </div>
-                            {service.is_featured && (
+                            {service.tags && service.tags.includes('popular') && (
                               <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
                                 Popular
                               </span>

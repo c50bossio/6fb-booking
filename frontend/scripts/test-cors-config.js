@@ -8,7 +8,7 @@
 const https = require('https');
 
 const BACKEND_URL = 'https://sixfb-backend.onrender.com';
-const FRONTEND_ORIGIN = 'https://bookbarber-6fb.vercel.app';
+const FRONTEND_ORIGIN = 'https://bookedbarber-6fb.vercel.app';
 
 console.log('🧪 Testing CORS Configuration...\n');
 

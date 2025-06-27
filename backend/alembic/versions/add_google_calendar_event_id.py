@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "add_google_calendar_event_id"
-down_revision = "ea46f0e03b47"
+down_revision = "ea46f0e03b47"  # pragma: allowlist secret
 branch_labels = None
 depends_on = None
 

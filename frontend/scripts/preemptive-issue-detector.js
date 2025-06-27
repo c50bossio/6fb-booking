@@ -39,11 +39,11 @@ class PreemptiveIssueDetector extends EventEmitter {
         this.args = process.argv.slice(2);
         this.configPath = path.join(process.cwd(), '.dev-settings.json');
         this.config = this.loadConfiguration();
-        
+
         this.startTime = Date.now();
         this.dataDirectory = path.join(process.cwd(), 'logs', 'preemptive-data');
         this.setupDataDirectory();
-        
+
         // Monitoring intervals
         this.intervals = {
             fastCheck: 2000,      // Critical system checks
@@ -51,7 +51,7 @@ class PreemptiveIssueDetector extends EventEmitter {
             slowCheck: 30000,     // Trend analysis
             prediction: 60000     // Predictive analysis
         };
-        
+
         // Predictive models and thresholds
         this.models = {
             memory: {
@@ -94,7 +94,7 @@ class PreemptiveIssueDetector extends EventEmitter {
                 riskThreshold: 0.7
             }
         };
-        
+
         // Issue prediction weights and scoring
         this.riskFactors = {
             memory: { weight: 0.25, enabled: true },
@@ -105,7 +105,7 @@ class PreemptiveIssueDetector extends EventEmitter {
             logs: { weight: 0.10, enabled: true },
             dependencies: { weight: 0.05, enabled: true }
         };
-        
+
         // Alert management
         this.alerts = {
             active: new Map(),
@@ -113,7 +113,7 @@ class PreemptiveIssueDetector extends EventEmitter {
             suppressionRules: new Map(),
             escalationLevels: ['info', 'warning', 'critical', 'emergency']
         };
-        
+
         // Auto-remediation capabilities
         this.remediationActions = {
             memory_leak: this.remediateMemoryLeak.bind(this),
@@ -122,12 +122,12 @@ class PreemptiveIssueDetector extends EventEmitter {
             build_degradation: this.remediateBuildDegradation.bind(this),
             dependency_issues: this.remediateDependencyIssues.bind(this)
         };
-        
+
         this.setupLogging();
         this.loadHistoricalData();
         this.setupEventHandlers();
     }
-    
+
     loadConfiguration() {
         try {
             if (fs.existsSync(this.configPath)) {
@@ -152,7 +152,7 @@ class PreemptiveIssueDetector extends EventEmitter {
         } catch (error) {
             this.log(`Configuration load failed: ${error.message}`, 'warning');
         }
-        
+
         return {
             preemptive: {
                 enabled: true,
@@ -168,12 +168,12 @@ class PreemptiveIssueDetector extends EventEmitter {
             }
         };
     }
-    
+
     setupDataDirectory() {
         if (!fs.existsSync(this.dataDirectory)) {
             fs.mkdirSync(this.dataDirectory, { recursive: true });
         }
-        
+
         // Create subdirectories for different data types
         const subdirs = ['metrics', 'predictions', 'models', 'logs', 'alerts'];
         subdirs.forEach(dir => {
@@ -183,31 +183,31 @@ class PreemptiveIssueDetector extends EventEmitter {
             }
         });
     }
-    
+
     setupLogging() {
         const logFile = path.join(this.dataDirectory, 'logs', `preemptive-${new Date().toISOString().split('T')[0]}.log`);
         this.logStream = fs.createWriteStream(logFile, { flags: 'a' });
     }
-    
+
     setupEventHandlers() {
         this.on('prediction', this.handlePrediction.bind(this));
         this.on('anomaly', this.handleAnomaly.bind(this));
         this.on('threshold_breach', this.handleThresholdBreach.bind(this));
         this.on('pattern_detected', this.handlePatternDetection.bind(this));
         this.on('auto_remediation', this.handleAutoRemediation.bind(this));
-        
+
         // Graceful shutdown
         process.on('SIGINT', () => this.shutdown());
         process.on('SIGTERM', () => this.shutdown());
         process.on('SIGHUP', () => this.saveModels());
     }
-    
+
     log(message, level = 'info') {
         const timestamp = new Date().toISOString();
         const logEntry = `[${timestamp}] ${level.toUpperCase()}: ${message}\n`;
-        
+
         this.logStream.write(logEntry);
-        
+
         if (level !== 'debug' || this.args.includes('--verbose')) {
             const colors = {
                 info: '\x1b[36m',
@@ -218,12 +218,12 @@ class PreemptiveIssueDetector extends EventEmitter {
                 debug: '\x1b[90m',
                 reset: '\x1b[0m'
             };
-            
+
             const color = colors[level] || colors.info;
             console.log(`${color}🔮 [PREEMPTIVE] ${message}${colors.reset}`);
         }
     }
-    
+
     async executeCommand(command, timeout = 10000) {
         return new Promise((resolve) => {
             const startTime = Date.now();
@@ -239,11 +239,11 @@ class PreemptiveIssueDetector extends EventEmitter {
             });
         });
     }
-    
+
     // =====================================
     // RESOURCE MONITORING & PREDICTION
     // =====================================
-    
+
     async collectSystemMetrics() {
         const metrics = {
             timestamp: Date.now(),
@@ -253,16 +253,16 @@ class PreemptiveIssueDetector extends EventEmitter {
             network: await this.getNetworkMetrics(),
             processes: await this.getProcessMetrics()
         };
-        
+
         return metrics;
     }
-    
+
     getMemoryMetrics() {
         const total = os.totalmem();
         const free = os.freemem();
         const used = total - free;
         const percentage = (used / total) * 100;
-        
+
         return {
             total,
             free,
@@ -273,22 +273,22 @@ class PreemptiveIssueDetector extends EventEmitter {
             cached: 0   // Would need platform-specific implementation
         };
     }
-    
+
     async getCPUMetrics() {
         const loadavg = os.loadavg();
         const cpus = os.cpus();
-        
+
         // Get more detailed CPU info if available
         const cpuUsage = await this.executeCommand('top -l 1 -n 0 | grep "CPU usage"');
         let cpuPercentage = 0;
-        
+
         if (cpuUsage.success && cpuUsage.stdout) {
             const match = cpuUsage.stdout.match(/(\d+\.\d+)%\s+user/);
             if (match) {
                 cpuPercentage = parseFloat(match[1]);
             }
         }
-        
+
         return {
             cores: cpus.length,
             loadavg: loadavg,
@@ -297,11 +297,11 @@ class PreemptiveIssueDetector extends EventEmitter {
             speed: cpus[0]?.speed || 0
         };
     }
-    
+
     async getDiskMetrics() {
         const diskResult = await this.executeCommand('df -h . | tail -n 1');
         let diskInfo = { available: 0, used: 0, total: 0, percentage: 0 };
-        
+
         if (diskResult.success) {
             const parts = diskResult.stdout.split(/\s+/);
             if (parts.length >= 5) {
@@ -313,10 +313,10 @@ class PreemptiveIssueDetector extends EventEmitter {
                 };
             }
         }
-        
+
         return diskInfo;
     }
-    
+
     parseDiskSize(sizeStr) {
         const units = { 'K': 1024, 'M': 1024**2, 'G': 1024**3, 'T': 1024**4 };
         const match = sizeStr.match(/^([\d.]+)([KMGT])?$/);
@@ -327,53 +327,53 @@ class PreemptiveIssueDetector extends EventEmitter {
         }
         return 0;
     }
-    
+
     async getNetworkMetrics() {
         const pingResult = await this.executeCommand('ping -c 3 127.0.0.1');
         let latency = 0;
         let packetLoss = 0;
-        
+
         if (pingResult.success) {
             const latencyMatch = pingResult.stdout.match(/round-trip.*?(\d+\.?\d*)/);
             const lossMatch = pingResult.stdout.match(/(\d+)% packet loss/);
-            
+
             if (latencyMatch) latency = parseFloat(latencyMatch[1]);
             if (lossMatch) packetLoss = parseInt(lossMatch[1]);
         }
-        
+
         return {
             latency,
             packetLoss,
             connectivity: pingResult.success
         };
     }
-    
+
     async getProcessMetrics() {
         const processes = await this.executeCommand('ps aux | grep -E "(node|npm|next)" | grep -v grep');
         const processCount = processes.success ? processes.stdout.split('\n').filter(line => line.trim()).length : 0;
-        
+
         return {
             nodeProcesses: processCount,
             totalProcesses: await this.getTotalProcessCount()
         };
     }
-    
+
     async getTotalProcessCount() {
         const result = await this.executeCommand('ps aux | wc -l');
         return result.success ? parseInt(result.stdout) - 1 : 0;
     }
-    
+
     // =====================================
     // PREDICTIVE ANALYSIS
     // =====================================
-    
+
     updatePredictiveModels(metrics) {
         this.updateMemoryModel(metrics.memory);
         this.updateCPUModel(metrics.cpu);
         this.updateDiskModel(metrics.disk);
         this.updateNetworkModel(metrics.network);
     }
-    
+
     updateMemoryModel(memoryMetrics) {
         const model = this.models.memory;
         model.historicalData.push({
@@ -382,15 +382,15 @@ class PreemptiveIssueDetector extends EventEmitter {
             used: memoryMetrics.used,
             available: memoryMetrics.free
         });
-        
+
         // Keep only recent data for analysis
         if (model.historicalData.length > model.leakDetectionWindow * 2) {
             model.historicalData = model.historicalData.slice(-model.leakDetectionWindow * 2);
         }
-        
+
         // Detect memory leaks
         this.detectMemoryLeak(model);
-        
+
         // Predict future memory usage
         const prediction = this.predictMemoryUsage(model);
         if (prediction.risk > this.config.preemptive.alertThreshold) {
@@ -404,13 +404,13 @@ class PreemptiveIssueDetector extends EventEmitter {
             });
         }
     }
-    
+
     detectMemoryLeak(model) {
         if (model.historicalData.length < model.leakDetectionWindow) return;
-        
+
         const recent = model.historicalData.slice(-model.leakDetectionWindow);
         const trend = this.calculateLinearTrend(recent.map(d => d.percentage));
-        
+
         // Memory leak indicators
         if (trend.slope > 0.5 && trend.r2 > 0.8) { // Consistent upward trend
             this.emit('anomaly', {
@@ -422,29 +422,29 @@ class PreemptiveIssueDetector extends EventEmitter {
             });
         }
     }
-    
+
     predictMemoryUsage(model) {
         if (model.historicalData.length < model.trendWindow) {
             return { risk: 0, timeToFailure: Infinity, predictedPeak: 0 };
         }
-        
+
         const recent = model.historicalData.slice(-model.trendWindow);
         const trend = this.calculateLinearTrend(recent.map(d => d.percentage));
         const currentUsage = recent[recent.length - 1].percentage;
-        
+
         if (trend.slope <= 0) {
             return { risk: 0, timeToFailure: Infinity, predictedPeak: currentUsage };
         }
-        
+
         // Calculate time to reach critical threshold
         const timeToFailure = ((model.criticalThreshold - currentUsage) / trend.slope) * this.intervals.normalCheck;
         const predictedPeak = currentUsage + (trend.slope * (model.predictionHorizon / this.intervals.normalCheck));
-        
+
         const risk = Math.min(1, Math.max(0, (100 - timeToFailure / 60000) / 100)); // Risk based on minutes to failure
-        
+
         return { risk, timeToFailure, predictedPeak };
     }
-    
+
     updateCPUModel(cpuMetrics) {
         const model = this.models.cpu;
         model.historicalData.push({
@@ -452,11 +452,11 @@ class PreemptiveIssueDetector extends EventEmitter {
             usage: cpuMetrics.usage,
             loadavg: cpuMetrics.loadavg[0]
         });
-        
+
         if (model.historicalData.length > model.trendWindow * 2) {
             model.historicalData = model.historicalData.slice(-model.trendWindow * 2);
         }
-        
+
         const prediction = this.predictCPUUsage(model);
         if (prediction.risk > this.config.preemptive.alertThreshold) {
             this.emit('prediction', {
@@ -468,22 +468,22 @@ class PreemptiveIssueDetector extends EventEmitter {
             });
         }
     }
-    
+
     predictCPUUsage(model) {
         if (model.historicalData.length < model.trendWindow) {
             return { risk: 0, predictedPeak: 0 };
         }
-        
+
         const recent = model.historicalData.slice(-model.trendWindow);
         const trend = this.calculateLinearTrend(recent.map(d => d.usage));
         const currentUsage = recent[recent.length - 1].usage;
-        
+
         const predictedPeak = Math.max(currentUsage, currentUsage + (trend.slope * 10)); // 10 intervals ahead
         const risk = Math.min(1, Math.max(0, (predictedPeak - model.warningThreshold) / (model.criticalThreshold - model.warningThreshold)));
-        
+
         return { risk, predictedPeak };
     }
-    
+
     updateDiskModel(diskMetrics) {
         const model = this.models.disk;
         model.historicalData.push({
@@ -491,11 +491,11 @@ class PreemptiveIssueDetector extends EventEmitter {
             percentage: diskMetrics.percentage,
             available: diskMetrics.available
         });
-        
+
         if (model.historicalData.length > model.trendWindow) {
             model.historicalData = model.historicalData.slice(-model.trendWindow);
         }
-        
+
         const prediction = this.predictDiskUsage(model);
         if (prediction.risk > this.config.preemptive.alertThreshold) {
             this.emit('prediction', {
@@ -507,26 +507,26 @@ class PreemptiveIssueDetector extends EventEmitter {
             });
         }
     }
-    
+
     predictDiskUsage(model) {
         if (model.historicalData.length < 5) {
             return { risk: 0, timeToFull: Infinity };
         }
-        
+
         const recent = model.historicalData.slice(-Math.min(model.trendWindow, model.historicalData.length));
         const trend = this.calculateLinearTrend(recent.map(d => d.percentage));
         const currentUsage = recent[recent.length - 1].percentage;
-        
+
         if (trend.slope <= 0) {
             return { risk: 0, timeToFull: Infinity };
         }
-        
+
         const timeToFull = ((100 - currentUsage) / trend.slope) * this.intervals.slowCheck;
         const risk = Math.min(1, Math.max(0, 1 - (timeToFull / (24 * 60 * 60 * 1000)))); // Risk increases as time to full decreases
-        
+
         return { risk, timeToFull };
     }
-    
+
     updateNetworkModel(networkMetrics) {
         const model = this.models.network;
         model.historicalData.push({
@@ -535,21 +535,21 @@ class PreemptiveIssueDetector extends EventEmitter {
             packetLoss: networkMetrics.packetLoss,
             connectivity: networkMetrics.connectivity
         });
-        
+
         if (model.historicalData.length > model.trendWindow * 2) {
             model.historicalData = model.historicalData.slice(-model.trendWindow * 2);
         }
-        
+
         this.analyzeNetworkPatterns(model);
     }
-    
+
     analyzeNetworkPatterns(model) {
         if (model.historicalData.length < model.trendWindow) return;
-        
+
         const recent = model.historicalData.slice(-model.trendWindow);
         const avgLatency = recent.reduce((sum, d) => sum + d.latency, 0) / recent.length;
         const avgPacketLoss = recent.reduce((sum, d) => sum + d.packetLoss, 0) / recent.length;
-        
+
         if (avgLatency > model.latencyThreshold || avgPacketLoss > model.packetLossThreshold) {
             this.emit('anomaly', {
                 type: 'network_degradation',
@@ -560,34 +560,34 @@ class PreemptiveIssueDetector extends EventEmitter {
             });
         }
     }
-    
+
     // =====================================
     // LOG PATTERN ANALYSIS
     // =====================================
-    
+
     async analyzeLogPatterns() {
         if (!this.config.preemptive.logAnalysis) return;
-        
+
         const logFiles = await this.findLogFiles();
         const patterns = [];
-        
+
         for (const logFile of logFiles) {
             const analysis = await this.analyzeLogFile(logFile);
             patterns.push(...analysis);
         }
-        
+
         this.processLogPatterns(patterns);
     }
-    
+
     async findLogFiles() {
         const logPaths = [
             path.join(process.cwd(), 'logs'),
             path.join(process.cwd(), '.next'),
             '/tmp'
         ];
-        
+
         const logFiles = [];
-        
+
         for (const logPath of logPaths) {
             if (fs.existsSync(logPath)) {
                 const files = await this.executeCommand(`find ${logPath} -name "*.log" -mtime -1`);
@@ -596,29 +596,29 @@ class PreemptiveIssueDetector extends EventEmitter {
                 }
             }
         }
-        
+
         return logFiles;
     }
-    
+
     async analyzeLogFile(logFile) {
         try {
             const content = fs.readFileSync(logFile, 'utf8');
             const lines = content.split('\n').slice(-1000); // Analyze last 1000 lines
-            
+
             const patterns = {
                 errors: this.findErrorPatterns(lines),
                 warnings: this.findWarningPatterns(lines),
                 performance: this.findPerformanceIssues(lines),
                 anomalies: this.findAnomalousPatterns(lines)
             };
-            
+
             return this.classifyLogPatterns(patterns, logFile);
         } catch (error) {
             this.log(`Failed to analyze log file ${logFile}: ${error.message}`, 'debug');
             return [];
         }
     }
-    
+
     findErrorPatterns(lines) {
         const errorPatterns = [
             /error/i,
@@ -630,12 +630,12 @@ class PreemptiveIssueDetector extends EventEmitter {
             /out of memory/i,
             /segmentation fault/i
         ];
-        
-        return lines.filter(line => 
+
+        return lines.filter(line =>
             errorPatterns.some(pattern => pattern.test(line))
         );
     }
-    
+
     findWarningPatterns(lines) {
         const warningPatterns = [
             /warn/i,
@@ -644,12 +644,12 @@ class PreemptiveIssueDetector extends EventEmitter {
             /retry/i,
             /fallback/i
         ];
-        
-        return lines.filter(line => 
+
+        return lines.filter(line =>
             warningPatterns.some(pattern => pattern.test(line))
         );
     }
-    
+
     findPerformanceIssues(lines) {
         const performancePatterns = [
             /(\d+)ms/g,
@@ -657,9 +657,9 @@ class PreemptiveIssueDetector extends EventEmitter {
             /high memory usage/i,
             /gc pause/i
         ];
-        
+
         const issues = [];
-        
+
         lines.forEach(line => {
             performancePatterns.forEach(pattern => {
                 const matches = line.match(pattern);
@@ -668,10 +668,10 @@ class PreemptiveIssueDetector extends EventEmitter {
                 }
             });
         });
-        
+
         return issues;
     }
-    
+
     findAnomalousPatterns(lines) {
         // Look for unusual spikes in log frequency
         const timePattern = /\[([\d-T:\.Z]+)\]/;
@@ -681,24 +681,24 @@ class PreemptiveIssueDetector extends EventEmitter {
                 return match ? new Date(match[1]).getTime() : null;
             })
             .filter(t => t !== null);
-        
+
         if (timestamps.length < 10) return [];
-        
+
         // Detect unusual frequency spikes
         const intervals = [];
         for (let i = 1; i < timestamps.length; i++) {
             intervals.push(timestamps[i] - timestamps[i-1]);
         }
-        
+
         const avgInterval = intervals.reduce((sum, i) => sum + i, 0) / intervals.length;
         const anomalies = intervals.filter(interval => interval < avgInterval * 0.1); // Very fast logging
-        
+
         return anomalies.length > 5 ? ['High frequency logging detected'] : [];
     }
-    
+
     classifyLogPatterns(patterns, logFile) {
         const classifications = [];
-        
+
         if (patterns.errors.length > 5) {
             classifications.push({
                 type: 'error_spike',
@@ -708,7 +708,7 @@ class PreemptiveIssueDetector extends EventEmitter {
                 message: `Error spike detected: ${patterns.errors.length} errors in recent logs`
             });
         }
-        
+
         if (patterns.performance.length > 0) {
             classifications.push({
                 type: 'performance_degradation',
@@ -718,7 +718,7 @@ class PreemptiveIssueDetector extends EventEmitter {
                 message: `Performance issues detected in logs`
             });
         }
-        
+
         if (patterns.anomalies.length > 0) {
             classifications.push({
                 type: 'log_anomaly',
@@ -728,37 +728,37 @@ class PreemptiveIssueDetector extends EventEmitter {
                 message: `Anomalous logging patterns detected`
             });
         }
-        
+
         return classifications;
     }
-    
+
     processLogPatterns(patterns) {
         patterns.forEach(pattern => {
             this.emit('pattern_detected', pattern);
         });
     }
-    
+
     // =====================================
     // BUILD PERFORMANCE MONITORING
     // =====================================
-    
+
     async monitorBuildPerformance() {
         if (!this.config.preemptive.buildMonitoring) return;
-        
+
         const buildMetrics = await this.collectBuildMetrics();
         this.updateBuildModel(buildMetrics);
     }
-    
+
     async collectBuildMetrics() {
         const startTime = Date.now();
-        
+
         // Check if build process is running
         const buildProcess = await this.executeCommand('ps aux | grep -E "(next build|npm run build)" | grep -v grep');
-        
+
         if (!buildProcess.success || !buildProcess.stdout.trim()) {
             return null; // No build running
         }
-        
+
         // Collect build-related metrics
         const metrics = {
             timestamp: startTime,
@@ -768,50 +768,50 @@ class PreemptiveIssueDetector extends EventEmitter {
             fileSystemActivity: await this.getFileSystemActivity(),
             cacheSize: await this.getCacheSize()
         };
-        
+
         return metrics;
     }
-    
+
     async getBuildMemoryUsage() {
         const result = await this.executeCommand('ps aux | grep -E "(next|node)" | grep -v grep | awk \'{sum+=$6} END {print sum}\'');
         return result.success ? parseInt(result.stdout) || 0 : 0;
     }
-    
+
     async getFileSystemActivity() {
         // Monitor .next directory size changes
         const nextDirResult = await this.executeCommand('du -s .next 2>/dev/null || echo "0"');
         const nodeModulesResult = await this.executeCommand('du -s node_modules 2>/dev/null || echo "0"');
-        
+
         return {
             nextDir: parseInt(nextDirResult.stdout) || 0,
             nodeModules: parseInt(nodeModulesResult.stdout) || 0
         };
     }
-    
+
     async getCacheSize() {
         const cacheResult = await this.executeCommand('du -s .next/cache 2>/dev/null || echo "0"');
         return parseInt(cacheResult.stdout) || 0;
     }
-    
+
     updateBuildModel(buildMetrics) {
         if (!buildMetrics) return;
-        
+
         const model = this.models.build;
         model.historicalData.push(buildMetrics);
-        
+
         if (model.historicalData.length > model.trendWindow * 2) {
             model.historicalData = model.historicalData.slice(-model.trendWindow * 2);
         }
-        
+
         this.analyzeBuildTrends(model);
     }
-    
+
     analyzeBuildTrends(model) {
         if (model.historicalData.length < 3) return;
-        
+
         const recent = model.historicalData.slice(-3);
         const avgMemory = recent.reduce((sum, d) => sum + d.memoryUsage, 0) / recent.length;
-        
+
         // Establish baseline if not set
         if (!model.performanceBaseline) {
             if (model.historicalData.length >= 5) {
@@ -823,10 +823,10 @@ class PreemptiveIssueDetector extends EventEmitter {
             }
             return;
         }
-        
+
         // Check for performance degradation
         const memoryRatio = avgMemory / model.performanceBaseline.avgMemory;
-        
+
         if (memoryRatio > model.degradationThreshold) {
             this.emit('anomaly', {
                 type: 'build_performance_degradation',
@@ -838,27 +838,27 @@ class PreemptiveIssueDetector extends EventEmitter {
             });
         }
     }
-    
+
     // =====================================
     // PORT MONITORING & CONFLICT PREDICTION
     // =====================================
-    
+
     async monitorPortUsage() {
         const ports = [3000, 3001, 8000, 8080, 9000, 5000];
         const portStatus = new Map();
-        
+
         for (const port of ports) {
             const usage = await this.checkPortUsage(port);
             portStatus.set(port, usage);
             this.updatePortModel(port, usage);
         }
-        
+
         this.predictPortConflicts(portStatus);
     }
-    
+
     async checkPortUsage(port) {
         const result = await this.executeCommand(`lsof -i :${port}`);
-        
+
         if (result.success && result.stdout.trim()) {
             const processes = result.stdout.split('\n').slice(1); // Skip header
             return {
@@ -874,46 +874,46 @@ class PreemptiveIssueDetector extends EventEmitter {
                 })
             };
         }
-        
+
         return { inUse: false, processCount: 0, processes: [] };
     }
-    
+
     updatePortModel(port, usage) {
         const model = this.models.ports;
         const now = Date.now();
-        
+
         if (!model.historicalUsage.has(port)) {
             model.historicalUsage.set(port, []);
         }
-        
+
         const history = model.historicalUsage.get(port);
         history.push({
             timestamp: now,
             inUse: usage.inUse,
             processCount: usage.processCount
         });
-        
+
         // Keep last 100 entries
         if (history.length > 100) {
             history.splice(0, history.length - 100);
         }
     }
-    
+
     predictPortConflicts(currentStatus) {
         const model = this.models.ports;
-        
+
         currentStatus.forEach((usage, port) => {
             const history = model.historicalUsage.get(port);
             if (!history || history.length < 10) return;
-            
+
             // Calculate usage frequency
             const recentUsage = history.slice(-20);
             const usageFrequency = recentUsage.filter(h => h.inUse).length / recentUsage.length;
-            
+
             // Predict conflict risk
             const conflictRisk = this.calculatePortConflictRisk(port, usageFrequency, usage);
             model.conflictPrediction.set(port, conflictRisk);
-            
+
             if (conflictRisk > model.riskThreshold) {
                 this.emit('prediction', {
                     type: 'port_conflict',
@@ -926,45 +926,45 @@ class PreemptiveIssueDetector extends EventEmitter {
             }
         });
     }
-    
+
     calculatePortConflictRisk(port, usageFrequency, currentUsage) {
         // Base risk on usage frequency
         let risk = usageFrequency;
-        
+
         // Increase risk if port is currently in use but shouldn't be
         if (currentUsage.inUse && (port === 3000 || port === 8000)) {
             const expectedProcesses = port === 3000 ? ['node', 'next'] : ['python', 'uvicorn'];
-            const hasExpectedProcess = currentUsage.processes.some(p => 
+            const hasExpectedProcess = currentUsage.processes.some(p =>
                 expectedProcesses.some(expected => p.command.toLowerCase().includes(expected))
             );
-            
+
             if (!hasExpectedProcess) {
                 risk += 0.3; // Unexpected process using our port
             }
         }
-        
+
         // Increase risk for multiple processes on same port
         if (currentUsage.processCount > 1) {
             risk += 0.2;
         }
-        
+
         return Math.min(1, risk);
     }
-    
+
     // =====================================
     // DEPENDENCY HEALTH MONITORING
     // =====================================
-    
+
     async monitorDependencyHealth() {
         if (!this.config.preemptive.dependencyTracking) return;
-        
+
         const packageJson = await this.loadPackageJson();
         if (!packageJson) return;
-        
+
         const dependencyHealth = await this.analyzeDependencyHealth(packageJson);
         this.processDependencyHealth(dependencyHealth);
     }
-    
+
     async loadPackageJson() {
         try {
             const packagePath = path.join(process.cwd(), 'package.json');
@@ -974,7 +974,7 @@ class PreemptiveIssueDetector extends EventEmitter {
             return null;
         }
     }
-    
+
     async analyzeDependencyHealth(packageJson) {
         const health = {
             outdated: [],
@@ -983,7 +983,7 @@ class PreemptiveIssueDetector extends EventEmitter {
             missing: [],
             conflicts: []
         };
-        
+
         // Check for outdated packages
         const outdatedResult = await this.executeCommand('npm outdated --json');
         if (outdatedResult.success && outdatedResult.stdout) {
@@ -994,7 +994,7 @@ class PreemptiveIssueDetector extends EventEmitter {
                 this.log(`Failed to parse outdated packages: ${error.message}`, 'debug');
             }
         }
-        
+
         // Check for vulnerabilities
         const auditResult = await this.executeCommand('npm audit --json');
         if (auditResult.success && auditResult.stdout) {
@@ -1007,7 +1007,7 @@ class PreemptiveIssueDetector extends EventEmitter {
                 this.log(`Failed to parse audit results: ${error.message}`, 'debug');
             }
         }
-        
+
         // Check for missing dependencies
         const missingResult = await this.executeCommand('npm ls --json');
         if (missingResult.success && missingResult.stdout) {
@@ -1020,14 +1020,14 @@ class PreemptiveIssueDetector extends EventEmitter {
                 this.log(`Failed to parse dependency tree: ${error.message}`, 'debug');
             }
         }
-        
+
         return health;
     }
-    
+
     processDependencyHealth(health) {
         const criticalIssues = health.vulnerable.length + health.missing.length;
         const totalIssues = criticalIssues + health.outdated.length + health.deprecated.length;
-        
+
         if (criticalIssues > 0) {
             this.emit('anomaly', {
                 type: 'dependency_issues',
@@ -1047,14 +1047,14 @@ class PreemptiveIssueDetector extends EventEmitter {
             });
         }
     }
-    
+
     // =====================================
     // MATHEMATICAL ANALYSIS UTILITIES
     // =====================================
-    
+
     calculateLinearTrend(values) {
         if (values.length < 2) return { slope: 0, intercept: 0, r2: 0 };
-        
+
         const n = values.length;
         const x = Array.from({ length: n }, (_, i) => i);
         const sumX = x.reduce((sum, val) => sum + val, 0);
@@ -1062,10 +1062,10 @@ class PreemptiveIssueDetector extends EventEmitter {
         const sumXY = x.reduce((sum, val, i) => sum + val * values[i], 0);
         const sumX2 = x.reduce((sum, val) => sum + val * val, 0);
         const sumY2 = values.reduce((sum, val) => sum + val * val, 0);
-        
+
         const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
         const intercept = (sumY - slope * sumX) / n;
-        
+
         // Calculate R-squared
         const avgY = sumY / n;
         const ssRes = values.reduce((sum, val, i) => {
@@ -1074,13 +1074,13 @@ class PreemptiveIssueDetector extends EventEmitter {
         }, 0);
         const ssTot = values.reduce((sum, val) => sum + Math.pow(val - avgY, 2), 0);
         const r2 = ssTot === 0 ? 1 : 1 - (ssRes / ssTot);
-        
+
         return { slope, intercept, r2 };
     }
-    
+
     calculateMovingAverage(values, window) {
         if (values.length < window) return values;
-        
+
         const result = [];
         for (let i = window - 1; i < values.length; i++) {
             const slice = values.slice(i - window + 1, i + 1);
@@ -1089,14 +1089,14 @@ class PreemptiveIssueDetector extends EventEmitter {
         }
         return result;
     }
-    
+
     detectAnomalies(values, threshold = 2) {
         if (values.length < 3) return [];
-        
+
         const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
         const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
         const stdDev = Math.sqrt(variance);
-        
+
         return values.map((value, index) => {
             const zScore = Math.abs((value - mean) / stdDev);
             return {
@@ -1107,24 +1107,24 @@ class PreemptiveIssueDetector extends EventEmitter {
             };
         }).filter(item => item.isAnomaly);
     }
-    
+
     // =====================================
     // AUTO-REMEDIATION ACTIONS
     // =====================================
-    
+
     async remediateMemoryLeak(alert) {
         this.log(`Attempting memory leak remediation`, 'info');
-        
+
         const actions = [
             'Restarting development server to clear memory',
             'Clearing Next.js cache',
             'Running garbage collection',
             'Optimizing memory-intensive processes'
         ];
-        
+
         // Clear Next.js cache
         await this.executeCommand('rm -rf .next/cache');
-        
+
         // Suggest memory optimization
         this.emit('auto_remediation', {
             type: 'memory_leak',
@@ -1133,24 +1133,24 @@ class PreemptiveIssueDetector extends EventEmitter {
             message: 'Memory optimization steps completed'
         });
     }
-    
+
     async remediateDiskSpace(alert) {
         this.log(`Attempting disk space remediation`, 'info');
-        
+
         const actions = [];
-        
+
         // Clean build artifacts
         const cleanNext = await this.executeCommand('rm -rf .next');
         if (cleanNext.success) actions.push('Cleaned .next directory');
-        
+
         // Clean node_modules cache
         const cleanModules = await this.executeCommand('npm cache clean --force');
         if (cleanModules.success) actions.push('Cleaned npm cache');
-        
+
         // Clean logs older than 7 days
         const cleanLogs = await this.executeCommand('find logs -name "*.log" -mtime +7 -delete');
         if (cleanLogs.success) actions.push('Cleaned old log files');
-        
+
         this.emit('auto_remediation', {
             type: 'disk_space',
             actions,
@@ -1158,21 +1158,21 @@ class PreemptiveIssueDetector extends EventEmitter {
             message: `Disk cleanup completed: ${actions.length} actions taken`
         });
     }
-    
+
     async remediatePortConflict(alert) {
         this.log(`Attempting port conflict remediation for port ${alert.port}`, 'info');
-        
+
         const actions = [];
-        
+
         // Kill processes using the port if they're not expected
         const portUsage = await this.checkPortUsage(alert.port);
         const expectedProcesses = alert.port === 3000 ? ['node', 'next'] : ['python', 'uvicorn'];
-        
+
         for (const process of portUsage.processes) {
-            const isExpected = expectedProcesses.some(expected => 
+            const isExpected = expectedProcesses.some(expected =>
                 process.command.toLowerCase().includes(expected)
             );
-            
+
             if (!isExpected) {
                 const killResult = await this.executeCommand(`kill ${process.pid}`);
                 if (killResult.success) {
@@ -1180,7 +1180,7 @@ class PreemptiveIssueDetector extends EventEmitter {
                 }
             }
         }
-        
+
         this.emit('auto_remediation', {
             type: 'port_conflict',
             port: alert.port,
@@ -1189,20 +1189,20 @@ class PreemptiveIssueDetector extends EventEmitter {
             message: `Port conflict remediation completed: ${actions.length} processes terminated`
         });
     }
-    
+
     async remediateBuildDegradation(alert) {
         this.log(`Attempting build performance remediation`, 'info');
-        
+
         const actions = [];
-        
+
         // Clear build cache
         const clearCache = await this.executeCommand('rm -rf .next/cache');
         if (clearCache.success) actions.push('Cleared build cache');
-        
+
         // Update dependencies
         const updateDeps = await this.executeCommand('npm update');
         if (updateDeps.success) actions.push('Updated dependencies');
-        
+
         this.emit('auto_remediation', {
             type: 'build_degradation',
             actions,
@@ -1210,20 +1210,20 @@ class PreemptiveIssueDetector extends EventEmitter {
             message: `Build optimization completed: ${actions.length} actions taken`
         });
     }
-    
+
     async remediateDependencyIssues(alert) {
         this.log(`Attempting dependency issue remediation`, 'info');
-        
+
         const actions = [];
-        
+
         // Fix vulnerabilities
         const auditFix = await this.executeCommand('npm audit fix');
         if (auditFix.success) actions.push('Applied security fixes');
-        
+
         // Install missing dependencies
         const install = await this.executeCommand('npm install');
         if (install.success) actions.push('Installed missing dependencies');
-        
+
         this.emit('auto_remediation', {
             type: 'dependency_issues',
             actions,
@@ -1231,64 +1231,64 @@ class PreemptiveIssueDetector extends EventEmitter {
             message: `Dependency remediation completed: ${actions.length} actions taken`
         });
     }
-    
+
     // =====================================
     // EVENT HANDLERS
     // =====================================
-    
+
     handlePrediction(prediction) {
         this.log(`PREDICTION: ${prediction.message} (Risk: ${(prediction.risk * 100).toFixed(1)}%)`, 'warning');
-        
+
         // Store prediction for analysis
         this.savePrediction(prediction);
-        
+
         // Auto-remediation if enabled and risk is high
         if (this.config.preemptive.autoRemediation && prediction.risk > 0.8) {
             if (this.remediationActions[prediction.type]) {
                 this.remediationActions[prediction.type](prediction);
             }
         }
-        
+
         // Generate alert
         this.generateAlert(prediction, 'prediction');
     }
-    
+
     handleAnomaly(anomaly) {
         this.log(`ANOMALY: ${anomaly.message} (Severity: ${anomaly.severity})`, 'warning');
-        
+
         // Auto-remediation for critical anomalies
         if (this.config.preemptive.autoRemediation && anomaly.severity === 'critical') {
             if (this.remediationActions[anomaly.type]) {
                 this.remediationActions[anomaly.type](anomaly);
             }
         }
-        
+
         this.generateAlert(anomaly, 'anomaly');
     }
-    
+
     handleThresholdBreach(breach) {
         this.log(`THRESHOLD BREACH: ${breach.message}`, 'error');
         this.generateAlert(breach, 'threshold_breach');
     }
-    
+
     handlePatternDetection(pattern) {
         this.log(`PATTERN: ${pattern.message}`, 'info');
-        
+
         if (pattern.severity === 'warning' || pattern.severity === 'critical') {
             this.generateAlert(pattern, 'pattern');
         }
     }
-    
+
     handleAutoRemediation(remediation) {
         this.log(`AUTO-REMEDIATION: ${remediation.message}`, 'success');
-        
+
         if (remediation.success) {
             this.log(`Actions taken: ${remediation.actions.join(', ')}`, 'info');
         } else {
             this.log(`Remediation failed for ${remediation.type}`, 'error');
         }
     }
-    
+
     generateAlert(data, type) {
         const alert = {
             id: `${type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -1298,37 +1298,37 @@ class PreemptiveIssueDetector extends EventEmitter {
             message: data.message,
             data
         };
-        
+
         // Check suppression rules
         if (this.isAlertSuppressed(alert)) {
             this.log(`Alert suppressed: ${alert.message}`, 'debug');
             return;
         }
-        
+
         this.alerts.active.set(alert.id, alert);
         this.alerts.history.push(alert);
-        
+
         // Keep history manageable
         if (this.alerts.history.length > 1000) {
             this.alerts.history = this.alerts.history.slice(-500);
         }
-        
+
         // Display alert
         this.displayAlert(alert);
-        
+
         // Save to file
         this.saveAlert(alert);
     }
-    
+
     isAlertSuppressed(alert) {
         // Check if similar alert was recently generated
         const recentSimilar = this.alerts.history
             .filter(a => a.type === alert.type && (Date.now() - a.timestamp) < 300000) // 5 minutes
             .length;
-        
+
         return recentSimilar > 2; // Suppress if more than 2 similar alerts in 5 minutes
     }
-    
+
     displayAlert(alert) {
         const severityIcon = {
             info: '📘',
@@ -1336,28 +1336,28 @@ class PreemptiveIssueDetector extends EventEmitter {
             critical: '🚨',
             emergency: '🔥'
         }[alert.severity] || '📘';
-        
+
         console.log(`\n${severityIcon} PREEMPTIVE ALERT [${alert.severity.toUpperCase()}]`);
         console.log(`Type: ${alert.type}`);
         console.log(`Message: ${alert.message}`);
         console.log(`Time: ${new Date(alert.timestamp).toISOString()}`);
         console.log('─'.repeat(80));
     }
-    
+
     // =====================================
     // DATA PERSISTENCE
     // =====================================
-    
+
     savePrediction(prediction) {
         const filename = path.join(this.dataDirectory, 'predictions', `${Date.now()}.json`);
         fs.writeFileSync(filename, JSON.stringify(prediction, null, 2));
     }
-    
+
     saveAlert(alert) {
         const filename = path.join(this.dataDirectory, 'alerts', `${alert.id}.json`);
         fs.writeFileSync(filename, JSON.stringify(alert, null, 2));
     }
-    
+
     saveModels() {
         const modelsFile = path.join(this.dataDirectory, 'models', 'current-models.json');
         const modelsData = {
@@ -1365,37 +1365,37 @@ class PreemptiveIssueDetector extends EventEmitter {
             models: this.models,
             riskFactors: this.riskFactors
         };
-        
+
         fs.writeFileSync(modelsFile, JSON.stringify(modelsData, null, 2));
         this.log('Predictive models saved', 'info');
     }
-    
+
     loadHistoricalData() {
         try {
             const modelsFile = path.join(this.dataDirectory, 'models', 'current-models.json');
             if (fs.existsSync(modelsFile)) {
                 const data = JSON.parse(fs.readFileSync(modelsFile, 'utf8'));
-                
+
                 // Restore historical data (keep only recent data)
                 if (data.models) {
                     Object.keys(this.models).forEach(modelType => {
                         if (data.models[modelType] && data.models[modelType].historicalData) {
                             const maxAge = 24 * 60 * 60 * 1000; // 24 hours
                             const cutoff = Date.now() - maxAge;
-                            
+
                             this.models[modelType].historicalData = data.models[modelType].historicalData
                                 .filter(item => item.timestamp > cutoff);
                         }
                     });
                 }
-                
+
                 this.log('Historical data loaded', 'info');
             }
         } catch (error) {
             this.log(`Failed to load historical data: ${error.message}`, 'warning');
         }
     }
-    
+
     generateReport() {
         const report = {
             timestamp: Date.now(),
@@ -1410,29 +1410,29 @@ class PreemptiveIssueDetector extends EventEmitter {
             activeAlerts: Array.from(this.alerts.active.values()),
             recommendations: this.generateRecommendations()
         };
-        
+
         const reportFile = path.join(this.dataDirectory, `preemptive-report-${Date.now()}.json`);
         fs.writeFileSync(reportFile, JSON.stringify(report, null, 2));
-        
+
         return report;
     }
-    
+
     calculateOverallRisk() {
         const risks = {};
-        
+
         Object.entries(this.riskFactors).forEach(([factor, config]) => {
             if (!config.enabled) return;
-            
+
             const model = this.models[factor];
             if (!model || !model.historicalData || model.historicalData.length === 0) {
                 risks[factor] = 0;
                 return;
             }
-            
+
             // Calculate risk based on recent trends and current values
             let risk = 0;
             const recent = model.historicalData.slice(-5);
-            
+
             switch (factor) {
                 case 'memory':
                     const avgMemory = recent.reduce((sum, d) => sum + d.percentage, 0) / recent.length;
@@ -1449,30 +1449,30 @@ class PreemptiveIssueDetector extends EventEmitter {
                 default:
                     risk = 0;
             }
-            
+
             risks[factor] = risk;
         });
-        
+
         // Calculate weighted overall risk
         const totalWeight = Object.values(this.riskFactors)
             .filter(config => config.enabled)
             .reduce((sum, config) => sum + config.weight, 0);
-        
+
         const overallRisk = Object.entries(risks).reduce((sum, [factor, risk]) => {
             const weight = this.riskFactors[factor]?.weight || 0;
             return sum + (risk * weight);
         }, 0) / totalWeight;
-        
+
         return {
             overall: overallRisk,
             factors: risks
         };
     }
-    
+
     generateRecommendations() {
         const recommendations = [];
         const riskAssessment = this.calculateOverallRisk();
-        
+
         Object.entries(riskAssessment.factors).forEach(([factor, risk]) => {
             if (risk > 0.7) {
                 switch (factor) {
@@ -1503,12 +1503,12 @@ class PreemptiveIssueDetector extends EventEmitter {
                 }
             }
         });
-        
+
         // Add general recommendations based on alert history
         const recentCriticalAlerts = this.alerts.history
             .filter(a => a.severity === 'critical' && (Date.now() - a.timestamp) < 3600000)
             .length;
-        
+
         if (recentCriticalAlerts > 3) {
             recommendations.push({
                 priority: 'high',
@@ -1517,49 +1517,49 @@ class PreemptiveIssueDetector extends EventEmitter {
                 reason: `${recentCriticalAlerts} critical alerts in the last hour`
             });
         }
-        
+
         return recommendations;
     }
-    
+
     // =====================================
     // MAIN MONITORING LOOP
     // =====================================
-    
+
     async performMonitoringCycle() {
         try {
             // Collect system metrics
             const metrics = await this.collectSystemMetrics();
             this.updatePredictiveModels(metrics);
-            
+
             // Analyze log patterns
             await this.analyzeLogPatterns();
-            
+
             // Monitor build performance
             await this.monitorBuildPerformance();
-            
+
             // Monitor port usage
             await this.monitorPortUsage();
-            
+
             // Monitor dependency health
             await this.monitorDependencyHealth();
-            
+
             // Save models periodically
             if (Date.now() % (10 * 60 * 1000) < this.intervals.normalCheck) { // Every 10 minutes
                 this.saveModels();
             }
-            
+
         } catch (error) {
             this.log(`Monitoring cycle failed: ${error.message}`, 'error');
         }
     }
-    
+
     async run() {
         this.log('🔮 Preemptive Issue Detection System Starting', 'info');
         this.log(`Configuration: ${JSON.stringify(this.config.preemptive, null, 2)}`, 'debug');
-        
+
         // Initial monitoring cycle
         await this.performMonitoringCycle();
-        
+
         // Start monitoring intervals
         const fastInterval = setInterval(() => {
             // Quick checks for critical issues
@@ -1567,24 +1567,24 @@ class PreemptiveIssueDetector extends EventEmitter {
                 this.updatePredictiveModels(metrics);
             });
         }, this.intervals.fastCheck);
-        
+
         const normalInterval = setInterval(() => {
             // Regular monitoring cycle
             this.performMonitoringCycle();
         }, this.intervals.normalCheck);
-        
+
         const slowInterval = setInterval(() => {
             // Deep analysis and predictions
             this.analyzeLogPatterns();
             this.monitorDependencyHealth();
         }, this.intervals.slowCheck);
-        
+
         const predictionInterval = setInterval(() => {
             // Generate predictive report
             const report = this.generateReport();
             this.log(`Risk assessment: ${(report.riskAssessment.overall * 100).toFixed(1)}%`, 'info');
         }, this.intervals.prediction);
-        
+
         // Keep process running
         process.on('SIGINT', () => {
             clearInterval(fastInterval);
@@ -1593,16 +1593,16 @@ class PreemptiveIssueDetector extends EventEmitter {
             clearInterval(predictionInterval);
             this.shutdown();
         });
-        
+
         this.log('Monitoring started. Press Ctrl+C to stop.', 'info');
     }
-    
+
     shutdown() {
         this.log('🔮 Preemptive Issue Detection System Shutting Down', 'info');
-        
+
         // Generate final report
         const report = this.generateReport();
-        
+
         console.log('\n📊 FINAL ANALYSIS REPORT:');
         console.log(`• Monitoring Duration: ${Math.round(report.duration / 1000)} seconds`);
         console.log(`• Predictions Generated: ${report.summary.predictions}`);
@@ -1610,7 +1610,7 @@ class PreemptiveIssueDetector extends EventEmitter {
         console.log(`• Patterns Found: ${report.summary.patterns}`);
         console.log(`• Auto-Remediations: ${report.summary.remediations}`);
         console.log(`• Overall Risk Level: ${(report.riskAssessment.overall * 100).toFixed(1)}%`);
-        
+
         if (report.recommendations.length > 0) {
             console.log('\n🎯 RECOMMENDATIONS:');
             report.recommendations.forEach(rec => {
@@ -1618,14 +1618,14 @@ class PreemptiveIssueDetector extends EventEmitter {
                 console.log(`  Reason: ${rec.reason}`);
             });
         }
-        
+
         this.saveModels();
         this.logStream.end();
-        
+
         console.log(`\n📄 Detailed report saved to: ${this.dataDirectory}`);
         process.exit(0);
     }
-    
+
     static showHelp() {
         console.log(`
 🔮 Preemptive Issue Detection System for 6FB Booking Frontend
@@ -1701,7 +1701,7 @@ if (require.main === module) {
         PreemptiveIssueDetector.showHelp();
         process.exit(0);
     }
-    
+
     const detector = new PreemptiveIssueDetector();
     detector.run().catch(error => {
         console.error('❌ Preemptive detector failed:', error);

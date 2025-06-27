@@ -9,7 +9,7 @@ import json
 from typing import Dict, Any
 
 # Set environment variables
-os.environ["DATA_ENCRYPTION_KEY"] = "BcyOvTLRfOGPAUWZlxaeYHCMpwP9w391ZBFCMNy-TOQ="
+os.environ["DATA_ENCRYPTION_KEY"] = "BcyOvTLRfOGPAUWZlxaeYHCMpwP9w391ZBFCMNy-TOQ="  # pragma: allowlist secret
 
 # Test server configuration
 BASE_URL = "http://localhost:8000"

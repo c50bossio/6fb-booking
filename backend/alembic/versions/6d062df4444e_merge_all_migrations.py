@@ -11,8 +11,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "6d062df4444e"
-down_revision = ("8db9824aead6", "add_performance_indexes")
+revision = "6d062df4444e"  # pragma: allowlist secret
+down_revision = ("8db9824aead6", "add_performance_indexes")  # pragma: allowlist secret
 branch_labels = None
 depends_on = None
 

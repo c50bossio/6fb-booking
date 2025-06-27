@@ -1,0 +1,16 @@
+{
+  "timestamp": "2025-06-27T15:10:48.236Z",
+  "environment": {
+    "node": "v22.16.0",
+    "platform": "darwin"
+  },
+  "bundleAnalysis": {},
+  "pageMetrics": [],
+  "lighthouseScores": [],
+  "recommendations": [],
+  "summary": {
+    "healthScore": 100,
+    "issues": [],
+    "timestamp": "2025-06-27T15:11:03.530Z"
+  }
+}

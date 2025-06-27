@@ -11,8 +11,8 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon
 } from '@heroicons/react/24/outline'
-import { publicBookingService } from '@/lib/api/publicBooking'
-import type { PublicLocationInfo, PublicBarberProfile, PublicServiceInfo } from '@/lib/api/publicBooking'
+import { publicBookingService, PublicBookingApiError } from '@/lib/api/publicBooking'
+import type { PublicLocationInfo, PublicBarberProfile, PublicServiceInfo, CreateBookingRequest } from '@/lib/api/publicBooking'
 import ServiceSelector from '@/components/booking/ServiceSelector'
 import TimeSlotSelector from '@/components/booking/TimeSlotSelector'
 import BookingConfirmationModal from '@/components/booking/BookingConfirmationModal'
@@ -31,6 +31,12 @@ interface BookingForm {
   notes: string
 }
 
+interface ApiError {
+  message: string
+  status?: number
+  details?: any
+}
+
 function BookingPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -41,6 +47,7 @@ function BookingPageContent() {
 
   const [currentStep, setCurrentStep] = useState<BookingStep>('location')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<ApiError | null>(null)
   const [locations, setLocations] = useState<PublicLocationInfo[]>([])
   const [services, setServices] = useState<PublicServiceInfo[]>([])
   const [barbers, setBarbers] = useState<PublicBarberProfile[]>([])
@@ -50,6 +57,10 @@ function BookingPageContent() {
   const [selectedLocation, setSelectedLocation] = useState<PublicLocationInfo | null>(null)
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [bookingConfirmation, setBookingConfirmation] = useState<any>(null)
+  const [locationsLoading, setLocationsLoading] = useState(false)
+  const [servicesLoading, setServicesLoading] = useState(false)
+  const [barbersLoading, setBarbersLoading] = useState(false)
+  const [availabilityLoading, setAvailabilityLoading] = useState(false)
 
   const [form, setForm] = useState<BookingForm>({
     location_id: preselectedLocationId ? parseInt(preselectedLocationId) : null,
@@ -83,17 +94,17 @@ function BookingPageContent() {
 
   // Load services when location is selected
   useEffect(() => {
-    if (form.location_id || form.barber_id) {
+    if (form.location_id) {
       loadServices()
     }
-  }, [form.location_id, form.barber_id])
+  }, [form.location_id])
 
-  // Load barbers when service is selected
+  // Load barbers when location is selected
   useEffect(() => {
-    if (form.service_id && form.location_id) {
+    if (form.location_id) {
       loadBarbers()
     }
-  }, [form.service_id, form.location_id])
+  }, [form.location_id])
 
   // Check availability when barber and date are selected
   useEffect(() => {
@@ -103,51 +114,65 @@ function BookingPageContent() {
   }, [form.barber_id, form.date, form.service_id])
 
   const loadLocations = async () => {
+    setLocationsLoading(true)
+    setError(null)
     try {
-      const response = await locationsService.getLocations({ is_active: true })
-      setLocations(response.data)
+      const locations = await publicBookingService.getShops({ is_active: true })
+      setLocations(locations)
 
       // Auto-select if only one location
-      if (response.data.length === 1) {
-        setForm(prev => ({ ...prev, location_id: response.data[0].id }))
-        setSelectedLocation(response.data[0])
+      if (locations.length === 1) {
+        setForm(prev => ({ ...prev, location_id: locations[0].id }))
+        setSelectedLocation(locations[0])
       }
     } catch (error) {
       console.error('Failed to load locations:', error)
+      const apiError = error instanceof PublicBookingApiError
+        ? { message: error.message, status: error.status, details: error.details }
+        : { message: 'Failed to load locations. Please try again.' }
+      setError(apiError)
+    } finally {
+      setLocationsLoading(false)
     }
   }
 
   const loadServices = async () => {
-    setLoading(true)
+    setServicesLoading(true)
+    setError(null)
     try {
-      const params: any = { is_active: true }
-      if (form.location_id) params.location_id = form.location_id
-      if (form.barber_id) params.barber_id = form.barber_id
+      if (!form.location_id) {
+        setError({ message: 'Please select a location first.' })
+        return
+      }
 
-      const response = await servicesService.getServices(params)
-      setServices(response.data)
+      const services = await publicBookingService.getShopServices(form.location_id)
+      setServices(services)
     } catch (error) {
       console.error('Failed to load services:', error)
+      const apiError = error instanceof PublicBookingApiError
+        ? { message: error.message, status: error.status, details: error.details }
+        : { message: 'Failed to load services. Please try again.' }
+      setError(apiError)
     } finally {
-      setLoading(false)
+      setServicesLoading(false)
     }
   }
 
   const loadBarbers = async () => {
-    setLoading(true)
+    setBarbersLoading(true)
+    setError(null)
     try {
-      const response = await barbersService.getBarbers({
-        location_id: form.location_id!,
-        service_id: form.service_id!,
-        is_active: true
-      })
-      // Handle both paginated response and direct array response (for mock data)
-      const barbersData = Array.isArray(response) ? response : (response?.data || [])
-      setBarbers(Array.isArray(barbersData) ? barbersData : [])
+      if (!form.location_id) {
+        setError({ message: 'Please select a location first.' })
+        return
+      }
+
+      const barbers = await publicBookingService.getShopBarbers(form.location_id)
+      setBarbers(barbers)
 
       // If pre-selected barber, find and select them
-      if (preselectedBarberId && Array.isArray(barbersData)) {
-        const barber = barbersData.find(b => b.id === parseInt(preselectedBarberId))
+      if (preselectedBarberId && barbers.length > 0) {
+        const barber = barbers.find(b => b.id === parseInt(preselectedBarberId))
         if (barber) {
           setSelectedBarber(barber)
           setForm(prev => ({ ...prev, barber_id: barber.id }))
@@ -155,31 +180,39 @@ function BookingPageContent() {
       }
     } catch (error) {
       console.error('Failed to load barbers:', error)
+      const apiError = error instanceof PublicBookingApiError
+        ? { message: error.message, status: error.status, details: error.details }
+        : { message: 'Failed to load barbers. Please try again.' }
+      setError(apiError)
       setBarbers([])
     } finally {
-      setLoading(false)
+      setBarbersLoading(false)
     }
   }
 
   const checkAvailability = async () => {
     if (!form.barber_id || !form.date || !selectedService) return
 
-    setLoading(true)
+    setAvailabilityLoading(true)
+    setError(null)
     try {
-      const response = await barbersService.getAvailability(
+      const response = await publicBookingService.getBarberAvailability(
         form.barber_id,
-        form.date,
-        form.date,
         form.service_id!,
-        selectedService.duration_minutes
+        form.date,
+        form.date
       )
 
-      const slots = response.data[form.date] || []
-      setAvailableSlots(slots)
+      setAvailableSlots(response.slots || [])
     } catch (error) {
       console.error('Failed to check availability:', error)
+      const apiError = error instanceof PublicBookingApiError
+        ? { message: error.message, status: error.status, details: error.details }
+        : { message: 'Failed to check availability. Please try again.' }
+      setError(apiError)
+      setAvailableSlots([])
     } finally {
-      setLoading(false)
+      setAvailabilityLoading(false)
     }
   }
 
@@ -199,37 +232,51 @@ function BookingPageContent() {
 
   const handleSubmit = async () => {
     setLoading(true)
+    setError(null)
     try {
-      const bookingData = {
+      // Split client name into first and last name
+      const nameParts = form.client_name.trim().split(' ')
+      const firstName = nameParts[0] || ''
+      const lastName = nameParts.slice(1).join(' ') || ''
+
+      const bookingData: CreateBookingRequest = {
         service_id: form.service_id!,
         barber_id: form.barber_id!,
         appointment_date: form.date,
         appointment_time: form.time,
-        location_id: form.location_id,
-        client_info: {
-          name: form.client_name,
-          email: form.client_email,
-          phone: form.client_phone
-        },
-        notes: form.notes
+        location_id: form.location_id || undefined,
+        client_first_name: firstName,
+        client_last_name: lastName,
+        client_email: form.client_email,
+        client_phone: form.client_phone,
+        notes: form.notes || undefined,
+        timezone: 'America/New_York'
       }
 
-      const response = await bookingService.createBooking(bookingData)
+      const response = await publicBookingService.createBooking(bookingData)
 
       // Prepare confirmation data
       setBookingConfirmation({
-        ...response.data,
+        confirmation_number: response.booking_token,
         service_name: selectedService?.name,
         barber_name: selectedBarber ? `${selectedBarber.first_name} ${selectedBarber.last_name}` : '',
+        appointment_date: form.date,
+        appointment_time: form.time,
         duration: selectedService?.duration_minutes,
         price: selectedService?.base_price,
+        client_name: form.client_name,
+        client_email: form.client_email,
+        client_phone: form.client_phone,
         location: selectedLocation
       })
 
       setShowConfirmation(true)
     } catch (error: any) {
       console.error('Failed to create booking:', error)
-      alert(error.response?.data?.detail || 'Failed to create booking. Please try again.')
+      const apiError = error instanceof PublicBookingApiError
+        ? { message: error.message, status: error.status, details: error.details }
+        : { message: 'Failed to create booking. Please try again.' }
+      setError(apiError)
     } finally {
       setLoading(false)
     }
@@ -241,30 +288,67 @@ function BookingPageContent() {
         return (
           <div className="space-y-4">
             <h2 className="text-xl font-semibold text-gray-900">Select Location</h2>
-            <div className="grid grid-cols-1 gap-4">
-              {locations.map((location) => (
+
+            {/* Error Display */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-red-800 text-sm">{error.message}</p>
                 <button
-                  key={location.id}
-                  onClick={() => {
-                    setForm(prev => ({ ...prev, location_id: location.id }))
-                    setSelectedLocation(location)
-                    handleNext()
-                  }}
-                  className={`p-4 rounded-lg border-2 transition-all text-left
-                    ${form.location_id === location.id
-                      ? 'border-slate-700 bg-slate-50'
-                      : 'border-gray-300 hover:border-slate-400'}`}
+                  onClick={loadLocations}
+                  className="mt-2 text-red-600 hover:text-red-800 text-sm underline"
                 >
-                  <h3 className="font-medium text-gray-900">{location.name}</h3>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {location.address}, {location.city}, {location.state}
-                  </p>
-                  {location.phone && (
-                    <p className="text-sm text-gray-500 mt-2">{location.phone}</p>
-                  )}
+                  Try again
                 </button>
-              ))}
-            </div>
+              </div>
+            )}
+
+            {/* Loading State */}
+            {locationsLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="h-24 bg-gray-200 rounded-lg"></div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4">
+                {locations.map((location) => (
+                  <button
+                    key={location.id}
+                    onClick={() => {
+                      setForm(prev => ({ ...prev, location_id: location.id }))
+                      setSelectedLocation(location)
+                      handleNext()
+                    }}
+                    className={`p-4 rounded-lg border-2 transition-all text-left
+                      ${form.location_id === location.id
+                        ? 'border-slate-700 bg-slate-50'
+                        : 'border-gray-300 hover:border-slate-400'}`}
+                  >
+                    <h3 className="font-medium text-gray-900">{location.name}</h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {location.address}, {location.city}, {location.state}
+                    </p>
+                    {location.phone && (
+                      <p className="text-sm text-gray-500 mt-2">{location.phone}</p>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {!locationsLoading && !error && locations.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                <p>No locations available at the moment.</p>
+                <button
+                  onClick={loadLocations}
+                  className="mt-2 text-slate-600 hover:text-slate-800 underline"
+                >
+                  Refresh
+                </button>
+              </div>
+            )}
           </div>
         )
 
@@ -272,6 +356,20 @@ function BookingPageContent() {
         return (
           <div className="space-y-4">
             <h2 className="text-xl font-semibold text-gray-900">Select Service</h2>
+
+            {/* Error Display */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-red-800 text-sm">{error.message}</p>
+                <button
+                  onClick={loadServices}
+                  className="mt-2 text-red-600 hover:text-red-800 text-sm underline"
+                >
+                  Try again
+                </button>
+              </div>
+            )}
+
             <ServiceSelector
               services={services}
               selectedService={selectedService}
@@ -279,8 +377,21 @@ function BookingPageContent() {
                 setSelectedService(service)
                 setForm(prev => ({ ...prev, service_id: service.id }))
               }}
-              loading={loading}
+              loading={servicesLoading}
             />
+
+            {!servicesLoading && !error && services.length === 0 && selectedLocation && (
+              <div className="text-center py-8 text-gray-500">
+                <p>No services available at {selectedLocation.name}.</p>
+                <button
+                  onClick={loadServices}
+                  className="mt-2 text-slate-600 hover:text-slate-800 underline"
+                >
+                  Refresh
+                </button>
+              </div>
+            )}
+
             {selectedService && (
               <button
                 onClick={handleNext}
@@ -296,34 +407,71 @@ function BookingPageContent() {
         return (
           <div className="space-y-4">
             <h2 className="text-xl font-semibold text-gray-900">Select Barber</h2>
-            <div className="grid grid-cols-1 gap-4">
-              {barbers.map((barber) => (
+
+            {/* Error Display */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-red-800 text-sm">{error.message}</p>
                 <button
-                  key={barber.id}
-                  onClick={() => {
-                    setSelectedBarber(barber)
-                    setForm(prev => ({ ...prev, barber_id: barber.id }))
-                    handleNext()
-                  }}
-                  className={`p-4 rounded-lg border-2 transition-all text-left
-                    ${form.barber_id === barber.id
-                      ? 'border-slate-700 bg-slate-50'
-                      : 'border-gray-300 hover:border-slate-400'}`}
+                  onClick={loadBarbers}
+                  className="mt-2 text-red-600 hover:text-red-800 text-sm underline"
                 >
-                  <h3 className="font-medium text-gray-900">
-                    {barber.first_name} {barber.last_name}
-                  </h3>
-                  {barber.specialties && barber.specialties.length > 0 && (
-                    <p className="text-sm text-gray-600 mt-1">{barber.specialties[0]}</p>
-                  )}
-                  {barber.average_rating && (
-                    <p className="text-sm text-gray-500 mt-2">
-                      ⭐ {barber.average_rating.toFixed(1)} rating
-                    </p>
-                  )}
+                  Try again
                 </button>
-              ))}
-            </div>
+              </div>
+            )}
+
+            {/* Loading State */}
+            {barbersLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="h-20 bg-gray-200 rounded-lg"></div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4">
+                {barbers.map((barber) => (
+                  <button
+                    key={barber.id}
+                    onClick={() => {
+                      setSelectedBarber(barber)
+                      setForm(prev => ({ ...prev, barber_id: barber.id }))
+                      handleNext()
+                    }}
+                    className={`p-4 rounded-lg border-2 transition-all text-left
+                      ${form.barber_id === barber.id
+                        ? 'border-slate-700 bg-slate-50'
+                        : 'border-gray-300 hover:border-slate-400'}`}
+                  >
+                    <h3 className="font-medium text-gray-900">
+                      {barber.first_name} {barber.last_name}
+                    </h3>
+                    {barber.bio && (
+                      <p className="text-sm text-gray-600 mt-1">{barber.bio}</p>
+                    )}
+                    {barber.average_rating && (
+                      <p className="text-sm text-gray-500 mt-2">
+                        ⭐ {barber.average_rating.toFixed(1)} rating ({barber.total_reviews} reviews)
+                      </p>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {!barbersLoading && !error && barbers.length === 0 && selectedLocation && (
+              <div className="text-center py-8 text-gray-500">
+                <p>No barbers available at {selectedLocation.name}.</p>
+                <button
+                  onClick={loadBarbers}
+                  className="mt-2 text-slate-600 hover:text-slate-800 underline"
+                >
+                  Refresh
+                </button>
+              </div>
+            )}
           </div>
         )
 
@@ -348,15 +496,29 @@ function BookingPageContent() {
             {form.date && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Available Times</label>
+
+                {/* Error Display */}
+                {error && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                    <p className="text-red-800 text-sm">{error.message}</p>
+                    <button
+                      onClick={checkAvailability}
+                      className="mt-2 text-red-600 hover:text-red-800 text-sm underline"
+                    >
+                      Try again
+                    </button>
+                  </div>
+                )}
+
                 <TimeSlotSelector
                   slots={availableSlots.map(slot => ({
                     time: slot.start_time,
-                    available: slot.is_available,
+                    available: slot.available,
                     reason: slot.reason
                   }))}
                   selectedTime={form.time}
                   onTimeSelect={(time) => setForm(prev => ({ ...prev, time }))}
-                  loading={loading}
+                  loading={availabilityLoading}
                 />
               </div>
             )}

@@ -31,6 +31,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:extensions": "node scripts/test-extensions.js",
+    "test:calendar-drag-drop": "node scripts/test-calendar-drag-drop.js",
     "debug:extensions": "node scripts/test-extensions.js && echo '\n📖 See BROWSER_EXTENSION_TROUBLESHOOTING.md for detailed solutions'",
     "validate:build": "node scripts/validate-build.js",
     "validate:deployment": "node scripts/pre-deployment-validation.js",
@@ -64,7 +65,15 @@
     "monitor:preemptive": "node scripts/preemptive-issue-detector.js",
     "monitor:predict": "node scripts/preemptive-issue-detector.js --mode=predict",
     "monitor:analyze": "node scripts/preemptive-issue-detector.js --mode=analyze",
-    "monitor:verbose": "node scripts/preemptive-issue-detector.js --verbose"
+    "monitor:verbose": "node scripts/preemptive-issue-detector.js --verbose",
+    "learn:recommend": "node scripts/cross-session-learning.js --recommend",
+    "learn:analyze": "node scripts/cross-session-learning.js --analyze",
+    "learn:optimize": "node scripts/cross-session-learning.js --optimize",
+    "learn:success": "node scripts/cross-session-learning.js --learn success",
+    "learn:failure": "node scripts/cross-session-learning.js --learn failure",
+    "learn:help": "node scripts/cross-session-learning.js --help",
+    "dev:smart": "node scripts/learning-integration-wrapper.js --smart-dev",
+    "dev:learning": "node scripts/learning-integration-wrapper.js --auto-detect"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",

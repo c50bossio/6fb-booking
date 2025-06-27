@@ -11,11 +11,11 @@ export async function generateMetadata({ params }: { params: { shopId: string } 
     // For server-side rendering, we need to make a direct API call
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
     const response = await fetch(`${apiBaseUrl}/api/v1/booking/public/shops/${params.shopId}`)
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch location')
     }
-    
+
     const location = await response.json()
 
     return {

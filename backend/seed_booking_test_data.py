@@ -8,7 +8,7 @@ from datetime import datetime, time, date
 from sqlalchemy.orm import Session
 
 # Set environment variables
-os.environ["DATA_ENCRYPTION_KEY"] = "BcyOvTLRfOGPAUWZlxaeYHCMpwP9w391ZBFCMNy-TOQ="
+os.environ["DATA_ENCRYPTION_KEY"] = "BcyOvTLRfOGPAUWZlxaeYHCMpwP9w391ZBFCMNy-TOQ="  # pragma: allowlist secret
 
 from config.database import get_db, SessionLocal
 from models import (

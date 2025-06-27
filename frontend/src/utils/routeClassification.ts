@@ -29,12 +29,20 @@ export const ROUTE_PATTERNS = {
     '/terms',
     '/security',
     '/test-public',
-    '/landing'
+    '/landing',
+    '/payment/success',
+    '/payment/failure'
   ],
 
   // Dashboard routes that should use the sidebar layout
   DASHBOARD: [
     '/dashboard',
+    '/dashboard/calendar',
+    '/dashboard/services',
+    '/dashboard/appointments',
+    '/dashboard/notifications',
+    '/dashboard/financial',
+    '/dashboard/enhanced',
     '/appointments',
     '/calendar',
     '/clients',
@@ -88,11 +96,19 @@ export function isPublicRoute(pathname: string): boolean {
  * Check if a route is a dashboard route (should use dashboard layout)
  */
 export function isDashboardRoute(pathname: string): boolean {
-  return ROUTE_PATTERNS.DASHBOARD.some(route => {
+  // Check explicit dashboard routes first
+  const isDashboard = ROUTE_PATTERNS.DASHBOARD.some(route => {
     if (pathname === route) return true
     if (pathname.startsWith(route + '/')) return true
     return false
   })
+
+  // Also check if it's any route under /dashboard
+  if (!isDashboard && pathname.startsWith('/dashboard')) {
+    return true
+  }
+
+  return isDashboard
 }
 
 /**

@@ -5,6 +5,7 @@ import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { LoadingSpinner } from '../ui/loading-spinner';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface GoogleCalendarConnectionStatus {
   connected: boolean;
@@ -69,10 +70,13 @@ export default function GoogleCalendarSettings() {
   const [connecting, setConnecting] = useState(false);
   const [syncResult, setSyncResult] = useState<SyncResponse | null>(null);
 
+  const { theme, getThemeColors } = useTheme();
+  const colors = getThemeColors();
+
   // Get auth token from localStorage
   const getAuthToken = () => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('auth_token');
+      return localStorage.getItem('access_token');
     }
     return null;
   };
@@ -233,7 +237,8 @@ export default function GoogleCalendarSettings() {
 
       if (response.ok) {
         // Show success message
-        alert('Settings saved successfully!');
+        // Show success message (TODO: use proper toast notification)
+        console.log('Settings saved successfully!');
       }
     } catch (error) {
       console.error('Error saving settings:', error);
@@ -325,7 +330,15 @@ export default function GoogleCalendarSettings() {
 
         {/* Sync Result */}
         {syncResult && (
-          <div className={`mt-4 p-3 rounded-lg ${syncResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+          <div className="mt-4 p-3 rounded-lg" style={{
+            backgroundColor: syncResult.success
+              ? (theme === 'light' || theme === 'soft-light' ? '#f0fdf4' : 'rgba(34, 197, 94, 0.1)')
+              : (theme === 'light' || theme === 'soft-light' ? '#fef2f2' : 'rgba(239, 68, 68, 0.1)'),
+            borderColor: syncResult.success
+              ? (theme === 'light' || theme === 'soft-light' ? '#bbf7d0' : 'rgba(34, 197, 94, 0.3)')
+              : (theme === 'light' || theme === 'soft-light' ? '#fecaca' : 'rgba(239, 68, 68, 0.3)'),
+            border: '1px solid'
+          }}>
             <div className="text-sm">
               <strong>Sync Result:</strong> {syncResult.message}
               <br />
@@ -338,7 +351,7 @@ export default function GoogleCalendarSettings() {
               )}
             </div>
             {syncResult.errors.length > 0 && (
-              <div className="mt-2 text-xs text-red-600">
+              <div className="mt-2 text-xs" style={{ color: theme === 'light' || theme === 'soft-light' ? '#dc2626' : '#f87171' }}>
                 <strong>Errors:</strong>
                 <ul className="list-disc list-inside mt-1">
                   {syncResult.errors.map((error, index) => (
@@ -353,9 +366,12 @@ export default function GoogleCalendarSettings() {
 
       {/* Sync Settings */}
       {connectionStatus?.connected && settings && (
-        <Card className="p-6">
+        <Card className="p-6" style={{
+          backgroundColor: colors.cardBackground,
+          borderColor: colors.border
+        }}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Sync Settings</h3>
+            <h3 className="text-lg font-semibold" style={{ color: colors.textPrimary }}>Sync Settings</h3>
             <Button
               onClick={handleSaveSettings}
               disabled={saving}
@@ -368,7 +384,7 @@ export default function GoogleCalendarSettings() {
           <div className="space-y-6">
             {/* Basic Sync Options */}
             <div>
-              <h4 className="font-medium mb-3">Automatic Sync</h4>
+              <h4 className="font-medium mb-3" style={{ color: colors.textPrimary }}>Automatic Sync</h4>
               <div className="space-y-2">
                 <label className="flex items-center space-x-2">
                   <input
@@ -377,7 +393,7 @@ export default function GoogleCalendarSettings() {
                     onChange={(e) => handleSettingsChange('auto_sync_enabled', e.target.checked)}
                     className="rounded"
                   />
-                  <span className="text-sm">Enable automatic sync</span>
+                  <span className="text-sm" style={{ color: colors.textPrimary }}>Enable automatic sync</span>
                 </label>
                 <label className="flex items-center space-x-2">
                   <input
@@ -386,7 +402,7 @@ export default function GoogleCalendarSettings() {
                     onChange={(e) => handleSettingsChange('sync_on_create', e.target.checked)}
                     className="rounded"
                   />
-                  <span className="text-sm">Sync when appointments are created</span>
+                  <span className="text-sm" style={{ color: colors.textPrimary }}>Sync when appointments are created</span>
                 </label>
                 <label className="flex items-center space-x-2">
                   <input
@@ -395,7 +411,7 @@ export default function GoogleCalendarSettings() {
                     onChange={(e) => handleSettingsChange('sync_on_update', e.target.checked)}
                     className="rounded"
                   />
-                  <span className="text-sm">Sync when appointments are updated</span>
+                  <span className="text-sm" style={{ color: colors.textPrimary }}>Sync when appointments are updated</span>
                 </label>
                 <label className="flex items-center space-x-2">
                   <input
@@ -404,14 +420,14 @@ export default function GoogleCalendarSettings() {
                     onChange={(e) => handleSettingsChange('sync_on_delete', e.target.checked)}
                     className="rounded"
                   />
-                  <span className="text-sm">Remove from calendar when appointments are deleted</span>
+                  <span className="text-sm" style={{ color: colors.textPrimary }}>Remove from calendar when appointments are deleted</span>
                 </label>
               </div>
             </div>
 
             {/* What to Sync */}
             <div>
-              <h4 className="font-medium mb-3">What to Sync</h4>
+              <h4 className="font-medium mb-3" style={{ color: colors.textPrimary }}>What to Sync</h4>
               <div className="space-y-2">
                 <label className="flex items-center space-x-2">
                   <input
@@ -537,6 +553,11 @@ export default function GoogleCalendarSettings() {
                         value={settings.reminder_email_minutes}
                         onChange={(e) => handleSettingsChange('reminder_email_minutes', parseInt(e.target.value))}
                         className="border rounded px-2 py-1 text-sm"
+                        style={{
+                          backgroundColor: theme === 'light' || theme === 'soft-light' ? '#ffffff' : '#374151',
+                          borderColor: colors.border,
+                          color: colors.textPrimary
+                        }}
                       >
                         <option value={1440}>1 day before</option>
                         <option value={720}>12 hours before</option>
@@ -552,6 +573,11 @@ export default function GoogleCalendarSettings() {
                         value={settings.reminder_popup_minutes}
                         onChange={(e) => handleSettingsChange('reminder_popup_minutes', parseInt(e.target.value))}
                         className="border rounded px-2 py-1 text-sm"
+                        style={{
+                          backgroundColor: theme === 'light' || theme === 'soft-light' ? '#ffffff' : '#374151',
+                          borderColor: colors.border,
+                          color: colors.textPrimary
+                        }}
                       >
                         <option value={30}>30 minutes before</option>
                         <option value={15}>15 minutes before</option>

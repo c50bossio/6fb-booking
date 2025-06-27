@@ -21,7 +21,8 @@ interface LoginResponse {
 interface RegisterRequest {
   email: string
   password: string
-  full_name: string
+  first_name: string
+  last_name: string
   role?: string
   primary_location_id?: number
 }
@@ -53,6 +54,7 @@ export const authService = {
    * Register new user
    */
   async register(userData: RegisterRequest): Promise<User> {
+    console.log('[AuthService] register called with:', userData)
     const response = await apiClient.post<User>('/auth/register', userData)
     return response.data
   },

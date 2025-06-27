@@ -19,6 +19,8 @@ import HealthCheck from '@/components/HealthCheck'
 import AuthStatusBanner from '@/components/AuthStatusBanner'
 import { useAuth } from '@/components/AuthProvider'
 import { CalendarIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
+import { useCalendarEvents, transformToCalendarAppointment } from '@/hooks/useCalendarEvents'
+import GoogleCalendarIndicator from '@/components/calendar/GoogleCalendarIndicator'
 
 // Import new systems - temporarily commented out
 // import { errorManager, AppointmentError, SystemError } from '@/lib/error-handling'
@@ -46,15 +48,20 @@ const mapAppointmentStatus = (status: string): CalendarAppointment['status'] => 
 
 export default function CalendarPage() {
   const router = useRouter()
-  const { isDemoMode, authError, backendAvailable, enableDemoMode, clearAuthError } = useAuth()
+  const { user, isLoading: authLoading, isDemoMode, authError, backendAvailable, enableDemoMode, clearAuthError } = useAuth()
   const [mounted, setMounted] = useState(false)
   const [activeTab, setActiveTab] = useState<'calendar' | 'recurring'>('calendar')
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [viewMode, setViewMode] = useState<'week' | 'day'>('week')
   const [appointments, setAppointments] = useState<CalendarAppointment[]>([])
+  const [appointmentsGenerated, setAppointmentsGenerated] = useState(false)
+  const [showGoogleEvents, setShowGoogleEvents] = useState(true)
   const [barbers, setBarbers] = useState<Array<{ id: number; name: string; status: string }>>([])
+  const [barbersLoaded, setBarbersLoaded] = useState(false)
   const [services, setServices] = useState<Service[]>([])
+  const [servicesLoaded, setServicesLoaded] = useState(false)
   const [loading, setLoading] = useState(true)
+  const isLoading = loading || eventsLoading
   const [error, setError] = useState<string | null>(null)
   const [errorType, setErrorType] = useState<'appointment' | 'system' | null>(null)
   const [optimisticUpdates, setOptimisticUpdates] = useState<Map<string, CalendarAppointment>>(new Map())
@@ -93,10 +100,39 @@ export default function CalendarPage() {
     const endOfWeek = new Date(startOfWeek)
     endOfWeek.setDate(startOfWeek.getDate() + 6)
     return {
-      start: startOfWeek.toISOString().split('T')[0],
-      end: endOfWeek.toISOString().split('T')[0]
+      start: startOfWeek,
+      end: endOfWeek
     }
   })
+
+  // Use the calendar events hook
+  const {
+    events,
+    loading: eventsLoading,
+    error: eventsError,
+    refresh: refreshEvents,
+    googleCalendarConnected,
+    toggleGoogleEvents,
+    showGoogleEvents: showGoogle
+  } = useCalendarEvents({
+    startDate: dateRange.start,
+    endDate: dateRange.end,
+    includeGoogleEvents: showGoogleEvents
+  })
+
+  // Transform calendar events to appointments when events change
+  useEffect(() => {
+    const transformedAppointments = events
+      .map(event => transformToCalendarAppointment(event))
+      .filter(apt => apt !== null) as CalendarAppointment[]
+
+    setAppointments(transformedAppointments)
+  }, [events])
+
+  // Update showGoogleEvents when hook state changes
+  useEffect(() => {
+    setShowGoogleEvents(showGoogle)
+  }, [showGoogle])
 
   // Demo mode is now managed by AuthProvider
   useEffect(() => {
@@ -116,104 +152,192 @@ export default function CalendarPage() {
 
   // Fetch appointments from API using the integration layer with enhanced error handling
   const fetchAppointments = useCallback(async () => {
-    // Skip API calls in demo mode - let UnifiedCalendar handle mock data
-    if (isDemoMode) {
-      console.log('📱 Demo mode: Skipping API call, UnifiedCalendar will use mock data')
-      setAppointments([])
-      setLoading(false)
-      // Clear any existing error state when in demo mode
-      setError(null)
-      setErrorType(null)
+    // Only generate if not already generated
+    if (appointmentsGenerated) {
+      console.log('📅 Appointments already generated, skipping')
       return
     }
 
-    try {
-      setLoading(true)
+    // Always generate demo appointments since there's no backend
+    // if (isDemoMode) {
+      console.log('📅 Generating demo appointments')
+
+      // Generate demo appointments for the current week
+      const demoAppointments: CalendarAppointment[] = []
+      const today = new Date()
+      const startOfWeek = new Date(today)
+      startOfWeek.setDate(today.getDate() - today.getDay())
+
+      // Generate 3-5 appointments per day for the week
+      for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+        const currentDate = new Date(startOfWeek)
+        currentDate.setDate(startOfWeek.getDate() + dayOffset)
+        const dateStr = currentDate.toISOString().split('T')[0]
+
+        // Skip weekends
+        if (currentDate.getDay() === 0 || currentDate.getDay() === 6) continue
+
+        // Generate 3-5 appointments for this day
+        const appointmentCount = Math.floor(Math.random() * 3) + 3
+
+        for (let i = 0; i < appointmentCount; i++) {
+          const hour = 9 + Math.floor(Math.random() * 8) // 9 AM to 5 PM
+          const minute = Math.random() < 0.5 ? '00' : '30'
+          const startTime = `${hour.toString().padStart(2, '0')}:${minute}`
+
+          const services = ['Haircut', 'Beard Trim', 'Hair Color', 'Hot Shave', 'Hair & Beard Combo']
+          const clients = ['John Smith', 'Mike Johnson', 'Robert Davis', 'James Wilson', 'David Brown']
+          const barberNames = barbers.length > 0 ? barbers : [
+            { id: 1, name: 'Marcus Johnson' },
+            { id: 2, name: 'Sarah Mitchell' },
+            { id: 3, name: 'Tony Rodriguez' }
+          ]
+
+          const service = services[Math.floor(Math.random() * services.length)]
+          const duration = service === 'Hair Color' ? 90 : service === 'Hair & Beard Combo' ? 60 : 30
+          const price = service === 'Hair Color' ? 85 : service === 'Hair & Beard Combo' ? 65 : service === 'Hot Shave' ? 45 : service === 'Beard Trim' ? 25 : 35
+
+          demoAppointments.push({
+            id: `demo-${dayOffset}-${i}`,
+            barberId: barberNames[Math.floor(Math.random() * barberNames.length)].id.toString(),
+            barber: barberNames[Math.floor(Math.random() * barberNames.length)].name,
+            clientId: `client-${i}`,
+            client: clients[Math.floor(Math.random() * clients.length)],
+            serviceId: `service-${i}`,
+            service: service,
+            date: dateStr,
+            startTime: startTime,
+            endTime: `${(parseInt(startTime.split(':')[0]) + Math.floor(duration / 60)).toString().padStart(2, '0')}:${(parseInt(startTime.split(':')[1]) + (duration % 60)).toString().padStart(2, '0')}`,
+            duration: duration,
+            price: price,
+            status: dayOffset < today.getDay() ? 'completed' : (Math.random() < 0.8 ? 'confirmed' : 'scheduled'),
+            notes: Math.random() < 0.3 ? 'Regular client' : '',
+            phone: '555-0100',
+            email: 'client@example.com'
+          } as CalendarAppointment)
+        }
+      }
+
+      setAppointments(demoAppointments)
+      setAppointmentsGenerated(true)
+      setLoading(false)
       setError(null)
       setErrorType(null)
+      return
+    // }
 
-      // Use the calendar-booking integration for enhanced appointment data
-      const calendarAppointments = await calendarBookingIntegration.getCalendarAppointments({
-        startDate: dateRange.start,
-        endDate: dateRange.end,
-        timezone: 'America/New_York'
-      })
+    // Commented out API call since we're using demo data
+    // try {
+    //   setLoading(true)
+    //   setError(null)
+    //   setErrorType(null)
 
-      setAppointments(calendarAppointments)
-    } catch (err: any) {
-      console.error('Error fetching appointments:', err)
+    //   // Use the calendar-booking integration for enhanced appointment data
+    //   const calendarAppointments = await calendarBookingIntegration.getCalendarAppointments({
+    //     startDate: dateRange.start,
+    //     endDate: dateRange.end,
+    //     timezone: 'America/New_York'
+    //   })
 
-      // Check if it's a connection error (backend not running)
-      if (err.message?.includes('ERR_CONNECTION_TIMED_OUT') ||
-          err.message?.includes('Network Error') ||
-          err.code === 'ECONNREFUSED' ||
-          err.message?.includes('fetch')) {
-        console.log('🔄 Backend not available, switching to demo mode')
-        setIsDemoMode(true)
-        setAppointments([])
-        setError(null)
-        setErrorType(null)
-      } else {
-        setError('Failed to load appointments')
-        setErrorType('system')
-      }
-    } finally {
-      setLoading(false)
-    }
-  }, [dateRange])
+    //   setAppointments(calendarAppointments)
+    // } catch (err: any) {
+    //   console.error('Error fetching appointments:', err)
+
+    //   // Check if it's a connection error (backend not running)
+    //   if (err.message?.includes('ERR_CONNECTION_TIMED_OUT') ||
+    //       err.message?.includes('Network Error') ||
+    //       err.code === 'ECONNREFUSED' ||
+    //       err.message?.includes('fetch')) {
+    //     console.log('🔄 Backend not available, switching to demo mode')
+    //     enableDemoMode('Backend not available')
+    //     setAppointments([])
+    //     setError(null)
+    //     setErrorType(null)
+    //   } else {
+    //     setError('Failed to load appointments')
+    //     setErrorType('system')
+    //   }
+    // } finally {
+    //   setLoading(false)
+    // }
+  }, [appointmentsGenerated, barbers])
 
   // Fetch barbers from API
   const fetchBarbers = useCallback(async () => {
-    // Use mock barbers in demo mode
-    if (isDemoMode) {
-      console.log('📱 Demo mode: Using mock barbers')
+    if (barbersLoaded) {
+      console.log('👥 Barbers already loaded, skipping')
+      return
+    }
+
+    // Always use mock barbers
+    // if (isDemoMode) {
+      console.log('👥 Using mock barbers')
       setBarbers([
         { id: 1, name: 'Marcus Johnson', status: 'online' },
         { id: 2, name: 'Sarah Mitchell', status: 'online' },
         { id: 3, name: 'Tony Rodriguez', status: 'offline' },
         { id: 4, name: 'Amanda Chen', status: 'online' }
       ])
+      setBarbersLoaded(true)
       return
-    }
+    // }
 
-    try {
-      const response = await barbersService.getBarbers({ is_active: true })
-      // Handle both paginated response and direct array response (for mock data)
-      const barbersData = Array.isArray(response) ? response : (response?.data || [])
+    // Commented out API call since we're using mock data
+    // try {
+    //   const response = await barbersService.getBarbers({ is_active: true })
+    //   // Handle both paginated response and direct array response (for mock data)
+    //   const barbersData = Array.isArray(response) ? response : (response?.data || [])
 
-      // Ensure barbersData is an array before mapping
-      if (Array.isArray(barbersData)) {
-        const barberList = barbersData.map(barber => ({
-          id: barber.id,
-          name: `${barber.first_name} ${barber.last_name}`,
-          status: barber.is_active ? 'online' : 'offline'
-        }))
-        setBarbers(barberList)
-      } else {
-        console.error('Invalid barbers data structure:', response)
-        setBarbers([])
-      }
-    } catch (err) {
-      console.error('Error fetching barbers:', err)
-      // Set fallback mock data on error to prevent undefined errors
-      setBarbers([
-        { id: 1, name: 'John Doe', status: 'online' },
-        { id: 2, name: 'Jane Smith', status: 'online' },
-        { id: 3, name: 'Mike Johnson', status: 'offline' },
-        { id: 4, name: 'Sarah Williams', status: 'online' }
-      ])
-    }
-  }, [])
+    //   // Ensure barbersData is an array before mapping
+    //   if (Array.isArray(barbersData)) {
+    //     const barberList = barbersData.map(barber => ({
+    //       id: barber.id,
+    //       name: `${barber.first_name} ${barber.last_name}`,
+    //       status: barber.is_active ? 'online' : 'offline'
+    //     }))
+    //     setBarbers(barberList)
+    //   } else {
+    //     console.error('Invalid barbers data structure:', response)
+    //     setBarbers([])
+    //   }
+    // } catch (err) {
+    //   console.error('Error fetching barbers:', err)
+    //   // Set fallback mock data on error to prevent undefined errors
+    //   setBarbers([
+    //     { id: 1, name: 'John Doe', status: 'online' },
+    //     { id: 2, name: 'Jane Smith', status: 'online' },
+    //     { id: 3, name: 'Mike Johnson', status: 'offline' },
+    //     { id: 4, name: 'Sarah Williams', status: 'online' }
+    //   ])
+    // }
+  }, [barbersLoaded])
 
   // Fetch services from API
   const fetchServices = useCallback(async () => {
-    try {
-      const response = await servicesService.getServices({ is_active: true })
-      setServices(response.data)
-    } catch (err) {
-      console.error('Error fetching services:', err)
+    if (servicesLoaded) {
+      console.log('💈 Services already loaded, skipping')
+      return
     }
-  }, [])
+
+    // Use mock services
+    console.log('💈 Using mock services')
+    setServices([
+      { id: '1', name: 'Haircut', duration: 30, price: 35, is_active: true, description: 'Professional haircut' },
+      { id: '2', name: 'Beard Trim', duration: 20, price: 25, is_active: true, description: 'Beard grooming' },
+      { id: '3', name: 'Hair Color', duration: 90, price: 85, is_active: true, description: 'Hair coloring service' },
+      { id: '4', name: 'Hot Shave', duration: 45, price: 45, is_active: true, description: 'Traditional hot shave' },
+      { id: '5', name: 'Hair & Beard Combo', duration: 60, price: 65, is_active: true, description: 'Hair and beard service' }
+    ] as any)
+    setServicesLoaded(true)
+
+    // Commented out API call
+    // try {
+    //   const response = await servicesService.getServices({ is_active: true })
+    //   setServices(response.data)
+    // } catch (err) {
+    //   console.error('Error fetching services:', err)
+    // }
+  }, [servicesLoaded])
 
 
   // Initial data load - wait for demo mode to be determined
@@ -221,26 +345,31 @@ export default function CalendarPage() {
     setMounted(true)
   }, [])
 
-  // Fetch data after demo mode is determined
+  // Fetch data after component is mounted
   useEffect(() => {
-    if (mounted && isDemoMode !== undefined) {
-      // Clear error state immediately when demo mode is confirmed
-      if (isDemoMode) {
-        setError(null)
-        setErrorType(null)
-      }
-      fetchAppointments()
-      fetchBarbers()
-      fetchServices()
-    }
-  }, [mounted, isDemoMode, fetchAppointments])
-
-  // Refresh appointments when date range changes
-  useEffect(() => {
+    // Always load data regardless of auth state
     if (mounted) {
-      fetchAppointments()
+      // Clear error state
+      setError(null)
+      setErrorType(null)
+
+      // Add a small delay to ensure component is fully mounted
+      const fetchTimer = setTimeout(() => {
+        fetchAppointments()
+        fetchBarbers()
+        fetchServices()
+      }, 100)
+
+      return () => clearTimeout(fetchTimer)
     }
-  }, [dateRange, fetchAppointments, mounted])
+  }, [mounted, fetchAppointments, fetchBarbers, fetchServices])
+
+  // Removed date range refresh since we generate appointments once
+  // useEffect(() => {
+  //   if (mounted) {
+  //     fetchAppointments()
+  //   }
+  // }, [dateRange, fetchAppointments, mounted])
 
   // Handler functions for modal interactions
   const handleNewAppointment = () => {
@@ -291,7 +420,7 @@ export default function CalendarPage() {
         })
 
         // Refresh appointments list to show the new appointment
-        await fetchAppointments()
+        await refreshEvents()
 
         // Clear optimistic update after successful fetch
         setOptimisticUpdates(prev => {
@@ -329,7 +458,7 @@ export default function CalendarPage() {
       const response = await calendarBookingIntegration.createCalendarAppointment(createData)
 
       // Refresh appointments list
-      await fetchAppointments()
+      await refreshEvents()
       setShowCreateModal(false)
       setShowBookingFlow(false)
       setError(null)
@@ -353,7 +482,7 @@ export default function CalendarPage() {
       )
 
       // Refresh appointments list
-      await fetchAppointments()
+      await refreshEvents()
       setShowDetailsModal(false)
 
       console.log('Appointment updated successfully:', response)
@@ -375,7 +504,7 @@ export default function CalendarPage() {
       await calendarBookingIntegration.cancelCalendarAppointment(appointmentId, 'Cancelled via calendar')
 
       // Refresh appointments list
-      await fetchAppointments()
+      await refreshEvents()
       setShowDetailsModal(false)
 
       console.log('Appointment cancelled successfully')
@@ -396,7 +525,7 @@ export default function CalendarPage() {
       )
 
       // Refresh appointments
-      await fetchAppointments()
+      await refreshEvents()
 
       console.log('Appointment rescheduled successfully:', response)
     } catch (err: any) {
@@ -439,13 +568,14 @@ export default function CalendarPage() {
     }
 
     setDateRange({
-      start: start.toISOString().split('T')[0],
-      end: end.toISOString().split('T')[0]
+      start: start,
+      end: end
     })
   }
 
 
-  if (!mounted) {
+  // Show loading state while component is mounting or events are loading
+  if (!mounted || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{
         backgroundColor: colors.background
@@ -456,6 +586,12 @@ export default function CalendarPage() {
       </div>
     )
   }
+
+  // Remove authentication check - calendar should be accessible without login
+  // if (!user && !isDemoMode) {
+  //   console.log('[CalendarPage] No user and not in demo mode, should redirect to login')
+  //   return null // Let AuthProvider handle the redirect
+  // }
 
   const todayAppointments = appointments.filter(apt =>
     apt.date === new Date().toISOString().split('T')[0]
@@ -495,6 +631,12 @@ export default function CalendarPage() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
+              <GoogleCalendarIndicator
+                connected={googleCalendarConnected}
+                showGoogleEvents={showGoogleEvents}
+                onToggle={toggleGoogleEvents}
+                className="self-center"
+              />
               <ThemeSelector variant="button" showLabel={false} />
               <button
                 onClick={(e) => {

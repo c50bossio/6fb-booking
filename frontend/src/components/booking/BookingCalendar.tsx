@@ -71,7 +71,7 @@ export default function BookingCalendar({
     const firstDate = findFirstAvailableDate()
     if (firstDate) {
       onDateSelect(firstDate)
-      
+
       // Auto-select first available time if enabled
       if (autoSelectFirstTime && onTimeSelect && availableSlots[firstDate]) {
         const availableTimes = availableSlots[firstDate].filter(slot => slot.available)
@@ -114,16 +114,16 @@ export default function BookingCalendar({
   const isDateDisabled = (date: Date) => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    
+
     // Check if date is in the past
     if (date < today) return true
-    
+
     // Check if date is before minDate
     if (minDate && date < minDate) return true
-    
+
     // Check if date is after maxDate
     if (maxDate && date > maxDate) return true
-    
+
     return false
   }
 
@@ -149,7 +149,7 @@ export default function BookingCalendar({
 
   const renderCalendarDays = () => {
     const days = []
-    
+
     // Add empty cells for days before the first day of the month
     for (let i = 0; i < firstDayOfWeek; i++) {
       days.push(
@@ -177,7 +177,7 @@ export default function BookingCalendar({
           disabled={isDisabled}
           className={`
             relative h-12 sm:h-14 lg:h-16 rounded-lg font-medium text-base sm:text-lg lg:text-xl
-            transition-all duration-200 
+            transition-all duration-200
             ${
               isDisabled
                 ? 'text-gray-300 cursor-not-allowed'
@@ -270,11 +270,11 @@ export default function BookingCalendar({
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
-        
+
         <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900">
           {monthYear}
         </h2>
-        
+
         <button
           onClick={() => navigateMonth('next')}
           disabled={!canNavigateNext}

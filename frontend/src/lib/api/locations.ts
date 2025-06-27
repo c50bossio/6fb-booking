@@ -281,11 +281,11 @@ export const locationsService = {
     // Use a separate request without auth for public endpoints
     const baseURL = apiClient.defaults.baseURL || getApiBaseUrl()
     const response = await fetch(`${baseURL}/booking/public/shops/${locationId}`)
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch location: ${response.statusText}`)
     }
-    
+
     const data = await response.json()
     return { data }
   },

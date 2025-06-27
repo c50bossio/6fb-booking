@@ -552,19 +552,19 @@ class Settings(BaseSettings):
             default_origins.extend(env_origins_list)
 
         # Add BookedBarber.com domains - PRODUCTION DOMAINS
-        bookbarber_domains = [
-            "https://app.bookbarber.com",  # Frontend application
-            "https://api.bookbarber.com",  # Backend API
-            "https://admin.bookbarber.com",  # Admin dashboard
-            "https://bookbarber.com",  # Main domain
-            "https://www.bookbarber.com",  # WWW redirect
+        bookedbarber_domains = [
+            "https://app.bookedbarber.com",  # Frontend application
+            "https://api.bookedbarber.com",  # Backend API
+            "https://admin.bookedbarber.com",  # Admin dashboard
+            "https://bookedbarber.com",  # Main domain
+            "https://www.bookedbarber.com",  # WWW redirect
         ]
-        default_origins.extend(bookbarber_domains)
+        default_origins.extend(bookedbarber_domains)
 
         # Add all known Vercel patterns - this will solve the random URL problem
         vercel_patterns = [
-            "https://bookbarber-6fb.vercel.app",  # Main deployment
-            "https://bookbarber.vercel.app",  # Alternative
+            "https://bookedbarber-6fb.vercel.app",  # Main deployment
+            "https://bookedbarber.vercel.app",  # Alternative
             "https://6fb-booking-frontend.vercel.app",  # Common pattern
             "https://6fb-booking-frontend-production.vercel.app",  # Production pattern
             "https://sixfb-booking-frontend.vercel.app",  # Another variation
@@ -626,12 +626,12 @@ class Settings(BaseSettings):
             return True
 
         # Check BookedBarber.com domains - PRODUCTION DOMAIN MATCHING
-        if origin.startswith("https://") and "bookbarber.com" in origin:
+        if origin.startswith("https://") and "bookedbarber.com" in origin:
             # Allow any BookedBarber.com subdomain
             allowed_subdomains = ["app", "api", "admin", "www", ""]
             domain = origin.replace("https://", "")
-            if domain == "bookbarber.com" or any(
-                domain.startswith(f"{sub}.bookbarber.com")
+            if domain == "bookedbarber.com" or any(
+                domain.startswith(f"{sub}.bookedbarber.com")
                 for sub in allowed_subdomains
                 if sub
             ):
@@ -642,8 +642,8 @@ class Settings(BaseSettings):
         if origin.startswith("https://") and origin.endswith(".vercel.app"):
             # Allow any Vercel deployment that contains our app identifiers
             domain_part = origin.replace("https://", "").replace(".vercel.app", "")
-            # Allow domains containing: bookbarber, 6fb, sixfb, or your specific deployment patterns
-            allowed_patterns = ["bookbarber", "6fb", "sixfb", "6fb-booking"]
+            # Allow domains containing: bookedbarber, 6fb, sixfb, or your specific deployment patterns
+            allowed_patterns = ["bookedbarber", "6fb", "sixfb", "6fb-booking"]
             if any(pattern in domain_part.lower() for pattern in allowed_patterns):
                 logger.info(f"Allowing dynamic Vercel origin: {origin}")
                 return True

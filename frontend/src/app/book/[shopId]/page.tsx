@@ -55,7 +55,7 @@ function ShopBookingContent() {
       // Load barbers for this location using public API
       const barbers = await publicBookingService.getShopBarbers(parseInt(shopId))
 
-      // Load services for this location using public API  
+      // Load services for this location using public API
       const services = await publicBookingService.getShopServices(parseInt(shopId))
 
       // Calculate stats (in real app, this would come from API)

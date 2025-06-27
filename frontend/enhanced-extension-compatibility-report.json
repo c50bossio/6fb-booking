@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-06-27T01:46:13.432Z",
+  "timestamp": "2025-06-27T14:46:53.264Z",
   "environment": {
     "nodeVersion": "v22.16.0",
     "platform": "darwin",
@@ -13,25 +13,30 @@
         "error": ""
       },
       "http://localhost:8000": {
-        "status": "failed",
-        "error": "Request timeout"
+        "status": "success",
+        "statusCode": 200,
+        "responseTime": 7
       },
       "http://localhost:8000/api/v1/auth/health": {
-        "status": "failed",
-        "error": "Request timeout"
+        "status": "success",
+        "statusCode": 200,
+        "responseTime": 5
       },
       "http://127.0.0.1:3000": {
         "status": "failed",
         "error": "connect ECONNREFUSED 127.0.0.1:3000"
       },
       "http://127.0.0.1:8000": {
-        "status": "failed",
-        "error": "Request timeout"
+        "status": "success",
+        "statusCode": 200,
+        "responseTime": 1
       }
     },
     "cors": {
-      "success": false,
-      "error": "Request timeout"
+      "success": true,
+      "headers": {
+        "access-control-allow-origin": "http://localhost:3000"
+      }
     },
     "csp": {
       "success": false,
@@ -47,18 +52,18 @@
         "error": ""
       },
       "http://localhost:8000/api/v1/auth/health": {
-        "blocked": true,
-        "error": "Request timeout"
+        "blocked": false,
+        "status": 200
       }
     }
   },
   "detectedExtensions": [],
   "recommendations": [],
   "scores": {
-    "overall": 0,
+    "overall": 8.333333333333332,
     "breakdown": {
       "connectivity": "pass",
-      "cors": "fail",
+      "cors": "pass",
       "csp": "warning",
       "resources": "pass",
       "extensions": "pass"
@@ -69,7 +74,7 @@
       "priority": "high",
       "category": "connectivity",
       "action": "Fix localhost connectivity issues",
-      "details": "Failed endpoints: http://localhost:3000, http://localhost:8000, http://localhost:8000/api/v1/auth/health, http://127.0.0.1:3000, http://127.0.0.1:8000",
+      "details": "Failed endpoints: http://localhost:3000, http://127.0.0.1:3000",
       "commands": [
         "npm run dev (frontend)",
         "cd ../backend && uvicorn main:app --reload (backend)"

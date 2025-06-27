@@ -473,13 +473,13 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
             {testimonials.map((testimonial, index) => (
-              <div key={index} className="glass-card-enhanced p-8 hover-lift group hover-glow">
+              <div key={index} className="bg-white p-8 hover-lift group hover-glow border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl">
                 <div className="flex items-center mb-6">
                   {[...Array(testimonial.rating)].map((_, i) => (
                     <StarIcon key={i} className="h-5 w-5 text-yellow-400 fill-current" />
                   ))}
                 </div>
-                <blockquote className="text-white mb-6 text-lg leading-relaxed font-medium">
+                <blockquote className="text-slate-900 mb-6 text-lg leading-relaxed font-medium">
                   "{testimonial.quote}"
                 </blockquote>
                 <div className="flex items-center">
@@ -487,8 +487,8 @@ export default function LandingPage() {
                     {testimonial.name.split(' ').map(n => n[0]).join('')}
                   </div>
                   <div>
-                    <div className="font-semibold text-white">{testimonial.name}</div>
-                    <div className="text-slate-100 text-sm font-semibold">{testimonial.title}</div>
+                    <div className="font-semibold text-slate-900">{testimonial.name}</div>
+                    <div className="text-slate-700 text-sm font-semibold">{testimonial.title}</div>
                   </div>
                 </div>
               </div>
@@ -497,24 +497,24 @@ export default function LandingPage() {
 
           {/* Success Metrics */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
-            <div className="text-center glass-card-enhanced p-6 hover-lift">
-              <div className="text-4xl font-bold mb-2 text-white">$2.5M+</div>
-              <div className="font-medium text-white">Paid Out Monthly</div>
+            <div className="text-center bg-white p-6 hover-lift border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl">
+              <div className="text-4xl font-bold mb-2 text-slate-900">$2.5M+</div>
+              <div className="font-medium text-slate-700">Paid Out Monthly</div>
               <div className="mt-3 w-10 h-1 bg-gradient-to-r from-teal-500 to-teal-600 rounded-full mx-auto"></div>
             </div>
-            <div className="text-center glass-card-enhanced p-6 hover-lift">
-              <div className="text-4xl font-bold mb-2 text-white">45K+</div>
-              <div className="font-medium text-white">Appointments Tracked</div>
+            <div className="text-center bg-white p-6 hover-lift border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl">
+              <div className="text-4xl font-bold mb-2 text-slate-900">45K+</div>
+              <div className="font-medium text-slate-700">Appointments Tracked</div>
               <div className="mt-3 w-10 h-1 bg-gradient-to-r from-slate-400 to-slate-500 rounded-full mx-auto"></div>
             </div>
-            <div className="text-center glass-card-enhanced p-6 hover-lift">
-              <div className="text-4xl font-bold mb-2 text-white">98%</div>
-              <div className="font-medium text-white">On-Time Payouts</div>
+            <div className="text-center bg-white p-6 hover-lift border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl">
+              <div className="text-4xl font-bold mb-2 text-slate-900">98%</div>
+              <div className="font-medium text-slate-700">On-Time Payouts</div>
               <div className="mt-3 w-10 h-1 bg-gradient-to-r from-teal-500 to-teal-600 rounded-full mx-auto"></div>
             </div>
-            <div className="text-center glass-card-enhanced p-6 hover-lift">
-              <div className="text-4xl font-bold mb-2 text-white">30 sec</div>
-              <div className="font-medium text-white">Instant Transfers</div>
+            <div className="text-center bg-white p-6 hover-lift border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl">
+              <div className="text-4xl font-bold mb-2 text-slate-900">30 sec</div>
+              <div className="font-medium text-slate-700">Instant Transfers</div>
               <div className="mt-3 w-10 h-1 bg-gradient-to-r from-slate-400 to-slate-500 rounded-full mx-auto"></div>
             </div>
           </div>
