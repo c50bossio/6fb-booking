@@ -10,12 +10,12 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
-    Decimal,
     Boolean,
     DateTime,
     ForeignKey,
     Enum as SQLEnum,
 )
+from sqlalchemy.sql.sqltypes import Numeric
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -68,10 +68,10 @@ class Product(Base):
     sku = Column(String(100), nullable=True, unique=True, index=True)
 
     # Pricing
-    price = Column(Decimal(10, 2), nullable=False)
-    cost_price = Column(Decimal(10, 2), nullable=True)  # For profit calculations
+    price = Column(Numeric(10, 2), nullable=False)
+    cost_price = Column(Numeric(10, 2), nullable=True)  # For profit calculations
     compare_at_price = Column(
-        Decimal(10, 2), nullable=True
+        Numeric(10, 2), nullable=True
     )  # Original price for discounts
 
     # Product organization
@@ -115,7 +115,7 @@ class Product(Base):
     )  # Last update on external platform
 
     # Commission settings (can override barber default rates)
-    commission_rate = Column(Decimal(5, 4), nullable=True)  # e.g., 0.1500 for 15%
+    commission_rate = Column(Numeric(5, 4), nullable=True)  # e.g., 0.1500 for 15%
     commission_type = Column(String(20), default="percentage")  # percentage or fixed
 
     # Audit fields
@@ -155,10 +155,10 @@ class Product(Base):
         return self.inventory_quantity <= self.low_stock_threshold
 
     @property
-    def profit_margin(self) -> Decimal:
+    def profit_margin(self) -> Numeric:
         """Calculate profit margin if cost price is available"""
         if not self.cost_price or self.cost_price <= 0:
-            return Decimal("0")
+            return Numeric("0")
         return ((self.price - self.cost_price) / self.price) * 100
 
     @property
