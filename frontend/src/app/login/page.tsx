@@ -17,7 +17,7 @@ export default function LoginPage() {
   const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState(false)
   const [forgotPasswordError, setForgotPasswordError] = useState('')
 
-  const { login, user } = useAuth()
+  const { login, user, isDemoMode, authError, backendAvailable, enableDemoMode } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
@@ -41,7 +41,18 @@ export default function LoginPage() {
     try {
       await login(email, password)
     } catch (err: any) {
-      setError(err.message || 'Invalid email or password')
+      console.error('Login error:', err)
+
+      // Check if it's a backend connectivity issue
+      if (!err.response || err.message?.includes('Network Error') || err.message?.includes('fetch')) {
+        setError('Unable to connect to authentication service. You can continue in demo mode.')
+      } else if (err.response?.status === 401) {
+        setError('Invalid email or password. Please try again.')
+      } else if (err.response?.status >= 500) {
+        setError('Authentication service is temporarily unavailable. You can try demo mode.')
+      } else {
+        setError(err.message || 'Login failed. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
@@ -183,6 +194,22 @@ export default function LoginPage() {
               </svg>
               <span>Sign in with Email Link</span>
             </button>
+
+            {/* Demo Mode Button */}
+            {(!backendAvailable || error.includes('demo mode')) && (
+              <button
+                onClick={() => {
+                  enableDemoMode('User selected demo mode from login')
+                  router.push('/dashboard/calendar')
+                }}
+                className="mt-4 w-full py-3 px-4 border border-blue-600 rounded-xl text-blue-400 hover:bg-blue-900/20 transition-all duration-200 flex items-center justify-center space-x-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <span>Continue in Demo Mode</span>
+              </button>
+            )}
           </div>
 
           <div className="mt-8 text-center">

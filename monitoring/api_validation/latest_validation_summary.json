@@ -1,0 +1,17 @@
+{
+  "timestamp": "2025-06-27T05:57:12.499918",
+  "summary": {
+    "total_endpoints": 5,
+    "successful": 4,
+    "failed": 1,
+    "success_rate": 80.0,
+    "method_not_allowed_count": 0,
+    "average_response_time": 187.92647900409065
+  },
+  "critical_issues": {
+    "has_405_errors": false,
+    "high_failure_rate": false,
+    "slow_responses": false
+  },
+  "method_not_allowed_endpoints": []
+}

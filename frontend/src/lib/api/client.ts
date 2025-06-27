@@ -92,43 +92,76 @@ apiClient.interceptors.response.use(
       statusText: error.response?.statusText,
       message: error.response?.data?.message || error.message,
       details: error.response?.data?.detail || null,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      isNetworkError: !error.response
     }
 
     console.error('API Error:', errorInfo)
 
+    // Enhanced error classification
+    error.isNetworkError = !error.response
+    error.isServerError = error.response?.status >= 500
+    error.isClientError = error.response?.status >= 400 && error.response?.status < 500
+    error.isAuthError = error.response?.status === 401
+    error.isPermissionError = error.response?.status === 403
+    error.isValidationError = error.response?.status === 422
+
     // Handle 429 Too Many Requests
     if (error.response?.status === 429) {
       console.warn('Rate limit exceeded. Waiting before retry...')
-      
+
       // Get retry-after header if available
       const retryAfter = error.response.headers['retry-after']
       const delay = retryAfter ? parseInt(retryAfter) * 1000 : 5000 // Default 5 seconds
-      
+
       // Only retry once to avoid infinite loops
       if (!originalRequest._retry) {
         originalRequest._retry = true
-        
+
         // Wait and retry
         await new Promise(resolve => setTimeout(resolve, delay))
         return apiClient(originalRequest)
       }
     }
 
-    // Handle 401 Unauthorized - redirect to login
+    // Handle 401 Unauthorized - enhanced auth error handling
     if (error.response?.status === 401) {
       // Clear stored tokens
       smartStorage.removeItem('access_token')
       smartStorage.removeItem('user')
+      smartStorage.removeItem('csrf_token')
 
-      // Only redirect if not already on login/auth pages
+      // Check if we're in demo mode or should enable it
+      const isDemoMode = sessionStorage.getItem('demo_mode') === 'true' ||
+                        window.location.pathname.includes('/app/') ||
+                        window.location.search.includes('demo=true')
+
+      // Only redirect if not already on login/auth pages and not in demo mode
       const currentPath = window.location.pathname
-      const authPaths = ['/login', '/signup', '/reset-password']
+      const authPaths = ['/login', '/signup', '/reset-password', '/demo']
+      const isPublicPath = authPaths.some(path => currentPath.includes(path)) ||
+                          currentPath === '/' ||
+                          currentPath.startsWith('/book')
 
-      if (!authPaths.some(path => currentPath.includes(path))) {
+      if (!isPublicPath && !isDemoMode) {
         // Store current location for redirect after login
         smartStorage.setItem('redirect_after_login', currentPath)
-        window.location.href = '/login'
+
+        // Emit custom event for auth error handling
+        window.dispatchEvent(new CustomEvent('auth-error', {
+          detail: {
+            type: 'unauthorized',
+            message: 'Your session has expired. Please log in again.',
+            shouldRedirect: true
+          }
+        }))
+
+        // Give components a chance to handle the event before redirecting
+        setTimeout(() => {
+          if (!sessionStorage.getItem('demo_mode')) {
+            window.location.href = '/login'
+          }
+        }, 100)
       }
       return Promise.reject(error)
     }
@@ -149,11 +182,34 @@ apiClient.interceptors.response.use(
       return Promise.reject(error)
     }
 
-    // Implement retry logic for network failures
+    // Implement retry logic for network failures with backend detection
     if (!error.response && !originalRequest._retry) {
       originalRequest._retry = true
 
-      // Wait with exponential backoff
+      // Check if this is a connection refused error (backend not running)
+      const isBackendDown = error.code === 'ECONNREFUSED' ||
+                           error.message?.includes('ERR_CONNECTION_REFUSED') ||
+                           error.message?.includes('Network Error') ||
+                           error.message?.includes('fetch')
+
+      if (isBackendDown) {
+        // Emit event to switch to demo mode
+        window.dispatchEvent(new CustomEvent('backend-unavailable', {
+          detail: {
+            message: 'Backend service is unavailable. Switching to demo mode.',
+            enableDemoMode: true
+          }
+        }))
+
+        // Set demo mode
+        sessionStorage.setItem('demo_mode', 'true')
+        sessionStorage.setItem('backend_unavailable_reason', 'connection_failed')
+
+        // Don't retry if backend is down
+        return Promise.reject(error)
+      }
+
+      // Wait with exponential backoff for other network errors
       const delay = Math.min(1000 * Math.pow(2, originalRequest._retryCount || 0), 5000)
       await new Promise(resolve => setTimeout(resolve, delay))
 
@@ -185,6 +241,28 @@ apiClient.interceptors.response.use(
     if (error.response?.status >= 400 && error.response?.status < 500) {
       // Enhance error with user-friendly message
       error.userMessage = getUserFriendlyErrorMessage(error.response.status, error.response.data)
+
+      // Emit error event for UI components to handle
+      window.dispatchEvent(new CustomEvent('api-error', {
+        detail: {
+          status: error.response.status,
+          message: error.userMessage,
+          type: error.isAuthError ? 'auth' : error.isValidationError ? 'validation' : 'client',
+          originalError: error
+        }
+      }))
+    }
+
+    // For server errors (5xx), check if we should enable demo mode
+    if (error.response?.status >= 500) {
+      // Emit server error event
+      window.dispatchEvent(new CustomEvent('server-error', {
+        detail: {
+          status: error.response.status,
+          message: 'Server error occurred. Some features may be limited.',
+          shouldShowFallback: true
+        }
+      }))
     }
 
     return Promise.reject(error)
@@ -224,44 +302,73 @@ function getUserFriendlyErrorMessage(status: number, data: any): string {
 // Utility functions for API health and debugging
 export const apiUtils = {
   /**
-   * Check API health
+   * Check API health with enhanced error details
    */
   async checkHealth(): Promise<{
     healthy: boolean
     status?: any
     error?: string
+    backendAvailable: boolean
+    authServiceHealthy: boolean
   }> {
     try {
       const response = await apiClient.get('/health')
+
+      // Also check auth service health
+      let authHealthy = false
+      try {
+        const authResponse = await apiClient.get('/api/v1/auth/health')
+        authHealthy = authResponse.status === 200
+      } catch (authError) {
+        console.warn('Auth service health check failed:', authError)
+      }
+
       return {
         healthy: true,
+        backendAvailable: true,
+        authServiceHealthy: authHealthy,
         status: response.data
       }
     } catch (error: any) {
+      const isNetworkError = !error.response
       return {
         healthy: false,
+        backendAvailable: !isNetworkError,
+        authServiceHealthy: false,
         error: error.message || 'Health check failed'
       }
     }
   },
 
   /**
-   * Test authentication
+   * Test authentication with proper endpoint
    */
   async testAuth(): Promise<{
     authenticated: boolean
     user?: any
     error?: string
+    errorType?: 'network' | 'unauthorized' | 'server' | 'other'
   }> {
     try {
-      const response = await apiClient.get('/auth/me')
+      const response = await apiClient.get('/api/v1/auth/me')
       return {
         authenticated: true,
         user: response.data
       }
     } catch (error: any) {
+      let errorType: 'network' | 'unauthorized' | 'server' | 'other' = 'other'
+
+      if (!error.response) {
+        errorType = 'network'
+      } else if (error.response.status === 401) {
+        errorType = 'unauthorized'
+      } else if (error.response.status >= 500) {
+        errorType = 'server'
+      }
+
       return {
         authenticated: false,
+        errorType,
         error: error.response?.data?.detail || error.message || 'Authentication test failed'
       }
     }
@@ -274,8 +381,46 @@ export const apiUtils = {
     return {
       baseURL: getBaseURL(),
       hasToken: !!smartStorage.getItem('access_token'),
+      hasCSRF: !!smartStorage.getItem('csrf_token'),
+      demoMode: sessionStorage?.getItem('demo_mode') === 'true',
       environment: process.env.NEXT_PUBLIC_ENVIRONMENT || 'development'
     }
+  },
+
+  /**
+   * Force enable demo mode
+   */
+  enableDemoMode(reason?: string) {
+    sessionStorage.setItem('demo_mode', 'true')
+    if (reason) {
+      sessionStorage.setItem('demo_mode_reason', reason)
+    }
+
+    // Clear auth data
+    smartStorage.removeItem('access_token')
+    smartStorage.removeItem('user')
+    smartStorage.removeItem('csrf_token')
+
+    // Emit demo mode event
+    window.dispatchEvent(new CustomEvent('demo-mode-enabled', {
+      detail: { reason }
+    }))
+  },
+
+  /**
+   * Check if demo mode is active
+   */
+  isDemoMode(): boolean {
+    return sessionStorage?.getItem('demo_mode') === 'true'
+  },
+
+  /**
+   * Disable demo mode
+   */
+  disableDemoMode() {
+    sessionStorage.removeItem('demo_mode')
+    sessionStorage.removeItem('demo_mode_reason')
+    sessionStorage.removeItem('backend_unavailable_reason')
   }
 }
 

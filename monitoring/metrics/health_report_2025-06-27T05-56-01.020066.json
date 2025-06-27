@@ -1,0 +1,391 @@
+{
+  "timestamp": "2025-06-27T05:56:01.020066",
+  "overall_status": "critical",
+  "api_health": {
+    "status": "critical",
+    "metrics": [
+      {
+        "name": "api_response_time__health",
+        "value": 126.5110969543457,
+        "threshold": 2000,
+        "status": "healthy",
+        "message": "Response time: 127ms",
+        "timestamp": "2025-06-27T05:56:01.146669"
+      },
+      {
+        "name": "api_response_time__api_v1_services",
+        "value": 72.21484184265137,
+        "threshold": 2000,
+        "status": "healthy",
+        "message": "Response time: 72ms",
+        "timestamp": "2025-06-27T05:56:01.218991"
+      },
+      {
+        "name": "api_response_time__api_v1_appointments",
+        "value": 103.96695137023926,
+        "threshold": 2000,
+        "status": "healthy",
+        "message": "Response time: 104ms",
+        "timestamp": "2025-06-27T05:56:01.323144"
+      },
+      {
+        "name": "api_response_time__api_v1_analytics_dashboard",
+        "value": 70.6632137298584,
+        "threshold": 2000,
+        "status": "healthy",
+        "message": "Response time: 71ms",
+        "timestamp": "2025-06-27T05:56:01.393924"
+      },
+      {
+        "name": "api_response_time__api_v1_auth_login",
+        "value": 199.7356414794922,
+        "threshold": 2000,
+        "status": "healthy",
+        "message": "Response time: 200ms",
+        "timestamp": "2025-06-27T05:56:01.593722"
+      },
+      {
+        "name": "api_response_time__api_v1_customers",
+        "value": 123.37398529052734,
+        "threshold": 2000,
+        "status": "healthy",
+        "message": "Response time: 123ms",
+        "timestamp": "2025-06-27T05:56:01.717128"
+      },
+      {
+        "name": "api_response_time__api_v1_barbers",
+        "value": 56.49876594543457,
+        "threshold": 2000,
+        "status": "healthy",
+        "message": "Response time: 56ms",
+        "timestamp": "2025-06-27T05:56:01.773653"
+      }
+    ],
+    "errors": [
+      {
+        "endpoint": "/api/v1/services",
+        "error": "405 Method Not Allowed - Route configuration issue",
+        "severity": "critical"
+      },
+      {
+        "endpoint": "/api/v1/services",
+        "error": "Unexpected status code: 405",
+        "severity": "warning"
+      },
+      {
+        "endpoint": "/api/v1/appointments",
+        "error": "405 Method Not Allowed - Route configuration issue",
+        "severity": "critical"
+      },
+      {
+        "endpoint": "/api/v1/appointments",
+        "error": "Unexpected status code: 405",
+        "severity": "warning"
+      },
+      {
+        "endpoint": "/api/v1/analytics/dashboard",
+        "error": "405 Method Not Allowed - Route configuration issue",
+        "severity": "critical"
+      },
+      {
+        "endpoint": "/api/v1/analytics/dashboard",
+        "error": "Unexpected status code: 405",
+        "severity": "warning"
+      },
+      {
+        "endpoint": "/api/v1/auth/login",
+        "error": "Unexpected status code: 401",
+        "severity": "warning"
+      },
+      {
+        "endpoint": "/api/v1/customers",
+        "error": "405 Method Not Allowed - Route configuration issue",
+        "severity": "critical"
+      },
+      {
+        "endpoint": "/api/v1/customers",
+        "error": "Unexpected status code: 405",
+        "severity": "warning"
+      },
+      {
+        "endpoint": "/api/v1/barbers",
+        "error": "405 Method Not Allowed - Route configuration issue",
+        "severity": "critical"
+      },
+      {
+        "endpoint": "/api/v1/barbers",
+        "error": "Unexpected status code: 405",
+        "severity": "warning"
+      }
+    ],
+    "response_times": {
+      "/health": 126.5110969543457,
+      "/api/v1/services": 72.21484184265137,
+      "/api/v1/appointments": 103.96695137023926,
+      "/api/v1/analytics/dashboard": 70.6632137298584,
+      "/api/v1/auth/login": 199.7356414794922,
+      "/api/v1/customers": 123.37398529052734,
+      "/api/v1/barbers": 56.49876594543457
+    },
+    "status_codes": {
+      "/health": 200,
+      "/api/v1/services": 405,
+      "/api/v1/appointments": 405,
+      "/api/v1/analytics/dashboard": 405,
+      "/api/v1/auth/login": 401,
+      "/api/v1/customers": 405,
+      "/api/v1/barbers": 405
+    }
+  },
+  "frontend_health": {
+    "status": "critical",
+    "metrics": [
+      {
+        "name": "frontend_load_time_homepage",
+        "value": 141.8609619140625,
+        "threshold": 3000,
+        "status": "healthy",
+        "message": "Load time: 142ms",
+        "timestamp": "2025-06-27T05:56:01.915752"
+      },
+      {
+        "name": "frontend_load_time_booking",
+        "value": 40.693044662475586,
+        "threshold": 3000,
+        "status": "healthy",
+        "message": "Load time: 41ms",
+        "timestamp": "2025-06-27T05:56:01.956735"
+      },
+      {
+        "name": "frontend_load_time_login",
+        "value": 35.57395935058594,
+        "threshold": 3000,
+        "status": "healthy",
+        "message": "Load time: 36ms",
+        "timestamp": "2025-06-27T05:56:01.992517"
+      },
+      {
+        "name": "frontend_load_time_dashboard",
+        "value": 35.4001522064209,
+        "threshold": 3000,
+        "status": "healthy",
+        "message": "Load time: 35ms",
+        "timestamp": "2025-06-27T05:56:02.028025"
+      }
+    ],
+    "errors": [
+      {
+        "page": "homepage",
+        "error": "HTTP 404",
+        "severity": "critical"
+      },
+      {
+        "page": "homepage",
+        "error": "Incomplete HTML response",
+        "severity": "warning"
+      },
+      {
+        "page": "booking",
+        "error": "HTTP 404",
+        "severity": "critical"
+      },
+      {
+        "page": "booking",
+        "error": "Incomplete HTML response",
+        "severity": "warning"
+      },
+      {
+        "page": "login",
+        "error": "HTTP 404",
+        "severity": "critical"
+      },
+      {
+        "page": "login",
+        "error": "Incomplete HTML response",
+        "severity": "warning"
+      },
+      {
+        "page": "dashboard",
+        "error": "HTTP 404",
+        "severity": "critical"
+      },
+      {
+        "page": "dashboard",
+        "error": "Incomplete HTML response",
+        "severity": "warning"
+      }
+    ],
+    "load_times": {
+      "homepage": 141.8609619140625,
+      "booking": 40.693044662475586,
+      "login": 35.57395935058594,
+      "dashboard": 35.4001522064209
+    },
+    "bundle_analysis": {
+      "status": "healthy",
+      "current_sizes": {},
+      "baseline_sizes": {
+        "main_js": 200000,
+        "main_css": 50000,
+        "vendor_js": 800000
+      },
+      "size_changes": {},
+      "warnings": []
+    }
+  },
+  "database_health": {
+    "status": "healthy",
+    "metrics": [],
+    "errors": [],
+    "connection_time": 0.17714500427246094,
+    "query_performance": {
+      "users_count": {
+        "time": 1.2350082397460938,
+        "result": 119
+      },
+      "appointments_count": {
+        "time": 0.010967254638671875,
+        "result": 0
+      },
+      "services_count": {
+        "time": 0.0059604644775390625,
+        "result": 0
+      },
+      "sqlite_version": {
+        "time": 0.003814697265625,
+        "result": "3.43.2"
+      }
+    },
+    "database_size": 2158592
+  },
+  "bundle_health": {
+    "status": "healthy",
+    "current_sizes": {},
+    "baseline_sizes": {
+      "main_js": 200000,
+      "main_css": 50000,
+      "vendor_js": 800000
+    },
+    "size_changes": {},
+    "warnings": []
+  },
+  "alerts": [
+    {
+      "type": "api_error",
+      "severity": "critical",
+      "message": "API Error - /api/v1/services: 405 Method Not Allowed - Route configuration issue",
+      "timestamp": "2025-06-27T05:56:01.020066"
+    },
+    {
+      "type": "api_error",
+      "severity": "warning",
+      "message": "API Error - /api/v1/services: Unexpected status code: 405",
+      "timestamp": "2025-06-27T05:56:01.020066"
+    },
+    {
+      "type": "api_error",
+      "severity": "critical",
+      "message": "API Error - /api/v1/appointments: 405 Method Not Allowed - Route configuration issue",
+      "timestamp": "2025-06-27T05:56:01.020066"
+    },
+    {
+      "type": "api_error",
+      "severity": "warning",
+      "message": "API Error - /api/v1/appointments: Unexpected status code: 405",
+      "timestamp": "2025-06-27T05:56:01.020066"
+    },
+    {
+      "type": "api_error",
+      "severity": "critical",
+      "message": "API Error - /api/v1/analytics/dashboard: 405 Method Not Allowed - Route configuration issue",
+      "timestamp": "2025-06-27T05:56:01.020066"
+    },
+    {
+      "type": "api_error",
+      "severity": "warning",
+      "message": "API Error - /api/v1/analytics/dashboard: Unexpected status code: 405",
+      "timestamp": "2025-06-27T05:56:01.020066"
+    },
+    {
+      "type": "api_error",
+      "severity": "warning",
+      "message": "API Error - /api/v1/auth/login: Unexpected status code: 401",
+      "timestamp": "2025-06-27T05:56:01.020066"
+    },
+    {
+      "type": "api_error",
+      "severity": "critical",
+      "message": "API Error - /api/v1/customers: 405 Method Not Allowed - Route configuration issue",
+      "timestamp": "2025-06-27T05:56:01.020066"
+    },
+    {
+      "type": "api_error",
+      "severity": "warning",
+      "message": "API Error - /api/v1/customers: Unexpected status code: 405",
+      "timestamp": "2025-06-27T05:56:01.020066"
+    },
+    {
+      "type": "api_error",
+      "severity": "critical",
+      "message": "API Error - /api/v1/barbers: 405 Method Not Allowed - Route configuration issue",
+      "timestamp": "2025-06-27T05:56:01.020066"
+    },
+    {
+      "type": "api_error",
+      "severity": "warning",
+      "message": "API Error - /api/v1/barbers: Unexpected status code: 405",
+      "timestamp": "2025-06-27T05:56:01.020066"
+    },
+    {
+      "type": "frontend_error",
+      "severity": "critical",
+      "message": "Frontend Error - homepage: HTTP 404",
+      "timestamp": "2025-06-27T05:56:01.020066"
+    },
+    {
+      "type": "frontend_error",
+      "severity": "warning",
+      "message": "Frontend Error - homepage: Incomplete HTML response",
+      "timestamp": "2025-06-27T05:56:01.020066"
+    },
+    {
+      "type": "frontend_error",
+      "severity": "critical",
+      "message": "Frontend Error - booking: HTTP 404",
+      "timestamp": "2025-06-27T05:56:01.020066"
+    },
+    {
+      "type": "frontend_error",
+      "severity": "warning",
+      "message": "Frontend Error - booking: Incomplete HTML response",
+      "timestamp": "2025-06-27T05:56:01.020066"
+    },
+    {
+      "type": "frontend_error",
+      "severity": "critical",
+      "message": "Frontend Error - login: HTTP 404",
+      "timestamp": "2025-06-27T05:56:01.020066"
+    },
+    {
+      "type": "frontend_error",
+      "severity": "warning",
+      "message": "Frontend Error - login: Incomplete HTML response",
+      "timestamp": "2025-06-27T05:56:01.020066"
+    },
+    {
+      "type": "frontend_error",
+      "severity": "critical",
+      "message": "Frontend Error - dashboard: HTTP 404",
+      "timestamp": "2025-06-27T05:56:01.020066"
+    },
+    {
+      "type": "frontend_error",
+      "severity": "warning",
+      "message": "Frontend Error - dashboard: Incomplete HTML response",
+      "timestamp": "2025-06-27T05:56:01.020066"
+    }
+  ],
+  "recommendations": [
+    "Fix 405 Method Not Allowed errors by checking route configurations in FastAPI"
+  ]
+}
