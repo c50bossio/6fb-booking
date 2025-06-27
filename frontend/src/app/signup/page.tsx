@@ -169,60 +169,73 @@ export default function SignupPage() {
 
   const handleCreateAccount = async () => {
     setLoading(true)
+    setErrors({}) // Clear any previous errors
 
     try {
-      // Create account via API
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          role: 'barber',
-        }),
+      // Use authService for better error handling
+      const { authService } = await import('../../lib/api/auth')
+
+      console.log('Attempting to register user...')
+
+      // Create account via authService
+      const userData = await authService.register({
+        email: formData.email,
+        password: formData.password,
+        full_name: `${formData.firstName} ${formData.lastName}`,
+        role: 'barber',
       })
 
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.detail || 'Failed to create account')
-      }
+      console.log('Registration successful:', { userId: userData.id, email: userData.email })
+
+      // Small delay to ensure database transaction is committed
+      await new Promise(resolve => setTimeout(resolve, 500))
 
       // Account created successfully - now log them in
-      const loginResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/token`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          username: formData.email,
-          password: formData.password,
-        }),
+      console.log('Attempting automatic login after registration...')
+
+      const loginData = await authService.login({
+        username: formData.email,
+        password: formData.password,
       })
 
-      if (!loginResponse.ok) {
-        throw new Error('Account created but login failed. Please try logging in.')
-      }
-
-      const loginData = await loginResponse.json()
-      try {
-        // Safely store tokens with error handling
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('access_token', loginData.access_token)
-          localStorage.setItem('user', JSON.stringify(loginData.user))
-        }
-      } catch (e) {
-        console.warn('Unable to save to localStorage:', e)
-        // Continue - app will still work
-      }
+      console.log('Login successful after registration')
 
       // Redirect to dashboard
       router.push('/dashboard')
     } catch (error: any) {
-      alert(error.message || 'Failed to create account. Please try again.')
+      console.error('Signup error:', error)
+
+      // Check for specific error types
+      if (error.response?.status === 400) {
+        const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.response?.data?.error || error.message
+
+        if (errorMessage && (errorMessage.includes('Email already registered') || errorMessage.includes('already registered'))) {
+          setErrors({ email: 'This email is already registered. Please login instead.' })
+          setLoading(false)
+          return
+        }
+      }
+
+      // Check if this is an "auto-login failed" error (account was created)
+      const isAutoLoginFailure = error.message && error.message.includes('Account created successfully but automatic login failed')
+
+      if (isAutoLoginFailure) {
+        // Account was created, just auto-login failed - show success with manual login option
+        setErrors(prev => ({
+          ...prev,
+          general: `🎉 Account created successfully! The automatic login failed, but you can now sign in manually.`,
+          showManualLogin: true,
+          accountEmail: formData.email
+        }))
+      } else {
+        // Show the enhanced error message from the API client
+        const errorMessage = error.userMessage || error.response?.data?.detail || error.response?.data?.message || error.message || 'Failed to create account. Please try again.'
+        setErrors(prev => ({
+          ...prev,
+          general: errorMessage
+        }))
+      }
+
       setLoading(false)
     }
   }
@@ -526,6 +539,54 @@ export default function SignupPage() {
 
             {step === 3 && (
               <div className="text-center">
+                {/* Display general error message if any */}
+                {errors.general && (
+                  <div className={`border rounded-lg p-4 mb-6 ${
+                    errors.showManualLogin
+                      ? 'bg-yellow-50 border-yellow-200'
+                      : 'bg-red-50 border-red-200'
+                  }`}>
+                    <p className={errors.showManualLogin ? 'text-yellow-800' : 'text-red-800'}>
+                      {errors.general}
+                    </p>
+                    {errors.showManualLogin && (
+                      <div className="mt-4">
+                        <p className="text-yellow-700 text-sm mb-3">
+                          Your email: <strong>{errors.accountEmail}</strong>
+                        </p>
+                        <div className="flex gap-3">
+                          <a
+                            href="/login"
+                            className="bg-yellow-600 text-white px-4 py-2 rounded-md text-sm hover:bg-yellow-700 transition-colors"
+                          >
+                            Go to Login Page
+                          </a>
+                          <button
+                            onClick={() => {
+                              setErrors({})
+                              setStep(1)
+                              setFormData({
+                                firstName: '',
+                                lastName: '',
+                                email: '',
+                                phone: '',
+                                shopName: '',
+                                password: '',
+                                confirmPassword: '',
+                                agreeToTerms: false,
+                                subscribeToNewsletter: true
+                              })
+                            }}
+                            className="bg-gray-500 text-white px-4 py-2 rounded-md text-sm hover:bg-gray-600 transition-colors"
+                          >
+                            Start Over
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div className="bg-green-50 border border-green-200 rounded-lg p-8 mb-8">
                   <CheckIcon className="h-16 w-16 text-green-600 mx-auto mb-4" />
                   <h2 className="text-2xl font-bold text-gray-900 mb-4">Welcome to Booked Barber!</h2>
