@@ -104,7 +104,7 @@ export default function CalendarPage() {
                      window.location.pathname.includes('/app/')
       setIsDemoMode(demoMode)
       console.log('📱 Calendar page demo mode check:', demoMode)
-      
+
       // If backend is not available, enable demo mode
       if (demoMode) {
         sessionStorage.setItem('demo_mode', 'true')
@@ -140,9 +140,9 @@ export default function CalendarPage() {
       setAppointments(calendarAppointments)
     } catch (err: any) {
       console.error('Error fetching appointments:', err)
-      
+
       // Check if it's a connection error (backend not running)
-      if (err.message?.includes('ERR_CONNECTION_TIMED_OUT') || 
+      if (err.message?.includes('ERR_CONNECTION_TIMED_OUT') ||
           err.message?.includes('Network Error') ||
           err.code === 'ECONNREFUSED' ||
           err.message?.includes('fetch')) {

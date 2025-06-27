@@ -164,7 +164,7 @@ def set_auth_cookies(
             httponly=True,
             samesite="lax",
         )
-    
+
     # Set CSRF token cookie if provided
     if csrf_token:
         set_csrf_cookie(response, csrf_token)

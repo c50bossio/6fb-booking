@@ -84,7 +84,14 @@ from .appointment_series import (
     RecurrencePattern,
     SeriesStatus,
 )
-from .product import Product, ProductCategory, ProductSyncLog, ProductSource, ProductStatus, SyncStatus
+from .product import (
+    Product,
+    ProductCategory,
+    ProductSyncLog,
+    ProductSource,
+    ProductStatus,
+    SyncStatus,
+)
 from .pos_session import POSSession
 
 # Export all models for easy importing
@@ -179,7 +186,7 @@ __all__ = [
     "SeriesStatus",
     # Product models
     "Product",
-    "ProductCategory", 
+    "ProductCategory",
     "ProductSyncLog",
     "ProductSource",
     "ProductStatus",
