@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Contrast Test</title>
+    <style>
+        /* Copy the enhanced input styles */
+        body input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+        body textarea,
+        body select,
+        html input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+        html textarea,
+        html select,
+        input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+        textarea,
+        select {
+            color: #111827 !important; /* Dark gray text for high contrast */
+            background-color: #ffffff !important; /* White background */
+            border: 1px solid #d1d5db !important; /* Light gray border */
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        body input::placeholder,
+        body textarea::placeholder,
+        html input::placeholder,
+        html textarea::placeholder,
+        input::placeholder,
+        textarea::placeholder {
+            color: #6b7280 !important; /* Medium gray for placeholders */
+            opacity: 1 !important; /* Ensure visibility */
+        }
+
+        body input:focus:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+        body textarea:focus,
+        body select:focus,
+        input:focus:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+        textarea:focus,
+        select:focus {
+            outline: 2px solid #3b82f6 !important; /* Blue focus ring */
+            outline-offset: 2px !important;
+            border-color: #3b82f6 !important; /* Blue border on focus */
+        }
+
+        /* Test cases */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        /* Simulated problematic styles that our rules should override */
+        .problematic-input {
+            color: white !important;
+            background: white !important;
+        }
+        
+        .dark-theme {
+            background-color: #1a1a1a;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .dark-theme label {
+            color: white;
+        }
+        
+        /* Test the special login page handling */
+        .bg-black {
+            background-color: black;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .bg-black label {
+            color: white;
+        }
+        
+        .min-h-screen.bg-black input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+        .min-h-screen.bg-black textarea,
+        .min-h-screen.bg-black select,
+        .bg-black input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+        .bg-black textarea,
+        .bg-black select {
+            color: #ffffff !important; /* White text for login page */
+            background-color: rgba(31, 41, 55, 0.5) !important; /* Semi-transparent dark background */
+            border-color: #374151 !important; /* Dark gray border */
+        }
+
+        .min-h-screen.bg-black input::placeholder,
+        .min-h-screen.bg-black textarea::placeholder,
+        .bg-black input::placeholder,
+        .bg-black textarea::placeholder {
+            color: #9ca3af !important; /* Light gray placeholders for login page */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Input Contrast Test</h1>
+        <p>This page tests the enhanced CSS rules for form input contrast.</p>
+        
+        <div class="test-section">
+            <h3>Normal Light Theme Form</h3>
+            <div class="form-group">
+                <label for="normal-email">Email Address:</label>
+                <input type="email" id="normal-email" placeholder="you@example.com" value="test@email.com">
+            </div>
+            <div class="form-group">
+                <label for="normal-password">Password:</label>
+                <input type="password" id="normal-password" placeholder="••••••••" value="mypassword">
+            </div>
+            <div class="form-group">
+                <label for="normal-text">Name:</label>
+                <input type="text" id="normal-text" placeholder="Your full name" value="John Doe">
+            </div>
+            <div class="form-group">
+                <label for="normal-textarea">Notes:</label>
+                <textarea id="normal-textarea" placeholder="Additional notes" rows="3">Some sample text content</textarea>
+            </div>
+        </div>
+
+        <div class="test-section problematic-input">
+            <h3>Problematic Inputs (should be fixed by our CSS)</h3>
+            <div class="form-group">
+                <label for="problem-email">Email (originally white on white):</label>
+                <input type="email" id="problem-email" class="problematic-input" placeholder="you@example.com" value="test@email.com">
+            </div>
+            <div class="form-group">
+                <label for="problem-text">Text (originally white on white):</label>
+                <input type="text" id="problem-text" class="problematic-input" placeholder="Your name" value="John Doe">
+            </div>
+        </div>
+
+        <div class="test-section dark-theme">
+            <h3>Dark Theme Form</h3>
+            <div class="form-group">
+                <label for="dark-email">Email Address:</label>
+                <input type="email" id="dark-email" placeholder="you@example.com" value="test@email.com">
+            </div>
+            <div class="form-group">
+                <label for="dark-password">Password:</label>
+                <input type="password" id="dark-password" placeholder="••••••••" value="mypassword">
+            </div>
+        </div>
+
+        <div class="test-section bg-black">
+            <h3>Login Page Style (Black Background)</h3>
+            <div class="form-group">
+                <label for="login-email">Email Address:</label>
+                <input type="email" id="login-email" placeholder="you@example.com" value="test@email.com">
+            </div>
+            <div class="form-group">
+                <label for="login-password">Password:</label>
+                <input type="password" id="login-password" placeholder="••••••••" value="mypassword">
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test Results</h3>
+            <ul>
+                <li><strong>Normal inputs:</strong> Should have dark text on white background</li>
+                <li><strong>Problematic inputs:</strong> Should be fixed to have dark text on white background</li>
+                <li><strong>Dark theme:</strong> Should have dark text on white background (override theme)</li>
+                <li><strong>Login page style:</strong> Should have white text on dark semi-transparent background</li>
+                <li><strong>All placeholders:</strong> Should be clearly visible</li>
+                <li><strong>Focus states:</strong> Should show blue outline when clicked</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

@@ -4,6 +4,7 @@
 
 import apiClient from './client'
 import type { ApiResponse, PaginatedResponse, Location } from './client'
+import { getApiBaseUrl } from './corsHelper'
 
 // === TYPE DEFINITIONS ===
 
@@ -271,6 +272,22 @@ export const locationsService = {
     const params = includeStats ? '?include_stats=true' : ''
     const response = await apiClient.get<ExtendedLocation>(`/locations/${locationId}${params}`)
     return { data: response.data }
+  },
+
+  /**
+   * Get location by ID (public endpoint - no auth required)
+   */
+  async getLocationPublic(locationId: number): Promise<ApiResponse<any>> {
+    // Use a separate request without auth for public endpoints
+    const baseURL = apiClient.defaults.baseURL || getApiBaseUrl()
+    const response = await fetch(`${baseURL}/booking/public/shops/${locationId}`)
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch location: ${response.statusText}`)
+    }
+    
+    const data = await response.json()
+    return { data }
   },
 
   /**

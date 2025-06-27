@@ -6,22 +6,27 @@ import { Metadata } from 'next'
 import {
   CalendarIcon,
   UserIcon,
+  UsersIcon,
   ClockIcon,
   MapPinIcon,
   CheckIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
   CreditCardIcon,
-  ShieldCheckIcon
+  ShieldCheckIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import { bookingService } from '@/lib/api/bookings'
 import { servicesService } from '@/lib/api/services'
 import { barbersService } from '@/lib/api/barbers'
-import { locationsService } from '@/lib/api/locations'
+import { publicBookingService } from '@/lib/api/publicBooking'
 import ServiceSelector from '@/components/booking/ServiceSelector'
 import TimeSlotSelector from '@/components/booking/TimeSlotSelector'
 import BookingConfirmationModal from '@/components/booking/BookingConfirmationModal'
-import SimplePaymentStep from '@/components/booking/SimplePaymentStep'
+import EnhancedPaymentStep from '@/components/booking/EnhancedPaymentStep'
+import BookingCalendar from '@/components/booking/BookingCalendar'
+import AppointmentCreationFallback from '@/components/booking/AppointmentCreationFallback'
+import { useLocationPaymentSettings } from '@/hooks/useLocationPaymentSettings'
 import type { Service, BarberProfile, Location } from '@/lib/api'
 
 type BookingStep = 'service' | 'barber' | 'datetime' | 'details' | 'payment' | 'confirm'
@@ -35,8 +40,10 @@ interface BookingForm {
   client_email: string
   client_phone: string
   notes: string
-  payment_method: 'full' | 'deposit'
+  payment_method: 'full' | 'deposit' | 'in_person'
   payment_details: any
+  create_account: boolean
+  password?: string
 }
 
 interface BookingFlowData {
@@ -44,6 +51,7 @@ interface BookingFlowData {
   services: Service[]
   barbers: BarberProfile[]
   availableSlots: any[]
+  availableDates: string[]
   selectedService: Service | null
   selectedBarber: BarberProfile | null
 }
@@ -62,12 +70,16 @@ function BookingFlowContent() {
   const [error, setError] = useState<string | null>(null)
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [bookingConfirmation, setBookingConfirmation] = useState<any>(null)
+  const [createdAppointment, setCreatedAppointment] = useState<any>(null)
+  const [showAppointmentFallback, setShowAppointmentFallback] = useState(false)
+  const [appointmentCreationRetries, setAppointmentCreationRetries] = useState(0)
 
   const [flowData, setFlowData] = useState<BookingFlowData>({
     location: null,
     services: [],
     barbers: [],
     availableSlots: [],
+    availableDates: [],
     selectedService: null,
     selectedBarber: null
   })
@@ -82,8 +94,15 @@ function BookingFlowContent() {
     client_phone: '',
     notes: '',
     payment_method: 'full',
-    payment_details: null
+    payment_details: null,
+    create_account: false,
+    password: ''
   })
+
+  // Get payment settings for the location
+  const { settings: paymentSettings, loading: paymentSettingsLoading } = useLocationPaymentSettings(
+    flowData.location?.id
+  )
 
   const steps: { key: BookingStep; label: string; icon: React.ElementType }[] = [
     { key: 'service', label: 'Select Service', icon: UserIcon },
@@ -110,22 +129,42 @@ function BookingFlowContent() {
     }
   }, [form.barber_id, form.date, form.service_id])
 
+  useEffect(() => {
+    if (form.barber_id && form.service_id) {
+      loadMonthlyAvailability()
+    }
+  }, [form.barber_id, form.service_id])
+
+  // Debug logging for createdAppointment changes
+  useEffect(() => {
+    console.log('[BookingFlow] createdAppointment state changed:', {
+      appointmentId: createdAppointment?.appointment_id,
+      bookingToken: createdAppointment?.booking_token,
+      appointmentKeys: createdAppointment ? Object.keys(createdAppointment) : [],
+      timestamp: new Date().toISOString()
+    })
+  }, [createdAppointment])
+
+  // Debug logging for current step changes
+  useEffect(() => {
+    console.log('[BookingFlow] Current step changed:', {
+      currentStep,
+      hasCreatedAppointment: !!createdAppointment,
+      appointmentId: createdAppointment?.appointment_id,
+      timestamp: new Date().toISOString()
+    })
+  }, [currentStep, createdAppointment])
+
   const loadInitialData = async () => {
     try {
       setLoading(true)
       setError(null)
 
-      // Load location
-      const locationResponse = await locationsService.getLocation(parseInt(shopId))
+      // Load location using public API
+      const location = await publicBookingService.getShopInfo(parseInt(shopId))
 
-      // Load services
-      const servicesResponse = await servicesService.getServices({
-        location_id: parseInt(shopId),
-        is_active: true
-      })
-
-      const location = locationResponse.data
-      const services = servicesResponse.data
+      // Load services using public API
+      const services = await publicBookingService.getShopServices(parseInt(shopId))
 
       setFlowData(prev => ({
         ...prev,
@@ -154,13 +193,8 @@ function BookingFlowContent() {
 
     try {
       setLoading(true)
-      const response = await barbersService.getBarbers({
-        location_id: parseInt(shopId),
-        service_id: form.service_id,
-        is_active: true
-      })
-
-      const barbers = Array.isArray(response) ? response : response.data
+      // Use public API to get barbers
+      const barbers = await publicBookingService.getShopBarbers(parseInt(shopId))
       setFlowData(prev => ({ ...prev, barbers }))
 
       // Pre-select barber if provided
@@ -182,17 +216,41 @@ function BookingFlowContent() {
   const checkAvailability = async () => {
     if (!form.barber_id || !form.date || !flowData.selectedService) return
 
+    // For "Any Professional", we would need a different API endpoint
+    // For now, we'll skip availability check and show all time slots
+    if (form.barber_id === -1) {
+      // Generate standard time slots for "Any Professional"
+      const standardSlots = [];
+      const startHour = 9; // 9 AM
+      const endHour = 18; // 6 PM
+
+      for (let hour = startHour; hour < endHour; hour++) {
+        for (let minute = 0; minute < 60; minute += 30) {
+          const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+          standardSlots.push({
+            start_time: time,
+            available: true,
+            date: form.date
+          });
+        }
+      }
+
+      setFlowData(prev => ({ ...prev, availableSlots: standardSlots }))
+      return;
+    }
+
     try {
       setLoading(true)
-      const response = await barbersService.getAvailability(
+      // Use public API for availability
+      const response = await publicBookingService.getBarberAvailability(
         form.barber_id,
-        form.date,
-        form.date,
         form.service_id!,
-        flowData.selectedService.duration_minutes
+        form.date,
+        form.date
       )
 
-      const slots = response.data[form.date] || []
+      // The response has a slots array, not indexed by date
+      const slots = response.slots || []
       setFlowData(prev => ({ ...prev, availableSlots: slots }))
     } catch (error) {
       console.error('Failed to check availability:', error)
@@ -202,9 +260,104 @@ function BookingFlowContent() {
     }
   }
 
-  const handleNext = () => {
+  const loadMonthlyAvailability = async () => {
+    if (!form.barber_id || !form.service_id) return
+
+    // For "Any Professional", show all dates as available
+    if (form.barber_id === -1) {
+      const today = new Date();
+      const availableDates = [];
+
+      // Generate dates for the next 3 months
+      for (let i = 0; i < 90; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() + i);
+        availableDates.push(date.toISOString().split('T')[0]);
+      }
+
+      setFlowData(prev => ({
+        ...prev,
+        availableDates: availableDates
+      }));
+      return;
+    }
+
+    try {
+      // Get the start and end of the current month
+      const today = new Date()
+      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+      const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 3, 0) // Next 3 months
+
+      const startDate = startOfMonth.toISOString().split('T')[0]
+      const endDate = endOfMonth.toISOString().split('T')[0]
+
+      // Use public API for availability
+      const response = await publicBookingService.getBarberAvailability(
+        form.barber_id,
+        form.service_id,
+        startDate,
+        endDate
+      )
+
+      // Extract unique dates that have available slots
+      const availableDates = new Set<string>()
+
+      if (response.slots && Array.isArray(response.slots)) {
+        response.slots.forEach((slot: any) => {
+          if (slot.available && slot.date) {
+            availableDates.add(slot.date)
+          }
+        })
+      }
+
+      setFlowData(prev => ({
+        ...prev,
+        availableDates: Array.from(availableDates).sort()
+      }))
+    } catch (error) {
+      console.error('Failed to load monthly availability:', error)
+      // Don't show error for this background operation
+    }
+  }
+
+  const handleNext = async () => {
     const stepIndex = steps.findIndex(s => s.key === currentStep)
-    if (stepIndex < steps.length - 1) {
+
+    // If moving from details to payment, create the appointment first
+    if (currentStep === 'details' && stepIndex < steps.length - 1 && steps[stepIndex + 1].key === 'payment') {
+      console.log('[BookingFlow] Transitioning from details to payment step')
+
+      // Validate form fields before creating appointment
+      if (!form.client_name || !form.client_email || (form.create_account && (!form.password || form.password.length < 8))) {
+        console.warn('[BookingFlow] Form validation failed before appointment creation')
+        return // Don't proceed if validation fails
+      }
+
+      try {
+        console.log('[BookingFlow] Creating appointment before payment step')
+        const appointmentData = await createAppointmentForPayment()
+        console.log('[BookingFlow] Appointment created, proceeding to payment:', {
+          appointmentId: appointmentData?.appointment_id,
+          timestamp: new Date().toISOString()
+        })
+        setCurrentStep(steps[stepIndex + 1].key)
+      } catch (error) {
+        console.error('[BookingFlow] Failed to create appointment, staying on details step:', error)
+        setAppointmentCreationRetries(prev => prev + 1)
+
+        // Show fallback after 2 failed attempts
+        if (appointmentCreationRetries >= 1) {
+          console.log('[BookingFlow] Showing appointment creation fallback after multiple failures')
+          setShowAppointmentFallback(true)
+        }
+        // Error is already handled in createAppointmentForPayment
+        return
+      }
+    } else if (stepIndex < steps.length - 1) {
+      console.log('[BookingFlow] Regular step progression:', {
+        from: currentStep,
+        to: steps[stepIndex + 1].key
+      })
       setCurrentStep(steps[stepIndex + 1].key)
     }
   }
@@ -222,9 +375,15 @@ function BookingFlowContent() {
     handleNext()
   }
 
-  const handleBarberSelect = (barber: BarberProfile) => {
-    setFlowData(prev => ({ ...prev, selectedBarber: barber }))
-    setForm(prev => ({ ...prev, barber_id: barber.id }))
+  const handleBarberSelect = (barber: BarberProfile | null) => {
+    if (barber === null) {
+      // "Any Professional" selected
+      setFlowData(prev => ({ ...prev, selectedBarber: null }))
+      setForm(prev => ({ ...prev, barber_id: -1 }))
+    } else {
+      setFlowData(prev => ({ ...prev, selectedBarber: barber }))
+      setForm(prev => ({ ...prev, barber_id: barber.id }))
+    }
     handleNext()
   }
 
@@ -233,35 +392,144 @@ function BookingFlowContent() {
     handleNext()
   }
 
-  const handleSubmit = async () => {
+  const createAppointmentForPayment = async () => {
+    console.log('[BookingFlow] createAppointmentForPayment started:', {
+      formData: {
+        service_id: form.service_id,
+        barber_id: form.barber_id,
+        date: form.date,
+        time: form.time,
+        client_name: form.client_name,
+        client_email: form.client_email
+      },
+      timestamp: new Date().toISOString()
+    })
+
     try {
       setLoading(true)
       setError(null)
 
+      // Validate required fields
+      if (!form.service_id || !form.date || !form.time || !form.client_name || !form.client_email) {
+        const missingFields = []
+        if (!form.service_id) missingFields.push('service')
+        if (!form.date) missingFields.push('date')
+        if (!form.time) missingFields.push('time')
+        if (!form.client_name) missingFields.push('name')
+        if (!form.client_email) missingFields.push('email')
+
+        console.error('[BookingFlow] Validation failed - missing fields:', missingFields)
+        throw new Error(`Please fill in all required fields: ${missingFields.join(', ')}`)
+      }
+
       const bookingData = {
         service_id: form.service_id!,
-        barber_id: form.barber_id!,
+        barber_id: form.barber_id === -1 ? null : form.barber_id!,  // Send null for "Any Professional"
         appointment_date: form.date,
         appointment_time: form.time,
         client_first_name: form.client_name.split(' ')[0],
         client_last_name: form.client_name.split(' ').slice(1).join(' ') || form.client_name.split(' ')[0],
         client_email: form.client_email,
         client_phone: form.client_phone,
-        notes: form.notes
+        notes: form.notes,
+        any_professional: form.barber_id === -1,  // Flag to indicate "Any Professional" was selected
+        location_id: form.barber_id === -1 ? parseInt(shopId) : undefined  // Required for "Any Professional"
       }
 
+      console.log('[BookingFlow] Calling bookingService.createBooking with data:', bookingData)
       const response = await bookingService.createBooking(bookingData)
 
+      console.log('[BookingFlow] Appointment created successfully:', {
+        appointmentId: response.data?.appointment_id,
+        bookingToken: response.data?.booking_token,
+        responseKeys: Object.keys(response.data || {}),
+        timestamp: new Date().toISOString()
+      })
+
+      setCreatedAppointment(response.data)
+      return response.data
+    } catch (error: any) {
+      console.error('[BookingFlow] Failed to create appointment:', {
+        error,
+        errorMessage: error.message,
+        errorResponse: error.response?.data,
+        errorStatus: error.response?.status,
+        timestamp: new Date().toISOString()
+      })
+
+      // Handle specific error types
+      let errorMessage = 'Failed to create appointment. Please try again.'
+
+      if (error.response?.status === 409) {
+        errorMessage = 'The selected time slot is no longer available. Please choose a different time.'
+      } else if (error.response?.status === 404) {
+        errorMessage = 'The selected service or barber is not available. Please refresh and try again.'
+      } else if (error.response?.data?.detail) {
+        if (typeof error.response.data.detail === 'string') {
+          errorMessage = error.response.data.detail
+        } else if (error.response.data.detail.message) {
+          errorMessage = error.response.data.detail.message
+        }
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+
+      setError(errorMessage)
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSubmit = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      // If customer wants to create an account, do it after booking is successful
+      if (form.create_account && form.password) {
+        try {
+          const customerData = {
+            email: form.client_email,
+            password: form.password,
+            first_name: form.client_name.split(' ')[0],
+            last_name: form.client_name.split(' ').slice(1).join(' ') || '',
+            phone: form.client_phone,
+            newsletter_subscription: true,
+            preferred_location_id: parseInt(shopId)
+          }
+
+          // Create customer account
+          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/customer/auth/register`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(customerData),
+          })
+
+          // We don't need to handle the response as the customer will log in later
+          // The important thing is the booking was successful
+        } catch (accountError) {
+          // Don't fail the booking if account creation fails
+          console.error('Failed to create customer account:', accountError)
+          // Could show a non-blocking notification here
+        }
+      }
+
       // Redirect to standalone confirmation page using the booking token
-      if (response.data.booking_token) {
-        router.push(`/book/confirmation/${response.data.booking_token}`)
+      if (createdAppointment?.booking_token) {
+        router.push(`/book/confirmation/${createdAppointment.booking_token}`)
       } else {
-        // Fallback to modal if no token (should not happen)
+        // Fallback to modal if no token
         setBookingConfirmation({
-          ...response.data,
+          ...createdAppointment,
           service_name: flowData.selectedService?.name,
-          barber_name: flowData.selectedBarber ?
-            `${flowData.selectedBarber.first_name} ${flowData.selectedBarber.last_name}` : '',
+          barber_name: form.barber_id === -1
+            ? 'Any Professional'
+            : flowData.selectedBarber
+              ? `${flowData.selectedBarber.first_name} ${flowData.selectedBarber.last_name}`
+              : '',
           duration: flowData.selectedService?.duration_minutes,
           price: flowData.selectedService?.base_price,
           location: flowData.location
@@ -269,8 +537,8 @@ function BookingFlowContent() {
         setShowConfirmation(true)
       }
     } catch (error: any) {
-      console.error('Failed to create booking:', error)
-      setError(error.response?.data?.detail || 'Failed to create booking. Please try again.')
+      console.error('Failed to finalize booking:', error)
+      setError(error.response?.data?.detail || 'Failed to finalize booking. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -302,6 +570,37 @@ function BookingFlowContent() {
               <p className="text-gray-600 mt-2">Select a barber for your appointment</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* "Any Professional" card */}
+              <button
+                onClick={() => handleBarberSelect(null)}
+                className={`p-6 rounded-lg border-2 transition-all text-left hover:shadow-md ${
+                  form.barber_id === -1
+                    ? 'border-purple-600 bg-purple-50 shadow-md'
+                    : 'border-purple-300 hover:border-purple-400 bg-gradient-to-br from-purple-50 to-indigo-50'
+                }`}
+              >
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center">
+                    <UsersIcon className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900">
+                      Any Professional
+                    </h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Let us match you with the best available barber
+                    </p>
+                    {form.barber_id === -1 && (
+                      <div className="mt-2 inline-flex items-center text-xs font-medium text-purple-600">
+                        <CheckIcon className="h-3 w-3 mr-1" />
+                        Selected
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </button>
+
+              {/* Regular barber cards */}
               {flowData.barbers.map((barber) => (
                 <button
                   key={barber.id}
@@ -357,41 +656,59 @@ function BookingFlowContent() {
       case 'datetime':
         return (
           <div className="space-y-6">
-            <div className="text-center">
+            <div className="text-center mb-8">
               <h2 className="text-2xl font-bold text-gray-900">Pick Date & Time</h2>
               <p className="text-gray-600 mt-2">Select your preferred appointment slot</p>
             </div>
 
-            {/* Date Selector */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Select Date
-              </label>
-              <input
-                type="date"
-                value={form.date}
-                onChange={(e) => setForm(prev => ({ ...prev, date: e.target.value }))}
-                min={new Date().toISOString().split('T')[0]}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 text-lg"
-              />
+            {/* Desktop: Side-by-side layout, Mobile: Stacked */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+              {/* Calendar */}
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Select Date</h3>
+                <BookingCalendar
+                  selectedDate={form.date}
+                  onDateSelect={(date) => setForm(prev => ({ ...prev, date }))}
+                  availableDates={flowData.availableDates}
+                />
+              </div>
+
+              {/* Time Slots */}
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  {form.date ? 'Available Times' : 'Select a date first'}
+                </h3>
+                {form.date ? (
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+                    <TimeSlotSelector
+                      slots={flowData.availableSlots.map(slot => ({
+                        time: slot.start_time,
+                        available: slot.available,
+                        reason: slot.reason
+                      }))}
+                      selectedTime={form.time}
+                      onTimeSelect={(time) => handleDateTimeSelect(form.date, time)}
+                      loading={loading}
+                    />
+                  </div>
+                ) : (
+                  <div className="bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 p-8 text-center">
+                    <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                    <p className="text-gray-500">Please select a date to view available time slots</p>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Time Slots */}
-            {form.date && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Available Times
-                </label>
-                <TimeSlotSelector
-                  slots={flowData.availableSlots.map(slot => ({
-                    time: slot.start_time,
-                    available: slot.is_available,
-                    reason: slot.reason
-                  }))}
-                  selectedTime={form.time}
-                  onTimeSelect={(time) => handleDateTimeSelect(form.date, time)}
-                  loading={loading}
-                />
+            {/* Continue button for time selection */}
+            {form.date && form.time && (
+              <div className="mt-6">
+                <button
+                  onClick={handleNext}
+                  className="w-full px-6 py-3 bg-slate-700 text-white text-lg font-semibold rounded-lg hover:bg-slate-800 transition-colors"
+                >
+                  Continue to Details
+                </button>
               </div>
             )}
           </div>
@@ -415,7 +732,7 @@ function BookingFlowContent() {
                   required
                   value={form.client_name}
                   onChange={(e) => setForm(prev => ({ ...prev, client_name: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 text-gray-900 bg-white placeholder:text-gray-400"
                   placeholder="John Smith"
                 />
               </div>
@@ -429,7 +746,7 @@ function BookingFlowContent() {
                   required
                   value={form.client_email}
                   onChange={(e) => setForm(prev => ({ ...prev, client_email: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 text-gray-900 bg-white placeholder:text-gray-400"
                   placeholder="john@example.com"
                 />
               </div>
@@ -442,7 +759,7 @@ function BookingFlowContent() {
                   type="tel"
                   value={form.client_phone}
                   onChange={(e) => setForm(prev => ({ ...prev, client_phone: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 text-gray-900 bg-white placeholder:text-gray-400"
                   placeholder="(555) 123-4567"
                 />
               </div>
@@ -455,39 +772,181 @@ function BookingFlowContent() {
                   value={form.notes}
                   onChange={(e) => setForm(prev => ({ ...prev, notes: e.target.value }))}
                   rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 text-gray-900 bg-white placeholder:text-gray-400"
                   placeholder="Any special requests or notes for your barber..."
                 />
+              </div>
+
+              {/* Optional Account Creation */}
+              <div className="mt-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <div className="flex items-start">
+                  <input
+                    type="checkbox"
+                    id="create-account"
+                    checked={form.create_account}
+                    onChange={(e) => setForm(prev => ({ ...prev, create_account: e.target.checked }))}
+                    className="mt-1 h-4 w-4 text-slate-600 border-gray-300 rounded focus:ring-slate-500"
+                  />
+                  <div className="ml-3 flex-1">
+                    <label htmlFor="create-account" className="text-sm font-medium text-gray-900 cursor-pointer">
+                      Create an account for faster future bookings
+                    </label>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Save your information, view booking history, and get exclusive offers
+                    </p>
+                  </div>
+                </div>
+
+                {/* Password field if creating account */}
+                {form.create_account && (
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Choose a Password
+                    </label>
+                    <input
+                      type="password"
+                      value={form.password}
+                      onChange={(e) => setForm(prev => ({ ...prev, password: e.target.value }))}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 text-gray-900 bg-white"
+                      placeholder="••••••••"
+                      minLength={8}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Minimum 8 characters
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
             <button
               onClick={handleNext}
-              disabled={!form.client_name || !form.client_email}
-              className="w-full px-6 py-3 bg-slate-700 text-white text-lg font-semibold rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              disabled={!form.client_name || !form.client_email || (form.create_account && (!form.password || form.password.length < 8)) || loading}
+              className="w-full px-6 py-3 bg-slate-700 text-white text-lg font-semibold rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
             >
-              Continue to Payment
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  Creating Appointment...
+                  {appointmentCreationRetries > 0 && (
+                    <span className="ml-2 text-sm opacity-75">(Retry {appointmentCreationRetries + 1})</span>
+                  )}
+                </>
+              ) : (
+                'Continue to Payment'
+              )}
             </button>
+
+            {/* Retry info */}
+            {appointmentCreationRetries > 0 && !loading && (
+              <div className="mt-3 text-center">
+                <p className="text-sm text-gray-600">
+                  Previous attempt failed. Click to try again or go back to modify your selection.
+                </p>
+              </div>
+            )}
           </div>
         )
 
       case 'payment':
+        // Show fallback if appointment creation failed multiple times
+        if (showAppointmentFallback) {
+          return (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-gray-900">Booking Issue</h2>
+                <p className="text-gray-600 mt-2">We need to resolve an appointment creation issue</p>
+              </div>
+
+              <AppointmentCreationFallback
+                error={error || undefined}
+                customerEmail={form.client_email}
+                locationName={flowData.location?.name}
+                onRetry={async () => {
+                  console.log('[BookingFlow] Retrying appointment creation from fallback')
+                  setShowAppointmentFallback(false)
+                  setError(null)
+                  try {
+                    const appointmentData = await createAppointmentForPayment()
+                    console.log('[BookingFlow] Retry successful, appointment created:', appointmentData?.appointment_id)
+                  } catch (retryError) {
+                    console.error('[BookingFlow] Retry failed:', retryError)
+                    setShowAppointmentFallback(true)
+                  }
+                }}
+                onGoBack={() => {
+                  console.log('[BookingFlow] Going back from appointment creation fallback')
+                  setShowAppointmentFallback(false)
+                  setCurrentStep('details')
+                  setError(null)
+                  setAppointmentCreationRetries(0)
+                }}
+                isRetrying={loading}
+              />
+            </div>
+          )
+        }
+
+        // Normal payment flow
         return (
           <div className="space-y-6">
             <div className="text-center">
               <h2 className="text-2xl font-bold text-gray-900">Payment</h2>
-              <p className="text-gray-600 mt-2">Choose your payment option</p>
+              <p className="text-gray-600 mt-2">Complete your booking with payment</p>
             </div>
 
-            <SimplePaymentStep
+            {/* Appointment validation warning */}
+            {(!createdAppointment?.appointment_id) && (
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <div className="flex items-start">
+                  <ExclamationTriangleIcon className="h-5 w-5 text-orange-600 mt-0.5 mr-3" />
+                  <div className="text-sm">
+                    <p className="text-orange-800 font-medium">Appointment Setup Verification</p>
+                    <p className="text-orange-700 mt-1">
+                      Verifying appointment creation... If payment options don't appear, please refresh the page.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <EnhancedPaymentStep
               service={flowData.selectedService}
+              appointmentId={createdAppointment?.appointment_id}
+              customerEmail={form.client_email}
+              locationId={flowData.location?.id}
+              payInPersonEnabled={paymentSettings?.pay_in_person_enabled ?? true}
+              payInPersonMessage={paymentSettings?.pay_in_person_message}
               onPaymentSelect={(paymentMethod, paymentDetails) => {
+                console.log('[BookingFlow] Payment method selected:', {
+                  paymentMethod,
+                  paymentDetails,
+                  appointmentId: createdAppointment?.appointment_id,
+                  timestamp: new Date().toISOString()
+                })
                 setForm(prev => ({
                   ...prev,
                   payment_method: paymentMethod,
                   payment_details: paymentDetails
                 }))
                 handleNext()
+              }}
+              onPaymentSuccess={(paymentId) => {
+                console.log('[BookingFlow] Payment successful:', {
+                  paymentId,
+                  appointmentId: createdAppointment?.appointment_id,
+                  timestamp: new Date().toISOString()
+                })
+                // Payment successful, go to confirmation
+                setCurrentStep('confirm')
+              }}
+              onPaymentError={(error) => {
+                console.error('[BookingFlow] Payment error received:', {
+                  error,
+                  appointmentId: createdAppointment?.appointment_id,
+                  timestamp: new Date().toISOString()
+                })
+                setError(`Payment failed: ${error}`)
               }}
               selectedMethod={form.payment_method}
             />
@@ -498,8 +957,8 @@ function BookingFlowContent() {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-900">Confirm Your Booking</h2>
-              <p className="text-gray-600 mt-2">Please review your appointment details</p>
+              <h2 className="text-2xl font-bold text-gray-900">Booking Complete!</h2>
+              <p className="text-gray-600 mt-2">Your appointment has been successfully created and payment processed</p>
             </div>
 
             <div className="bg-gray-50 rounded-xl p-6 space-y-6">
@@ -529,7 +988,9 @@ function BookingFlowContent() {
                   <div className="flex justify-between">
                     <span className="text-gray-600">Barber:</span>
                     <span className="font-medium">
-                      {flowData.selectedBarber?.first_name} {flowData.selectedBarber?.last_name}
+                      {form.barber_id === -1
+                        ? "Any Professional"
+                        : `${flowData.selectedBarber?.first_name} ${flowData.selectedBarber?.last_name}`}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -588,15 +1049,15 @@ function BookingFlowContent() {
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="w-full px-6 py-4 bg-slate-700 text-white text-lg font-semibold rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+              className="w-full px-6 py-4 bg-green-600 text-white text-lg font-semibold rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
             >
               {loading ? (
                 <>
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  Confirming Booking...
+                  Finalizing...
                 </>
               ) : (
-                'Confirm Booking'
+                'View Confirmation Details'
               )}
             </button>
           </div>
@@ -676,7 +1137,20 @@ function BookingFlowContent() {
         {/* Error Display */}
         {error && (
           <div className="mb-6 bg-red-50 border-l-4 border-red-400 p-4 rounded-lg">
-            <p className="text-red-700">{error}</p>
+            <div className="flex items-start">
+              <ExclamationTriangleIcon className="h-5 w-5 text-red-600 mt-0.5 mr-3" />
+              <div className="text-sm">
+                <p className="text-red-800 font-medium">Booking Error</p>
+                <p className="text-red-700 mt-1">{error}</p>
+                {currentStep === 'payment' && (
+                  <div className="mt-3">
+                    <p className="text-red-600 text-xs">
+                      Debug info: Step = {currentStep}, Appointment ID = {createdAppointment?.appointment_id || 'not created'}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
@@ -685,7 +1159,7 @@ function BookingFlowContent() {
           {getStepContent()}
 
           {/* Navigation */}
-          {currentStep !== 'service' && currentStep !== 'confirm' && currentStep !== 'payment' && (
+          {currentStep === 'barber' && (
             <div className="mt-8 flex justify-between">
               <button
                 onClick={handleBack}
@@ -693,6 +1167,40 @@ function BookingFlowContent() {
               >
                 <ArrowLeftIcon className="h-4 w-4 mr-2" />
                 Back
+              </button>
+            </div>
+          )}
+          {currentStep === 'datetime' && (
+            <div className="mt-8 flex justify-between">
+              <button
+                onClick={handleBack}
+                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center"
+              >
+                <ArrowLeftIcon className="h-4 w-4 mr-2" />
+                Back
+              </button>
+            </div>
+          )}
+          {currentStep === 'payment' && (
+            <div className="mt-8 flex justify-between">
+              <button
+                onClick={() => {
+                  if (showAppointmentFallback) {
+                    setShowAppointmentFallback(false)
+                    setCurrentStep('details')
+                    setError(null)
+                    setAppointmentCreationRetries(0)
+                  } else {
+                    setError('To make changes to your appointment details, please start a new booking.')
+                  }
+                }}
+                className={`px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center ${
+                  showAppointmentFallback ? '' : 'opacity-50 cursor-not-allowed'
+                }`}
+                disabled={!showAppointmentFallback}
+              >
+                <ArrowLeftIcon className="h-4 w-4 mr-2" />
+                {showAppointmentFallback ? 'Back to Details' : 'Back (Disabled - Appointment Created)'}
               </button>
             </div>
           )}

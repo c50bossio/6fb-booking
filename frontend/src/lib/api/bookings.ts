@@ -3,7 +3,7 @@ import type { ApiResponse, PaginatedResponse } from './client'
 
 export interface BookingRequest {
   service_id: number
-  barber_id: number
+  barber_id: number | null
   appointment_date: string
   appointment_time: string
   client_first_name: string
@@ -12,10 +12,43 @@ export interface BookingRequest {
   client_phone: string
   notes?: string
   timezone?: string
+  any_professional?: boolean
+  location_id?: number
+}
+
+// Backend response from /api/v1/booking/public/bookings/create
+export interface BookingConfirmationResponse {
+  booking_token: string
+  appointment_id: number
+  confirmation_message: string
+  appointment_details: {
+    barber: string
+    service: string
+    date: string
+    time: string
+    duration: string
+    price: string
+    location: string
+    payment?: {
+      payment_method: string
+      payment_status: string
+      amount?: string
+      deposit_amount?: string
+      remaining_amount?: string
+      payment_instructions?: string
+    }
+  }
+  assigned_barber?: {
+    id: number
+    name: string
+    business_name?: string
+    message: string
+  }
 }
 
 export interface Booking {
   id: string
+  appointment_id?: number  // Add for consistency with backend response
   confirmation_number: string
   service: {
     id: number
@@ -161,8 +194,8 @@ export const bookingService = {
     return { data: response.data }
   },
 
-  // Create a new booking
-  async createBooking(bookingData: BookingRequest): Promise<ApiResponse<Booking>> {
+  // Create a new booking - returns BookingConfirmationResponse with appointment_id
+  async createBooking(bookingData: BookingRequest): Promise<ApiResponse<BookingConfirmationResponse>> {
     const response = await apiClient.post('/api/v1/booking/public/bookings/create', bookingData)
     return { data: response.data }
   },

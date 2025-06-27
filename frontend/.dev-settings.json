@@ -1,0 +1,100 @@
+{
+  "validation": {
+    "defaultMode": "quick",
+    "autoFix": true,
+    "timeouts": {
+      "defaultTimeout": 15000,
+      "extensionCheck": 10000,
+      "networkCheck": 5000
+    },
+    "skipChecks": {
+      "browserExtensions": false,
+      "networkConnectivity": false,
+      "portAvailability": false,
+      "systemRequirements": false,
+      "dependencyIntegrity": false,
+      "fileSystemIntegrity": false
+    },
+    "gracefulDegradation": {
+      "enabled": true,
+      "nonBlockingIssues": [
+        "port_conflict",
+        "network_issue", 
+        "extension_timeout",
+        "extension_error",
+        "check_timeout"
+      ]
+    },
+    "fallbackBehavior": {
+      "enableAutoFallback": true,
+      "fallbackMode": "emergency",
+      "maxRetries": 1
+    }
+  },
+  "development": {
+    "preferredStartupMethod": "dev:safe",
+    "emergencyMethods": [
+      "dev:failsafe",
+      "dev:recovery", 
+      "dev:skip-validation"
+    ],
+    "healthMonitoring": {
+      "enabled": false,
+      "alertOnFailure": true,
+      "backgroundMonitoring": false
+    }
+  },
+  "logging": {
+    "verbose": false,
+    "silent": false,
+    "logToFile": true,
+    "retentionDays": 7
+  },
+  "personalizations": {
+    "skipExtensionChecks": false,
+    "quickStartMode": false,
+    "showProgressBars": true,
+    "colorOutput": true
+  },
+  "troubleshooting": {
+    "autoOpenLogsOnFailure": false,
+    "suggestCommands": true,
+    "showDetailedErrors": true
+  },
+  "preemptive": {
+    "enabled": true,
+    "predictionInterval": 60000,
+    "alertThreshold": 0.7,
+    "autoRemediation": true,
+    "logAnalysis": true,
+    "trendsAnalysis": true,
+    "resourcePrediction": true,
+    "buildMonitoring": true,
+    "networkMonitoring": true,
+    "dependencyTracking": true,
+    "thresholds": {
+      "memory": {
+        "warning": 75,
+        "critical": 90,
+        "leakDetection": true
+      },
+      "cpu": {
+        "warning": 70,
+        "critical": 85
+      },
+      "disk": {
+        "warning": 80,
+        "critical": 90
+      },
+      "responseTime": 5000,
+      "consecutiveFailures": 3
+    },
+    "autoRemediationActions": {
+      "memory_leak": true,
+      "disk_space": true,
+      "port_conflict": true,
+      "build_degradation": true,
+      "dependency_issues": true
+    }
+  }
+}

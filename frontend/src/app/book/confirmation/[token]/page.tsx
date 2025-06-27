@@ -15,7 +15,8 @@ import {
   ShareIcon,
   PrinterIcon,
   PencilIcon,
-  XMarkIcon
+  XMarkIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline'
 import { CheckCircleIcon as CheckCircleSolidIcon } from '@heroicons/react/24/solid'
 
@@ -53,6 +54,10 @@ export default function BookingConfirmationPage() {
   const [booking, setBooking] = useState<BookingDetails | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showSignupPrompt, setShowSignupPrompt] = useState(true)
+  const [creatingAccount, setCreatingAccount] = useState(false)
+  const [accountPassword, setAccountPassword] = useState('')
+  const [accountCreated, setAccountCreated] = useState(false)
 
   useEffect(() => {
     if (!token) {
@@ -66,7 +71,9 @@ export default function BookingConfirmationPage() {
 
   const fetchBookingDetails = async () => {
     try {
-      const response = await fetch(`/api/v1/booking/public/bookings/confirm/${token}`)
+      // Use the correct API base URL pattern
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || ''
+      const response = await fetch(`${baseUrl}/api/v1/booking/public/bookings/confirm/${token}`)
 
       if (!response.ok) {
         if (response.status === 404) {
@@ -129,6 +136,47 @@ export default function BookingConfirmationPage() {
   const copyToClipboard = () => {
     navigator.clipboard.writeText(window.location.href)
     alert('Confirmation link copied to clipboard!')
+  }
+
+  const handleCreateAccount = async () => {
+    if (!booking || !accountPassword || accountPassword.length < 8) {
+      alert('Please enter a password with at least 8 characters')
+      return
+    }
+
+    setCreatingAccount(true)
+
+    try {
+      const customerData = {
+        email: booking.client.email,
+        password: accountPassword,
+        first_name: booking.client.name.split(' ')[0],
+        last_name: booking.client.name.split(' ').slice(1).join(' ') || '',
+        phone: booking.client.phone,
+        newsletter_subscription: true
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/customer/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(customerData),
+      })
+
+      if (response.ok) {
+        setAccountCreated(true)
+        setShowSignupPrompt(false)
+      } else {
+        const error = await response.json()
+        alert(error.detail || 'Failed to create account. Please try again.')
+      }
+    } catch (error) {
+      console.error('Failed to create account:', error)
+      alert('Failed to create account. Please try again.')
+    } finally {
+      setCreatingAccount(false)
+    }
   }
 
   const addToCalendar = () => {
@@ -349,6 +397,68 @@ Confirmation ID: ${booking.appointment.id}`
                     <li>• Contact us if you need to make changes</li>
                   </ul>
                 </div>
+
+                {/* Customer Account Creation Prompt */}
+                {showSignupPrompt && !accountCreated && (
+                  <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-4 border border-purple-200">
+                    <div className="flex items-start">
+                      <SparklesIcon className="h-6 w-6 text-purple-600 mr-3 flex-shrink-0 mt-1" />
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-900 mb-2">Create Your Account</h4>
+                        <p className="text-sm text-gray-700 mb-3">
+                          Save time on future bookings and track your appointment history
+                        </p>
+                        
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Password for your account
+                            </label>
+                            <input
+                              type="password"
+                              value={accountPassword}
+                              onChange={(e) => setAccountPassword(e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-gray-900 bg-white"
+                              placeholder="Minimum 8 characters"
+                              minLength={8}
+                            />
+                          </div>
+                          
+                          <div className="flex items-center space-x-3">
+                            <button
+                              onClick={handleCreateAccount}
+                              disabled={creatingAccount || accountPassword.length < 8}
+                              className="px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                              {creatingAccount ? 'Creating...' : 'Create Account'}
+                            </button>
+                            <button
+                              onClick={() => setShowSignupPrompt(false)}
+                              className="text-sm text-gray-600 hover:text-gray-800"
+                            >
+                              Skip for now
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Account Created Success Message */}
+                {accountCreated && (
+                  <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                    <div className="flex items-center">
+                      <CheckCircleIcon className="h-6 w-6 text-green-600 mr-3" />
+                      <div>
+                        <h4 className="font-medium text-green-900">Account Created Successfully!</h4>
+                        <p className="text-sm text-green-800 mt-1">
+                          You can now log in with your email and password for faster future bookings.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Recurring Appointment Upsell */}
                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">

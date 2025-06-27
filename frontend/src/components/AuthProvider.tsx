@@ -28,6 +28,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 const PUBLIC_ROUTES = [
   '/login',
+  '/signup',
   '/forgot-password',
   '/register',
   '/emergency-login',

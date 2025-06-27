@@ -13,14 +13,14 @@ import {
   ArrowRightIcon
 } from '@heroicons/react/24/outline'
 import { locationsService } from '@/lib/api/locations'
-import { barbersService } from '@/lib/api/barbers'
-import { servicesService } from '@/lib/api/services'
-import type { Location, BarberProfile, Service } from '@/lib/api'
+import { publicBookingService } from '@/lib/api/publicBooking'
+import type { Location } from '@/lib/api'
+import type { PublicBarberProfile, PublicServiceInfo } from '@/lib/api/publicBooking'
 
 interface ShopInfo {
   location: Location
-  barbers: BarberProfile[]
-  services: Service[]
+  barbers: PublicBarberProfile[]
+  services: PublicServiceInfo[]
   stats: {
     totalBookings: number
     averageRating: number
@@ -49,23 +49,14 @@ function ShopBookingContent() {
       setLoading(true)
       setError(null)
 
-      // Load location details
-      const locationResponse = await locationsService.getLocation(parseInt(shopId))
-      const location = locationResponse.data
+      // Load location details using public API endpoint
+      const location = await publicBookingService.getShopInfo(parseInt(shopId))
 
-      // Load barbers for this location
-      const barbersResponse = await barbersService.getBarbers({
-        location_id: parseInt(shopId),
-        is_active: true
-      })
-      const barbers = Array.isArray(barbersResponse) ? barbersResponse : barbersResponse.data
+      // Load barbers for this location using public API
+      const barbers = await publicBookingService.getShopBarbers(parseInt(shopId))
 
-      // Load services for this location
-      const servicesResponse = await servicesService.getServices({
-        location_id: parseInt(shopId),
-        is_active: true
-      })
-      const services = servicesResponse.data
+      // Load services for this location using public API  
+      const services = await publicBookingService.getShopServices(parseInt(shopId))
 
       // Calculate stats (in real app, this would come from API)
       const stats = {

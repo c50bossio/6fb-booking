@@ -9,7 +9,8 @@ import {
   ShieldCheckIcon,
   CurrencyDollarIcon,
   ClockIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  BanknotesIcon
 } from '@heroicons/react/24/outline'
 import type { Service } from '@/lib/api/services'
 import { getStripe, formatAmountForStripe, stripeAppearance } from '@/lib/stripe'
@@ -18,31 +19,39 @@ import { StripePaymentForm } from '@/components/payments/StripePaymentForm'
 
 interface PaymentStepProps {
   service: Service | null
-  onPaymentSelect: (paymentMethod: 'full' | 'deposit', paymentDetails: any) => void
-  selectedMethod: 'full' | 'deposit'
+  onPaymentSelect: (paymentMethod: 'full' | 'deposit' | 'in_person', paymentDetails: any) => void
+  selectedMethod: 'full' | 'deposit' | 'in_person'
   appointmentId?: number
   customerEmail?: string
   onPaymentSuccess?: (paymentId: number) => void
   onPaymentError?: (error: string) => void
+  locationId?: number
+  // Location payment settings
+  payInPersonEnabled?: boolean
+  payInPersonMessage?: string
 }
 
 interface PaymentOption {
-  id: 'full' | 'deposit'
+  id: 'full' | 'deposit' | 'in_person'
   name: string
   description: string
   icon: React.ElementType
   amount: number
   note?: string
+  requiresOnlinePayment: boolean
 }
 
-export default function SimplePaymentStep({
+export default function EnhancedPaymentStep({
   service,
   onPaymentSelect,
   selectedMethod,
   appointmentId,
   customerEmail,
   onPaymentSuccess,
-  onPaymentError
+  onPaymentError,
+  locationId,
+  payInPersonEnabled = true,
+  payInPersonMessage
 }: PaymentStepProps) {
   const [loading, setLoading] = useState(false)
   const [selectedOption, setSelectedOption] = useState<PaymentOption | null>(null)
@@ -55,30 +64,32 @@ export default function SimplePaymentStep({
 
   // Debug logging for appointment ID tracking
   useEffect(() => {
-    console.log('[SimplePaymentStep] Component mounted with props:', {
+    console.log('[EnhancedPaymentStep] Component mounted with props:', {
       appointmentId,
       customerEmail,
+      locationId,
       serviceId: service?.id,
       serviceName: service?.name,
+      payInPersonEnabled,
       timestamp: new Date().toISOString()
     })
-    
+
     // Validate appointment ID on mount
     if (appointmentId === undefined || appointmentId === null) {
-      console.warn('[SimplePaymentStep] WARNING: appointmentId is missing or undefined')
+      console.warn('[EnhancedPaymentStep] WARNING: appointmentId is missing or undefined')
       setAppointmentValidationError('Appointment ID is missing. Please ensure the appointment was created successfully before proceeding with payment.')
     } else if (typeof appointmentId !== 'number' || appointmentId <= 0) {
-      console.warn('[SimplePaymentStep] WARNING: appointmentId is invalid:', appointmentId)
+      console.warn('[EnhancedPaymentStep] WARNING: appointmentId is invalid:', appointmentId)
       setAppointmentValidationError(`Invalid appointment ID format: ${appointmentId}. Expected a positive number.`)
     } else {
-      console.log('[SimplePaymentStep] Appointment ID validation passed:', appointmentId)
+      console.log('[EnhancedPaymentStep] Appointment ID validation passed:', appointmentId)
       setAppointmentValidationError('')
     }
-  }, [appointmentId, customerEmail, service])
+  }, [appointmentId, customerEmail, locationId, service])
 
   // Track prop changes for debugging
   useEffect(() => {
-    console.log('[SimplePaymentStep] Appointment ID changed:', {
+    console.log('[EnhancedPaymentStep] Appointment ID changed:', {
       from: 'previous value',
       to: appointmentId,
       type: typeof appointmentId,
@@ -104,24 +115,35 @@ export default function SimplePaymentStep({
 
   const paymentOptions: PaymentOption[] = [
     {
-      id: 'full',
-      name: 'Pay Full Amount',
-      description: 'Pay the complete service fee now',
-      icon: CreditCardIcon,
-      amount: fullAmount,
-      note: 'No additional payment required at appointment'
-    }
-  ]
-
-  // Only add deposit option if the service allows it or if it's required
-  if (service.requires_deposit || true) { // Allow deposit for all services
-    paymentOptions.unshift({
       id: 'deposit',
       name: 'Pay Deposit Only',
       description: 'Secure your booking with a deposit',
       icon: CurrencyDollarIcon,
       amount: depositAmount,
-      note: `Remaining $${(fullAmount - depositAmount).toFixed(2)} due at appointment`
+      note: `Remaining $${(fullAmount - depositAmount).toFixed(2)} due at appointment`,
+      requiresOnlinePayment: true
+    },
+    {
+      id: 'full',
+      name: 'Pay Full Amount',
+      description: 'Pay the complete service fee now',
+      icon: CreditCardIcon,
+      amount: fullAmount,
+      note: 'No additional payment required at appointment',
+      requiresOnlinePayment: true
+    }
+  ]
+
+  // Add "Pay in Person" option if enabled for this location
+  if (payInPersonEnabled) {
+    paymentOptions.push({
+      id: 'in_person',
+      name: 'Pay in Person',
+      description: 'Pay when you arrive at the shop',
+      icon: BanknotesIcon,
+      amount: fullAmount,
+      note: payInPersonMessage || 'Payment accepted at the shop: cash, card, or digital wallet',
+      requiresOnlinePayment: false
     })
   }
 
@@ -134,22 +156,25 @@ export default function SimplePaymentStep({
 
   const handleOptionSelect = (option: PaymentOption) => {
     setSelectedOption(option)
+    setShowPaymentForm(false)
+    setStripeError('')
   }
 
   const createPaymentIntent = async (amount: number) => {
-    console.log('[SimplePaymentStep] createPaymentIntent called with:', {
+    console.log('[EnhancedPaymentStep] createPaymentIntent called with:', {
       amount,
       appointmentId,
       appointmentIdType: typeof appointmentId,
       selectedOption: selectedOption?.id,
       customerEmail,
+      locationId,
       timestamp: new Date().toISOString()
     })
 
     // Enhanced validation with detailed error messages
     if (appointmentId === undefined || appointmentId === null) {
       const errorMsg = `Cannot process payment: Appointment ID is missing. This usually means the appointment creation failed or is still in progress. Please try refreshing the page or starting a new booking.`
-      console.error('[SimplePaymentStep] Payment blocked - missing appointment ID:', {
+      console.error('[EnhancedPaymentStep] Payment blocked - missing appointment ID:', {
         appointmentId,
         type: typeof appointmentId,
         customerEmail,
@@ -162,7 +187,7 @@ export default function SimplePaymentStep({
 
     if (typeof appointmentId !== 'number' || appointmentId <= 0) {
       const errorMsg = `Cannot process payment: Invalid appointment ID format (${appointmentId}). Expected a positive number. Please try creating a new booking.`
-      console.error('[SimplePaymentStep] Payment blocked - invalid appointment ID:', {
+      console.error('[EnhancedPaymentStep] Payment blocked - invalid appointment ID:', {
         appointmentId,
         type: typeof appointmentId,
         customerEmail,
@@ -175,7 +200,7 @@ export default function SimplePaymentStep({
 
     if (!selectedOption) {
       const errorMsg = 'Please select a payment option before proceeding.'
-      console.error('[SimplePaymentStep] Payment blocked - no payment option selected')
+      console.error('[EnhancedPaymentStep] Payment blocked - no payment option selected')
       setStripeError(errorMsg)
       onPaymentError?.(errorMsg)
       return
@@ -184,12 +209,13 @@ export default function SimplePaymentStep({
     try {
       setLoading(true)
       setStripeError('') // Clear any previous errors
-      
-      console.log('[SimplePaymentStep] Creating payment intent with validated data:', {
+
+      console.log('[EnhancedPaymentStep] Creating payment intent with validated data:', {
         appointmentId,
         amount: formatAmountForStripe(amount),
         paymentType: selectedOption.id,
-        customerEmail
+        customerEmail,
+        locationId
       })
 
       const intent = await paymentsAPI.createPaymentIntent({
@@ -200,36 +226,38 @@ export default function SimplePaymentStep({
         metadata: {
           payment_type: selectedOption.id,
           customer_email: customerEmail || 'not_provided',
+          location_id: locationId?.toString() || 'not_provided',
           original_amount: amount.toString(),
           created_at: new Date().toISOString()
         }
       })
-      
-      console.log('[SimplePaymentStep] Payment intent created successfully:', {
+
+      console.log('[EnhancedPaymentStep] Payment intent created successfully:', {
         paymentIntentId: intent.id,
         clientSecretLength: intent.clientSecret?.length || 0,
         appointmentId,
         timestamp: new Date().toISOString()
       })
-      
+
       setClientSecret(intent.clientSecret)
       setPaymentIntentId(intent.id)
       setShowPaymentForm(true)
     } catch (error) {
-      console.error('[SimplePaymentStep] Payment intent creation failed:', {
+      console.error('[EnhancedPaymentStep] Payment intent creation failed:', {
         error,
         appointmentId,
         amount,
         selectedOption: selectedOption?.id,
         customerEmail,
+        locationId,
         timestamp: new Date().toISOString()
       })
-      
+
       let errorMessage = 'Failed to initialize payment. Please try again.'
-      
+
       if (error instanceof Error) {
         errorMessage = error.message
-        
+
         // Provide more specific error messages based on common issues
         if (error.message.includes('appointment not found') || error.message.includes('404')) {
           errorMessage = 'The appointment could not be found. Please refresh the page and try again, or start a new booking.'
@@ -241,7 +269,7 @@ export default function SimplePaymentStep({
           errorMessage = 'Payment system error. Please try again in a moment.'
         }
       }
-      
+
       setStripeError(errorMessage)
       onPaymentError?.(errorMessage)
     } finally {
@@ -250,29 +278,50 @@ export default function SimplePaymentStep({
   }
 
   const handleContinue = async () => {
-    console.log('[SimplePaymentStep] handleContinue called:', {
+    console.log('[EnhancedPaymentStep] handleContinue called:', {
       selectedOption: selectedOption?.id,
       appointmentId,
       timestamp: new Date().toISOString()
     })
-    
+
     if (!selectedOption) {
       const errorMsg = 'Please select a payment option before continuing.'
-      console.warn('[SimplePaymentStep] Continue blocked - no option selected')
+      console.warn('[EnhancedPaymentStep] Continue blocked - no option selected')
       setStripeError(errorMsg)
       return
     }
 
-    // Enhanced validation before proceeding
-    if (!appointmentId || typeof appointmentId !== 'number' || appointmentId <= 0) {
-      const errorMsg = 'Cannot process payment: Invalid appointment data. Please refresh and try again.'
-      console.error('[SimplePaymentStep] Continue blocked - invalid appointment ID:', appointmentId)
-      setStripeError(errorMsg)
-      onPaymentError?.(errorMsg)
+    // If "Pay in Person" is selected, no online payment is needed
+    if (selectedOption.id === 'in_person') {
+      console.log('[EnhancedPaymentStep] Processing in-person payment option')
+
+      // Still validate appointment ID for in-person payments
+      if (!appointmentId || typeof appointmentId !== 'number' || appointmentId <= 0) {
+        const errorMsg = 'Cannot complete booking: Invalid appointment data. Please refresh and try again.'
+        console.error('[EnhancedPaymentStep] In-person payment blocked - invalid appointment ID:', appointmentId)
+        setStripeError(errorMsg)
+        onPaymentError?.(errorMsg)
+        return
+      }
+
+      const paymentDetails = {
+        method: 'in_person',
+        amount: selectedOption.amount,
+        currency: 'USD',
+        status: 'pending_in_person',
+        requires_in_person_payment: true,
+        payment_instructions: selectedOption.note,
+        appointment_id: appointmentId
+      }
+
+      console.log('[EnhancedPaymentStep] In-person payment details created:', paymentDetails)
+      onPaymentSelect('in_person', paymentDetails)
+      onPaymentSuccess?.(0) // No payment ID for in-person payments
       return
     }
 
-    console.log('[SimplePaymentStep] Proceeding with payment intent creation')
+    // For online payments, create payment intent
+    console.log('[EnhancedPaymentStep] Proceeding with online payment intent creation')
     await createPaymentIntent(selectedOption.amount)
   }
 
@@ -322,13 +371,18 @@ export default function SimplePaymentStep({
           <div className="space-y-3">
             {paymentOptions.map((option) => {
               const Icon = option.icon
+              const isInPerson = option.id === 'in_person'
               return (
                 <RadioGroup.Option
                   key={option.id}
                   value={option}
                   className={({ checked }) =>
-                    `${checked ? 'bg-slate-50 border-slate-600 ring-1 ring-slate-600' : 'border-gray-300'}
-                    relative flex cursor-pointer rounded-lg border p-4 focus:outline-none`
+                    `${checked
+                      ? isInPerson
+                        ? 'bg-green-50 border-green-600 ring-1 ring-green-600'
+                        : 'bg-slate-50 border-slate-600 ring-1 ring-slate-600'
+                      : 'border-gray-300'}
+                    relative flex cursor-pointer rounded-lg border p-4 focus:outline-none hover:bg-gray-50 transition-colors`
                   }
                 >
                   {({ checked }) => (
@@ -336,22 +390,38 @@ export default function SimplePaymentStep({
                       <div className="flex items-center">
                         <div className="text-sm">
                           <div className="flex items-center">
-                            <Icon className="h-5 w-5 text-gray-600 mr-3" />
+                            <Icon className={`h-5 w-5 mr-3 ${
+                              isInPerson
+                                ? checked ? 'text-green-600' : 'text-green-500'
+                                : 'text-gray-600'
+                            }`} />
                             <div>
                               <RadioGroup.Label
                                 as="p"
-                                className={`font-medium ${checked ? 'text-slate-900' : 'text-gray-900'}`}
+                                className={`font-medium ${
+                                  checked
+                                    ? isInPerson ? 'text-green-900' : 'text-slate-900'
+                                    : 'text-gray-900'
+                                }`}
                               >
                                 {option.name}
                               </RadioGroup.Label>
                               <RadioGroup.Description
                                 as="p"
-                                className={`${checked ? 'text-slate-700' : 'text-gray-500'}`}
+                                className={`${
+                                  checked
+                                    ? isInPerson ? 'text-green-700' : 'text-slate-700'
+                                    : 'text-gray-500'
+                                }`}
                               >
                                 {option.description}
                               </RadioGroup.Description>
                               {option.note && (
-                                <p className="text-sm text-gray-500 mt-1">{option.note}</p>
+                                <p className={`text-sm mt-1 ${
+                                  isInPerson ? 'text-green-600' : 'text-gray-500'
+                                }`}>
+                                  {option.note}
+                                </p>
                               )}
                             </div>
                           </div>
@@ -359,19 +429,32 @@ export default function SimplePaymentStep({
                       </div>
                       <div className="flex items-center">
                         <div className="text-right mr-4">
-                          <div className={`text-lg font-semibold ${
-                            checked ? 'text-slate-900' : 'text-gray-900'
-                          }`}>
-                            {formatPrice(option.amount)}
-                          </div>
-                          {option.id === 'deposit' && (
-                            <div className="text-sm text-gray-500">
-                              + {formatPrice(fullAmount - option.amount)} later
+                          {!isInPerson && (
+                            <>
+                              <div className={`text-lg font-semibold ${
+                                checked ? 'text-slate-900' : 'text-gray-900'
+                              }`}>
+                                {formatPrice(option.amount)}
+                              </div>
+                              {option.id === 'deposit' && (
+                                <div className="text-sm text-gray-500">
+                                  + {formatPrice(fullAmount - option.amount)} later
+                                </div>
+                              )}
+                            </>
+                          )}
+                          {isInPerson && (
+                            <div className={`text-lg font-semibold ${
+                              checked ? 'text-green-900' : 'text-green-700'
+                            }`}>
+                              {formatPrice(option.amount)}
                             </div>
                           )}
                         </div>
                         {checked && (
-                          <CheckIcon className="h-5 w-5 text-slate-600" />
+                          <CheckIcon className={`h-5 w-5 ${
+                            isInPerson ? 'text-green-600' : 'text-slate-600'
+                          }`} />
                         )}
                       </div>
                     </div>
@@ -383,18 +466,44 @@ export default function SimplePaymentStep({
         </RadioGroup>
       </div>
 
-      {/* Security Notice */}
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-        <div className="flex items-start">
-          <ShieldCheckIcon className="h-5 w-5 text-green-600 mt-0.5 mr-3" />
-          <div className="text-sm">
-            <p className="text-green-800 font-medium">Secure Payment</p>
-            <p className="text-green-700 mt-1">
-              Your payment information is encrypted and secure. We use industry-standard security measures to protect your data.
-            </p>
+      {/* Pay in Person Special Notice */}
+      {selectedOption?.id === 'in_person' && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="flex items-start">
+            <BanknotesIcon className="h-5 w-5 text-green-600 mt-0.5 mr-3" />
+            <div className="text-sm">
+              <p className="text-green-800 font-medium">Pay in Person Selected</p>
+              <p className="text-green-700 mt-1">
+                Your appointment is confirmed! No online payment is required.
+                Please bring payment when you arrive at the shop.
+              </p>
+              <div className="mt-2 text-green-700">
+                <p className="font-medium">Accepted payment methods at the shop:</p>
+                <ul className="list-disc list-inside mt-1 space-y-1">
+                  <li>Cash</li>
+                  <li>Credit/Debit Cards</li>
+                  <li>Digital Wallets (Apple Pay, Google Pay)</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Security Notice for Online Payments */}
+      {selectedOption?.requiresOnlinePayment && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-start">
+            <ShieldCheckIcon className="h-5 w-5 text-blue-600 mt-0.5 mr-3" />
+            <div className="text-sm">
+              <p className="text-blue-800 font-medium">Secure Online Payment</p>
+              <p className="text-blue-700 mt-1">
+                Your payment information is encrypted and secure. We use industry-standard security measures to protect your data.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Appointment Validation Error */}
       {appointmentValidationError && (
@@ -436,7 +545,7 @@ export default function SimplePaymentStep({
       )}
 
       {/* Stripe Payment Form */}
-      {showPaymentForm && clientSecret && selectedOption && stripePromise && (
+      {showPaymentForm && clientSecret && selectedOption && stripePromise && selectedOption.requiresOnlinePayment && (
         <div className="space-y-4">
           <h4 className="font-medium text-gray-900">Payment Information</h4>
           <Elements
@@ -463,7 +572,11 @@ export default function SimplePaymentStep({
         <button
           onClick={handleContinue}
           disabled={!selectedOption || loading || !!appointmentValidationError}
-          className="w-full px-6 py-3 bg-slate-700 text-white text-lg font-semibold rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+          className={`w-full px-6 py-3 text-white text-lg font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center ${
+            selectedOption?.id === 'in_person'
+              ? 'bg-green-600 hover:bg-green-700'
+              : 'bg-slate-700 hover:bg-slate-800'
+          }`}
         >
           {loading ? (
             <>
@@ -472,15 +585,21 @@ export default function SimplePaymentStep({
             </>
           ) : appointmentValidationError ? (
             'Fix Appointment Issues First'
+          ) : selectedOption?.id === 'in_person' ? (
+            'Confirm Booking (Pay in Person)'
           ) : (
             `Proceed with ${selectedOption ? formatPrice(selectedOption.amount) : 'Payment'}`
           )}
         </button>
       )}
 
-      {/* Secure Payment Info */}
+      {/* Payment Info Footer */}
       <div className="text-center text-sm text-gray-500">
-        <p>Payments are processed securely through Stripe. Your card information is encrypted and never stored on our servers.</p>
+        {selectedOption?.id === 'in_person' ? (
+          <p>Your booking will be confirmed immediately. Payment is due when you arrive at the shop.</p>
+        ) : (
+          <p>Payments are processed securely through Stripe. Your card information is encrypted and never stored on our servers.</p>
+        )}
       </div>
     </div>
   )
