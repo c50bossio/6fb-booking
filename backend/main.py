@@ -38,6 +38,7 @@ from models import (
     google_calendar_settings,
     square_payment,
     product,
+    mfa_settings,
 )
 
 # Import security middleware
@@ -234,11 +235,6 @@ app.include_router(
     tags=["Payment Splits"],
 )
 app.include_router(barber_payroll.router, prefix="/api/v1/payroll", tags=["Payroll"])
-app.include_router(
-    compensation_plans.router,
-    prefix="/api/v1/compensation-plans",
-    tags=["Compensation Plans"],
-)
 app.include_router(
     barber_payments.router,
     prefix="/api/v1/barber-payments",

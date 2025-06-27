@@ -25,14 +25,14 @@ class CreateSeriesRequest(BaseModel):
 
     client_first_name: str = Field(..., min_length=1, max_length=100)
     client_last_name: str = Field(..., min_length=1, max_length=100)
-    client_email: str = Field(..., regex=r"^[^@]+@[^@]+\.[^@]+$")
+    client_email: str = Field(..., pattern=r"^[^@]+@[^@]+\.[^@]+$")
     client_phone: str = Field(..., min_length=10, max_length=20)
     barber_id: int
     service_id: int
     location_id: int
     recurrence_pattern: RecurrencePattern
     preferred_time: str = Field(
-        ..., regex=r"^([01]?[0-9]|2[0-3]):[0-5][0-9]$"
+        ..., pattern=r"^([01]?[0-9]|2[0-3]):[0-5][0-9]$"
     )  # HH:MM format
     start_date: date
     end_date: Optional[date] = None

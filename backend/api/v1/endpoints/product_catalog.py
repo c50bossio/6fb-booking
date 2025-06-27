@@ -103,8 +103,8 @@ class ProductUpdate(BaseModel):
 class SyncRequest(BaseModel):
     """Sync request model"""
 
-    platform: str = Field(..., regex="^(square|shopify)$")
-    sync_type: str = Field("incremental", regex="^(full|incremental)$")
+    platform: str = Field(..., pattern="^(square|shopify)$")
+    sync_type: str = Field("incremental", pattern="^(full|incremental)$")
     location_id: Optional[str] = None  # Required for Square
 
 
@@ -155,9 +155,9 @@ class SyncStatusResponse(BaseModel):
 async def get_product_catalog(
     category: Optional[str] = Query(None, description="Filter by category"),
     search: Optional[str] = Query(None, description="Search in name, description, SKU"),
-    source: Optional[str] = Query(None, regex="^(manual|square|shopify)$"),
+    source: Optional[str] = Query(None, pattern="^(manual|square|shopify)$"),
     status: Optional[str] = Query(
-        None, regex="^(active|inactive|out_of_stock|discontinued)$"
+        None, pattern="^(active|inactive|out_of_stock|discontinued)$"
     ),
     limit: int = Query(50, ge=1, le=500),
     offset: int = Query(0, ge=0),

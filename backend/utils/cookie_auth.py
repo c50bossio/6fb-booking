@@ -138,6 +138,7 @@ def set_auth_cookies(
     response: Response,
     access_token: str,
     refresh_token: Optional[str] = None,
+    csrf_token: Optional[str] = None,
     max_age: int = 86400,
 ) -> None:
     """Set authentication cookies for tokens"""
@@ -163,6 +164,10 @@ def set_auth_cookies(
             httponly=True,
             samesite="lax",
         )
+    
+    # Set CSRF token cookie if provided
+    if csrf_token:
+        set_csrf_cookie(response, csrf_token)
 
 
 def clear_auth_cookies(response: Response) -> None:

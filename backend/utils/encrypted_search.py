@@ -24,47 +24,36 @@ def hash_for_search(value: str, salt: str = "6fb_search_salt") -> str:
 
 
 def exact_match_encrypted_field(
-    session: Session,
-    model_class: Any,
-    field_column: Column,
-    search_value: str,
-    hash_column: Optional[Column] = None,
-) -> list:
+    query, field_name: str, search_value: str, model_class: Any
+):
     """
-    Search for exact matches in encrypted fields using hash comparison
+    Filter a query for exact matches in encrypted fields
+    For now, this is a simplified version that just searches the plain field
+    since email encryption is handled by the EncryptedString type itself.
 
     Args:
-        session: SQLAlchemy session
-        model_class: The model class to search
-        field_column: The encrypted field column
+        query: SQLAlchemy query object to filter
+        field_name: Name of the field to search (e.g., "email")
         search_value: The value to search for
-        hash_column: Optional hash column for faster searching
+        model_class: The model class being searched
 
     Returns:
-        List of matching records
+        Modified query object
     """
     if not search_value:
-        return []
+        return query
 
     try:
-        if hash_column:
-            # Use hash column for faster searching
-            search_hash = hash_for_search(search_value)
-            return session.query(model_class).filter(hash_column == search_hash).all()
-        else:
-            # Fallback to full table scan (slower)
-            logger.warning(
-                f"Performing full table scan for encrypted search on {model_class.__name__}"
-            )
-            all_records = session.query(model_class).all()
-
-            # This is a simplified version - in practice, you'd decrypt and compare
-            # For now, just return empty list to avoid errors
-            return []
+        # Get the field from the model
+        field = getattr(model_class, field_name)
+        
+        # For encrypted fields, we'll use direct comparison
+        # The EncryptedString type should handle the encryption/decryption
+        return query.filter(field == search_value)
 
     except Exception as e:
         logger.error(f"Error in encrypted field search: {str(e)}")
-        return []
+        return query
 
 
 def create_search_hash(value: str) -> str:

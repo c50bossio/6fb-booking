@@ -20,7 +20,7 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
 
-from .base import Base
+from config.database import Base
 
 
 class ProductSource(str, enum.Enum):

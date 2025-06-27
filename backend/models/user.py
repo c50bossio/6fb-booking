@@ -127,8 +127,8 @@ class User(Base):
     )
 
     # MFA relationships
-    mfa_settings = relationship("MFASettings", back_populates="user", uselist=False)
-    trusted_devices = relationship("TrustedDevice", back_populates="user")
+    # mfa_settings = relationship("MFASettings", back_populates="user", uselist=False)
+    # trusted_devices = relationship("TrustedDevice", back_populates="user")
 
     # Product relationships
     created_products = relationship(

@@ -100,7 +100,7 @@ async def get_security_dashboard(
 @router.get("/events", response_model=List[SecurityEventResponse])
 async def get_security_events(
     hours: int = Query(24, ge=1, le=168, description="Hours to look back"),
-    severity: Optional[str] = Query(None, regex="^(CRITICAL|HIGH|MEDIUM|LOW)$"),
+    severity: Optional[str] = Query(None, pattern="^(CRITICAL|HIGH|MEDIUM|LOW)$"),
     event_type: Optional[str] = Query(None),
     ip_address: Optional[str] = Query(None),
     limit: int = Query(100, ge=1, le=1000),
@@ -413,7 +413,7 @@ async def get_threat_intelligence(
 @router.post("/export-security-report")
 async def export_security_report(
     days: int = Query(7, ge=1, le=30),
-    format: str = Query("json", regex="^(json|csv)$"),
+    format: str = Query("json", pattern="^(json|csv)$"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):

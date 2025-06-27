@@ -192,6 +192,60 @@ export default function UnifiedCalendar({
     dragHandle: { visible: false, appointmentId: null }
   })
 
+  // Global event listeners for drag state cleanup
+  useEffect(() => {
+    const resetDragState = () => {
+      setDragState({
+        isDragging: false,
+        draggedAppointment: null,
+        dragOffset: { x: 0, y: 0 },
+        currentPosition: { x: 0, y: 0 },
+        dropTarget: null,
+        conflictingAppointments: [],
+        snapTarget: null,
+        isValidDrop: true,
+        snapGuides: { x: 0, y: 0, visible: false },
+        dragHandle: { visible: false, appointmentId: null }
+      })
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Reset drag state on ESC key
+      if (e.key === 'Escape' && dragState.isDragging) {
+        console.log('🔧 ESC pressed - resetting drag state')
+        resetDragState()
+      }
+    }
+
+    const handleMouseUp = (e: MouseEvent) => {
+      // Cleanup drag state if mouse is released outside calendar
+      if (dragState.isDragging) {
+        console.log('🔧 Global mouse up - resetting drag state')
+        resetDragState()
+      }
+    }
+
+    const handleDragEnd = (e: DragEvent) => {
+      // Global dragend fallback
+      if (dragState.isDragging) {
+        console.log('🔧 Global drag end - resetting drag state')
+        resetDragState()
+      }
+    }
+
+    // Add global event listeners
+    document.addEventListener('keydown', handleKeyDown)
+    document.addEventListener('mouseup', handleMouseUp)
+    document.addEventListener('dragend', handleDragEnd)
+
+    // Cleanup
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      document.removeEventListener('mouseup', handleMouseUp)
+      document.removeEventListener('dragend', handleDragEnd)
+    }
+  }, [dragState.isDragging])
+
   // Search and filter state (from EnterpriseCalendar)
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({
     searchTerm: '',
@@ -521,12 +575,19 @@ export default function UnifiedCalendar({
         },
         onDragEnd: (e: React.DragEvent) => {
           console.log('🔥 Drag ended')
-          setDragState(prev => ({
-            ...prev,
+          // Complete drag state reset
+          setDragState({
             isDragging: false,
             draggedAppointment: null,
-            dropTarget: null
-          }))
+            dragOffset: { x: 0, y: 0 },
+            currentPosition: { x: 0, y: 0 },
+            dropTarget: null,
+            conflictingAppointments: [],
+            snapTarget: null,
+            isValidDrop: true,
+            snapGuides: { x: 0, y: 0, visible: false },
+            dragHandle: { visible: false, appointmentId: null }
+          })
         }
       }
     }))
@@ -591,8 +652,35 @@ export default function UnifiedCalendar({
       })
       setIsConfirmationOpen(true)
 
+      // Reset drag state after successful drop
+      setDragState({
+        isDragging: false,
+        draggedAppointment: null,
+        dragOffset: { x: 0, y: 0 },
+        currentPosition: { x: 0, y: 0 },
+        dropTarget: null,
+        conflictingAppointments: [],
+        snapTarget: null,
+        isValidDrop: true,
+        snapGuides: { x: 0, y: 0, visible: false },
+        dragHandle: { visible: false, appointmentId: null }
+      })
+
     } catch (error) {
       console.error('Error handling drop:', error)
+      // Reset drag state on error as well
+      setDragState({
+        isDragging: false,
+        draggedAppointment: null,
+        dragOffset: { x: 0, y: 0 },
+        currentPosition: { x: 0, y: 0 },
+        dropTarget: null,
+        conflictingAppointments: [],
+        snapTarget: null,
+        isValidDrop: true,
+        snapGuides: { x: 0, y: 0, visible: false },
+        dragHandle: { visible: false, appointmentId: null }
+      })
     }
   }, [filteredAppointments])
 
@@ -865,6 +953,19 @@ export default function UnifiedCalendar({
           onClose={() => {
             setIsConfirmationOpen(false)
             setPendingMove(null)
+            // Ensure drag state is reset when modal is closed
+            setDragState({
+              isDragging: false,
+              draggedAppointment: null,
+              dragOffset: { x: 0, y: 0 },
+              currentPosition: { x: 0, y: 0 },
+              dropTarget: null,
+              conflictingAppointments: [],
+              snapTarget: null,
+              isValidDrop: true,
+              snapGuides: { x: 0, y: 0, visible: false },
+              dragHandle: { visible: false, appointmentId: null }
+            })
           }}
           onConfirm={handleConfirmedMove}
           appointment={{

@@ -38,7 +38,7 @@ class TransactionItem(BaseModel):
 class POSTransactionRequest(BaseModel):
     items: List[TransactionItem]
     client_id: Optional[int] = None
-    payment_method: str = Field(..., regex="^(cash|card|other)$")
+    payment_method: str = Field(..., pattern="^(cash|card|other)$")
     subtotal: float = Field(gt=0)
     tax: float = Field(ge=0)
     tip: Optional[float] = Field(default=0, ge=0)
