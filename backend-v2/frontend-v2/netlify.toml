@@ -1,0 +1,33 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+  base = "."
+
+[build.environment]
+  NEXT_PUBLIC_API_URL = "https://sixfb-backend.onrender.com"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://sixfb-backend.onrender.com/:splat"
+  status = 200
+  force = true
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[context.production.environment]
+  NEXT_PUBLIC_API_URL = "https://sixfb-backend.onrender.com"
+
+[context.deploy-preview.environment]
+  NEXT_PUBLIC_API_URL = "https://sixfb-backend.onrender.com"
+
+[context.branch-deploy.environment]
+  NEXT_PUBLIC_API_URL = "https://sixfb-backend.onrender.com"
