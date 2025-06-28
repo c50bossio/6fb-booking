@@ -73,13 +73,14 @@ async def handle_exception(request: Request, exc: Exception) -> JSONResponse:
 
 
 def create_error_response(exc: Exception, request_id: str) -> Dict[str, Any]:
-    """Create standardized error response"""
+    """Create standardized error response with security-first approach"""
 
     # Default error response
     error_detail = {
         "error": "Internal Server Error",
         "message": "An unexpected error occurred",
         "request_id": request_id,
+        "timestamp": traceback.format_exc(),  # Store full traceback for server logging only
     }
     status_code = 500
 
@@ -100,7 +101,8 @@ def create_error_response(exc: Exception, request_id: str) -> Dict[str, Any]:
         status_code = 422
         error_detail["error"] = "Validation Error"
         error_detail["message"] = "Invalid request data"
-        error_detail["details"] = exc.errors()
+        # Only include sanitized validation details
+        error_detail["details"] = _sanitize_validation_errors(exc.errors())
 
     elif isinstance(exc, IntegrityError):
         status_code = 409
@@ -117,29 +119,57 @@ def create_error_response(exc: Exception, request_id: str) -> Dict[str, Any]:
     elif isinstance(exc, ValueError):
         status_code = 400
         error_detail["error"] = "Invalid Value"
-        error_detail["message"] = str(exc)
+        error_detail["message"] = "Invalid request data provided"
 
     elif isinstance(exc, PermissionError):
         status_code = 403
         error_detail["error"] = "Permission Denied"
         error_detail["message"] = "You don't have permission to perform this action"
 
-    # In development, include more details
-    if settings.ENVIRONMENT == "development":
-        error_detail["exception_type"] = type(exc).__name__
-        try:
-            # Ensure traceback is JSON serializable
-            tb_lines = traceback.format_exc().split("\n")
-            # Convert any potential bytes to strings
-            error_detail["traceback"] = [
-                line.decode("utf-8") if isinstance(line, bytes) else str(line)
-                for line in tb_lines
-            ]
-        except Exception as tb_error:
-            # Fallback if traceback processing fails
-            error_detail["traceback"] = [f"Traceback processing error: {str(tb_error)}"]
+    # Store full traceback for server-side logging only
+    full_traceback = error_detail.pop("timestamp", "")
 
-    return {"status_code": status_code, "content": error_detail}
+    # Log the full error details server-side for debugging
+    logger.error(
+        f"Exception occurred: {type(exc).__name__}: {str(exc)}",
+        extra={
+            "request_id": request_id,
+            "exception_type": type(exc).__name__,
+            "status_code": status_code,
+            "full_traceback": full_traceback,
+        },
+    )
+
+    # SECURITY: Never expose internal details to client - even in development
+    # Only include basic error information in the response
+    client_safe_response = {
+        "error": error_detail["error"],
+        "message": error_detail["message"],
+        "request_id": request_id,
+        "status_code": status_code,
+    }
+
+    # Only include validation details for client if they're safe
+    if "details" in error_detail and status_code == 422:
+        client_safe_response["validation_errors"] = error_detail["details"]
+
+    return {"status_code": status_code, "content": client_safe_response}
+
+
+def _sanitize_validation_errors(errors: list) -> list:
+    """Sanitize validation errors to remove internal path information"""
+    sanitized_errors = []
+    for error in errors:
+        if isinstance(error, dict):
+            # Remove internal file paths and keep only essential validation info
+            sanitized_error = {
+                "field": ".".join(str(loc) for loc in error.get("loc", [])),
+                "message": error.get("msg", "Validation failed"),
+                "type": error.get("type", "validation_error"),
+            }
+            # Don't include 'input' as it might contain sensitive data
+            sanitized_errors.append(sanitized_error)
+    return sanitized_errors
 
 
 def register_exception_handlers(app):

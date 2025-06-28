@@ -73,8 +73,27 @@ class EncryptionManager:
             decrypted_data = self._fernet.decrypt(decoded_data)
             return decrypted_data.decode()
         except Exception as e:
-            logger.error(f"Decryption failed: {e}")
-            # Return empty string instead of raising error to handle corrupted data gracefully
+            logger.warning(f"Decryption failed for data, trying fallback methods: {e}")
+            # Try alternative decryption methods for backward compatibility
+            try:
+                # Method 1: Try direct decryption without base64
+                decrypted_data = self._fernet.decrypt(encrypted_data.encode())
+                return decrypted_data.decode()
+            except:
+                try:
+                    # Method 2: Check if it's already plaintext (for migration scenarios)
+                    if "@" in encrypted_data and len(encrypted_data) < 100:
+                        logger.info(
+                            f"Found plaintext email during decryption, returning as-is"
+                        )
+                        return encrypted_data
+                except:
+                    pass
+
+            logger.error(
+                f"All decryption methods failed for data: {encrypted_data[:20]}..."
+            )
+            # Return empty string to handle corrupted data gracefully
             return ""
 
     def hash_for_search(self, data: str) -> str:

@@ -96,13 +96,31 @@ booking_rate_limiter = RateLimiter(
 
 
 def check_login_rate_limit(identifier: str) -> dict:
-    """Check login rate limit and return headers"""
-    allowed, headers = login_rate_limiter.is_allowed(identifier)
+    """Check login rate limit and return headers - Legacy function for backward compatibility"""
+    from services.rate_limiting_service import rate_limiting_service
+
+    # Use enhanced rate limiting service
+    allowed, headers = rate_limiting_service.check_rate_limit(
+        endpoint="login", ip_address=identifier
+    )
+
     if not allowed:
-        reset_time = login_rate_limiter.get_reset_time(identifier)
+        blocked_type = headers.get("X-RateLimit-Blocked", "rate_limit")
+        retry_after = headers.get("Retry-After", "300")
+
+        error_messages = {
+            "rate_limit": f"Too many login attempts. Please try again in {retry_after} seconds.",
+            "ip": "Your IP address has been temporarily blocked due to suspicious activity.",
+            "account": "Account temporarily locked due to multiple failed attempts.",
+        }
+
+        detail = error_messages.get(
+            blocked_type, f"Too many requests. Try again in {retry_after} seconds."
+        )
+
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail=f"Too many login attempts. Please try again in {reset_time} seconds.",
+            detail=detail,
             headers=headers,
         )
     return headers

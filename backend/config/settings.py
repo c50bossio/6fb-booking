@@ -81,6 +81,12 @@ class Settings(BaseSettings):
         default_factory=lambda: os.getenv("STRIPE_CONNECT_CLIENT_ID", ""),
         description="Stripe Connect client ID",
     )
+    STRIPE_TRIAL_PRICE_ID: str = Field(
+        default_factory=lambda: os.getenv(
+            "STRIPE_TRIAL_PRICE_ID", "price_test_trial_monthly"
+        ),
+        description="Stripe price ID for trial subscriptions",
+    )
 
     # Square Integration (OAuth & Payouts)
     SQUARE_APPLICATION_ID: Optional[str] = Field(
@@ -367,6 +373,25 @@ class Settings(BaseSettings):
     )
     UVICORN_LOG_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = Field(
         default="INFO", description="Uvicorn log level"
+    )
+
+    # =============================================================================
+    # ERROR HANDLING & SECURITY
+    # =============================================================================
+    # Error exposure controls (security-focused)
+    EXPOSE_ERROR_DETAILS: bool = Field(
+        default=False,
+        description="Whether to expose detailed error information to clients",
+    )
+    EXPOSE_STACK_TRACES: bool = Field(
+        default=False,
+        description="Whether to expose stack traces to clients (NEVER in production)",
+    )
+    DETAILED_ERROR_LOGGING: bool = Field(
+        default=True, description="Enable detailed error logging server-side"
+    )
+    ERROR_MONITORING_ENABLED: bool = Field(
+        default=True, description="Enable error monitoring integration"
     )
 
     # =============================================================================

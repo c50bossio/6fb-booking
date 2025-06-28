@@ -44,12 +44,13 @@ from models import (
 # Import security middleware
 from middleware.security import SecurityHeadersMiddleware, RateLimitMiddleware
 from middleware.csrf_protection import CSRFProtectionMiddleware
+from middleware.auth_rate_limiting import AuthRateLimitingMiddleware
 
 # from middleware.advanced_security import AdvancedSecurityMiddleware, SecurityHeadersEnhancedMiddleware
 from middleware.request_logging import RequestLoggingMiddleware
-from middleware.error_handling import (
-    ErrorHandlingMiddleware,
-    register_exception_handlers,
+from middleware.secure_error_handling import (
+    SecureErrorHandlingMiddleware,
+    register_secure_exception_handlers,
 )
 
 # Import routers from api.v1
@@ -112,6 +113,7 @@ from api.v1.endpoints import (
     barber_pin_auth,
     sales,
     pos_transactions,
+    rate_limiting_admin,
 )
 
 # Import logging setup
@@ -147,11 +149,15 @@ app = FastAPI(
 app.state.settings = settings
 
 # Add middleware (order matters - error handling should be outermost)
-app.add_middleware(ErrorHandlingMiddleware)
+app.add_middleware(SecureErrorHandlingMiddleware, enable_sentry=True)
 app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(
     CSRFProtectionMiddleware, strict_mode=False
 )  # Set to True for production
+# Enhanced authentication rate limiting middleware
+app.add_middleware(
+    AuthRateLimitingMiddleware, enable_account_lockout=True, enable_ip_blocking=True
+)
 # app.add_middleware(AdvancedSecurityMiddleware, enable_monitoring=True)
 app.add_middleware(RateLimitMiddleware)
 # app.add_middleware(SecurityHeadersEnhancedMiddleware)
@@ -176,8 +182,8 @@ app.add_middleware(
     settings=settings,  # Pass settings for dynamic origin checking
 )
 
-# Register exception handlers
-register_exception_handlers(app)
+# Register secure exception handlers
+register_secure_exception_handlers(app)
 
 # Include routers
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
@@ -355,6 +361,11 @@ app.include_router(
     sales.router,
     prefix="/api/v1/sales",
     tags=["Sales"],
+)
+app.include_router(
+    rate_limiting_admin.router,
+    prefix="/api/v1/admin/rate-limiting",
+    tags=["Rate Limiting Administration"],
 )
 
 # Customer API routes
