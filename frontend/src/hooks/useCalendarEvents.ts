@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { calendarService, CalendarEvent, CalendarFilters } from '@/lib/api/calendar'
 import { useTheme } from '@/contexts/ThemeContext'
+import { useAuth } from '@/components/AuthProvider'
 
 interface UseCalendarEventsOptions {
   startDate: Date
@@ -35,11 +36,19 @@ export function useCalendarEvents({
   const [googleCalendarConnected, setGoogleCalendarConnected] = useState(false)
   const [showGoogleEvents, setShowGoogleEvents] = useState(includeGoogleEvents)
   const { theme } = useTheme()
+  const { isAuthenticated, isLoading: authLoading } = useAuth()
 
   // Check Google Calendar connection status
   useEffect(() => {
     const checkGoogleStatus = async () => {
+      // Only check status if authenticated and not loading
+      if (!isAuthenticated || authLoading) {
+        console.log('[useCalendarEvents] Waiting for authentication before checking Google Calendar status')
+        return
+      }
+
       try {
+        console.log('[useCalendarEvents] Checking Google Calendar status...')
         const status = await calendarService.getGoogleCalendarStatus()
         setGoogleCalendarConnected(status.data.connected)
       } catch (error) {
@@ -48,13 +57,20 @@ export function useCalendarEvents({
     }
 
     checkGoogleStatus()
-  }, [])
+  }, [isAuthenticated, authLoading])
 
   const fetchEvents = useCallback(async () => {
+    // Don't fetch if not authenticated or still loading auth
+    if (!isAuthenticated || authLoading) {
+      console.log('[useCalendarEvents] Skipping fetch - waiting for authentication')
+      return
+    }
+
     try {
       setLoading(true)
       setError(null)
 
+      console.log('[useCalendarEvents] Fetching calendar events...')
       const response = await calendarService.getCalendarEvents(
         startDate,
         endDate,
@@ -84,7 +100,7 @@ export function useCalendarEvents({
     } finally {
       setLoading(false)
     }
-  }, [startDate, endDate, filters, showGoogleEvents, googleCalendarConnected, theme])
+  }, [startDate, endDate, filters, showGoogleEvents, googleCalendarConnected, theme, isAuthenticated, authLoading])
 
   // Initial fetch
   useEffect(() => {

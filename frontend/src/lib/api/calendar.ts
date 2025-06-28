@@ -6,6 +6,8 @@
 import apiClient from './client'
 import type { ApiResponse, PaginatedResponse } from './client'
 import { TimezoneHelper } from '../utils/datetime'
+import { calendarApiClient } from './tokenValidatedClient'
+import { smartStorage } from '../utils/storage'
 
 // === TYPE DEFINITIONS ===
 
@@ -277,12 +279,21 @@ class CalendarWebSocket {
 
     this.setConnectionStatus('connecting')
 
-    const token = localStorage.getItem('access_token')
+    const token = smartStorage.getItem('access_token')
     if (!token) {
-      console.warn('No access token found, cannot connect to WebSocket')
-      this.setConnectionStatus('error', 'No authentication token')
+      console.warn('[CalendarWebSocket] No access token found, delaying connection...')
+      this.setConnectionStatus('error', 'No authentication token - waiting for auth')
+      
+      // Retry connection after a short delay in case auth is still initializing
+      setTimeout(() => {
+        if (!this.isManuallyDisconnected) {
+          this.connect()
+        }
+      }, 2000)
       return
     }
+
+    console.log('[CalendarWebSocket] Connecting with valid token...')
 
     const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000/ws'
 
@@ -475,18 +486,64 @@ class CalendarService {
   private websocket = new CalendarWebSocket()
   private eventListeners = new Map<string, ((data: any) => void)[]>()
   private isInitialized = false
+  private authReadyCallbacks: (() => void)[] = []
+  private isAuthReady = false
 
   constructor() {
-    // Initialize only in browser environment
+    // Don't auto-initialize - wait for authentication confirmation
+    console.log('[CalendarService] Service created, waiting for authentication...')
+  }
+
+  /**
+   * Called by AuthProvider when authentication is ready
+   */
+  onAuthReady(): void {
+    console.log('[CalendarService] Authentication ready, initializing calendar service...')
+    this.isAuthReady = true
+    
     if (typeof window !== 'undefined') {
       this.initialize()
     }
+
+    // Execute any pending callbacks
+    this.authReadyCallbacks.forEach(callback => callback())
+    this.authReadyCallbacks = []
+  }
+
+  /**
+   * Called when authentication state changes (logout, token expired)
+   */
+  onAuthStateChanged(isAuthenticated: boolean): void {
+    if (!isAuthenticated && this.isInitialized) {
+      console.log('[CalendarService] Authentication lost, disconnecting...')
+      this.disconnect()
+      this.isInitialized = false
+      this.isAuthReady = false
+    } else if (isAuthenticated && !this.isInitialized) {
+      console.log('[CalendarService] Authentication restored, reinitializing...')
+      this.onAuthReady()
+    }
+  }
+
+  /**
+   * Wait for authentication to be ready before proceeding
+   */
+  private waitForAuth(): Promise<void> {
+    if (this.isAuthReady) {
+      return Promise.resolve()
+    }
+
+    return new Promise((resolve) => {
+      this.authReadyCallbacks.push(resolve)
+    })
   }
 
   private initialize(): void {
     if (this.isInitialized) return
 
-    // Auto-connect WebSocket
+    console.log('[CalendarService] Initializing with authenticated connection...')
+
+    // Auto-connect WebSocket only after auth is ready
     this.websocket.connect()
 
     // Set up real-time event handlers for appointments
@@ -594,6 +651,9 @@ class CalendarService {
     filters?: CalendarFilters,
     options?: CalendarViewOptions & { includeGoogleEvents?: boolean }
   ): Promise<ApiResponse<CalendarEvent[]>> {
+    // Wait for authentication to be ready before making API calls
+    await this.waitForAuth()
+
     const cacheKey = `calendar_events_${startDate.toISOString()}_${endDate.toISOString()}_${JSON.stringify(filters)}_${options?.includeGoogleEvents}`
     const cached = this.cache.get<CalendarEvent[]>(cacheKey)
     if (cached) {
@@ -625,10 +685,10 @@ class CalendarService {
       params.append('client_search', filters.clientSearch)
     }
 
-    const response = await apiClient.get(`/calendar/events?${params}`)
+    const response = await calendarApiClient.getEvents(Object.fromEntries(params))
 
     // The response should already be in CalendarEvent format from the backend
-    let events = response.data
+    let events = response
 
     // If includeGoogleEvents is true, fetch and merge Google Calendar events
     if (options?.includeGoogleEvents) {
@@ -744,7 +804,7 @@ class CalendarService {
   // === APPOINTMENTS ===
 
   async createAppointment(data: CreateAppointmentRequest): Promise<ApiResponse<CalendarAppointment>> {
-    const response = await apiClient.post('/calendar/appointments', {
+    const response = await calendarApiClient.createAppointment({
       barber_id: data.barberId,
       service_id: data.serviceId,
       client_id: data.clientId,
@@ -764,30 +824,28 @@ class CalendarService {
     this.cache.invalidate('appointments')
     this.cache.invalidate('calendar_events')
 
-    return { data: response.data }
+    return { data: response }
   }
 
   async updateAppointment(
     appointmentId: number,
     data: UpdateAppointmentRequest
   ): Promise<ApiResponse<CalendarAppointment>> {
-    const response = await apiClient.patch(`/calendar/appointments/${appointmentId}`, data)
+    const response = await calendarApiClient.updateAppointment(appointmentId, data)
 
     this.cache.invalidate('appointments')
     this.cache.invalidate('calendar_events')
 
-    return { data: response.data }
+    return { data: response }
   }
 
   async deleteAppointment(appointmentId: number, reason?: string): Promise<ApiResponse<void>> {
-    const response = await apiClient.delete(`/calendar/appointments/${appointmentId}`, {
-      data: { reason }
-    })
+    const response = await calendarApiClient.deleteAppointment(appointmentId, reason)
 
     this.cache.invalidate('appointments')
     this.cache.invalidate('calendar_events')
 
-    return response.data
+    return { data: response }
   }
 
   async getAppointment(appointmentId: number): Promise<ApiResponse<CalendarAppointment>> {
@@ -817,19 +875,19 @@ class CalendarService {
       return { data: cached }
     }
 
-    const params = new URLSearchParams({
+    const params: any = {
       start_date: startDate.toISOString().split('T')[0],
       end_date: endDate.toISOString().split('T')[0]
-    })
-
-    if (serviceId) {
-      params.append('service_id', serviceId.toString())
     }
 
-    const response = await apiClient.get(`/calendar/barbers/${barberId}/availability?${params}`)
-    this.cache.set(cacheKey, response.data, 2 * 60 * 1000) // 2 minute cache for availability
+    if (serviceId) {
+      params.service_id = serviceId.toString()
+    }
 
-    return { data: response.data }
+    const response = await calendarApiClient.getAvailability(barberId, params)
+    this.cache.set(cacheKey, response, 2 * 60 * 1000) // 2 minute cache for availability
+
+    return { data: response }
   }
 
   async createAvailability(data: CreateAvailabilityRequest): Promise<ApiResponse<CalendarAvailability>> {
@@ -895,22 +953,22 @@ class CalendarService {
       return { data: cached }
     }
 
-    const params = new URLSearchParams({
+    const params: any = {
       start_date: startDate.toISOString().split('T')[0],
       end_date: endDate.toISOString().split('T')[0]
-    })
+    }
 
     if (filters?.barberIds?.length) {
-      params.append('barber_ids', filters.barberIds.join(','))
+      params.barber_ids = filters.barberIds.join(',')
     }
     if (filters?.locationIds?.length) {
-      params.append('location_ids', filters.locationIds.join(','))
+      params.location_ids = filters.locationIds.join(',')
     }
 
-    const response = await apiClient.get(`/calendar/stats?${params}`)
-    this.cache.set(cacheKey, response.data, 10 * 60 * 1000) // 10 minute cache for stats
+    const response = await calendarApiClient.getStats(params)
+    this.cache.set(cacheKey, response, 10 * 60 * 1000) // 10 minute cache for stats
 
-    return { data: response.data }
+    return { data: response }
   }
 
   // === WEBSOCKET METHODS ===
@@ -937,15 +995,15 @@ class CalendarService {
     startDate: Date,
     endDate: Date
   ): Promise<ApiResponse<CalendarEvent[]>> {
-    const params = new URLSearchParams({
+    const params = {
       start_date: startDate.toISOString(),
       end_date: endDate.toISOString()
-    })
+    }
 
-    const response = await apiClient.get(`/google-calendar/events?${params}`)
+    const response = await calendarApiClient.getGoogleCalendarEvents(params)
 
     // Transform Google Calendar events to CalendarEvent format
-    const events: CalendarEvent[] = response.data.map((event: any) => {
+    const events: CalendarEvent[] = response.map((event: any) => {
       const start = new Date(event.start)
       const end = new Date(event.end)
 
@@ -1029,8 +1087,8 @@ class CalendarService {
     last_sync_date?: string
   }>> {
     try {
-      const response = await apiClient.get('/google-calendar/status')
-      return { data: response.data }
+      const response = await calendarApiClient.getGoogleCalendarStatus()
+      return { data: response }
     } catch (error) {
       return {
         data: {
