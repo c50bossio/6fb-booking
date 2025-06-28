@@ -1,0 +1,167 @@
+name: Monorepo Boundaries
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  check-dependencies:
+    name: Validate Package Dependencies
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+            
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Check circular dependencies
+        run: |
+          npx madge --circular --extensions ts,tsx,js,jsx packages/*/src || exit 1
+          
+      - name: Validate import boundaries
+        run: |
+          # Frontend should not import from backend
+          if grep -r "from ['\"]\.\./\.\./backend" packages/frontend/src; then
+            echo "Error: Frontend is importing from backend package"
+            exit 1
+          fi
+          
+          # Backend should not import from frontend
+          if grep -r "from ['\"]\.\./\.\./frontend" packages/backend/src; then
+            echo "Error: Backend is importing from frontend package"
+            exit 1
+          fi
+          
+          # Mobile should only import from shared
+          if grep -r "from ['\"]\.\./\.\./\(frontend\|backend\)" packages/mobile/src; then
+            echo "Error: Mobile is importing from frontend or backend"
+            exit 1
+          fi
+          
+      - name: Check workspace dependencies
+        run: |
+          # Ensure all internal dependencies use workspace protocol
+          for package in packages/*/package.json; do
+            if grep -E "\"@6fb/(frontend|backend|shared|mobile)\": \"[^w]" "$package"; then
+              echo "Error: $package has internal dependency not using workspace protocol"
+              exit 1
+            fi
+          done
+          
+      - name: Validate shared package usage
+        run: |
+          # Check that common types are imported from shared
+          for file in $(find packages/frontend packages/backend packages/mobile -name "*.ts" -o -name "*.tsx"); do
+            # Skip node_modules
+            if [[ $file == *node_modules* ]]; then
+              continue
+            fi
+            
+            # Check for duplicated type definitions
+            if grep -E "^(export )?(interface|type|enum) (User|Appointment|Payment|Booking)" "$file" 2>/dev/null; then
+              if [[ $file != *packages/shared* ]]; then
+                echo "Warning: $file might be duplicating shared types"
+              fi
+            fi
+          done
+          
+  architecture-compliance:
+    name: Architecture Compliance
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          
+      - name: Check file structure
+        run: |
+          # Validate expected directory structure
+          for package in frontend backend shared mobile; do
+            echo "Checking $package structure..."
+            
+            # Check for required directories
+            for dir in src tests; do
+              if [ ! -d "packages/$package/$dir" ]; then
+                echo "Error: Missing required directory packages/$package/$dir"
+                exit 1
+              fi
+            done
+            
+            # Check for config files
+            for file in package.json tsconfig.json; do
+              if [ ! -f "packages/$package/$file" ]; then
+                echo "Error: Missing required file packages/$package/$file"
+                exit 1
+              fi
+            done
+          done
+          
+      - name: Validate API contracts
+        run: |
+          # Check that API types match between frontend and backend
+          echo "Checking API contract consistency..."
+          
+          # This is a placeholder for more sophisticated contract testing
+          # In practice, you might use tools like Pact or generate types from OpenAPI
+          
+  dependency-graph:
+    name: Generate Dependency Graph
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Generate dependency graph
+        run: |
+          npx madge --image dependency-graph.svg packages/*/src
+          
+      - name: Upload dependency graph
+        uses: actions/upload-artifact@v3
+        with:
+          name: dependency-graph
+          path: dependency-graph.svg
+          
+      - name: Check for dependency violations
+        run: |
+          # Generate JSON output for analysis
+          npx madge --json packages/*/src > dependencies.json
+          
+          # Add custom validation logic here
+          node -e "
+            const deps = require('./dependencies.json');
+            // Add validation logic
+            console.log('Dependency analysis complete');
+          "

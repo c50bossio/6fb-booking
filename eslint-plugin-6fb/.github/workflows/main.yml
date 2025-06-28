@@ -1,0 +1,81 @@
+name: Main CI Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Quick quality check that runs first
+  quick-check:
+    name: Quick Quality Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint:root
+
+  # Main quality checks
+  quality:
+    name: Code Quality
+    needs: quick-check
+    uses: ./.github/workflows/code-quality.yml
+
+  # Build validation
+  build:
+    name: Build Validation
+    needs: quick-check
+    uses: ./.github/workflows/build-validation.yml
+
+  # Pre-commit checks
+  pre-commit:
+    name: Pre-commit Checks
+    needs: quick-check
+    uses: ./.github/workflows/pre-commit-check.yml
+
+  # Monorepo boundary checks
+  boundaries:
+    name: Monorepo Boundaries
+    needs: quick-check
+    uses: ./.github/workflows/monorepo-boundaries.yml
+
+  # Bundle size checks
+  bundle-size:
+    name: Bundle Size Analysis
+    needs: build
+    uses: ./.github/workflows/bundle-size-check.yml
+
+  # All checks passed
+  all-checks:
+    name: All Checks Passed
+    runs-on: ubuntu-latest
+    needs: [quality, build, pre-commit, boundaries, bundle-size]
+    steps:
+      - name: Success
+        run: |
+          echo "✅ All CI checks passed successfully!"
+          echo "Ready to merge!"
+
+  # Auto-merge for dependabot
+  auto-merge:
+    name: Auto-merge Dependabot PRs
+    runs-on: ubuntu-latest
+    needs: all-checks
+    if: github.actor == 'dependabot[bot]' && github.event_name == 'pull_request'
+    steps:
+      - name: Auto-merge
+        uses: pascalgn/merge-action@v0.15.5
+        with:
+          method: squash
+          labels: dependencies

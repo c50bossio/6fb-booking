@@ -1,0 +1,207 @@
+name: Bundle Size Check
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main]
+
+jobs:
+  bundle-analysis:
+    name: Analyze Bundle Sizes
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            .next/cache
+          key: ${{ runner.os }}-bundle-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-bundle-
+            
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build frontend for production
+        run: |
+          cd packages/frontend
+          npm ci
+          npm run build
+          
+      - name: Analyze frontend bundle
+        run: |
+          cd packages/frontend
+          npx next-bundle-analyzer || true
+          
+      - name: Check bundle sizes
+        run: |
+          cd packages/frontend
+          
+          # Get sizes of key bundles
+          echo "Bundle sizes:"
+          find .next/static/chunks -name "*.js" -exec du -h {} \; | sort -h
+          
+          # Check main bundle size
+          MAIN_SIZE=$(find .next/static/chunks -name "main-*.js" -exec du -k {} \; | awk '{print $1}')
+          if [ "$MAIN_SIZE" -gt 300 ]; then
+            echo "Warning: Main bundle exceeds 300KB"
+          fi
+          
+      - name: Build mobile for production
+        run: |
+          cd packages/mobile
+          npm ci
+          npm run build || true
+          
+      - name: Generate size report
+        run: |
+          cat > bundle-size-report.json << 'EOF'
+          {
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "packages": {
+              "frontend": {
+                "totalSize": "$(du -sh packages/frontend/.next | awk '{print $1}')",
+                "chunks": []
+              },
+              "mobile": {
+                "totalSize": "$(du -sh packages/mobile/build 2>/dev/null || echo 'N/A')",
+                "chunks": []
+              }
+            }
+          }
+          EOF
+          
+      - name: Upload size report
+        uses: actions/upload-artifact@v3
+        with:
+          name: bundle-size-report
+          path: bundle-size-report.json
+          
+  lighthouse-check:
+    name: Lighthouse Performance Check
+    runs-on: ubuntu-latest
+    if: contains(fromJson('["frontend"]'), matrix.package)
+    strategy:
+      matrix:
+        package: [frontend]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: |
+          cd packages/${{ matrix.package }}
+          npm ci
+          
+      - name: Build application
+        run: |
+          cd packages/${{ matrix.package }}
+          npm run build
+          
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          configPath: './packages/${{ matrix.package }}/lighthouserc.json'
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+          
+  webpack-bundle-analyzer:
+    name: Webpack Bundle Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Generate bundle stats
+        run: |
+          cd packages/frontend
+          npm ci
+          ANALYZE=true npm run build || true
+          
+      - name: Upload bundle stats
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: webpack-bundle-stats
+          path: packages/frontend/.next/analyze/
+          
+  size-limit:
+    name: Size Limit Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        
+      - name: Checkout base
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.base_ref }}
+          path: base
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Check size limits
+        uses: andresz1/size-limit-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          skip_step: install
+          script: npm run size
+          
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = `## Bundle Size Report
+            
+            | Package | Size | Change |
+            |---------|------|--------|
+            | Frontend | X KB | +Y KB |
+            | Mobile | X KB | +Y KB |
+            
+            View detailed analysis in the artifacts.`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

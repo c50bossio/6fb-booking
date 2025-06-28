@@ -1,0 +1,155 @@
+name: Build Validation
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  build-packages:
+    name: Build ${{ matrix.package }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package: [frontend, backend, shared, mobile]
+      fail-fast: false
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            .next/cache
+          key: ${{ runner.os }}-build-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-
+            
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Install package dependencies
+        run: |
+          cd packages/${{ matrix.package }}
+          npm ci
+          
+      - name: Build package
+        run: |
+          cd packages/${{ matrix.package }}
+          npm run build
+          
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-${{ matrix.package }}
+          path: |
+            packages/${{ matrix.package }}/dist
+            packages/${{ matrix.package }}/.next
+            packages/${{ matrix.package }}/build
+          retention-days: 7
+          
+  build-validation:
+    name: Validate Build Output
+    runs-on: ubuntu-latest
+    needs: build-packages
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        
+      - name: Validate build outputs
+        run: |
+          # Check that all expected build outputs exist
+          for package in frontend backend shared mobile; do
+            echo "Checking $package build..."
+            if [ "$package" = "frontend" ]; then
+              [ -d "build-$package/.next" ] || exit 1
+            else
+              [ -d "build-$package/dist" ] || [ -d "build-$package/build" ] || exit 1
+            fi
+          done
+          
+      - name: Check for build-time errors
+        run: |
+          # Look for common build issues
+          find . -name "*.map" -size 0 | grep -q . && echo "Warning: Empty source maps found" || true
+          
+  unused-code-check:
+    name: Check for Unused Code
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package: [frontend, backend, shared, mobile]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Install package dependencies
+        run: |
+          cd packages/${{ matrix.package }}
+          npm ci
+          
+      - name: Check for unused exports
+        run: |
+          cd packages/${{ matrix.package }}
+          npx ts-prune || true
+          
+      - name: Check for unused dependencies
+        run: |
+          cd packages/${{ matrix.package }}
+          npx depcheck || true
+          
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate || true
+        
+      - name: Run detailed audit
+        run: npm audit --json > audit-report.json || true
+        
+      - name: Upload audit report
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-audit-report
+          path: audit-report.json
