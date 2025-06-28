@@ -1,0 +1,16 @@
+{
+  "name": "@6fb/api-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "API server deployment configuration",
+  "scripts": {
+    "build": "nx build @6fb/api",
+    "start": "node ../../dist/packages/api/server.js",
+    "start:dev": "nx serve @6fb/api",
+    "docker:build": "docker build -t 6fb-api .",
+    "docker:run": "docker run -p 8000:8000 6fb-api"
+  },
+  "dependencies": {
+    "@6fb/api": "workspace:*"
+  }
+}

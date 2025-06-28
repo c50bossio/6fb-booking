@@ -1,0 +1,67 @@
+{
+  "name": "6fb-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "6FB Platform - Monorepo for barber shop booking and business management",
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "tools/*"
+  ],
+  "scripts": {
+    "build": "nx run-many --target=build --all",
+    "test": "nx run-many --target=test --all",
+    "lint": "nx run-many --target=lint --all",
+    "dev": "nx run-many --target=serve --all --parallel",
+    "clean": "nx run-many --target=clean --all && rimraf node_modules",
+    "format": "nx format:write",
+    "affected:build": "nx affected:build",
+    "affected:test": "nx affected:test",
+    "affected:lint": "nx affected:lint",
+    "graph": "nx graph",
+    "migrate": "nx migrate latest",
+    "reset": "nx reset",
+    "prepare": "husky install",
+    "validate": "node tools/scripts/validate-architecture.js"
+  },
+  "devDependencies": {
+    "@nx/workspace": "^19.0.0",
+    "@nx/js": "^19.0.0",
+    "@nx/react": "^19.0.0",
+    "@nx/next": "^19.0.0",
+    "@nx/node": "^19.0.0",
+    "@nx/eslint": "^19.0.0",
+    "@nx/jest": "^19.0.0",
+    "@nx/cypress": "^19.0.0",
+    "@nx/storybook": "^19.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-react": "^7.34.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "husky": "^9.0.0",
+    "lint-staged": "^15.2.0",
+    "nx": "^19.0.0",
+    "prettier": "^3.2.5",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "nx": {
+    "defaultBase": "main"
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  }
+}

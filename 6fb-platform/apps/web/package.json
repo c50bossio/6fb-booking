@@ -1,0 +1,16 @@
+{
+  "name": "@6fb/web-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Web application deployment configuration",
+  "scripts": {
+    "build": "nx build @6fb/web",
+    "start": "nx start @6fb/web",
+    "start:dev": "nx serve @6fb/web",
+    "docker:build": "docker build -t 6fb-web .",
+    "docker:run": "docker run -p 3000:3000 6fb-web"
+  },
+  "dependencies": {
+    "@6fb/web": "workspace:*"
+  }
+}
