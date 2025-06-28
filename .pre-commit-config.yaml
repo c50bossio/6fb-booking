@@ -86,6 +86,65 @@ repos:
             .*_test\.py$
           )$
 
+  # Custom hooks for 6fb-booking project
+  - repo: local
+    hooks:
+      - id: check-test-files
+        name: Check for test files in root directory
+        entry: hooks/check-test-files.py
+        language: python
+        pass_filenames: true
+        types: [python, javascript, ts, tsx]
+
+      - id: check-file-prefixes
+        name: Check for disallowed file prefixes
+        entry: hooks/check-file-prefixes.py
+        language: python
+        pass_filenames: true
+
+      - id: check-duplicate-components
+        name: Check for duplicate component implementations
+        entry: hooks/check-duplicate-components.py
+        language: python
+        pass_filenames: false
+        always_run: true
+
+      - id: check-duplicate-auth
+        name: Check for duplicate authentication implementations
+        entry: hooks/check-duplicate-auth.py
+        language: python
+        pass_filenames: false
+        always_run: true
+
+      - id: check-file-count
+        name: Check excessive file count in commit
+        entry: hooks/check-file-count.py
+        language: python
+        pass_filenames: true
+        always_run: true
+
+      - id: check-database-files
+        name: Check for database files
+        entry: hooks/check-database-files.py
+        language: python
+        pass_filenames: true
+        types: [file]
+
+      - id: check-duplicate-endpoints
+        name: Check for duplicate API endpoints
+        entry: hooks/check-duplicate-endpoints.py
+        language: python
+        pass_filenames: false
+        always_run: true
+
+      - id: no-commit-to-branch
+        name: Prevent commits to main/master branches
+        entry: hooks/no-commit-to-branch.py
+        language: python
+        pass_filenames: false
+        always_run: true
+        args: ['--branch', 'main', '--branch', 'master']
+
 # Global configuration
 default_language_version:
   python: python3
