@@ -3,6 +3,8 @@
  * Handles calendar events, appointment changes, and live notifications
  */
 
+import { smartStorage } from './storage'
+
 type WebSocketEventType =
   | 'appointment_created'
   | 'appointment_updated'
@@ -362,7 +364,7 @@ export class WebSocketService {
 
   private getAuthToken(): string | null {
     try {
-      return localStorage.getItem('access_token')
+      return smartStorage.getItem('access_token')
     } catch {
       return null
     }

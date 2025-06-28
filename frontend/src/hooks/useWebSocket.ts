@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { useAuth } from '@/components/AuthProvider'
+import { smartStorage } from '@/lib/utils/storage'
 
 interface WebSocketMessage {
   type: string
@@ -33,7 +34,7 @@ export function useWebSocket(): WebSocketHook {
     setConnectionStatus('connecting')
 
     const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000'
-    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
+    const token = typeof window !== 'undefined' ? smartStorage.getItem('access_token') : null
     const url = token ? `${wsUrl}/api/v1/ws?token=${encodeURIComponent(token)}` : `${wsUrl}/api/v1/ws`
 
     try {
