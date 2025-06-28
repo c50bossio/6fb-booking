@@ -5,7 +5,21 @@ import { useRouter } from 'next/navigation'
 import Calendar from '@/components/Calendar'
 import TimeSlots from '@/components/TimeSlots'
 import PaymentForm from '@/components/PaymentForm'
-import { getAvailableSlots, createBooking, getMyBookings, getProfile } from '@/lib/api'
+import TimezoneTooltip from '@/components/TimezoneTooltip'
+import { Button } from '@/components/ui/Button'
+import { Card, CardContent } from '@/components/ui/Card'
+import { LoadingButton, TimeSlotsLoadingSkeleton, ErrorDisplay } from '@/components/LoadingStates'
+import { getAvailableSlots, createBooking, getMyBookings, getProfile, getNextAvailableSlot, quickBooking as quickBookingAPI, type SlotsResponse, type NextAvailableSlot } from '@/lib/api'
+import { 
+  formatDateForAPI, 
+  parseAPIDate, 
+  formatTimeWithTimezone, 
+  getTimezoneDisplayName,
+  getFriendlyDateLabel,
+  isToday as checkIsToday,
+  isTomorrow as checkIsTomorrow
+} from '@/lib/timezone'
+
 
 const SERVICES = [
   { id: 'Haircut', name: 'Haircut', duration: '30 min', price: '$30', amount: 30 },
@@ -21,10 +35,21 @@ export default function BookPage() {
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
   const [timeSlots, setTimeSlots] = useState<any[]>([])
   const [loadingSlots, setLoadingSlots] = useState(false)
+  const [nextAvailable, setNextAvailable] = useState<NextAvailableSlot | null>(null)
+  const [loadingNextAvailable, setLoadingNextAvailable] = useState(false)
+  const [quickBooking, setQuickBooking] = useState(false)
   const [bookingDates, setBookingDates] = useState<Date[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [bookingId, setBookingId] = useState<number | null>(null)
+
+  // State for timezone display
+  const [userTimezone, setUserTimezone] = useState<string>('')
+  
+  // Get user timezone on mount
+  useEffect(() => {
+    setUserTimezone(getTimezoneDisplayName())
+  }, [])
 
   // Check authentication and fetch user's existing bookings on mount
   useEffect(() => {
@@ -35,9 +60,11 @@ export default function BookPage() {
         
         // Fetch existing bookings
         const response = await getMyBookings()
-        const dates = response.bookings.map((booking: any) => 
-          new Date(booking.start_time)
-        )
+        const dates = response.bookings.map((booking: any) => {
+          // Parse the datetime string properly
+          const bookingDate = new Date(booking.start_time)
+          return bookingDate
+        })
         setBookingDates(dates)
       } catch (err) {
         console.error('Authentication or booking fetch failed:', err)
@@ -48,6 +75,11 @@ export default function BookPage() {
     checkAuthAndFetchBookings()
   }, [router])
 
+  // Fetch next available slot on mount
+  useEffect(() => {
+    fetchNextAvailableSlot()
+  }, [])
+
   // Fetch available slots when date is selected
   useEffect(() => {
     if (selectedDate) {
@@ -55,16 +87,89 @@ export default function BookPage() {
     }
   }, [selectedDate])
 
+  const fetchNextAvailableSlot = async () => {
+    try {
+      const next = await getNextAvailableSlot()
+      setNextAvailable(next)
+    } catch (err) {
+      console.error('Failed to fetch next available slot:', err)
+      // Don't show error for this, it's not critical
+    }
+  }
+
   const fetchTimeSlots = async (date: Date) => {
     setLoadingSlots(true)
     setError(null)
+    // Clear any stale nextAvailable data to prevent showing outdated info
+    setNextAvailable(null)
+    
     try {
-      const dateStr = date.toISOString().split('T')[0]
-      const slots = await getAvailableSlots(dateStr)
-      setTimeSlots(slots)
+      const dateStr = formatDateForAPI(date)
+      const response: SlotsResponse = await getAvailableSlots(dateStr)
+      setTimeSlots(response.slots || [])
+      
+      // If no slots available for selected date, show helpful message
+      if (response.slots.length === 0 && response.next_available) {
+        // Update the nextAvailable state with fresh data from API response
+        setNextAvailable(response.next_available)
+        
+        // Parse date properly to avoid timezone issues
+        const nextDate = parseAPIDate(response.next_available.date)
+        const selectedDateStr = dateStr
+        const todayStr = formatDateForAPI(new Date())
+        const nextDateStr = formatDateForAPI(nextDate)
+        
+        // Debug logging
+        console.log('🔍 Date Logic Debug:', {
+          selectedDateStr,
+          todayStr,
+          nextDateStr,
+          apiResponse: response.next_available,
+          comparison: {
+            isToday: nextDateStr === todayStr,
+            isTomorrow: nextDateStr === formatDateForAPI(new Date(Date.now() + 24 * 60 * 60 * 1000))
+          }
+        })
+        
+        // Determine if next available is today, tomorrow, or later
+        let messagePrefix = ""
+        let dateLabel = ""
+        
+        if (selectedDateStr === todayStr) {
+          // User is looking at today
+          if (nextDateStr === todayStr) {
+            // Next available is also today (later time) 
+            messagePrefix = "No earlier slots available today."
+            dateLabel = "Today"
+          } else if (nextDateStr === formatDateForAPI(new Date(Date.now() + 24 * 60 * 60 * 1000))) {
+            // Next available is tomorrow
+            messagePrefix = "No slots available today."
+            dateLabel = "Tomorrow"
+          } else {
+            // Next available is later than tomorrow
+            messagePrefix = "No slots available today."
+            dateLabel = nextDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
+          }
+        } else {
+          // User is looking at a different date
+          messagePrefix = "No slots available on this date."
+          if (nextDateStr === todayStr) {
+            dateLabel = "Today"
+          } else if (nextDateStr === formatDateForAPI(new Date(Date.now() + 24 * 60 * 60 * 1000))) {
+            dateLabel = "Tomorrow"
+          } else {
+            dateLabel = nextDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
+          }
+        }
+        
+        setError(`${messagePrefix} Next available: ${dateLabel} at ${formatTimeWithTimezone(response.next_available.time, false)}`)
+      } else if (response.slots.length > 0) {
+        // If there are available slots, clear nextAvailable to prevent showing stale data
+        setNextAvailable(null)
+      }
     } catch (err) {
       console.error('Failed to fetch slots:', err)
-      setError('Failed to load available time slots')
+      setError('Failed to load available time slots. Please try again or contact support.')
       setTimeSlots([])
     } finally {
       setLoadingSlots(false)
@@ -97,6 +202,26 @@ export default function BookPage() {
     }
   }
 
+  const handleQuickBooking = async () => {
+    if (!selectedService) return
+
+    setQuickBooking(true)
+    setError(null)
+
+    try {
+      const booking = await quickBookingAPI({ service: selectedService })
+      
+      // Store booking ID and proceed to payment
+      setBookingId(booking.id)
+      setStep(4)
+    } catch (err: any) {
+      console.error('Quick booking failed:', err)
+      setError(getErrorMessage(err))
+    } finally {
+      setQuickBooking(false)
+    }
+  }
+
   const handleConfirmBooking = async () => {
     if (!selectedService || !selectedDate || !selectedTime) return
 
@@ -104,7 +229,7 @@ export default function BookPage() {
     setError(null)
 
     try {
-      const dateStr = selectedDate.toISOString().split('T')[0]
+      const dateStr = formatDateForAPI(selectedDate)
       const booking = await createBooking(dateStr, selectedTime, selectedService)
       
       // Store booking ID and proceed to payment
@@ -112,10 +237,30 @@ export default function BookPage() {
       setStep(4)
     } catch (err: any) {
       console.error('Booking failed:', err)
-      setError(err.message || 'Failed to create booking. Please try again.')
+      setError(getErrorMessage(err))
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const getErrorMessage = (err: any): string => {
+    // Provide more user-friendly error messages
+    if (err.message?.includes('past')) {
+      return 'Cannot book appointments in the past. Please select a future date and time.'
+    } else if (err.message?.includes('already booked') || err.message?.includes('not available')) {
+      return 'This time slot is no longer available. Please refresh and select a different time.'
+    } else if (err.message?.includes('Invalid service')) {
+      return 'The selected service is not available. Please choose a different service.'
+    } else if (err.message?.includes('lead time')) {
+      return 'This time slot is too soon. Please select a time slot with more advance notice.'
+    } else if (err.message?.includes('business hours')) {
+      return 'This time slot is outside business hours. Please select a different time.'
+    } else if (err.message?.includes('maximum advance')) {
+      return 'This date is too far in advance. Please select a sooner date.'
+    } else if (err.message) {
+      return err.message
+    }
+    return 'Failed to create booking. Please try again or contact support if the problem persists.'
   }
 
   const handlePaymentSuccess = () => {
@@ -123,8 +268,8 @@ export default function BookPage() {
     router.push('/dashboard?booking=success&payment=complete')
   }
 
-  const handlePaymentError = (error: string) => {
-    setError(error)
+  const handlePaymentError = (errorMsg: string) => {
+    setError(errorMsg)
   }
 
   const formatDate = (date: Date) => {
@@ -137,56 +282,69 @@ export default function BookPage() {
   }
 
   const formatTime = (time: string) => {
-    const [hours, minutes] = time.split(':')
-    const hour = parseInt(hours)
-    const ampm = hour >= 12 ? 'PM' : 'AM'
-    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour
-    return `${displayHour}:${minutes} ${ampm}`
+    // Use timezone-aware formatting
+    return formatTimeWithTimezone(time, false)
   }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
+        {/* Timezone indicator */}
+        {userTimezone && (
+          <div className="text-center mb-4">
+            <TimezoneTooltip content="All appointment times are shown in your local timezone. The barber shop will expect you at this time in their local timezone.">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-50 text-primary-700 cursor-help">
+                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                All times shown in {userTimezone}
+                <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </span>
+            </TimezoneTooltip>
+          </div>
+        )}
         {/* Progress indicator */}
         <div className="mb-8">
           <div className="flex items-center justify-center">
             <div className="flex items-center space-x-4">
-              <div className={`flex items-center ${step >= 1 ? 'text-blue-600' : 'text-gray-400'}`}>
+              <div className={`flex items-center ${step >= 1 ? 'text-primary-600' : 'text-gray-400'}`}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  step >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'
+                  step >= 1 ? 'bg-primary-600 text-white' : 'bg-gray-200'
                 }`}>
                   1
                 </div>
                 <span className="ml-2 font-medium hidden sm:inline">Service</span>
               </div>
               
-              <div className={`h-px w-16 ${step >= 2 ? 'bg-blue-600' : 'bg-gray-300'}`} />
+              <div className={`h-px w-16 ${step >= 2 ? 'bg-primary-600' : 'bg-gray-300'}`} />
               
-              <div className={`flex items-center ${step >= 2 ? 'text-blue-600' : 'text-gray-400'}`}>
+              <div className={`flex items-center ${step >= 2 ? 'text-primary-600' : 'text-gray-400'}`}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  step >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200'
+                  step >= 2 ? 'bg-primary-600 text-white' : 'bg-gray-200'
                 }`}>
                   2
                 </div>
                 <span className="ml-2 font-medium hidden sm:inline">Date & Time</span>
               </div>
               
-              <div className={`h-px w-16 ${step >= 3 ? 'bg-blue-600' : 'bg-gray-300'}`} />
+              <div className={`h-px w-16 ${step >= 3 ? 'bg-primary-600' : 'bg-gray-300'}`} />
               
-              <div className={`flex items-center ${step >= 3 ? 'text-blue-600' : 'text-gray-400'}`}>
+              <div className={`flex items-center ${step >= 3 ? 'text-primary-600' : 'text-gray-400'}`}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  step >= 3 ? 'bg-blue-600 text-white' : 'bg-gray-200'
+                  step >= 3 ? 'bg-primary-600 text-white' : 'bg-gray-200'
                 }`}>
                   3
                 </div>
                 <span className="ml-2 font-medium hidden sm:inline">Confirm</span>
               </div>
               
-              <div className={`h-px w-16 ${step >= 4 ? 'bg-blue-600' : 'bg-gray-300'}`} />
+              <div className={`h-px w-16 ${step >= 4 ? 'bg-primary-600' : 'bg-gray-300'}`} />
               
-              <div className={`flex items-center ${step >= 4 ? 'text-blue-600' : 'text-gray-400'}`}>
+              <div className={`flex items-center ${step >= 4 ? 'text-primary-600' : 'text-gray-400'}`}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  step >= 4 ? 'bg-blue-600 text-white' : 'bg-gray-200'
+                  step >= 4 ? 'bg-primary-600 text-white' : 'bg-gray-200'
                 }`}>
                   4
                 </div>
@@ -200,21 +358,54 @@ export default function BookPage() {
         {step === 1 && (
           <div>
             <h1 className="text-2xl font-bold text-center mb-8">Select a Service</h1>
+            
+            {/* Next Available Quick Booking */}
+            {nextAvailable && selectedService && (
+              <div className="max-w-2xl mx-auto mb-8 p-4 bg-gradient-to-r from-primary-50 to-primary-100 border border-primary-200 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-primary-800 mb-1">
+                      ⚡ Next Available Slot
+                    </h3>
+                    <p className="text-primary-700">
+                      {getFriendlyDateLabel(parseAPIDate(nextAvailable.date))} at {formatTimeWithTimezone(nextAvailable.time)}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-primary-600 mb-2">Skip the wait!</p>
+                    <Button
+                      onClick={handleQuickBooking}
+                      loading={quickBooking}
+                      loadingText="Booking..."
+                      variant="success"
+                      size="md"
+                    >
+                      Book Next Available
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <div className="grid gap-4 max-w-2xl mx-auto">
               {SERVICES.map(service => (
-                <button
+                <Card
                   key={service.id}
+                  variant="default"
+                  interactive
                   onClick={() => handleServiceSelect(service.id)}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-left hover:border-blue-400 hover:shadow-md transition-all duration-200"
+                  className="cursor-pointer hover:border-primary-400"
                 >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h3 className="text-lg font-semibold">{service.name}</h3>
-                      <p className="text-gray-600 text-sm mt-1">{service.duration}</p>
+                  <CardContent>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h3 className="text-lg font-semibold text-accent-800">{service.name}</h3>
+                        <p className="text-gray-600 text-sm mt-1">{service.duration}</p>
+                      </div>
+                      <div className="text-xl font-bold text-primary-600">{service.price}</div>
                     </div>
-                    <div className="text-xl font-bold text-blue-600">{service.price}</div>
-                  </div>
-                </button>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           </div>
@@ -224,15 +415,18 @@ export default function BookPage() {
         {step === 2 && (
           <div>
             <div className="flex items-center justify-between mb-8">
-              <button
+              <Button
                 onClick={handleBack}
-                className="flex items-center text-gray-600 hover:text-gray-900"
+                variant="ghost"
+                size="sm"
+                leftIcon={
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                }
               >
-                <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
                 Back
-              </button>
+              </Button>
               <h1 className="text-2xl font-bold">Select Date & Time</h1>
               <div className="w-16" /> {/* Spacer for centering */}
             </div>
@@ -252,21 +446,56 @@ export default function BookPage() {
                   {selectedDate ? formatDate(selectedDate) : 'Select a date first'}
                 </h2>
                 {selectedDate && (
-                  <TimeSlots
-                    slots={timeSlots}
-                    selectedTime={selectedTime}
-                    onTimeSelect={handleTimeSelect}
-                    loading={loadingSlots}
-                  />
+                  <>
+                    {loadingSlots ? (
+                      <TimeSlotsLoadingSkeleton />
+                    ) : (
+                      <TimeSlots
+                        slots={timeSlots}
+                        selectedTime={selectedTime}
+                        onTimeSelect={handleTimeSelect}
+                        loading={false}
+                        showNextAvailableBadge={true}
+                      />
+                    )}
+                  </>
                 )}
               </div>
             </div>
 
             {error && (
-              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-center">
-                {error}
+              <div className={`mt-4 ${
+                error.includes('Next available') 
+                  ? 'text-center'
+                  : ''
+              }`}>
+                {error.includes('Next available') ? (
+                  <div className="p-4 border rounded-lg bg-primary-50 border-primary-200 text-primary-700 text-center">
+                    {error}
+                    {nextAvailable && (
+                      <button
+                        onClick={() => {
+                          const nextDate = parseAPIDate(nextAvailable.date)
+                          setSelectedDate(nextDate)
+                          setStep(2)
+                        }}
+                        className="ml-2 px-3 py-1 bg-primary-600 text-white text-sm rounded hover:bg-primary-700 transition-colors"
+                      >
+                        Go to {parseAPIDate(nextAvailable.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <ErrorDisplay 
+                    error={error} 
+                    onRetry={() => selectedDate && fetchTimeSlots(selectedDate)}
+                    title="Failed to load time slots"
+                  />
+                )}
               </div>
             )}
+
+            {/* Quick booking errors are handled in the main error state */}
           </div>
         )}
 
@@ -274,15 +503,18 @@ export default function BookPage() {
         {step === 3 && (
           <div className="max-w-md mx-auto">
             <div className="flex items-center justify-between mb-8">
-              <button
+              <Button
                 onClick={handleBack}
-                className="flex items-center text-gray-600 hover:text-gray-900"
+                variant="ghost"
+                size="sm"
+                leftIcon={
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                }
               >
-                <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
                 Back
-              </button>
+              </Button>
               <h1 className="text-2xl font-bold">Confirm Booking</h1>
               <div className="w-16" /> {/* Spacer for centering */}
             </div>
@@ -306,7 +538,7 @@ export default function BookPage() {
                 <div className="flex justify-between">
                   <span className="text-gray-600">Time:</span>
                   <span className="font-medium">
-                    {selectedTime && formatTime(selectedTime)}
+                    {selectedTime && formatTimeWithTimezone(selectedTime)}
                   </span>
                 </div>
                 
@@ -321,24 +553,26 @@ export default function BookPage() {
               </div>
 
               {error && (
-                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
-                  {error}
+                <div className="mt-4">
+                  <ErrorDisplay 
+                    error={error} 
+                    onRetry={handleConfirmBooking}
+                    title="Booking failed"
+                  />
                 </div>
               )}
 
-              <button
+              <Button
                 onClick={handleConfirmBooking}
-                disabled={submitting}
-                className={`
-                  w-full mt-6 py-3 px-4 rounded-lg font-medium transition-all duration-200
-                  ${submitting 
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                  }
-                `}
+                loading={submitting}
+                loadingText="Creating Booking..."
+                variant="primary"
+                size="lg"
+                fullWidth
+                className="mt-6"
               >
-                {submitting ? 'Creating Booking...' : 'Proceed to Payment'}
-              </button>
+                Proceed to Payment
+              </Button>
             </div>
           </div>
         )}

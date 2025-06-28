@@ -1,5 +1,13 @@
 import './globals.css'
 import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
+
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+})
 
 export const metadata: Metadata = {
   title: '6FB Booking',
@@ -12,9 +20,11 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-gray-50">
-        {children}
+    <html lang="en" className={inter.variable}>
+      <body className={`${inter.className} min-h-screen bg-gray-50`}>
+        <ErrorBoundary>
+          {children}
+        </ErrorBoundary>
       </body>
     </html>
   )

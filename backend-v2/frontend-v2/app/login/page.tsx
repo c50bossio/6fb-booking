@@ -1,32 +1,44 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { login } from '@/lib/api'
+import { useAsyncOperation } from '@/lib/useAsyncOperation'
+import { LoadingButton, ErrorDisplay, SuccessMessage } from '@/components/LoadingStates'
+import { Input } from '@/components/ui/Input'
+import { Button } from '@/components/ui/Button'
+import { Card, CardContent } from '@/components/ui/Card'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
+  
+  const [loginState, loginActions] = useAsyncOperation()
+
+  useEffect(() => {
+    if (searchParams.get('registered') === 'true') {
+      setSuccessMessage('Registration successful! Please sign in.')
+    } else if (searchParams.get('reset') === 'true') {
+      setSuccessMessage('Password reset successful! Please sign in with your new password.')
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
-    setLoading(true)
 
     try {
-      const response = await login(email, password)
+      const response = await loginActions.execute(() => login(email, password))
       if (response.access_token) {
         localStorage.setItem('token', response.access_token)
         router.push('/dashboard')
       }
     } catch (err) {
-      setError('Invalid email or password')
-    } finally {
-      setLoading(false)
+      // Error is already handled by useAsyncOperation
+      console.error('Login failed:', err)
     }
   }
 
@@ -34,67 +46,82 @@ export default function LoginPage() {
     <main className="flex min-h-screen flex-col items-center justify-center p-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900">Login</h2>
+          <h2 className="text-3xl font-bold text-accent-900">Login</h2>
           <p className="mt-2 text-gray-600">
             Sign in to your account
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-50 text-red-500 p-3 rounded-md text-sm">
-              {error}
-            </div>
+        <Card className="mt-8">
+          <CardContent>
+            <form className="space-y-6" onSubmit={handleSubmit}>
+          {successMessage && (
+            <SuccessMessage message={successMessage} onDismiss={() => setSuccessMessage('')} />
+          )}
+          
+          {loginState.error && (
+            <ErrorDisplay 
+              error={loginState.error} 
+              onRetry={handleSubmit}
+              title="Login failed"
+            />
           )}
 
           <div className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              label="Email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              label="Password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+
+          <div className="text-right">
+            <Link href="/forgot-password" className="text-sm text-primary-600 hover:text-primary-700">
+              Forgot password?
+            </Link>
           </div>
 
           <div>
-            <button
+            <Button
               type="submit"
-              disabled={loading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              loading={loginState.loading}
+              loadingText="Signing in..."
+              variant="primary"
+              fullWidth
+              size="lg"
             >
-              {loading ? 'Signing in...' : 'Sign in'}
-            </button>
+              Sign in
+            </Button>
           </div>
 
-          <div className="text-center">
-            <Link href="/" className="text-sm text-blue-600 hover:text-blue-500">
+          <div className="text-center space-y-2">
+            <p className="text-sm text-gray-600">
+              Don't have an account?{' '}
+              <Link href="/register" className="font-medium text-primary-600 hover:text-primary-700">
+                Create account
+              </Link>
+            </p>
+            <Link href="/" className="text-sm text-primary-600 hover:text-primary-700">
               Back to home
             </Link>
           </div>
-        </form>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </main>
   )
