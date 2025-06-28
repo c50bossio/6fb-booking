@@ -6,6 +6,7 @@ import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { LoadingSpinner } from '../ui/loading-spinner';
 import { useTheme } from '@/contexts/ThemeContext';
+import apiClient from '@/lib/api/client';
 
 interface GoogleCalendarConnectionStatus {
   connected: boolean;
@@ -73,13 +74,7 @@ export default function GoogleCalendarSettings() {
   const { theme, getThemeColors } = useTheme();
   const colors = getThemeColors();
 
-  // Get auth token from localStorage
-  const getAuthToken = () => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('access_token');
-    }
-    return null;
-  };
+  // Note: Authentication is now handled automatically by the API client
 
   // Load connection status and settings
   useEffect(() => {
@@ -89,20 +84,8 @@ export default function GoogleCalendarSettings() {
 
   const loadConnectionStatus = async () => {
     try {
-      const token = getAuthToken();
-      if (!token) return;
-
-      const { corsAwareFetch } = await import('@/lib/api/corsHelper')
-      const response = await corsAwareFetch('/google-calendar/status', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setConnectionStatus(data);
-      }
+      const response = await apiClient.get('/google-calendar/status');
+      setConnectionStatus(response.data);
     } catch (error) {
       console.error('Error loading connection status:', error);
     }
@@ -110,20 +93,8 @@ export default function GoogleCalendarSettings() {
 
   const loadSettings = async () => {
     try {
-      const token = getAuthToken();
-      if (!token) return;
-
-      const { corsAwareFetch } = await import('@/lib/api/corsHelper')
-      const response = await corsAwareFetch('/google-calendar/settings', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setSettings(data);
-      }
+      const response = await apiClient.get('/google-calendar/settings');
+      setSettings(response.data);
     } catch (error) {
       console.error('Error loading settings:', error);
     } finally {
@@ -132,25 +103,26 @@ export default function GoogleCalendarSettings() {
   };
 
   const handleConnect = async () => {
+    console.log('Google Calendar Connect button clicked');
     try {
       setConnecting(true);
-      const token = getAuthToken();
-      if (!token) return;
 
-      const { corsAwareFetch } = await import('@/lib/api/corsHelper')
-      const response = await corsAwareFetch('/google-calendar/connect', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      console.log('Making API request to /google-calendar/connect');
+      const response = await apiClient.get('/google-calendar/connect');
 
-      if (response.ok) {
-        const data = await response.json();
-        // Redirect to Google OAuth
-        window.location.href = data.authorization_url;
+      console.log('API Response status: 200');
+      console.log('API Response data:', response.data);
+
+      // Redirect to Google OAuth
+      if (response.data.authorization_url) {
+        console.log('Redirecting to:', response.data.authorization_url);
+        window.location.href = response.data.authorization_url;
+      } else {
+        console.error('No authorization_url in response');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error initiating connection:', error);
+      console.error('API request failed:', error.response?.status, error.response?.data);
     } finally {
       setConnecting(false);
     }
@@ -162,21 +134,9 @@ export default function GoogleCalendarSettings() {
     }
 
     try {
-      const token = getAuthToken();
-      if (!token) return;
-
-      const { corsAwareFetch } = await import('@/lib/api/corsHelper')
-      const response = await corsAwareFetch('/google-calendar/disconnect', {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        await loadConnectionStatus();
-        setSyncResult(null);
-      }
+      await apiClient.delete('/google-calendar/disconnect');
+      await loadConnectionStatus();
+      setSyncResult(null);
     } catch (error) {
       console.error('Error disconnecting:', error);
     }
@@ -186,22 +146,10 @@ export default function GoogleCalendarSettings() {
     try {
       setSyncing(true);
       setSyncResult(null);
-      const token = getAuthToken();
-      if (!token) return;
 
-      const { corsAwareFetch } = await import('@/lib/api/corsHelper')
-      const response = await corsAwareFetch('/google-calendar/sync', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setSyncResult(data);
-        await loadConnectionStatus(); // Refresh status
-      }
+      const response = await apiClient.post('/google-calendar/sync');
+      setSyncResult(response.data);
+      await loadConnectionStatus(); // Refresh status
     } catch (error) {
       console.error('Error syncing:', error);
     } finally {
@@ -222,24 +170,9 @@ export default function GoogleCalendarSettings() {
 
     try {
       setSaving(true);
-      const token = getAuthToken();
-      if (!token) return;
-
-      const { corsAwareFetch } = await import('@/lib/api/corsHelper')
-      const response = await corsAwareFetch('/google-calendar/settings', {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(settings),
-      });
-
-      if (response.ok) {
-        // Show success message
-        // Show success message (TODO: use proper toast notification)
-        console.log('Settings saved successfully!');
-      }
+      await apiClient.put('/google-calendar/settings', settings);
+      // Show success message (TODO: use proper toast notification)
+      console.log('Settings saved successfully!');
     } catch (error) {
       console.error('Error saving settings:', error);
     } finally {

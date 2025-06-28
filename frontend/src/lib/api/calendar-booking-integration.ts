@@ -14,6 +14,7 @@ import { bookingService } from './bookings'
 import { barbersService } from './barbers'
 import { servicesService } from './services'
 import type { ApiResponse } from './client'
+import { smartStorage } from '../utils/storage'
 import type {
   Appointment,
   AppointmentCreate,
@@ -395,13 +396,12 @@ export class CalendarBookingIntegration {
   }
 
   /**
-   * Get authentication token from local storage or session
+   * Get authentication token from smart storage
    */
   private getAuthToken(): string | null {
-    // This should be implemented based on your auth system
-    // For now, return null and handle unauthenticated requests
+    // Use smartStorage to ensure consistent token access across the application
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token')
+      return smartStorage.getItem('access_token') || smartStorage.getItem('auth_token')
     }
     return null
   }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
+import { smartStorage } from '../lib/utils/storage';
 
 export interface GoogleCalendarStatus {
   connected: boolean;
@@ -69,10 +70,10 @@ export function useGoogleCalendar() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Get auth token from localStorage
+  // Get auth token from smartStorage
   const getAuthToken = useCallback(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('auth_token');
+      return smartStorage.getItem('access_token') || smartStorage.getItem('auth_token');
     }
     return null;
   }, []);

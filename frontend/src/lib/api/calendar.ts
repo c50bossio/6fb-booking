@@ -283,7 +283,7 @@ class CalendarWebSocket {
     if (!token) {
       console.warn('[CalendarWebSocket] No access token found, delaying connection...')
       this.setConnectionStatus('error', 'No authentication token - waiting for auth')
-      
+
       // Retry connection after a short delay in case auth is still initializing
       setTimeout(() => {
         if (!this.isManuallyDisconnected) {
@@ -500,7 +500,7 @@ class CalendarService {
   onAuthReady(): void {
     console.log('[CalendarService] Authentication ready, initializing calendar service...')
     this.isAuthReady = true
-    
+
     if (typeof window !== 'undefined') {
       this.initialize()
     }

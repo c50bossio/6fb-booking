@@ -14,7 +14,8 @@ import {
   ClockIcon,
   UserIcon,
   CurrencyDollarIcon,
-  PlusIcon
+  PlusIcon,
+  CalendarIcon as CalendarIconOutline
 } from '@heroicons/react/24/outline'
 import {
   CalendarIcon,
@@ -159,7 +160,7 @@ const generateTimeSlots = (start: string, end: string, duration: number = 30): s
   const startTime = new Date(`2024-01-01 ${start}`)
   const endTime = new Date(`2024-01-01 ${end}`)
 
-  let current = new Date(startTime)
+  const current = new Date(startTime)
   while (current < endTime) {
     slots.push(current.toTimeString().slice(0, 5))
     current.setMinutes(current.getMinutes() + duration)
@@ -361,6 +362,9 @@ export default function UnifiedCalendar({
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [successAnimation, setSuccessAnimation] = useState<{ visible: boolean; appointmentId: string | null }>({ visible: false, appointmentId: null })
+
+  // Optimistic updates state for immediate visual feedback
+  const [optimisticMoves, setOptimisticMoves] = useState<Map<string, { newDate: string; newTime: string }>>(new Map())
   const [hoveredAppointment, setHoveredAppointment] = useState<string | null>(null)
   const [appointmentPreview, setAppointmentPreview] = useState<{
     visible: boolean
@@ -648,80 +652,19 @@ export default function UnifiedCalendar({
         }
       }
 
-      // Only add drag props if drag & drop is enabled
-      if (!enableDragDrop) {
-        return {
-          ...appointment,
-          __customStyle: customStyle
-        }
-      }
-
-      return {
+      // Apply optimistic updates if any exist for this appointment
+      const optimisticUpdate = optimisticMoves.get(appointment.id)
+      const finalAppointment = optimisticUpdate ? {
         ...appointment,
-        __customStyle: customStyle,
-        __dragProps: {
-        draggable: true,
-        style: { cursor: 'move' },
-        onMouseDown: (e: React.MouseEvent) => {
-          // Log mouse down for debugging
-          console.log('🔥 Mouse down on appointment:', appointment.id)
-        },
-        onDragStart: (e: React.DragEvent) => {
-          console.log('🔥 Drag started for appointment:', appointment.id)
+        date: optimisticUpdate.newDate,
+        startTime: optimisticUpdate.newTime,
+        __optimistic: true // Flag to indicate this is an optimistic update
+      } : appointment
 
-          // Stop propagation to prevent click handlers from interfering
-          e.stopPropagation()
-
-          // Set drag data
-          e.dataTransfer.setData('text/plain', JSON.stringify({
-            appointmentId: appointment.id,
-            originalDate: appointment.date,
-            originalTime: appointment.startTime
-          }))
-
-          // Update drag state
-          setDragState(prev => ({
-            ...prev,
-            isDragging: true,
-            draggedAppointment: appointment,
-            dragOffset: { x: 0, y: 0 },
-            currentPosition: { x: e.clientX, y: e.clientY }
-          }))
-
-          // Add visual feedback
-          e.dataTransfer.effectAllowed = 'move'
-          const dragImage = document.createElement('div')
-          dragImage.textContent = `${appointment.client} - ${appointment.service}`
-          dragImage.style.cssText = 'position: absolute; top: -1000px; background: #8b5cf6; color: white; padding: 8px; border-radius: 4px; font-size: 12px;'
-          document.body.appendChild(dragImage)
-          e.dataTransfer.setDragImage(dragImage, 0, 0)
-          setTimeout(() => document.body.removeChild(dragImage), 0)
-        },
-        onDrag: (e: React.DragEvent) => {
-          // Prevent default behavior during drag
-          e.stopPropagation()
-        },
-        onDragEnd: (e: React.DragEvent) => {
-          console.log('🔥 Drag ended, drop effect:', e.dataTransfer.dropEffect)
-          e.stopPropagation()
-
-          // Only reset if drop didn't occur
-          if (e.dataTransfer.dropEffect === 'none') {
-            // Complete drag state reset
-            setDragState({
-              isDragging: false,
-              draggedAppointment: null,
-              dragOffset: { x: 0, y: 0 },
-              currentPosition: { x: 0, y: 0 },
-              dropTarget: null,
-              conflictingAppointments: [],
-              snapTarget: null,
-              isValidDrop: true,
-              snapGuides: { x: 0, y: 0, visible: false },
-              dragHandle: { visible: false, appointmentId: null }
-            })
-          }
-        }
+      // Return appointment with styling and optimistic updates
+      return {
+        ...finalAppointment,
+        __customStyle: customStyle
       }
     })
 
