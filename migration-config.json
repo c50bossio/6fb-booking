@@ -1,0 +1,200 @@
+{
+  "monorepoStructure": {
+    "rootPath": "/Users/bossio/6fb-platform",
+    "apps": {
+      "backend": "apps/backend",
+      "frontend": "apps/frontend",
+      "dashboard": "apps/dashboard"
+    },
+    "packages": {
+      "shared": "packages/shared",
+      "ui-components": "packages/ui-components",
+      "utils": "packages/utils",
+      "api-client": "packages/api-client"
+    }
+  },
+  "migrationRules": {
+    "backend": {
+      "include": [
+        "main.py",
+        "config/**/*.py",
+        "models/**/*.py",
+        "api/**/*.py",
+        "services/**/*.py",
+        "middleware/**/*.py",
+        "utils/**/*.py",
+        "alembic/**/*",
+        "alembic.ini",
+        "requirements.txt",
+        "pyproject.toml",
+        "pytest.ini",
+        ".env.template"
+      ],
+      "exclude": [
+        "**/*.pyc",
+        "**/__pycache__/**",
+        "venv/**",
+        "*.db",
+        "*.db-shm",
+        "*.db-wal",
+        "*.log",
+        "*.pid",
+        "test_*.py",
+        "seed_*.py",
+        "create_*.py",
+        "fix_*.py",
+        "check_*.py",
+        "verify_*.py",
+        "debug_*.py",
+        "simple_*.py",
+        "quick_*.py",
+        "add_*.py",
+        "reset_*.py",
+        "setup_*.py",
+        "migrate_*.py",
+        "backups/**",
+        "logs/**",
+        "data/**",
+        "credentials/**"
+      ],
+      "archive": [
+        "test_*.py",
+        "seed_*.py",
+        "create_*.py",
+        "*_test_results.json",
+        "*_report.json",
+        "*_report.md"
+      ]
+    },
+    "frontend": {
+      "include": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "src/**/*.js",
+        "src/**/*.jsx",
+        "src/**/*.css",
+        "public/**/*",
+        "package.json",
+        "tsconfig.json",
+        "next.config.js",
+        "tailwind.config.js",
+        "postcss.config.mjs",
+        "middleware.ts",
+        ".env.template"
+      ],
+      "exclude": [
+        "node_modules/**",
+        ".next/**",
+        "venv/**",
+        "*.log",
+        "*.pid",
+        "test-*.js",
+        "test-*.html",
+        "test_*.py",
+        "build/**",
+        "dist/**",
+        "logs/**",
+        "*-test-results.*",
+        "*_report.*",
+        "*.db"
+      ],
+      "archive": [
+        "test-*.js",
+        "test-*.html",
+        "*-test-results.*",
+        "*_report.*"
+      ]
+    },
+    "sharedComponents": {
+      "patterns": [
+        "frontend/src/components/modals/**",
+        "frontend/src/components/booking/**",
+        "frontend/src/components/analytics/**",
+        "frontend/src/lib/utils/**",
+        "backend/schemas/**",
+        "backend/utils/security.py",
+        "backend/utils/encryption.py"
+      ],
+      "destination": "packages/shared"
+    },
+    "documentation": {
+      "include": [
+        "README.md",
+        "CLAUDE.md",
+        "docs/**/*.md",
+        "API_REFERENCE.md",
+        "DEPLOYMENT_GUIDE.md",
+        "DEVELOPMENT_GUIDE.md"
+      ],
+      "exclude": [
+        "*_REPORT.md",
+        "*_RESULTS.md",
+        "*_TEST_*.md",
+        "*_FIX_*.md"
+      ],
+      "destination": "docs"
+    },
+    "scripts": {
+      "include": [
+        "scripts/parallel-tests.sh",
+        "scripts/create-snapshot.sh",
+        "scripts/restore-snapshot.sh",
+        "scripts/pre-work-checklist.sh",
+        "scripts/health-check.sh",
+        "scripts/deploy.sh",
+        "scripts/backup.sh"
+      ],
+      "exclude": [
+        "*-fix.sh",
+        "*-test.sh",
+        "quick-*.sh"
+      ],
+      "destination": "tools/scripts"
+    },
+    "configuration": {
+      "include": [
+        ".env.template",
+        "docker-compose.yml",
+        "Dockerfile",
+        "nginx.conf",
+        "render.yaml",
+        "railway.toml",
+        ".gitignore"
+      ],
+      "destination": "config"
+    }
+  },
+  "importMappings": {
+    "backend": {
+      "models": "@6fb/backend/models",
+      "services": "@6fb/backend/services",
+      "api": "@6fb/backend/api",
+      "utils": "@6fb/backend/utils",
+      "config": "@6fb/backend/config"
+    },
+    "frontend": {
+      "@/components": "@6fb/ui-components",
+      "@/lib/api": "@6fb/api-client",
+      "@/lib/utils": "@6fb/utils",
+      "@/hooks": "@6fb/frontend/hooks"
+    }
+  },
+  "archiveSettings": {
+    "archivePath": "/Users/bossio/6fb-booking-archive",
+    "createArchiveFolders": {
+      "tests": "archive/tests",
+      "scripts": "archive/scripts",
+      "reports": "archive/reports",
+      "experiments": "archive/experiments",
+      "deployment": "archive/deployment-artifacts"
+    }
+  },
+  "qualityChecks": {
+    "removeDeadCode": true,
+    "consolidateDuplicates": true,
+    "updateImports": true,
+    "validateDependencies": true,
+    "checkForSecrets": true,
+    "lintCode": false
+  }
+}
