@@ -60,3 +60,4 @@ coverage/
 
 # Testing
 .pytest_cache/
+test-pre-commit-temp/
