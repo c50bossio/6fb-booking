@@ -1,0 +1,43 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2020", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@6fb/core": ["packages/core/src/index.ts"],
+      "@6fb/core/*": ["packages/core/src/*"],
+      "@6fb/api": ["packages/api/src/index.ts"],
+      "@6fb/api/*": ["packages/api/src/*"],
+      "@6fb/web": ["packages/web/src/index.ts"],
+      "@6fb/web/*": ["packages/web/src/*"],
+      "@6fb/ui": ["packages/ui/src/index.ts"],
+      "@6fb/ui/*": ["packages/ui/src/*"],
+      "@6fb/mobile": ["packages/mobile/src/index.ts"],
+      "@6fb/mobile/*": ["packages/mobile/src/*"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}
