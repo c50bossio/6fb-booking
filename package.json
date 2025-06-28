@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "start": "cd backend && python -m uvicorn main:app --host 0.0.0.0 --port 8000",
-    "build": "echo 'Building 6FB Platform'"
+    "build": "echo 'Building 6FB Platform'",
+    "analyze-pages": "node analyze-pages-puppeteer.js"
   },
   "engines": {
     "node": "20.x"
@@ -12,5 +13,8 @@
     "@stripe/stripe-js": "^7.3.1",
     "recharts": "^2.15.3",
     "stripe": "^18.2.1"
+  },
+  "devDependencies": {
+    "puppeteer": "^21.11.0"
   }
 }

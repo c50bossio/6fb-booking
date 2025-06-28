@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
+const withValidation = require('./next.config.validation');
+
+const baseConfig = {
   // Force rebuild: 2025-06-27-bundle-optimization
   reactStrictMode: false, // Disable to prevent double renders and improve stability
   // Enable standalone for production deployment - Railway compatible
@@ -237,5 +239,8 @@ const nextConfig = {
     ];
   },
 }
+
+// Apply validation plugin
+const nextConfig = withValidation(baseConfig);
 
 module.exports = nextConfig
