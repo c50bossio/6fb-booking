@@ -1,0 +1,83 @@
+{
+  "projectRoot": "./",
+  "thresholds": {
+    "files": {
+      "total": 5000,
+      "perType": {
+        "js": 1000,
+        "ts": 1000,
+        "tsx": 1000,
+        "py": 500,
+        "css": 200,
+        "scss": 200,
+        "md": 300
+      }
+    },
+    "duplicates": {
+      "maxAllowed": 10,
+      "minSimilarity": 0.8
+    },
+    "bundleSize": {
+      "frontend": {
+        "total": 2000000,
+        "mainBundle": 500000,
+        "vendorBundle": 1000000
+      }
+    },
+    "dependencies": {
+      "maxOutdated": 20,
+      "maxSecurityVulnerabilities": 0
+    },
+    "complexity": {
+      "maxCyclomaticComplexity": 15,
+      "maxLinesPerFile": 500,
+      "maxLinesPerFunction": 100
+    },
+    "testCoverage": {
+      "minimum": 60,
+      "target": 80
+    },
+    "todos": {
+      "maxAllowed": 50,
+      "warningLevel": 30
+    }
+  },
+  "alerts": {
+    "emailTo": [],
+    "slackWebhook": null,
+    "consoleOutput": true
+  },
+  "ignore": {
+    "directories": [
+      "node_modules",
+      ".git",
+      ".next",
+      "__pycache__",
+      "venv",
+      "dist",
+      "build",
+      ".pytest_cache",
+      "coverage",
+      "logs",
+      ".dev-manager"
+    ],
+    "files": [
+      "*.min.js",
+      "*.min.css",
+      "*.lock",
+      "*.log",
+      "*.db",
+      "*.sqlite",
+      ".DS_Store"
+    ]
+  },
+  "reports": {
+    "outputDirectory": "./monitoring/reports",
+    "keepHistory": 30,
+    "formats": ["markdown", "json", "html"]
+  },
+  "schedule": {
+    "cronExpression": "0 9 * * 1",
+    "timezone": "America/New_York"
+  }
+}
