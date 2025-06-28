@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setIsClient(true);
-    
+
     // Check if demo mode was previously enabled
     if (typeof window !== "undefined") {
       const demoMode = sessionStorage.getItem("demo_mode") === "true";
@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Simple check: if no user and not on public route, redirect to login
     if (!user && !isDemoMode && !isPublic && !currentPath.includes("/login")) {
       const hasToken = smartStorage.getItem("access_token");
-      
+
       if (!hasToken) {
         console.log("[AuthProvider] No token, redirecting to login");
         smartStorage.setItem("redirect_after_login", currentPath);
@@ -95,19 +95,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const currentUser = await authService.getCurrentUser();
           setUser(currentUser);
           setAuthError(null);
-          
+
           // Notify calendar service that authentication is ready
           console.log("[AuthProvider] User authenticated, notifying calendar service");
           calendarService.onAuthReady();
         } catch (error: any) {
           console.error("Failed to get current user:", error);
-          
+
           // If unauthorized, clear token and redirect
           if (error.response?.status === 401) {
             smartStorage.removeItem("access_token");
             smartStorage.removeItem("user");
             setAuthError("Session expired. Please log in again.");
-            
+
             // Notify calendar service that authentication is lost
             console.log("[AuthProvider] Session expired, notifying calendar service");
             calendarService.onAuthStateChanged(false);
@@ -117,7 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(null);
         }
       }
-      
+
       setLoading(false);
     } catch (error) {
       console.error("Auth check failed:", error);

@@ -4,6 +4,11 @@
 import axios from 'axios'
 import { smartStorage } from '../utils/storage'
 import { getApiBaseUrl, initializeCors } from './corsHelper'
+import {
+  isTokenExpired,
+  isTokenExpiringWithin,
+  TOKEN_REFRESH_THRESHOLD
+} from '../utils/tokenUtils'
 
 // Initialize CORS checking
 if (typeof window !== 'undefined') {
@@ -34,9 +39,65 @@ const apiClient = axios.create({
   },
 })
 
-// Request interceptor to add auth token and logging
+// Token refresh management
+let isRefreshingToken = false
+let refreshPromise: Promise<boolean> | null = null
+let failedRequestsQueue: Array<{
+  resolve: (value?: any) => void
+  reject: (error?: any) => void
+  config: any
+}> = []
+
+// Function to refresh token
+const refreshToken = async (): Promise<boolean> => {
+  if (refreshPromise) {
+    return refreshPromise
+  }
+
+  refreshPromise = (async () => {
+    try {
+      console.log('[API Client] Attempting token refresh...')
+
+      // Import auth service dynamically to avoid circular dependency
+      const { authService } = await import('./auth')
+
+      // Try to get fresh user data (this will trigger token refresh)
+      const user = await authService.getCurrentUser()
+
+      if (user) {
+        console.log('[API Client] Token refresh successful')
+        return true
+      } else {
+        console.error('[API Client] Token refresh failed - no user returned')
+        return false
+      }
+    } catch (error) {
+      console.error('[API Client] Token refresh failed:', error)
+      return false
+    } finally {
+      refreshPromise = null
+    }
+  })()
+
+  return refreshPromise
+}
+
+// Process queued requests after token refresh
+const processQueue = (error: any = null) => {
+  failedRequestsQueue.forEach(({ resolve, reject, config }) => {
+    if (error) {
+      reject(error)
+    } else {
+      resolve(apiClient.request(config))
+    }
+  })
+
+  failedRequestsQueue = []
+}
+
+// Request interceptor to add auth token and proactive validation
 apiClient.interceptors.request.use(
-  (config) => {
+  async (config) => {
     try {
       // Set dynamic base URL
       config.baseURL = getBaseURL()
@@ -44,18 +105,70 @@ apiClient.interceptors.request.use(
       // Always try to get fresh token from storage
       const token = smartStorage.getItem('access_token')
 
-      // Ensure Authorization header is set properly
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`
+      // Skip auth validation for auth endpoints and health checks
+      const isAuthEndpoint = config.url?.includes('/auth/') ||
+                           config.url?.includes('/health') ||
+                           config.url?.includes('/register')
 
-        // Double-check the header was set
-        if (!config.headers.Authorization || config.headers.Authorization !== `Bearer ${token}`) {
-          console.warn('[API Client] Authorization header not set properly, retrying...')
-          config.headers = config.headers || {}
+      if (token && !isAuthEndpoint) {
+        // Proactive token validation for protected endpoints
+        const isExpired = isTokenExpired(token)
+        const isExpiring = isTokenExpiringWithin(token, TOKEN_REFRESH_THRESHOLD)
+
+        if (isExpired || isExpiring) {
+          console.log('[API Client] Token validation failed, attempting refresh before request', {
+            url: config.url,
+            isExpired,
+            isExpiring
+          })
+
+          // Queue this request if token is being refreshed
+          if (isRefreshingToken) {
+            return new Promise((resolve, reject) => {
+              failedRequestsQueue.push({ resolve, reject, config })
+            })
+          }
+
+          // Attempt token refresh
+          isRefreshingToken = true
+          try {
+            const refreshSuccess = await refreshToken()
+            if (refreshSuccess) {
+              // Get the refreshed token
+              const newToken = smartStorage.getItem('access_token')
+              if (newToken) {
+                config.headers.Authorization = `Bearer ${newToken}`
+                console.log('[API Client] Using refreshed token for request')
+              }
+              processQueue() // Process any queued requests
+            } else {
+              const error = new Error('Token refresh failed')
+              processQueue(error)
+              throw error
+            }
+          } finally {
+            isRefreshingToken = false
+          }
+        } else {
+          // Token is valid, use it
           config.headers.Authorization = `Bearer ${token}`
         }
+
+        // Double-check the header was set
+        if (!config.headers.Authorization || !config.headers.Authorization.startsWith('Bearer ')) {
+          console.warn('[API Client] Authorization header not set properly, retrying...')
+          config.headers = config.headers || {}
+          const currentToken = smartStorage.getItem('access_token')
+          if (currentToken) {
+            config.headers.Authorization = `Bearer ${currentToken}`
+          }
+        }
+      } else if (!token && !isAuthEndpoint) {
+        // No token for protected endpoint
+        console.warn('[API Client] No token available for protected endpoint:', config.url)
+        delete config.headers.Authorization
       } else {
-        // Remove Authorization header if no token
+        // Auth endpoint or no token needed
         delete config.headers.Authorization
       }
 
@@ -108,7 +221,7 @@ apiClient.interceptors.request.use(
   }
 )
 
-// Response interceptor for error handling and retry logic
+// Response interceptor for basic error handling only
 apiClient.interceptors.response.use(
   (response) => {
     // Log successful requests in development
@@ -120,24 +233,17 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config
 
-    // Log error details with better context
-    const errorInfo = {
-      url: originalRequest?.url,
-      method: originalRequest?.method?.toUpperCase(),
+    // Log error details
+    console.error('API Error:', {
+      url: error.config?.url,
+      method: error.config?.method?.toUpperCase(),
       status: error.response?.status,
-      statusText: error.response?.statusText,
       message: error.response?.data?.message || error.message,
-      details: error.response?.data?.detail || null,
-      timestamp: new Date().toISOString(),
       isNetworkError: !error.response,
-      hasToken: !!smartStorage.getItem('access_token'),
-      isRetry: originalRequest?._retry || false,
-      isTokenRefresh: originalRequest?.url?.includes('/auth/refresh') || false
-    }
+      isRetry: originalRequest._retry
+    })
 
-    console.error('API Error:', errorInfo)
-
-    // Enhanced error classification
+    // Enhanced error classification for UI components
     error.isNetworkError = !error.response
     error.isServerError = error.response?.status >= 500
     error.isClientError = error.response?.status >= 400 && error.response?.status < 500
@@ -145,246 +251,127 @@ apiClient.interceptors.response.use(
     error.isPermissionError = error.response?.status === 403
     error.isValidationError = error.response?.status === 422
 
-    // Handle 429 Too Many Requests
-    if (error.response?.status === 429) {
-      console.warn('Rate limit exceeded. Waiting before retry...')
+    // Handle 401 Unauthorized with retry logic
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      const isAuthEndpoint = originalRequest.url?.includes('/auth/') ||
+                           originalRequest.url?.includes('/health') ||
+                           originalRequest.url?.includes('/register')
 
-      // Get retry-after header if available
-      const retryAfter = error.response.headers['retry-after']
-      const delay = retryAfter ? parseInt(retryAfter) * 1000 : 5000 // Default 5 seconds
-
-      // Only retry once to avoid infinite loops
-      if (!originalRequest._retry) {
-        originalRequest._retry = true
-
-        // Wait and retry
-        await new Promise(resolve => setTimeout(resolve, delay))
-        return apiClient(originalRequest)
-      }
-    }
-
-    // Handle 401 Unauthorized - enhanced auth error handling with token refresh
-    if (error.response?.status === 401) {
-      // Don't try to refresh if this is already a refresh request or has skip header
-      if (originalRequest?.url?.includes('/auth/refresh') ||
-          originalRequest?.url?.includes('/auth/token') ||
-          originalRequest?.headers?.['X-Skip-Auth-Refresh'] === 'true') {
-        console.log('[API Client] Token refresh skipped or failed, clearing auth state')
-
-        // Clear tokens and auth state
-        smartStorage.removeItem('access_token')
-        smartStorage.removeItem('user')
-        smartStorage.removeItem('csrf_token')
-
-        // Redirect to login only if not on a public page
-        const currentPath = window.location.pathname
-        const authPaths = ['/login', '/signup', '/reset-password', '/demo', '/']
-        const isPublicPath = authPaths.some(path => currentPath === path || currentPath.startsWith('/book'))
-
-        if (!isPublicPath) {
-          smartStorage.setItem('redirect_after_login', currentPath)
-          window.location.href = '/login'
-        }
-
+      // Don't retry auth endpoints or if already retried
+      if (isAuthEndpoint) {
+        console.log('[API Client] 401 on auth endpoint, not retrying')
+        // Emit auth error event for login endpoints
+        window.dispatchEvent(new CustomEvent('auth-error', {
+          detail: {
+            type: 'unauthorized',
+            message: 'Authentication failed. Please check your credentials.',
+            status: 401
+          }
+        }))
         return Promise.reject(error)
       }
 
-      // Check if we should attempt token refresh
-      const hasToken = smartStorage.getItem('access_token')
-      const isSessionRestoring = (window as any)._authSessionRestoreInProgress
-      const isDemoMode = sessionStorage.getItem('demo_mode') === 'true'
-
-      // Try to refresh token if we have one and not already retrying
-      if (hasToken && !originalRequest._retry && !isSessionRestoring && !isDemoMode) {
-        originalRequest._retry = true
-
-        console.log('[API Client] 401 received, attempting token refresh...')
-
-        try {
-          // Attempt to refresh the token
-          const refreshResponse = await fetch(`${getBaseURL()}/auth/refresh`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${hasToken}`
-            },
-            credentials: 'include'
-          })
-
-          if (refreshResponse.ok) {
-            const refreshData = await refreshResponse.json()
-
-            console.log('[API Client] Token refresh successful')
-
-            // Update the stored token
-            if (refreshData.access_token) {
-              smartStorage.setItem('access_token', refreshData.access_token)
-
-              // Update user data if provided
-              if (refreshData.user) {
-                smartStorage.setItem('user', JSON.stringify(refreshData.user))
-              }
-
-              // Retry the original request with the new token
-              originalRequest.headers.Authorization = `Bearer ${refreshData.access_token}`
-              return apiClient(originalRequest)
-            }
-          } else {
-            console.log('[API Client] Token refresh failed with status:', refreshResponse.status)
-          }
-        } catch (refreshError) {
-          console.error('[API Client] Token refresh error:', refreshError)
-        }
-      }
-
-      // If we reach here, token refresh failed or wasn't attempted
-      // Check if session restoration is in progress
-      if (!isSessionRestoring) {
-        console.warn('[API Client] 401 received, checking authentication state...')
-
-        // Only redirect if not already on login/auth pages and not in demo mode
-        const currentPath = window.location.pathname
-        const authPaths = ['/login', '/signup', '/reset-password', '/demo']
-        const isPublicPath = authPaths.some(path => currentPath.includes(path)) ||
-                            currentPath === '/' ||
-                            currentPath.startsWith('/book')
-
-        if (!isPublicPath && !isDemoMode) {
-          // Emit custom event for auth error handling
-          window.dispatchEvent(new CustomEvent('auth-error', {
-            detail: {
-              type: 'unauthorized',
-              message: 'Authentication expired. Please log in again.',
-              shouldRedirect: !hasToken // Only redirect if no token exists
-            }
-          }))
-
-          // Delay token clearing to give AuthProvider time to handle the error
-          setTimeout(() => {
-            // Re-check conditions before clearing tokens
-            if (!(window as any)._authSessionRestoreInProgress &&
-                !smartStorage.getItem('user') &&
-                !sessionStorage.getItem('demo_mode')) {
-
-              console.log('[API Client] Clearing invalid tokens')
-
-              // Clear tokens
-              smartStorage.removeItem('access_token')
-              smartStorage.removeItem('user')
-              smartStorage.removeItem('csrf_token')
-
-              // Store current location for redirect after login
-              smartStorage.setItem('redirect_after_login', currentPath)
-
-              // Redirect to login
-              window.location.href = '/login'
-            }
-          }, 1000) // Give more time for session restoration
-        }
-      } else {
-        console.log('[API Client] 401 received but session restoration in progress, not redirecting')
-      }
-
-      return Promise.reject(error)
-    }
-
-    // Handle 403 Forbidden
-    if (error.response?.status === 403) {
-      console.error('Access forbidden - insufficient permissions')
-      return Promise.reject(error)
-    }
-
-    // Handle 404 Not Found - don't retry
-    if (error.response?.status === 404) {
-      return Promise.reject(error)
-    }
-
-    // Handle 422 Validation Error - don't retry
-    if (error.response?.status === 422) {
-      return Promise.reject(error)
-    }
-
-    // Implement retry logic for network failures with backend detection
-    if (!error.response && !originalRequest._retry) {
+      // Mark as retry attempt
       originalRequest._retry = true
 
-      // Check if this is a connection refused error (backend not running)
+      console.log('[API Client] 401 error, attempting token refresh and retry')
+
+      // If already refreshing, queue this request
+      if (isRefreshingToken) {
+        return new Promise((resolve, reject) => {
+          failedRequestsQueue.push({
+            resolve: (value) => resolve(value),
+            reject: (err) => reject(err),
+            config: originalRequest
+          })
+        })
+      }
+
+      // Attempt token refresh
+      isRefreshingToken = true
+      try {
+        const refreshSuccess = await refreshToken()
+
+        if (refreshSuccess) {
+          // Update the authorization header with new token
+          const newToken = smartStorage.getItem('access_token')
+          if (newToken) {
+            originalRequest.headers.Authorization = `Bearer ${newToken}`
+            console.log('[API Client] Retrying request with refreshed token')
+
+            // Process any queued requests
+            processQueue()
+
+            // Retry the original request
+            return apiClient.request(originalRequest)
+          }
+        }
+
+        // Token refresh failed, process queue with error
+        const refreshError = new Error('Token refresh failed')
+        processQueue(refreshError)
+
+        // Emit auth error event
+        window.dispatchEvent(new CustomEvent('auth-error', {
+          detail: {
+            type: 'unauthorized',
+            message: 'Authentication expired. Please log in again.',
+            status: 401
+          }
+        }))
+
+        return Promise.reject(refreshError)
+
+      } catch (refreshError) {
+        console.error('[API Client] Token refresh failed:', refreshError)
+
+        // Process queue with error
+        processQueue(refreshError)
+
+        // Emit auth error event
+        window.dispatchEvent(new CustomEvent('auth-error', {
+          detail: {
+            type: 'unauthorized',
+            message: 'Authentication expired. Please log in again.',
+            status: 401
+          }
+        }))
+
+        return Promise.reject(refreshError)
+      } finally {
+        isRefreshingToken = false
+      }
+    } else if (error.response?.status === 401) {
+      // Already retried and still 401, emit auth error
+      window.dispatchEvent(new CustomEvent('auth-error', {
+        detail: {
+          type: 'unauthorized',
+          message: 'Authentication expired. Please log in again.',
+          status: 401
+        }
+      }))
+    }
+
+    // Handle network errors - emit backend unavailable event
+    if (!error.response) {
       const isBackendDown = error.code === 'ECONNREFUSED' ||
                            error.message?.includes('ERR_CONNECTION_REFUSED') ||
                            error.message?.includes('Network Error') ||
                            error.message?.includes('fetch')
 
       if (isBackendDown) {
-        // Emit event to switch to demo mode
         window.dispatchEvent(new CustomEvent('backend-unavailable', {
           detail: {
-            message: 'Backend service is unavailable. Switching to demo mode.',
+            message: 'Backend service is unavailable.',
             enableDemoMode: true
           }
         }))
-
-        // Set demo mode
-        sessionStorage.setItem('demo_mode', 'true')
-        sessionStorage.setItem('backend_unavailable_reason', 'connection_failed')
-
-        // Don't retry if backend is down
-        return Promise.reject(error)
       }
-
-      // Wait with exponential backoff for other network errors
-      const delay = Math.min(1000 * Math.pow(2, originalRequest._retryCount || 0), 5000)
-      await new Promise(resolve => setTimeout(resolve, delay))
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`Retrying network failure (attempt ${(originalRequest._retryCount || 0) + 1}):`, originalRequest.url)
-      }
-
-      originalRequest._retryCount = (originalRequest._retryCount || 0) + 1
-      return apiClient(originalRequest)
     }
 
-    // Handle 500+ server errors with limited retry
-    if (error.response?.status >= 500 && !originalRequest._retry && (originalRequest._retryCount || 0) < 2) {
-      originalRequest._retry = true
-      originalRequest._retryCount = (originalRequest._retryCount || 0) + 1
-
-      // Wait longer for server errors
-      const delay = Math.min(2000 * Math.pow(2, originalRequest._retryCount - 1), 10000)
-      await new Promise(resolve => setTimeout(resolve, delay))
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`Retrying server error (attempt ${originalRequest._retryCount}):`, originalRequest.url)
-      }
-
-      return apiClient(originalRequest)
-    }
-
-    // For client errors (4xx), add user-friendly error handling
+    // Add user-friendly error messages
     if (error.response?.status >= 400 && error.response?.status < 500) {
-      // Enhance error with user-friendly message
       error.userMessage = getUserFriendlyErrorMessage(error.response.status, error.response.data)
-
-      // Emit error event for UI components to handle
-      window.dispatchEvent(new CustomEvent('api-error', {
-        detail: {
-          status: error.response.status,
-          message: error.userMessage,
-          type: error.isAuthError ? 'auth' : error.isValidationError ? 'validation' : 'client',
-          originalError: error
-        }
-      }))
-    }
-
-    // For server errors (5xx), check if we should enable demo mode
-    if (error.response?.status >= 500) {
-      // Emit server error event
-      window.dispatchEvent(new CustomEvent('server-error', {
-        detail: {
-          status: error.response.status,
-          message: 'Server error occurred. Some features may be limited.',
-          shouldShowFallback: true
-        }
-      }))
     }
 
     return Promise.reject(error)
@@ -422,196 +409,39 @@ function getUserFriendlyErrorMessage(status: number, data: any): string {
   }
 }
 
-// Utility functions for API health and debugging
+// Simple utility functions for API health and demo mode
 export const apiUtils = {
   /**
-   * Check API health with enhanced error details
+   * Basic health check
    */
   async checkHealth(): Promise<{
     healthy: boolean
     status?: any
     error?: string
-    backendAvailable: boolean
-    authServiceHealthy: boolean
   }> {
     try {
       const response = await apiClient.get('/health')
-
-      // Also check auth service health
-      let authHealthy = false
-      try {
-        const authResponse = await apiClient.get('/api/v1/auth/health')
-        authHealthy = authResponse.status === 200
-      } catch (authError) {
-        console.warn('Auth service health check failed:', authError)
-      }
-
       return {
         healthy: true,
-        backendAvailable: true,
-        authServiceHealthy: authHealthy,
         status: response.data
       }
     } catch (error: any) {
-      const isNetworkError = !error.response
       return {
         healthy: false,
-        backendAvailable: !isNetworkError,
-        authServiceHealthy: false,
         error: error.message || 'Health check failed'
       }
     }
   },
 
   /**
-   * Test authentication with proper endpoint
-   */
-  async testAuth(): Promise<{
-    authenticated: boolean
-    user?: any
-    error?: string
-    errorType?: 'network' | 'unauthorized' | 'server' | 'other'
-  }> {
-    try {
-      const response = await apiClient.get('/api/v1/auth/me')
-      return {
-        authenticated: true,
-        user: response.data
-      }
-    } catch (error: any) {
-      let errorType: 'network' | 'unauthorized' | 'server' | 'other' = 'other'
-
-      if (!error.response) {
-        errorType = 'network'
-      } else if (error.response.status === 401) {
-        errorType = 'unauthorized'
-      } else if (error.response.status >= 500) {
-        errorType = 'server'
-      }
-
-      return {
-        authenticated: false,
-        errorType,
-        error: error.response?.data?.detail || error.message || 'Authentication test failed'
-      }
-    }
-  },
-
-  /**
-   * Proactively refresh token if needed
-   */
-  async refreshTokenIfNeeded(): Promise<boolean> {
-    const token = smartStorage.getItem('access_token')
-    if (!token) {
-      console.log('[API Utils] No token to refresh')
-      return false
-    }
-
-    try {
-      console.log('[API Utils] Attempting proactive token refresh...')
-
-      const refreshResponse = await fetch(`${getBaseURL()}/auth/refresh`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        credentials: 'include'
-      })
-
-      if (refreshResponse.ok) {
-        const refreshData = await refreshResponse.json()
-
-        if (refreshData.access_token) {
-          console.log('[API Utils] Token refreshed successfully')
-          smartStorage.setItem('access_token', refreshData.access_token)
-
-          if (refreshData.user) {
-            smartStorage.setItem('user', JSON.stringify(refreshData.user))
-          }
-
-          return true
-        }
-      } else {
-        console.log('[API Utils] Token refresh failed with status:', refreshResponse.status)
-      }
-    } catch (error) {
-      console.error('[API Utils] Token refresh error:', error)
-    }
-
-    return false
-  },
-
-  /**
-   * Validate current token without making an API call
-   */
-  validateStoredToken(): {
-    hasToken: boolean
-    tokenLength: number
-    hasUser: boolean
-    isExpired?: boolean
-  } {
-    const token = smartStorage.getItem('access_token')
-    const user = smartStorage.getItem('user')
-
-    let isExpired = false
-
-    // Basic JWT expiration check (if token is JWT)
-    if (token && token.split('.').length === 3) {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]))
-        if (payload.exp) {
-          isExpired = payload.exp * 1000 < Date.now()
-        }
-      } catch (e) {
-        console.warn('[API Utils] Failed to parse JWT:', e)
-      }
-    }
-
-    return {
-      hasToken: !!token,
-      tokenLength: token ? token.length : 0,
-      hasUser: !!user,
-      isExpired
-    }
-  },
-
-  /**
-   * Get API configuration info
+   * Get basic API configuration info
    */
   getConfig() {
-    const tokenInfo = this.validateStoredToken()
-
     return {
       baseURL: getBaseURL(),
-      hasToken: tokenInfo.hasToken,
-      tokenExpired: tokenInfo.isExpired,
-      hasUser: tokenInfo.hasUser,
-      hasCSRF: !!smartStorage.getItem('csrf_token'),
       demoMode: sessionStorage?.getItem('demo_mode') === 'true',
-      environment: process.env.NEXT_PUBLIC_ENVIRONMENT || 'development',
-      tokenInfo
+      environment: process.env.NEXT_PUBLIC_ENVIRONMENT || 'development'
     }
-  },
-
-  /**
-   * Force enable demo mode
-   */
-  enableDemoMode(reason?: string) {
-    sessionStorage.setItem('demo_mode', 'true')
-    if (reason) {
-      sessionStorage.setItem('demo_mode_reason', reason)
-    }
-
-    // Clear auth data
-    smartStorage.removeItem('access_token')
-    smartStorage.removeItem('user')
-    smartStorage.removeItem('csrf_token')
-
-    // Emit demo mode event
-    window.dispatchEvent(new CustomEvent('demo-mode-enabled', {
-      detail: { reason }
-    }))
   },
 
   /**
@@ -628,36 +458,6 @@ export const apiUtils = {
     sessionStorage.removeItem('demo_mode')
     sessionStorage.removeItem('demo_mode_reason')
     sessionStorage.removeItem('backend_unavailable_reason')
-  },
-
-  /**
-   * Debug authentication state
-   */
-  debugAuth() {
-    const config = this.getConfig()
-    const token = smartStorage.getItem('access_token')
-    const user = smartStorage.getItem('user')
-
-    console.group('[API Debug] Authentication State')
-    console.log('Configuration:', config)
-    console.log('Token exists:', !!token)
-    console.log('Token length:', token ? token.length : 0)
-    console.log('User data exists:', !!user)
-
-    if (user) {
-      try {
-        const userData = JSON.parse(user)
-        console.log('User:', { id: userData.id, email: userData.email, role: userData.role })
-      } catch (e) {
-        console.error('Failed to parse user data:', e)
-      }
-    }
-
-    console.log('Session restore in progress:', (window as any)._authSessionRestoreInProgress)
-    console.log('Demo mode:', this.isDemoMode())
-    console.groupEnd()
-
-    return config
   }
 }
 

@@ -1,137 +1,212 @@
-/**
- * Hook to proactively refresh authentication tokens
- */
-import { useEffect, useRef } from 'react'
-import { apiUtils } from '@/lib/api/client'
-import { useAuth } from '@/components/AuthProvider'
+'use client'
+
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { authService } from '@/lib/api/auth'
+import { smartStorage } from '@/lib/utils/storage'
+import {
+  isTokenExpired,
+  isTokenExpiringWithin,
+  getTokenTimeRemaining,
+  TOKEN_REFRESH_THRESHOLD,
+  TOKEN_VALIDATION_INTERVAL
+} from '@/lib/utils/tokenUtils'
 
 interface UseTokenRefreshOptions {
-  /**
-   * Interval in milliseconds to check token validity
-   * Default: 5 minutes (300000ms)
-   */
-  checkInterval?: number
-
-  /**
-   * Whether to enable automatic refresh
-   * Default: true
-   */
-  enabled?: boolean
-
-  /**
-   * Callback when token is refreshed successfully
-   */
+  checkInterval?: number // milliseconds
   onRefreshSuccess?: () => void
-
-  /**
-   * Callback when token refresh fails
-   */
-  onRefreshError?: (error: any) => void
+  onRefreshError?: (error: Error) => void
+  enabled?: boolean
+  proactiveRefresh?: boolean // Enable proactive refresh before expiry
 }
 
-export function useTokenRefresh(options: UseTokenRefreshOptions = {}) {
+interface UseTokenRefreshReturn {
+  refreshNow: () => Promise<boolean>
+  validateAndRefresh: () => Promise<boolean> // New method for API calls
+  isRefreshing: boolean
+  lastRefresh: Date | null
+  refreshError: Error | null
+  tokenTimeRemaining: number
+  isTokenExpiring: boolean
+}
+
+export function useTokenRefresh(options: UseTokenRefreshOptions = {}): UseTokenRefreshReturn {
   const {
-    checkInterval = 5 * 60 * 1000, // 5 minutes
-    enabled = true,
+    checkInterval = TOKEN_VALIDATION_INTERVAL, // 30 seconds default for more frequent checks
     onRefreshSuccess,
-    onRefreshError
+    onRefreshError,
+    enabled = true,
+    proactiveRefresh = true
   } = options
 
-  const { isAuthenticated, isDemoMode } = useAuth()
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null)
+  const [refreshError, setRefreshError] = useState<Error | null>(null)
+  const [tokenTimeRemaining, setTokenTimeRemaining] = useState<number>(0)
+  const [isTokenExpiring, setIsTokenExpiring] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
-  const isRefreshingRef = useRef(false)
+  const refreshPromiseRef = useRef<Promise<boolean> | null>(null)
 
-  useEffect(() => {
-    // Don't run in demo mode or when not authenticated
-    if (!enabled || !isAuthenticated || isDemoMode) {
-      return
+  const refreshNow = useCallback(async (): Promise<boolean> => {
+    // If already refreshing, return the existing promise
+    if (refreshPromiseRef.current) {
+      return refreshPromiseRef.current
     }
 
-    const checkAndRefreshToken = async () => {
-      // Prevent concurrent refresh attempts
-      if (isRefreshingRef.current) {
-        console.log('[useTokenRefresh] Refresh already in progress, skipping...')
-        return
-      }
+    // Create a new refresh promise
+    refreshPromiseRef.current = (async () => {
+      setIsRefreshing(true)
+      setRefreshError(null)
 
       try {
-        isRefreshingRef.current = true
-
-        // Check token validity
-        const tokenInfo = apiUtils.validateStoredToken()
-
-        if (!tokenInfo.hasToken) {
+        // Check if we have a current token
+        if (!authService.isAuthenticated()) {
           console.log('[useTokenRefresh] No token found, skipping refresh')
-          return
+          return false
         }
 
-        // If token is expired or close to expiring, refresh it
-        if (tokenInfo.isExpired) {
-          console.log('[useTokenRefresh] Token expired, attempting refresh...')
+        // Get current token and check its status
+        const token = smartStorage.getItem('access_token')
+        if (!token) {
+          console.log('[useTokenRefresh] Token not found in storage')
+          return false
+        }
 
-          const refreshed = await apiUtils.refreshTokenIfNeeded()
+        // Check if token is expired or expiring soon
+        const isExpired = isTokenExpired(token)
+        const isExpiring = isTokenExpiringWithin(token, TOKEN_REFRESH_THRESHOLD)
 
-          if (refreshed) {
-            console.log('[useTokenRefresh] Token refreshed successfully')
-            onRefreshSuccess?.()
-          } else {
-            console.error('[useTokenRefresh] Token refresh failed')
-            onRefreshError?.(new Error('Token refresh failed'))
-          }
+        if (!isExpired && !isExpiring) {
+          console.log('[useTokenRefresh] Token is still valid and not expiring soon')
+          setLastRefresh(new Date())
+          onRefreshSuccess?.()
+          return true
+        }
+
+        console.log('[useTokenRefresh] Token expired or expiring, attempting refresh...', {
+          isExpired,
+          isExpiring,
+          timeRemaining: getTokenTimeRemaining(token)
+        })
+
+        // Try to get fresh user data (this will trigger token refresh if needed)
+        const user = await authService.getCurrentUser()
+
+        if (user) {
+          console.log('[useTokenRefresh] Token refresh successful')
+          setLastRefresh(new Date())
+          onRefreshSuccess?.()
+          return true
         } else {
-          console.log('[useTokenRefresh] Token still valid')
+          throw new Error('Failed to refresh token')
         }
+
       } catch (error) {
-        console.error('[useTokenRefresh] Error during token check:', error)
-        onRefreshError?.(error)
+        const refreshError = error instanceof Error ? error : new Error('Token refresh failed')
+        console.error('[useTokenRefresh] Refresh failed:', refreshError)
+        setRefreshError(refreshError)
+        onRefreshError?.(refreshError)
+        return false
       } finally {
-        isRefreshingRef.current = false
+        setIsRefreshing(false)
+        refreshPromiseRef.current = null
       }
+    })()
+
+    return refreshPromiseRef.current
+  }, [onRefreshSuccess, onRefreshError])
+
+  // New method for proactive validation and refresh before API calls
+  const validateAndRefresh = useCallback(async (): Promise<boolean> => {
+    const token = smartStorage.getItem('access_token')
+    if (!token) {
+      console.warn('[validateAndRefresh] No token found')
+      return false
     }
 
-    // Check immediately on mount
-    checkAndRefreshToken()
+    // Check if token is expired or expiring within threshold
+    const isExpired = isTokenExpired(token)
+    const isExpiring = isTokenExpiringWithin(token, TOKEN_REFRESH_THRESHOLD)
 
-    // Set up interval for periodic checks
-    intervalRef.current = setInterval(checkAndRefreshToken, checkInterval)
+    if (isExpired || isExpiring) {
+      console.log('[validateAndRefresh] Token needs refresh', {
+        isExpired,
+        isExpiring,
+        timeRemaining: getTokenTimeRemaining(token)
+      })
+      return await refreshNow()
+    }
 
-    // Cleanup
+    return true // Token is valid
+  }, [refreshNow])
+
+  // Update token status periodically
+  const updateTokenStatus = useCallback(() => {
+    const token = smartStorage.getItem('access_token')
+    if (token) {
+      const timeRemaining = getTokenTimeRemaining(token)
+      const isExpiring = isTokenExpiringWithin(token, TOKEN_REFRESH_THRESHOLD)
+
+      setTokenTimeRemaining(timeRemaining)
+      setIsTokenExpiring(isExpiring)
+
+      // Trigger proactive refresh if enabled and token is expiring
+      if (proactiveRefresh && isExpiring && !isRefreshing) {
+        console.log('[useTokenRefresh] Proactive refresh triggered', { timeRemaining })
+        refreshNow().catch(console.error)
+      }
+    } else {
+      setTokenTimeRemaining(0)
+      setIsTokenExpiring(true)
+    }
+  }, [proactiveRefresh, isRefreshing, refreshNow])
+
+  // Initialize token status on mount
+  useEffect(() => {
+    updateTokenStatus()
+  }, [updateTokenStatus])
+
+  // Periodic token status checking and proactive refresh
+  useEffect(() => {
+    if (!enabled || checkInterval <= 0) return
+
+    console.log(`[useTokenRefresh] Starting periodic token validation every ${checkInterval / 1000}s`)
+
+    const startPeriodicCheck = () => {
+      intervalRef.current = setInterval(() => {
+        updateTokenStatus()
+      }, checkInterval)
+    }
+
+    // Start immediately and then at intervals
+    startPeriodicCheck()
+
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
         intervalRef.current = null
+        console.log('[useTokenRefresh] Stopped periodic token validation')
       }
     }
-  }, [enabled, isAuthenticated, isDemoMode, checkInterval, onRefreshSuccess, onRefreshError])
+  }, [enabled, checkInterval, updateTokenStatus])
 
-  // Manual refresh function
-  const refreshNow = async () => {
-    if (isRefreshingRef.current) {
-      console.log('[useTokenRefresh] Refresh already in progress')
-      return false
-    }
-
-    try {
-      isRefreshingRef.current = true
-      const refreshed = await apiUtils.refreshTokenIfNeeded()
-
-      if (refreshed) {
-        onRefreshSuccess?.()
-      } else {
-        onRefreshError?.(new Error('Manual token refresh failed'))
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
       }
-
-      return refreshed
-    } catch (error) {
-      onRefreshError?.(error)
-      return false
-    } finally {
-      isRefreshingRef.current = false
+      // Clear any pending refresh promise
+      refreshPromiseRef.current = null
     }
-  }
+  }, [])
 
   return {
     refreshNow,
-    isRefreshing: isRefreshingRef.current
+    validateAndRefresh,
+    isRefreshing,
+    lastRefresh,
+    refreshError,
+    tokenTimeRemaining,
+    isTokenExpiring
   }
 }

@@ -311,12 +311,24 @@ async def get_current_user(
         logger.error(f"Unexpected error validating JWT: {str(e)}")
         raise credentials_exception
 
-    # Use encrypted search for email lookup
-    user_query = db.query(User)
-    user_query = exact_match_encrypted_field(
-        user_query, "email", token_data.email, User
-    )
-    user = user_query.first()
+    # Use encrypted search for email lookup with fallback
+    user = None
+    try:
+        user_query = db.query(User)
+        user_query = exact_match_encrypted_field(
+            user_query, "email", token_data.email, User
+        )
+        user = user_query.first()
+    except Exception as e:
+        logger.warning(f"Encrypted search failed, trying direct lookup: {e}")
+        # Fallback: try direct email lookup for backward compatibility
+        try:
+            user = db.query(User).filter(User.email == token_data.email).first()
+        except Exception as fallback_error:
+            logger.error(
+                f"Both encrypted and direct email lookup failed: {fallback_error}"
+            )
+
     if user is None:
         logger.warning(f"User not found for email: {token_data.email}")
         raise credentials_exception
@@ -543,11 +555,25 @@ async def login(
         if user:
             logger.debug(f"User found via encrypted search - ID: {user.id}")
         else:
-            logger.debug(f"User not found with encrypted search")
+            logger.debug(f"User not found with encrypted search, trying fallback")
+            # Fallback: try direct email lookup for backward compatibility
+            try:
+                user = db.query(User).filter(User.email == email).first()
+                if user:
+                    logger.debug(f"User found via direct search - ID: {user.id}")
+            except Exception as fallback_error:
+                logger.warning(f"Direct email lookup also failed: {fallback_error}")
 
     except Exception as e:
         logger.error(f"Error during encrypted user lookup: {str(e)}")
-        user = None
+        # Try direct lookup as fallback
+        try:
+            user = db.query(User).filter(User.email == email).first()
+            if user:
+                logger.debug(f"User found via fallback direct search - ID: {user.id}")
+        except Exception as fallback_error:
+            logger.error(f"All user lookup methods failed: {fallback_error}")
+            user = None
 
     # Enhanced debugging for authentication failures
     if not user:

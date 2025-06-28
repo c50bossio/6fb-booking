@@ -95,45 +95,6 @@ export const authService = {
     })
   },
 
-  /**
-   * Refresh access token with better error handling
-   */
-  async refreshToken(): Promise<LoginResponse | null> {
-    try {
-      console.log('[AuthService] Attempting token refresh...')
-
-      // First try with the standard endpoint
-      const response = await apiClient.post<LoginResponse>('/auth/refresh', {}, {
-        // Ensure we don't trigger infinite loops
-        headers: {
-          'X-Skip-Auth-Refresh': 'true'
-        }
-      })
-
-      // Update stored token
-      if (response.data.access_token) {
-        console.log('[AuthService] Token refresh successful')
-        smartStorage.setItem('access_token', response.data.access_token)
-
-        if (response.data.user) {
-          smartStorage.setItem('user', JSON.stringify(response.data.user))
-        }
-
-        return response.data
-      }
-
-      return null
-    } catch (error: any) {
-      console.error('[AuthService] Token refresh failed:', error)
-
-      // If refresh fails with 401, the refresh token is also invalid
-      if (error.response?.status === 401) {
-        console.log('[AuthService] Refresh token is invalid')
-      }
-
-      return null
-    }
-  },
 
   /**
    * Verify token validity
@@ -168,28 +129,6 @@ export const authService = {
     return !!smartStorage.getItem('access_token')
   },
 
-  /**
-   * Check if user is authenticated with token validation
-   */
-  async isAuthenticatedWithValidation(): Promise<boolean> {
-    const token = smartStorage.getItem('access_token')
-    if (!token) return false
-
-    try {
-      // Make a lightweight request to validate the token
-      await this.getCurrentUser()
-      return true
-    } catch (error: any) {
-      // If 401, token is invalid
-      if (error.response?.status === 401) {
-        smartStorage.removeItem('access_token')
-        smartStorage.removeItem('user')
-        return false
-      }
-      // For other errors (network, 5xx), assume token is still valid
-      return true
-    }
-  },
 
   /**
    * Check if user has permission
