@@ -1,0 +1,305 @@
+# GitLab CI/CD Configuration for 6FB Monorepo
+
+stages:
+  - install
+  - quality
+  - build
+  - test
+  - deploy
+
+variables:
+  NODE_VERSION: "20"
+  CACHE_VERSION: "v1"
+  FF_USE_FASTZIP: "true"
+  ARTIFACT_COMPRESSION_LEVEL: "fast"
+  CACHE_COMPRESSION_LEVEL: "fast"
+
+# Cache configuration
+.cache_config: &cache_config
+  key:
+    files:
+      - package-lock.json
+      - packages/*/package-lock.json
+    prefix: ${CACHE_VERSION}-${CI_COMMIT_REF_SLUG}
+  paths:
+    - node_modules/
+    - packages/*/node_modules/
+    - .npm/
+    - .cache/
+  policy: pull-push
+
+# Node.js setup
+.node_setup: &node_setup
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - npm config set cache .npm
+    - npm ci --prefer-offline --no-audit
+
+# Install stage
+install:dependencies:
+  stage: install
+  <<: *node_setup
+  cache:
+    <<: *cache_config
+    policy: push
+  script:
+    - npm ci
+    - |
+      for package in frontend backend shared mobile; do
+        echo "Installing dependencies for $package"
+        cd packages/$package && npm ci && cd ../..
+      done
+  artifacts:
+    expire_in: 1 hour
+    paths:
+      - node_modules/
+      - packages/*/node_modules/
+
+# Quality checks
+quality:eslint:
+  stage: quality
+  <<: *node_setup
+  needs: ["install:dependencies"]
+  cache:
+    <<: *cache_config
+    policy: pull
+  parallel:
+    matrix:
+      - PACKAGE: [frontend, backend, shared, mobile]
+  script:
+    - cd packages/$PACKAGE
+    - npm run lint:ci
+  artifacts:
+    when: always
+    reports:
+      junit: packages/$PACKAGE/eslint-report.xml
+    paths:
+      - packages/$PACKAGE/eslint-report.json
+    expire_in: 1 week
+
+quality:typecheck:
+  stage: quality
+  <<: *node_setup
+  needs: ["install:dependencies"]
+  cache:
+    <<: *cache_config
+    policy: pull
+  parallel:
+    matrix:
+      - PACKAGE: [frontend, backend, shared, mobile]
+  script:
+    - cd packages/$PACKAGE
+    - npm run type-check
+
+quality:prettier:
+  stage: quality
+  <<: *node_setup
+  needs: ["install:dependencies"]
+  cache:
+    <<: *cache_config
+    policy: pull
+  script:
+    - npm run format:check
+
+quality:custom-rules:
+  stage: quality
+  <<: *node_setup
+  needs: ["install:dependencies"]
+  cache:
+    <<: *cache_config
+    policy: pull
+  script:
+    - npm run build
+    - npm test
+    - npm run validate:rules
+
+quality:pre-commit:
+  stage: quality
+  image: python:3.11-slim
+  needs: []
+  before_script:
+    - apt-get update && apt-get install -y git nodejs npm
+    - pip install pre-commit
+  script:
+    - pre-commit run --all-files --show-diff-on-failure
+
+quality:security-audit:
+  stage: quality
+  <<: *node_setup
+  needs: ["install:dependencies"]
+  cache:
+    <<: *cache_config
+    policy: pull
+  script:
+    - npm audit --audit-level=moderate
+  allow_failure: true
+  artifacts:
+    when: always
+    paths:
+      - audit-report.json
+    expire_in: 1 week
+
+# Build stage
+build:packages:
+  stage: build
+  <<: *node_setup
+  needs: ["install:dependencies"]
+  cache:
+    <<: *cache_config
+    policy: pull
+  parallel:
+    matrix:
+      - PACKAGE: [frontend, backend, shared, mobile]
+  script:
+    - cd packages/$PACKAGE
+    - npm run build
+  artifacts:
+    paths:
+      - packages/$PACKAGE/dist/
+      - packages/$PACKAGE/.next/
+      - packages/$PACKAGE/build/
+    expire_in: 1 day
+
+# Bundle size checks
+build:bundle-analysis:
+  stage: build
+  <<: *node_setup
+  needs: ["build:packages"]
+  script:
+    - cd packages/frontend
+    - |
+      echo "Analyzing bundle sizes..."
+      find .next/static/chunks -name "*.js" -exec du -h {} \; | sort -h > ../../bundle-sizes.txt
+    - |
+      # Check if main bundle exceeds limit
+      MAIN_SIZE=$(find .next/static/chunks -name "main-*.js" -exec du -k {} \; | awk '{print $1}')
+      if [ "$MAIN_SIZE" -gt 300 ]; then
+        echo "Warning: Main bundle exceeds 300KB ($MAIN_SIZE KB)"
+        exit 1
+      fi
+  artifacts:
+    paths:
+      - bundle-sizes.txt
+    reports:
+      performance: bundle-performance.json
+    expire_in: 1 week
+
+# Monorepo boundary checks
+test:boundaries:
+  stage: test
+  <<: *node_setup
+  needs: ["install:dependencies"]
+  cache:
+    <<: *cache_config
+    policy: pull
+  script:
+    - |
+      echo "Checking circular dependencies..."
+      npx madge --circular --extensions ts,tsx,js,jsx packages/*/src
+    - |
+      echo "Validating import boundaries..."
+      # Check that packages don't import from each other incorrectly
+      ./ci/check-boundaries.sh
+  artifacts:
+    when: always
+    paths:
+      - dependency-graph.svg
+    expire_in: 1 week
+
+# Test stage
+test:unit:
+  stage: test
+  <<: *node_setup
+  needs: ["build:packages"]
+  cache:
+    <<: *cache_config
+    policy: pull
+  parallel:
+    matrix:
+      - PACKAGE: [frontend, backend, shared, mobile]
+  script:
+    - cd packages/$PACKAGE
+    - npm test -- --coverage
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  artifacts:
+    when: always
+    reports:
+      junit: packages/$PACKAGE/junit.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: packages/$PACKAGE/coverage/cobertura-coverage.xml
+    paths:
+      - packages/$PACKAGE/coverage/
+    expire_in: 1 week
+
+# Lighthouse CI (only for frontend)
+test:lighthouse:
+  stage: test
+  <<: *node_setup
+  needs: ["build:packages"]
+  only:
+    refs:
+      - merge_requests
+    changes:
+      - packages/frontend/**/*
+  script:
+    - cd packages/frontend
+    - npm install -g @lhci/cli
+    - lhci autorun || true
+  artifacts:
+    paths:
+      - packages/frontend/.lighthouseci/
+    expire_in: 1 week
+
+# Deploy stage (example)
+deploy:preview:
+  stage: deploy
+  <<: *node_setup
+  needs: ["test:unit", "test:boundaries"]
+  only:
+    - merge_requests
+  environment:
+    name: preview/$CI_MERGE_REQUEST_IID
+    url: https://preview-$CI_MERGE_REQUEST_IID.example.com
+    on_stop: deploy:stop-preview
+  script:
+    - echo "Deploying preview environment..."
+    # Add your deployment script here
+
+deploy:stop-preview:
+  stage: deploy
+  <<: *node_setup
+  only:
+    - merge_requests
+  when: manual
+  environment:
+    name: preview/$CI_MERGE_REQUEST_IID
+    action: stop
+  script:
+    - echo "Stopping preview environment..."
+    # Add your cleanup script here
+
+# MR pipeline validation
+validate:merge-request:
+  stage: .pre
+  image: alpine:latest
+  only:
+    - merge_requests
+  script:
+    - |
+      # Check MR title follows conventional commits
+      if ! echo "$CI_MERGE_REQUEST_TITLE" | grep -qE '^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?: .+'; then
+        echo "MR title must follow conventional commit format"
+        echo "Format: type(scope): description"
+        exit 1
+      fi
+
+# Success notification
+notify:success:
+  stage: .post
+  image: alpine:latest
+  when: on_success
+  only:
+    - main
+  script:
+    - echo "Pipeline succeeded! All quality checks passed."

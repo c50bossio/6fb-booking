@@ -1,0 +1,132 @@
+name: Pre-commit Checks
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  pre-commit:
+    name: Pre-commit Hook Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better hook execution
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Cache pre-commit
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+          
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+            
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Install pre-commit
+        run: pip install pre-commit
+        
+      - name: Run pre-commit on all files
+        run: pre-commit run --all-files --show-diff-on-failure
+        
+      - name: Check commit message format
+        if: github.event_name == 'pull_request'
+        run: |
+          # Get all commit messages in the PR
+          git log --format=%s origin/main..HEAD | while read commit; do
+            # Check conventional commit format
+            if ! echo "$commit" | grep -qE '^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?: .+'; then
+              echo "Invalid commit message format: $commit"
+              echo "Expected format: type(scope): description"
+              exit 1
+            fi
+          done
+          
+  lint-staged:
+    name: Lint Staged Files
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Get changed files
+        id: changed-files
+        run: |
+          echo "files=$(git diff --name-only --diff-filter=ACMRT origin/main...HEAD | grep -E '\.(ts|tsx|js|jsx)$' | tr '\n' ' ')" >> $GITHUB_OUTPUT
+          
+      - name: Run ESLint on changed files
+        if: steps.changed-files.outputs.files != ''
+        run: |
+          npx eslint ${{ steps.changed-files.outputs.files }} --max-warnings 0
+          
+      - name: Run Prettier on changed files
+        if: steps.changed-files.outputs.files != ''
+        run: |
+          npx prettier --check ${{ steps.changed-files.outputs.files }}
+          
+  commitlint:
+    name: Commit Message Lint
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Validate PR title
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          if ! echo "$PR_TITLE" | npx commitlint; then
+            echo "PR title does not follow conventional commit format"
+            exit 1
+          fi
+          
+      - name: Validate commit messages
+        run: |
+          npx commitlint --from=origin/main --to=HEAD --verbose

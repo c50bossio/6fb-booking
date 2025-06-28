@@ -1,0 +1,54 @@
+[
+  {
+    "name": "Frontend - Main Bundle",
+    "path": "packages/frontend/.next/static/chunks/main-*.js",
+    "limit": "300 KB",
+    "webpack": false,
+    "running": false
+  },
+  {
+    "name": "Frontend - Framework Bundle", 
+    "path": "packages/frontend/.next/static/chunks/framework-*.js",
+    "limit": "150 KB",
+    "webpack": false,
+    "running": false
+  },
+  {
+    "name": "Frontend - App Bundle",
+    "path": "packages/frontend/.next/static/chunks/pages/_app-*.js",
+    "limit": "100 KB",
+    "webpack": false,
+    "running": false
+  },
+  {
+    "name": "Frontend - Home Page",
+    "path": "packages/frontend/.next/static/chunks/pages/index-*.js",
+    "limit": "50 KB",
+    "webpack": false,
+    "running": false
+  },
+  {
+    "name": "Frontend - Dashboard Page",
+    "path": "packages/frontend/.next/static/chunks/pages/dashboard-*.js",
+    "limit": "150 KB",
+    "webpack": false,
+    "running": false
+  },
+  {
+    "name": "Shared Package",
+    "path": "packages/shared/dist/index.js",
+    "limit": "50 KB"
+  },
+  {
+    "name": "Mobile - Main Bundle",
+    "path": "packages/mobile/build/static/js/main.*.js",
+    "limit": "400 KB",
+    "webpack": false,
+    "running": false
+  },
+  {
+    "name": "ESLint Plugin",
+    "path": "dist/index.js",
+    "limit": "100 KB"
+  }
+]
