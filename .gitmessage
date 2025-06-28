@@ -1,0 +1,17 @@
+type(scope): subject
+
+# Body - Explain *what* and *why* (not *how*)
+
+# Footer - Issues, breaking changes, etc.
+
+# Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
+# Scopes: api, auth, db, payment, booking, ui, dashboard, config, deps, docker, scripts
+# Backend: api, auth, db, payment, booking, analytics, notification
+# Frontend: ui, booking, dashboard, auth, admin, client
+# Remember: 
+# - Capitalize subject line
+# - No period at end of subject
+# - Use imperative mood ("add" not "added")
+# - Limit subject to 50 characters
+# - Wrap body at 72 characters
+# - Separate subject from body with blank line
