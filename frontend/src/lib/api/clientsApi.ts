@@ -143,15 +143,15 @@ export const clientsApi = {
   },
 
   // Send message to client
-  sendMessage: async (clientId: string, data: ClientMessage): Promise<{ 
+  sendMessage: async (clientId: string, data: ClientMessage): Promise<{
     message: string
     email_sent?: boolean
-    sms_sent?: boolean 
+    sms_sent?: boolean
   }> => {
-    const response = await apiClient.post<{ 
+    const response = await apiClient.post<{
       message: string
       email_sent?: boolean
-      sms_sent?: boolean 
+      sms_sent?: boolean
     }>(`/clients/${clientId}/message`, data)
     return response.data
   },
@@ -188,10 +188,10 @@ export const clientsApi = {
     // This could be a dedicated endpoint, but for now we'll calculate from client list
     const response = await apiClient.get<ClientListResponse>('/clients', { params: { limit: 1000 } })
     const clients = response.data.clients
-    
+
     const now = new Date()
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-    
+
     return {
       total_clients: response.data.total_clients,
       new_clients_this_month: clients.filter(c => new Date(c.created_at) >= thisMonth).length,

@@ -577,36 +577,60 @@ async def get_barbers_payment_info(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to view barber payment information",
         )
-    
+
     barbers = db.query(Barber).filter(Barber.is_active == True).all()
     result = []
-    
+
     for barber in barbers:
         payment_model = (
             db.query(BarberPaymentModel)
             .filter(BarberPaymentModel.barber_id == barber.id)
             .first()
         )
-        
-        result.append({
-            "barber_id": barber.id,
-            "barber_name": f"{barber.first_name} {barber.last_name}",
-            "email": barber.email,
-            "phone": barber.phone,
-            "payment_type": payment_model.payment_type.value if payment_model else "commission",
-            "commission_rate": payment_model.service_commission_rate if payment_model else 0.3,
-            "booth_rent_amount": payment_model.booth_rent_amount if payment_model else 0,
-            "booth_rent_frequency": payment_model.rent_frequency if payment_model else "weekly",
-            "stripe_account_id": payment_model.stripe_connect_account_id if payment_model else None,
-            "square_merchant_id": payment_model.square_merchant_id if payment_model else None,
-            "stripe_connected": bool(payment_model.stripe_connect_account_id) if payment_model else False,
-            "square_connected": bool(payment_model.square_merchant_id) if payment_model else False,
-            "rentpedi_tenant_id": None,
-            "rentpedi_connected": False,
-            "created_at": barber.created_at.isoformat() if barber.created_at else None,
-            "updated_at": barber.updated_at.isoformat() if barber.updated_at else None,
-        })
-    
+
+        result.append(
+            {
+                "barber_id": barber.id,
+                "barber_name": f"{barber.first_name} {barber.last_name}",
+                "email": barber.email,
+                "phone": barber.phone,
+                "payment_type": (
+                    payment_model.payment_type.value if payment_model else "commission"
+                ),
+                "commission_rate": (
+                    payment_model.service_commission_rate if payment_model else 0.3
+                ),
+                "booth_rent_amount": (
+                    payment_model.booth_rent_amount if payment_model else 0
+                ),
+                "booth_rent_frequency": (
+                    payment_model.rent_frequency if payment_model else "weekly"
+                ),
+                "stripe_account_id": (
+                    payment_model.stripe_connect_account_id if payment_model else None
+                ),
+                "square_merchant_id": (
+                    payment_model.square_merchant_id if payment_model else None
+                ),
+                "stripe_connected": (
+                    bool(payment_model.stripe_connect_account_id)
+                    if payment_model
+                    else False
+                ),
+                "square_connected": (
+                    bool(payment_model.square_merchant_id) if payment_model else False
+                ),
+                "rentpedi_tenant_id": None,
+                "rentpedi_connected": False,
+                "created_at": (
+                    barber.created_at.isoformat() if barber.created_at else None
+                ),
+                "updated_at": (
+                    barber.updated_at.isoformat() if barber.updated_at else None
+                ),
+            }
+        )
+
     return result
 
 
@@ -624,7 +648,7 @@ async def get_recent_payment_splits(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to view financial data",
         )
-    
+
     # Get recent payments with appointment info
     payments = (
         db.query(Payment)
@@ -633,19 +657,23 @@ async def get_recent_payment_splits(
         .limit(limit)
         .all()
     )
-    
+
     split_service = PaymentSplitService()
     result = []
-    
+
     for payment in payments:
         if payment.appointment and payment.appointment.barber_id:
-            barber = db.query(Barber).filter(Barber.id == payment.appointment.barber_id).first()
+            barber = (
+                db.query(Barber)
+                .filter(Barber.id == payment.appointment.barber_id)
+                .first()
+            )
             payment_model = (
                 db.query(BarberPaymentModel)
                 .filter(BarberPaymentModel.barber_id == payment.appointment.barber_id)
                 .first()
             )
-            
+
             if barber and payment_model:
                 split = split_service.calculate_split(
                     total_amount=payment.amount,
@@ -654,22 +682,32 @@ async def get_recent_payment_splits(
                         "service_commission_rate": payment_model.service_commission_rate,
                     },
                 )
-                
-                result.append({
-                    "id": payment.id,
-                    "date": payment.created_at.isoformat(),
-                    "appointment_id": payment.appointment_id,
-                    "barber_name": f"{barber.first_name} {barber.last_name}",
-                    "barber_id": barber.id,
-                    "service": payment.appointment.service_name if payment.appointment else "Service",
-                    "total_amount": float(payment.amount),
-                    "barber_amount": float(split["barber_amount"]),
-                    "shop_amount": float(split["shop_amount"]),
-                    "commission_rate": float(split["commission_rate"]),
-                    "payment_method": payment.payment_method or "card",
-                    "status": "completed" if payment.status == "succeeded" else payment.status,
-                })
-    
+
+                result.append(
+                    {
+                        "id": payment.id,
+                        "date": payment.created_at.isoformat(),
+                        "appointment_id": payment.appointment_id,
+                        "barber_name": f"{barber.first_name} {barber.last_name}",
+                        "barber_id": barber.id,
+                        "service": (
+                            payment.appointment.service_name
+                            if payment.appointment
+                            else "Service"
+                        ),
+                        "total_amount": float(payment.amount),
+                        "barber_amount": float(split["barber_amount"]),
+                        "shop_amount": float(split["shop_amount"]),
+                        "commission_rate": float(split["commission_rate"]),
+                        "payment_method": payment.payment_method or "card",
+                        "status": (
+                            "completed"
+                            if payment.status == "succeeded"
+                            else payment.status
+                        ),
+                    }
+                )
+
     return result
 
 
@@ -688,25 +726,25 @@ async def get_commission_payments(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to view financial data",
         )
-    
+
     # For now, calculate commissions from actual payments
     query = db.query(Payment).join(Appointment)
-    
+
     if start_date:
         query = query.filter(Payment.created_at >= start_date)
     if end_date:
         query = query.filter(Payment.created_at <= end_date)
-    
+
     payments = query.all()
-    
+
     # Group by barber
     barber_commissions = {}
     split_service = PaymentSplitService()
-    
+
     for payment in payments:
         if payment.appointment and payment.appointment.barber_id:
             barber_id = payment.appointment.barber_id
-            
+
             if barber_id not in barber_commissions:
                 barber = db.query(Barber).filter(Barber.id == barber_id).first()
                 payment_model = (
@@ -714,7 +752,7 @@ async def get_commission_payments(
                     .filter(BarberPaymentModel.barber_id == barber_id)
                     .first()
                 )
-                
+
                 if barber:
                     barber_commissions[barber_id] = {
                         "barber_id": barber_id,
@@ -722,29 +760,43 @@ async def get_commission_payments(
                         "total_revenue": 0,
                         "total_commission": 0,
                         "payment_count": 0,
-                        "commission_rate": payment_model.service_commission_rate if payment_model else 0.3,
+                        "commission_rate": (
+                            payment_model.service_commission_rate
+                            if payment_model
+                            else 0.3
+                        ),
                         "status": "pending",
                     }
-            
+
             if barber_id in barber_commissions:
                 payment_model = (
                     db.query(BarberPaymentModel)
                     .filter(BarberPaymentModel.barber_id == barber_id)
                     .first()
                 )
-                
+
                 split = split_service.calculate_split(
                     total_amount=payment.amount,
                     barber_payment_model={
-                        "payment_type": payment_model.payment_type.value if payment_model else "commission",
-                        "service_commission_rate": payment_model.service_commission_rate if payment_model else 0.3,
+                        "payment_type": (
+                            payment_model.payment_type.value
+                            if payment_model
+                            else "commission"
+                        ),
+                        "service_commission_rate": (
+                            payment_model.service_commission_rate
+                            if payment_model
+                            else 0.3
+                        ),
                     },
                 )
-                
+
                 barber_commissions[barber_id]["total_revenue"] += float(payment.amount)
-                barber_commissions[barber_id]["total_commission"] += float(split["shop_amount"])
+                barber_commissions[barber_id]["total_commission"] += float(
+                    split["shop_amount"]
+                )
                 barber_commissions[barber_id]["payment_count"] += 1
-    
+
     return list(barber_commissions.values())
 
 
@@ -761,7 +813,7 @@ async def get_booth_rent_payments(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to view financial data",
         )
-    
+
     # Get all barbers with booth rent payment model
     booth_rent_barbers = (
         db.query(Barber)
@@ -769,7 +821,7 @@ async def get_booth_rent_payments(
         .filter(BarberPaymentModel.payment_type == PaymentModelType.BOOTH_RENT)
         .all()
     )
-    
+
     result = []
     for barber in booth_rent_barbers:
         payment_model = (
@@ -777,12 +829,13 @@ async def get_booth_rent_payments(
             .filter(BarberPaymentModel.barber_id == barber.id)
             .first()
         )
-        
+
         if payment_model:
             # Calculate next due date based on frequency
             from datetime import date
+
             today = date.today()
-            
+
             # Simple calculation - would need to be more sophisticated in production
             if payment_model.rent_frequency == "weekly":
                 days_until_due = (payment_model.rent_due_day - today.weekday()) % 7
@@ -790,17 +843,19 @@ async def get_booth_rent_payments(
                 days_until_due = payment_model.rent_due_day - today.day
                 if days_until_due < 0:
                     days_until_due += 30
-            
-            result.append({
-                "barber_id": barber.id,
-                "barber_name": f"{barber.first_name} {barber.last_name}",
-                "rent_amount": float(payment_model.booth_rent_amount),
-                "frequency": payment_model.rent_frequency,
-                "due_date": (today + timedelta(days=days_until_due)).isoformat(),
-                "status": "current" if days_until_due > 0 else "due",
-                "auto_collect": payment_model.auto_collect_rent,
-            })
-    
+
+            result.append(
+                {
+                    "barber_id": barber.id,
+                    "barber_name": f"{barber.first_name} {barber.last_name}",
+                    "rent_amount": float(payment_model.booth_rent_amount),
+                    "frequency": payment_model.rent_frequency,
+                    "due_date": (today + timedelta(days=days_until_due)).isoformat(),
+                    "status": "current" if days_until_due > 0 else "due",
+                    "auto_collect": payment_model.auto_collect_rent,
+                }
+            )
+
     return result
 
 

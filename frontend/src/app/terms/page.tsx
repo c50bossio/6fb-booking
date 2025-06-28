@@ -10,28 +10,28 @@ export default function TermsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Terms of Service</h1>
-      
+
       <div className="prose max-w-none">
         <p className="text-gray-600 mb-6">
           <strong>Last updated:</strong> {new Date().toLocaleDateString()}
         </p>
 
         <p className="text-gray-600 mb-6">
-          These Terms of Service ("Terms") govern your use of the 6FB Booking Platform 
+          These Terms of Service ("Terms") govern your use of the 6FB Booking Platform
           ("Service") operated by 6FB Booking Platform ("us", "we", or "our").
         </p>
 
         <h2 className="text-2xl font-semibold mb-4 text-gray-900">Acceptance of Terms</h2>
         <p className="text-gray-600 mb-6">
-          By accessing and using our Service, you accept and agree to be bound by the terms 
-          and provision of this agreement. If you do not agree to abide by the above, 
+          By accessing and using our Service, you accept and agree to be bound by the terms
+          and provision of this agreement. If you do not agree to abide by the above,
           please do not use this service.
         </p>
 
         <h2 className="text-2xl font-semibold mb-4 text-gray-900">Description of Service</h2>
         <p className="text-gray-600 mb-6">
-          6FB Booking Platform provides a comprehensive booking and business management system 
-          for barber shops, including appointment scheduling, payment processing, client management, 
+          6FB Booking Platform provides a comprehensive booking and business management system
+          for barber shops, including appointment scheduling, payment processing, client management,
           and business analytics.
         </p>
 
@@ -65,8 +65,8 @@ export default function TermsPage() {
 
         <h2 className="text-2xl font-semibold mb-4 text-gray-900">Intellectual Property</h2>
         <p className="text-gray-600 mb-6">
-          The Service and its original content, features, and functionality are and will remain 
-          the exclusive property of 6FB Booking Platform and its licensors. The Service is 
+          The Service and its original content, features, and functionality are and will remain
+          the exclusive property of 6FB Booking Platform and its licensors. The Service is
           protected by copyright, trademark, and other laws.
         </p>
 
@@ -80,43 +80,43 @@ export default function TermsPage() {
 
         <h2 className="text-2xl font-semibold mb-4 text-gray-900">Service Availability</h2>
         <p className="text-gray-600 mb-6">
-          We strive to maintain 99.9% uptime but do not guarantee uninterrupted access to the Service. 
+          We strive to maintain 99.9% uptime but do not guarantee uninterrupted access to the Service.
           We reserve the right to modify, suspend, or discontinue the Service with reasonable notice.
         </p>
 
         <h2 className="text-2xl font-semibold mb-4 text-gray-900">Limitation of Liability</h2>
         <p className="text-gray-600 mb-6">
-          In no event shall 6FB Booking Platform, nor its directors, employees, partners, agents, 
-          suppliers, or affiliates, be liable for any indirect, incidental, special, consequential, 
-          or punitive damages, including without limitation, loss of profits, data, use, goodwill, 
+          In no event shall 6FB Booking Platform, nor its directors, employees, partners, agents,
+          suppliers, or affiliates, be liable for any indirect, incidental, special, consequential,
+          or punitive damages, including without limitation, loss of profits, data, use, goodwill,
           or other intangible losses.
         </p>
 
         <h2 className="text-2xl font-semibold mb-4 text-gray-900">Indemnification</h2>
         <p className="text-gray-600 mb-6">
-          You agree to defend, indemnify, and hold harmless 6FB Booking Platform and its licensee 
-          and licensors from and against any and all claims, damages, obligations, losses, liabilities, 
+          You agree to defend, indemnify, and hold harmless 6FB Booking Platform and its licensee
+          and licensors from and against any and all claims, damages, obligations, losses, liabilities,
           costs or debt, and expenses (including but not limited to attorney's fees).
         </p>
 
         <h2 className="text-2xl font-semibold mb-4 text-gray-900">Termination</h2>
         <p className="text-gray-600 mb-6">
-          We may terminate or suspend your account and bar access to the Service immediately, 
-          without prior notice or liability, under our sole discretion, for any reason whatsoever 
+          We may terminate or suspend your account and bar access to the Service immediately,
+          without prior notice or liability, under our sole discretion, for any reason whatsoever
           and without limitation, including but not limited to a breach of the Terms.
         </p>
 
         <h2 className="text-2xl font-semibold mb-4 text-gray-900">Governing Law</h2>
         <p className="text-gray-600 mb-6">
-          These Terms shall be interpreted and governed by the laws of [Jurisdiction], without 
-          regard to its conflict of law provisions. Our failure to enforce any right or provision 
+          These Terms shall be interpreted and governed by the laws of [Jurisdiction], without
+          regard to its conflict of law provisions. Our failure to enforce any right or provision
           of these Terms will not be considered a waiver of those rights.
         </p>
 
         <h2 className="text-2xl font-semibold mb-4 text-gray-900">Changes to Terms</h2>
         <p className="text-gray-600 mb-6">
-          We reserve the right, at our sole discretion, to modify or replace these Terms at any time. 
-          If a revision is material, we will try to provide at least 30 days notice prior to any 
+          We reserve the right, at our sole discretion, to modify or replace these Terms at any time.
+          If a revision is material, we will try to provide at least 30 days notice prior to any
           new terms taking effect.
         </p>
 

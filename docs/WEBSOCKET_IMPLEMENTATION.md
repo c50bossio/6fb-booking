@@ -173,7 +173,7 @@ import { useWebSocket } from '@/hooks/useWebSocket'
 
 function MyComponent() {
   const { isConnected, sendMessage, lastMessage, connectionStatus } = useWebSocket()
-  
+
   // React to new messages
   useEffect(() => {
     if (lastMessage?.type === 'notification') {
@@ -181,7 +181,7 @@ function MyComponent() {
       console.log('New notification:', lastMessage.data)
     }
   }, [lastMessage])
-  
+
   // Send message to server
   const subscribe = () => {
     sendMessage({
@@ -189,7 +189,7 @@ function MyComponent() {
       event_type: 'performance_updates'
     })
   }
-  
+
   return (
     <div>
       Status: {connectionStatus}

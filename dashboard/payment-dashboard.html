@@ -41,19 +41,19 @@
                     <p class="mt-2 text-3xl font-bold">$<span id="today-revenue">0</span></p>
                     <p class="mt-1 text-sm text-green-400">+15% from yesterday</p>
                 </div>
-                
+
                 <div class="bg-gray-800 rounded-lg p-6">
                     <h3 class="text-sm font-medium text-gray-400">Your Earnings (70%)</h3>
                     <p class="mt-2 text-3xl font-bold">$<span id="barber-earnings">0</span></p>
                     <p class="mt-1 text-sm text-gray-400">Instant payout</p>
                 </div>
-                
+
                 <div class="bg-gray-800 rounded-lg p-6">
                     <h3 class="text-sm font-medium text-gray-400">Shop Commission (30%)</h3>
                     <p class="mt-2 text-3xl font-bold">$<span id="shop-commission">0</span></p>
                     <p class="mt-1 text-sm text-gray-400">Auto-deducted</p>
                 </div>
-                
+
                 <div class="bg-gray-800 rounded-lg p-6">
                     <h3 class="text-sm font-medium text-gray-400">Appointments Today</h3>
                     <p class="mt-2 text-3xl font-bold"><span id="appointment-count">0</span></p>
@@ -84,7 +84,7 @@
                         </div>
                     </div>
                 </div>
-                <button onclick="processTestPayment()" 
+                <button onclick="processTestPayment()"
                         class="mt-4 bg-green-600 hover:bg-green-700 px-6 py-2 rounded-md font-medium transition">
                     Process Test Payment
                 </button>
@@ -165,7 +165,7 @@
 
     <script>
         const API_BASE = 'http://localhost:8000/api/v1';
-        
+
         // Update amount preview
         document.getElementById('test-amount').addEventListener('input', (e) => {
             const amount = parseFloat(e.target.value) || 0;
@@ -177,17 +177,17 @@
         async function processTestPayment() {
             const amount = parseFloat(document.getElementById('test-amount').value);
             const resultDiv = document.getElementById('payment-result');
-            
+
             resultDiv.innerHTML = '<div class="bg-blue-900 text-blue-300 p-3 rounded">Processing payment...</div>';
-            
+
             try {
                 // In a real app, you'd process the payment here
                 // For now, we'll just simulate it
                 await new Promise(resolve => setTimeout(resolve, 1500));
-                
+
                 const barberAmount = (amount * 0.7).toFixed(2);
                 const shopAmount = (amount * 0.3).toFixed(2);
-                
+
                 resultDiv.innerHTML = `
                     <div class="bg-green-900 text-green-300 p-3 rounded">
                         ✅ Payment Successful!<br>
@@ -195,10 +195,10 @@
                         🏪 $${shopAmount} kept as shop commission
                     </div>
                 `;
-                
+
                 // Update stats
                 updateStats(amount, barberAmount, shopAmount);
-                
+
                 // Add to transactions table
                 addTransaction({
                     time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
@@ -207,7 +207,7 @@
                     total: amount,
                     barberCut: barberAmount
                 });
-                
+
             } catch (error) {
                 resultDiv.innerHTML = `
                     <div class="bg-red-900 text-red-300 p-3 rounded">
@@ -223,14 +223,14 @@
             const barberEarnings = document.getElementById('barber-earnings');
             const shopCommission = document.getElementById('shop-commission');
             const appointmentCount = document.getElementById('appointment-count');
-            
+
             todayRevenue.textContent = (parseFloat(todayRevenue.textContent) + amount).toFixed(2);
             barberEarnings.textContent = (parseFloat(barberEarnings.textContent) + parseFloat(barberAmount)).toFixed(2);
             shopCommission.textContent = (parseFloat(shopCommission.textContent) + parseFloat(shopAmount)).toFixed(2);
-            
+
             const count = parseInt(appointmentCount.textContent) + 1;
             appointmentCount.textContent = count;
-            
+
             const avgTicket = document.getElementById('avg-ticket');
             avgTicket.textContent = (parseFloat(todayRevenue.textContent) / count).toFixed(2);
         }

@@ -10,28 +10,28 @@ class ReportGenerator {
 
   async generate(metrics, previousMetrics = null) {
     console.log('📄 Generating reports...');
-    
+
     const reports = {};
-    
+
     if (this.config.reports.formats.includes('markdown')) {
       reports.markdown = await this.generateMarkdownReport(metrics, previousMetrics);
     }
-    
+
     if (this.config.reports.formats.includes('json')) {
       reports.json = await this.generateJsonReport(metrics, previousMetrics);
     }
-    
+
     if (this.config.reports.formats.includes('html')) {
       reports.html = await this.generateHtmlReport(metrics, previousMetrics);
     }
-    
+
     return reports;
   }
 
   async generateMarkdownReport(metrics, previousMetrics) {
     const issues = this.analyzeIssues(metrics);
     const trends = previousMetrics ? this.analyzeTrends(metrics, previousMetrics) : null;
-    
+
     let report = `# 🏥 Codebase Health Report
 
 **Generated:** ${new Date(metrics.timestamp).toLocaleString()}
@@ -158,7 +158,7 @@ ${Object.entries(
 ).map(([type, count]) => `- ${type}: ${count}`).join('\n')}
 
 #### Recent TODOs:
-${metrics.todos.slice(0, 10).map(todo => 
+${metrics.todos.slice(0, 10).map(todo =>
   `- [${todo.type}] ${todo.file}:${todo.line} - ${todo.message}`
 ).join('\n')}
 ` : ''}
@@ -183,7 +183,7 @@ ${this.generateRecommendations(metrics, issues)}
   async generateJsonReport(metrics, previousMetrics) {
     const issues = this.analyzeIssues(metrics);
     const trends = previousMetrics ? this.analyzeTrends(metrics, previousMetrics) : null;
-    
+
     return {
       metadata: {
         timestamp: metrics.timestamp,
@@ -199,7 +199,7 @@ ${this.generateRecommendations(metrics, issues)}
   async generateHtmlReport(metrics, previousMetrics) {
     const issues = this.analyzeIssues(metrics);
     const trends = previousMetrics ? this.analyzeTrends(metrics, previousMetrics) : null;
-    
+
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -212,20 +212,20 @@ ${this.generateRecommendations(metrics, issues)}
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.6;
             color: #333;
             background: #f5f5f5;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
         }
-        
+
         .header {
             background: white;
             padding: 30px;
@@ -233,52 +233,52 @@ ${this.generateRecommendations(metrics, issues)}
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             margin-bottom: 30px;
         }
-        
+
         h1 {
             color: #2c3e50;
             margin-bottom: 10px;
         }
-        
+
         .timestamp {
             color: #7f8c8d;
             font-size: 14px;
         }
-        
+
         .summary-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
-        
+
         .metric-card {
             background: white;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        
+
         .metric-card h3 {
             color: #34495e;
             margin-bottom: 10px;
             font-size: 16px;
         }
-        
+
         .metric-value {
             font-size: 32px;
             font-weight: bold;
             color: #2c3e50;
         }
-        
+
         .metric-label {
             color: #7f8c8d;
             font-size: 14px;
         }
-        
+
         .status-good { color: #27ae60; }
         .status-warning { color: #f39c12; }
         .status-critical { color: #e74c3c; }
-        
+
         .issues-section {
             background: white;
             padding: 30px;
@@ -286,12 +286,12 @@ ${this.generateRecommendations(metrics, issues)}
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             margin-bottom: 30px;
         }
-        
+
         .issue-list {
             list-style: none;
             margin-top: 15px;
         }
-        
+
         .issue-item {
             padding: 10px;
             margin-bottom: 5px;
@@ -299,22 +299,22 @@ ${this.generateRecommendations(metrics, issues)}
             display: flex;
             align-items: center;
         }
-        
+
         .issue-critical {
             background: #ffe5e5;
             color: #c0392b;
         }
-        
+
         .issue-warning {
             background: #fff3cd;
             color: #856404;
         }
-        
+
         .issue-icon {
             margin-right: 10px;
             font-size: 20px;
         }
-        
+
         .chart-container {
             background: white;
             padding: 30px;
@@ -322,45 +322,45 @@ ${this.generateRecommendations(metrics, issues)}
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             margin-bottom: 30px;
         }
-        
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
-        
+
         th, td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ecf0f1;
         }
-        
+
         th {
             background: #f8f9fa;
             font-weight: 600;
             color: #2c3e50;
         }
-        
+
         .trend-up { color: #e74c3c; }
         .trend-down { color: #27ae60; }
         .trend-neutral { color: #95a5a6; }
-        
+
         .recommendations {
             background: #e8f5e9;
             padding: 20px;
             border-radius: 10px;
             margin-top: 30px;
         }
-        
+
         .recommendations h3 {
             color: #27ae60;
             margin-bottom: 10px;
         }
-        
+
         .recommendations ul {
             margin-left: 20px;
         }
-        
+
         canvas {
             max-width: 100%;
             height: auto;
@@ -374,37 +374,37 @@ ${this.generateRecommendations(metrics, issues)}
             <h1>🏥 Codebase Health Report</h1>
             <div class="timestamp">Generated: ${new Date(metrics.timestamp).toLocaleString()}</div>
         </div>
-        
+
         <div class="summary-grid">
             <div class="metric-card">
                 <h3>Total Files</h3>
                 <div class="metric-value">${metrics.files.totalCount.toLocaleString()}</div>
                 <div class="metric-label">${this.formatBytes(metrics.files.totalSize)}</div>
             </div>
-            
+
             <div class="metric-card">
                 <h3>Code Quality Score</h3>
                 <div class="metric-value ${this.getScoreClass(this.calculateHealthScore(metrics))}">${this.calculateHealthScore(metrics)}%</div>
                 <div class="metric-label">Overall Health</div>
             </div>
-            
+
             <div class="metric-card">
                 <h3>Issues Found</h3>
                 <div class="metric-value">${issues.critical.length + issues.warnings.length}</div>
                 <div class="metric-label">${issues.critical.length} critical, ${issues.warnings.length} warnings</div>
             </div>
-            
+
             <div class="metric-card">
                 <h3>TODOs</h3>
                 <div class="metric-value">${metrics.todos.length}</div>
                 <div class="metric-label">Pending tasks</div>
             </div>
         </div>
-        
+
         ${issues.critical.length > 0 || issues.warnings.length > 0 ? `
         <div class="issues-section">
             <h2>🚨 Issues</h2>
-            
+
             ${issues.critical.length > 0 ? `
             <h3 style="margin-top: 20px;">Critical Issues</h3>
             <ul class="issue-list">
@@ -416,7 +416,7 @@ ${this.generateRecommendations(metrics, issues)}
                 `).join('')}
             </ul>
             ` : ''}
-            
+
             ${issues.warnings.length > 0 ? `
             <h3 style="margin-top: 20px;">Warnings</h3>
             <ul class="issue-list">
@@ -430,17 +430,17 @@ ${this.generateRecommendations(metrics, issues)}
             ` : ''}
         </div>
         ` : ''}
-        
+
         <div class="chart-container">
             <h2>📊 File Distribution</h2>
             <canvas id="fileChart"></canvas>
         </div>
-        
+
         <div class="chart-container">
             <h2>📈 Complexity Analysis</h2>
             <canvas id="complexityChart"></canvas>
         </div>
-        
+
         ${metrics.duplicates.length > 0 ? `
         <div class="chart-container">
             <h2>🔍 Duplicate Files</h2>
@@ -464,7 +464,7 @@ ${this.generateRecommendations(metrics, issues)}
             </table>
         </div>
         ` : ''}
-        
+
         <div class="recommendations">
             <h3>💡 Recommendations</h3>
             <ul>
@@ -472,12 +472,12 @@ ${this.generateRecommendations(metrics, issues)}
             </ul>
         </div>
     </div>
-    
+
     <script>
         // File distribution chart
         const fileCtx = document.getElementById('fileChart').getContext('2d');
         const fileData = ${JSON.stringify(Object.entries(metrics.files.byType).slice(0, 10))};
-        
+
         new Chart(fileCtx, {
             type: 'doughnut',
             data: {
@@ -499,19 +499,19 @@ ${this.generateRecommendations(metrics, issues)}
                 }
             }
         });
-        
+
         // Complexity chart
         const complexityCtx = document.getElementById('complexityChart').getContext('2d');
         const complexityData = ${JSON.stringify(
             metrics.complexity.files
                 .sort((a, b) => b.complexity - a.complexity)
                 .slice(0, 10)
-                .map(f => ({ 
-                    file: f.path.split('/').pop(), 
-                    complexity: f.complexity 
+                .map(f => ({
+                    file: f.path.split('/').pop(),
+                    complexity: f.complexity
                 }))
         )};
-        
+
         new Chart(complexityCtx, {
             type: 'bar',
             data: {
@@ -519,7 +519,7 @@ ${this.generateRecommendations(metrics, issues)}
                 datasets: [{
                     label: 'Complexity Score',
                     data: complexityData.map(d => d.complexity),
-                    backgroundColor: complexityData.map(d => 
+                    backgroundColor: complexityData.map(d =>
                         d.complexity > ${this.config.thresholds.complexity.maxCyclomaticComplexity} ? '#e74c3c' : '#3498db'
                     )
                 }]
@@ -543,12 +543,12 @@ ${this.generateRecommendations(metrics, issues)}
       critical: [],
       warnings: []
     };
-    
+
     // Check file count thresholds
     if (metrics.files.totalCount > this.config.thresholds.files.total) {
       issues.warnings.push(`Total file count (${metrics.files.totalCount}) exceeds threshold (${this.config.thresholds.files.total})`);
     }
-    
+
     // Check file type thresholds
     Object.entries(this.config.thresholds.files.perType).forEach(([ext, threshold]) => {
       const count = metrics.files.byType[`.${ext}`] || 0;
@@ -556,43 +556,43 @@ ${this.generateRecommendations(metrics, issues)}
         issues.warnings.push(`${ext.toUpperCase()} file count (${count}) exceeds threshold (${threshold})`);
       }
     });
-    
+
     // Check duplicates
     if (metrics.duplicates.length > this.config.thresholds.duplicates.maxAllowed) {
       issues.critical.push(`Found ${metrics.duplicates.length} duplicate files/components (max allowed: ${this.config.thresholds.duplicates.maxAllowed})`);
     }
-    
+
     // Check bundle sizes
     if (metrics.bundleSize.totalSize > this.config.thresholds.bundleSize.frontend.total) {
       issues.critical.push(`Frontend bundle size (${this.formatBytes(metrics.bundleSize.totalSize)}) exceeds threshold (${this.formatBytes(this.config.thresholds.bundleSize.frontend.total)})`);
     }
-    
+
     // Check dependencies
     if (metrics.dependencies.frontend.outdated > this.config.thresholds.dependencies.maxOutdated) {
       issues.warnings.push(`Frontend has ${metrics.dependencies.frontend.outdated} outdated packages (max: ${this.config.thresholds.dependencies.maxOutdated})`);
     }
-    
-    if (metrics.dependencies.frontend.vulnerabilities && 
-        (metrics.dependencies.frontend.vulnerabilities.critical > 0 || 
+
+    if (metrics.dependencies.frontend.vulnerabilities &&
+        (metrics.dependencies.frontend.vulnerabilities.critical > 0 ||
          metrics.dependencies.frontend.vulnerabilities.high > 0)) {
       issues.critical.push(`Security vulnerabilities found in frontend dependencies`);
     }
-    
+
     // Check complexity
     if (metrics.complexity.summary.filesOverThreshold > 0) {
       issues.warnings.push(`${metrics.complexity.summary.filesOverThreshold} files exceed complexity threshold`);
     }
-    
+
     // Check TODOs
     if (metrics.todos.length > this.config.thresholds.todos.maxAllowed) {
       issues.warnings.push(`Too many TODOs (${metrics.todos.length}) in codebase (max: ${this.config.thresholds.todos.maxAllowed})`);
     }
-    
+
     // Check test coverage
     if (metrics.testCoverage.frontend && metrics.testCoverage.frontend.lines < this.config.thresholds.testCoverage.minimum) {
       issues.critical.push(`Frontend test coverage (${metrics.testCoverage.frontend.lines}%) below minimum (${this.config.thresholds.testCoverage.minimum}%)`);
     }
-    
+
     return issues;
   }
 
@@ -611,7 +611,7 @@ ${this.generateRecommendations(metrics, issues)}
   generateExecutiveSummary(metrics, issues) {
     const healthScore = this.calculateHealthScore(metrics);
     const status = healthScore >= 80 ? '🟢 Healthy' : healthScore >= 60 ? '🟡 Needs Attention' : '🔴 Critical';
-    
+
     return `
 **Overall Status:** ${status} (${healthScore}%)
 
@@ -625,67 +625,67 @@ ${this.generateRecommendations(metrics, issues)}
 
   generateTrendsSection(trends) {
     const items = [];
-    
+
     if (trends.files.total !== 0) {
       const icon = trends.files.total > 0 ? '📈' : '📉';
       items.push(`${icon} Files: ${trends.files.total > 0 ? '+' : ''}${trends.files.total} (${trends.files.size > 0 ? '+' : ''}${this.formatBytes(trends.files.size)})`);
     }
-    
+
     if (trends.duplicates !== 0) {
       const icon = trends.duplicates > 0 ? '⚠️' : '✅';
       items.push(`${icon} Duplicates: ${trends.duplicates > 0 ? '+' : ''}${trends.duplicates}`);
     }
-    
+
     if (trends.todos !== 0) {
       const icon = trends.todos > 0 ? '📝' : '✅';
       items.push(`${icon} TODOs: ${trends.todos > 0 ? '+' : ''}${trends.todos}`);
     }
-    
+
     if (trends.complexity !== 0) {
       const icon = trends.complexity > 0 ? '⚠️' : '✅';
       items.push(`${icon} Complexity: ${trends.complexity > 0 ? '+' : ''}${trends.complexity.toFixed(2)}`);
     }
-    
+
     return items.join('\n');
   }
 
   generateRecommendations(metrics, issues) {
     const recommendations = [];
-    
+
     if (issues.critical.length > 0) {
       recommendations.push('- 🚨 Address critical issues immediately');
     }
-    
+
     if (metrics.duplicates.length > 5) {
       recommendations.push('- 🔄 Refactor duplicate components into shared modules');
     }
-    
+
     if (metrics.complexity.summary.filesOverThreshold > 0) {
       recommendations.push('- 🧩 Refactor complex files to improve maintainability');
     }
-    
+
     if (metrics.todos.length > this.config.thresholds.todos.warningLevel) {
       recommendations.push('- 📝 Schedule time to address accumulated TODOs');
     }
-    
+
     if (metrics.dependencies.frontend.outdated > 10) {
       recommendations.push('- 📦 Update outdated dependencies to get latest features and security fixes');
     }
-    
+
     if (!metrics.testCoverage.frontend && !metrics.testCoverage.backend) {
       recommendations.push('- 🧪 Set up test coverage reporting to track code quality');
     }
-    
+
     if (metrics.files.totalSize > 100000000) { // 100MB
       recommendations.push('- 🗑️ Clean up unnecessary files and optimize asset sizes');
     }
-    
+
     return recommendations.join('\n');
   }
 
   generateRecommendationsJson(metrics, issues) {
     const recommendations = [];
-    
+
     if (issues.critical.length > 0) {
       recommendations.push({
         priority: 'critical',
@@ -694,7 +694,7 @@ ${this.generateRecommendations(metrics, issues)}
         details: issues.critical
       });
     }
-    
+
     if (metrics.duplicates.length > 5) {
       recommendations.push({
         priority: 'high',
@@ -703,29 +703,29 @@ ${this.generateRecommendations(metrics, issues)}
         details: `Found ${metrics.duplicates.length} duplicates`
       });
     }
-    
+
     return recommendations;
   }
 
   calculateHealthScore(metrics) {
     let score = 100;
-    
+
     // Deduct points for issues
     const issues = this.analyzeIssues(metrics);
     score -= issues.critical.length * 10;
     score -= issues.warnings.length * 5;
-    
+
     // Deduct for duplicates
     score -= Math.min(metrics.duplicates.length * 2, 20);
-    
+
     // Deduct for TODOs
     score -= Math.min(metrics.todos.length * 0.5, 10);
-    
+
     // Deduct for complexity
     if (metrics.complexity.summary.avgComplexity > 10) {
       score -= 10;
     }
-    
+
     // Ensure score is between 0 and 100
     return Math.max(0, Math.min(100, Math.round(score)));
   }

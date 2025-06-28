@@ -336,19 +336,19 @@ class DevStartupOrchestrator extends EventEmitter {
 
     async handleFallback(data) {
         this.log('🚨 Initiating emergency startup sequence', 'warning');
-        
+
         try {
             // Switch to emergency mode
             const originalMode = this.mode;
             this.mode = 'emergency';
             const emergencyPhases = this.phases.emergency;
-            
+
             this.log(`Falling back from ${originalMode} to emergency mode due to ${data.failedPhase} failure`, 'warning');
-            
+
             for (const phase of emergencyPhases) {
                 this.log(`Emergency phase: ${phase.name}`, 'warning');
                 const result = await this.runPhase(phase);
-                
+
                 if (phase.name === 'dev-server') {
                     this.log('✅ Emergency startup successful!', 'success');
                     this.state.metrics.status = 'emergency_success';

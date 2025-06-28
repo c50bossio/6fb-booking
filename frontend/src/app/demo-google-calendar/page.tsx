@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
-import { 
-  CheckIcon, 
+import {
+  CheckIcon,
   ExclamationTriangleIcon,
   ArrowPathIcon,
   XMarkIcon,

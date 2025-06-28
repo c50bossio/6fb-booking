@@ -184,5 +184,5 @@ If you encounter issues:
 
 ---
 
-**Created for 6FB Booking Platform**  
+**Created for 6FB Booking Platform**
 *Last updated: 2025-06-25*

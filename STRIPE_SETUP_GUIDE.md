@@ -37,7 +37,7 @@ This guide will help you set up Stripe payment processing for the 6FB Platform.
 1. In Stripe Dashboard, go to **Developers** → **Webhooks**
 2. Click **"Add endpoint"**
 3. Configure the endpoint:
-   - **Endpoint URL**: 
+   - **Endpoint URL**:
      - Development: `http://localhost:8000/api/v1/webhooks/stripe`
      - Production: `https://your-domain.com/api/v1/webhooks/stripe`
    - **Events to send**: Select the following events:
@@ -70,7 +70,7 @@ This guide will help you set up Stripe payment processing for the 6FB Platform.
    STRIPE_SECRET_KEY=sk_test_your_secret_key_here
    STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key_here
    STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
-   
+
    # Optional: Stripe Connect (for marketplace features)
    # STRIPE_CONNECT_CLIENT_ID=ca_your_connect_client_id
    ```
@@ -133,7 +133,7 @@ Use any future expiry date and any 3-digit CVC.
    ```bash
    # macOS
    brew install stripe/stripe-cli/stripe
-   
+
    # Or download from https://stripe.com/docs/stripe-cli
    ```
 

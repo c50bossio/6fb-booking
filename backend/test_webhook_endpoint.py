@@ -20,7 +20,7 @@ try:
         print("✅ Setup endpoint working!")
         print(f"Webhook URL: {data['webhook_url']}")
         print("\nInstructions:")
-        for instruction in data['instructions']:
+        for instruction in data["instructions"]:
             print(f"  {instruction}")
     else:
         print(f"❌ Error: {response.text}")
@@ -41,27 +41,22 @@ test_payload = {
             "endTime": "2025-06-20T15:30:00Z",
             "status": "confirmed",
             "price": 65.00,
-            "service": {
-                "name": "Haircut + Beard Trim"
-            },
+            "service": {"name": "Haircut + Beard Trim"},
             "customer": {
                 "firstName": "Test",
                 "lastName": "Customer",
                 "email": "test@example.com",
-                "phone": "+1234567890"
-            }
+                "phone": "+1234567890",
+            },
         }
-    }
+    },
 }
 
 try:
     response = requests.post(
         f"{BASE_URL}/api/v1/webhooks/trafft",
         json=test_payload,
-        headers={
-            "Content-Type": "application/json",
-            "X-Webhook-Source": "test-script"
-        }
+        headers={"Content-Type": "application/json", "X-Webhook-Source": "test-script"},
     )
     print(f"Status: {response.status_code}")
     if response.status_code == 200:

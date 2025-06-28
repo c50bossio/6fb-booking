@@ -1,8 +1,8 @@
 import { ESLintUtils, TSESTree } from '@typescript-eslint/utils';
-import { 
-  ComponentInfo, 
-  extractComponentName, 
-  getComponentType, 
+import {
+  ComponentInfo,
+  extractComponentName,
+  getComponentType,
   isReactComponent,
   normalizeComponentName,
   getRelativeFilePath,
@@ -62,31 +62,31 @@ const rule = createRule({
     const options = context.options[0];
     const filename = context.getFilename();
     const sourceCode = context.getSourceCode();
-    
+
     // Skip test and demo files
     if (isTestFile(filename) || isDemoFile(filename)) {
       return {};
     }
-    
+
     // Check if file matches exclude patterns
     if (options.excludePatterns.some((pattern: string) => new RegExp(pattern).test(filename))) {
       return {};
     }
-    
+
     // Global registry to track all components across files
     // In a real implementation, this would be shared across files
     const componentRegistry: ComponentRegistry = {};
-    
+
     function checkForDuplicates(node: TSESTree.Node, componentName: string) {
       const normalizedName = options.ignoreCase ? componentName.toLowerCase() : componentName;
       const currentFile = getRelativeFilePath(filename, process.cwd());
-      
+
       // Check for exact duplicates
       if (componentRegistry[normalizedName]) {
         const duplicates = componentRegistry[normalizedName].filter(
           comp => comp.filePath !== currentFile
         );
-        
+
         if (duplicates.length > 0) {
           const otherFiles = duplicates.map(d => d.filePath).join(', ');
           context.report({
@@ -99,15 +99,15 @@ const rule = createRule({
           });
         }
       }
-      
+
       // Check for similar names
       if (options.checkSimilarNames) {
         const normalized = normalizeComponentName(componentName);
-        
+
         Object.entries(componentRegistry).forEach(([registeredName, components]) => {
           const registeredNormalized = normalizeComponentName(registeredName);
-          
-          if (normalized === registeredNormalized && 
+
+          if (normalized === registeredNormalized &&
               registeredName !== componentName &&
               components.some(c => c.filePath !== currentFile)) {
             const otherComponent = components.find(c => c.filePath !== currentFile);
@@ -125,12 +125,12 @@ const rule = createRule({
           }
         });
       }
-      
+
       // Register the component
       if (!componentRegistry[normalizedName]) {
         componentRegistry[normalizedName] = [];
       }
-      
+
       componentRegistry[normalizedName].push({
         name: componentName,
         filePath: currentFile,
@@ -138,7 +138,7 @@ const rule = createRule({
         type: getComponentType(node) || 'function',
       });
     }
-    
+
     return {
       FunctionDeclaration(node) {
         const name = extractComponentName(node);
@@ -146,21 +146,21 @@ const rule = createRule({
           checkForDuplicates(node, name);
         }
       },
-      
+
       VariableDeclarator(node) {
         const name = extractComponentName(node);
         if (name && isReactComponent(name)) {
           checkForDuplicates(node, name);
         }
       },
-      
+
       ClassDeclaration(node) {
         const name = extractComponentName(node);
         if (name && isReactComponent(name)) {
           checkForDuplicates(node, name);
         }
       },
-      
+
       ExportDefaultDeclaration(node) {
         const name = extractComponentName(node);
         if (name && isReactComponent(name)) {

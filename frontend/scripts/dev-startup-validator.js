@@ -58,8 +58,8 @@ class DevStartupValidator {
     loadDevSettings() {
         const configPath = path.join(process.cwd(), '.dev-settings.json');
         const defaultConfig = {
-            validation: { 
-                defaultMode: 'quick', 
+            validation: {
+                defaultMode: 'quick',
                 autoFix: false,
                 timeouts: { defaultTimeout: 15000, extensionCheck: 10000 },
                 skipChecks: {},
@@ -77,7 +77,7 @@ class DevStartupValidator {
         } catch (error) {
             console.warn('⚠️ Could not load .dev-settings.json, using defaults');
         }
-        
+
         return defaultConfig;
     }
 
@@ -167,22 +167,22 @@ class DevStartupValidator {
         return new Promise((resolve) => {
             const timeoutId = setTimeout(() => {
                 this.log(`Timeout: ${description} - exceeded ${timeoutMs}ms limit`, 'warning');
-                resolve({ 
-                    success: false, 
-                    error: `Timeout after ${timeoutMs}ms`, 
+                resolve({
+                    success: false,
+                    error: `Timeout after ${timeoutMs}ms`,
                     timeout: true,
                     stdout: '',
-                    stderr: '' 
+                    stderr: ''
                 });
             }, timeoutMs);
 
             exec(command, { timeout: timeoutMs }, (error, stdout, stderr) => {
                 clearTimeout(timeoutId);
-                
+
                 if (error) {
                     const isTimeout = error.signal === 'SIGTERM' || error.message.includes('timeout');
                     this.log(`Failed: ${description} - ${error.message}`, critical ? 'critical' : 'warning');
-                    
+
                     if (critical && !isTimeout) {
                         this.criticalIssues.push({
                             type: 'check_failure',
@@ -198,13 +198,13 @@ class DevStartupValidator {
                             error: error.message
                         });
                     }
-                    
-                    resolve({ 
-                        success: false, 
-                        error: error.message, 
+
+                    resolve({
+                        success: false,
+                        error: error.message,
                         timeout: isTimeout,
-                        stdout, 
-                        stderr 
+                        stdout,
+                        stderr
                     });
                 } else {
                     this.log(`✓ ${description}`, 'success');
@@ -739,12 +739,12 @@ class DevStartupValidator {
         const warningCount = this.warnings.length;
 
         // Graceful degradation: Only block for truly critical issues that prevent startup
-        const blockingIssues = this.criticalIssues.filter(issue => 
-            issue.type === 'missing_file' || 
+        const blockingIssues = this.criticalIssues.filter(issue =>
+            issue.type === 'missing_file' ||
             issue.type === 'missing_directory' ||
             (issue.type === 'dependency_issue' && issue.check === 'node_modules exists')
         );
-        
+
         const readyToStart = blockingIssues.length === 0;
 
         this.results.summary = {
@@ -811,7 +811,7 @@ class DevStartupValidator {
         } else {
             console.log('\n🚫 DEVELOPMENT STARTUP BLOCKED');
             console.log(`   ❌ ${summary.blockingIssues} blocking issues must be resolved first`);
-            
+
             if (summary.gracefulDegradation) {
                 console.log(`   🛡️  ${summary.criticalCount - summary.blockingIssues} other critical issues converted to warnings`);
             }
@@ -914,7 +914,7 @@ Integration with Development Scripts:
   • npm run dev:safe     - Validates before starting
   • npm run dev:fresh    - Validates, cleans, then starts
   • npm run dev:paranoid - Paranoid validation before starting
-  
+
 Failsafe Options (if validation fails):
   • npm run dev:failsafe      - Skip validation, start immediately
   • npm run dev:recovery      - Emergency recovery mode

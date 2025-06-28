@@ -23,7 +23,7 @@ class HealthMetricsCollector {
 
   async collect() {
     console.log('🔍 Starting health metrics collection...');
-    
+
     await this.collectFileMetrics();
     await this.detectDuplicates();
     await this.analyzeBundleSize();
@@ -32,7 +32,7 @@ class HealthMetricsCollector {
     await this.collectTestCoverage();
     await this.findTodos();
     await this.collectPerformanceMetrics();
-    
+
     console.log('✅ Metrics collection complete');
     return this.metrics;
   }
@@ -41,31 +41,31 @@ class HealthMetricsCollector {
     console.log('📊 Collecting file metrics...');
     const fileTypes = {};
     const fileSizes = {};
-    
+
     const walkDir = async (dir) => {
       const entries = await fs.readdir(dir, { withFileTypes: true });
-      
+
       for (const entry of entries) {
         const fullPath = path.join(dir, entry.name);
         const relativePath = path.relative(this.config.projectRoot, fullPath);
-        
+
         // Check if should ignore
         if (this.shouldIgnore(relativePath)) continue;
-        
+
         if (entry.isDirectory()) {
           await walkDir(fullPath);
         } else {
           const ext = path.extname(entry.name).toLowerCase();
           const stats = await fs.stat(fullPath);
-          
+
           fileTypes[ext] = (fileTypes[ext] || 0) + 1;
           fileSizes[ext] = (fileSizes[ext] || 0) + stats.size;
         }
       }
     };
-    
+
     await walkDir(this.config.projectRoot);
-    
+
     this.metrics.files = {
       byType: fileTypes,
       totalCount: Object.values(fileTypes).reduce((a, b) => a + b, 0),
@@ -78,16 +78,16 @@ class HealthMetricsCollector {
     console.log('🔍 Detecting duplicate components...');
     const componentFiles = [];
     const duplicates = [];
-    
+
     const findComponents = async (dir) => {
       const entries = await fs.readdir(dir, { withFileTypes: true });
-      
+
       for (const entry of entries) {
         const fullPath = path.join(dir, entry.name);
         const relativePath = path.relative(this.config.projectRoot, fullPath);
-        
+
         if (this.shouldIgnore(relativePath)) continue;
-        
+
         if (entry.isDirectory()) {
           await findComponents(fullPath);
         } else if (/\.(jsx?|tsx?)$/.test(entry.name)) {
@@ -106,9 +106,9 @@ class HealthMetricsCollector {
         }
       }
     };
-    
+
     await findComponents(path.join(this.config.projectRoot, 'frontend/src'));
-    
+
     // Find duplicates by content hash
     const hashMap = {};
     componentFiles.forEach(file => {
@@ -117,7 +117,7 @@ class HealthMetricsCollector {
       }
       hashMap[file.hash].push(file);
     });
-    
+
     Object.values(hashMap).forEach(files => {
       if (files.length > 1) {
         duplicates.push({
@@ -127,7 +127,7 @@ class HealthMetricsCollector {
         });
       }
     });
-    
+
     // Also check for similar names
     const nameMap = {};
     componentFiles.forEach(file => {
@@ -137,7 +137,7 @@ class HealthMetricsCollector {
       }
       nameMap[baseName].push(file);
     });
-    
+
     Object.entries(nameMap).forEach(([name, files]) => {
       if (files.length > 1) {
         duplicates.push({
@@ -147,19 +147,19 @@ class HealthMetricsCollector {
         });
       }
     });
-    
+
     this.metrics.duplicates = duplicates;
   }
 
   async analyzeBundleSize() {
     console.log('📦 Analyzing bundle sizes...');
-    
+
     try {
       // Check if Next.js build output exists
       const buildManifest = path.join(this.config.projectRoot, 'frontend/.next/build-manifest.json');
       if (await this.fileExists(buildManifest)) {
         const manifest = JSON.parse(await fs.readFile(buildManifest, 'utf8'));
-        
+
         // Analyze page bundles
         const pageSizes = {};
         for (const [page, assets] of Object.entries(manifest.pages || {})) {
@@ -175,18 +175,18 @@ class HealthMetricsCollector {
           }
           pageSizes[page] = totalSize;
         }
-        
+
         this.metrics.bundleSize = {
           pages: pageSizes,
           totalSize: Object.values(pageSizes).reduce((a, b) => a + b, 0)
         };
       }
-      
+
       // Check backend bundle size (if applicable)
       const backendDir = path.join(this.config.projectRoot, 'backend');
       const backendSize = await this.getDirectorySize(backendDir);
       this.metrics.bundleSize.backend = backendSize;
-      
+
     } catch (error) {
       console.warn('⚠️  Could not analyze bundle size:', error.message);
       this.metrics.bundleSize = { error: error.message };
@@ -195,25 +195,25 @@ class HealthMetricsCollector {
 
   async checkDependencies() {
     console.log('📦 Checking dependencies...');
-    
+
     const results = {
       frontend: {},
       backend: {}
     };
-    
+
     // Check frontend dependencies
     try {
       const frontendPath = path.join(this.config.projectRoot, 'frontend');
       if (await this.fileExists(path.join(frontendPath, 'package.json'))) {
         const packageJson = JSON.parse(await fs.readFile(path.join(frontendPath, 'package.json'), 'utf8'));
-        
+
         // Count dependencies
         results.frontend.dependencies = Object.keys(packageJson.dependencies || {}).length;
         results.frontend.devDependencies = Object.keys(packageJson.devDependencies || {}).length;
-        
+
         // Check for outdated packages
         try {
-          const outdated = execSync('npm outdated --json', { 
+          const outdated = execSync('npm outdated --json', {
             cwd: frontendPath,
             encoding: 'utf8'
           });
@@ -234,10 +234,10 @@ class HealthMetricsCollector {
             }
           }
         }
-        
+
         // Check for security vulnerabilities
         try {
-          const audit = execSync('npm audit --json', { 
+          const audit = execSync('npm audit --json', {
             cwd: frontendPath,
             encoding: 'utf8'
           });
@@ -251,16 +251,16 @@ class HealthMetricsCollector {
     } catch (error) {
       console.warn('⚠️  Could not check frontend dependencies:', error.message);
     }
-    
+
     // Check backend dependencies
     try {
       const backendPath = path.join(this.config.projectRoot, 'backend');
       const requirementsPath = path.join(backendPath, 'requirements.txt');
-      
+
       if (await this.fileExists(requirementsPath)) {
         const requirements = await fs.readFile(requirementsPath, 'utf8');
         results.backend.dependencies = requirements.split('\n').filter(line => line.trim() && !line.startsWith('#')).length;
-        
+
         // Check for outdated Python packages
         try {
           const outdated = execSync('pip list --outdated --format=json', {
@@ -279,13 +279,13 @@ class HealthMetricsCollector {
     } catch (error) {
       console.warn('⚠️  Could not check backend dependencies:', error.message);
     }
-    
+
     this.metrics.dependencies = results;
   }
 
   async analyzeComplexity() {
     console.log('🧩 Analyzing code complexity...');
-    
+
     const complexityResults = {
       files: [],
       summary: {
@@ -295,13 +295,13 @@ class HealthMetricsCollector {
         filesOverThreshold: 0
       }
     };
-    
+
     const analyzeFile = async (filePath) => {
       try {
         const content = await fs.readFile(filePath, 'utf8');
         const lines = content.split('\n');
         const relativePath = path.relative(this.config.projectRoot, filePath);
-        
+
         // Simple complexity metrics
         const metrics = {
           path: relativePath,
@@ -310,7 +310,7 @@ class HealthMetricsCollector {
           complexity: 0,
           todos: 0
         };
-        
+
         // Count functions and estimate complexity
         if (/\.(js|jsx|ts|tsx)$/.test(filePath)) {
           metrics.functions = (content.match(/function\s+\w+|const\s+\w+\s*=\s*\(|=>\s*{/g) || []).length;
@@ -319,18 +319,18 @@ class HealthMetricsCollector {
           metrics.functions = (content.match(/def\s+\w+|class\s+\w+/g) || []).length;
           metrics.complexity = this.estimateComplexity(content);
         }
-        
+
         metrics.todos = (content.match(/TODO|FIXME|HACK|XXX/gi) || []).length;
-        
+
         return metrics;
       } catch (error) {
         return null;
       }
     };
-    
+
     // Analyze all code files
     const codeFiles = await this.findCodeFiles();
-    
+
     for (const file of codeFiles) {
       const metrics = await analyzeFile(file);
       if (metrics) {
@@ -338,24 +338,24 @@ class HealthMetricsCollector {
         complexityResults.summary.totalFiles++;
         complexityResults.summary.avgComplexity += metrics.complexity;
         complexityResults.summary.maxComplexity = Math.max(complexityResults.summary.maxComplexity, metrics.complexity);
-        
+
         if (metrics.complexity > this.config.thresholds.complexity.maxCyclomaticComplexity) {
           complexityResults.summary.filesOverThreshold++;
         }
       }
     }
-    
+
     if (complexityResults.summary.totalFiles > 0) {
       complexityResults.summary.avgComplexity /= complexityResults.summary.totalFiles;
     }
-    
+
     this.metrics.complexity = complexityResults;
   }
 
   estimateComplexity(content) {
     // Simple cyclomatic complexity estimation
     let complexity = 1;
-    
+
     // Count decision points
     const decisionPatterns = [
       /\bif\s*\(/g,
@@ -368,25 +368,25 @@ class HealthMetricsCollector {
       /&&/g,
       /\|\|/g
     ];
-    
+
     decisionPatterns.forEach(pattern => {
       const matches = content.match(pattern);
       if (matches) {
         complexity += matches.length;
       }
     });
-    
+
     return complexity;
   }
 
   async collectTestCoverage() {
     console.log('🧪 Collecting test coverage...');
-    
+
     const coverage = {
       frontend: {},
       backend: {}
     };
-    
+
     // Check for frontend coverage
     try {
       const frontendCoveragePath = path.join(this.config.projectRoot, 'frontend/coverage/coverage-summary.json');
@@ -402,7 +402,7 @@ class HealthMetricsCollector {
     } catch (error) {
       console.warn('⚠️  Could not read frontend coverage:', error.message);
     }
-    
+
     // Check for backend coverage
     try {
       const backendCoveragePath = path.join(this.config.projectRoot, 'backend/.coverage');
@@ -421,22 +421,22 @@ class HealthMetricsCollector {
     } catch (error) {
       console.warn('⚠️  Could not read backend coverage:', error.message);
     }
-    
+
     this.metrics.testCoverage = coverage;
   }
 
   async findTodos() {
     console.log('📝 Finding TODOs and FIXMEs...');
-    
+
     const todos = [];
     const codeFiles = await this.findCodeFiles();
-    
+
     for (const file of codeFiles) {
       try {
         const content = await fs.readFile(file, 'utf8');
         const lines = content.split('\n');
         const relativePath = path.relative(this.config.projectRoot, file);
-        
+
         lines.forEach((line, index) => {
           const todoMatch = line.match(/(TODO|FIXME|HACK|XXX|BUG|OPTIMIZE|REFACTOR):\s*(.+)/i);
           if (todoMatch) {
@@ -452,19 +452,19 @@ class HealthMetricsCollector {
         // Skip files that can't be read
       }
     }
-    
+
     this.metrics.todos = todos;
   }
 
   async collectPerformanceMetrics() {
     console.log('⚡ Collecting performance metrics...');
-    
+
     const performance = {
       loadTime: {},
       apiResponse: {},
       databaseQueries: {}
     };
-    
+
     // Check for performance logs or metrics
     try {
       // Look for frontend performance metrics
@@ -474,7 +474,7 @@ class HealthMetricsCollector {
         // Parse performance data (format depends on your logging)
         performance.frontend = { raw: perfData };
       }
-      
+
       // Look for backend performance metrics
       const backendPerfPath = path.join(this.config.projectRoot, 'backend/logs/performance.json');
       if (await this.fileExists(backendPerfPath)) {
@@ -483,24 +483,24 @@ class HealthMetricsCollector {
     } catch (error) {
       console.warn('⚠️  Could not collect performance metrics:', error.message);
     }
-    
+
     this.metrics.performance = performance;
   }
 
   async findCodeFiles() {
     const codeFiles = [];
     const extensions = ['.js', '.jsx', '.ts', '.tsx', '.py'];
-    
+
     const walkDir = async (dir) => {
       try {
         const entries = await fs.readdir(dir, { withFileTypes: true });
-        
+
         for (const entry of entries) {
           const fullPath = path.join(dir, entry.name);
           const relativePath = path.relative(this.config.projectRoot, fullPath);
-          
+
           if (this.shouldIgnore(relativePath)) continue;
-          
+
           if (entry.isDirectory()) {
             await walkDir(fullPath);
           } else if (extensions.some(ext => entry.name.endsWith(ext))) {
@@ -511,20 +511,20 @@ class HealthMetricsCollector {
         // Skip directories that can't be read
       }
     };
-    
+
     await walkDir(this.config.projectRoot);
     return codeFiles;
   }
 
   async getDirectorySize(dir) {
     let totalSize = 0;
-    
+
     try {
       const entries = await fs.readdir(dir, { withFileTypes: true });
-      
+
       for (const entry of entries) {
         const fullPath = path.join(dir, entry.name);
-        
+
         if (entry.isDirectory()) {
           if (!this.shouldIgnore(path.relative(this.config.projectRoot, fullPath))) {
             totalSize += await this.getDirectorySize(fullPath);
@@ -537,7 +537,7 @@ class HealthMetricsCollector {
     } catch (error) {
       // Skip directories that can't be read
     }
-    
+
     return totalSize;
   }
 
@@ -548,7 +548,7 @@ class HealthMetricsCollector {
         return true;
       }
     }
-    
+
     // Check file ignores
     const fileName = path.basename(relativePath);
     for (const pattern of this.config.ignore.files) {
@@ -561,7 +561,7 @@ class HealthMetricsCollector {
         return true;
       }
     }
-    
+
     return false;
   }
 

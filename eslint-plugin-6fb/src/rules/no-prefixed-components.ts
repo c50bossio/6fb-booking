@@ -1,6 +1,6 @@
 import { ESLintUtils, TSESTree } from '@typescript-eslint/utils';
-import { 
-  extractComponentName, 
+import {
+  extractComponentName,
   isReactComponent,
   isTestFile,
   isDemoFile
@@ -76,13 +76,13 @@ const rule = createRule({
   create(context) {
     const options = context.options[0];
     const filename = context.getFilename();
-    
+
     // Skip if in test/demo files and allowed
     if ((options.allowInTests && isTestFile(filename)) ||
         (options.allowInDemos && isDemoFile(filename))) {
       return {};
     }
-    
+
     function checkComponentName(node: TSESTree.Node, componentName: string) {
       for (const prefix of options.forbiddenPrefixes) {
         if (componentName.startsWith(prefix)) {
@@ -104,7 +104,7 @@ const rule = createRule({
         }
       }
     }
-    
+
     return {
       FunctionDeclaration(node) {
         const name = extractComponentName(node);
@@ -112,21 +112,21 @@ const rule = createRule({
           checkComponentName(node, name);
         }
       },
-      
+
       VariableDeclarator(node) {
         const name = extractComponentName(node);
         if (name && isReactComponent(name)) {
           checkComponentName(node, name);
         }
       },
-      
+
       ClassDeclaration(node) {
         const name = extractComponentName(node);
         if (name && isReactComponent(name)) {
           checkComponentName(node, name);
         }
       },
-      
+
       ExportDefaultDeclaration(node) {
         const name = extractComponentName(node);
         if (name && isReactComponent(name)) {

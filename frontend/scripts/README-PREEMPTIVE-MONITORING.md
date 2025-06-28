@@ -41,7 +41,7 @@ The Preemptive Issue Detection System is an advanced monitoring solution for the
 ## Installation & Setup
 
 ### Prerequisites
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 - Existing 6FB Booking Frontend project
 
@@ -135,7 +135,7 @@ The system maintains several predictive models:
 - **Prediction Horizon**: 5 minutes ahead for critical alerts
 - **Auto-Remediation**: Cache clearing and garbage collection
 
-#### CPU Model  
+#### CPU Model
 - **Load Monitoring**: Tracks CPU usage and load averages
 - **Overload Prediction**: Forecasts when CPU will exceed thresholds
 - **Process Analysis**: Identifies resource-heavy processes
@@ -157,7 +157,7 @@ The system calculates overall risk using weighted factors:
 ```javascript
 Risk Factors:
 - Memory: 25% weight
-- CPU: 20% weight  
+- CPU: 20% weight
 - Disk: 15% weight
 - Network: 10% weight
 - Build Performance: 15% weight
@@ -233,7 +233,7 @@ npm cache clean --force
 # Build artifact cleanup
 rm -rf .next
 
-# Log file cleanup  
+# Log file cleanup
 find logs -name "*.log" -mtime +7 -delete
 
 # npm cache cleanup
@@ -281,7 +281,7 @@ The preemptive detector runs alongside your development server:
 # Terminal 1: Start development server
 npm run dev
 
-# Terminal 2: Start preemptive monitoring  
+# Terminal 2: Start preemptive monitoring
 npm run monitor:preemptive
 ```
 
@@ -446,7 +446,7 @@ See the source code comments for detailed implementation guidance.
 For issues, questions, or feature requests:
 
 1. Check the troubleshooting section above
-2. Review the verbose logs for detailed error information  
+2. Review the verbose logs for detailed error information
 3. Consult the existing monitoring scripts for similar patterns
 4. Test with minimal configuration to isolate issues
 

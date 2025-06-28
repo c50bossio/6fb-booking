@@ -69,60 +69,60 @@ const rule = createRule({
     const options = context.options[0];
     const filename = context.getFilename();
     const sourceCode = context.getSourceCode();
-    
+
     // Skip excluded directories
     if (options.exclude.some((pattern: string) => filename.includes(pattern))) {
       return {};
     }
-    
+
     const directoryComponentCount: DirectoryComponentCount = {};
-    
+
     function getDirectory(filePath: string): string {
       return path.dirname(filePath);
     }
-    
+
     function getMaxForDirectory(directory: string): number {
       // Check for exact match first
       if ((options.directories as any)[directory] !== undefined) {
         return (options.directories as any)[directory];
       }
-      
+
       // Check for partial matches (subdirectories)
       for (const [configDir, max] of Object.entries(options.directories)) {
         if (directory.includes(configDir)) {
           return max as number;
         }
       }
-      
+
       return options.max;
     }
-    
+
     function trackComponent(componentName: string, node: TSESTree.Node, isExported: boolean) {
       if (options.countOnlyExported && !isExported) {
         return;
       }
-      
+
       const directory = getDirectory(filename);
-      
+
       if (!directoryComponentCount[directory]) {
         directoryComponentCount[directory] = {
           count: 0,
           components: [],
         };
       }
-      
+
       directoryComponentCount[directory].count++;
       directoryComponentCount[directory].components.push(componentName);
     }
-    
+
     let hasExportDefault = false;
     let hasNamedExports = false;
-    
+
     return {
       // Track exported components
       ExportNamedDeclaration(node) {
         hasNamedExports = true;
-        
+
         if (node.declaration) {
           if (node.declaration.type === 'FunctionDeclaration' && node.declaration.id) {
             const name = extractComponentName(node.declaration);
@@ -144,10 +144,10 @@ const rule = createRule({
           }
         }
       },
-      
+
       ExportDefaultDeclaration(node) {
         hasExportDefault = true;
-        
+
         if (node.declaration.type === 'FunctionDeclaration' ||
             node.declaration.type === 'ClassDeclaration') {
           const name = extractComponentName(node.declaration);
@@ -158,7 +158,7 @@ const rule = createRule({
           trackComponent(node.declaration.name, node, true);
         }
       },
-      
+
       // Track non-exported components if needed
       FunctionDeclaration(node) {
         if (!options.countOnlyExported && node.id) {
@@ -168,7 +168,7 @@ const rule = createRule({
           }
         }
       },
-      
+
       VariableDeclarator(node) {
         if (!options.countOnlyExported) {
           const name = extractComponentName(node);
@@ -177,7 +177,7 @@ const rule = createRule({
           }
         }
       },
-      
+
       ClassDeclaration(node) {
         if (!options.countOnlyExported && node.id) {
           const name = extractComponentName(node);
@@ -186,15 +186,15 @@ const rule = createRule({
           }
         }
       },
-      
+
       // Check limits at the end of file
       'Program:exit'() {
         for (const [directory, info] of Object.entries(directoryComponentCount)) {
           const maxComponents = getMaxForDirectory(directory);
-          
+
           if (info.count > maxComponents) {
             const relativeDir = path.relative(process.cwd(), directory);
-            
+
             context.report({
               node: sourceCode.ast,
               messageId: 'tooManyComponents',
@@ -204,7 +204,7 @@ const rule = createRule({
                 max: maxComponents,
               },
             });
-            
+
             // Provide additional context about which components are in the directory
             context.report({
               node: sourceCode.ast,

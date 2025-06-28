@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Test</title>
+</head>
+<body>
+    <h1>Test Login Page</h1>
+    <script>
+        console.log('Testing login page...');
+        fetch('http://localhost:3000/login')
+            .then(response => response.text())
+            .then(html => {
+                console.log('Response length:', html.length);
+                console.log('Has welcome:', html.includes('Welcome'));
+                console.log('Has form:', html.includes('form'));
+                console.log('Has input:', html.includes('input'));
+            })
+            .catch(err => console.error('Error:', err));
+    </script>
+</body>
+</html>

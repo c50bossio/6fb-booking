@@ -6,9 +6,11 @@ import os
 PORT = 8082
 DIRECTORY = "static"
 
+
 class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=DIRECTORY, **kwargs)
+
 
 print(f"🚀 Starting 6FB Dashboard UI server...")
 print(f"📁 Serving files from: {os.path.abspath(DIRECTORY)}")

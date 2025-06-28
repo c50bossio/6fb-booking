@@ -98,23 +98,23 @@ const rule = createRule({
     const options = context.options[0];
     const filename = context.getFilename();
     const detectedImplementations: Map<string, Set<string>> = new Map();
-    
+
     // Convert string patterns to RegExp objects
     const implementationPatterns: ImplementationPattern[] = options.patterns.map((p: any) => ({
       pattern: new RegExp(p.pattern),
       category: p.category,
       suggestion: p.suggestion,
     }));
-    
+
     function checkForMultipleImplementations(name: string, node: TSESTree.Node) {
       for (const { pattern, category, suggestion } of implementationPatterns) {
         if (pattern.test(name)) {
           if (!detectedImplementations.has(category)) {
             detectedImplementations.set(category, new Set());
           }
-          
+
           const implementations = detectedImplementations.get(category)!;
-          
+
           if (implementations.size > 0 && !implementations.has(name)) {
             const existing = Array.from(implementations)[0];
             context.report({
@@ -127,13 +127,13 @@ const rule = createRule({
               },
             });
           }
-          
+
           implementations.add(name);
           break;
         }
       }
     }
-    
+
     return {
       // Check function/class declarations
       FunctionDeclaration(node) {
@@ -141,37 +141,37 @@ const rule = createRule({
           checkForMultipleImplementations(node.id.name, node);
         }
       },
-      
+
       ClassDeclaration(node) {
         if (node.id?.name) {
           checkForMultipleImplementations(node.id.name, node);
         }
       },
-      
+
       // Check variable declarations
       VariableDeclarator(node) {
         if (node.id.type === 'Identifier') {
           checkForMultipleImplementations(node.id.name, node);
         }
       },
-      
+
       // Check imports if enabled
       ImportDeclaration(node) {
         if (!options.checkImports) return;
-        
+
         for (const specifier of node.specifiers) {
-          if (specifier.type === 'ImportSpecifier' || 
+          if (specifier.type === 'ImportSpecifier' ||
               specifier.type === 'ImportDefaultSpecifier') {
             const importedName = specifier.local.name;
             checkForMultipleImplementations(importedName, specifier);
           }
         }
       },
-      
+
       // Check exports if enabled
       ExportNamedDeclaration(node) {
         if (!options.checkExports) return;
-        
+
         if (node.declaration) {
           if (node.declaration.type === 'FunctionDeclaration' ||
               node.declaration.type === 'ClassDeclaration') {
@@ -187,20 +187,20 @@ const rule = createRule({
           }
         }
       },
-      
+
       // Check for Context.Provider usage
       JSXElement(node) {
         if (node.openingElement.name.type === 'JSXMemberExpression') {
           const object = node.openingElement.name.object;
           const property = node.openingElement.name.property;
-          
+
           if (object.type === 'JSXIdentifier' && property.type === 'JSXIdentifier' &&
               property.name === 'Provider') {
             checkForMultipleImplementations(object.name, node);
           }
         }
       },
-      
+
       // Report summary at the end of file
       'Program:exit'() {
         for (const [category, implementations] of detectedImplementations.entries()) {

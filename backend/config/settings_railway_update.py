@@ -5,7 +5,7 @@
             # Allow any Railway deployment URL
             logger.info(f"Allowing Railway origin: {origin}")
             return True
-            
+
         # Specific Railway URLs
         railway_urls = [
             "https://web-production-92a6c.up.railway.app",

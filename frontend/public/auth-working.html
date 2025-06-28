@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Working Authentication</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 40px;
+            background: #f3f4f6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 { color: #111827; margin-bottom: 24px; text-align: center; }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #374151;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input:focus {
+            outline: none;
+            border-color: #14b8a6;
+            box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #14b8a6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        button:hover { background: #0f766e; }
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 8px;
+            display: none;
+        }
+        .status.success {
+            background: #f0fdf4;
+            color: #065f46;
+            border: 1px solid #86efac;
+            display: block;
+        }
+        .status.error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+            display: block;
+        }
+        .status.info {
+            background: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+            display: block;
+        }
+        .quick-actions {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+        }
+        .action-btn {
+            background: #6b7280;
+            margin-top: 8px;
+        }
+        .action-btn:hover { background: #4b5563; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Working Authentication</h1>
+        <p style="text-align: center; color: #6b7280; margin-bottom: 24px;">
+            Login system that bypasses encryption issues
+        </p>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required
+                       placeholder="Your email" value="bossio@tomb45.com">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required
+                       placeholder="Your password">
+            </div>
+
+            <button type="submit" id="loginBtn">Login</button>
+        </form>
+
+        <div id="status" class="status"></div>
+
+        <div class="quick-actions">
+            <h3 style="margin: 0 0 12px 0; font-size: 18px;">Working Test Accounts</h3>
+            <button class="action-btn" onclick="quickLogin('admin@6fb.com', 'admin123')">
+                Admin Account
+            </button>
+            <button class="action-btn" onclick="quickLogin('test@example.com', 'testpassword123')">
+                Test Account
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('loginForm');
+        const statusDiv = document.getElementById('status');
+        const loginBtn = document.getElementById('loginBtn');
+
+        function updateStatus(message, type = 'info') {
+            statusDiv.className = `status ${type}`;
+            statusDiv.innerHTML = message;
+        }
+
+        function quickLogin(email, password) {
+            document.getElementById('email').value = email;
+            document.getElementById('password').value = password;
+            form.dispatchEvent(new Event('submit'));
+        }
+
+        async function performLogin(email, password) {
+            updateStatus('🔄 Logging in...', 'info');
+
+            try {
+                // Step 1: Login
+                const loginResponse = await fetch('/api/proxy/api/v1/auth/token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        username: email,
+                        password: password
+                    })
+                });
+
+                if (!loginResponse.ok) {
+                    const error = await loginResponse.json();
+                    throw new Error(error.message || 'Login failed');
+                }
+
+                const loginData = await loginResponse.json();
+
+                // Step 2: Store credentials manually with fallback user data
+                const userFallback = {
+                    id: loginData.user.id,
+                    email: email, // Use the email we logged in with
+                    full_name: loginData.user.full_name || "User",
+                    first_name: loginData.user.first_name || loginData.user.full_name?.split(' ')[0] || "User",
+                    last_name: loginData.user.last_name || loginData.user.full_name?.split(' ').slice(1).join(' ') || "",
+                    role: loginData.user.role,
+                    permissions: loginData.user.permissions || [],
+                    primary_location_id: loginData.user.primary_location_id
+                };
+
+                localStorage.setItem('access_token', loginData.access_token);
+                localStorage.setItem('user', JSON.stringify(userFallback));
+
+                // Step 3: Set cookie for backend
+                document.cookie = `access_token=${loginData.access_token}; path=/; max-age=86400; SameSite=Lax`;
+
+                // Step 4: Success message
+                const successMessage = `
+                    <h3>✅ Login Successful!</h3>
+                    <p><strong>Name:</strong> ${userFallback.full_name}</p>
+                    <p><strong>Email:</strong> ${userFallback.email}</p>
+                    <p><strong>Role:</strong> ${userFallback.role}</p>
+                    <p><strong>User ID:</strong> ${userFallback.id}</p>
+
+                    <div style="margin-top: 16px;">
+                        <button onclick="testDashboard()"
+                                style="background: #14b8a6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
+                            Test Dashboard
+                        </button>
+                        <button onclick="window.location.href='/dashboard'"
+                                style="background: #059669; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; margin-left: 8px;">
+                            Go to Dashboard
+                        </button>
+                    </div>
+                `;
+
+                updateStatus(successMessage, 'success');
+
+            } catch (error) {
+                updateStatus(`❌ Error: ${error.message}`, 'error');
+                console.error('Login error:', error);
+            }
+        }
+
+        async function testDashboard() {
+            updateStatus('🔄 Testing dashboard access...', 'info');
+
+            try {
+                const token = localStorage.getItem('access_token');
+
+                // Test some API endpoints that the dashboard uses
+                const tests = [
+                    { name: 'Health Check', url: '/api/proxy/api/v1/health' },
+                    { name: 'User Profile', url: '/api/proxy/api/v1/users/profile' },
+                    { name: 'Locations', url: '/api/proxy/api/v1/locations' }
+                ];
+
+                let results = '<h4>Dashboard API Tests:</h4>';
+
+                for (const test of tests) {
+                    try {
+                        const response = await fetch(test.url, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Cookie': document.cookie
+                            }
+                        });
+
+                        if (response.ok) {
+                            results += `<p style="color: #10b981;">✅ ${test.name}: Working</p>`;
+                        } else {
+                            results += `<p style="color: #f59e0b;">⚠️ ${test.name}: ${response.status}</p>`;
+                        }
+                    } catch (error) {
+                        results += `<p style="color: #ef4444;">❌ ${test.name}: ${error.message}</p>`;
+                    }
+                }
+
+                results += `
+                    <div style="margin-top: 16px;">
+                        <button onclick="window.location.href='/dashboard'"
+                                style="background: #059669; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
+                            Go to Dashboard Now
+                        </button>
+                    </div>
+                `;
+
+                updateStatus(results, 'success');
+
+            } catch (error) {
+                updateStatus(`❌ Dashboard test failed: ${error.message}`, 'error');
+            }
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Processing...';
+
+            try {
+                await performLogin(email, password);
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login';
+            }
+        });
+    </script>
+</body>
+</html>

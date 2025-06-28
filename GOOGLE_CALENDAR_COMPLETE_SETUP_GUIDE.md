@@ -8,7 +8,7 @@ The Google Calendar integration for the 6FB Booking Platform is **fully implemen
 
 ### ✅ **Backend Implementation (100% Complete)**
 - OAuth 2.0 authentication flow
-- Full Google Calendar API integration 
+- Full Google Calendar API integration
 - Database schema with sync tracking
 - Comprehensive API endpoints
 - Error handling and retry logic
@@ -50,12 +50,12 @@ The Google Calendar integration for the 6FB Booking Platform is **fully implemen
    # 3. Choose "Web application"
    # 4. Add authorized redirect URIs:
    ```
-   
+
    **Development:**
    ```
    http://localhost:8000/api/v1/google-calendar/oauth/callback
    ```
-   
+
    **Production (replace with your domain):**
    ```
    https://yourdomain.com/api/v1/google-calendar/oauth/callback
@@ -151,7 +151,7 @@ Reminders: Configurable (default: 1 day + 15 minutes before)
 
 Currently supports major US timezones:
 - Eastern Time (ET)
-- Central Time (CT) 
+- Central Time (CT)
 - Mountain Time (MT)
 - Pacific Time (PT)
 - Arizona Time (MST)
@@ -209,7 +209,7 @@ Detailed logging includes:
 
 ```bash
 GOOGLE_CALENDAR_CLIENT_ID=your_production_client_id
-GOOGLE_CALENDAR_CLIENT_SECRET=your_production_client_secret  
+GOOGLE_CALENDAR_CLIENT_SECRET=your_production_client_secret
 GOOGLE_CALENDAR_REDIRECT_URI=https://yourdomain.com/api/v1/google-calendar/oauth/callback
 FEATURE_GOOGLE_CALENDAR_SYNC=true
 ```
@@ -237,7 +237,7 @@ For production use:
 
 ```
 GET  /api/v1/google-calendar/status           - Check connection status
-GET  /api/v1/google-calendar/connect          - Start OAuth flow  
+GET  /api/v1/google-calendar/connect          - Start OAuth flow
 GET  /api/v1/google-calendar/oauth/callback   - Handle OAuth callback
 DELETE /api/v1/google-calendar/disconnect     - Disconnect calendar
 GET  /api/v1/google-calendar/settings         - Get sync preferences
@@ -258,7 +258,7 @@ GET  /api/v1/google-calendar/sync-logs        - View sync history
 The Google Calendar integration is **production-ready** and provides:
 
 - **Seamless Integration**: Automatic, real-time synchronization
-- **User Control**: Comprehensive customization options  
+- **User Control**: Comprehensive customization options
 - **Enterprise Ready**: Secure, scalable, and maintainable
 - **Developer Friendly**: Well-documented with testing framework
 
@@ -266,7 +266,7 @@ Once you complete the Google Cloud Console setup and environment configuration, 
 
 ---
 
-**Need Help?** 
+**Need Help?**
 - Check the test script output for specific issues
 - Review backend logs for detailed error messages
 - Ensure all environment variables are set correctly

@@ -77,12 +77,12 @@ def _is_railway_origin(self, origin: str) -> bool:
 async def handle_options(path: str, request: Request):
     """Handle CORS preflight requests with proper origin validation"""
     origin = request.headers.get("origin", "")
-    
+
     # Railway domain special handling
     if (".railway.app" in origin or ".up.railway.app" in origin):
         allowed_origin = origin
         logger.info(f"OPTIONS: Allowed Railway origin {origin}")
-    
+
     return Response(
         headers={
             "Access-Control-Allow-Origin": allowed_origin,
@@ -174,7 +174,7 @@ async def cors_test(request: Request):
 
 The following Railway environment variables are automatically detected:
 - `RAILWAY_STATIC_URL`
-- `RAILWAY_PUBLIC_DOMAIN`  
+- `RAILWAY_PUBLIC_DOMAIN`
 - `RAILWAY_ADDITIONAL_URLS`
 
 ## Current Railway URL Support

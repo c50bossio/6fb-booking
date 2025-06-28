@@ -102,8 +102,8 @@ Each interactive element shows realistic preview of full functionality:
 #### **Event Handlers**
 ```typescript
 const handleCheckIn = (appointmentId: number) => {
-  setAppointments(prev => prev.map(apt => 
-    apt.id === appointmentId 
+  setAppointments(prev => prev.map(apt =>
+    apt.id === appointmentId
       ? { ...apt, status: 'in_progress' }
       : apt
   ))

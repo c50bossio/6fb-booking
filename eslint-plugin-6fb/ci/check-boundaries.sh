@@ -67,7 +67,7 @@ for file in $(find packages/frontend packages/backend packages/mobile -name "*.t
     if [[ $file == *node_modules* ]]; then
         continue
     fi
-    
+
     # Check for duplicated type definitions
     if grep -E "^(export )?(interface|type|enum) (User|Appointment|Payment|Booking|Barber|Client)" "$file" 2>/dev/null; then
         if [[ $file != *packages/shared* ]]; then

@@ -124,7 +124,7 @@ function generateBookingData() {
     const cancelled = Math.floor((total - completed) * 0.6)
     const no_show = Math.floor((total - completed - cancelled) * 0.5)
     const pending = total - completed - cancelled - no_show
-    
+
     data.push({
       date: date.toISOString().split('T')[0],
       total,
@@ -140,14 +140,14 @@ function generateBookingData() {
 function generatePeakHoursData() {
   const data = []
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-  
+
   days.forEach(day => {
     for (let hour = 8; hour < 20; hour++) {
       const isWeekend = day === 'Saturday' || day === 'Sunday'
       const isPeakHour = (hour >= 10 && hour <= 12) || (hour >= 17 && hour <= 19)
       const baseBookings = isWeekend ? 8 : 5
       const peakMultiplier = isPeakHour ? 2.5 : 1
-      
+
       data.push({
         day,
         hour,
@@ -155,7 +155,7 @@ function generatePeakHoursData() {
       })
     }
   })
-  
+
   return data
 }
 
@@ -164,7 +164,7 @@ beforeEach(() => {
   global.fetch = jest.fn((url) => {
     const endpoint = url.toString().split('?')[0].split('/').pop()
     const data = mockAnalyticsData[endpoint as keyof typeof mockAnalyticsData]
-    
+
     return Promise.resolve({
       ok: true,
       json: () => Promise.resolve(data || {})
@@ -206,14 +206,14 @@ describe('Analytics Dashboard Integration', () => {
 
     // Switch to bookings tab
     await user.click(screen.getByRole('tab', { name: /bookings/i }))
-    
+
     await waitFor(() => {
       expect(screen.getByText('Booking Status Trends')).toBeInTheDocument()
     })
 
     // Switch to services tab
     await user.click(screen.getByRole('tab', { name: /services/i }))
-    
+
     await waitFor(() => {
       expect(screen.getByText('Premium Cut')).toBeInTheDocument()
       expect(screen.getByText('Classic Cut')).toBeInTheDocument()
@@ -221,7 +221,7 @@ describe('Analytics Dashboard Integration', () => {
 
     // Switch to team comparison
     await user.click(screen.getByRole('tab', { name: /team/i }))
-    
+
     await waitFor(() => {
       expect(screen.getByText('John Smith')).toBeInTheDocument()
       expect(screen.getByText('$8,750')).toBeInTheDocument()
@@ -263,7 +263,7 @@ describe('Analytics Dashboard Integration', () => {
 
     // Simulate WebSocket message
     const ws = new MockWebSocket('ws://localhost:8000')
-    
+
     // Send analytics update
     setTimeout(() => {
       if (ws.onmessage) {
@@ -289,9 +289,9 @@ describe('Analytics Dashboard Integration', () => {
 
   it('exports data successfully', async () => {
     const user = userEvent.setup()
-    
+
     // Mock successful export
-    global.fetch = jest.fn(() => 
+    global.fetch = jest.fn(() =>
       Promise.resolve({
         ok: true,
         blob: () => Promise.resolve(new Blob(['csv data'], { type: 'text/csv' }))
@@ -300,7 +300,7 @@ describe('Analytics Dashboard Integration', () => {
 
     // Mock URL.createObjectURL
     global.URL.createObjectURL = jest.fn(() => 'blob:mock-url')
-    
+
     renderWithProviders(<AnalyticsDashboard />)
 
     // Wait for load
@@ -327,7 +327,7 @@ describe('Analytics Dashboard Integration', () => {
 
   it('handles errors gracefully', async () => {
     // Mock API error
-    global.fetch = jest.fn(() => 
+    global.fetch = jest.fn(() =>
       Promise.reject(new Error('Network error'))
     ) as jest.Mock
 
@@ -342,7 +342,7 @@ describe('Analytics Dashboard Integration', () => {
     global.fetch = jest.fn((url) => {
       const endpoint = url.toString().split('?')[0].split('/').pop()
       const data = mockAnalyticsData[endpoint as keyof typeof mockAnalyticsData]
-      
+
       return Promise.resolve({
         ok: true,
         json: () => Promise.resolve(data || {})
@@ -371,7 +371,7 @@ describe('Analytics Dashboard Integration', () => {
 
     // Go to services tab
     await user.click(screen.getByRole('tab', { name: /services/i }))
-    
+
     await waitFor(() => {
       expect(screen.getByText('Premium Cut')).toBeInTheDocument()
     })
@@ -381,13 +381,13 @@ describe('Analytics Dashboard Integration', () => {
 
     // Data should still be there (no refetch)
     expect(screen.getByText('$125,000')).toBeInTheDocument()
-    
+
     // Verify no additional API calls were made
     const fetchCalls = (global.fetch as jest.Mock).mock.calls.length
-    
+
     // Switch tabs again
     await user.click(screen.getByRole('tab', { name: /bookings/i }))
-    
+
     // No new API calls should have been made
     expect((global.fetch as jest.Mock).mock.calls.length).toBe(fetchCalls)
   })

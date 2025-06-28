@@ -4,7 +4,7 @@
 
 1. **Removed duplicate health endpoint** from `main.py` (line 385-409)
    - The duplicate `/health` endpoint was causing conflicts
-   
+
 2. **Added redirect** from `/health` to `/api/v1/health` for backward compatibility
    - Status code 301 (Permanent Redirect)
    - This ensures existing monitoring tools continue to work

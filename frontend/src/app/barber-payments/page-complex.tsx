@@ -244,7 +244,7 @@ export default function BarberPaymentsPage() {
                 <p className="text-xs text-gray-400">Booth Rent & Commission Tracking</p>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <button
                 onClick={fetchBarberPaymentData}
@@ -304,7 +304,7 @@ export default function BarberPaymentsPage() {
                     <p className="text-sm font-medium text-gray-400">Total Barbers</p>
                     <p className="text-2xl font-bold text-white">{barberPayments.length}</p>
                     <p className="text-xs text-gray-500 mt-1">
-                      {barberPayments.filter(b => b.payment_type === 'commission').length} commission • 
+                      {barberPayments.filter(b => b.payment_type === 'commission').length} commission •
                       {barberPayments.filter(b => b.payment_type === 'booth_rent').length} booth rent
                     </p>
                   </div>
@@ -371,12 +371,12 @@ export default function BarberPaymentsPage() {
                       <div>
                         <h3 className="text-lg font-semibold text-white">{barber.barber_name}</h3>
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          barber.payment_type === 'commission' 
+                          barber.payment_type === 'commission'
                             ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                             : 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
                         }`}>
-                          {barber.payment_type === 'commission' 
-                            ? `${barber.commission_rate}% Commission` 
+                          {barber.payment_type === 'commission'
+                            ? `${barber.commission_rate}% Commission`
                             : `$${barber.booth_rent_amount} ${barber.booth_rent_frequency}`
                           }
                         </span>
@@ -472,14 +472,14 @@ export default function BarberPaymentsPage() {
                         <span className="text-gray-400">Total Revenue</span>
                         <span className="text-white font-medium">{formatCurrency(totalRevenue)}</span>
                       </div>
-                      
+
                       {barber.payment_type === 'commission' && (
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-400">Pending Payout</span>
                           <span className="text-yellow-400 font-medium">{formatCurrency(pendingCommissions)}</span>
                         </div>
                       )}
-                      
+
                       {barber.payment_type === 'booth_rent' && nextRent && (
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-400">Next Rent Due</span>
@@ -574,7 +574,7 @@ export default function BarberPaymentsPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            split.status === 'processed' 
+                            split.status === 'processed'
                               ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                               : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
                           }`}>
@@ -692,7 +692,7 @@ export default function BarberPaymentsPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              payment.status === 'paid' 
+                              payment.status === 'paid'
                                 ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                                 : payment.status === 'pending'
                                 ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
@@ -780,7 +780,7 @@ export default function BarberPaymentsPage() {
                     {boothRentPayments.map((payment) => {
                       const barber = barberPayments.find(b => b.barber_id === payment.barber_id)
                       const isPastDue = new Date(payment.due_date) < new Date() && payment.status === 'pending'
-                      
+
                       return (
                         <tr key={payment.id} className="hover:bg-gray-700/50 transition-colors">
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -796,7 +796,7 @@ export default function BarberPaymentsPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              payment.status === 'paid' 
+                              payment.status === 'paid'
                                 ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                                 : isPastDue
                                 ? 'bg-red-500/20 text-red-400 border border-red-500/30'

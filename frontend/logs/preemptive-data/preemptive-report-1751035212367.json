@@ -1,0 +1,82 @@
+{
+  "timestamp": 1751035212367,
+  "duration": 4986,
+  "summary": {
+    "predictions": 0,
+    "anomalies": 0,
+    "patterns": 3,
+    "remediations": 0
+  },
+  "riskAssessment": {
+    "overall": 0.3903472174580892,
+    "factors": {
+      "memory": 0.9571488698323569,
+      "cpu": 0.1553,
+      "disk": 0.8,
+      "network": 0,
+      "build": 0,
+      "logs": 0,
+      "dependencies": 0
+    }
+  },
+  "activeAlerts": [
+    {
+      "id": "pattern_1751035210295_96arm091d",
+      "type": "pattern",
+      "timestamp": 1751035210295,
+      "severity": "warning",
+      "message": "Error spike detected: 13 errors in recent logs",
+      "data": {
+        "type": "error_spike",
+        "severity": "warning",
+        "count": 13,
+        "file": "/Users/bossio/6fb-booking/frontend/logs/troubleshoot-2025-06-27.log",
+        "message": "Error spike detected: 13 errors in recent logs"
+      }
+    },
+    {
+      "id": "pattern_1751035210295_ehmn6s727",
+      "type": "pattern",
+      "timestamp": 1751035210295,
+      "severity": "warning",
+      "message": "Anomalous logging patterns detected",
+      "data": {
+        "type": "log_anomaly",
+        "severity": "warning",
+        "details": [
+          "High frequency logging detected"
+        ],
+        "file": "/Users/bossio/6fb-booking/frontend/logs/troubleshoot-2025-06-27.log",
+        "message": "Anomalous logging patterns detected"
+      }
+    },
+    {
+      "id": "pattern_1751035210295_upz6u36h6",
+      "type": "pattern",
+      "timestamp": 1751035210295,
+      "severity": "warning",
+      "message": "Error spike detected: 43 errors in recent logs",
+      "data": {
+        "type": "error_spike",
+        "severity": "warning",
+        "count": 43,
+        "file": "/Users/bossio/6fb-booking/frontend/logs/dev-startup-2025-06-27.log",
+        "message": "Error spike detected: 43 errors in recent logs"
+      }
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "high",
+      "category": "performance",
+      "action": "Optimize memory usage or restart development server",
+      "reason": "Memory usage is at 95.7%"
+    },
+    {
+      "priority": "high",
+      "category": "maintenance",
+      "action": "Clean up disk space (logs, cache, build artifacts)",
+      "reason": "Disk usage is at 80.0%"
+    }
+  ]
+}

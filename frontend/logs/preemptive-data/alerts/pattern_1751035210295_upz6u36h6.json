@@ -1,0 +1,14 @@
+{
+  "id": "pattern_1751035210295_upz6u36h6",
+  "type": "pattern",
+  "timestamp": 1751035210295,
+  "severity": "warning",
+  "message": "Error spike detected: 43 errors in recent logs",
+  "data": {
+    "type": "error_spike",
+    "severity": "warning",
+    "count": 43,
+    "file": "/Users/bossio/6fb-booking/frontend/logs/dev-startup-2025-06-27.log",
+    "message": "Error spike detected: 43 errors in recent logs"
+  }
+}

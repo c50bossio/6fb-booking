@@ -6,6 +6,7 @@
 import apiClient from './client'
 import type { ApiResponse, PaginatedResponse } from './client'
 import { TimezoneHelper } from '../utils/datetime'
+import { withCircuitBreaker, circuitBreakers } from '../utils/circuit-breaker'
 
 // === TYPE DEFINITIONS ===
 
@@ -275,6 +276,14 @@ class CalendarWebSocket {
     // Don't reconnect if already connected or connecting
     if (this.ws?.readyState === WebSocket.OPEN || this.ws?.readyState === WebSocket.CONNECTING) return
 
+    // Circuit breaker protection for WebSocket connections
+    const breakerState = circuitBreakers.websocket.getState()
+    if (breakerState.state === 'OPEN') {
+      console.warn(`[WebSocket] Circuit breaker OPEN - connection blocked until ${new Date(breakerState.nextRetryTime!)}`)
+      this.setConnectionStatus('error', 'Circuit breaker protection active')
+      return
+    }
+
     this.setConnectionStatus('connecting')
 
     const token = localStorage.getItem('access_token')
@@ -486,81 +495,15 @@ class CalendarService {
   private initialize(): void {
     if (this.isInitialized) return
 
-    // Auto-connect WebSocket
-    this.websocket.connect()
+    console.log('[CalendarService] Initializing WITHOUT WebSocket for stability...')
 
-    // Set up real-time event handlers for appointments
-    this.websocket.subscribe('appointment_created', (data) => {
-      console.log('Real-time: Appointment created', data)
-      this.cache.invalidate('appointments')
-      this.cache.invalidate('calendar_events')
-      this.emit('appointment_created', data)
-      this.emit('calendar_update', { type: 'appointment_created', data })
-    })
+    // WebSocket connection DISABLED to prevent infinite reconnection loops
+    // this.websocket.connect()
 
-    this.websocket.subscribe('appointment_updated', (data) => {
-      console.log('Real-time: Appointment updated', data)
-      this.cache.invalidate('appointments')
-      this.cache.invalidate('calendar_events')
-      this.emit('appointment_updated', data)
-      this.emit('calendar_update', { type: 'appointment_updated', data })
-    })
+    // All WebSocket event handlers DISABLED for stability
+    // Real-time updates temporarily disabled until system stabilizes
 
-    this.websocket.subscribe('appointment_deleted', (data) => {
-      console.log('Real-time: Appointment deleted', data)
-      this.cache.invalidate('appointments')
-      this.cache.invalidate('calendar_events')
-      this.emit('appointment_deleted', data)
-      this.emit('calendar_update', { type: 'appointment_deleted', data })
-    })
-
-    this.websocket.subscribe('appointment_cancelled', (data) => {
-      console.log('Real-time: Appointment cancelled', data)
-      this.cache.invalidate('appointments')
-      this.cache.invalidate('calendar_events')
-      this.emit('appointment_cancelled', data)
-      this.emit('calendar_update', { type: 'appointment_cancelled', data })
-    })
-
-    this.websocket.subscribe('appointment_status_changed', (data) => {
-      console.log('Real-time: Appointment status changed', data)
-      this.cache.invalidate('appointments')
-      this.cache.invalidate('calendar_events')
-      this.emit('appointment_status_changed', data)
-      this.emit('calendar_update', { type: 'appointment_status_changed', data })
-    })
-
-    // Set up real-time event handlers for availability
-    this.websocket.subscribe('availability_created', (data) => {
-      console.log('Real-time: Availability created', data)
-      this.cache.invalidate('availability')
-      this.cache.invalidate('calendar_events')
-      this.emit('availability_created', data)
-      this.emit('calendar_update', { type: 'availability_created', data })
-    })
-
-    this.websocket.subscribe('availability_updated', (data) => {
-      console.log('Real-time: Availability updated', data)
-      this.cache.invalidate('availability')
-      this.cache.invalidate('calendar_events')
-      this.emit('availability_updated', data)
-      this.emit('calendar_update', { type: 'availability_updated', data })
-    })
-
-    this.websocket.subscribe('availability_deleted', (data) => {
-      console.log('Real-time: Availability deleted', data)
-      this.cache.invalidate('availability')
-      this.cache.invalidate('calendar_events')
-      this.emit('availability_deleted', data)
-      this.emit('calendar_update', { type: 'availability_deleted', data })
-    })
-
-    // Handle connection status changes
-    this.websocket.subscribe('connection_status', (statusEvent: WebSocketStatusEvent) => {
-      console.log('WebSocket connection status changed:', statusEvent)
-      this.emit('connection_status', statusEvent)
-    })
-
+    console.log('[CalendarService] Initialization complete (WebSocket disabled)')
     this.isInitialized = true
   }
 
@@ -600,38 +543,41 @@ class CalendarService {
       return { data: cached }
     }
 
-    const params = new URLSearchParams({
-      start_date: startDate.toISOString().split('T')[0],
-      end_date: endDate.toISOString().split('T')[0],
-      timezone: options?.timezone || TimezoneHelper.getUserTimezone()
+    // Circuit breaker protection for API calls
+    return await withCircuitBreaker('getCalendarEvents', async () => {
+      const params = new URLSearchParams({
+        start_date: startDate.toISOString().split('T')[0],
+        end_date: endDate.toISOString().split('T')[0],
+        timezone: options?.timezone || TimezoneHelper.getUserTimezone()
+      })
+
+      if (filters?.barberIds?.length) {
+        params.append('barber_ids', filters.barberIds.join(','))
+      }
+      if (filters?.locationIds?.length) {
+        params.append('location_ids', filters.locationIds.join(','))
+      }
+      if (filters?.serviceIds?.length) {
+        params.append('service_ids', filters.serviceIds.join(','))
+      }
+      if (filters?.statuses?.length) {
+        params.append('statuses', filters.statuses.join(','))
+      }
+      if (filters?.types?.length) {
+        params.append('types', filters.types.join(','))
+      }
+      if (filters?.clientSearch) {
+        params.append('client_search', filters.clientSearch)
+      }
+
+      const response = await apiClient.get(`/calendar/events?${params}`)
+
+      // The response should already be in CalendarEvent format from the backend
+      const events = response.data
+
+      this.cache.set(cacheKey, events)
+      return { data: events }
     })
-
-    if (filters?.barberIds?.length) {
-      params.append('barber_ids', filters.barberIds.join(','))
-    }
-    if (filters?.locationIds?.length) {
-      params.append('location_ids', filters.locationIds.join(','))
-    }
-    if (filters?.serviceIds?.length) {
-      params.append('service_ids', filters.serviceIds.join(','))
-    }
-    if (filters?.statuses?.length) {
-      params.append('statuses', filters.statuses.join(','))
-    }
-    if (filters?.types?.length) {
-      params.append('types', filters.types.join(','))
-    }
-    if (filters?.clientSearch) {
-      params.append('client_search', filters.clientSearch)
-    }
-
-    const response = await apiClient.get(`/calendar/events?${params}`)
-
-    // The response should already be in CalendarEvent format from the backend
-    const events = response.data
-
-    this.cache.set(cacheKey, events)
-    return { data: events }
   }
 
   private transformToCalendarEvent(item: any): CalendarEvent {

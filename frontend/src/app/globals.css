@@ -18,7 +18,7 @@
     background-color: #ffffff !important; /* White background */
     border: 1px solid #d1d5db !important; /* Light gray border */
   }
-  
+
   /* Enhanced placeholder visibility with high specificity */
   body input::placeholder,
   body textarea::placeholder,
@@ -53,7 +53,7 @@
     color: #6b7280 !important; /* Medium gray text for disabled */
     cursor: not-allowed !important;
   }
-  
+
   /* Dark theme overrides with high specificity */
   .dark body input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
   .dark body textarea,
@@ -65,7 +65,7 @@
     background-color: #374151 !important; /* Dark gray background */
     border-color: #4b5563 !important; /* Medium gray border */
   }
-  
+
   .dark body input::placeholder,
   .dark body textarea::placeholder,
   .dark input::placeholder,
@@ -82,7 +82,7 @@
     border-color: #10b981 !important; /* Green focus for dark theme */
     outline-color: #10b981 !important;
   }
-  
+
   /* Charcoal theme overrides with high specificity */
   .charcoal body input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
   .charcoal body textarea,
@@ -94,7 +94,7 @@
     background-color: #404040 !important; /* Medium gray background */
     border-color: #525252 !important; /* Lighter gray border */
   }
-  
+
   .charcoal body input::placeholder,
   .charcoal body textarea::placeholder,
   .charcoal input::placeholder,
@@ -123,7 +123,7 @@
     background-color: #faf9f6 !important; /* Warm white background */
     border-color: #d1d5db !important; /* Light gray border */
   }
-  
+
   .soft-light body input::placeholder,
   .soft-light body textarea::placeholder,
   .soft-light input::placeholder,

@@ -1,0 +1,433 @@
+{
+  "startTime": "2025-06-27T01:50:56.723Z",
+  "severity": "quick",
+  "dryRun": true,
+  "phases": {
+    "phase1": {
+      "name": "Pre-flight Checks",
+      "issues": [],
+      "fixes": []
+    },
+    "phase2": {
+      "name": "Network Diagnostics",
+      "issues": [
+        "Fix DNS resolution for localhost",
+        "Fix DNS resolution for 127.0.0.1",
+        "Fix DNS resolution for ::1"
+      ],
+      "fixes": [],
+      "diagnostics": {
+        "dns": {
+          "localhost": {
+            "description": "localhost resolution",
+            "success": false,
+            "output": "Server:\t\t1.1.1.1\nAddress:\t1.1.1.1#53\n\n** server can't find localhost: NXDOMAIN",
+            "error": "Command failed: nslookup localhost\n"
+          },
+          "127.0.0.1": {
+            "description": "loopback IP",
+            "success": false,
+            "output": "Server:\t\t1.1.1.1\nAddress:\t1.1.1.1#53\n\n** server can't find 1.0.0.127.in-addr.arpa: NXDOMAIN",
+            "error": "Command failed: nslookup 127.0.0.1\n"
+          },
+          "::1": {
+            "description": "IPv6 loopback",
+            "success": false,
+            "output": "Server:\t\t1.1.1.1\nAddress:\t1.1.1.1#53\n\n** server can't find 1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa: NXDOMAIN",
+            "error": "Command failed: nslookup ::1\n"
+          }
+        },
+        "network": {
+          "interfaces": {
+            "lo0": [
+              {
+                "address": "127.0.0.1",
+                "netmask": "255.0.0.0",
+                "family": "IPv4",
+                "mac": "00:00:00:00:00:00",
+                "internal": true,
+                "cidr": "127.0.0.1/8"
+              },
+              {
+                "address": "::1",
+                "netmask": "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
+                "family": "IPv6",
+                "mac": "00:00:00:00:00:00",
+                "internal": true,
+                "cidr": "::1/128",
+                "scopeid": 0
+              },
+              {
+                "address": "fe80::1",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "00:00:00:00:00:00",
+                "internal": true,
+                "cidr": "fe80::1/64",
+                "scopeid": 1
+              }
+            ],
+            "en0": [
+              {
+                "address": "fe80::81b:f243:28f6:f277",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "42:c8:03:6d:83:7e",
+                "internal": false,
+                "cidr": "fe80::81b:f243:28f6:f277/64",
+                "scopeid": 14
+              },
+              {
+                "address": "172.18.170.41",
+                "netmask": "255.255.255.0",
+                "family": "IPv4",
+                "mac": "42:c8:03:6d:83:7e",
+                "internal": false,
+                "cidr": "172.18.170.41/24"
+              }
+            ],
+            "awdl0": [
+              {
+                "address": "fe80::603a:ffff:fe3b:5ad9",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "62:3a:ff:3b:5a:d9",
+                "internal": false,
+                "cidr": "fe80::603a:ffff:fe3b:5ad9/64",
+                "scopeid": 19
+              }
+            ],
+            "utun0": [
+              {
+                "address": "fe80::7dc0:6f7e:dec8:c63f",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "00:00:00:00:00:00",
+                "internal": false,
+                "cidr": "fe80::7dc0:6f7e:dec8:c63f/64",
+                "scopeid": 20
+              }
+            ],
+            "llw0": [
+              {
+                "address": "fe80::603a:ffff:fe3b:5ad9",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "62:3a:ff:3b:5a:d9",
+                "internal": false,
+                "cidr": "fe80::603a:ffff:fe3b:5ad9/64",
+                "scopeid": 21
+              }
+            ],
+            "utun1": [
+              {
+                "address": "fe80::cb35:9434:ad10:87af",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "00:00:00:00:00:00",
+                "internal": false,
+                "cidr": "fe80::cb35:9434:ad10:87af/64",
+                "scopeid": 22
+              }
+            ],
+            "utun2": [
+              {
+                "address": "fe80::6025:c5c2:ecb7:a740",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "00:00:00:00:00:00",
+                "internal": false,
+                "cidr": "fe80::6025:c5c2:ecb7:a740/64",
+                "scopeid": 23
+              }
+            ],
+            "utun3": [
+              {
+                "address": "fe80::ce81:b1c:bd2c:69e",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "00:00:00:00:00:00",
+                "internal": false,
+                "cidr": "fe80::ce81:b1c:bd2c:69e/64",
+                "scopeid": 24
+              }
+            ],
+            "utun4": [
+              {
+                "address": "fe80::202e:69e3:f4c5:69ad",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "00:00:00:00:00:00",
+                "internal": false,
+                "cidr": "fe80::202e:69e3:f4c5:69ad/64",
+                "scopeid": 25
+              }
+            ],
+            "utun5": [
+              {
+                "address": "fe80::2ea4:1360:15ff:4dcc",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "00:00:00:00:00:00",
+                "internal": false,
+                "cidr": "fe80::2ea4:1360:15ff:4dcc/64",
+                "scopeid": 26
+              }
+            ],
+            "utun6": [
+              {
+                "address": "fe80::92b:5efd:ade6:2fc1",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "00:00:00:00:00:00",
+                "internal": false,
+                "cidr": "fe80::92b:5efd:ade6:2fc1/64",
+                "scopeid": 27
+              }
+            ],
+            "utun7": [
+              {
+                "address": "fe80::ba84:ab33:a9b0:ee28",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "00:00:00:00:00:00",
+                "internal": false,
+                "cidr": "fe80::ba84:ab33:a9b0:ee28/64",
+                "scopeid": 28
+              }
+            ]
+          },
+          "loopbackAvailable": true
+        },
+        "ports": {
+          "3000": {
+            "inUse": false,
+            "processInfo": null,
+            "connectable": false,
+            "error": ""
+          },
+          "3001": {
+            "inUse": false,
+            "processInfo": null,
+            "connectable": false,
+            "error": ""
+          },
+          "8000": {
+            "inUse": "COMMAND     PID   USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\npython3.1 49315 bossio    3u  IPv4 0x461ce53496fa2e58      0t0  TCP *:irdmi (LISTEN)\nGoogle    88266 bossio   34u  IPv4 0x25ba2a8e902d3afa      0t0  TCP localhost:50613->localhost:irdmi (ESTABLISHED)\nGoogle    88266 bossio   41u  IPv4 0x840e1b892c75745e      0t0  TCP localhost:50623->localhost:irdmi (ESTABLISHED)",
+            "processInfo": "COMMAND     PID   USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\npython3.1 49315 bossio    3u  IPv4 0x461ce53496fa2e58      0t0  TCP *:irdmi (LISTEN)\nGoogle    88266 bossio   34u  IPv4 0x25ba2a8e902d3afa      0t0  TCP localhost:50613->localhost:irdmi (ESTABLISHED)\nGoogle    88266 bossio   41u  IPv4 0x840e1b892c75745e      0t0  TCP localhost:50623->localhost:irdmi (ESTABLISHED)",
+            "connectable": true,
+            "error": null
+          },
+          "8001": {
+            "inUse": "COMMAND     PID   USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\npython3.1 50416 bossio    4u  IPv6 0x6cdfc71f95ed04c6      0t0  TCP *:vcom-tunnel (LISTEN)",
+            "processInfo": "COMMAND     PID   USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\npython3.1 50416 bossio    4u  IPv6 0x6cdfc71f95ed04c6      0t0  TCP *:vcom-tunnel (LISTEN)",
+            "connectable": true,
+            "error": null
+          },
+          "8080": {
+            "inUse": "COMMAND     PID   USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\npython3.1 42216 bossio    3u  IPv4 0xf25eac851455ee36      0t0  TCP localhost:http-alt (LISTEN)\npython3.1 84567 bossio    4u  IPv6 0x89997abbea8db2e3      0t0  TCP *:http-alt (LISTEN)",
+            "processInfo": "COMMAND     PID   USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\npython3.1 42216 bossio    3u  IPv4 0xf25eac851455ee36      0t0  TCP localhost:http-alt (LISTEN)\npython3.1 84567 bossio    4u  IPv6 0x89997abbea8db2e3      0t0  TCP *:http-alt (LISTEN)",
+            "connectable": true,
+            "error": null
+          }
+        },
+        "browser": {
+          "hostsFile": {
+            "exists": true,
+            "hasLocalhost": true,
+            "content": [
+              "# localhost is used to configure the loopback interface",
+              "127.0.0.1\tlocalhost",
+              "::1             localhost"
+            ]
+          },
+          "proxySettings": {
+            "HTTP_PROXY": null,
+            "HTTPS_PROXY": null,
+            "http_proxy": null,
+            "https_proxy": null
+          }
+        },
+        "system": {},
+        "recommendations": [
+          "Fix DNS resolution for localhost",
+          "Fix DNS resolution for 127.0.0.1",
+          "Fix DNS resolution for ::1"
+        ]
+      }
+    },
+    "phase3": {
+      "name": "Extension Analysis",
+      "issues": [
+        {
+          "type": "connectivity_failure",
+          "count": 5,
+          "suggestion": "Check for ad blockers or security extensions"
+        },
+        {
+          "type": "cors_failure",
+          "suggestion": "Check for CORS-modifying extensions"
+        }
+      ],
+      "fixes": [],
+      "testResults": {
+        "connectivity": {
+          "http://localhost:3000": {
+            "status": "failed",
+            "error": ""
+          },
+          "http://localhost:8000": {
+            "status": "failed",
+            "error": "Request timeout"
+          },
+          "http://localhost:8000/api/v1/auth/health": {
+            "status": "failed",
+            "error": "Request timeout"
+          },
+          "http://127.0.0.1:3000": {
+            "status": "failed",
+            "error": "connect ECONNREFUSED 127.0.0.1:3000"
+          },
+          "http://127.0.0.1:8000": {
+            "status": "failed",
+            "error": "Request timeout"
+          }
+        },
+        "cors": {
+          "success": false,
+          "error": "Request timeout"
+        },
+        "resources": {
+          "http://localhost:3000/_next/static/css/app.css": {
+            "blocked": true,
+            "error": ""
+          },
+          "http://localhost:3000/_next/static/js/app.js": {
+            "blocked": true,
+            "error": ""
+          },
+          "http://localhost:8000/api/v1/auth/health": {
+            "blocked": true,
+            "error": "Request timeout"
+          }
+        }
+      }
+    },
+    "phase4": {
+      "name": "Automatic Fixes",
+      "issues": [],
+      "fixes": [
+        {
+          "id": "clear_cache",
+          "description": "Clear localhost cache",
+          "severity": "quick",
+          "command": "node scripts/clear-localhost-cache.js",
+          "critical": false,
+          "applied": true,
+          "result": {
+            "success": true,
+            "dryRun": true
+          }
+        },
+        {
+          "id": "kill_ports",
+          "description": "Kill processes on development ports",
+          "severity": "quick",
+          "command": "lsof -ti:3000 | xargs kill -9 2>/dev/null; lsof -ti:8000 | xargs kill -9 2>/dev/null",
+          "critical": false,
+          "applied": true,
+          "result": {
+            "success": true,
+            "dryRun": true
+          }
+        }
+      ]
+    },
+    "phase5": {
+      "name": "Verification",
+      "issues": [],
+      "fixes": [],
+      "verificationResults": {
+        "Frontend port test": {},
+        "Backend port test": {},
+        "DNS resolution test": {}
+      },
+      "score": 0
+    }
+  },
+  "issues": [],
+  "fixes": [],
+  "recommendations": [
+    {
+      "phase": "Extension Analysis",
+      "issue": "connectivity_failure",
+      "priority": "high",
+      "category": "network",
+      "action": "Fix network connectivity",
+      "details": "5 endpoints failed connectivity tests",
+      "command": "npm run fix-localhost -- --full"
+    },
+    {
+      "priority": "high",
+      "category": "manual_intervention",
+      "action": "Manual troubleshooting required",
+      "details": "Automatic fixes were not sufficient. Consider manual configuration.",
+      "nextSteps": [
+        "Check browser console for errors",
+        "Test in incognito mode",
+        "Verify firewall settings",
+        "Check proxy configuration"
+      ]
+    },
+    {
+      "phase": "Network Diagnostics",
+      "issue": "Fix DNS resolution for localhost",
+      "priority": "medium",
+      "action": "Investigate manually",
+      "details": "No automated fix available"
+    },
+    {
+      "phase": "Network Diagnostics",
+      "issue": "Fix DNS resolution for 127.0.0.1",
+      "priority": "medium",
+      "action": "Investigate manually",
+      "details": "No automated fix available"
+    },
+    {
+      "phase": "Network Diagnostics",
+      "issue": "Fix DNS resolution for ::1",
+      "priority": "medium",
+      "action": "Investigate manually",
+      "details": "No automated fix available"
+    },
+    {
+      "phase": "Extension Analysis",
+      "issue": "cors_failure",
+      "priority": "medium",
+      "category": "cors",
+      "action": "Check CORS configuration",
+      "details": "CORS headers may be modified by browser extensions",
+      "command": "npm run debug:extensions"
+    },
+    {
+      "priority": "medium",
+      "category": "escalation",
+      "action": "Consider running full diagnostic",
+      "command": "npm run fix-localhost -- --full",
+      "reason": "Quick fix mode detected issues that may require deeper analysis"
+    }
+  ],
+  "summary": {
+    "duration": 35,
+    "severity": "quick",
+    "dryRun": true,
+    "totalIssues": 5,
+    "totalFixes": 2,
+    "successfulFixes": 2,
+    "verificationScore": 0,
+    "status": "failure",
+    "recommendationCount": 7
+  },
+  "endTime": "2025-06-27T01:51:32.089Z",
+  "duration": 35367
+}

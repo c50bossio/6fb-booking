@@ -5,7 +5,7 @@
 ### 1. **Stripe Integration**
 - **API Keys**: Test keys need to be configured from Stripe Dashboard
   - Get your Secret Key from: https://dashboard.stripe.com/test/apikeys
-  - Get your Publishable Key from: https://dashboard.stripe.com/test/apikeys  
+  - Get your Publishable Key from: https://dashboard.stripe.com/test/apikeys
   - Get your Connect Client ID from: https://dashboard.stripe.com/settings/connect
 - **Account Status**: Ready for configuration
 - **Payment Intents**: Implementation ready for testing once keys are configured

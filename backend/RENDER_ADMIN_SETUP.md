@@ -97,7 +97,7 @@ The default password `Welcome123!` should only be used for initial setup. Once l
 
 If you're still having issues:
 
-1. **Check if the backend is running**: 
+1. **Check if the backend is running**:
    - Visit https://sixfb-backend.onrender.com/health
 
 2. **Check Render logs**:

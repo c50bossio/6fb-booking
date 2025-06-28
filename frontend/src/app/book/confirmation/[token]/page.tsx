@@ -408,7 +408,7 @@ Confirmation ID: ${booking.appointment.id}`
                         <p className="text-sm text-gray-700 mb-3">
                           Save time on future bookings and track your appointment history
                         </p>
-                        
+
                         <div className="space-y-3">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -423,7 +423,7 @@ Confirmation ID: ${booking.appointment.id}`
                               minLength={8}
                             />
                           </div>
-                          
+
                           <div className="flex items-center space-x-3">
                             <button
                               onClick={handleCreateAccount}

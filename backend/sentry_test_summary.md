@@ -14,7 +14,7 @@
 - ✅ test_performance_transaction - Performance monitoring completed (with deprecation warning)
 
 **Total Events Sent:** 4
-**Event IDs:** 
+**Event IDs:**
 - 1aba32ea090449cfb190d7d2377c6d07
 - 6e06987dd5bc4fe8b4ed3701edd549b7
 - 5a38a8538dfe44d9a96c357bea6ff472

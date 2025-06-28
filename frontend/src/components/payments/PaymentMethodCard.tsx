@@ -80,7 +80,7 @@ export function PaymentMethodCard({
             )}
           </div>
         </div>
-        
+
         {!isSelectable && (
           <div className="flex items-center space-x-2">
             {!paymentMethod.is_default && onSetDefault && (

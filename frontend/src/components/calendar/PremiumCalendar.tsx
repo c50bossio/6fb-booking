@@ -48,6 +48,7 @@ export interface CalendarProps {
   onCreateAppointment?: (date: string, time: string) => void
   onUpdateAppointment?: (appointment: CalendarAppointment) => void
   onDeleteAppointment?: (appointmentId: string) => void
+  onTimeSlotDrop?: (e: React.DragEvent, date: string, time: string) => void
   initialView?: 'month' | 'week' | 'day'
   initialDate?: Date
   workingHours?: { start: string; end: string }
@@ -164,6 +165,7 @@ export default function PremiumCalendar({
   onCreateAppointment,
   onUpdateAppointment,
   onDeleteAppointment,
+  onTimeSlotDrop,
   initialView = 'week',
   initialDate = new Date(),
   workingHours = DEFAULT_WORKING_HOURS,
@@ -406,6 +408,40 @@ export default function PremiumCalendar({
               setSelectedDate(date)
               handleTimeSlotClick(date, '09:00')
             }}
+            // Drag & Drop handlers for month view
+            onDragOver={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              // Visual feedback for valid drop zone
+              e.currentTarget.style.backgroundColor = theme === 'soft-light' ? '#7c9885' + '30' : theme === 'charcoal' ? '#4b5563' + '40' : '#8b5cf6' + '30'
+            }}
+            onDragLeave={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              // Reset background on drag leave
+              const bgColor = isTodayDate
+                ? (theme === 'soft-light' ? '#7c9885' + '20' : theme === 'charcoal' ? '#4b5563' + '30' : '#8b5cf6' + '20')
+                : !isCurrentMonthDate
+                  ? (theme === 'light' || theme === 'soft-light' ? '#f9fafb' : colors.background)
+                  : colors.cardBackground
+              e.currentTarget.style.backgroundColor = bgColor
+            }}
+            onDrop={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              console.log('🎯 Drop detected on month day:', formatDateString(date))
+              // Reset background
+              const bgColor = isTodayDate
+                ? (theme === 'soft-light' ? '#7c9885' + '20' : theme === 'charcoal' ? '#4b5563' + '30' : '#8b5cf6' + '20')
+                : !isCurrentMonthDate
+                  ? (theme === 'light' || theme === 'soft-light' ? '#f9fafb' : colors.background)
+                  : colors.cardBackground
+              e.currentTarget.style.backgroundColor = bgColor
+              // Call the drop handler if provided
+              if (onTimeSlotDrop) {
+                onTimeSlotDrop(e, formatDateString(date), '09:00') // Default to 9 AM for month view
+              }
+            }}
           >
             <div className="text-sm font-medium mb-2" style={{
               color: isTodayDate
@@ -546,9 +582,11 @@ export default function PremiumCalendar({
                     }}
                     onMouseEnter={() => {
                       setHoveredTimeSlot({ date: dateStr, time })
+                      handleTimeSlotHover(date, time, true)
                     }}
                     onMouseLeave={() => {
                       setHoveredTimeSlot(null)
+                      handleTimeSlotHover(date, time, false)
                     }}
                     data-time-slot="true"
                     data-date={dateStr}
@@ -566,8 +604,34 @@ export default function PremiumCalendar({
                         handleTimeSlotClick(date, time)
                       }
                     }}
-                    onMouseEnter={() => handleTimeSlotHover(date, time, true)}
-                    onMouseLeave={() => handleTimeSlotHover(date, time, false)}
+                    // Drag & Drop handlers
+                    onDragOver={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      // Visual feedback for valid drop zone
+                      e.currentTarget.style.backgroundColor = theme === 'soft-light' ? '#7c9885' + '30' : theme === 'charcoal' ? '#4b5563' + '40' : '#8b5cf6' + '30'
+                    }}
+                    onDragLeave={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      // Reset background on drag leave
+                      e.currentTarget.style.backgroundColor = isHovered
+                        ? (theme === 'soft-light' ? '#7c9885' + '20' : theme === 'charcoal' ? '#4b5563' + '30' : '#8b5cf6' + '20')
+                        : 'transparent'
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      console.log('🎯 Drop detected on time slot:', dateStr, time)
+                      // Reset background
+                      e.currentTarget.style.backgroundColor = isHovered
+                        ? (theme === 'soft-light' ? '#7c9885' + '20' : theme === 'charcoal' ? '#4b5563' + '30' : '#8b5cf6' + '20')
+                        : 'transparent'
+                      // Call the drop handler if provided
+                      if (onTimeSlotDrop) {
+                        onTimeSlotDrop(e, dateStr, time)
+                      }
+                    }}
                   >
                     {/* Add appointment hint on hover */}
                     {isHovered && !appointmentForTime && (

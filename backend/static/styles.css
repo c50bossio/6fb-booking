@@ -11,12 +11,12 @@
     --bg-secondary: #252830;
     --bg-card: #2d3139;
     --bg-hover: #363b45;
-    
+
     /* Text colors */
     --text-primary: #ffffff;
     --text-secondary: #a0a4ab;
     --text-muted: #6b7280;
-    
+
     /* Accent colors */
     --accent-green: #4CAF50;
     --accent-green-light: #66BB6A;
@@ -24,7 +24,7 @@
     --accent-blue: #2196F3;
     --accent-orange: #FF9800;
     --accent-purple: #9C27B0;
-    
+
     /* Other colors */
     --border-color: #3a3f4a;
     --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
@@ -532,29 +532,29 @@ body {
         width: 70px;
         padding: 1rem;
     }
-    
+
     .logo span,
     .nav-item span,
     .user-profile > div {
         display: none;
     }
-    
+
     .nav-item {
         justify-content: center;
     }
-    
+
     .nav-item svg {
         margin: 0;
     }
-    
+
     .main-content {
         padding: 1rem;
     }
-    
+
     .stats-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .action-grid {
         grid-template-columns: repeat(2, 1fr);
     }

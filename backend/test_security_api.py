@@ -13,8 +13,8 @@ response = requests.post(
         "password": "weak",
         "first_name": "Weak",
         "last_name": "Password",
-        "role": "barber"
-    }
+        "role": "barber",
+    },
 )
 print(f"Status: {response.status_code}")
 print(f"Response: {response.json()}\n")
@@ -28,8 +28,8 @@ response = requests.post(
         "password": "StrongP@ssw0rd!",
         "first_name": "Strong",
         "last_name": "Password",
-        "role": "barber"
-    }
+        "role": "barber",
+    },
 )
 print(f"Status: {response.status_code}")
 print(f"Response: {response.json()}\n")
@@ -38,7 +38,13 @@ print(f"Response: {response.json()}\n")
 print("Testing security headers...")
 response = requests.get(f"{BASE_URL}/health")
 print("Security headers:")
-for header in ["X-Content-Type-Options", "X-Frame-Options", "X-XSS-Protection", "Referrer-Policy", "X-Process-Time"]:
+for header in [
+    "X-Content-Type-Options",
+    "X-Frame-Options",
+    "X-XSS-Protection",
+    "Referrer-Policy",
+    "X-Process-Time",
+]:
     if header in response.headers:
         print(f"  {header}: {response.headers[header]}")
 

@@ -49,7 +49,7 @@ describe('useWebSocket', () => {
 
     // Wait for initial connection
     await server.connected
-    
+
     act(() => {
       server.send({ type: 'connection', data: { status: 'connected' } })
     })

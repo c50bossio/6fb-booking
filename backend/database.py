@@ -9,7 +9,7 @@ engine = create_engine(
     settings.DATABASE_URL,
     pool_pre_ping=True,
     pool_recycle=300,
-    echo=settings.ENVIRONMENT == "development"
+    echo=settings.ENVIRONMENT == "development",
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

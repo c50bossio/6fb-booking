@@ -15,44 +15,44 @@ list_backups() {
 # Function to restore database
 restore_database() {
     local backup_file=$1
-    
+
     if [ ! -f "$backup_file" ]; then
         echo "Backup file not found: $backup_file"
         exit 1
     fi
-    
+
     echo "Restoring database from $backup_file..."
-    
+
     # Create temporary uncompressed file
     gunzip -c $backup_file > /tmp/restore.sql
-    
+
     # Restore database
     PGPASSWORD=$POSTGRES_PASSWORD psql \
         -h $POSTGRES_HOST \
         -U $POSTGRES_USER \
         -d $POSTGRES_DB \
         < /tmp/restore.sql
-    
+
     # Clean up
     rm /tmp/restore.sql
-    
+
     echo "Database restored successfully"
 }
 
 # Function to restore uploads
 restore_uploads() {
     local backup_file=$1
-    
+
     if [ ! -f "$backup_file" ]; then
         echo "Backup file not found: $backup_file"
         exit 1
     fi
-    
+
     echo "Restoring uploads from $backup_file..."
-    
+
     # Extract uploads
     tar -xzf $backup_file -C /app/data/
-    
+
     echo "Uploads restored successfully"
 }
 

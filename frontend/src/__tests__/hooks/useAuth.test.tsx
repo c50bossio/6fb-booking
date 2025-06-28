@@ -77,7 +77,7 @@ describe('useAuth Hook', () => {
 
   it('should handle logout', async () => {
     const { authService } = require('@/lib/api')
-    
+
     const { result } = renderHook(() => useAuth(), { wrapper })
 
     await act(async () => {

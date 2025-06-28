@@ -17,15 +17,15 @@ class Cache {
    */
   get<T>(key: string): T | null {
     const item = this.store.get(key)
-    
+
     if (!item) return null
-    
+
     // Check if item has expired
     if (Date.now() - item.timestamp > item.ttl) {
       this.delete(key)
       return null
     }
-    
+
     return item.data
   }
 
@@ -59,7 +59,7 @@ class Cache {
    */
   delete(key: string): void {
     this.store.delete(key)
-    
+
     const timer = this.timers.get(key)
     if (timer) {
       clearTimeout(timer)
@@ -73,7 +73,7 @@ class Cache {
   clear(): void {
     // Clear all timers
     this.timers.forEach(timer => clearTimeout(timer))
-    
+
     // Clear stores
     this.store.clear()
     this.timers.clear()
@@ -92,13 +92,13 @@ class Cache {
   has(key: string): boolean {
     const item = this.store.get(key)
     if (!item) return false
-    
+
     // Check expiry
     if (Date.now() - item.timestamp > item.ttl) {
       this.delete(key)
       return false
     }
-    
+
     return true
   }
 }
@@ -108,16 +108,16 @@ export const cache = new Cache()
 
 // Cache key generators
 export const cacheKeys = {
-  analytics: (type: string, startDate: string, endDate: string, locationId?: number) => 
+  analytics: (type: string, startDate: string, endDate: string, locationId?: number) =>
     `analytics:${type}:${startDate}:${endDate}:${locationId || 'all'}`,
-  
+
   user: (userId: number) => `user:${userId}`,
-  
+
   location: (locationId: number) => `location:${locationId}`,
-  
+
   barber: (barberId: number) => `barber:${barberId}`,
-  
-  appointments: (date: string, locationId?: number) => 
+
+  appointments: (date: string, locationId?: number) =>
     `appointments:${date}:${locationId || 'all'}`
 }
 
@@ -139,10 +139,10 @@ export const cacheUtils = {
 
     // Fetch fresh data
     const data = await fetcher()
-    
+
     // Store in cache
     cache.set(key, data, ttl)
-    
+
     return data
   },
 
@@ -151,14 +151,14 @@ export const cacheUtils = {
    */
   invalidatePattern(pattern: string): void {
     const keysToDelete: string[] = []
-    
+
     // Find matching keys (simple pattern matching)
     cache['store'].forEach((_, key) => {
       if (key.includes(pattern)) {
         keysToDelete.push(key)
       }
     })
-    
+
     // Delete matching keys
     keysToDelete.forEach(key => cache.delete(key))
   }

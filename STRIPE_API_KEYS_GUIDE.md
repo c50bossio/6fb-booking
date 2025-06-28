@@ -20,7 +20,7 @@ You'll see:
 
 ![Stripe API Keys Location](https://stripe.com/img/docs/keys.png)
 
-⚠️ **Important**: 
+⚠️ **Important**:
 - Never share your secret key
 - Test keys are for development only
 - Live keys require account activation
@@ -65,7 +65,7 @@ You'll see:
    ```bash
    # On macOS
    open -e .env
-   
+
    # Or use your preferred editor
    code .env
    nano .env
@@ -96,7 +96,7 @@ You'll see:
    ```bash
    # On macOS
    open -e .env.local
-   
+
    # Or use your preferred editor
    code .env.local
    nano .env.local

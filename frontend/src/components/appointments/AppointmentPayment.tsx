@@ -57,23 +57,23 @@ export function AppointmentPayment({
     <div className="space-y-6">
       <Card className="p-6">
         <h3 className="text-lg font-semibold mb-4">Appointment Summary</h3>
-        
+
         <div className="space-y-3">
           <div className="flex items-center text-gray-600">
             <Calendar className="h-4 w-4 mr-3" />
             <span>{format(new Date(appointment.date), 'MMMM d, yyyy')}</span>
           </div>
-          
+
           <div className="flex items-center text-gray-600">
             <Clock className="h-4 w-4 mr-3" />
             <span>{appointment.time} ({appointment.duration} minutes)</span>
           </div>
-          
+
           <div className="flex items-center text-gray-600">
             <User className="h-4 w-4 mr-3" />
             <span>{appointment.barber}</span>
           </div>
-          
+
           <div className="pt-3 border-t">
             <div className="flex items-center justify-between">
               <span className="font-medium">{appointment.service}</span>
@@ -91,7 +91,7 @@ export function AppointmentPayment({
           </div>
           <span className="text-2xl font-bold">{formatAmount(appointment.price * 100)}</span>
         </div>
-        
+
         <p className="text-sm text-gray-600 mb-6">
           Your payment will be processed securely through Stripe. You can save your
           payment method for faster checkout in the future.

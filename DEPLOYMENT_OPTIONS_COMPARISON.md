@@ -182,7 +182,7 @@
 Most successful startups follow this path:
 
 1. **Start**: Heroku (validate idea)
-2. **Growth**: DigitalOcean (scale efficiently)  
+2. **Growth**: DigitalOcean (scale efficiently)
 3. **Enterprise**: AWS (global scale)
 
 The 6FB platform is containerized, making migration between providers relatively straightforward when needed.

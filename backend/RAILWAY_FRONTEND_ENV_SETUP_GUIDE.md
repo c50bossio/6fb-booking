@@ -97,7 +97,7 @@ These should NEVER be in frontend environment variables:
 # Variable Name: NEXT_PUBLIC_API_URL
 # Value: https://your-backend-service.railway.app/api/v1
 
-# Variable Name: NEXT_PUBLIC_ENVIRONMENT  
+# Variable Name: NEXT_PUBLIC_ENVIRONMENT
 # Value: production
 
 # Variable Name: NEXT_PUBLIC_APP_NAME
@@ -118,7 +118,7 @@ These should NEVER be in frontend environment variables:
 # Variable Name: NEXT_PUBLIC_ENABLE_ANALYTICS
 # Value: true
 
-# Variable Name: NEXT_PUBLIC_ENABLE_WEBSOCKET  
+# Variable Name: NEXT_PUBLIC_ENABLE_WEBSOCKET
 # Value: true
 
 # Variable Name: NEXT_PUBLIC_ENABLE_PAYMENTS

@@ -7,12 +7,12 @@
 <body class="bg-gray-100 p-8">
     <div class="max-w-4xl mx-auto">
         <h1 class="text-3xl font-bold mb-6">6FB Backend Deployment Status</h1>
-        
+
         <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
             <h2 class="text-xl font-semibold mb-4">Current Status</h2>
             <div id="status" class="space-y-2"></div>
         </div>
-        
+
         <div class="bg-white rounded-lg shadow-lg p-6">
             <h2 class="text-xl font-semibold mb-4">What's Happening</h2>
             <ol class="list-decimal list-inside space-y-2 text-gray-700">
@@ -21,26 +21,26 @@
                 <li>⏳ CORS update is being deployed (started ~2 minutes ago)</li>
                 <li>⏳ Once CORS is fixed, dashboard will show "ONLINE"</li>
             </ol>
-            
+
             <div class="mt-6 p-4 bg-blue-50 rounded">
                 <p class="text-sm text-blue-800">
-                    <strong>Note:</strong> The dashboard shows "OFFLINE" due to browser security (CORS). 
+                    <strong>Note:</strong> The dashboard shows "OFFLINE" due to browser security (CORS).
                     The backend is actually online and working. The fix is deploying now.
                 </p>
             </div>
         </div>
-        
+
         <div class="mt-6 text-center">
             <a href="http://localhost:8081/index.html" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                 Go to Dashboard
             </a>
         </div>
     </div>
-    
+
     <script>
         async function checkStatus() {
             const statusDiv = document.getElementById('status');
-            
+
             // Check backend
             try {
                 const response = await fetch('https://sixfb-backend.onrender.com/health');
@@ -66,7 +66,7 @@
                 `;
             }
         }
-        
+
         checkStatus();
         setInterval(checkStatus, 5000);
     </script>

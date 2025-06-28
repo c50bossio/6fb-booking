@@ -75,6 +75,9 @@ interface UnifiedCalendarProps extends CalendarProps {
   enableExport?: boolean
   enableKeyboardNavigation?: boolean
   enableStatistics?: boolean
+  // Multi-selection support
+  onAppointmentSelect?: (appointmentId: string, selected: boolean) => void
+  selectedAppointments?: Set<string>
 }
 
 // Helper function to format date as YYYY-MM-DD without timezone conversion
@@ -660,6 +663,35 @@ export default function UnifiedCalendar({
         return
       }
 
+      // Basic conflict detection - check for overlapping appointments
+      const conflicts = filteredAppointments.filter(apt => {
+        if (apt.id === appointmentId) return false // Ignore the appointment being moved
+        if (apt.date !== date) return false // Different day, no conflict
+
+        // Check time overlap
+        const newStart = new Date(`2024-01-01T${time}:00`)
+        const newEnd = new Date(newStart.getTime() + (appointment.duration || 60) * 60000)
+        const existingStart = new Date(`2024-01-01T${apt.startTime}:00`)
+        const existingEnd = new Date(`2024-01-01T${apt.endTime}:00`)
+
+        return (newStart < existingEnd && newEnd > existingStart)
+      })
+
+      if (conflicts.length > 0 && showConflicts && !allowConflicts) {
+        console.warn('🚨 Scheduling conflict detected:', conflicts)
+
+        // Update drag state to show conflicts
+        setDragState(prev => ({
+          ...prev,
+          conflictingAppointments: conflicts,
+          isValidDrop: false
+        }))
+
+        // Could show a conflict resolution modal here
+        alert(`Scheduling conflict detected! This time slot overlaps with:\n${conflicts.map(c => `${c.client} (${c.service})`).join('\n')}`)
+        return
+      }
+
       // Set up the pending move for confirmation
       setPendingMove({
         appointment,
@@ -967,6 +999,12 @@ export default function UnifiedCalendar({
             if (typeof window !== 'undefined') {
               console.log('🖱️ UnifiedCalendar received time slot click:', date, time)
               onTimeSlotClick?.(date, time)
+            }
+          }}
+          onTimeSlotDrop={(e, date, time) => {
+            if (typeof window !== 'undefined') {
+              console.log('🎯 UnifiedCalendar received time slot drop:', date, time)
+              handleTimeSlotDrop(e, date, time)
             }
           }}
           workingHours={workingHours}

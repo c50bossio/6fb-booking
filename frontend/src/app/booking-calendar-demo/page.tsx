@@ -12,19 +12,19 @@ export default function BookingCalendarDemo() {
   function generateAvailableDates() {
     const dates: string[] = []
     const today = new Date()
-    
+
     // Add some random dates in the next 90 days
     for (let i = 0; i < 30; i++) {
       const randomDaysAhead = Math.floor(Math.random() * 90) + 1
       const date = new Date(today)
       date.setDate(date.getDate() + randomDaysAhead)
-      
+
       const dateString = formatDateString(date)
       if (!dates.includes(dateString)) {
         dates.push(dateString)
       }
     }
-    
+
     return dates.sort()
   }
 

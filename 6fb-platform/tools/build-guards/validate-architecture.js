@@ -53,7 +53,7 @@ class ArchitectureValidator {
 
     otherPackages.forEach(pkg => {
       const pkgTypes = this.findTypeDefinitions(`packages/${pkg}/src`);
-      
+
       pkgTypes.forEach(type => {
         if (coreTypes.includes(type)) {
           this.errors.push(`Duplicate type definition '${type}' found in ${pkg}. Should only exist in core.`);
@@ -74,13 +74,13 @@ class ArchitectureValidator {
   validateDependencyDirection() {
     // Check that dependencies only flow in allowed directions
     const packages = ['core', 'api', 'web', 'ui', 'mobile'];
-    
+
     packages.forEach(pkg => {
       const pkgJsonPath = path.join(__dirname, `../../packages/${pkg}/package.json`);
       if (fs.existsSync(pkgJsonPath)) {
         const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
         const deps = Object.keys(pkgJson.dependencies || {});
-        
+
         deps.forEach(dep => {
           if (dep.startsWith('@6fb/')) {
             this.validateAllowedDependency(pkg, dep);
@@ -103,7 +103,7 @@ class ArchitectureValidator {
 
     uiFiles.forEach(file => {
       const content = fs.readFileSync(file, 'utf8');
-      
+
       businessLogicPatterns.forEach(pattern => {
         if (pattern.test(content)) {
           this.warnings.push(`Possible business logic in UI component: ${file}`);
@@ -129,14 +129,14 @@ class ArchitectureValidator {
 
   findTypeDefinitions(dir) {
     if (!fs.existsSync(dir)) return [];
-    
+
     const files = glob.sync(`${dir}/**/*.{ts,tsx}`);
     const types = [];
 
     files.forEach(file => {
       const content = fs.readFileSync(file, 'utf8');
       const matches = content.match(/(?:interface|type|enum)\s+(\w+)/g) || [];
-      
+
       matches.forEach(match => {
         const typeName = match.split(/\s+/)[1];
         types.push(typeName);
@@ -148,7 +148,7 @@ class ArchitectureValidator {
 
   findAPIEndpoints(dir) {
     if (!fs.existsSync(dir)) return [];
-    
+
     const files = glob.sync(`${dir}/**/*.{ts,py}`);
     const endpoints = [];
 
@@ -156,7 +156,7 @@ class ArchitectureValidator {
       const content = fs.readFileSync(file, 'utf8');
       // Look for route definitions
       const matches = content.match(/(?:@app\.|router\.)(?:get|post|put|delete|patch)\(['"]([^'"]+)['"]/g) || [];
-      
+
       matches.forEach(match => {
         const endpoint = match.match(/['"]([^'"]+)['"]/)[1];
         endpoints.push(endpoint);
@@ -169,14 +169,14 @@ class ArchitectureValidator {
   findDuplicates(arr) {
     const seen = new Set();
     const duplicates = new Set();
-    
+
     arr.forEach(item => {
       if (seen.has(item)) {
         duplicates.add(item);
       }
       seen.add(item);
     });
-    
+
     return Array.from(duplicates);
   }
 

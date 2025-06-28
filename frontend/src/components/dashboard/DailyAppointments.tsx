@@ -19,7 +19,7 @@ const mockAppointments = [
   },
   {
     id: 2,
-    time: "10:30 AM", 
+    time: "10:30 AM",
     clientName: "Mike Johnson",
     service: "Standard Cut",
     revenue: 45.00,
@@ -90,14 +90,14 @@ const getCustomerTypeColor = (type: string) => {
 
 export default function DailyAppointments() {
   const [appointments, setAppointments] = useState(mockAppointments)
-  
+
   const completedAppointments = appointments.filter(apt => apt.status === 'completed')
   const totalRevenue = completedAppointments.reduce((sum, apt) => sum + apt.revenue, 0)
   const averageTicket = completedAppointments.length > 0 ? totalRevenue / completedAppointments.length : 0
 
   const handleCheckIn = (appointmentId: number) => {
-    setAppointments(prev => prev.map(apt => 
-      apt.id === appointmentId 
+    setAppointments(prev => prev.map(apt =>
+      apt.id === appointmentId
         ? { ...apt, status: 'in_progress' }
         : apt
     ))
@@ -125,11 +125,11 @@ export default function DailyAppointments() {
           <div>
             <CardTitle>Today&apos;s Appointments</CardTitle>
             <CardDescription>
-              {new Date().toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+              {new Date().toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
               })}
             </CardDescription>
           </div>
@@ -164,7 +164,7 @@ export default function DailyAppointments() {
           {/* Appointments List */}
           <div className="space-y-2">
             {appointments.map((appointment) => (
-              <div 
+              <div
                 key={appointment.id}
                 className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
               >
@@ -177,30 +177,30 @@ export default function DailyAppointments() {
                     <div className="text-sm text-gray-600">{appointment.service}</div>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center space-x-3">
-                  <Badge 
-                    variant="secondary" 
+                  <Badge
+                    variant="secondary"
                     className={getCustomerTypeColor(appointment.customerType)}
                   >
                     {appointment.customerType}
                   </Badge>
-                  
+
                   <div className="text-right min-w-[80px]">
                     <div className="font-medium">${appointment.revenue.toFixed(2)}</div>
                     <div className="text-xs text-gray-600">{appointment.duration}min</div>
                   </div>
-                  
-                  <Badge 
-                    variant="secondary" 
+
+                  <Badge
+                    variant="secondary"
                     className={getStatusColor(appointment.status)}
                   >
                     {appointment.status.replace('_', ' ')}
                   </Badge>
-                  
+
                   {appointment.status === 'scheduled' && (
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={() => handleCheckIn(appointment.id)}
                     >
@@ -214,8 +214,8 @@ export default function DailyAppointments() {
 
           {/* Add Appointment Button */}
           <div className="pt-4 border-t">
-            <Button 
-              className="w-full" 
+            <Button
+              className="w-full"
               variant="outline"
               onClick={handleAddWalkIn}
             >

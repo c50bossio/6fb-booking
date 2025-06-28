@@ -58,7 +58,7 @@ nx serve @6fb/web   # Frontend on http://localhost:3000
    ```typescript
    // packages/ui/src/components/NewFeature.tsx
    import { NewFeature } from '@6fb/core';
-   
+
    export const NewFeatureComponent = () => {
      // Component implementation
    };

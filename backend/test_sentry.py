@@ -36,10 +36,9 @@ except ZeroDivisionError as e:
 print("\nTest 3: Sending error with context...")
 sentry_sdk.set_tag("test", "true")
 sentry_sdk.set_user({"id": "test-user-123", "email": "test@6fb.com"})
-sentry_sdk.set_context("test_context", {
-    "platform": "6FB Booking",
-    "test_type": "integration"
-})
+sentry_sdk.set_context(
+    "test_context", {"platform": "6FB Booking", "test_type": "integration"}
+)
 
 try:
     raise ValueError("Test error with context")

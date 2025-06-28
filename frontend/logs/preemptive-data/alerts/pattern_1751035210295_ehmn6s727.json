@@ -1,0 +1,16 @@
+{
+  "id": "pattern_1751035210295_ehmn6s727",
+  "type": "pattern",
+  "timestamp": 1751035210295,
+  "severity": "warning",
+  "message": "Anomalous logging patterns detected",
+  "data": {
+    "type": "log_anomaly",
+    "severity": "warning",
+    "details": [
+      "High frequency logging detected"
+    ],
+    "file": "/Users/bossio/6fb-booking/frontend/logs/troubleshoot-2025-06-27.log",
+    "message": "Anomalous logging patterns detected"
+  }
+}

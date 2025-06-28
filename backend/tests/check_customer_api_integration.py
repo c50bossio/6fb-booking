@@ -182,7 +182,10 @@ class APIIntegrationChecker:
         try:
             response = requests.post(
                 f"{BACKEND_URL}/customer/auth/login",
-                json={"email": "test@example.com", "password": "wrongpass"},  # pragma: allowlist secret
+                json={
+                    "email": "test@example.com",
+                    "password": "wrongpass",
+                },  # pragma: allowlist secret
             )
 
             if response.status_code == 401:
@@ -248,7 +251,10 @@ class APIIntegrationChecker:
                 # Login
                 login_response = requests.post(
                     f"{BACKEND_URL}/customer/auth/login",
-                    json={"email": test_email, "password": "TestPass123!"},  # pragma: allowlist secret
+                    json={
+                        "email": test_email,
+                        "password": "TestPass123!",
+                    },  # pragma: allowlist secret
                 )
 
                 if login_response.status_code == 200:

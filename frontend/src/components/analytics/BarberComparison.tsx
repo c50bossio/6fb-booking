@@ -25,7 +25,7 @@ interface BarberComparisonProps {
 export function BarberComparison({ data }: BarberComparisonProps) {
   // Sort barbers by revenue for leaderboard
   const leaderboard = [...data].sort((a, b) => b.revenue - a.revenue)
-  
+
   // Prepare data for comparison chart
   const comparisonData = data.map(barber => ({
     name: barber.name,
@@ -48,7 +48,7 @@ export function BarberComparison({ data }: BarberComparisonProps) {
                   (barber.bookings / teamAvg.bookings) * 0.3 +
                   (barber.rating / teamAvg.rating) * 0.2 +
                   (barber.efficiency / teamAvg.efficiency) * 0.1
-    
+
     if (score >= 1.2) return { level: 'Excellent', color: 'text-green-600', bg: 'bg-green-50' }
     if (score >= 1) return { level: 'Above Average', color: 'text-blue-600', bg: 'bg-blue-50' }
     if (score >= 0.8) return { level: 'Average', color: 'text-yellow-600', bg: 'bg-yellow-50' }
@@ -111,13 +111,13 @@ export function BarberComparison({ data }: BarberComparisonProps) {
       <Card className="p-6">
         <h3 className="text-lg font-semibold mb-4">Performance Comparison</h3>
         <ResponsiveContainer width="100%" height={400}>
-          <BarChart 
+          <BarChart
             data={comparisonData}
             margin={{ top: 20, right: 30, left: 0, bottom: 60 }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-            <XAxis 
-              dataKey="name" 
+            <XAxis
+              dataKey="name"
               angle={-45}
               textAnchor="end"
               height={100}
@@ -143,8 +143,8 @@ export function BarberComparison({ data }: BarberComparisonProps) {
             {leaderboard.map((barber, index) => {
               const performance = getPerformanceLevel(barber)
               return (
-                <div 
-                  key={barber.id} 
+                <div
+                  key={barber.id}
                   className={`p-4 rounded-lg border ${index < 3 ? 'border-yellow-200 bg-yellow-50' : 'border-gray-200'}`}
                 >
                   <div className="flex items-center justify-between">
@@ -176,25 +176,25 @@ export function BarberComparison({ data }: BarberComparisonProps) {
               <PolarGrid stroke="#e5e7eb" />
               <PolarAngleAxis dataKey="name" fontSize={12} />
               <PolarRadiusAxis angle={90} domain={[0, 100]} fontSize={12} />
-              <Radar 
-                name="Productivity" 
-                dataKey="productivity" 
-                stroke="#3b82f6" 
-                fill="#3b82f6" 
+              <Radar
+                name="Productivity"
+                dataKey="productivity"
+                stroke="#3b82f6"
+                fill="#3b82f6"
                 fillOpacity={0.6}
               />
-              <Radar 
-                name="Client Satisfaction" 
-                dataKey="satisfaction" 
-                stroke="#10b981" 
-                fill="#10b981" 
+              <Radar
+                name="Client Satisfaction"
+                dataKey="satisfaction"
+                stroke="#10b981"
+                fill="#10b981"
                 fillOpacity={0.6}
               />
-              <Radar 
-                name="Technical Skills" 
-                dataKey="skills" 
-                stroke="#f59e0b" 
-                fill="#f59e0b" 
+              <Radar
+                name="Technical Skills"
+                dataKey="skills"
+                stroke="#f59e0b"
+                fill="#f59e0b"
                 fillOpacity={0.6}
               />
               <Legend />

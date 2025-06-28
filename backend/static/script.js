@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
         data.forEach((value, index) => {
             const x = padding + (index * stepX);
             const y = padding + chartHeight - ((value - minValue) / range * chartHeight);
-            
+
             if (index === 0) {
                 ctx.moveTo(x, y);
             } else {
@@ -218,14 +218,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const numericValue = parseInt(finalValue.replace(/[^0-9]/g, ''));
         let currentValue = 0;
         const increment = numericValue / 30;
-        
+
         const counter = setInterval(() => {
             currentValue += increment;
             if (currentValue >= numericValue) {
                 currentValue = numericValue;
                 clearInterval(counter);
             }
-            
+
             if (isPrice) {
                 stat.textContent = '$' + Math.floor(currentValue).toLocaleString();
             } else if (finalValue.includes('%')) {
@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function() {
             { time: '14:30', name: 'Marcus Johnson' },
             { time: '15:30', name: 'David Williams' }
         ];
-        
+
         // Find next appointment
         const nextAppointment = appointments.find(apt => {
             const [hours, minutes] = apt.time.split(':');
@@ -251,7 +251,7 @@ document.addEventListener('DOMContentLoaded', function() {
             aptTime.setHours(parseInt(hours), parseInt(minutes), 0);
             return aptTime > now;
         });
-        
+
         if (nextAppointment) {
             const timeBadge = document.querySelector('.time-badge');
             if (timeBadge) {
@@ -259,7 +259,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
-    
+
     updateNextAppointmentTime();
     setInterval(updateNextAppointmentTime, 60000); // Update every minute
 });

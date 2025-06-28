@@ -75,7 +75,7 @@ def seed_barber_availability():
                     location_id=barber.location_id,  # Add required location_id
                     day_of_week=DayOfWeek.SUNDAY,
                     start_time=time(9, 0),  # Required field even if not available
-                    end_time=time(18, 0),   # Required field even if not available
+                    end_time=time(18, 0),  # Required field even if not available
                     is_available=False,
                 )
                 db.add(sunday)

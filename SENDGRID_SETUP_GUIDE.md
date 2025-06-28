@@ -103,7 +103,7 @@ from core.config import settings
 def test_sendgrid():
     """Test SendGrid email configuration"""
     print("=== SendGrid Configuration Test ===\n")
-    
+
     # Check configuration
     print("📧 Email Configuration:")
     print(f"  - Email enabled: {settings.email_enabled}")
@@ -112,7 +112,7 @@ def test_sendgrid():
     print(f"  - SMTP Username: {settings.SMTP_USERNAME}")
     print(f"  - From Address: {settings.EMAIL_FROM_ADDRESS}")
     print(f"  - From Name: {settings.EMAIL_FROM_NAME}")
-    
+
     if not settings.email_enabled:
         print("\n❌ Email is not configured. Please check your .env file.")
         print("\nRequired variables:")
@@ -120,7 +120,7 @@ def test_sendgrid():
         print("  - SMTP_USERNAME")
         print("  - SMTP_PASSWORD")
         return
-    
+
     # Test connection
     print("\n🔌 Testing SMTP Connection...")
     try:
@@ -130,14 +130,14 @@ def test_sendgrid():
     except Exception as e:
         print(f"❌ Failed to connect: {str(e)}")
         return
-    
+
     # Send test email
     test_email = input("\n📬 Enter email address to send test to: ")
-    
+
     db = SessionLocal()
     try:
         print(f"\n📤 Sending test email to {test_email}...")
-        
+
         # Test 1: Welcome email
         success = email_service.send_welcome_email(
             db=db,
@@ -148,13 +148,13 @@ def test_sendgrid():
                 "created_at": datetime.now()
             }
         )
-        
+
         if success:
             print("✅ Welcome email sent successfully!")
         else:
             print("❌ Failed to send welcome email")
             return
-        
+
         # Test 2: Appointment confirmation
         print("\n📤 Sending appointment confirmation...")
         success = email_service.send_appointment_confirmation(
@@ -170,16 +170,16 @@ def test_sendgrid():
                 "price": 45.00
             }
         )
-        
+
         if success:
             print("✅ Appointment confirmation sent successfully!")
         else:
             print("❌ Failed to send appointment confirmation")
-        
+
         print(f"\n✨ All tests completed! Check {test_email} for the test emails.")
         print("\n📊 You can view email statistics in your SendGrid dashboard:")
         print("   https://app.sendgrid.com/statistics")
-        
+
     except Exception as e:
         print(f"\n❌ Error during testing: {str(e)}")
     finally:

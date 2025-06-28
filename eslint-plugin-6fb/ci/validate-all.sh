@@ -65,10 +65,10 @@ mkdir -p "$RESULTS_DIR"
 run_check() {
     local name=$1
     local command=$2
-    
+
     TOTAL_CHECKS=$((TOTAL_CHECKS + 1))
     log_info "Running: $name"
-    
+
     if eval "$command" > "$RESULTS_DIR/$name.log" 2>&1; then
         log_success "$name passed"
         return 0

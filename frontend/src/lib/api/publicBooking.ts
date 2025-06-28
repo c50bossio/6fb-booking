@@ -19,10 +19,10 @@ publicApiClient.interceptors.request.use(
   (config) => {
     // Set dynamic base URL
     config.baseURL = getApiBaseUrl()
-    
+
     // Add request ID for debugging
     config.headers['X-Request-ID'] = Date.now().toString()
-    
+
     // Log outgoing requests in development
     if (process.env.NODE_ENV === 'development') {
       console.log('Public API Request:', {
@@ -32,7 +32,7 @@ publicApiClient.interceptors.request.use(
         timestamp: new Date().toISOString()
       })
     }
-    
+
     return config
   },
   (error) => {
@@ -58,7 +58,7 @@ publicApiClient.interceptors.response.use(
       details: error.response?.data?.detail || null,
       timestamp: new Date().toISOString()
     }
-    
+
     console.error('Public API Error:', errorInfo)
     return Promise.reject(error)
   }
@@ -209,7 +209,7 @@ export const publicBookingService = {
     const params = new URLSearchParams()
     if (categoryId) params.append('category_id', categoryId.toString())
     if (isAddon !== undefined) params.append('is_addon', isAddon.toString())
-    
+
     const response = await publicApiClient.get<PublicServiceInfo[]>(
       `/api/v1/booking/public/shops/${shopId}/services${params.toString() ? '?' + params.toString() : ''}`
     )
@@ -236,7 +236,7 @@ export const publicBookingService = {
     const params = new URLSearchParams()
     if (categoryId) params.append('category_id', categoryId.toString())
     if (isAddon !== undefined) params.append('is_addon', isAddon.toString())
-    
+
     const response = await publicApiClient.get<PublicServiceInfo[]>(
       `/api/v1/booking/public/barbers/${barberId}/services${params.toString() ? '?' + params.toString() : ''}`
     )
@@ -259,7 +259,7 @@ export const publicBookingService = {
       timezone
     })
     if (endDate) params.append('end_date', endDate)
-    
+
     const response = await publicApiClient.get<AvailabilityResponse>(
       `/api/v1/booking/public/barbers/${barberId}/availability?${params.toString()}`
     )

@@ -62,7 +62,7 @@ export default function SimplePaymentStep({
       serviceName: service?.name,
       timestamp: new Date().toISOString()
     })
-    
+
     // Validate appointment ID on mount
     if (appointmentId === undefined || appointmentId === null) {
       console.warn('[SimplePaymentStep] WARNING: appointmentId is missing or undefined')
@@ -184,7 +184,7 @@ export default function SimplePaymentStep({
     try {
       setLoading(true)
       setStripeError('') // Clear any previous errors
-      
+
       console.log('[SimplePaymentStep] Creating payment intent with validated data:', {
         appointmentId,
         amount: formatAmountForStripe(amount),
@@ -204,14 +204,14 @@ export default function SimplePaymentStep({
           created_at: new Date().toISOString()
         }
       })
-      
+
       console.log('[SimplePaymentStep] Payment intent created successfully:', {
         paymentIntentId: intent.id,
         clientSecretLength: intent.clientSecret?.length || 0,
         appointmentId,
         timestamp: new Date().toISOString()
       })
-      
+
       setClientSecret(intent.clientSecret)
       setPaymentIntentId(intent.id)
       setShowPaymentForm(true)
@@ -224,12 +224,12 @@ export default function SimplePaymentStep({
         customerEmail,
         timestamp: new Date().toISOString()
       })
-      
+
       let errorMessage = 'Failed to initialize payment. Please try again.'
-      
+
       if (error instanceof Error) {
         errorMessage = error.message
-        
+
         // Provide more specific error messages based on common issues
         if (error.message.includes('appointment not found') || error.message.includes('404')) {
           errorMessage = 'The appointment could not be found. Please refresh the page and try again, or start a new booking.'
@@ -241,7 +241,7 @@ export default function SimplePaymentStep({
           errorMessage = 'Payment system error. Please try again in a moment.'
         }
       }
-      
+
       setStripeError(errorMessage)
       onPaymentError?.(errorMessage)
     } finally {
@@ -255,7 +255,7 @@ export default function SimplePaymentStep({
       appointmentId,
       timestamp: new Date().toISOString()
     })
-    
+
     if (!selectedOption) {
       const errorMsg = 'Please select a payment option before continuing.'
       console.warn('[SimplePaymentStep] Continue blocked - no option selected')

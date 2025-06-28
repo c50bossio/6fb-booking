@@ -27,7 +27,7 @@ class WebpackValidationPlugin {
     compiler.hooks.beforeCompile.tapAsync('WebpackValidationPlugin', (compilation, callback) => {
       this.errors = [];
       this.warnings = [];
-      
+
       Promise.all([
         this.validateDuplicateComponents(),
         this.validateDirectoryFileCounts(),
@@ -59,10 +59,10 @@ class WebpackValidationPlugin {
 
     const componentMap = new Map();
     const srcDir = path.join(process.cwd(), 'src');
-    
+
     this.walkDirectory(srcDir, (filePath) => {
       if (!this.isComponentFile(filePath)) return;
-      
+
       const componentName = this.extractComponentName(filePath);
       if (componentName) {
         if (!componentMap.has(componentName)) {
@@ -92,14 +92,14 @@ class WebpackValidationPlugin {
   async validateDirectoryFileCounts() {
     const directoryCounts = new Map();
     const srcDir = path.join(process.cwd(), 'src');
-    
+
     this.walkDirectory(srcDir, (filePath, isDirectory) => {
       if (isDirectory) {
         const files = fs.readdirSync(filePath).filter(f => {
           const fullPath = path.join(filePath, f);
           return fs.statSync(fullPath).isFile() && !f.startsWith('.');
         });
-        
+
         if (files.length > this.options.maxFilesPerDirectory) {
           directoryCounts.set(filePath, files.length);
         }
@@ -119,15 +119,15 @@ class WebpackValidationPlugin {
   async validateForbiddenPatterns() {
     const srcDir = path.join(process.cwd(), 'src');
     const violations = [];
-    
+
     this.walkDirectory(srcDir, (filePath) => {
       const relativePath = this.getRelativePath(filePath);
-      
+
       // Skip test directories
       if (relativePath.includes('__tests__') || relativePath.includes('tests/')) {
         return;
       }
-      
+
       for (const pattern of this.options.forbiddenPatterns) {
         if (pattern.test(filePath)) {
           violations.push({
@@ -150,7 +150,7 @@ class WebpackValidationPlugin {
 
   async validateComponentRegistry() {
     if (!this.options.componentRegistry) return;
-    
+
     const registryPath = path.join(process.cwd(), this.options.componentRegistry);
     if (!fs.existsSync(registryPath)) {
       this.warnings.push({
@@ -166,15 +166,15 @@ class WebpackValidationPlugin {
       const registry = require(registryPath);
       const allowedComponents = new Set(registry.allowedComponents || []);
       const componentImports = new Map();
-      
+
       // Scan for component imports
       const srcDir = path.join(process.cwd(), 'src');
       this.walkDirectory(srcDir, (filePath) => {
         if (!this.isSourceFile(filePath)) return;
-        
+
         const content = fs.readFileSync(filePath, 'utf8');
         const imports = this.extractComponentImports(content);
-        
+
         imports.forEach(imp => {
           if (!allowedComponents.has(imp) && !this.isInternalImport(imp)) {
             if (!componentImports.has(imp)) {
@@ -205,16 +205,16 @@ class WebpackValidationPlugin {
 
   async validateAPIEndpoints() {
     if (!this.options.apiEndpointValidation) return;
-    
+
     const endpoints = new Map();
     const apiDir = path.join(process.cwd(), 'src/app/api');
-    
+
     if (fs.existsSync(apiDir)) {
       this.walkDirectory(apiDir, (filePath) => {
         if (filePath.endsWith('route.ts') || filePath.endsWith('route.js')) {
           const endpoint = this.extractAPIEndpoint(filePath);
           const methods = this.extractAPIMethods(filePath);
-          
+
           methods.forEach(method => {
             const key = `${method} ${endpoint}`;
             if (!endpoints.has(key)) {
@@ -241,7 +241,7 @@ class WebpackValidationPlugin {
 
   async validateAuthSystem() {
     if (!this.options.authSystemValidation) return;
-    
+
     const authPatterns = [
       /useAuth/,
       /AuthProvider/,
@@ -249,16 +249,16 @@ class WebpackValidationPlugin {
       /authentication/i,
       /login|signin/i
     ];
-    
+
     const authSystems = new Map();
     const srcDir = path.join(process.cwd(), 'src');
-    
+
     this.walkDirectory(srcDir, (filePath) => {
       if (!this.isSourceFile(filePath)) return;
-      
+
       const content = fs.readFileSync(filePath, 'utf8');
       const authImports = this.detectAuthSystem(content, authPatterns);
-      
+
       authImports.forEach(system => {
         if (!authSystems.has(system)) {
           authSystems.set(system, []);
@@ -286,7 +286,7 @@ class WebpackValidationPlugin {
     });
 
     const oversizedAssets = stats.assets.filter(asset => {
-      return asset.size > this.options.maxBundleSize && 
+      return asset.size > this.options.maxBundleSize &&
              !asset.name.includes('sourcemap') &&
              (asset.name.endsWith('.js') || asset.name.endsWith('.css'));
     });
@@ -304,22 +304,22 @@ class WebpackValidationPlugin {
   // Helper methods
   walkDirectory(dir, callback, _isRoot = true) {
     if (!fs.existsSync(dir)) return;
-    
+
     const files = fs.readdirSync(dir);
-    
+
     if (_isRoot) {
       callback(dir, true);
     }
-    
+
     files.forEach(file => {
       const filePath = path.join(dir, file);
       const stat = fs.statSync(filePath);
-      
+
       // Skip excluded paths
       if (this.options.excludePaths.some(exclude => filePath.includes(exclude))) {
         return;
       }
-      
+
       if (stat.isDirectory()) {
         callback(filePath, true);
         this.walkDirectory(filePath, callback, false);
@@ -330,7 +330,7 @@ class WebpackValidationPlugin {
   }
 
   isComponentFile(filePath) {
-    return /\.(tsx|jsx)$/.test(filePath) && 
+    return /\.(tsx|jsx)$/.test(filePath) &&
            !filePath.includes('__tests__') &&
            !filePath.includes('.test.') &&
            !filePath.includes('.spec.');
@@ -356,7 +356,7 @@ class WebpackValidationPlugin {
       `${baseName}V2`,
       `${baseName}2`
     ];
-    
+
     return files.filter(file => {
       const name = this.extractComponentName(file);
       return variations.some(v => v.toLowerCase() === name.toLowerCase());
@@ -367,7 +367,7 @@ class WebpackValidationPlugin {
     const imports = [];
     const importRegex = /import\s+(?:{[^}]+}|\w+)\s+from\s+['"]([^'"]+)['"]/g;
     let match;
-    
+
     while ((match = importRegex.exec(content)) !== null) {
       const importPath = match[1];
       if (importPath.startsWith('@/components/') || importPath.startsWith('../components/')) {
@@ -375,7 +375,7 @@ class WebpackValidationPlugin {
         imports.push(componentName);
       }
     }
-    
+
     return imports;
   }
 
@@ -396,17 +396,17 @@ class WebpackValidationPlugin {
     const methods = [];
     const methodRegex = /export\s+(?:async\s+)?function\s+(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)/g;
     let match;
-    
+
     while ((match = methodRegex.exec(content)) !== null) {
       methods.push(match[1]);
     }
-    
+
     return methods.length > 0 ? methods : ['GET']; // Default to GET if no methods found
   }
 
   detectAuthSystem(content, patterns) {
     const systems = new Set();
-    
+
     patterns.forEach(pattern => {
       if (pattern.test(content)) {
         // Try to identify the specific auth system
@@ -425,7 +425,7 @@ class WebpackValidationPlugin {
         }
       }
     });
-    
+
     return Array.from(systems);
   }
 
@@ -436,12 +436,12 @@ class WebpackValidationPlugin {
   reportResults() {
     console.log('\n' + chalk.bold('Build Validation Results'));
     console.log('=' .repeat(50));
-    
+
     if (this.errors.length === 0 && this.warnings.length === 0) {
       console.log(chalk.green('✓ All validation checks passed!'));
       return;
     }
-    
+
     if (this.errors.length > 0) {
       console.log('\n' + chalk.red.bold(`Errors (${this.errors.length}):`));
       this.errors.forEach((error, index) => {
@@ -450,7 +450,7 @@ class WebpackValidationPlugin {
         console.log(chalk.yellow(`→ ${error.remediation}`));
       });
     }
-    
+
     if (this.warnings.length > 0) {
       console.log('\n' + chalk.yellow.bold(`Warnings (${this.warnings.length}):`));
       this.warnings.forEach((warning, index) => {
@@ -459,9 +459,9 @@ class WebpackValidationPlugin {
         console.log(chalk.blue(`→ ${warning.remediation}`));
       });
     }
-    
+
     console.log('\n' + '='.repeat(50));
-    
+
     if (this.errors.length > 0) {
       console.log(chalk.red.bold('\n✗ Build validation failed!'));
       console.log(chalk.gray('Fix the errors above and try again.\n'));
