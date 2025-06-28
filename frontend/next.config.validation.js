@@ -2,7 +2,7 @@ const WebpackValidationPlugin = require('./build-validation/webpack-validation-p
 
 /**
  * Next.js Build Validation Configuration
- * 
+ *
  * This configuration adds comprehensive build-time validation to ensure:
  * - No duplicate components
  * - Proper file organization
@@ -14,13 +14,13 @@ const WebpackValidationPlugin = require('./build-validation/webpack-validation-p
 const validationConfig = {
   // Enable/disable validation in different environments
   enableValidation: process.env.SKIP_BUILD_VALIDATION !== 'true',
-  
+
   // Validation rules
   rules: {
     maxFilesPerDirectory: 20,
     maxBundleSize: 5 * 1024 * 1024, // 5MB
     componentRegistry: 'src/components/component-registry.ts',
-    
+
     // Patterns for files that shouldn't be in src
     forbiddenPatterns: [
       /\.test\.(tsx?|jsx?)$/,
@@ -29,7 +29,7 @@ const validationConfig = {
       /__tests__/,
       /\.mock\.(tsx?|jsx?)$/
     ],
-    
+
     // Paths to exclude from validation
     excludePaths: [
       'node_modules',
@@ -40,7 +40,7 @@ const validationConfig = {
       '.git'
     ]
   },
-  
+
   // Custom webpack configuration
   webpack: (config, { dev, isServer }) => {
     if (validationConfig.enableValidation) {
@@ -57,7 +57,7 @@ const validationConfig = {
         })
       );
     }
-    
+
     return config;
   }
 };
@@ -69,12 +69,12 @@ module.exports = function withValidation(nextConfig = {}) {
     webpack: (config, options) => {
       // Apply validation webpack config
       config = validationConfig.webpack(config, options);
-      
+
       // Apply any existing webpack config
       if (typeof nextConfig.webpack === 'function') {
         config = nextConfig.webpack(config, options);
       }
-      
+
       return config;
     }
   };

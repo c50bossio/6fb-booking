@@ -29,13 +29,13 @@ We will use a single `Client` model for all client-related data:
 ```python
 class Client(Base):
     __tablename__ = "clients"
-    
+
     id: UUID
     email: str
     first_name: str
     last_name: str
     phone: str
-    
+
     # Relations
     user_id: Optional[UUID]  # Link to User if registered
     appointments: List[Appointment]

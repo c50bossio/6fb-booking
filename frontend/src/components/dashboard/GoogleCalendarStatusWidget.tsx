@@ -29,7 +29,7 @@ export default function GoogleCalendarStatusWidget() {
 
   const getStatusColor = () => {
     if (!status) return 'text-gray-500'
-    
+
     switch (status.status) {
       case 'active':
         return 'text-green-600'
@@ -44,7 +44,7 @@ export default function GoogleCalendarStatusWidget() {
 
   const getStatusIcon = () => {
     if (!status) return XCircleIcon
-    
+
     switch (status.status) {
       case 'active':
         return CheckCircleIcon
@@ -83,7 +83,7 @@ export default function GoogleCalendarStatusWidget() {
             )}
           </div>
         </div>
-        
+
         <Link
           href="/settings/google-calendar"
           className="flex items-center space-x-1 text-xs text-blue-600 hover:text-blue-700 font-medium"
@@ -92,7 +92,7 @@ export default function GoogleCalendarStatusWidget() {
           <ArrowTopRightOnSquareIcon className="h-3 w-3" />
         </Link>
       </div>
-      
+
       {status?.last_sync_date && (
         <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
           <p className="text-xs text-gray-500 dark:text-gray-400">

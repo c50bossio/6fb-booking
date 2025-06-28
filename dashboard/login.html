@@ -7,31 +7,31 @@
 <body class="bg-blue-50 min-h-screen flex items-center justify-center">
     <div class="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
         <h1 class="text-2xl font-bold text-center mb-6 text-blue-600">6FB Login</h1>
-        
+
         <form id="loginForm" class="space-y-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700">Username or Email</label>
                 <input type="text" id="username" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" required>
             </div>
-            
+
             <div>
                 <label class="block text-sm font-medium text-gray-700">Password</label>
                 <input type="password" id="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" required>
             </div>
-            
+
             <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">
                 Login
             </button>
         </form>
-        
+
         <div id="message" class="mt-4 text-center"></div>
-        
+
         <!-- Alternative Login Options -->
         <div class="mt-6 space-y-3">
             <button type="button" id="forgotPasswordBtn" class="w-full text-center text-sm text-blue-600 hover:text-blue-500">
                 Forgot your password?
             </button>
-            
+
             <div class="relative">
                 <div class="absolute inset-0 flex items-center">
                     <div class="w-full border-t border-gray-300"></div>
@@ -49,7 +49,7 @@
             </button>
         </div>
     </div>
-    
+
     <!-- Forgot Password Modal -->
     <div id="forgotPasswordModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
         <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
@@ -101,20 +101,20 @@
     <script>
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const messageEl = document.getElementById('message');
-            
+
             try {
                 const response = await fetch('/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username_or_email: username, password: password })
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (response.ok && data.access_token) {
                     localStorage.setItem('access_token', data.access_token);
                     localStorage.setItem('refresh_token', data.refresh_token);
@@ -150,28 +150,28 @@
         // Forgot Password Form
         document.getElementById('forgotPasswordForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const email = document.getElementById('resetEmail').value;
             const messageEl = document.getElementById('resetMessage');
-            
+
             try {
                 const response = await fetch('http://localhost:8000/api/v1/auth/forgot-password', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: email })
                 });
-                
+
                 const data = await response.json();
                 messageEl.className = 'mt-4 text-center text-sm text-green-600';
                 messageEl.textContent = data.message;
-                
+
                 // Clear form and close modal after delay
                 setTimeout(() => {
                     document.getElementById('forgotPasswordModal').classList.add('hidden');
                     document.getElementById('forgotPasswordForm').reset();
                     messageEl.textContent = '';
                 }, 3000);
-                
+
             } catch (error) {
                 messageEl.className = 'mt-4 text-center text-sm text-red-600';
                 messageEl.textContent = 'Network error. Please try again.';
@@ -181,28 +181,28 @@
         // Email Login Form
         document.getElementById('emailLoginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const email = document.getElementById('magicEmail').value;
             const messageEl = document.getElementById('magicMessage');
-            
+
             try {
                 const response = await fetch('http://localhost:8000/api/v1/auth/send-magic-link', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: email })
                 });
-                
+
                 const data = await response.json();
                 messageEl.className = 'mt-4 text-center text-sm text-green-600';
                 messageEl.textContent = data.message;
-                
+
                 // Clear form and close modal after delay
                 setTimeout(() => {
                     document.getElementById('emailLoginModal').classList.add('hidden');
                     document.getElementById('emailLoginForm').reset();
                     messageEl.textContent = '';
                 }, 3000);
-                
+
             } catch (error) {
                 messageEl.className = 'mt-4 text-center text-sm text-red-600';
                 messageEl.textContent = 'Network error. Please try again.';

@@ -154,15 +154,15 @@
             try {
                 const response = await fetch(`${API_URL}/`);
                 if (response.ok) {
-                    document.getElementById('systemStatus').innerHTML = 
+                    document.getElementById('systemStatus').innerHTML =
                         '<span class="text-green-300">ONLINE</span>';
                     fetchDetailedMetrics();
                 } else {
-                    document.getElementById('systemStatus').innerHTML = 
+                    document.getElementById('systemStatus').innerHTML =
                         '<span class="text-red-300">ERROR</span>';
                 }
             } catch (error) {
-                document.getElementById('systemStatus').innerHTML = 
+                document.getElementById('systemStatus').innerHTML =
                     '<span class="text-red-300">OFFLINE</span>';
             }
         }
@@ -311,7 +311,7 @@
                         legend: { display: false }
                     },
                     scales: {
-                        y: { 
+                        y: {
                             beginAtZero: true,
                             ticks: { precision: 0 }
                         }
@@ -322,7 +322,7 @@
 
         function updateApiChart() {
             if (!apiChart) return;
-            
+
             // Simulate hourly API request data
             const newData = Array(7).fill(0).map(() => Math.floor(Math.random() * 300) + 50);
             apiChart.data.datasets[0].data = newData;
@@ -330,7 +330,7 @@
         }
 
         function updateLastRefresh() {
-            document.getElementById('lastUpdate').textContent = 
+            document.getElementById('lastUpdate').textContent =
                 `Last updated: ${new Date().toLocaleTimeString()}`;
         }
     </script>

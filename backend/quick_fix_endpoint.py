@@ -12,16 +12,16 @@ async def get_quick_appointments():
         from config.database import SessionLocal
         from sqlalchemy import text
         from datetime import date
-        
+
         db = SessionLocal()
         result = db.execute(text("SELECT COUNT(*) FROM appointments WHERE appointment_date = CURRENT_DATE"))
         count = result.scalar() or 0
-        
+
         revenue_result = db.execute(text("SELECT COALESCE(SUM(service_revenue), 0) FROM appointments WHERE appointment_date = CURRENT_DATE AND status != 'cancelled'"))
         revenue = revenue_result.scalar() or 0
-        
+
         db.close()
-        
+
         return {
             "date": date.today().isoformat(),
             "appointments": [],

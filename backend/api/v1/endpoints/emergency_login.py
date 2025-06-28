@@ -26,7 +26,7 @@ async def emergency_login_options():
             "Access-Control-Allow-Headers": "*",
             "Access-Control-Allow-Credentials": "false",  # Don't send credentials
             "Access-Control-Max-Age": "3600",
-        }
+        },
     )
 
 
@@ -34,7 +34,7 @@ async def emergency_login_options():
 async def emergency_login(
     username: Annotated[str, Form()],
     password: Annotated[str, Form()],
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Emergency login endpoint with no CORS restrictions
@@ -42,38 +42,31 @@ async def emergency_login(
     """
     try:
         # Find user by email/username
-        user = db.query(User).filter(
-            (User.email == username) | (User.username == username)
-        ).first()
-        
+        user = (
+            db.query(User)
+            .filter((User.email == username) | (User.username == username))
+            .first()
+        )
+
         if not user:
-            raise HTTPException(
-                status_code=401,
-                detail="Incorrect email or password"
-            )
-        
+            raise HTTPException(status_code=401, detail="Incorrect email or password")
+
         # Verify password
         auth_service = AuthService()
         if not auth_service.verify_password(password, user.hashed_password):
-            raise HTTPException(
-                status_code=401,
-                detail="Incorrect email or password"
-            )
-        
+            raise HTTPException(status_code=401, detail="Incorrect email or password")
+
         # Check if user is active
         if not user.is_active:
-            raise HTTPException(
-                status_code=401,
-                detail="User account is disabled"
-            )
-        
+            raise HTTPException(status_code=401, detail="User account is disabled")
+
         # Create access token
         from datetime import timedelta
+
         access_token = auth_service.create_access_token(
-            data={"sub": user.email},
-            expires_delta=timedelta(minutes=30)
+            data={"sub": user.email}, expires_delta=timedelta(minutes=30)
         )
-        
+
         # Return response with permissive CORS headers
         response_data = {
             "access_token": access_token,
@@ -83,11 +76,13 @@ async def emergency_login(
                 "email": user.email,
                 "full_name": user.full_name,
                 "role": user.role,
-                "permissions": user.get_permissions() if hasattr(user, 'get_permissions') else [],
-                "primary_location_id": user.primary_location_id
-            }
+                "permissions": (
+                    user.get_permissions() if hasattr(user, "get_permissions") else []
+                ),
+                "primary_location_id": user.primary_location_id,
+            },
         }
-        
+
         return JSONResponse(
             content=response_data,
             headers={
@@ -96,9 +91,9 @@ async def emergency_login(
                 "Access-Control-Allow-Headers": "*",
                 "Access-Control-Allow-Credentials": "false",
                 "Cache-Control": "no-store, no-cache, must-revalidate",
-            }
+            },
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -111,5 +106,5 @@ async def emergency_login(
                 "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
                 "Access-Control-Allow-Headers": "*",
                 "Access-Control-Allow-Credentials": "false",
-            }
+            },
         )

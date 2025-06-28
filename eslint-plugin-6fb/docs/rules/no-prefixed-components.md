@@ -56,7 +56,7 @@ export function ChartExample() {
 
 ### `forbiddenPrefixes`
 
-Type: `string[]`  
+Type: `string[]`
 Default: `['Enhanced', 'Simple', 'Demo', 'Test', 'Mock', 'Temp', 'Old', 'New']`
 
 List of prefixes that are not allowed in component names.
@@ -71,7 +71,7 @@ List of prefixes that are not allowed in component names.
 
 ### `allowInTests`
 
-Type: `boolean`  
+Type: `boolean`
 Default: `true`
 
 Allow forbidden prefixes in test files (files matching `*.test.*`, `*.spec.*`, or in `__tests__` directories).
@@ -86,7 +86,7 @@ Allow forbidden prefixes in test files (files matching `*.test.*`, `*.spec.*`, o
 
 ### `allowInDemos`
 
-Type: `boolean`  
+Type: `boolean`
 Default: `true`
 
 Allow forbidden prefixes in demo files (files matching `*.demo.*`, `*.example.*`, or in `demos/` directories).
@@ -101,7 +101,7 @@ Allow forbidden prefixes in demo files (files matching `*.demo.*`, `*.example.*`
 
 ### `suggestions`
 
-Type: `object`  
+Type: `object`
 Default: Provides helpful suggestions for each prefix
 
 Custom suggestions for how to fix each forbidden prefix.

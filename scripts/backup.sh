@@ -37,7 +37,7 @@ find $BACKUP_DIR -name "*.gz" -mtime +$RETENTION_DAYS -delete
 if [ ! -z "$AWS_S3_BUCKET" ]; then
     echo "Uploading to S3..."
     aws s3 cp $BACKUP_DIR/db_backup_$TIMESTAMP.sql.gz s3://$AWS_S3_BUCKET/backups/
-    
+
     if [ -f "$BACKUP_DIR/uploads_backup_$TIMESTAMP.tar.gz" ]; then
         aws s3 cp $BACKUP_DIR/uploads_backup_$TIMESTAMP.tar.gz s3://$AWS_S3_BUCKET/backups/
     fi

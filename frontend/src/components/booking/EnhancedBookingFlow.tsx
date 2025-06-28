@@ -137,7 +137,7 @@ export function ExampleBookingFlowWithPayInPerson() {
           onPaymentError={handlePaymentError}
         />
       )}
-      
+
       {/* Success message for pay in person */}
       {currentStep === 5 && bookingData.paymentMethod === 'in_person' && (
         <div className="text-center space-y-6">
@@ -154,7 +154,7 @@ export function ExampleBookingFlowWithPayInPerson() {
             <div className="bg-white border border-green-200 rounded-lg p-4 text-left">
               <h4 className="font-medium text-green-900 mb-2">Payment Instructions:</h4>
               <p className="text-green-700 text-sm">
-                {bookingData.paymentDetails?.payment_instructions || 
+                {bookingData.paymentDetails?.payment_instructions ||
                  'Please bring payment when you arrive at the shop. We accept cash, credit/debit cards, and digital wallets.'}
               </p>
             </div>

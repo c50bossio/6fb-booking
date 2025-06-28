@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { 
-  CurrencyDollarIcon, 
-  UserGroupIcon, 
+import {
+  CurrencyDollarIcon,
+  UserGroupIcon,
   ChartBarIcon,
   ArrowDownTrayIcon,
   CheckCircleIcon,
@@ -114,7 +114,7 @@ export default function PaymentsPage() {
 
       // Refresh data
       await fetchData();
-      
+
       // Show success message (you could use a toast library here)
       alert('Payout processed successfully!');
     } catch (error) {
@@ -127,7 +127,7 @@ export default function PaymentsPage() {
 
   const processBatchPayouts = async () => {
     if (!confirm('Process payouts for all eligible barbers?')) return;
-    
+
     try {
       const endDate = new Date();
       const startDate = new Date();

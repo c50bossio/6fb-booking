@@ -35,7 +35,7 @@ describe('AnalyticsDashboard', () => {
     // Reset mocks
     jest.clearAllMocks()
     localStorage.setItem('token', 'test-token')
-    
+
     // Mock successful API responses
     const mockResponses = {
       revenue: [
@@ -87,21 +87,21 @@ describe('AnalyticsDashboard', () => {
 
   it('renders dashboard header correctly', () => {
     render(<AnalyticsDashboard />)
-    
+
     expect(screen.getByText('Analytics Dashboard')).toBeInTheDocument()
     expect(screen.getByText('Track performance and gain insights')).toBeInTheDocument()
   })
 
   it('shows loading state initially', () => {
     render(<AnalyticsDashboard />)
-    
+
     // Should show skeleton loaders
     expect(screen.getAllByTestId('skeleton')).toBeTruthy()
   })
 
   it('loads and displays analytics data', async () => {
     render(<AnalyticsDashboard />)
-    
+
     await waitFor(() => {
       expect(screen.getByText('$2,200')).toBeInTheDocument() // Total revenue
       expect(screen.getByText('15.5% vs last period')).toBeInTheDocument() // Revenue growth
@@ -113,9 +113,9 @@ describe('AnalyticsDashboard', () => {
   it('handles API errors gracefully', async () => {
     // Mock failed API call
     ;(global.fetch as jest.Mock).mockRejectedValueOnce(new Error('API Error'))
-    
+
     render(<AnalyticsDashboard />)
-    
+
     await waitFor(() => {
       expect(screen.getByText(/Failed to load analytics data/i)).toBeInTheDocument()
     })
@@ -123,33 +123,33 @@ describe('AnalyticsDashboard', () => {
 
   it('refreshes data when refresh button is clicked', async () => {
     render(<AnalyticsDashboard />)
-    
+
     await waitFor(() => {
       expect(screen.getByText('$2,200')).toBeInTheDocument()
     })
-    
+
     // Clear mock calls
     ;(global.fetch as jest.Mock).mockClear()
-    
+
     // Click refresh button
     const refreshButton = screen.getByLabelText('Refresh data')
     fireEvent.click(refreshButton)
-    
+
     // Verify API calls were made again
     expect(global.fetch).toHaveBeenCalled()
   })
 
   it('switches between tabs correctly', async () => {
     render(<AnalyticsDashboard />)
-    
+
     await waitFor(() => {
       expect(screen.getByText('Revenue Trend')).toBeInTheDocument()
     })
-    
+
     // Click on Bookings tab
     const bookingsTab = screen.getByRole('tab', { name: /bookings/i })
     fireEvent.click(bookingsTab)
-    
+
     // Should show booking content
     await waitFor(() => {
       expect(screen.getByText('Booking Status Trends')).toBeInTheDocument()
@@ -158,19 +158,19 @@ describe('AnalyticsDashboard', () => {
 
   it('handles date range changes', async () => {
     render(<AnalyticsDashboard />)
-    
+
     await waitFor(() => {
       expect(screen.getByText('$2,200')).toBeInTheDocument()
     })
-    
+
     // Find and click date range picker
     const dateRangePicker = screen.getByRole('button', { name: /date range/i })
     fireEvent.click(dateRangePicker)
-    
+
     // Select "Last 7 Days"
     const last7Days = screen.getByText('Last 7 Days')
     fireEvent.click(last7Days)
-    
+
     // Verify API calls were made with new date range
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
@@ -182,15 +182,15 @@ describe('AnalyticsDashboard', () => {
 
   it('shows no data message when empty', async () => {
     // Mock empty responses
-    ;(global.fetch as jest.Mock).mockImplementation(() => 
+    ;(global.fetch as jest.Mock).mockImplementation(() =>
       Promise.resolve({
         ok: true,
         json: () => Promise.resolve([])
       })
     )
-    
+
     render(<AnalyticsDashboard />)
-    
+
     await waitFor(() => {
       expect(screen.getByText(/No revenue data available/i)).toBeInTheDocument()
     })
@@ -199,9 +199,9 @@ describe('AnalyticsDashboard', () => {
   it('requires authentication', async () => {
     // Remove token
     localStorage.removeItem('token')
-    
+
     render(<AnalyticsDashboard />)
-    
+
     await waitFor(() => {
       expect(screen.getByText(/Authentication required/i)).toBeInTheDocument()
     })

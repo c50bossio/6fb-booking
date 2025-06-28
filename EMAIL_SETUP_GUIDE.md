@@ -142,16 +142,16 @@ def test_email_config():
     print(f"SMTP Host: {settings.SMTP_HOST}")
     print(f"SMTP Port: {settings.SMTP_PORT}")
     print(f"SMTP Username: {settings.SMTP_USERNAME}")
-    
+
     if not settings.email_enabled:
         print("\n❌ Email is not configured. Please check your .env file.")
         return
-    
+
     # Test sending
     db = SessionLocal()
     try:
         test_email = input("\nEnter email address to send test to: ")
-        
+
         success = email_service.send_email(
             db=db,
             to_email=test_email,
@@ -164,12 +164,12 @@ def test_email_config():
                 }
             }
         )
-        
+
         if success:
             print(f"✅ Test email sent successfully to {test_email}")
         else:
             print(f"❌ Failed to send test email")
-            
+
     finally:
         db.close()
 

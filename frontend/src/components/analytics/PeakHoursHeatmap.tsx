@@ -16,7 +16,7 @@ const HOURS = Array.from({ length: 12 }, (_, i) => {
 export function PeakHoursHeatmap({ data }: PeakHoursHeatmapProps) {
   // Calculate max value for color scaling
   const maxValue = Math.max(...data.map(d => d.bookings))
-  
+
   // Get value for specific day and hour
   const getValue = (day: string, hour: number) => {
     const item = data.find(d => d.day === day && d.hour === hour + 8)
@@ -151,7 +151,7 @@ export function PeakHoursHeatmap({ data }: PeakHoursHeatmapProps) {
             {dailyTotals.map(({ day, total }) => {
               const maxDaily = Math.max(...dailyTotals.map(d => d.total))
               const percentage = (total / maxDaily) * 100
-              
+
               return (
                 <div key={day} className="space-y-1">
                   <div className="flex items-center justify-between text-sm">

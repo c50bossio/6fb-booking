@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
+import {
   UserIcon,
   BanknotesIcon,
   CreditCardIcon,
@@ -32,7 +32,7 @@ export default function PaymentSetupPage() {
   const [selectedBarber, setSelectedBarber] = useState<number | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  
+
   // Form states
   const [paymentModel, setPaymentModel] = useState({
     payment_type: 'commission',
@@ -42,19 +42,19 @@ export default function PaymentSetupPage() {
     rent_frequency: 'weekly',
     auto_pay_commissions: true
   });
-  
+
   const [bankAccount, setBankAccount] = useState({
     routing_number: '',
     account_number: '',
     account_type: 'checking',
     account_name: ''
   });
-  
+
   const [microDeposits, setMicroDeposits] = useState({
     amount1: '',
     amount2: ''
   });
-  
+
   const [squareLink, setSquareLink] = useState({
     square_location_id: '',
     square_employee_email: ''
@@ -80,7 +80,7 @@ export default function PaymentSetupPage() {
 
   const createPaymentModel = async () => {
     if (!selectedBarber) return;
-    
+
     setLoading(true);
     try {
       await axios.post('/api/v1/barber-payments/payment-models/', {
@@ -98,12 +98,12 @@ export default function PaymentSetupPage() {
 
   const addBankAccount = async () => {
     if (!selectedBarber) return;
-    
+
     setLoading(true);
     try {
       const modelResponse = await axios.get(`/api/v1/barber-payments/payment-models/${selectedBarber}`);
       const paymentModelId = modelResponse.data.id;
-      
+
       await axios.post(`/api/v1/barber-payments/payment-models/${paymentModelId}/bank-account`, bankAccount);
       setCurrentStep(4);
     } catch (error) {
@@ -116,12 +116,12 @@ export default function PaymentSetupPage() {
 
   const verifyMicroDeposits = async () => {
     if (!selectedBarber) return;
-    
+
     setLoading(true);
     try {
       const modelResponse = await axios.get(`/api/v1/barber-payments/payment-models/${selectedBarber}`);
       const paymentModelId = modelResponse.data.id;
-      
+
       await axios.post(`/api/v1/barber-payments/payment-models/${paymentModelId}/verify-bank`, {
         amount1: parseFloat(microDeposits.amount1),
         amount2: parseFloat(microDeposits.amount2)
@@ -137,7 +137,7 @@ export default function PaymentSetupPage() {
 
   const linkSquareAccount = async () => {
     if (!selectedBarber) return;
-    
+
     setLoading(true);
     try {
       await axios.post('/api/v1/square/link-barber', {
@@ -217,8 +217,8 @@ export default function PaymentSetupPage() {
             {steps.map((step, index) => (
               <div key={step.id} className="flex items-center">
                 <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
-                  step.completed ? 'bg-emerald-600 border-emerald-600' : 
-                  currentStep === step.id ? 'border-emerald-400 text-emerald-400' : 
+                  step.completed ? 'bg-emerald-600 border-emerald-600' :
+                  currentStep === step.id ? 'border-emerald-400 text-emerald-400' :
                   'border-gray-600 text-gray-600'
                 }`}>
                   {step.completed ? (
@@ -271,7 +271,7 @@ export default function PaymentSetupPage() {
           {currentStep === 2 && (
             <div className="space-y-6">
               <h3 className="text-lg font-medium text-white mb-4">Configure Payment Model</h3>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-2">Payment Type</label>
                 <select
@@ -363,7 +363,7 @@ export default function PaymentSetupPage() {
           {currentStep === 3 && (
             <div className="space-y-6">
               <h3 className="text-lg font-medium text-white mb-4">Add Bank Account</h3>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-2">Account Name</label>
                 <input
@@ -412,7 +412,7 @@ export default function PaymentSetupPage() {
 
               <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
                 <p className="text-sm text-blue-400">
-                  <strong>Note:</strong> Dwolla will send two small deposits (less than $0.10 each) to verify this account. 
+                  <strong>Note:</strong> Dwolla will send two small deposits (less than $0.10 each) to verify this account.
                   This typically takes 1-2 business days.
                 </p>
               </div>
@@ -430,10 +430,10 @@ export default function PaymentSetupPage() {
           {currentStep === 4 && (
             <div className="space-y-6">
               <h3 className="text-lg font-medium text-white mb-4">Verify Micro-Deposits</h3>
-              
+
               <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-6">
                 <p className="text-sm text-yellow-400">
-                  Check the bank account for two small deposits from Dwolla. 
+                  Check the bank account for two small deposits from Dwolla.
                   Enter the exact amounts below to verify the account.
                 </p>
               </div>
@@ -480,7 +480,7 @@ export default function PaymentSetupPage() {
           {currentStep === 5 && (
             <div className="space-y-6">
               <h3 className="text-lg font-medium text-white mb-4">Link Square Account (Optional)</h3>
-              
+
               <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4 mb-6">
                 <p className="text-sm text-purple-400">
                   Link the barber's Square employee account to automatically track product sales and calculate commissions.

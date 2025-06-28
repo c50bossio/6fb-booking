@@ -5,18 +5,18 @@ const BACKEND_URL = 'https://sixfb-backend.onrender.com';
 export async function POST(request: NextRequest) {
   try {
     console.log('🚨 Emergency login route activated');
-    
+
     const formData = await request.formData();
     const username = formData.get('username') as string;
     const password = formData.get('password') as string;
-    
+
     console.log('Login attempt for:', username);
-    
+
     // Create form data for backend
     const backendFormData = new URLSearchParams();
     backendFormData.append('username', username);
     backendFormData.append('password', password);
-    
+
     const response = await fetch(`${BACKEND_URL}/api/v1/auth/token`, {
       method: 'POST',
       headers: {
@@ -25,9 +25,9 @@ export async function POST(request: NextRequest) {
       },
       body: backendFormData.toString(),
     });
-    
+
     console.log('Backend response status:', response.status);
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Backend error:', errorText);
@@ -36,10 +36,10 @@ export async function POST(request: NextRequest) {
         { status: response.status }
       );
     }
-    
+
     const data = await response.json();
     console.log('Login successful for:', username);
-    
+
     return NextResponse.json(data, {
       status: 200,
       headers: {
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
         'Access-Control-Allow-Headers': 'Content-Type',
       },
     });
-    
+
   } catch (error) {
     console.error('Emergency login error:', error);
     return NextResponse.json(

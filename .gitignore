@@ -1,3 +1,5 @@
+# STRICT GITIGNORE - ENFORCED BY PRE-COMMIT HOOKS
+
 # Python
 __pycache__/
 *.py[cod]
@@ -15,49 +17,126 @@ build/
 
 # FastAPI
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.template
+!.env.example
 
-# Database
+# Database - NEVER COMMIT
 *.db
 *.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+*_test.db
+*_temp.db
+/data/
+
+# Test files that shouldn't be in root
+/test_*.py
+/backend/test_*.py
+/frontend/test_*.py
+/*_test_results.*
+/*_test_report.*
+/test-*.html
+/test-*.js
+!**/tests/**
+
+# Reports and logs
+*.log
+/logs/
+/*_report.json
+/*_report.md
+/*_results.json
+/backend/*.log
+/frontend/*.log
 
 # Node.js
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
 
 # Next.js
 .next/
 out/
+/.vercel
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 
 # OS
 .DS_Store
 Thumbs.db
-
-# Logs
-logs/
-*.log
 
 # Runtime data
 pids/
 *.pid
 *.seed
 *.pid.lock
+/backend.pid
+/frontend.pid
 
-# Coverage directory used by tools like istanbul
+# Coverage directory
 coverage/
 .nyc_output/
+htmlcov/
 
 # Testing
 .pytest_cache/
 test-pre-commit-temp/
+
+# Temporary files
+*.tmp
+*.temp
+/tmp/
+/temp/
+
+# Build artifacts
+*.pyc
+*.pyo
+
+# Documentation drafts
+/DRAFT_*.md
+/draft_*.md
+
+# Authentication test files
+/backend/*auth_test*.py
+/frontend/*auth*.html
+/frontend/public/*test*.html
+/frontend/public/*debug*.html
+/frontend/public/*bypass*.html
+
+# Payment test files
+/backend/*payment*test*.py
+
+# Scripts that should be in /scripts
+/start-*.sh
+/deploy-*.sh
+/create-*.sh
+/restore-*.sh
+/quick-*.sh
+!scripts/**/*.sh
+
+# Analysis outputs
+/analyze-*.json
+/analyze-*.md
+*-analysis-report*
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# Screenshots
+*.png
+!frontend/public/**/*.png
+!frontend/src/**/*.png
+
+# Puppeteer artifacts
+/puppeteer-*.js
+/analyze-pages-*.js

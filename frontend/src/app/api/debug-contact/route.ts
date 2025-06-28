@@ -5,19 +5,19 @@ import { NextResponse } from 'next/server';
 export async function GET() {
   try {
     const contactPath = path.join(process.cwd(), 'src/app/contact/page.tsx');
-    
+
     if (!fs.existsSync(contactPath)) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: 'Contact page not found',
         path: contactPath,
         cwd: process.cwd()
       });
     }
-    
+
     const content = fs.readFileSync(contactPath, 'utf8');
     const lines = content.split('\n');
-    
-    return NextResponse.json({ 
+
+    return NextResponse.json({
       lines: lines.length,
       hasUseClient: content.includes('use client'),
       hasLucide: content.includes('lucide-react'),
@@ -28,9 +28,9 @@ export async function GET() {
       path: contactPath
     });
   } catch (error: any) {
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: error.message,
-      stack: error.stack 
+      stack: error.stack
     }, { status: 500 });
   }
 }

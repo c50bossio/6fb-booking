@@ -378,7 +378,10 @@ class CustomerPortalIntegrationTester:
         # Test invalid login
         try:
             url = f"{self.base_url}/customer/auth/login"
-            invalid_data = {"email": "invalid@test.com", "password": "wrongpass"}  # pragma: allowlist secret
+            invalid_data = {
+                "email": "invalid@test.com",
+                "password": "wrongpass",
+            }  # pragma: allowlist secret
 
             async with session.post(url, json=invalid_data) as response:
                 if response.status == 401:

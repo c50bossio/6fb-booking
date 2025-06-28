@@ -437,20 +437,39 @@ export default function AnalyticsPage() {
             <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
               <h3 className="text-lg font-semibold text-white mb-4">Top Services</h3>
               <div className="h-64">
-                <Doughnut data={serviceChartData} options={{
-                  ...chartOptions,
-                  plugins: {
-                    ...chartOptions.plugins,
-                    legend: {
-                      display: true,
-                      position: 'bottom' as const,
-                      labels: {
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={serviceChartData.datasets?.[0]?.data?.map((value: number, index: number) => ({
+                        name: serviceChartData.labels?.[index] || `Service ${index + 1}`,
+                        value,
+                        fill: serviceChartData.datasets?.[0]?.backgroundColor?.[index] || '#3B82F6'
+                      })) || []}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      dataKey="value"
+                    >
+                      {serviceChartData.datasets?.[0]?.data?.map((entry: any, index: number) => (
+                        <Cell key={`cell-${index}`} fill={serviceChartData.datasets?.[0]?.backgroundColor?.[index] || '#3B82F6'} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        border: '1px solid #334155',
+                        borderRadius: '8px',
+                        color: '#fff'
+                      }}
+                    />
+                    <Legend
+                      wrapperStyle={{
                         color: '#94a3b8',
-                        padding: 10
-                      }
-                    }
-                  }
-                }} />
+                        paddingTop: '10px'
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
             </div>
 

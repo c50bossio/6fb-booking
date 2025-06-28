@@ -56,7 +56,7 @@ export default function BarberPaymentsTestPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-gray-800 rounded-lg p-8 border border-gray-700">
           <h2 className="text-2xl font-bold text-white mb-4">Test Results</h2>
-          
+
           <div className="space-y-4">
             <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
               <h3 className="text-green-400 font-semibold">✅ Component Loading</h3>

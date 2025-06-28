@@ -3,15 +3,15 @@ SELECT id, email, role FROM users WHERE email = 'c50bossio@gmail.com';
 
 -- If no user exists, run this INSERT:
 INSERT INTO users (
-    email, 
-    first_name, 
-    last_name, 
+    email,
+    first_name,
+    last_name,
     hashed_password,
-    role, 
-    is_active, 
+    role,
+    is_active,
     is_verified,
     permissions,
-    created_at, 
+    created_at,
     updated_at
 ) VALUES (
     'c50bossio@gmail.com',
@@ -27,8 +27,8 @@ INSERT INTO users (
 );
 
 -- If user exists but is not admin, run this UPDATE:
-UPDATE users 
-SET 
+UPDATE users
+SET
     role = 'super_admin',
     hashed_password = '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKyNiGSVq08fMpi',  -- Welcome123!
     is_active = true,

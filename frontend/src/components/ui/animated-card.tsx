@@ -10,11 +10,11 @@ interface AnimatedCardProps extends HTMLMotionProps<"div"> {
   hover?: boolean
 }
 
-export function AnimatedCard({ 
-  children, 
-  className, 
+export function AnimatedCard({
+  children,
+  className,
   hover = true,
-  ...props 
+  ...props
 }: AnimatedCardProps) {
   return (
     <motion.div
@@ -39,7 +39,7 @@ export function AnimatedCardContent({
   ...props
 }: HTMLMotionProps<"div">) {
   return (
-    <motion.div 
+    <motion.div
       className={cn("p-6", className)}
       {...props}
     >

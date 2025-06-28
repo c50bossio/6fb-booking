@@ -10,10 +10,10 @@ export default function SecurityPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Security & Data Protection</h1>
-      
+
       <div className="prose max-w-none">
         <p className="text-gray-600 mb-6 text-lg">
-          At 6FB Booking Platform, we take security seriously. Your data and privacy are 
+          At 6FB Booking Platform, we take security seriously. Your data and privacy are
           protected with industry-leading security measures and best practices.
         </p>
 
@@ -54,28 +54,28 @@ export default function SecurityPage() {
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold mb-2 text-gray-900">GDPR Compliance</h3>
             <p className="text-gray-600 text-sm">
-              Full compliance with EU General Data Protection Regulation, including data subject rights 
+              Full compliance with EU General Data Protection Regulation, including data subject rights
               and privacy by design principles.
             </p>
           </div>
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold mb-2 text-gray-900">CCPA Compliance</h3>
             <p className="text-gray-600 text-sm">
-              Compliant with California Consumer Privacy Act, providing transparency and control 
+              Compliant with California Consumer Privacy Act, providing transparency and control
               over personal information.
             </p>
           </div>
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold mb-2 text-gray-900">PCI DSS</h3>
             <p className="text-gray-600 text-sm">
-              Payment processing through Stripe ensures PCI DSS Level 1 compliance for all 
+              Payment processing through Stripe ensures PCI DSS Level 1 compliance for all
               payment card data handling.
             </p>
           </div>
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold mb-2 text-gray-900">SOC 2 Type II</h3>
             <p className="text-gray-600 text-sm">
-              Our infrastructure partners maintain SOC 2 Type II compliance for security, 
+              Our infrastructure partners maintain SOC 2 Type II compliance for security,
               availability, and confidentiality.
             </p>
           </div>
@@ -121,8 +121,8 @@ export default function SecurityPage() {
 
         <h2 className="text-2xl font-semibold mb-4 text-gray-900">Security Updates</h2>
         <p className="text-gray-600">
-          We continuously monitor security threats and update our systems accordingly. 
-          Critical security updates are applied immediately, and users are notified of 
+          We continuously monitor security threats and update our systems accordingly.
+          Critical security updates are applied immediately, and users are notified of
           any changes that affect their accounts or data.
         </p>
       </div>

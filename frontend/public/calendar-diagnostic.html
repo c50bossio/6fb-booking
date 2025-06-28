@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Calendar Diagnostic</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 40px;
+            background: #f3f4f6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #111827; margin-bottom: 24px; }
+        .test-section {
+            margin: 20px 0;
+            padding: 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .info { color: #3b82f6; }
+        .warning { color: #f59e0b; }
+        pre {
+            background: #f9fafb;
+            padding: 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+        button {
+            background: #14b8a6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+        button:hover { background: #0f766e; }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+        .status-badge.success { background: #d1fae5; color: #065f46; }
+        .status-badge.error { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Calendar Diagnostic Tool</h1>
+
+        <div class="test-section">
+            <h2>1. Authentication Status</h2>
+            <div id="auth-status">Checking...</div>
+        </div>
+
+        <div class="test-section">
+            <h2>2. User Information</h2>
+            <div id="user-info">Checking...</div>
+        </div>
+
+        <div class="test-section">
+            <h2>3. API Endpoints</h2>
+            <div id="api-tests">Checking...</div>
+        </div>
+
+        <div class="test-section">
+            <h2>4. Appointments Data</h2>
+            <div id="appointments-data">Checking...</div>
+        </div>
+
+        <div class="test-section">
+            <h2>Actions</h2>
+            <button onclick="createTestAppointment()">Create Test Appointment</button>
+            <button onclick="clearAndRefresh()">Clear Cache & Refresh</button>
+            <button onclick="window.location.href='/dashboard'">Go to Dashboard</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api/proxy/api/v1';
+
+        function log(elementId, message, className = 'info') {
+            const element = document.getElementById(elementId);
+            const div = document.createElement('div');
+            div.className = className;
+            div.innerHTML = message;
+            if (element.innerHTML === 'Checking...') {
+                element.innerHTML = '';
+            }
+            element.appendChild(div);
+        }
+
+        async function checkAuth() {
+            try {
+                const token = localStorage.getItem('access_token');
+                const userStr = localStorage.getItem('user');
+
+                if (!token) {
+                    log('auth-status', '❌ No authentication token found', 'error');
+                    return false;
+                }
+
+                log('auth-status', '✅ Token found in localStorage', 'success');
+
+                // Verify token with API
+                const response = await fetch(`${API_BASE}/auth/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    log('auth-status', '✅ Token is valid <span class="status-badge success">Authenticated</span>', 'success');
+
+                    // Show user info
+                    log('user-info', `<strong>Name:</strong> ${userData.first_name} ${userData.last_name}`);
+                    log('user-info', `<strong>Email:</strong> ${userData.email}`);
+                    log('user-info', `<strong>Role:</strong> ${userData.role}`);
+                    log('user-info', `<strong>User ID:</strong> ${userData.id}`);
+
+                    if (userData.primary_location_id) {
+                        log('user-info', `<strong>Primary Location ID:</strong> ${userData.primary_location_id}`);
+                    }
+
+                    return userData;
+                } else {
+                    log('auth-status', '❌ Token is invalid or expired', 'error');
+                    return false;
+                }
+            } catch (error) {
+                log('auth-status', `❌ Auth check failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testAPIs(user) {
+            const endpoints = [
+                { name: 'Appointments', url: '/appointments', requiresAuth: true },
+                { name: 'Locations', url: '/locations', requiresAuth: true },
+                { name: 'Barbers', url: '/barbers', requiresAuth: true },
+                { name: 'Services', url: '/services', requiresAuth: true },
+                { name: 'Analytics Summary', url: '/analytics/summary', requiresAuth: true }
+            ];
+
+            for (const endpoint of endpoints) {
+                try {
+                    const token = localStorage.getItem('access_token');
+                    const response = await fetch(`${API_BASE}${endpoint.url}`, {
+                        headers: endpoint.requiresAuth ? {
+                            'Authorization': `Bearer ${token}`
+                        } : {}
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const count = Array.isArray(data) ? data.length : (data.appointments?.length || 'N/A');
+                        log('api-tests', `✅ ${endpoint.name}: <span class="status-badge success">OK</span> (${count} items)`);
+                    } else {
+                        const error = await response.text();
+                        log('api-tests', `❌ ${endpoint.name}: <span class="status-badge error">${response.status}</span>`, 'error');
+                    }
+                } catch (error) {
+                    log('api-tests', `❌ ${endpoint.name}: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        async function checkAppointments() {
+            try {
+                const token = localStorage.getItem('access_token');
+                const response = await fetch(`${API_BASE}/appointments`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const appointments = await response.json();
+
+                    if (appointments.length === 0) {
+                        log('appointments-data', '⚠️ No appointments found', 'warning');
+                        log('appointments-data', 'This might be why the calendar appears empty.');
+                    } else {
+                        log('appointments-data', `✅ Found ${appointments.length} appointments`, 'success');
+
+                        // Show first few appointments
+                        log('appointments-data', '<strong>Recent appointments:</strong>');
+                        appointments.slice(0, 3).forEach(apt => {
+                            const date = new Date(apt.appointment_datetime);
+                            log('appointments-data', `• ${date.toLocaleDateString()} ${date.toLocaleTimeString()} - ${apt.service?.name || 'Unknown Service'} (${apt.status})`);
+                        });
+                    }
+                } else {
+                    log('appointments-data', '❌ Failed to fetch appointments', 'error');
+                }
+            } catch (error) {
+                log('appointments-data', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function createTestAppointment() {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = 'Creating...';
+
+            try {
+                const token = localStorage.getItem('access_token');
+
+                // First get services
+                const servicesRes = await fetch(`${API_BASE}/services`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const services = await servicesRes.json();
+
+                if (services.length === 0) {
+                    alert('No services available. Please create services first.');
+                    return;
+                }
+
+                // Create appointment for tomorrow at 10 AM
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                tomorrow.setHours(10, 0, 0, 0);
+
+                const appointmentData = {
+                    client_id: 1, // Test client
+                    service_id: services[0].id,
+                    appointment_datetime: tomorrow.toISOString(),
+                    status: 'confirmed',
+                    notes: 'Test appointment created from diagnostic tool'
+                };
+
+                const response = await fetch(`${API_BASE}/appointments`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(appointmentData)
+                });
+
+                if (response.ok) {
+                    alert('Test appointment created successfully! Refresh the calendar to see it.');
+                    checkAppointments(); // Refresh the list
+                } else {
+                    const error = await response.json();
+                    alert(`Failed to create appointment: ${error.detail || error.message}`);
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Create Test Appointment';
+            }
+        }
+
+        function clearAndRefresh() {
+            if (confirm('This will clear all cached data and refresh the page. Continue?')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.reload(true);
+            }
+        }
+
+        // Run diagnostics on load
+        async function runDiagnostics() {
+            const user = await checkAuth();
+            if (user) {
+                await testAPIs(user);
+                await checkAppointments();
+            } else {
+                log('api-tests', '⚠️ Cannot test APIs without authentication', 'warning');
+                log('appointments-data', '⚠️ Cannot check appointments without authentication', 'warning');
+            }
+        }
+
+        runDiagnostics();
+    </script>
+</body>
+</html>

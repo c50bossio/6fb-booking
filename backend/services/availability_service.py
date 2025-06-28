@@ -347,7 +347,7 @@ class AvailabilityService:
 
         # Get barber availability for this day
         day_of_week = DayOfWeek(appointment_date.weekday())
-        
+
         availability = (
             self.db.query(BarberAvailability)
             .filter(

@@ -13,7 +13,7 @@
 **Decision**: Use separate Sentry project for Python backend
 **Reason**: Better error segregation and project-specific alerting
 **Impact**: Clearer error tracking per service
-**Configuration**: 
+**Configuration**:
 - DSN: Python project (4509526819012608)
 - Environment: development/production based on env var
 - Sensitive data filtering enabled

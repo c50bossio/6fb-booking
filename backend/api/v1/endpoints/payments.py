@@ -189,27 +189,25 @@ async def create_setup_intent(
     try:
         stripe_service = StripeService(db)
         customer_id = await stripe_service.create_or_get_customer(current_user)
-        
+
         # Create setup intent
         import stripe
+
         setup_intent = stripe.SetupIntent.create(
             customer=customer_id,
-            payment_method_types=['card'],
-            metadata={
-                'user_id': str(current_user.id),
-                'platform': '6FB'
-            }
+            payment_method_types=["card"],
+            metadata={"user_id": str(current_user.id), "platform": "6FB"},
         )
-        
+
         return {
             "client_secret": setup_intent.client_secret,
-            "setup_intent_id": setup_intent.id
+            "setup_intent_id": setup_intent.id,
         }
     except Exception as e:
         logger.error(f"Failed to create setup intent: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Failed to create setup intent"
+            detail="Failed to create setup intent",
         )
 
 

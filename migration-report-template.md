@@ -1,8 +1,8 @@
 # 6FB Booking to Monorepo Migration Report
 
-**Generated:** {{timestamp}}  
-**Migration Type:** {{dryRun ? 'DRY RUN' : 'EXECUTED'}}  
-**Source:** {{source}}  
+**Generated:** {{timestamp}}
+**Migration Type:** {{dryRun ? 'DRY RUN' : 'EXECUTED'}}
+**Source:** {{source}}
 **Target:** {{target}}
 
 ## Executive Summary

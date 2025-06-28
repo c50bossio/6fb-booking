@@ -108,7 +108,7 @@ describe('Auth Service', () => {
     it('should return stored user', () => {
       const user = { id: 1, email: 'test@example.com' }
       localStorage.setItem('user', JSON.stringify(user))
-      
+
       expect(authService.getStoredUser()).toEqual(user)
     })
 

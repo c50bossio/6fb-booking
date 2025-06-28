@@ -14,24 +14,24 @@ export default function SixFBDashboard() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <DashboardHeader />
-      
+
       {/* Main Dashboard Content */}
       <div className="container mx-auto px-4 py-6 space-y-6">
         {/* 6FB Score Section */}
         <SixFBScore />
-        
+
         {/* Key Metrics Cards */}
         <MetricsCards />
-        
+
         {/* Weekly Comparison */}
         <WeeklyComparison />
-        
+
         {/* Daily Appointments Summary */}
         <DailyAppointments />
-        
+
         {/* Trafft Integration */}
         <TrafftIntegration />
-        
+
         {/* Automation Dashboard */}
         <AutomationDashboard />
       </div>

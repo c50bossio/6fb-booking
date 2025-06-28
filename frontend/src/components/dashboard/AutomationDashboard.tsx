@@ -42,7 +42,7 @@ const mockActiveWorkflows = [
   {
     id: 2,
     name: "Post-Appointment Follow-up",
-    type: "client_followup", 
+    type: "client_followup",
     status: "active",
     triggered_count: 12,
     success_rate: 92.1,
@@ -88,7 +88,7 @@ const mockRecentActivity = [
   },
   {
     id: 2,
-    timestamp: "2024-12-18 15:30:15", 
+    timestamp: "2024-12-18 15:30:15",
     type: "performance_alert",
     action: "Alert triggered: Booking rate below threshold",
     workflow: "Performance Monitoring",

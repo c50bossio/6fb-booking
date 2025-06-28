@@ -107,7 +107,7 @@ describe('RevenueChart', () => {
       from: new Date('2024-01-01'),
       to: new Date('2024-01-07')
     }
-    
+
     render(<RevenueChart data={mockData} dateRange={weeklyRange} />)
     // Chart should be rendered with correct date formatting
     expect(screen.getByTestId('area-chart')).toBeInTheDocument()
@@ -117,7 +117,7 @@ describe('RevenueChart', () => {
       from: new Date('2024-01-01'),
       to: new Date('2024-01-31')
     }
-    
+
     render(<RevenueChart data={mockData} dateRange={monthlyRange} />)
     expect(screen.getByTestId('area-chart')).toBeInTheDocument()
   })
@@ -129,7 +129,7 @@ describe('RevenueChart', () => {
     ]
 
     render(<RevenueChart data={dataWithoutBreakdown} dateRange={mockDateRange} />)
-    
+
     // Should not render breakdown chart if no breakdown data
     expect(screen.queryByText('Revenue Breakdown')).not.toBeInTheDocument()
   })
@@ -142,7 +142,7 @@ describe('RevenueChart', () => {
     ]
 
     render(<RevenueChart data={dataWithNulls as any} dateRange={mockDateRange} />)
-    
+
     // Should handle nulls gracefully
     expect(screen.getByText('Revenue Trend')).toBeInTheDocument()
   })

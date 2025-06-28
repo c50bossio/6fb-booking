@@ -8,12 +8,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { 
-  Building, 
-  Users, 
-  TrendingUp, 
-  DollarSign, 
-  MapPin, 
+import {
+  Building,
+  Users,
+  TrendingUp,
+  DollarSign,
+  MapPin,
   Phone,
   Mail,
   Calendar,
@@ -398,7 +398,7 @@ export default function LocationManager() {
                 Add Team Member
               </Button>
             </div>
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {locationBarbers.map((barber) => (
                 <Card key={barber.id}>
@@ -446,18 +446,18 @@ export default function LocationManager() {
                         <span>{barber.hire_date}</span>
                       </div>
                       <div className="flex space-x-2 mt-4">
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
+                        <Button
+                          size="sm"
+                          variant="outline"
                           className="flex-1"
                           onClick={() => handleEditBarber(barber.id)}
                         >
                           <Edit className="w-4 h-4 mr-1" />
                           Edit
                         </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
+                        <Button
+                          size="sm"
+                          variant="outline"
                           className="flex-1"
                           onClick={() => handleRemoveBarber(barber.id)}
                         >
@@ -474,7 +474,7 @@ export default function LocationManager() {
 
           <TabsContent value="analytics" className="space-y-6">
             <h2 className="text-2xl font-bold">Performance Analytics</h2>
-            
+
             {locationAnalytics && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card>
@@ -536,7 +536,7 @@ export default function LocationManager() {
 
           <TabsContent value="settings" className="space-y-6">
             <h2 className="text-2xl font-bold">Location Settings</h2>
-            
+
             {locationDetails && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card>
@@ -548,42 +548,42 @@ export default function LocationManager() {
                     <div className="space-y-4">
                       <div>
                         <Label htmlFor="location-name">Location Name</Label>
-                        <Input 
-                          id="location-name" 
-                          value={locationDetails.name} 
+                        <Input
+                          id="location-name"
+                          value={locationDetails.name}
                           disabled={!editMode}
                         />
                       </div>
                       <div>
                         <Label htmlFor="location-code">Location Code</Label>
-                        <Input 
-                          id="location-code" 
-                          value={locationDetails.location_code} 
+                        <Input
+                          id="location-code"
+                          value={locationDetails.location_code}
                           disabled={!editMode}
                         />
                       </div>
                       <div>
                         <Label htmlFor="address">Address</Label>
-                        <Input 
-                          id="address" 
-                          value={locationDetails.address} 
+                        <Input
+                          id="address"
+                          value={locationDetails.address}
                           disabled={!editMode}
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="phone">Phone</Label>
-                          <Input 
-                            id="phone" 
-                            value={locationDetails.phone} 
+                          <Input
+                            id="phone"
+                            value={locationDetails.phone}
                             disabled={!editMode}
                           />
                         </div>
                         <div>
                           <Label htmlFor="email">Email</Label>
-                          <Input 
-                            id="email" 
-                            value={locationDetails.email} 
+                          <Input
+                            id="email"
+                            value={locationDetails.email}
                             disabled={!editMode}
                           />
                         </div>

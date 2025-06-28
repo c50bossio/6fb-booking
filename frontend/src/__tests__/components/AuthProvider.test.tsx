@@ -86,7 +86,7 @@ describe('AuthProvider', () => {
 
   it('should handle authentication check failure', async () => {
     const { authService } = require('@/lib/api')
-    
+
     localStorage.setItem('access_token', 'invalid-token')
     authService.getCurrentUser.mockRejectedValueOnce(new Error('Invalid token'))
 

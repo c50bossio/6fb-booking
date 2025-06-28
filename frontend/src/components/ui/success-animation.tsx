@@ -11,11 +11,11 @@ interface SuccessAnimationProps {
   className?: string
 }
 
-export function SuccessAnimation({ 
-  show, 
-  message = "Success!", 
+export function SuccessAnimation({
+  show,
+  message = "Success!",
   onComplete,
-  className 
+  className
 }: SuccessAnimationProps) {
   return (
     <AnimatePresence>
@@ -48,12 +48,12 @@ export function SuccessAnimation({
               <motion.div
                 key={i}
                 className="absolute"
-                initial={{ 
-                  x: 0, 
+                initial={{
+                  x: 0,
                   y: 0,
                   opacity: 0
                 }}
-                animate={{ 
+                animate={{
                   x: Math.cos(i * 60 * Math.PI / 180) * 100,
                   y: Math.sin(i * 60 * Math.PI / 180) * 100,
                   opacity: [0, 1, 0]
@@ -73,7 +73,7 @@ export function SuccessAnimation({
               className="mx-auto mb-4"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ 
+              transition={{
                 type: "spring",
                 damping: 10,
                 delay: 0.2
@@ -92,7 +92,7 @@ export function SuccessAnimation({
                 >
                   <CheckCircle className="h-12 w-12 text-green-600" />
                 </motion.div>
-                
+
                 {/* Ring animation */}
                 <motion.div
                   className="absolute inset-0 border-4 border-green-500 rounded-full"

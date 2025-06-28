@@ -20,14 +20,14 @@ if DATABASE_URL.startswith("postgres://"):
 # Parse connection parameters for optimization
 if DATABASE_URL:
     parsed = urlparse(DATABASE_URL)
-    
+
     # Connection pool settings optimized for Render
     POOL_SIZE = int(os.getenv("POOL_SIZE", "10"))
     MAX_OVERFLOW = int(os.getenv("MAX_OVERFLOW", "20"))
     POOL_TIMEOUT = int(os.getenv("POOL_TIMEOUT", "30"))
     POOL_RECYCLE = int(os.getenv("POOL_RECYCLE", "3600"))  # 1 hour
     POOL_PRE_PING = os.getenv("POOL_PRE_PING", "true").lower() == "true"
-    
+
     # Create engine with optimized settings
     engine = create_engine(
         DATABASE_URL,
@@ -52,7 +52,7 @@ if DATABASE_URL:
             "postgresql_statement_timeout": 30000,  # 30 seconds
         },
     )
-    
+
     # Session configuration
     SessionLocal = sessionmaker(
         autocommit=False,

@@ -47,7 +47,7 @@ describe('API Client', () => {
 
     // Get the request interceptor
     const requestInterceptor = (apiClient.interceptors.request as any).handlers[0]
-    
+
     const config = { headers: {} }
     const modifiedConfig = await requestInterceptor.fulfilled(config)
 
@@ -57,7 +57,7 @@ describe('API Client', () => {
   it('should not add authorization header when no token exists', async () => {
     // Get the request interceptor
     const requestInterceptor = (apiClient.interceptors.request as any).handlers[0]
-    
+
     const config = { headers: {} }
     const modifiedConfig = await requestInterceptor.fulfilled(config)
 
@@ -78,7 +78,7 @@ describe('API Client', () => {
 
     // Get the response interceptor error handler
     const responseInterceptor = (apiClient.interceptors.response as any).handlers[0]
-    
+
     localStorage.setItem('access_token', 'test-token')
     localStorage.setItem('refresh_token', 'test-refresh')
 

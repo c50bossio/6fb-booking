@@ -28,7 +28,7 @@ module.exports = {
       ImportDeclaration(node) {
         const importPath = node.source.value;
         const currentPackage = getCurrentPackage(context.getFilename());
-        
+
         if (!currentPackage || !importPath.startsWith('@6fb/')) {
           return;
         }

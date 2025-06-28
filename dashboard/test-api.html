@@ -7,31 +7,31 @@
     <h1>Testing 6FB Backend API</h1>
     <button onclick="testAPI()">Test API Connection</button>
     <pre id="result"></pre>
-    
+
     <script>
         async function testAPI() {
             const resultDiv = document.getElementById('result');
             resultDiv.textContent = 'Testing...\n';
-            
+
             try {
                 // Test health endpoint
                 const healthResponse = await fetch('https://sixfb-backend.onrender.com/health');
                 resultDiv.textContent += `Health Status: ${healthResponse.status}\n`;
                 const healthData = await healthResponse.json();
                 resultDiv.textContent += `Health Response: ${JSON.stringify(healthData, null, 2)}\n\n`;
-                
+
                 // Test usage-summary endpoint
                 const usageResponse = await fetch('https://sixfb-backend.onrender.com/api/usage-summary');
                 resultDiv.textContent += `Usage Summary Status: ${usageResponse.status}\n`;
                 const usageData = await usageResponse.json();
                 resultDiv.textContent += `Usage Response: ${JSON.stringify(usageData, null, 2).substring(0, 200)}...\n`;
-                
+
             } catch (error) {
                 resultDiv.textContent += `ERROR: ${error.message}\n`;
                 console.error('Full error:', error);
             }
         }
-        
+
         // Test on load
         testAPI();
     </script>

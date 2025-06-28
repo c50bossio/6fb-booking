@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
-import { 
-  Users, 
-  TrendingUp, 
-  Target, 
-  BookOpen, 
-  Award, 
+import {
+  Users,
+  TrendingUp,
+  Target,
+  BookOpen,
+  Award,
   Calendar,
   AlertCircle,
   CheckCircle,
@@ -426,7 +426,7 @@ export default function MentorDashboard() {
 
           <TabsContent value="mentees" className="space-y-6">
             <h2 className="text-2xl font-bold">Mentee Management</h2>
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {mentees.map((mentee) => (
                 <Card key={mentee.id}>
@@ -476,18 +476,18 @@ export default function MentorDashboard() {
                         </div>
                       )}
                       <div className="flex space-x-2 mt-4">
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
+                        <Button
+                          size="sm"
+                          variant="outline"
                           className="flex-1"
                           onClick={() => handleScheduleCheckin(mentee.id)}
                         >
                           <Calendar className="w-4 h-4 mr-1" />
                           Check-in
                         </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
+                        <Button
+                          size="sm"
+                          variant="outline"
                           className="flex-1"
                           onClick={() => handleConductAssessment(mentee.id)}
                         >
@@ -510,7 +510,7 @@ export default function MentorDashboard() {
                 Create Goal
               </Button>
             </div>
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {goals.map((goal) => (
                 <Card key={goal.id}>
@@ -534,9 +534,9 @@ export default function MentorDashboard() {
                           {goal.category === 'retention' && '%'}
                         </span>
                       </div>
-                      <Progress 
-                        value={(goal.current_value / goal.target_value) * 100} 
-                        className="h-2" 
+                      <Progress
+                        value={(goal.current_value / goal.target_value) * 100}
+                        className="h-2"
                       />
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-500">Target Date:</span>
@@ -555,7 +555,7 @@ export default function MentorDashboard() {
 
           <TabsContent value="training" className="space-y-6">
             <h2 className="text-2xl font-bold">Training Progress</h2>
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {trainingProgress.map((module, index) => (
                 <Card key={index}>
@@ -569,7 +569,7 @@ export default function MentorDashboard() {
                           {module.status === 'not_started' && `Due: ${module.due_date}`}
                         </CardDescription>
                       </div>
-                      <Badge 
+                      <Badge
                         variant={
                           module.status === 'completed' ? 'default' :
                           module.status === 'in_progress' ? 'secondary' : 'outline'
@@ -598,7 +598,7 @@ export default function MentorDashboard() {
 
           <TabsContent value="assessments" className="space-y-6">
             <h2 className="text-2xl font-bold">Skill Assessments</h2>
-            
+
             <div className="space-y-6">
               {assessments.map((assessment) => (
                 <Card key={assessment.id}>

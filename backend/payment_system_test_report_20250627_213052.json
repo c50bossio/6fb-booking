@@ -1,0 +1,74 @@
+{
+  "test_summary": {
+    "timestamp": "2025-06-27T21:30:52.095446",
+    "total_test_categories": 9,
+    "passed": 0,
+    "failed": 0,
+    "partial": 0,
+    "overall_status": "FAIL"
+  },
+  "detailed_results": {
+    "stripe_connectivity": {
+      "status": "pending",
+      "details": []
+    },
+    "payment_intents": {
+      "status": "pending",
+      "details": []
+    },
+    "payment_methods": {
+      "status": "pending",
+      "details": []
+    },
+    "payment_flows": {
+      "status": "pending",
+      "details": []
+    },
+    "webhooks": {
+      "status": "pending",
+      "details": []
+    },
+    "payouts": {
+      "status": "pending",
+      "details": []
+    },
+    "security": {
+      "status": "pending",
+      "details": []
+    },
+    "error_handling": {
+      "status": "pending",
+      "details": []
+    },
+    "performance": {
+      "status": "pending",
+      "details": []
+    }
+  },
+  "recommendations": [
+    {
+      "priority": "HIGH",
+      "category": "Configuration",
+      "issue": "Stripe connectivity issues",
+      "recommendation": "Verify Stripe API keys and webhook configuration"
+    },
+    {
+      "priority": "HIGH",
+      "category": "Integration",
+      "issue": "Webhook processing issues",
+      "recommendation": "Configure webhook endpoints and signature validation"
+    },
+    {
+      "priority": "CRITICAL",
+      "category": "Security",
+      "issue": "Security measures incomplete",
+      "recommendation": "Implement all PCI compliance requirements and input validation"
+    },
+    {
+      "priority": "MEDIUM",
+      "category": "Business Logic",
+      "issue": "Payout system needs configuration",
+      "recommendation": "Complete Stripe Connect setup for barber payouts"
+    }
+  ]
+}

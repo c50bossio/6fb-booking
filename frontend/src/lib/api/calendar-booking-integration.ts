@@ -100,6 +100,18 @@ export class CalendarBookingIntegration {
    */
   async getCalendarAppointments(config: CalendarViewConfig): Promise<CalendarAppointment[]> {
     try {
+      // Check if we're in demo mode or if backend is unavailable
+      if (typeof window !== 'undefined') {
+        const isDemoMode = window.location.search.includes('demo=true') ||
+                          window.location.pathname.includes('/app/') ||
+                          localStorage.getItem('demo_mode') === 'true'
+
+        if (isDemoMode) {
+          console.log('[CalendarBookingIntegration] Demo mode detected - returning empty array')
+          return []
+        }
+      }
+
       // Use existing appointments API with calendar formatting
       const filters: AppointmentFilter = {
         start_date: config.startDate,
@@ -316,6 +328,39 @@ export class CalendarBookingIntegration {
     reason?: string
   ): Promise<CalendarAppointment> {
     try {
+      // Check if we're in demo mode
+      if (typeof window !== 'undefined') {
+        const isDemoMode = window.location.search.includes('demo=true') ||
+                          window.location.pathname.includes('/app/') ||
+                          localStorage.getItem('demo_mode') === 'true'
+
+        if (isDemoMode) {
+          console.log('[CalendarBookingIntegration] Demo mode - simulating reschedule:', {
+            appointmentId,
+            newDate,
+            newTime,
+            reason
+          })
+
+          // Return a mock response for demo mode
+          await new Promise(resolve => setTimeout(resolve, 500)) // Simulate API delay
+
+          return {
+            id: appointmentId,
+            title: 'Demo Appointment - Rescheduled',
+            client: 'Demo Client',
+            barber: 'Demo Barber',
+            barberId: 1,
+            startTime: newTime,
+            endTime: this.calculateEndTime(newTime, 60),
+            service: 'Demo Service',
+            price: 50,
+            status: 'confirmed',
+            date: newDate
+          } as CalendarAppointment
+        }
+      }
+
       // Check if new slot is available
       const currentAppointment = await appointmentsService.getAppointment(parseInt(appointmentId))
 

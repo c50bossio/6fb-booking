@@ -46,15 +46,15 @@ export function RevenueChart({ data, dateRange }: RevenueChartProps) {
   // Calculate trend
   const calculateTrend = () => {
     if (data.length < 2) return { value: 0, direction: 'neutral' }
-    
+
     const firstHalf = data.slice(0, Math.floor(data.length / 2))
     const secondHalf = data.slice(Math.floor(data.length / 2))
-    
+
     const firstAvg = firstHalf.reduce((sum, item) => sum + (item.revenue || 0), 0) / firstHalf.length
     const secondAvg = secondHalf.reduce((sum, item) => sum + (item.revenue || 0), 0) / secondHalf.length
-    
+
     const percentChange = firstAvg > 0 ? ((secondAvg - firstAvg) / firstAvg) * 100 : 0
-    
+
     return {
       value: Math.abs(percentChange).toFixed(1),
       direction: percentChange > 5 ? 'up' : percentChange < -5 ? 'down' : 'neutral'
@@ -103,8 +103,8 @@ export function RevenueChart({ data, dateRange }: RevenueChartProps) {
             {trend.direction === 'down' && <TrendingDown className="h-4 w-4 text-red-500 mr-1" />}
             {trend.direction === 'neutral' && <Minus className="h-4 w-4 text-gray-500 mr-1" />}
             <span className={`text-sm ${
-              trend.direction === 'up' ? 'text-green-600' : 
-              trend.direction === 'down' ? 'text-red-600' : 
+              trend.direction === 'up' ? 'text-green-600' :
+              trend.direction === 'down' ? 'text-red-600' :
               'text-gray-600'
             }`}>
               {trend.value}% trend
@@ -141,31 +141,31 @@ export function RevenueChart({ data, dateRange }: RevenueChartProps) {
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-            <XAxis 
-              dataKey="date" 
+            <XAxis
+              dataKey="date"
               tickFormatter={formatXAxis}
               stroke="#6b7280"
               fontSize={12}
             />
-            <YAxis 
+            <YAxis
               tickFormatter={(value) => `$${value}`}
               stroke="#6b7280"
               fontSize={12}
             />
-            <Tooltip 
+            <Tooltip
               formatter={formatTooltipValue}
               labelFormatter={formatTooltipLabel}
-              contentStyle={{ 
+              contentStyle={{
                 backgroundColor: 'rgba(255, 255, 255, 0.95)',
                 border: '1px solid #e5e7eb',
                 borderRadius: '8px'
               }}
             />
-            <Area 
-              type="monotone" 
-              dataKey="revenue" 
-              stroke="#3b82f6" 
-              fillOpacity={1} 
+            <Area
+              type="monotone"
+              dataKey="revenue"
+              stroke="#3b82f6"
+              fillOpacity={1}
               fill="url(#colorRevenue)"
               strokeWidth={2}
             />
@@ -180,47 +180,47 @@ export function RevenueChart({ data, dateRange }: RevenueChartProps) {
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis 
-                dataKey="date" 
+              <XAxis
+                dataKey="date"
                 tickFormatter={formatXAxis}
                 stroke="#6b7280"
                 fontSize={12}
               />
-              <YAxis 
+              <YAxis
                 tickFormatter={(value) => `$${value}`}
                 stroke="#6b7280"
                 fontSize={12}
               />
-              <Tooltip 
+              <Tooltip
                 formatter={formatTooltipValue}
                 labelFormatter={formatTooltipLabel}
-                contentStyle={{ 
+                contentStyle={{
                   backgroundColor: 'rgba(255, 255, 255, 0.95)',
                   border: '1px solid #e5e7eb',
                   borderRadius: '8px'
                 }}
               />
               <Legend />
-              <Line 
-                type="monotone" 
-                dataKey="services" 
-                stroke="#3b82f6" 
+              <Line
+                type="monotone"
+                dataKey="services"
+                stroke="#3b82f6"
                 strokeWidth={2}
                 dot={false}
                 name="Services"
               />
-              <Line 
-                type="monotone" 
-                dataKey="products" 
-                stroke="#10b981" 
+              <Line
+                type="monotone"
+                dataKey="products"
+                stroke="#10b981"
                 strokeWidth={2}
                 dot={false}
                 name="Products"
               />
-              <Line 
-                type="monotone" 
-                dataKey="tips" 
-                stroke="#f59e0b" 
+              <Line
+                type="monotone"
+                dataKey="tips"
+                stroke="#f59e0b"
                 strokeWidth={2}
                 dot={false}
                 name="Tips"

@@ -57,7 +57,7 @@ export function ServiceAnalytics({ data }: ServiceAnalyticsProps) {
           {payload.map((entry: any, index: number) => (
             <p key={index} className="text-sm" style={{ color: entry.color }}>
               {entry.name}: {
-                entry.name === 'revenue' || entry.name === 'avg_price' || entry.name === 'efficiency' 
+                entry.name === 'revenue' || entry.name === 'avg_price' || entry.name === 'efficiency'
                   ? `$${entry.value.toFixed(2)}`
                   : entry.value
               }
@@ -146,13 +146,13 @@ export function ServiceAnalytics({ data }: ServiceAnalyticsProps) {
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">Service Popularity</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart 
+            <BarChart
               data={popularityData}
               margin={{ top: 20, right: 30, left: 0, bottom: 60 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis 
-                dataKey="name" 
+              <XAxis
+                dataKey="name"
                 angle={-45}
                 textAnchor="end"
                 height={100}

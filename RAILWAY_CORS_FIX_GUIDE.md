@@ -127,12 +127,12 @@ Save this as `test-railway-login.html` and open in browser:
     <h1>Railway Frontend CORS Test</h1>
     <button onclick="testCORS()">Test Backend Connection</button>
     <pre id="result"></pre>
-    
+
     <script>
         async function testCORS() {
             const result = document.getElementById('result');
             result.textContent = 'Testing...';
-            
+
             try {
                 const response = await fetch('https://sixfb-backend.onrender.com/api/v1/health', {
                     method: 'GET',
@@ -141,7 +141,7 @@ Save this as `test-railway-login.html` and open in browser:
                     },
                     credentials: 'include'
                 });
-                
+
                 const data = await response.json();
                 result.textContent = 'SUCCESS! Backend is accessible.\n' + JSON.stringify(data, null, 2);
             } catch (error) {

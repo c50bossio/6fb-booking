@@ -20,7 +20,7 @@ ruleTester.run('no-copy-paste-code', rule, {
         function add(a, b) {
           return a + b;
         }
-        
+
         function subtract(a, b) {
           return a - b;
         }
@@ -32,7 +32,7 @@ ruleTester.run('no-copy-paste-code', rule, {
         function short1() {
           return 1;
         }
-        
+
         function short2() {
           return 1;
         }
@@ -47,7 +47,7 @@ ruleTester.run('no-copy-paste-code', rule, {
           const result = data.map(x => x * 2);
           return result;
         }
-        
+
         function process2() {
           // Transform data
           const result = data.map(x => x * 2);
@@ -77,7 +77,7 @@ ruleTester.run('no-copy-paste-code', rule, {
           const sorted = mapped.sort((a, b) => a - b);
           return sorted;
         }
-        
+
         function process2(data) {
           const filtered = data.filter(x => x > 0);
           const mapped = filtered.map(x => x * 2);
@@ -105,7 +105,7 @@ ruleTester.run('no-copy-paste-code', rule, {
             .catch(error => setError(error))
             .finally(() => setLoading(false));
         }
-        
+
         function handleClick2() {
           setLoading(true);
           fetchUsers()
@@ -133,7 +133,7 @@ ruleTester.run('no-copy-paste-code', rule, {
             </div>
           );
         }
-        
+
         function Component2() {
           return (
             <div className="container">
@@ -161,7 +161,7 @@ ruleTester.run('no-copy-paste-code', rule, {
           permissions.push('manage');
           return permissions;
         }
-        
+
         if (currentUser.role === 'admin') {
           permissions.push('read');
           permissions.push('write');
@@ -192,7 +192,7 @@ ruleTester.run('no-copy-paste-code', rule, {
             throw error;
           }
         }
-        
+
         function save2() {
           try {
             validateData(data);

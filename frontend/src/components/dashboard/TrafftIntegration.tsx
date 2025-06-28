@@ -30,7 +30,7 @@ const mockSyncHistory = [
   {
     id: 2,
     timestamp: "2024-12-20 14:15:12",
-    type: "webhook", 
+    type: "webhook",
     event: "appointment.completed",
     status: "success",
     details: "Appointment completed: DeAndre Williams - Classic Cut ($35)"
@@ -47,7 +47,7 @@ const mockSyncHistory = [
     id: 4,
     timestamp: "2024-12-20 12:30:15",
     type: "webhook",
-    event: "payment.completed", 
+    event: "payment.completed",
     status: "success",
     details: "Payment processed: $65.00 - Jaylen Carter (Signature Cut)"
   },
@@ -56,7 +56,7 @@ const mockSyncHistory = [
     timestamp: "2024-12-20 11:22:44",
     type: "webhook",
     event: "customer.updated",
-    status: "success", 
+    status: "success",
     details: "Customer profile updated: Isaiah Brooks - loyalty points added"
   },
   {
@@ -64,7 +64,7 @@ const mockSyncHistory = [
     timestamp: "2024-12-20 10:15:33",
     type: "webhook",
     event: "appointment.cancelled",
-    status: "warning", 
+    status: "warning",
     details: "Appointment cancelled: Xavier Thompson - Refund processed"
   }
 ]
@@ -138,7 +138,7 @@ export default function TrafftIntegration() {
         <h4 className="text-sm font-medium text-white mb-3">Recent Sync Activity</h4>
         <div className="space-y-2 max-h-48 overflow-y-auto">
           {mockSyncHistory.slice(0, 4).map((event) => (
-            <div 
+            <div
               key={event.id}
               className="flex items-center justify-between p-3 bg-slate-700/20 rounded-lg border border-slate-600/20 hover:bg-slate-700/30 transition-colors"
             >

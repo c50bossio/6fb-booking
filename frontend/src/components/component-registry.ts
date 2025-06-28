@@ -1,9 +1,9 @@
 /**
  * Component Registry
- * 
+ *
  * This file maintains a registry of all allowed components in the application.
  * Components not listed here will trigger build warnings.
- * 
+ *
  * This helps prevent:
  * - Component sprawl
  * - Duplicate components

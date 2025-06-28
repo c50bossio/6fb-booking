@@ -54,17 +54,17 @@ export function BookingTrendsChart({ data, dateRange }: BookingTrendsChartProps)
           <p className="text-sm text-gray-600">Total Bookings</p>
           <p className="text-2xl font-bold">{totalBookings}</p>
         </Card>
-        
+
         <Card className="p-4 border-green-200 bg-green-50">
           <p className="text-sm text-green-600">Completion Rate</p>
           <p className="text-2xl font-bold text-green-700">{completionRate}%</p>
         </Card>
-        
+
         <Card className="p-4 border-yellow-200 bg-yellow-50">
           <p className="text-sm text-yellow-600">Cancellation Rate</p>
           <p className="text-2xl font-bold text-yellow-700">{cancellationRate}%</p>
         </Card>
-        
+
         <Card className="p-4 border-red-200 bg-red-50">
           <p className="text-sm text-red-600">No-Show Rate</p>
           <p className="text-2xl font-bold text-red-700">{noShowRate}%</p>
@@ -77,19 +77,19 @@ export function BookingTrendsChart({ data, dateRange }: BookingTrendsChartProps)
         <ResponsiveContainer width="100%" height={350}>
           <BarChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-            <XAxis 
-              dataKey="date" 
+            <XAxis
+              dataKey="date"
               tickFormatter={formatXAxis}
               stroke="#6b7280"
               fontSize={12}
             />
-            <YAxis 
+            <YAxis
               stroke="#6b7280"
               fontSize={12}
             />
-            <Tooltip 
+            <Tooltip
               labelFormatter={(label) => format(new Date(label), 'MMM dd, yyyy')}
-              contentStyle={{ 
+              contentStyle={{
                 backgroundColor: 'rgba(255, 255, 255, 0.95)',
                 border: '1px solid #e5e7eb',
                 borderRadius: '8px'
@@ -110,17 +110,17 @@ export function BookingTrendsChart({ data, dateRange }: BookingTrendsChartProps)
         <div className="flex flex-col md:flex-row items-center justify-between">
           <div className="w-full md:w-1/2">
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart 
-                data={statusBreakdown} 
+              <BarChart
+                data={statusBreakdown}
                 layout="horizontal"
                 margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis type="number" stroke="#6b7280" fontSize={12} />
                 <YAxis dataKey="name" type="category" stroke="#6b7280" fontSize={12} />
-                <Tooltip 
+                <Tooltip
                   formatter={(value: number) => value.toLocaleString()}
-                  contentStyle={{ 
+                  contentStyle={{
                     backgroundColor: 'rgba(255, 255, 255, 0.95)',
                     border: '1px solid #e5e7eb',
                     borderRadius: '8px'
@@ -138,7 +138,7 @@ export function BookingTrendsChart({ data, dateRange }: BookingTrendsChartProps)
             {statusBreakdown.map((status) => (
               <div key={status.name} className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <div 
+                  <div
                     className="w-4 h-4 rounded mr-3"
                     style={{ backgroundColor: status.color }}
                   />

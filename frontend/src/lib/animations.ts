@@ -19,7 +19,7 @@ export const transitions = {
     damping: 30,
     stiffness: 200
   },
-  
+
   // Easing animations
   easeOut: {
     type: "tween",
@@ -40,7 +40,7 @@ export const animations = {
     animate: { opacity: 1 },
     exit: { opacity: 0 }
   },
-  
+
   // Slide animations
   slideUp: {
     initial: { opacity: 0, y: 20 },
@@ -62,7 +62,7 @@ export const animations = {
     animate: { opacity: 1, x: 0 },
     exit: { opacity: 0, x: 20 }
   },
-  
+
   // Scale animations
   scale: {
     initial: { opacity: 0, scale: 0.9 },
@@ -74,18 +74,18 @@ export const animations = {
     animate: { opacity: 1, scale: 1 },
     exit: { opacity: 0, scale: 1.1 }
   },
-  
+
   // Pop animation
   pop: {
     initial: { scale: 0, opacity: 0 },
-    animate: { 
-      scale: 1, 
+    animate: {
+      scale: 1,
       opacity: 1,
       transition: transitions.springBouncy
     },
     exit: { scale: 0, opacity: 0 }
   },
-  
+
   // Rotate animation
   rotate: {
     initial: { opacity: 0, rotate: -180 },
@@ -113,16 +113,16 @@ export const staggerItem = {
 // Page transition variants
 export const pageTransition = {
   initial: { opacity: 0, x: -20 },
-  animate: { 
-    opacity: 1, 
+  animate: {
+    opacity: 1,
     x: 0,
     transition: {
       duration: 0.3,
       ease: "easeOut"
     }
   },
-  exit: { 
-    opacity: 0, 
+  exit: {
+    opacity: 0,
     x: 20,
     transition: {
       duration: 0.2,
@@ -156,18 +156,18 @@ export const buttonVariants = {
 
 // Notification animations
 export const notificationVariants = {
-  initial: { 
-    opacity: 0, 
-    y: 50, 
-    scale: 0.3 
+  initial: {
+    opacity: 0,
+    y: 50,
+    scale: 0.3
   },
-  animate: { 
-    opacity: 1, 
-    y: 0, 
+  animate: {
+    opacity: 1,
+    y: 0,
     scale: 1,
     transition: transitions.spring
   },
-  exit: { 
+  exit: {
     opacity: 0,
     scale: 0.5,
     transition: { duration: 0.2 }
@@ -178,7 +178,7 @@ export const notificationVariants = {
 export const chartAnimations = {
   container: {
     initial: { opacity: 0 },
-    animate: { 
+    animate: {
       opacity: 1,
       transition: {
         staggerChildren: 0.1,
@@ -188,8 +188,8 @@ export const chartAnimations = {
   },
   item: {
     initial: { opacity: 0, y: 20 },
-    animate: { 
-      opacity: 1, 
+    animate: {
+      opacity: 1,
       y: 0,
       transition: transitions.easeOut
     }
@@ -213,8 +213,8 @@ export const loadingDots = {
 // Success animation
 export const successCheckmark = {
   initial: { pathLength: 0, opacity: 0 },
-  animate: { 
-    pathLength: 1, 
+  animate: {
+    pathLength: 1,
     opacity: 1,
     transition: {
       duration: 0.5,
@@ -226,8 +226,8 @@ export const successCheckmark = {
 // Number counter animation
 export const counterAnimation = {
   initial: { opacity: 0, y: 20 },
-  animate: { 
-    opacity: 1, 
+  animate: {
+    opacity: 1,
     y: 0,
     transition: {
       duration: 0.5,
@@ -257,15 +257,15 @@ export const modalVariants = {
   },
   content: {
     initial: { opacity: 0, scale: 0.95, y: 20 },
-    animate: { 
-      opacity: 1, 
-      scale: 1, 
+    animate: {
+      opacity: 1,
+      scale: 1,
       y: 0,
       transition: transitions.spring
     },
-    exit: { 
-      opacity: 0, 
-      scale: 0.95, 
+    exit: {
+      opacity: 0,
+      scale: 0.95,
       y: 20,
       transition: transitions.easeOut
     }
@@ -275,16 +275,16 @@ export const modalVariants = {
 // Tab animations
 export const tabContentVariants = {
   initial: { opacity: 0, x: -10 },
-  animate: { 
-    opacity: 1, 
+  animate: {
+    opacity: 1,
     x: 0,
     transition: {
       duration: 0.2,
       ease: "easeOut"
     }
   },
-  exit: { 
-    opacity: 0, 
+  exit: {
+    opacity: 0,
     x: 10,
     transition: {
       duration: 0.15,

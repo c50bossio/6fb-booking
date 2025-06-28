@@ -18,7 +18,16 @@ import ThemeSelector from '@/components/ThemeSelector'
 import HealthCheck from '@/components/HealthCheck'
 import AuthStatusBanner from '@/components/AuthStatusBanner'
 import { useAuth } from '@/components/AuthProvider'
-import { CalendarIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
+import {
+  CalendarIcon,
+  ArrowPathIcon,
+  MagnifyingGlassIcon,
+  FunnelIcon,
+  ArrowDownTrayIcon,
+  Squares2X2Icon,
+  ClockIcon,
+  UserIcon
+} from '@heroicons/react/24/outline'
 
 // Import new systems - temporarily commented out
 // import { errorManager, AppointmentError, SystemError } from '@/lib/error-handling'
@@ -59,6 +68,16 @@ export default function CalendarPage() {
   const [errorType, setErrorType] = useState<'appointment' | 'system' | null>(null)
   const [optimisticUpdates, setOptimisticUpdates] = useState<Map<string, CalendarAppointment>>(new Map())
   const [availabilityCache, setAvailabilityCache] = useState<Map<string, boolean>>(new Map())
+
+  // Advanced calendar features
+  const [searchTerm, setSearchTerm] = useState('')
+  const [showFilters, setShowFilters] = useState(false)
+  const [selectedBarberFilter, setSelectedBarberFilter] = useState<string>('all')
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all')
+  const [selectedServiceFilter, setSelectedServiceFilter] = useState<string>('all')
+  const [selectedAppointments, setSelectedAppointments] = useState<Set<string>>(new Set())
+  const [showBulkActions, setShowBulkActions] = useState(false)
+  const [dateRangeFilter, setDateRangeFilter] = useState<{start: string | null, end: string | null}>({start: null, end: null})
 
   // Global theme management
   const { theme, getThemeColors } = useTheme()
@@ -143,24 +162,31 @@ export default function CalendarPage() {
     } catch (err: any) {
       console.error('Error fetching appointments:', err)
 
-      // Check if it's a connection error (backend not running)
-      if (err.message?.includes('ERR_CONNECTION_TIMED_OUT') ||
-          err.message?.includes('Network Error') ||
-          err.code === 'ECONNREFUSED' ||
-          err.message?.includes('fetch')) {
-        console.log('🔄 Backend not available, switching to demo mode')
-        setIsDemoMode(true)
+      // Check if it's a connection error or specific API endpoint failure
+      const isConnectionError = err.message?.includes('ERR_CONNECTION_TIMED_OUT') ||
+                               err.message?.includes('Network Error') ||
+                               err.code === 'ECONNREFUSED' ||
+                               err.message?.includes('fetch') ||
+                               err.response?.status >= 500 ||
+                               err.message?.includes('Failed to load calendar appointments')
+
+      if (isConnectionError) {
+        console.log('🔄 Backend/API not available, using fallback data')
+        // Don't switch to demo mode here, just use empty appointments
+        // and let UnifiedCalendar handle mock data generation
         setAppointments([])
         setError(null)
         setErrorType(null)
       } else {
+        // Only show error for client-side issues (validation, auth, etc.)
         setError('Failed to load appointments')
         setErrorType('system')
+        setAppointments([]) // Still provide empty array as fallback
       }
     } finally {
       setLoading(false)
     }
-  }, [dateRange])
+  }, [dateRange, isDemoMode])
 
   // Fetch barbers from API
   const fetchBarbers = useCallback(async () => {
@@ -182,7 +208,7 @@ export default function CalendarPage() {
       const barbersData = Array.isArray(response) ? response : (response?.data || [])
 
       // Ensure barbersData is an array before mapping
-      if (Array.isArray(barbersData)) {
+      if (Array.isArray(barbersData) && barbersData.length > 0) {
         const barberList = barbersData.map(barber => ({
           id: barber.id,
           name: `${barber.first_name} ${barber.last_name}`,
@@ -190,30 +216,55 @@ export default function CalendarPage() {
         }))
         setBarbers(barberList)
       } else {
-        console.error('Invalid barbers data structure:', response)
-        setBarbers([])
+        console.warn('No barbers data available, using fallback')
+        // Use fallback data when no barbers are returned
+        setBarbers([
+          { id: 1, name: 'Marcus Johnson', status: 'online' },
+          { id: 2, name: 'Sarah Mitchell', status: 'online' },
+          { id: 3, name: 'Tony Rodriguez', status: 'offline' },
+          { id: 4, name: 'Amanda Chen', status: 'online' }
+        ])
       }
     } catch (err) {
       console.error('Error fetching barbers:', err)
       // Set fallback mock data on error to prevent undefined errors
       setBarbers([
-        { id: 1, name: 'John Doe', status: 'online' },
-        { id: 2, name: 'Jane Smith', status: 'online' },
-        { id: 3, name: 'Mike Johnson', status: 'offline' },
-        { id: 4, name: 'Sarah Williams', status: 'online' }
+        { id: 1, name: 'Marcus Johnson', status: 'online' },
+        { id: 2, name: 'Sarah Mitchell', status: 'online' },
+        { id: 3, name: 'Tony Rodriguez', status: 'offline' },
+        { id: 4, name: 'Amanda Chen', status: 'online' }
       ])
     }
-  }, [])
+  }, [isDemoMode])
 
   // Fetch services from API
   const fetchServices = useCallback(async () => {
+    // Use mock services in demo mode
+    if (isDemoMode) {
+      console.log('📱 Demo mode: Using mock services')
+      setServices([
+        { id: 1, name: 'Haircut & Style', duration: 45, price: 50, category: 'Hair' },
+        { id: 2, name: 'Beard Trim', duration: 30, price: 25, category: 'Beard' },
+        { id: 3, name: 'Full Service', duration: 90, price: 85, category: 'Premium' },
+        { id: 4, name: 'Kids Cut', duration: 30, price: 30, category: 'Hair' }
+      ])
+      return
+    }
+
     try {
       const response = await servicesService.getServices({ is_active: true })
-      setServices(response.data)
+      setServices(response.data || [])
     } catch (err) {
       console.error('Error fetching services:', err)
+      // Set fallback mock data on error to prevent undefined errors
+      setServices([
+        { id: 1, name: 'Haircut & Style', duration: 45, price: 50, category: 'Hair' },
+        { id: 2, name: 'Beard Trim', duration: 30, price: 25, category: 'Beard' },
+        { id: 3, name: 'Full Service', duration: 90, price: 85, category: 'Premium' },
+        { id: 4, name: 'Kids Cut', duration: 30, price: 30, category: 'Hair' }
+      ])
     }
-  }, [])
+  }, [isDemoMode])
 
 
   // Initial data load - wait for demo mode to be determined
@@ -385,7 +436,13 @@ export default function CalendarPage() {
     }
   }
 
-  const handleAppointmentDrop = async (appointmentId: string, newDate: string, newTime: string) => {
+  const handleAppointmentDrop = async (appointmentId: string, newDate: string, newTime: string, originalDate?: string, originalTime?: string) => {
+    console.log('🎯 handleAppointmentDrop called:', {
+      appointmentId,
+      from: `${originalDate} ${originalTime}`,
+      to: `${newDate} ${newTime}`
+    })
+
     try {
       // Reschedule appointment via integration layer with conflict detection
       const response = await calendarBookingIntegration.rescheduleAppointment(
@@ -445,6 +502,75 @@ export default function CalendarPage() {
   }
 
 
+  // Filter appointments based on search and filters
+  const filteredAppointments = useMemo(() => {
+    let filtered = appointments
+
+    // Search filter
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase()
+      filtered = filtered.filter(apt =>
+        apt.client.toLowerCase().includes(term) ||
+        apt.service.toLowerCase().includes(term) ||
+        apt.barber.toLowerCase().includes(term) ||
+        apt.notes?.toLowerCase().includes(term)
+      )
+    }
+
+    // Barber filter
+    if (selectedBarberFilter !== 'all') {
+      filtered = filtered.filter(apt => apt.barberId.toString() === selectedBarberFilter)
+    }
+
+    // Status filter
+    if (selectedStatusFilter !== 'all') {
+      filtered = filtered.filter(apt => apt.status === selectedStatusFilter)
+    }
+
+    // Service filter
+    if (selectedServiceFilter !== 'all') {
+      filtered = filtered.filter(apt => apt.serviceId?.toString() === selectedServiceFilter)
+    }
+
+    // Date range filter
+    if (dateRangeFilter.start && dateRangeFilter.end) {
+      filtered = filtered.filter(apt => {
+        const aptDate = new Date(apt.date)
+        const startDate = new Date(dateRangeFilter.start!)
+        const endDate = new Date(dateRangeFilter.end!)
+        return aptDate >= startDate && aptDate <= endDate
+      })
+    }
+
+    return filtered
+  }, [appointments, searchTerm, selectedBarberFilter, selectedStatusFilter, selectedServiceFilter, dateRangeFilter])
+
+  // Bulk selection handlers
+  const handleSelectAppointment = (appointmentId: string, selected: boolean) => {
+    setSelectedAppointments(prev => {
+      const newSet = new Set(prev)
+      if (selected) {
+        newSet.add(appointmentId)
+      } else {
+        newSet.delete(appointmentId)
+      }
+      return newSet
+    })
+  }
+
+  const selectAllAppointments = () => {
+    setSelectedAppointments(new Set(filteredAppointments.map(apt => apt.id)))
+  }
+
+  const clearSelection = () => {
+    setSelectedAppointments(new Set())
+  }
+
+  // Update bulk actions visibility
+  useEffect(() => {
+    setShowBulkActions(selectedAppointments.size > 0)
+  }, [selectedAppointments])
+
   if (!mounted) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{
@@ -457,11 +583,11 @@ export default function CalendarPage() {
     )
   }
 
-  const todayAppointments = appointments.filter(apt =>
+  const todayAppointments = filteredAppointments.filter(apt =>
     apt.date === new Date().toISOString().split('T')[0]
   )
 
-  const weekRevenue = appointments.reduce((sum, apt) => {
+  const weekRevenue = filteredAppointments.reduce((sum, apt) => {
     const serviceRevenue = apt.serviceRevenue || apt.price || 0
     const tipAmount = apt.tipAmount || 0
     const productRevenue = apt.productRevenue || 0
@@ -496,6 +622,55 @@ export default function CalendarPage() {
 
             <div className="flex flex-col sm:flex-row gap-3">
               <ThemeSelector variant="button" showLabel={false} />
+
+              {/* Export Button */}
+              <button
+                onClick={() => {
+                  // Export filtered appointments with enhanced data
+                  const csvData = filteredAppointments.map(apt => ({
+                    Date: apt.date,
+                    Time: `${apt.startTime} - ${apt.endTime}`,
+                    Client: apt.client,
+                    Service: apt.service,
+                    Barber: apt.barber,
+                    Status: apt.status,
+                    Price: apt.price,
+                    Duration: CalendarHelpers.getAppointmentDuration(apt),
+                    Notes: apt.notes || '',
+                    Phone: apt.clientPhone || '',
+                    Email: apt.clientEmail || ''
+                  }))
+
+                  const csvContent = [
+                    Object.keys(csvData[0] || {}).join(','),
+                    ...csvData.map(row => Object.values(row).map(val =>
+                      typeof val === 'string' && val.includes(',') ? `"${val}"` : val
+                    ).join(','))
+                  ].join('\n')
+
+                  const blob = new Blob([csvContent], { type: 'text/csv' })
+                  const url = URL.createObjectURL(blob)
+                  const a = document.createElement('a')
+                  a.href = url
+                  a.download = `appointments-${new Date().toISOString().split('T')[0]}.csv`
+                  document.body.appendChild(a)
+                  a.click()
+                  document.body.removeChild(a)
+                  URL.revokeObjectURL(url)
+                  console.log('📄 Exported', csvData.length, 'appointments (filtered view)')
+                }}
+                className={`px-4 py-3 text-white font-medium rounded-lg transition-colors duration-200 ${
+                  theme === 'soft-light'
+                    ? 'bg-[#7c9885] hover:bg-[#6a8574]'
+                    : theme === 'charcoal'
+                    ? 'bg-gray-600 hover:bg-gray-500'
+                    : 'bg-teal-600 hover:bg-teal-700'
+                }`}
+                title="Export appointments to CSV"
+              >
+                Export
+              </button>
+
               <button
                 onClick={(e) => {
                   console.log('🔍 DIAGNOSTIC: New Appointment button clicked!', e.target)
@@ -546,6 +721,238 @@ export default function CalendarPage() {
             </div>
           </div>
         </div>
+
+        {/* Search and Filter Controls */}
+        <div className="mb-6 space-y-4">
+          {/* Search Bar */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search appointments by client, service, barber, or notes..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 rounded-lg border transition-colors duration-200"
+                  style={{
+                    backgroundColor: colors.cardBackground,
+                    borderColor: colors.border,
+                    color: colors.textPrimary
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Filter Toggle */}
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`px-4 py-3 rounded-lg border font-medium transition-colors duration-200 flex items-center gap-2 ${
+                showFilters ? 'text-white' : ''
+              }`}
+              style={{
+                backgroundColor: showFilters
+                  ? (theme === 'soft-light' ? '#7c9885' : theme === 'charcoal' ? '#374151' : '#0f766e')
+                  : colors.cardBackground,
+                borderColor: colors.border,
+                color: showFilters ? '#ffffff' : colors.textPrimary
+              }}
+            >
+              <FunnelIcon className="w-5 h-5" />
+              Filters
+              {(selectedBarberFilter !== 'all' || selectedStatusFilter !== 'all' || selectedServiceFilter !== 'all') && (
+                <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1">
+                  {[selectedBarberFilter !== 'all', selectedStatusFilter !== 'all', selectedServiceFilter !== 'all'].filter(Boolean).length}
+                </span>
+              )}
+            </button>
+          </div>
+
+          {/* Filter Panel */}
+          {showFilters && (
+            <div className="p-4 rounded-lg border" style={{
+              backgroundColor: colors.cardBackground,
+              borderColor: colors.border
+            }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Barber Filter */}
+                <div>
+                  <label className="block text-sm font-medium mb-2" style={{ color: colors.textPrimary }}>
+                    Barber
+                  </label>
+                  <select
+                    value={selectedBarberFilter}
+                    onChange={(e) => setSelectedBarberFilter(e.target.value)}
+                    className="w-full p-2 rounded border"
+                    style={{
+                      backgroundColor: colors.cardBackground,
+                      borderColor: colors.border,
+                      color: colors.textPrimary
+                    }}
+                  >
+                    <option value="all">All Barbers</option>
+                    {barbers.map(barber => (
+                      <option key={barber.id} value={barber.id.toString()}>
+                        {barber.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Status Filter */}
+                <div>
+                  <label className="block text-sm font-medium mb-2" style={{ color: colors.textPrimary }}>
+                    Status
+                  </label>
+                  <select
+                    value={selectedStatusFilter}
+                    onChange={(e) => setSelectedStatusFilter(e.target.value)}
+                    className="w-full p-2 rounded border"
+                    style={{
+                      backgroundColor: colors.cardBackground,
+                      borderColor: colors.border,
+                      color: colors.textPrimary
+                    }}
+                  >
+                    <option value="all">All Statuses</option>
+                    <option value="scheduled">Scheduled</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                    <option value="no_show">No Show</option>
+                  </select>
+                </div>
+
+                {/* Service Filter */}
+                <div>
+                  <label className="block text-sm font-medium mb-2" style={{ color: colors.textPrimary }}>
+                    Service
+                  </label>
+                  <select
+                    value={selectedServiceFilter}
+                    onChange={(e) => setSelectedServiceFilter(e.target.value)}
+                    className="w-full p-2 rounded border"
+                    style={{
+                      backgroundColor: colors.cardBackground,
+                      borderColor: colors.border,
+                      color: colors.textPrimary
+                    }}
+                  >
+                    <option value="all">All Services</option>
+                    {services.map(service => (
+                      <option key={service.id} value={service.id.toString()}>
+                        {service.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Clear Filters */}
+                <div className="flex items-end">
+                  <button
+                    onClick={() => {
+                      setSelectedBarberFilter('all')
+                      setSelectedStatusFilter('all')
+                      setSelectedServiceFilter('all')
+                      setSearchTerm('')
+                      setDateRangeFilter({start: null, end: null})
+                    }}
+                    className="w-full px-4 py-2 text-sm font-medium rounded border transition-colors duration-200"
+                    style={{
+                      backgroundColor: colors.cardBackground,
+                      borderColor: colors.border,
+                      color: colors.textSecondary
+                    }}
+                  >
+                    Clear All
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Bulk Actions Toolbar */}
+        {showBulkActions && (
+          <div className="mb-6 p-4 rounded-lg border" style={{
+            backgroundColor: theme === 'soft-light' ? '#7c9885' + '20' : theme === 'charcoal' ? '#374151' + '40' : '#0f766e' + '20',
+            borderColor: theme === 'soft-light' ? '#7c9885' : theme === 'charcoal' ? '#374151' : '#0f766e'
+          }}>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <span className="font-medium" style={{ color: colors.textPrimary }}>
+                  {selectedAppointments.size} appointment{selectedAppointments.size !== 1 ? 's' : ''} selected
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={selectAllAppointments}
+                    className="text-sm px-3 py-1 rounded border transition-colors duration-200"
+                    style={{
+                      backgroundColor: colors.cardBackground,
+                      borderColor: colors.border,
+                      color: colors.textPrimary
+                    }}
+                  >
+                    Select All ({filteredAppointments.length})
+                  </button>
+                  <button
+                    onClick={clearSelection}
+                    className="text-sm px-3 py-1 rounded border transition-colors duration-200"
+                    style={{
+                      backgroundColor: colors.cardBackground,
+                      borderColor: colors.border,
+                      color: colors.textPrimary
+                    }}
+                  >
+                    Clear Selection
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    // Bulk export of selected appointments
+                    const selectedAppts = filteredAppointments.filter(apt => selectedAppointments.has(apt.id))
+                    const csvData = selectedAppts.map(apt => ({
+                      Date: apt.date,
+                      Time: `${apt.startTime} - ${apt.endTime}`,
+                      Client: apt.client,
+                      Service: apt.service,
+                      Barber: apt.barber,
+                      Status: apt.status,
+                      Price: apt.price
+                    }))
+
+                    const csvContent = [
+                      Object.keys(csvData[0] || {}).join(','),
+                      ...csvData.map(row => Object.values(row).join(','))
+                    ].join('\n')
+
+                    const blob = new Blob([csvContent], { type: 'text/csv' })
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = `selected-appointments-${new Date().toISOString().split('T')[0]}.csv`
+                    document.body.appendChild(a)
+                    a.click()
+                    document.body.removeChild(a)
+                    URL.revokeObjectURL(url)
+                    console.log('📄 Exported', csvData.length, 'selected appointments')
+                  }}
+                  className="px-4 py-2 text-white font-medium rounded transition-colors duration-200"
+                  style={{
+                    backgroundColor: theme === 'soft-light' ? '#7c9885' : theme === 'charcoal' ? '#374151' : '#0f766e'
+                  }}
+                >
+                  <ArrowDownTrayIcon className="w-4 h-4 inline mr-2" />
+                  Export Selected
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Navigation Tabs */}
         <div className="mb-6">
@@ -756,7 +1163,7 @@ export default function CalendarPage() {
           boxShadow: colors.shadow
         }}>
           <UnifiedCalendar
-            appointments={appointments}
+            appointments={filteredAppointments}
             onAppointmentClick={(appointment) => {
               handleAppointmentClick(appointment)
             }}
@@ -770,6 +1177,9 @@ export default function CalendarPage() {
             allowConflicts={false}
             workingHours={{ start: '08:00', end: '20:00' }}
             initialView={calendarView === 'agenda' ? 'week' : calendarView as any}
+            // Pass selection handlers for multi-select support
+            onAppointmentSelect={handleSelectAppointment}
+            selectedAppointments={selectedAppointments}
           />
         </div>
 

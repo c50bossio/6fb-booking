@@ -73,11 +73,13 @@ class DynamicCORSMiddleware(CORSMiddleware):
         """
         if not origin:
             return False
-            
+
         # Check for Railway domains
-        if origin.startswith("https://") and (".railway.app" in origin or ".up.railway.app" in origin):
+        if origin.startswith("https://") and (
+            ".railway.app" in origin or ".up.railway.app" in origin
+        ):
             return True
-            
+
         # Check for specific known Railway URLs
         known_railway_urls = [
             "https://web-production-92a6c.up.railway.app",

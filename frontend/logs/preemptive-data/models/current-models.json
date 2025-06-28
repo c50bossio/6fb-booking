@@ -1,0 +1,100 @@
+{
+  "timestamp": 1751035212368,
+  "models": {
+    "memory": {
+      "historicalData": [
+        {
+          "timestamp": 1751035210266,
+          "percentage": 95.71488698323569,
+          "used": 49331077120,
+          "available": 2208530432
+        }
+      ],
+      "trendWindow": 20,
+      "predictionHorizon": 300000,
+      "criticalThreshold": 90,
+      "warningThreshold": 75,
+      "leakDetectionWindow": 50
+    },
+    "cpu": {
+      "historicalData": [
+        {
+          "timestamp": 1751035210266,
+          "usage": 15.53,
+          "loadavg": 4.05615234375
+        }
+      ],
+      "trendWindow": 15,
+      "predictionHorizon": 180000,
+      "criticalThreshold": 85,
+      "warningThreshold": 70
+    },
+    "disk": {
+      "historicalData": [
+        {
+          "timestamp": 1751035210266,
+          "percentage": 80,
+          "available": 0
+        }
+      ],
+      "trendWindow": 100,
+      "predictionHorizon": 3600000,
+      "criticalThreshold": 90,
+      "warningThreshold": 80
+    },
+    "network": {
+      "historicalData": [
+        {
+          "timestamp": 1751035210266,
+          "latency": 0.073,
+          "packetLoss": 0,
+          "connectivity": true
+        }
+      ],
+      "trendWindow": 10,
+      "latencyThreshold": 1000,
+      "packetLossThreshold": 5
+    },
+    "build": {
+      "historicalData": [],
+      "performanceBaseline": null,
+      "degradationThreshold": 1.5,
+      "trendWindow": 10
+    },
+    "ports": {
+      "historicalUsage": {},
+      "conflictPrediction": {},
+      "riskThreshold": 0.7
+    }
+  },
+  "riskFactors": {
+    "memory": {
+      "weight": 0.25,
+      "enabled": true
+    },
+    "cpu": {
+      "weight": 0.2,
+      "enabled": true
+    },
+    "disk": {
+      "weight": 0.15,
+      "enabled": true
+    },
+    "network": {
+      "weight": 0.1,
+      "enabled": true
+    },
+    "build": {
+      "weight": 0.15,
+      "enabled": true
+    },
+    "logs": {
+      "weight": 0.1,
+      "enabled": true
+    },
+    "dependencies": {
+      "weight": 0.05,
+      "enabled": true
+    }
+  }
+}

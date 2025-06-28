@@ -16,7 +16,7 @@ from models.base import Base
 import bcrypt
 
 # Get database URL from environment
-DATABASE_URL = os.getenv('DATABASE_URL')
+DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     print("ERROR: DATABASE_URL not set")
     sys.exit(1)
@@ -28,15 +28,15 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 db = SessionLocal()
 
 # User details
-email = 'c50bossio@gmail.com'
-password = 'Welcome123!'
-first_name = 'Chris'
-last_name = 'Bossio'
+email = "c50bossio@gmail.com"
+password = "Welcome123!"
+first_name = "Chris"
+last_name = "Bossio"
 
 try:
     # Check if user exists
     existing_user = db.query(User).filter(User.email == email).first()
-    
+
     if existing_user:
         print(f"User {email} already exists!")
         if existing_user.role != "super_admin":
@@ -46,25 +46,29 @@ try:
             existing_user.is_verified = True
             existing_user.permissions = ["*"]
             existing_user.updated_at = datetime.utcnow()
-            
+
             # Update password
             salt = bcrypt.gensalt()
-            existing_user.hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
-            
+            existing_user.hashed_password = bcrypt.hashpw(
+                password.encode("utf-8"), salt
+            ).decode("utf-8")
+
             db.commit()
             print(f"✅ Updated {email} to super_admin with new password")
         else:
             print("User is already a super_admin")
             # Still update password
             salt = bcrypt.gensalt()
-            existing_user.hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+            existing_user.hashed_password = bcrypt.hashpw(
+                password.encode("utf-8"), salt
+            ).decode("utf-8")
             db.commit()
             print("✅ Updated password")
     else:
         # Create new user
         salt = bcrypt.gensalt()
-        hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
-        
+        hashed_password = bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
+
         admin_user = User(
             email=email,
             first_name=first_name,
@@ -75,18 +79,20 @@ try:
             is_verified=True,
             permissions=["*"],
             created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
+            updated_at=datetime.utcnow(),
         )
-        
+
         db.add(admin_user)
         db.commit()
         print(f"✅ Created new super_admin user {email}")
-    
+
     print("\n📧 Email:", email)
     print("🔑 Password:", password)
-    print("\n✅ Admin user ready! Use these credentials at https://sixfb-backend.onrender.com/docs")
+    print(
+        "\n✅ Admin user ready! Use these credentials at https://sixfb-backend.onrender.com/docs"
+    )
     print("\n⚠️  IMPORTANT: Change this password after first login!")
-    
+
 except Exception as e:
     print(f"\n❌ Error: {str(e)}")
     db.rollback()

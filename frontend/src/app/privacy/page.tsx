@@ -10,14 +10,14 @@ export default function PrivacyPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Privacy Policy</h1>
-      
+
       <div className="prose max-w-none">
         <p className="text-gray-600 mb-6">
           <strong>Last updated:</strong> {new Date().toLocaleDateString()}
         </p>
 
         <p className="text-gray-600 mb-6">
-          This Privacy Policy describes how 6FB Booking Platform ("we", "our", or "us") collects, 
+          This Privacy Policy describes how 6FB Booking Platform ("we", "our", or "us") collects,
           uses, and protects your personal information when you use our service.
         </p>
 
@@ -81,20 +81,20 @@ export default function PrivacyPage() {
 
         <h2 className="text-2xl font-semibold mb-4 text-gray-900">Data Retention</h2>
         <p className="text-gray-600 mb-6">
-          We retain your personal information only as long as necessary to provide our services 
-          and comply with legal obligations. Booking and payment data may be retained for up to 
+          We retain your personal information only as long as necessary to provide our services
+          and comply with legal obligations. Booking and payment data may be retained for up to
           7 years for tax and legal compliance purposes.
         </p>
 
         <h2 className="text-2xl font-semibold mb-4 text-gray-900">Cookies and Tracking</h2>
         <p className="text-gray-600 mb-6">
-          We use cookies and similar technologies to improve your experience, analyze usage patterns, 
+          We use cookies and similar technologies to improve your experience, analyze usage patterns,
           and provide personalized content. You can control cookie settings through your browser.
         </p>
 
         <h2 className="text-2xl font-semibold mb-4 text-gray-900">Contact Us</h2>
         <p className="text-gray-600 mb-4">
-          If you have questions about this Privacy Policy or want to exercise your rights, 
+          If you have questions about this Privacy Policy or want to exercise your rights,
           please contact us at:
         </p>
         <ul className="text-gray-600 mb-6 space-y-1">
@@ -104,8 +104,8 @@ export default function PrivacyPage() {
 
         <h2 className="text-2xl font-semibold mb-4 text-gray-900">Changes to This Policy</h2>
         <p className="text-gray-600">
-          We may update this Privacy Policy from time to time. We will notify you of any 
-          material changes by email or through our platform. Your continued use of our 
+          We may update this Privacy Policy from time to time. We will notify you of any
+          material changes by email or through our platform. Your continued use of our
           service after such changes constitutes acceptance of the updated policy.
         </p>
       </div>

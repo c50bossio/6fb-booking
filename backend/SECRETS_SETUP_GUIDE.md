@@ -21,7 +21,7 @@ Generate these unique keys for your application:
 # Generate a 32-character encryption key
 python3 -c 'import secrets; print("DATA_ENCRYPTION_KEY=" + secrets.token_urlsafe(32))'
 
-# Generate a 64-character secret key  
+# Generate a 64-character secret key
 python3 -c 'import secrets; print("SECRET_KEY=" + secrets.token_urlsafe(64))'
 
 # Generate a 64-character JWT secret key (must be different from SECRET_KEY)
@@ -52,7 +52,7 @@ STRIPE_SECRET_KEY=sk_live_your_secret_key_here
 STRIPE_PUBLISHABLE_KEY=pk_live_your_publishable_key_here
 ```
 
-3. **Setup Stripe Connect**: 
+3. **Setup Stripe Connect**:
    - Go to [https://dashboard.stripe.com/settings/connect](https://dashboard.stripe.com/settings/connect)
    - Get your Connect Client ID:
 ```bash
@@ -69,7 +69,7 @@ STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
 
 ### 📅 Google Calendar Integration
 
-1. **Create Google Cloud Project**: 
+1. **Create Google Cloud Project**:
    - Go to [https://console.cloud.google.com/](https://console.cloud.google.com/)
    - Create a new project or select existing one
 

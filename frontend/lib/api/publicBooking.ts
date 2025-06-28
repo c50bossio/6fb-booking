@@ -104,7 +104,7 @@ class PublicBookingService {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     const url = `${API_BASE_URL}/api/v1/booking/public${endpoint}`
-    
+
     const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
@@ -289,7 +289,7 @@ export const barbersService = {
     }
     return publicBookingService.getBarbers(filters)
   },
-  
+
   getAvailability: (
     barberId: number,
     startDate: string,

@@ -1,6 +1,7 @@
 """
 Location management API endpoints
 """
+
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -17,6 +18,7 @@ from pydantic import BaseModel
 
 router = APIRouter()
 
+
 # Pydantic models
 class LocationCreate(BaseModel):
     name: str
@@ -32,6 +34,7 @@ class LocationCreate(BaseModel):
     mentor_id: Optional[int] = None
     capacity: int = 10
 
+
 class LocationUpdate(BaseModel):
     name: Optional[str] = None
     address: Optional[str] = None
@@ -41,6 +44,7 @@ class LocationUpdate(BaseModel):
     mentor_id: Optional[int] = None
     is_active: Optional[bool] = None
     capacity: Optional[int] = None
+
 
 class LocationResponse(BaseModel):
     id: int
@@ -63,6 +67,7 @@ class LocationResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 class LocationAnalyticsResponse(BaseModel):
     location_id: int
     location_name: str
@@ -77,6 +82,7 @@ class LocationAnalyticsResponse(BaseModel):
     revenue_per_barber: float
     top_services: List[dict]
 
+
 # API Endpoints
 @router.get("/", response_model=List[LocationResponse])
 async def get_locations(
@@ -85,11 +91,11 @@ async def get_locations(
     is_active: Optional[bool] = None,
     franchise_type: Optional[str] = None,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Get list of locations"""
     rbac = RBACService(db)
-    
+
     # Get accessible locations for user
     if rbac.has_permission(current_user, Permission.VIEW_ALL_LOCATIONS):
         query = db.query(Location)
@@ -98,15 +104,15 @@ async def get_locations(
         if not accessible_locations:
             return []
         query = db.query(Location).filter(Location.id.in_(accessible_locations))
-    
+
     # Apply filters
     if is_active is not None:
         query = query.filter(Location.is_active == is_active)
     if franchise_type:
         query = query.filter(Location.franchise_type == franchise_type)
-    
+
     locations = query.offset(skip).limit(limit).all()
-    
+
     # Add mentor names
     result = []
     for location in locations:
@@ -126,47 +132,52 @@ async def get_locations(
             "mentor_name": None,
             "operating_hours": location.operating_hours or {},
             "capacity": location.capacity,
-            "created_at": location.created_at
+            "created_at": location.created_at,
         }
-        
+
         if location.mentor_id:
             mentor = db.query(User).filter(User.id == location.mentor_id).first()
             if mentor:
                 location_dict["mentor_name"] = mentor.full_name
-        
+
         result.append(LocationResponse(**location_dict))
-    
+
     return result
+
 
 @router.post("/", response_model=LocationResponse)
 async def create_location(
     location_data: LocationCreate,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Create new location"""
     rbac = RBACService(db)
-    
+
     if not rbac.has_permission(current_user, Permission.CREATE_LOCATIONS):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="No permission to create locations"
+            detail="No permission to create locations",
         )
-    
+
     # Check if location code exists
-    existing = db.query(Location).filter(Location.location_code == location_data.location_code).first()
+    existing = (
+        db.query(Location)
+        .filter(Location.location_code == location_data.location_code)
+        .first()
+    )
     if existing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Location code already exists"
+            detail="Location code already exists",
         )
-    
+
     # Create location
     new_location = Location(**location_data.dict())
     db.add(new_location)
     db.commit()
     db.refresh(new_location)
-    
+
     # Return with mentor name
     result = {
         "id": new_location.id,
@@ -184,41 +195,41 @@ async def create_location(
         "mentor_name": None,
         "operating_hours": new_location.operating_hours or {},
         "capacity": new_location.capacity,
-        "created_at": new_location.created_at
+        "created_at": new_location.created_at,
     }
-    
+
     if new_location.mentor_id:
         mentor = db.query(User).filter(User.id == new_location.mentor_id).first()
         if mentor:
             result["mentor_name"] = mentor.full_name
-    
+
     return LocationResponse(**result)
+
 
 @router.get("/{location_id}", response_model=LocationResponse)
 async def get_location(
     location_id: int,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Get specific location"""
     rbac = RBACService(db)
-    
+
     location = db.query(Location).filter(Location.id == location_id).first()
     if not location:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Location not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Location not found"
         )
-    
+
     # Check permissions
     if not rbac.has_permission(current_user, Permission.VIEW_ALL_LOCATIONS):
         accessible_locations = rbac.get_accessible_locations(current_user)
         if location_id not in accessible_locations:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="No permission to view this location"
+                detail="No permission to view this location",
             )
-    
+
     # Return with mentor name
     result = {
         "id": location.id,
@@ -236,50 +247,54 @@ async def get_location(
         "mentor_name": None,
         "operating_hours": location.operating_hours or {},
         "capacity": location.capacity,
-        "created_at": location.created_at
+        "created_at": location.created_at,
     }
-    
+
     if location.mentor_id:
         mentor = db.query(User).filter(User.id == location.mentor_id).first()
         if mentor:
             result["mentor_name"] = mentor.full_name
-    
+
     return LocationResponse(**result)
+
 
 @router.put("/{location_id}", response_model=LocationResponse)
 async def update_location(
     location_id: int,
     location_update: LocationUpdate,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Update location information"""
     rbac = RBACService(db)
-    
+
     location = db.query(Location).filter(Location.id == location_id).first()
     if not location:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Location not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Location not found"
         )
-    
+
     # Check permissions
-    if not rbac.has_permission(current_user, Permission.MANAGE_ALL_LOCATIONS, location_id):
-        if not rbac.has_permission(current_user, Permission.MANAGE_ASSIGNED_LOCATIONS, location_id):
+    if not rbac.has_permission(
+        current_user, Permission.MANAGE_ALL_LOCATIONS, location_id
+    ):
+        if not rbac.has_permission(
+            current_user, Permission.MANAGE_ASSIGNED_LOCATIONS, location_id
+        ):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="No permission to update this location"
+                detail="No permission to update this location",
             )
-    
+
     # Update fields
     update_data = location_update.dict(exclude_unset=True)
     for field, value in update_data.items():
         setattr(location, field, value)
-    
+
     location.updated_at = datetime.utcnow()
     db.commit()
     db.refresh(location)
-    
+
     # Return with mentor name
     result = {
         "id": location.id,
@@ -297,49 +312,51 @@ async def update_location(
         "mentor_name": None,
         "operating_hours": location.operating_hours or {},
         "capacity": location.capacity,
-        "created_at": location.created_at
+        "created_at": location.created_at,
     }
-    
+
     if location.mentor_id:
         mentor = db.query(User).filter(User.id == location.mentor_id).first()
         if mentor:
             result["mentor_name"] = mentor.full_name
-    
+
     return LocationResponse(**result)
+
 
 @router.get("/{location_id}/analytics", response_model=LocationAnalyticsResponse)
 async def get_location_analytics(
     location_id: int,
     period_days: int = Query(30, ge=1, le=365),
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Get location analytics"""
     rbac = RBACService(db)
-    
+
     # Check permissions
     if not rbac.has_permission(current_user, Permission.VIEW_ALL_ANALYTICS):
-        if not rbac.has_permission(current_user, Permission.VIEW_LOCATION_ANALYTICS, location_id):
+        if not rbac.has_permission(
+            current_user, Permission.VIEW_LOCATION_ANALYTICS, location_id
+        ):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="No permission to view analytics for this location"
+                detail="No permission to view analytics for this location",
             )
-    
+
     # Get location
     location = db.query(Location).filter(Location.id == location_id).first()
     if not location:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Location not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Location not found"
         )
-    
+
     # Calculate analytics
     service = LocationManagementService(db)
     end_date = date.today()
     start_date = end_date - timedelta(days=period_days)
-    
+
     analytics = await service.get_location_analytics(location_id, start_date, end_date)
-    
+
     return LocationAnalyticsResponse(
         location_id=location_id,
         location_name=location.name,
@@ -352,29 +369,30 @@ async def get_location_analytics(
         booking_efficiency=analytics.get("booking_efficiency", 0),
         barber_count=analytics.get("barber_count", 0),
         revenue_per_barber=analytics.get("revenue_per_barber", 0),
-        top_services=analytics.get("top_services", [])
+        top_services=analytics.get("top_services", []),
     )
+
 
 @router.get("/{location_id}/barbers")
 async def get_location_barbers(
     location_id: int,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Get barbers for a location"""
     rbac = RBACService(db)
-    
+
     # Check permissions
     if not rbac.has_permission(current_user, Permission.VIEW_ALL_USERS):
         accessible_locations = rbac.get_accessible_locations(current_user)
         if location_id not in accessible_locations:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="No permission to view barbers for this location"
+                detail="No permission to view barbers for this location",
             )
-    
+
     barbers = db.query(Barber).filter(Barber.location_id == location_id).all()
-    
+
     return [
         {
             "id": barber.id,
@@ -382,51 +400,51 @@ async def get_location_barbers(
             "email": barber.email,
             "phone": barber.phone,
             "status": "active",  # Add status field to Barber model
-            "hire_date": barber.created_at
+            "hire_date": barber.created_at,
         }
         for barber in barbers
     ]
+
 
 @router.post("/{location_id}/assign-mentor")
 async def assign_location_mentor(
     location_id: int,
     mentor_id: int,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Assign mentor to location"""
     rbac = RBACService(db)
-    
+
     if not rbac.has_permission(current_user, Permission.MANAGE_ALL_LOCATIONS):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="No permission to assign mentors"
+            detail="No permission to assign mentors",
         )
-    
+
     # Verify location exists
     location = db.query(Location).filter(Location.id == location_id).first()
     if not location:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Location not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Location not found"
         )
-    
+
     # Verify mentor exists and has mentor role
     mentor = db.query(User).filter(User.id == mentor_id, User.role == "mentor").first()
     if not mentor:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid mentor or user is not a mentor"
+            detail="Invalid mentor or user is not a mentor",
         )
-    
+
     # Assign mentor
     location.mentor_id = mentor_id
     location.updated_at = datetime.utcnow()
     db.commit()
-    
+
     return {
         "message": "Mentor assigned successfully",
         "location_id": location_id,
         "mentor_id": mentor_id,
-        "mentor_name": mentor.full_name
+        "mentor_name": mentor.full_name,
     }

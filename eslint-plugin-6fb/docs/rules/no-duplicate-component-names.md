@@ -60,7 +60,7 @@ This rule accepts an options object with the following properties:
 
 ### `ignoreCase`
 
-Type: `boolean`  
+Type: `boolean`
 Default: `false`
 
 When set to `true`, the rule compares component names case-insensitively.
@@ -77,7 +77,7 @@ With this option, `Calendar` and `calendar` would be considered duplicates.
 
 ### `checkSimilarNames`
 
-Type: `boolean`  
+Type: `boolean`
 Default: `true`
 
 When enabled, the rule also checks for components with similar names that might be duplicates with prefixes/suffixes removed.
@@ -97,7 +97,7 @@ This would flag:
 
 ### `excludePatterns`
 
-Type: `string[]`  
+Type: `string[]`
 Default: `[]`
 
 File path patterns to exclude from checking. Useful for excluding generated files or third-party code.

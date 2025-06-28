@@ -19,7 +19,7 @@
       "enabled": true,
       "nonBlockingIssues": [
         "port_conflict",
-        "network_issue", 
+        "network_issue",
         "extension_timeout",
         "extension_error",
         "check_timeout"
@@ -35,7 +35,7 @@
     "preferredStartupMethod": "dev:safe",
     "emergencyMethods": [
       "dev:failsafe",
-      "dev:recovery", 
+      "dev:recovery",
       "dev:skip-validation"
     ],
     "healthMonitoring": {

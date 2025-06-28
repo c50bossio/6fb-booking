@@ -84,7 +84,7 @@ SKIP_BUILD_VALIDATION=true npm run build
 ### 1. Duplicate Component Detection
 
 **What it checks**: Components with similar names that might be duplicates
-**Examples**: 
+**Examples**:
 - `Calendar.tsx` and `EnhancedCalendar.tsx`
 - `Button.tsx` and `ButtonNew.tsx`
 
@@ -229,7 +229,7 @@ new WebpackValidationPlugin({
 ```yaml
 - name: Build Validation
   run: npm run validate:build:ci
-  
+
 - name: Build
   run: npm run build
 ```

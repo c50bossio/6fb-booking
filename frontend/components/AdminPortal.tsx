@@ -5,12 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { 
-  Users, 
-  MapPin, 
-  TrendingUp, 
-  GraduationCap, 
-  DollarSign, 
+import {
+  Users,
+  MapPin,
+  TrendingUp,
+  GraduationCap,
+  DollarSign,
   Settings,
   Shield,
   AlertTriangle,
@@ -404,7 +404,7 @@ export default function AdminPortal() {
                 Add User
               </Button>
             </div>
-            
+
             <Card>
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
@@ -448,8 +448,8 @@ export default function AdminPortal() {
                             {user.last_login || 'Never'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <Button 
-                              variant="ghost" 
+                            <Button
+                              variant="ghost"
                               size="sm"
                               onClick={() => handleViewDetails('user', user.id)}
                             >
@@ -473,7 +473,7 @@ export default function AdminPortal() {
                 Add Location
               </Button>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {locations.map((location) => (
                 <Card key={location.id}>
@@ -512,8 +512,8 @@ export default function AdminPortal() {
                         <span className="text-gray-500">Monthly Revenue:</span>
                         <span className="font-medium">${location.monthly_revenue.toLocaleString()}</span>
                       </div>
-                      <Button 
-                        className="w-full mt-4" 
+                      <Button
+                        className="w-full mt-4"
                         variant="outline"
                         onClick={() => handleViewDetails('location', location.id)}
                       >
@@ -528,7 +528,7 @@ export default function AdminPortal() {
 
           <TabsContent value="training" className="space-y-6">
             <h2 className="text-2xl font-bold">Training Management</h2>
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {trainingModules.map((module) => (
                 <Card key={module.id}>
@@ -551,8 +551,8 @@ export default function AdminPortal() {
                         <span className="font-medium">{module.enrollments}</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-blue-600 h-2 rounded-full" 
+                        <div
+                          className="bg-blue-600 h-2 rounded-full"
                           style={{ width: `${module.completion_rate}%` }}
                         ></div>
                       </div>
@@ -565,7 +565,7 @@ export default function AdminPortal() {
 
           <TabsContent value="revenue" className="space-y-6">
             <h2 className="text-2xl font-bold">Revenue Management</h2>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle>Commission Breakdown</CardTitle>
@@ -602,7 +602,7 @@ export default function AdminPortal() {
 
           <TabsContent value="settings" className="space-y-6">
             <h2 className="text-2xl font-bold">System Settings</h2>
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>

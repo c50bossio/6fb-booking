@@ -153,7 +153,7 @@ def get_location_analytics(db: Session, location_id: int, start_date: date, end_
     barber_ids = db.query(Barber.id).filter(
         Barber.location_id == location_id
     ).subquery()
-    
+
     return db.query(
         func.count(Appointment.id).label('total_appointments'),
         func.sum(Appointment.total_revenue).label('total_revenue'),
@@ -169,7 +169,7 @@ def get_location_analytics(db: Session, location_id: int, start_date: date, end_
 ```python
 def search_clients(db: Session, search_term: str, barber_id: Optional[int] = None):
     query = db.query(Client)
-    
+
     # Use OR with indexed columns
     query = query.filter(
         or_(
@@ -177,10 +177,10 @@ def search_clients(db: Session, search_term: str, barber_id: Optional[int] = Non
             Client.phone.ilike(f'%{search_term}%')
         )
     )
-    
+
     if barber_id:
         query = query.filter(Client.barber_id == barber_id)
-    
+
     return query.limit(20).all()
 ```
 
@@ -228,8 +228,8 @@ The application includes automatic performance monitoring:
 
 2. **Monitor Growth**: Check table sizes periodically
    ```sql
-   SELECT name, COUNT(*) FROM sqlite_master 
-   WHERE type='table' 
+   SELECT name, COUNT(*) FROM sqlite_master
+   WHERE type='table'
    GROUP BY name;
    ```
 

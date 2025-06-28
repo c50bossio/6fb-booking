@@ -15,7 +15,7 @@ VALUES (
     'c50bossio@gmail.com',
     '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewYpfQaXUIpaPE4q',
     'Admin',
-    'User', 
+    'User',
     'admin',
     true,
     NOW(),
@@ -50,7 +50,7 @@ Login at: https://sixfb-frontend-paby.onrender.com/login
 
 ## Setting up MCP for Future
 
-Unfortunately, there isn't a Render MCP server available yet. The Model Context Protocol is still new, and most servers are for services like GitHub, Google, etc. 
+Unfortunately, there isn't a Render MCP server available yet. The Model Context Protocol is still new, and most servers are for services like GitHub, Google, etc.
 
 For now, the best approach is:
 1. Use Render Dashboard for quick fixes

@@ -99,7 +99,7 @@ echo "5. Checking if settings.py needs updates..."
 # Add Railway pattern to settings.py if not present
 if ! grep -q "railway.app" backend/config/settings.py; then
     echo "   - Adding Railway pattern to settings.py..."
-    
+
     # Create a temporary update file
     cat > backend/config/settings_railway_update.py << 'EOF'
 # Add this to the is_allowed_origin method in settings.py
@@ -109,7 +109,7 @@ if ! grep -q "railway.app" backend/config/settings.py; then
             # Allow any Railway deployment URL
             logger.info(f"Allowing Railway origin: {origin}")
             return True
-            
+
         # Specific Railway URLs
         railway_urls = [
             "https://web-production-92a6c.up.railway.app",
@@ -119,7 +119,7 @@ if ! grep -q "railway.app" backend/config/settings.py; then
             logger.info(f"Allowing specific Railway origin: {origin}")
             return True
 EOF
-    
+
     echo "   - Created settings_railway_update.py with Railway patterns to add"
 else
     echo "   - Railway patterns already present in settings.py"

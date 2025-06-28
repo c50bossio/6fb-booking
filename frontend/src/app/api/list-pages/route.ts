@@ -6,7 +6,7 @@ export async function GET() {
   try {
     const appDir = path.join(process.cwd(), 'src/app')
     const entries = fs.readdirSync(appDir, { withFileTypes: true })
-    
+
     const pages = entries
       .filter(entry => entry.isDirectory() && !entry.name.startsWith('_') && !entry.name.startsWith('.'))
       .map(entry => entry.name)

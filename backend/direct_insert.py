@@ -10,15 +10,16 @@ conn = psycopg2.connect(
 
 try:
     cur = conn.cursor()
-    
+
     # Insert minimal test appointment
-    cur.execute("""
+    cur.execute(
+        """
         INSERT INTO appointments (
-            trafft_appointment_id, 
-            appointment_date, 
+            trafft_appointment_id,
+            appointment_date,
             appointment_time,
-            service_name, 
-            service_revenue, 
+            service_name,
+            service_revenue,
             status,
             created_at,
             updated_at
@@ -33,15 +34,18 @@ try:
             NOW()
         )
         ON CONFLICT (trafft_appointment_id) DO NOTHING
-    """)
-    
+    """
+    )
+
     conn.commit()
-    
+
     # Check count
-    cur.execute("SELECT COUNT(*) FROM appointments WHERE appointment_date = CURRENT_DATE")
+    cur.execute(
+        "SELECT COUNT(*) FROM appointments WHERE appointment_date = CURRENT_DATE"
+    )
     count = cur.fetchone()[0]
     print(f"✅ Success! Total appointments today: {count}")
-    
+
 except Exception as e:
     print(f"❌ Error: {e}")
 finally:

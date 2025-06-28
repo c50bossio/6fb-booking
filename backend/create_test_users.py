@@ -23,7 +23,7 @@ test_users = [
         "password": "testpassword123",
         "role": "barber",
         "is_active": True,
-        "is_verified": True
+        "is_verified": True,
     },
     {
         "email": "admin@6fb.com",
@@ -32,19 +32,19 @@ test_users = [
         "password": "admin123",
         "role": "super_admin",
         "is_active": True,
-        "is_verified": True
-    }
+        "is_verified": True,
+    },
 ]
 
 # Create users
 for user_data in test_users:
     # Check if user already exists
     existing_user = db.query(User).filter(User.email == user_data["email"]).first()
-    
+
     if existing_user:
         print(f"✓ User {user_data['email']} already exists")
         continue
-    
+
     # Create new user
     user = User(
         email=user_data["email"],
@@ -55,13 +55,15 @@ for user_data in test_users:
         is_active=user_data["is_active"],
         is_verified=user_data["is_verified"],
         created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow()
+        updated_at=datetime.utcnow(),
     )
-    
+
     db.add(user)
     db.commit()
-    
-    print(f"✅ Created user: {user_data['email']} / {user_data['password']} (role: {user_data['role']})")
+
+    print(
+        f"✅ Created user: {user_data['email']} / {user_data['password']} (role: {user_data['role']})"
+    )
 
 print("\n📋 Test Users Summary:")
 print("- Regular User: test@example.com / testpassword123")

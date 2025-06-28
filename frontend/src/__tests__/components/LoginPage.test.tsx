@@ -42,7 +42,7 @@ describe('LoginPage', () => {
   it('should handle form submission', async () => {
     const user = userEvent.setup()
     const { authService } = require('@/lib/api')
-    
+
     authService.login.mockResolvedValueOnce({
       access_token: 'test-token',
       user: { id: 1, email: 'test@example.com' },
@@ -70,7 +70,7 @@ describe('LoginPage', () => {
   it('should show loading state during submission', async () => {
     const user = userEvent.setup()
     const { authService } = require('@/lib/api')
-    
+
     authService.login.mockImplementation(
       () => new Promise(resolve => setTimeout(resolve, 100))
     )
@@ -92,7 +92,7 @@ describe('LoginPage', () => {
   it('should display error message on login failure', async () => {
     const user = userEvent.setup()
     const { authService } = require('@/lib/api')
-    
+
     authService.login.mockRejectedValueOnce({
       response: {
         data: {
@@ -123,7 +123,7 @@ describe('LoginPage', () => {
     render(<LoginPage />)
 
     const submitButton = screen.getByRole('button', { name: /sign in/i })
-    
+
     // Try to submit without filling fields
     await user.click(submitButton)
 

@@ -7,7 +7,7 @@
     "running": false
   },
   {
-    "name": "Frontend - Framework Bundle", 
+    "name": "Frontend - Framework Bundle",
     "path": "packages/frontend/.next/static/chunks/framework-*.js",
     "limit": "150 KB",
     "webpack": false,

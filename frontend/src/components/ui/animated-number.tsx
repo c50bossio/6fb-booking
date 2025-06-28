@@ -10,11 +10,11 @@ interface AnimatedNumberProps {
   className?: string
 }
 
-export function AnimatedNumber({ 
-  value, 
+export function AnimatedNumber({
+  value,
   format = (v) => v.toLocaleString(),
   duration = 0.5,
-  className 
+  className
 }: AnimatedNumberProps) {
   const motionValue = useMotionValue(0)
   const rounded = useTransform(motionValue, Math.round)

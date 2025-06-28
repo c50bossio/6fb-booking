@@ -23,7 +23,7 @@ add_cron_job() {
     local current_cron=$(crontab -l 2>/dev/null || echo "")
     local job_command="cd $SCRIPT_DIR && /usr/bin/env node $MONITOR_SCRIPT >> $LOG_DIR/monitor.log 2>&1"
     local cron_entry="$schedule $job_command"
-    
+
     # Check if job already exists
     if echo "$current_cron" | grep -q "$MONITOR_SCRIPT"; then
         echo "⚠️  Monitoring cron job already exists. Updating..."
@@ -31,7 +31,7 @@ add_cron_job() {
         echo "$current_cron" | grep -v "$MONITOR_SCRIPT" | crontab -
         current_cron=$(crontab -l 2>/dev/null || echo "")
     fi
-    
+
     # Add new job
     (echo "$current_cron"; echo "$cron_entry") | crontab -
     echo "✅ Cron job added: $cron_entry"
@@ -43,7 +43,7 @@ setup_systemd_timer() {
         echo "⚠️  Systemd not available on this system"
         return 1
     fi
-    
+
     # Create service file
     cat > /tmp/codebase-monitor.service <<EOF
 [Unit]
@@ -93,7 +93,7 @@ EOF
 # Function to setup launchd (macOS)
 setup_launchd() {
     local plist_path="$HOME/Library/LaunchAgents/com.sixfb.codebase-monitor.plist"
-    
+
     cat > "$plist_path" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -141,7 +141,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     echo "3) Both"
     echo "4) Skip automation"
     read -p "Enter choice (1-4): " choice
-    
+
     case $choice in
         1)
             add_cron_job "0 9 * * 1"  # Weekly on Monday at 9 AM
@@ -170,7 +170,7 @@ elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     echo "3) Both"
     echo "4) Skip automation"
     read -p "Enter choice (1-4): " choice
-    
+
     case $choice in
         1)
             add_cron_job "0 9 * * 1"  # Weekly on Monday at 9 AM

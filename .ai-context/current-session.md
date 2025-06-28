@@ -4,7 +4,7 @@
 
 ### Current Status
 - **Project**: 6FB Booking - Barber shop booking and management platform
-- **Tech Stack**: 
+- **Tech Stack**:
   - Backend: FastAPI, SQLAlchemy, PostgreSQL/SQLite
   - Frontend: Next.js, TypeScript, Tailwind CSS
   - Infrastructure: Sentry monitoring, Stripe payments, Trafft integration
@@ -17,15 +17,15 @@
 - Backend server was down due to import errors (now fixed)
 
 ### Current State
-- **What Works**: 
+- **What Works**:
   - Sentry error monitoring configured and tested
   - Database schema properly initialized
   - Core API structure in place
-- **Current Issues**: 
+- **Current Issues**:
   - Backend server needs restart after import fixes
   - Trafft webhook integration status unknown
   - No rate limiting on API endpoints (SECURITY RISK)
-- **Immediate Next Steps**: 
+- **Immediate Next Steps**:
   1. Restart backend server and verify it runs
   2. Test API endpoints for functionality
   3. Implement rate limiting on all endpoints

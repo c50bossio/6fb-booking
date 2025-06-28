@@ -12,7 +12,7 @@ sentry_sdk.init(
     traces_sample_rate=1.0,
     profiles_sample_rate=1.0,
     environment="testing",
-    release="backend@error-variety-test"
+    release="backend@error-variety-test",
 )
 
 print("🎭 Generating 5 different types of errors for Sentry dashboard...")
@@ -20,7 +20,9 @@ print("🎭 Generating 5 different types of errors for Sentry dashboard...")
 # 1. Database Connection Error
 print("\n1️⃣ Generating Database Connection Error...")
 try:
-    raise ConnectionError("Could not connect to database: Connection refused (host=non-existent-host.com, port=5432)")
+    raise ConnectionError(
+        "Could not connect to database: Connection refused (host=non-existent-host.com, port=5432)"
+    )
 except Exception as e:
     event_id = sentry_sdk.capture_exception(e)
     print(f"   ✅ Database error captured: {event_id}")
@@ -37,6 +39,7 @@ except Exception as e:
 print("\n3️⃣ Generating JSON Parse Error...")
 try:
     import json
+
     json.loads('{"invalid": json}')
 except Exception as e:
     event_id = sentry_sdk.capture_exception(e)
@@ -53,10 +56,14 @@ except Exception as e:
 # 5. Authentication/Permission Error
 print("\n5️⃣ Generating Authentication Error...")
 try:
-    raise PermissionError("User user_12345 does not have permission to access admin_dashboard")
+    raise PermissionError(
+        "User user_12345 does not have permission to access admin_dashboard"
+    )
 except Exception as e:
     event_id = sentry_sdk.capture_exception(e)
     print(f"   ✅ Authentication error captured: {event_id}")
 
 print("\n✨ All 5 error types have been generated and sent to Sentry!")
-print("🔗 Check your dashboard at: https://sentry.io/organizations/sixfb/issues/?project=4509526819012608")
+print(
+    "🔗 Check your dashboard at: https://sentry.io/organizations/sixfb/issues/?project=4509526819012608"
+)

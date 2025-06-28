@@ -84,8 +84,8 @@ export default function SimpleCalendarDemo() {
                     <h3 className="font-semibold text-white">{appointment.title}</h3>
                     <span className={`
                       px-2 py-1 text-xs rounded
-                      ${appointment.status === 'confirmed' 
-                        ? 'bg-green-900 text-green-300' 
+                      ${appointment.status === 'confirmed'
+                        ? 'bg-green-900 text-green-300'
                         : 'bg-yellow-900 text-yellow-300'}
                     `}>
                       {appointment.status}
@@ -107,7 +107,7 @@ export default function SimpleCalendarDemo() {
               className="bg-gray-800 border-2 border-dashed border-gray-600 rounded-lg p-8 min-h-[400px] flex items-center justify-center"
             >
               <p className="text-gray-500 text-center">
-                {draggedItem 
+                {draggedItem
                   ? `Drop ${draggedItem.title} here`
                   : 'Drag appointments here to reschedule'
                 }
@@ -124,7 +124,7 @@ export default function SimpleCalendarDemo() {
             <li>✅ No authentication required</li>
             <li>✅ Works without backend connection</li>
           </ul>
-          
+
           <div className="mt-4 pt-4 border-t border-gray-700">
             <p className="text-sm text-gray-400">
               This is a simplified demo. The full calendar demo at{' '}
