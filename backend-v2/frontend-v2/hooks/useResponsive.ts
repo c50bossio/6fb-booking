@@ -5,25 +5,28 @@ import { breakpoints, type Breakpoint } from '@/lib/responsive'
 
 export function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     const media = window.matchMedia(query)
-    if (media.matches !== matches) {
-      setMatches(media.matches)
-    }
+    setMatches(media.matches)
 
     const listener = () => setMatches(media.matches)
     media.addEventListener('change', listener)
     return () => media.removeEventListener('change', listener)
-  }, [matches, query])
+  }, [query])
 
-  return matches
+  // Return false during SSR to prevent hydration mismatch
+  return mounted ? matches : false
 }
 
 export function useBreakpoint(): Breakpoint | 'xs' {
-  const [currentBreakpoint, setCurrentBreakpoint] = useState<Breakpoint | 'xs'>('xs')
+  const [currentBreakpoint, setCurrentBreakpoint] = useState<Breakpoint | 'xs'>('lg') // Default to desktop for SSR
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     const handleResize = () => {
       const width = window.innerWidth
       
@@ -47,10 +50,12 @@ export function useBreakpoint(): Breakpoint | 'xs' {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  return currentBreakpoint
+  // Return desktop breakpoint during SSR to match most common case
+  return mounted ? currentBreakpoint : 'lg'
 }
 
 export function useResponsive() {
+  const [mounted, setMounted] = useState(false)
   const breakpoint = useBreakpoint()
   
   const isMobile = useMediaQuery('(max-width: 639px)')
@@ -58,14 +63,21 @@ export function useResponsive() {
   const isDesktop = useMediaQuery('(min-width: 1024px)')
   const isLargeDesktop = useMediaQuery('(min-width: 1536px)')
   
-  return {
-    breakpoint,
-    isMobile,
-    isTablet,
-    isDesktop,
-    isLargeDesktop,
-    isSmallScreen: isMobile || isTablet,
-    isMediumScreen: isTablet,
-    isLargeScreen: isDesktop || isLargeDesktop,
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+  
+  // During SSR, assume desktop view to prevent layout shifts
+  const ssrSafeValues = {
+    breakpoint: mounted ? breakpoint : 'lg' as const,
+    isMobile: mounted ? isMobile : false,
+    isTablet: mounted ? isTablet : false,
+    isDesktop: mounted ? isDesktop : true,
+    isLargeDesktop: mounted ? isLargeDesktop : false,
+    isSmallScreen: mounted ? (isMobile || isTablet) : false,
+    isMediumScreen: mounted ? isTablet : false,
+    isLargeScreen: mounted ? (isDesktop || isLargeDesktop) : true,
   }
+  
+  return ssrSafeValues
 }

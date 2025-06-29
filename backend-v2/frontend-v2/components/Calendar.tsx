@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { isToday as checkIsToday } from '@/lib/timezone'
 
 interface CalendarProps {
   selectedDate: Date | null
@@ -10,6 +11,7 @@ interface CalendarProps {
 
 export default function Calendar({ selectedDate, onDateSelect, bookingDates = [] }: CalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
+  // Create today's date at midnight in local timezone
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
@@ -36,7 +38,7 @@ export default function Calendar({ selectedDate, onDateSelect, bookingDates = []
 
   const isToday = (day: number) => {
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
-    return date.toDateString() === today.toDateString()
+    return checkIsToday(date)
   }
 
   const isSelected = (day: number) => {
@@ -47,27 +49,34 @@ export default function Calendar({ selectedDate, onDateSelect, bookingDates = []
 
   const isPastDate = (day: number) => {
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
+    date.setHours(0, 0, 0, 0) // Ensure we're comparing dates at midnight
     return date < today
   }
 
   const isTooFarInFuture = (day: number) => {
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
+    date.setHours(0, 0, 0, 0)
     const maxDate = new Date(today)
     maxDate.setDate(maxDate.getDate() + 30)
+    maxDate.setHours(23, 59, 59, 999) // End of day
     return date > maxDate
   }
 
   const hasBooking = (day: number) => {
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
-    return bookingDates.some(bookingDate => 
-      bookingDate.toDateString() === date.toDateString()
-    )
+    // Compare dates properly in local timezone
+    return bookingDates.some(bookingDate => {
+      return bookingDate.getFullYear() === date.getFullYear() &&
+             bookingDate.getMonth() === date.getMonth() &&
+             bookingDate.getDate() === date.getDate()
+    })
   }
 
   const handleDateClick = (day: number) => {
     if (isPastDate(day) || isTooFarInFuture(day)) return
     
-    const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
+    // Create date at noon to avoid any DST issues
+    const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day, 12, 0, 0)
     onDateSelect(date)
   }
 
@@ -143,18 +152,18 @@ export default function Calendar({ selectedDate, onDateSelect, bookingDates = []
                     : 'hover:bg-gray-100 cursor-pointer'
                   }
                   ${isToday(day) 
-                    ? 'bg-blue-50 text-blue-600 font-semibold' 
+                    ? 'bg-primary-50 text-primary-600 font-semibold' 
                     : ''
                   }
                   ${isSelected(day) 
-                    ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                    ? 'bg-primary-600 text-white hover:bg-primary-700' 
                     : ''
                   }
                 `}
               >
                 {day}
                 {hasBooking(day) && !isSelected(day) && (
-                  <span className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-blue-400 rounded-full" />
+                  <span className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary-400 rounded-full" />
                 )}
               </button>
             </div>
@@ -165,15 +174,15 @@ export default function Calendar({ selectedDate, onDateSelect, bookingDates = []
       {/* Legend */}
       <div className="px-4 pb-4 flex items-center justify-center gap-4 text-xs text-gray-600">
         <div className="flex items-center gap-1">
-          <span className="w-2 h-2 bg-blue-50 rounded"></span>
+          <span className="w-2 h-2 bg-primary-50 rounded"></span>
           <span>Today</span>
         </div>
         <div className="flex items-center gap-1">
-          <span className="w-2 h-2 bg-blue-600 rounded"></span>
+          <span className="w-2 h-2 bg-primary-600 rounded"></span>
           <span>Selected</span>
         </div>
         <div className="flex items-center gap-1">
-          <span className="w-1 h-1 bg-blue-400 rounded-full"></span>
+          <span className="w-1 h-1 bg-primary-400 rounded-full"></span>
           <span>Booking</span>
         </div>
       </div>

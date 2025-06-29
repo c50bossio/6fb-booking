@@ -1,109 +1,572 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { getProfile, logout } from '@/lib/api'
+import { getProfile, logout, getMyBookings, getClientDashboardMetrics, getDashboardAnalytics, type User, type DashboardAnalytics } from '@/lib/api'
+import TimezoneSetupModal from '@/components/TimezoneSetupModal'
+import { BarberDashboardLayout } from '@/components/BarberDashboardLayout'
+import { useAsyncOperation } from '@/lib/useAsyncOperation'
+import { PageLoading, ErrorDisplay, SuccessMessage } from '@/components/LoadingStates'
+import { Button } from '@/components/ui/Button'
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/Card'
+import { QuickActions } from '@/components/QuickActions'
 
-export default function DashboardPage() {
+// Simple Icon Components
+const BookIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+  </svg>
+)
+
+const BellIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+  </svg>
+)
+
+const SettingsIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+  </svg>
+)
+
+const UserIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+  </svg>
+)
+
+const CalendarIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+  </svg>
+)
+
+const TrendingUpIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+  </svg>
+)
+
+const ClockIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+)
+
+const ArrowRightIcon = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+  </svg>
+)
+
+const PlusIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+  </svg>
+)
+
+const ShieldIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+  </svg>
+)
+
+function DashboardContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [user, setUser] = useState<any>(null)
+  const [bookings, setBookings] = useState<any[]>([])
+  const [clientMetrics, setClientMetrics] = useState<any>(null)
+  const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null)
   const [loading, setLoading] = useState(true)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [showTimezoneWarning, setShowTimezoneWarning] = useState(false)
+  const [showTimezoneModal, setShowTimezoneModal] = useState(false)
 
   useEffect(() => {
-    async function fetchUser() {
+    async function fetchDashboardData() {
       try {
+        // Check authentication first
         const userData = await getProfile()
+        if (!userData) {
+          return
+        }
         setUser(userData)
+        
+        if (!userData.timezone) {
+          setShowTimezoneWarning(true)
+          const hasSeenTimezoneModal = localStorage.getItem('hasSeenTimezoneModal')
+          if (!hasSeenTimezoneModal) {
+            setShowTimezoneModal(true)
+          }
+        }
+
+        try {
+          const bookingsData = await getMyBookings()
+          setBookings(bookingsData.bookings || [])
+        } catch (bookingError) {
+          console.warn('Failed to load bookings:', bookingError)
+          setBookings([])
+        }
+
+        // Load role-specific data
+        if (userData.role === 'admin' || userData.role === 'barber') {
+          // Load client metrics and analytics in parallel
+          const [metricsResult, analyticsResult] = await Promise.allSettled([
+            getClientDashboardMetrics(),
+            getDashboardAnalytics(userData.id)
+          ])
+          
+          if (metricsResult.status === 'fulfilled') {
+            setClientMetrics(metricsResult.value)
+          } else {
+            console.warn('Failed to load client metrics:', metricsResult.reason)
+            setClientMetrics(null)
+          }
+          
+          if (analyticsResult.status === 'fulfilled') {
+            setAnalytics(analyticsResult.value)
+          } else {
+            console.warn('Failed to load analytics:', analyticsResult.reason)
+            setAnalytics(null)
+          }
+        }
       } catch (error) {
-        // Not authenticated, redirect to login
-        router.push('/login')
+        console.warn('Failed to load dashboard data:', error)
+        setUser(null)
+        setBookings([])
+        setClientMetrics(null)
+        setAnalytics(null)
+        // Don't redirect during render - let the loading state handle it
       } finally {
         setLoading(false)
       }
     }
 
-    fetchUser()
+    fetchDashboardData()
 
-    // Check for booking success
     if (searchParams.get('booking') === 'success') {
       setShowSuccess(true)
-      // Hide success message after 5 seconds
       setTimeout(() => setShowSuccess(false), 5000)
     }
   }, [router, searchParams])
+
+  // Handle redirect to login if user is not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      // Add a small delay to prevent premature redirects
+      const redirectTimer = setTimeout(() => {
+        router.push('/login')
+      }, 100)
+      return () => clearTimeout(redirectTimer)
+    }
+  }, [loading, user, router])
 
   const handleLogout = () => {
     logout()
     router.push('/')
   }
 
+  const handleTimezoneComplete = (timezone: string) => {
+    setShowTimezoneModal(false)
+    setShowTimezoneWarning(false)
+    localStorage.setItem('hasSeenTimezoneModal', 'true')
+    if (user) {
+      setUser({ ...user, timezone })
+    }
+  }
+
+  const handleTimezoneModalClose = () => {
+    setShowTimezoneModal(false)
+    localStorage.setItem('hasSeenTimezoneModal', 'true')
+  }
+
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-gray-600">Loading...</p>
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-ios-gray-50 to-white">
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 mx-auto">
+            <div className="w-full h-full rounded-full border-4 border-primary-200 border-t-primary-500 animate-spin"></div>
+          </div>
+          <p className="text-ios-body text-ios-gray-600">Loading your dashboard...</p>
+        </div>
       </div>
     )
   }
 
+  // Render specialized barber dashboard layout
+  if (user?.role === 'barber' || user?.role === 'admin' || user?.role === 'super_admin') {
+    // Calculate completion rate from analytics data
+    const completionRate = analytics?.appointment_summary ? 
+      Math.round(100 - (analytics.appointment_summary.cancellation_rate + analytics.appointment_summary.no_show_rate)) : 95
+    
+    const todayStats = {
+      appointments: analytics?.appointment_summary?.total_appointments || 0,
+      revenue: analytics?.revenue_summary?.total_revenue || 0,
+      newClients: analytics?.client_summary?.new_clients || 0,
+      completionRate
+    }
+
+    const upcomingAppointments = bookings.slice(0, 5).map(booking => ({
+      id: booking.id,
+      service_name: booking.service_name,
+      start_time: booking.start_time,
+      client_name: booking.client_name || 'Client',
+      status: booking.status
+    }))
+
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-ios-gray-50 to-white dark:from-zinc-900 dark:to-zinc-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          {/* Header Section */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 space-y-4 lg:space-y-0">
+            <div className="space-y-2">
+              <h1 className="text-ios-largeTitle font-bold text-accent-900 dark:text-white tracking-tight">
+                Barber Dashboard
+              </h1>
+              <p className="text-ios-body text-ios-gray-600 dark:text-zinc-300">
+                Welcome back, {user?.first_name || 'there'}. Here's your performance overview.
+              </p>
+            </div>
+          </div>
+
+          {/* Success Message */}
+          {showSuccess && (
+            <Card variant="success" className="mb-6" animated>
+              <CardContent className="flex items-center space-x-3">
+                <div className="flex-shrink-0">
+                  <svg className="w-6 h-6 text-success-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <p className="text-success-800 font-medium">Booking confirmed successfully!</p>
+                  <p className="text-success-700 text-sm mt-1">Your appointment has been scheduled.</p>
+                </div>
+                <Button
+                  onClick={() => setShowSuccess(false)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-success-600 hover:text-success-700"
+                >
+                  ×
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Timezone Warning */}
+          {showTimezoneWarning && (
+            <Card variant="warning" className="mb-6" animated>
+              <CardContent className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="flex-shrink-0">
+                    <svg className="w-6 h-6 text-warning-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.98-.833-2.75 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-warning-800 font-medium">Timezone not configured</p>
+                    <p className="text-warning-700 text-sm mt-1">
+                      Set your timezone to ensure appointment times display correctly.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => router.push('/settings')}
+                  variant="warning"
+                  size="sm"
+                  leftIcon={<SettingsIcon />}
+                >
+                  Configure
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          <BarberDashboardLayout 
+            user={user}
+            todayStats={todayStats}
+            upcomingAppointments={upcomingAppointments}
+          />
+        </div>
+
+        <TimezoneSetupModal
+          isOpen={showTimezoneModal}
+          onClose={handleTimezoneModalClose}
+          onComplete={handleTimezoneComplete}
+        />
+      </main>
+    )
+  }
+
   return (
-    <main className="min-h-screen p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <div className="flex gap-4">
-            <button
-              onClick={() => router.push('/book')}
-              className="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700"
+    <main className="min-h-screen bg-gradient-to-br from-ios-gray-50 to-white dark:from-zinc-900 dark:to-zinc-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Header Section */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 space-y-4 lg:space-y-0">
+          <div className="space-y-2">
+            <h1 className="text-ios-largeTitle font-bold text-accent-900 dark:text-white tracking-tight">
+              Command Center
+            </h1>
+            <p className="text-ios-body text-ios-gray-600 dark:text-zinc-300">
+              Welcome back, {user?.first_name || 'there'}. Here's what's happening today.
+            </p>
+          </div>
+          
+          {/* Quick Actions - Mobile Hidden, Desktop Visible */}
+          <div className="hidden lg:flex items-center space-x-3">
+            <Button 
+              onClick={() => router.push('/book')} 
+              variant="primary" 
+              size="md"
+              elevated
+              leftIcon={<BookIcon />}
             >
               Book Appointment
-            </button>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 text-sm text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+            </Button>
+            {(user?.role === 'admin' || user?.role === 'barber') && (
+              <Button 
+                onClick={() => router.push('/notifications')} 
+                variant="secondary" 
+                size="md"
+                leftIcon={<BellIcon />}
+              >
+                Notifications
+              </Button>
+            )}
+            <Button 
+              onClick={() => router.push('/settings')} 
+              variant="ghost" 
+              size="md"
+              leftIcon={<SettingsIcon />}
             >
-              Logout
-            </button>
+              Settings
+            </Button>
           </div>
         </div>
 
+        {/* Success Message */}
         {showSuccess && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-green-800 font-medium">
-              ✓ Booking confirmed successfully!
-            </p>
-          </div>
+          <Card variant="success" className="mb-6" animated>
+            <CardContent className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <svg className="w-6 h-6 text-success-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-success-800 font-medium">Booking confirmed successfully!</p>
+                <p className="text-success-700 text-sm mt-1">Your appointment has been scheduled.</p>
+              </div>
+              <Button
+                onClick={() => setShowSuccess(false)}
+                variant="ghost"
+                size="sm"
+                className="text-success-600 hover:text-success-700"
+              >
+                ×
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Timezone Warning */}
+        {showTimezoneWarning && (
+          <Card variant="warning" className="mb-6" animated>
+            <CardContent className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="flex-shrink-0">
+                  <svg className="w-6 h-6 text-warning-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.98-.833-2.75 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-warning-800 font-medium">Timezone not configured</p>
+                  <p className="text-warning-700 text-sm mt-1">
+                    Set your timezone to ensure appointment times display correctly.
+                  </p>
+                </div>
+              </div>
+              <Button
+                onClick={() => router.push('/settings')}
+                variant="warning"
+                size="sm"
+                leftIcon={<SettingsIcon />}
+              >
+                Configure
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Quick Actions - Prominent placement after warnings */}
+        {user && (
+          <QuickActions userRole={user.role} className="mb-8" />
         )}
 
         {user && (
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Welcome back!</h2>
-            <p className="text-gray-600 mb-6">
-              Logged in as: {user.email}
-            </p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <h3 className="font-semibold text-blue-900 mb-2">Quick Actions</h3>
-                <button
-                  onClick={() => router.push('/book')}
-                  className="text-blue-600 hover:text-blue-800 underline"
+          <Card className="mb-6">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle as="h2">Welcome back!</CardTitle>
+                <Button
+                  onClick={() => router.push('/settings')}
+                  variant="ghost"
+                  size="sm"
+                  className="text-primary-600 hover:text-primary-700"
                 >
-                  Book a new appointment →
-                </button>
+                  Account Settings
+                </Button>
               </div>
-              
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <h3 className="font-semibold text-gray-900 mb-2">Your Bookings</h3>
-                <p className="text-gray-600 text-sm">
-                  View and manage your appointments
-                </p>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-6">
+                <p className="text-gray-600">Logged in as: {user.email}</p>
+                {user.timezone && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    Timezone: {user.timezone.replace(/_/g, ' ')}
+                  </p>
+                )}
               </div>
-            </div>
-          </div>
+            
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <Card variant="default">
+                  <CardContent>
+                    <h3 className="font-semibold text-accent-900 mb-3">Your Bookings</h3>
+                    {bookings.length > 0 ? (
+                      <div className="space-y-2">
+                        <p className="text-sm text-gray-600">
+                          {bookings.length} appointment{bookings.length !== 1 ? 's' : ''}
+                        </p>
+                        {bookings.slice(0, 2).map((booking) => (
+                          <div key={booking.id} className="text-xs bg-gray-50 p-2 rounded border">
+                            <div className="font-medium">{booking.service_name}</div>
+                            <div className="text-gray-500">
+                              {new Date(booking.start_time).toLocaleDateString()} at{' '}
+                              {new Date(booking.start_time).toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </div>
+                            <div className={`text-xs mt-1 ${
+                              booking.status === 'confirmed' ? 'text-primary-600' : 
+                              booking.status === 'pending' ? 'text-yellow-600' : 
+                              'text-gray-600'
+                            }`}>
+                              {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                            </div>
+                          </div>
+                        ))}
+                        {bookings.length > 2 && (
+                          <p className="text-xs text-gray-500">
+                            +{bookings.length - 2} more appointments
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-gray-600 text-sm">No appointments scheduled</p>
+                    )}
+                  </CardContent>
+                </Card>
+                
+                <Card variant="default">
+                  <CardContent>
+                    <h3 className="font-semibold text-accent-900 mb-3">
+                      {user?.role === 'admin' || user?.role === 'barber' ? 'Client Management' : 'Services'}
+                    </h3>
+                    {user?.role === 'admin' || user?.role === 'barber' ? (
+                      <div className="space-y-2">
+                        {clientMetrics ? (
+                          <div className="text-sm space-y-1">
+                            <div>Total Clients: {clientMetrics.total_clients || 0}</div>
+                            <div>New This Month: {clientMetrics.new_clients_this_month || 0}</div>
+                            <div>VIP Clients: {clientMetrics.vip_clients || 0}</div>
+                          </div>
+                        ) : (
+                          <div className="text-sm text-gray-600">Loading metrics...</div>
+                        )}
+                        <Button
+                          onClick={() => router.push('/clients')}
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start text-primary-600 hover:text-primary-700 p-0"
+                        >
+                          Manage clients →
+                        </Button>
+                        <Button
+                          onClick={() => router.push('/import')}
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start text-primary-600 hover:text-primary-700 p-0"
+                        >
+                          Import data →
+                        </Button>
+                        <Button
+                          onClick={() => router.push('/export')}
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start text-primary-600 hover:text-primary-700 p-0"
+                        >
+                          Export data →
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <p className="text-sm text-gray-600">Browse available services</p>
+                        <Button
+                          onClick={() => router.push('/book')}
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start text-primary-600 hover:text-primary-700 p-0"
+                        >
+                          View services →
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {user?.role === 'admin' && (
+                <Card variant="default" className="mt-6 border-l-4 border-accent-400">
+                  <CardContent>
+                    <h3 className="font-semibold text-accent-900 mb-2">🛠️ Admin Panel</h3>
+                    <p className="text-accent-700 text-sm mb-3">
+                      Manage booking settings, business hours, and platform configuration
+                    </p>
+                    <Button
+                      onClick={() => router.push('/admin')}
+                      variant="ghost"
+                      size="sm"
+                      className="text-primary-600 hover:text-primary-700 p-0"
+                    >
+                      Open Admin Settings →
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+            </CardContent>
+          </Card>
         )}
       </div>
+
+      <TimezoneSetupModal
+        isOpen={showTimezoneModal}
+        onClose={handleTimezoneModalClose}
+        onComplete={handleTimezoneComplete}
+      />
     </main>
+  )
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><p className="text-gray-600">Loading...</p></div>}>
+      <DashboardContent />
+    </Suspense>
   )
 }

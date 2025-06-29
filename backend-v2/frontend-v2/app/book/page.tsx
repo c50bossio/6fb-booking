@@ -51,14 +51,14 @@ export default function BookPage() {
     setUserTimezone(getTimezoneDisplayName())
   }, [])
 
-  // Check authentication and fetch user's existing bookings on mount
+  // Optionally fetch user's existing bookings if authenticated (but don't require it)
   useEffect(() => {
     async function checkAuthAndFetchBookings() {
       try {
-        // Check if user is authenticated
+        // Try to check if user is authenticated (optional)
         await getProfile()
         
-        // Fetch existing bookings
+        // If authenticated, fetch existing bookings to show on calendar
         const response = await getMyBookings()
         const dates = response.bookings.map((booking: any) => {
           // Parse the datetime string properly
@@ -67,9 +67,9 @@ export default function BookPage() {
         })
         setBookingDates(dates)
       } catch (err) {
-        console.error('Authentication or booking fetch failed:', err)
-        // Redirect to login if not authenticated
-        router.push('/login')
+        console.log('User not authenticated - public booking mode')
+        // Don't redirect - allow public booking
+        // Just skip loading existing bookings
       }
     }
     checkAuthAndFetchBookings()
@@ -548,6 +548,40 @@ export default function BookPage() {
                     <span className="font-bold text-lg">
                       {SERVICES.find(s => s.id === selectedService)?.price}
                     </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recurring appointment option */}
+              <div className="mt-4 p-4 bg-primary-50 border border-primary-200 rounded-lg">
+                <div className="flex items-start">
+                  <svg className="w-5 h-5 text-primary-600 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <div className="flex-1">
+                    <h3 className="text-sm font-medium text-primary-900">Want to make this recurring?</h3>
+                    <p className="text-sm text-primary-700 mt-1">
+                      Set up regular appointments at this time every week, bi-weekly, or monthly.
+                    </p>
+                    <Button
+                      onClick={() => {
+                        // Store the booking details in session storage
+                        const service = SERVICES.find(s => s.id === selectedService)
+                        sessionStorage.setItem('recurringBookingTemplate', JSON.stringify({
+                          service_name: selectedService,
+                          service_id: service ? SERVICES.indexOf(service) + 1 : 1, // Map to actual service ID
+                          date: selectedDate?.toISOString(),
+                          time: selectedTime,
+                          day_of_week: selectedDate?.getDay()
+                        }))
+                        router.push('/recurring?mode=create')
+                      }}
+                      variant="ghost"
+                      size="sm"
+                      className="mt-2 text-primary-700 hover:text-primary-800"
+                    >
+                      Set up recurring appointment →
+                    </Button>
                   </div>
                 </div>
               </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { login } from '@/lib/api'
@@ -9,8 +9,9 @@ import { LoadingButton, ErrorDisplay, SuccessMessage } from '@/components/Loadin
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
+import { Logo } from '@/components/ui/Logo'
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
@@ -45,10 +46,11 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8">
       <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-accent-900">Login</h2>
+        <div className="text-center space-y-4">
+          <Logo variant="color" size="lg" className="mx-auto" href="#" />
+          <h2 className="text-3xl font-bold text-accent-900">Welcome Back</h2>
           <p className="mt-2 text-gray-600">
-            Sign in to your account
+            Sign in to manage your barbershop
           </p>
         </div>
 
@@ -62,7 +64,6 @@ export default function LoginPage() {
           {loginState.error && (
             <ErrorDisplay 
               error={loginState.error} 
-              onRetry={handleSubmit}
               title="Login failed"
             />
           )}
@@ -124,5 +125,13 @@ export default function LoginPage() {
         </Card>
       </div>
     </main>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><p className="text-gray-600">Loading...</p></div>}>
+      <LoginContent />
+    </Suspense>
   )
 }

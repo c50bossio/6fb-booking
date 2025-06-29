@@ -1,0 +1,4208 @@
+import { validateAPIRequest, validateAPIResponse, APIPerformanceMonitor, retryOperation, defaultRetryConfigs } from './apiUtils'
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
+// Webhook types
+export interface WebhookEndpoint {
+  id: string
+  url: string
+  name: string
+  description?: string
+  events: string[]
+  auth_type: 'none' | 'bearer' | 'basic' | 'hmac' | 'api_key'
+  auth_config?: Record<string, any>
+  headers?: Record<string, string>
+  is_active: boolean
+  max_retries: number
+  retry_delay_seconds: number
+  timeout_seconds: number
+  created_at: string
+  updated_at: string
+  total_deliveries: number
+  successful_deliveries: number
+  failed_deliveries: number
+  success_rate: number
+  last_triggered_at?: string
+  last_success_at?: string
+  last_failure_at?: string
+}
+
+export interface WebhookLog {
+  id: string
+  endpoint_id: string
+  event_type: string
+  event_id?: string
+  status: 'pending' | 'success' | 'failed' | 'retrying'
+  status_code?: number
+  request_url: string
+  request_method: string
+  request_headers?: Record<string, string>
+  request_body?: any
+  response_headers?: Record<string, string>
+  response_body?: string
+  response_time_ms?: number
+  error_message?: string
+  retry_count: number
+  next_retry_at?: string
+  created_at: string
+  delivered_at?: string
+  completed_at?: string
+}
+
+export interface WebhookEvent {
+  value: string
+  name: string
+  category: string
+  description: string
+}
+
+export interface WebhookStats {
+  total_endpoints: number
+  active_endpoints: number
+  last_24h: {
+    total_deliveries: number
+    successful_deliveries: number
+    failed_deliveries: number
+    success_rate: number
+  }
+  recent_failures: Array<{
+    id: string
+    endpoint_id: string
+    event_type: string
+    error_message?: string
+    created_at: string
+  }>
+}
+
+// Enhanced fetch wrapper with validation, monitoring, and automatic token refresh
+async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = true): Promise<any> {
+  // Start performance monitoring
+  const endTiming = APIPerformanceMonitor.startTiming(endpoint)
+  
+  // Validate request data if present
+  if (options.body && typeof options.body === 'string') {
+    try {
+      const requestData = JSON.parse(options.body)
+      const validation = validateAPIRequest(endpoint, requestData)
+      if (!validation.isValid) {
+        const error = new Error(`Request validation failed: ${validation.errors.join(', ')}`)
+        APIPerformanceMonitor.recordError(endpoint)
+        endTiming()
+        throw error
+      }
+    } catch (parseError) {
+      // If JSON parsing fails, continue (might be form data or other format)
+    }
+  }
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+  
+  const config: RequestInit = {
+    ...options,
+    headers: {
+      ...(!(options.body instanceof FormData) && { 'Content-Type': 'application/json' }),
+      ...(token && { Authorization: `Bearer ${token}` }),
+      ...options.headers,
+    },
+  }
+
+  const response = await fetch(`${API_URL}${endpoint}`, config)
+  
+  // Handle 401 with automatic token refresh
+  if (response.status === 401 && retry && endpoint !== '/api/v1/auth/refresh') {
+    try {
+      // Try to refresh token
+      const refresh_token = localStorage.getItem('refresh_token')
+      if (refresh_token) {
+        const refreshResponse = await fetch(`${API_URL}/api/v1/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refresh_token }),
+        })
+        
+        if (refreshResponse.ok) {
+          const data = await refreshResponse.json()
+          localStorage.setItem('token', data.access_token)
+          if (data.refresh_token) {
+            localStorage.setItem('refresh_token', data.refresh_token)
+          }
+          // Retry original request with new token
+          return fetchAPI(endpoint, options, false)
+        }
+      }
+    } catch (error) {
+      // If refresh fails, redirect to login
+      localStorage.removeItem('token')
+      localStorage.removeItem('refresh_token')
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login'
+      }
+    }
+  }
+  
+  if (!response.ok) {
+    let errorData: APIError
+    try {
+      errorData = await response.json()
+    } catch {
+      throw new Error(`Network error: ${response.status} ${response.statusText}`)
+    }
+    
+    // Handle specific error types
+    if (response.status === 429) {
+      const retryAfter = errorData.retry_after || 60
+      throw new Error(`Rate limit exceeded. Please try again in ${retryAfter} seconds.`)
+    }
+    
+    if (response.status === 422) {
+      // Validation errors - extract more specific message
+      if (Array.isArray(errorData.detail)) {
+        const messages = errorData.detail.map((err: ValidationError) => err.msg).join(', ')
+        throw new Error(messages)
+      }
+    }
+    
+    if (response.status === 401) {
+      throw new Error('Authentication failed. Please log in again.')
+    }
+    
+    if (response.status === 403) {
+      throw new Error('Access denied. You do not have permission to perform this action.')
+    }
+    
+    if (response.status >= 500) {
+      throw new Error('Server error. Please try again later or contact support.')
+    }
+    
+    // Handle both string and object detail formats
+    const message = typeof errorData.detail === 'string' 
+      ? errorData.detail 
+      : errorData.message || `API Error: ${response.status}`
+    
+    // Record error for monitoring
+    APIPerformanceMonitor.recordError(endpoint)
+    endTiming()
+    
+    throw new Error(message)
+  }
+
+  const responseData = await response.json()
+  
+  // Validate response data structure
+  const responseValidation = validateAPIResponse(endpoint, responseData)
+  if (!responseValidation.isValid) {
+    console.warn(`Response validation failed for ${endpoint}:`, responseValidation.errors)
+    // Don't throw error for response validation - just log warning
+  }
+  
+  endTiming()
+  return responseData
+}
+
+// Auth functions with retry logic for critical operations
+export async function login(email: string, password: string) {
+  const response = await retryOperation(
+    () => fetchAPI('/api/v1/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username: email, password }),
+    }),
+    defaultRetryConfigs.critical,
+    (error) => {
+      // Don't retry auth errors
+      return !error.message?.includes('401') && !error.message?.includes('Invalid')
+    }
+  )
+  
+  // Store tokens
+  if (response.access_token) {
+    localStorage.setItem('token', response.access_token)
+  }
+  if (response.refresh_token) {
+    localStorage.setItem('refresh_token', response.refresh_token)
+  }
+  
+  return response
+}
+
+export async function logout() {
+  localStorage.removeItem('token')
+  localStorage.removeItem('refresh_token')
+}
+
+export async function register(email: string, password: string, name: string) {
+  return fetchAPI('/api/v1/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({ email, password, name }),
+  })
+}
+
+export async function forgotPassword(email: string) {
+  return fetchAPI('/api/v1/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  })
+}
+
+export async function resetPassword(token: string, newPassword: string) {
+  return fetchAPI('/api/v1/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify({ token, new_password: newPassword }),
+  })
+}
+
+export async function changePassword(currentPassword: string, newPassword: string) {
+  return fetchAPI('/api/v1/auth/change-password', {
+    method: 'POST',
+    body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+  })
+}
+
+export async function refreshToken() {
+  const refresh_token = localStorage.getItem('refresh_token')
+  if (!refresh_token) {
+    throw new Error('No refresh token available')
+  }
+  
+  const response = await fetchAPI('/api/v1/auth/refresh', {
+    method: 'POST',
+    body: JSON.stringify({ refresh_token }),
+  })
+  
+  // Update tokens
+  if (response.access_token) {
+    localStorage.setItem('token', response.access_token)
+  }
+  if (response.refresh_token) {
+    localStorage.setItem('refresh_token', response.refresh_token)
+  }
+  
+  return response
+}
+
+// Basic API functions
+export async function getProfile(): Promise<User> {
+  return retryOperation(
+    () => fetchAPI('/api/v1/auth/me'),
+    defaultRetryConfigs.standard
+  )
+}
+
+export async function getAppointments() {
+  return fetchAPI('/api/v1/appointments')
+}
+
+export async function createAppointment(data: any) {
+  return fetchAPI('/api/v1/appointments', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+// Enhanced error handling interfaces
+export interface APIError {
+  detail: string | ValidationError[]
+  message?: string
+  retry_after?: number
+}
+
+export interface ValidationError {
+  loc: (string | number)[]
+  msg: string
+  type: string
+  ctx?: Record<string, any>
+}
+
+// TypeScript interfaces matching backend schemas
+export interface User {
+  id: number
+  email: string
+  name: string
+  role?: string // user, barber, admin
+  timezone?: string // User's preferred timezone
+  created_at: string
+  updated_at?: string
+}
+
+export interface TimeSlot {
+  time: string
+  available: boolean
+  is_next_available?: boolean
+}
+
+export interface NextAvailableSlot {
+  date: string
+  time: string
+  datetime: string
+}
+
+export interface BusinessHours {
+  start: string
+  end: string
+}
+
+export interface SlotsResponse {
+  date: string
+  slots: TimeSlot[]
+  next_available?: NextAvailableSlot
+  business_hours: BusinessHours
+  slot_duration_minutes: number
+}
+
+export interface BookingSettings {
+  id: number
+  business_id: number
+  business_name: string
+  min_lead_time_minutes: number
+  max_advance_days: number
+  same_day_cutoff_time?: string
+  business_start_time: string
+  business_end_time: string
+  slot_duration_minutes: number
+  show_soonest_available: boolean
+  allow_same_day_booking: boolean
+  require_advance_booking: boolean
+  business_type: string
+  business_hours?: string
+  holidays?: string
+  timezone?: string
+  buffer_time_minutes?: number
+  created_at: string
+  updated_at: string
+}
+
+export interface BookingSettingsUpdate {
+  business_name?: string
+  min_lead_time_minutes?: number
+  max_advance_days?: number
+  same_day_cutoff_time?: string
+  business_start_time?: string
+  business_end_time?: string
+  slot_duration_minutes?: number
+  show_soonest_available?: boolean
+  allow_same_day_booking?: boolean
+  require_advance_booking?: boolean
+  business_type?: string
+  business_hours?: string
+  holidays?: string
+  timezone?: string
+  buffer_time_minutes?: number
+}
+
+export interface QuickBookingData {
+  service: string
+  notes?: string
+}
+
+export interface BookingResponse {
+  id: number
+  user_id: number
+  service_name: string
+  start_time: string
+  duration_minutes: number
+  price: number
+  status: string
+  created_at: string
+}
+
+export interface BookingListResponse {
+  bookings: BookingResponse[]
+  total: number
+}
+
+// Enhanced client interfaces
+export interface Client {
+  id: number
+  first_name: string
+  last_name: string
+  email: string
+  phone?: string
+  date_of_birth?: string
+  notes?: string
+  tags?: string
+  preferred_barber_id?: number
+  customer_type: string
+  total_visits: number
+  total_spent: number
+  average_ticket: number
+  visit_frequency_days?: number
+  no_show_count: number
+  cancellation_count: number
+  referral_count: number
+  first_visit_date?: string
+  last_visit_date?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface ClientCreate {
+  first_name: string
+  last_name: string
+  email: string
+  phone?: string
+  date_of_birth?: string
+  notes?: string
+  tags?: string
+  preferred_barber_id?: number
+  preferred_services?: string[]
+  communication_preferences?: {
+    sms: boolean
+    email: boolean
+    marketing: boolean
+  }
+}
+
+export interface ClientUpdate {
+  first_name?: string
+  last_name?: string
+  email?: string
+  phone?: string
+  date_of_birth?: string
+  notes?: string
+  tags?: string
+  preferred_barber_id?: number
+  preferred_services?: string[]
+  communication_preferences?: {
+    sms: boolean
+    email: boolean
+    marketing: boolean
+  }
+}
+
+export interface ClientListResponse {
+  clients: Client[]
+  total: number
+  page: number
+  page_size: number
+}
+
+// Booking functions
+export async function getAvailableSlots(date: string): Promise<SlotsResponse> {
+  return fetchAPI(`/api/v1/bookings/slots?booking_date=${date}`)
+}
+
+export async function getNextAvailableSlot(): Promise<NextAvailableSlot> {
+  return fetchAPI('/api/v1/bookings/slots/next-available')
+}
+
+export async function getBookingSettings(): Promise<BookingSettings> {
+  return fetchAPI('/api/v1/bookings/settings/booking')
+}
+
+export async function updateBookingSettings(updates: BookingSettingsUpdate): Promise<BookingSettings> {
+  return fetchAPI('/api/v1/bookings/settings/booking', {
+    method: 'PUT',
+    body: JSON.stringify(updates),
+  })
+}
+
+export async function createBooking(date: string, time: string, service: string): Promise<BookingResponse> {
+  return retryOperation(
+    () => fetchAPI('/api/v1/bookings', {
+      method: 'POST',
+      body: JSON.stringify({ date, time, service }),
+    }),
+    defaultRetryConfigs.critical,
+    (error) => {
+      // Don't retry validation errors or conflicts
+      return !error.message?.includes('422') && !error.message?.includes('already booked')
+    }
+  )
+}
+
+export async function quickBooking(bookingData: QuickBookingData): Promise<BookingResponse> {
+  return retryOperation(
+    () => fetchAPI('/api/v1/bookings/quick', {
+      method: 'POST',
+      body: JSON.stringify(bookingData),
+    }),
+    defaultRetryConfigs.critical,
+    (error) => {
+      // Don't retry validation errors
+      return !error.message?.includes('422') && !error.message?.includes('Invalid')
+    }
+  )
+}
+
+export async function getMyBookings(): Promise<BookingListResponse> {
+  return fetchAPI('/api/v1/bookings')
+}
+
+// Client management functions
+export async function createClient(clientData: ClientCreate): Promise<Client> {
+  return fetchAPI('/api/v1/clients/', {
+    method: 'POST',
+    body: JSON.stringify(clientData),
+  })
+}
+
+export async function getClients(params?: {
+  page?: number
+  page_size?: number
+  search?: string
+  customer_type?: string
+  tags?: string
+}): Promise<ClientListResponse> {
+  const queryParams = new URLSearchParams()
+  if (params?.page) queryParams.append('page', params.page.toString())
+  if (params?.page_size) queryParams.append('page_size', params.page_size.toString())
+  if (params?.search) queryParams.append('search', params.search)
+  if (params?.customer_type) queryParams.append('customer_type', params.customer_type)
+  if (params?.tags) queryParams.append('tags', params.tags)
+  
+  const query = queryParams.toString()
+  return fetchAPI(`/api/v1/clients/${query ? '?' + query : ''}`)
+}
+
+export async function getClient(clientId: number): Promise<Client> {
+  return fetchAPI(`/api/v1/clients/${clientId}`)
+}
+
+export async function updateClient(clientId: number, updates: ClientUpdate): Promise<Client> {
+  return fetchAPI(`/api/v1/clients/${clientId}`, {
+    method: 'PUT',
+    body: JSON.stringify(updates),
+  })
+}
+
+export async function deleteClient(clientId: number) {
+  return fetchAPI(`/api/v1/clients/${clientId}`, {
+    method: 'DELETE',
+  })
+}
+
+export async function getClientHistory(clientId: number) {
+  return fetchAPI(`/api/v1/clients/${clientId}/history`)
+}
+
+export async function updateCustomerType(clientId: number, customerType: string) {
+  return fetchAPI(`/api/v1/clients/${clientId}/customer-type`, {
+    method: 'PUT',
+    body: JSON.stringify({ customer_type: customerType }),
+  })
+}
+
+export async function searchClients(query: string, limit = 10) {
+  return fetchAPI('/api/v1/clients/search', {
+    method: 'POST',
+    body: JSON.stringify({ query, limit }),
+  })
+}
+
+export async function importClients(clients: any[]) {
+  return fetchAPI('/api/v1/clients/import', {
+    method: 'POST',
+    body: JSON.stringify({ clients }),
+  })
+}
+
+  return fetchAPI('/api/v1/clients/export', {
+    method: 'POST',
+    body: JSON.stringify(params),
+  })
+}
+
+  return fetchAPI('/api/v1/appointments/export', {
+    method: 'POST',
+    body: JSON.stringify(params),
+  })
+}
+
+export async function exportTransactions(params: {
+  format: 'csv' | 'excel' | 'json' | 'pdf'
+  fields?: string[]
+  date_range?: { start: string; end: string }
+  status?: string[]
+}) {
+  return fetchAPI('/api/v1/payments/export', {
+    method: 'POST',
+    body: JSON.stringify(params),
+  })
+}
+
+  return fetchAPI('/api/v1/analytics/export', {
+    method: 'POST',
+    body: JSON.stringify(params),
+  })
+}
+
+// Enhanced client management functions
+export async function getClientAnalytics(clientId: number) {
+  return fetchAPI(`/api/v1/clients/${clientId}/analytics`)
+}
+
+export async function getClientRecommendations(clientId: number) {
+  return fetchAPI(`/api/v1/clients/${clientId}/recommendations`)
+}
+
+export async function getClientCommunicationPreferences(clientId: number) {
+  return fetchAPI(`/api/v1/clients/${clientId}/communication-preferences`)
+}
+
+export async function updateClientCommunicationPreferences(clientId: number, preferences: any) {
+  return fetchAPI(`/api/v1/clients/${clientId}/communication-preferences`, {
+    method: 'PUT',
+    body: JSON.stringify(preferences),
+  })
+}
+
+export async function addClientNote(clientId: number, note: string, noteType: string = 'general') {
+  return fetchAPI(`/api/v1/clients/${clientId}/notes`, {
+    method: 'POST',
+    body: JSON.stringify({ note, note_type: noteType }),
+  })
+}
+
+export async function updateClientTags(clientId: number, tags: string[]) {
+  return fetchAPI(`/api/v1/clients/${clientId}/tags`, {
+    method: 'PUT',
+    body: JSON.stringify({ tags }),
+  })
+}
+
+export async function getClientDashboardMetrics() {
+  return fetchAPI('/api/v1/clients/dashboard/metrics')
+}
+
+export async function advancedClientSearch(params: {
+  query?: string
+  customer_type?: string
+  tags?: string
+  min_visits?: number
+  max_days_since_visit?: number
+  limit?: number
+}) {
+  const queryParams = new URLSearchParams()
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined) {
+      queryParams.append(key, value.toString())
+    }
+  })
+  
+  const query = queryParams.toString()
+  return fetchAPI(`/api/v1/clients/advanced-search${query ? '?' + query : ''}`)
+}
+
+// Quick booking function for next available slot (legacy - use quickBooking instead)
+export async function bookNextAvailableSlot(service: string): Promise<BookingResponse> {
+  const nextSlot = await getNextAvailableSlot()
+  return createBooking(nextSlot.date, nextSlot.time, service)
+}
+
+// Timezone functions
+export async function updateUserTimezone(timezone: string): Promise<User> {
+  return fetchAPI('/api/v1/auth/timezone', {
+    method: 'PUT',
+    body: JSON.stringify({ timezone }),
+  })
+}
+
+export async function updateUserProfile(profileData: { name?: string; email?: string }): Promise<User> {
+  return fetchAPI('/api/v1/users/profile', {
+    method: 'PUT',
+    body: JSON.stringify(profileData),
+  })
+}
+
+export interface Timezone {
+  value: string
+  label: string
+  offset: string
+  abbrev: string
+}
+
+export async function getTimezones(): Promise<Timezone[]> {
+  return fetchAPI('/api/v1/timezones')
+}
+
+// Payment functions
+export interface PaymentIntentRequest {
+  booking_id: number
+  gift_certificate_code?: string
+}
+
+export interface PaymentIntentResponse {
+  client_secret?: string
+  payment_intent_id?: string
+  amount: number
+  original_amount: number
+  gift_certificate_used: number
+  payment_id: number
+}
+
+export interface PaymentConfirmRequest {
+  payment_intent_id?: string
+  booking_id: number
+}
+
+export async function createPaymentIntent(data: PaymentIntentRequest): Promise<PaymentIntentResponse> {
+  return fetchAPI('/api/v1/payments/create-intent', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+export async function confirmPayment(data: PaymentConfirmRequest) {
+  return fetchAPI('/api/v1/payments/confirm', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+// ============================================================================
+// ANALYTICS API
+// ============================================================================
+
+export interface SixFigureBarberMetrics {
+  current_performance: {
+    monthly_revenue: number
+    annual_revenue_projection: number
+    average_ticket: number
+    utilization_rate: number
+    average_visits_per_client: number
+    total_active_clients: number
+  }
+  targets: {
+    annual_income_target: number
+    monthly_revenue_target: number
+    daily_revenue_target: number
+    daily_clients_target: number
+    revenue_gap: number
+    on_track: boolean
+  }
+  recommendations: {
+    price_optimization: {
+      current_average_ticket: number
+      recommended_increase_percentage: number
+      recommended_average_ticket: number
+    }
+    client_acquisition: {
+      current_monthly_clients: number
+      target_monthly_clients: number
+      additional_clients_needed: number
+    }
+    time_optimization: {
+      current_utilization_rate: number
+      target_utilization_rate: number
+      additional_hours_needed: number
+    }
+  }
+  action_items: string[]
+}
+
+export interface DashboardAnalytics {
+  revenue_summary: {
+    total_revenue: number
+    revenue_growth: number
+    average_ticket: number
+    ticket_growth: number
+  }
+  appointment_summary: {
+    total_appointments: number
+    appointment_growth: number
+    cancellation_rate: number
+    no_show_rate: number
+  }
+  client_summary: {
+    total_clients: number
+    new_clients: number
+    returning_clients: number
+    retention_rate: number
+  }
+  trends: {
+    revenue_trend: Array<{date: string, revenue: number}>
+    appointment_trend: Array<{date: string, appointments: number}>
+  }
+}
+
+export interface RevenueAnalytics {
+  total_revenue: number
+  revenue_by_period: Array<{
+    period: string
+    revenue: number
+    appointments: number
+    average_ticket: number
+  }>
+  revenue_by_service: Array<{
+    service_name: string
+    revenue: number
+    percentage: number
+  }>
+  growth_metrics: {
+    revenue_growth: number
+    ticket_growth: number
+    volume_growth: number
+  }
+}
+
+export interface PerformanceAnalytics {
+  efficiency_metrics: {
+    utilization_rate: number
+    average_appointment_duration: number
+    daily_capacity: number
+    daily_utilization: number
+  }
+  client_metrics: {
+    new_clients_count: number
+    returning_clients_count: number
+    client_retention_rate: number
+    average_visits_per_client: number
+  }
+  financial_metrics: {
+    revenue_per_hour: number
+    revenue_per_client: number
+    cost_per_acquisition: number
+  }
+}
+
+export async function getSixFigureBarberMetrics(
+  targetAnnualIncome: number = 100000, 
+  userId?: number
+): Promise<SixFigureBarberMetrics> {
+  const params = new URLSearchParams()
+  params.append('target_annual_income', targetAnnualIncome.toString())
+  if (userId) params.append('user_id', userId.toString())
+  
+  return fetchAPI(`/api/v1/analytics/six-figure-barber?${params.toString()}`)
+}
+
+export async function getDashboardAnalytics(
+  userId?: number,
+  startDate?: string,
+  endDate?: string
+): Promise<DashboardAnalytics> {
+  const params = new URLSearchParams()
+  if (userId) params.append('user_id', userId.toString())
+  if (startDate) params.append('start_date', startDate)
+  if (endDate) params.append('end_date', endDate)
+  
+  const queryString = params.toString()
+  return fetchAPI(`/api/v1/analytics/dashboard${queryString ? `?${queryString}` : ''}`)
+}
+
+export async function getRevenueAnalytics(
+  userId?: number,
+  startDate?: string,
+  endDate?: string,
+  groupBy: string = 'day'
+): Promise<RevenueAnalytics> {
+  const params = new URLSearchParams()
+  if (userId) params.append('user_id', userId.toString())
+  if (startDate) params.append('start_date', startDate)
+  if (endDate) params.append('end_date', endDate)
+  params.append('group_by', groupBy)
+  
+  return fetchAPI(`/api/v1/analytics/revenue?${params.toString()}`)
+}
+
+export async function getPerformanceAnalytics(
+  userId?: number,
+  startDate?: string,
+  endDate?: string
+): Promise<PerformanceAnalytics> {
+  const params = new URLSearchParams()
+  if (userId) params.append('user_id', userId.toString())
+  if (startDate) params.append('start_date', startDate)
+  if (endDate) params.append('end_date', endDate)
+  
+  const queryString = params.toString()
+  return fetchAPI(`/api/v1/analytics/performance${queryString ? `?${queryString}` : ''}`)
+}
+
+// ============================================================================
+// SERVICES API
+// ============================================================================
+
+export interface ServiceCategory {
+  value: string
+  name: string
+  label: string
+}
+
+export interface ServicePricingRule {
+  id: number
+  rule_type: string
+  priority: number
+  start_date?: string
+  end_date?: string
+  start_time?: string
+  end_time?: string
+  day_of_week?: number
+  price_modifier_type: string
+  price_modifier_value: number
+  is_active: boolean
+}
+
+export interface ServiceBookingRule {
+  id: number
+  rule_type: string
+  is_active: boolean
+  min_age?: number
+  max_age?: number
+  requires_consultation?: boolean
+  requires_patch_test?: boolean
+  patch_test_hours_before?: number
+  max_bookings_per_day?: number
+  min_days_between_bookings?: number
+  blocked_days_of_week?: number[]
+}
+
+export interface Service {
+  id: number
+  name: string
+  description?: string
+  category: string
+  base_price: number
+  duration_minutes: number
+  is_active: boolean
+  is_bookable_online: boolean
+  is_package: boolean
+  display_order: number
+  created_by_id: number
+  created_at: string
+  updated_at: string
+  pricing_rules?: ServicePricingRule[]
+  booking_rules?: ServiceBookingRule[]
+  package_items?: Service[]
+}
+
+export interface ServiceCreate {
+  name: string
+  description?: string
+  category: string
+  base_price: number
+  duration_minutes: number
+  is_active?: boolean
+  is_bookable_online?: boolean
+  is_package?: boolean
+  display_order?: number
+  package_item_ids?: number[]
+}
+
+export interface ServiceUpdate {
+  name?: string
+  description?: string
+  category?: string
+  base_price?: number
+  duration_minutes?: number
+  is_active?: boolean
+  is_bookable_online?: boolean
+  is_package?: boolean
+  display_order?: number
+  package_item_ids?: number[]
+}
+
+export interface ServicePricingRuleCreate {
+  rule_type: string
+  priority: number
+  start_date?: string
+  end_date?: string
+  start_time?: string
+  end_time?: string
+  day_of_week?: number
+  price_modifier_type: string
+  price_modifier_value: number
+}
+
+export interface ServiceBookingRuleCreate {
+  rule_type: string
+  min_age?: number
+  max_age?: number
+  requires_consultation?: boolean
+  requires_patch_test?: boolean
+  patch_test_hours_before?: number
+  max_bookings_per_day?: number
+  min_days_between_bookings?: number
+  blocked_days_of_week?: number[]
+}
+
+export interface BarberService {
+  id: number
+  name: string
+  description?: string
+  category: string
+  base_price: number
+  duration_minutes: number
+  custom_price?: number
+  custom_duration?: number
+  effective_price: number
+  effective_duration: number
+  is_available: boolean
+}
+
+export interface ServicePriceCalculation {
+  service_id: number
+  base_price: number
+  calculated_price: number
+  barber_id?: number
+  booking_date?: string
+  booking_time?: string
+}
+
+// Services endpoints
+
+  const queryParams = new URLSearchParams()
+  if (params?.category) queryParams.append('category', params.category)
+  if (params?.barber_id) queryParams.append('barber_id', params.barber_id.toString())
+  if (params?.is_active !== undefined) queryParams.append('is_active', params.is_active.toString())
+  if (params?.is_bookable_online !== undefined) queryParams.append('is_bookable_online', params.is_bookable_online.toString())
+  if (params?.skip) queryParams.append('skip', params.skip.toString())
+  if (params?.limit) queryParams.append('limit', params.limit.toString())
+  
+  const query = queryParams.toString()
+  return fetchAPI(`/api/v1/services/${query ? '?' + query : ''}`)
+}
+
+
+
+
+
+export async function createServicePricingRule(serviceId: number, ruleData: ServicePricingRuleCreate) {
+  return fetchAPI(`/api/v1/services/${serviceId}/pricing-rules`, {
+    method: 'POST',
+    body: JSON.stringify(ruleData),
+  })
+}
+
+export async function getServicePricingRules(serviceId: number): Promise<ServicePricingRule[]> {
+  return fetchAPI(`/api/v1/services/${serviceId}/pricing-rules`)
+}
+
+export async function deleteServicePricingRule(serviceId: number, ruleId: number) {
+  return fetchAPI(`/api/v1/services/${serviceId}/pricing-rules/${ruleId}`, {
+    method: 'DELETE',
+  })
+}
+
+
+
+export async function deleteServiceBookingRule(serviceId: number, ruleId: number) {
+  return fetchAPI(`/api/v1/services/${serviceId}/booking-rules/${ruleId}`, {
+    method: 'DELETE',
+  })
+}
+
+
+
+
+
+// ============================================================================
+// BARBER AVAILABILITY API
+// ============================================================================
+
+export interface BarberAvailability {
+  id: number
+  barber_id: number
+  day_of_week: number
+  start_time: string
+  end_time: string
+}
+
+export interface BarberAvailabilityCreate {
+  day_of_week: number
+  start_time: string
+  end_time: string
+}
+
+export interface BarberAvailabilityUpdate {
+  day_of_week?: number
+  start_time?: string
+  end_time?: string
+}
+
+export interface BarberTimeOff {
+  id: number
+  barber_id: number
+  start_date: string
+  end_date: string
+  start_time?: string
+  end_time?: string
+  reason?: string
+  notes?: string
+}
+
+export interface BarberTimeOffCreate {
+  start_date: string
+  end_date: string
+  start_time?: string
+  end_time?: string
+  reason?: string
+  notes?: string
+}
+
+export interface BarberSpecialAvailability {
+  id: number
+  barber_id: number
+  date: string
+  start_time: string
+  end_time: string
+  availability_type: string
+  notes?: string
+}
+
+export interface BarberSpecialAvailabilityCreate {
+  date: string
+  start_time: string
+  end_time: string
+  availability_type: string
+  notes?: string
+}
+
+export interface BarberSchedule {
+  barber_id: number
+  start_date: string
+  end_date: string
+  timezone: string
+  schedule: Array<{
+    date: string
+    regular_availability: BarberAvailability[]
+    special_availability: BarberSpecialAvailability[]
+    time_off: BarberTimeOff[]
+    appointments: Array<{
+      id: number
+      start_time: string
+      end_time: string
+      service_name: string
+      client_name: string
+    }>
+  }>
+}
+
+export interface AvailableBarber {
+  barber_id: number
+  barber_name: string
+  available_slots: Array<{
+    time: string
+    available: boolean
+    is_next_available: boolean
+  }>
+}
+
+export interface AvailabilityCheck {
+  barber_id: number
+  date: string
+  start_time: string
+  end_time: string
+  is_available: boolean
+}
+
+// Barber availability endpoints
+export async function getBarberSchedule(
+  barberId: number,
+  startDate: string,
+  endDate: string,
+  timezone?: string
+): Promise<BarberSchedule> {
+  const params = new URLSearchParams()
+  params.append('start_date', startDate)
+  params.append('end_date', endDate)
+  if (timezone) params.append('timezone', timezone)
+  
+  return fetchAPI(`/api/v1/barber-availability/schedule/${barberId}?${params.toString()}`)
+}
+
+export async function getBarberAvailability(barberId: number, dayOfWeek?: number): Promise<BarberAvailability[]> {
+  const params = new URLSearchParams()
+  if (dayOfWeek !== undefined) params.append('day_of_week', dayOfWeek.toString())
+  
+  const query = params.toString()
+  return fetchAPI(`/api/v1/barber-availability/availability/${barberId}${query ? '?' + query : ''}`)
+}
+
+export async function createBarberAvailability(
+  barberId: number,
+  availabilityData: BarberAvailabilityCreate
+): Promise<BarberAvailability> {
+  return fetchAPI(`/api/v1/barber-availability/availability/${barberId}`, {
+    method: 'POST',
+    body: JSON.stringify(availabilityData),
+  })
+}
+
+export async function updateBarberAvailability(
+  availabilityId: number,
+  updates: BarberAvailabilityUpdate
+): Promise<BarberAvailability> {
+  return fetchAPI(`/api/v1/barber-availability/availability/${availabilityId}`, {
+    method: 'PUT',
+    body: JSON.stringify(updates),
+  })
+}
+
+export async function deleteBarberAvailability(availabilityId: number) {
+  return fetchAPI(`/api/v1/barber-availability/availability/${availabilityId}`, {
+    method: 'DELETE',
+  })
+}
+
+
+
+
+
+
+export async function getAvailableBarbersForSlot(
+  checkDate: string,
+  startTime: string,
+  endTime: string,
+  serviceId?: number
+): Promise<{ date: string; available_barbers: AvailableBarber[] }> {
+  const params = new URLSearchParams()
+  params.append('check_date', checkDate)
+  params.append('start_time', startTime)
+  params.append('end_time', endTime)
+  if (serviceId) params.append('service_id', serviceId.toString())
+  
+  return fetchAPI(`/api/v1/barber-availability/available-barbers?${params.toString()}`)
+}
+
+// ============================================================================
+// RECURRING APPOINTMENTS API
+// ============================================================================
+
+export interface RecurringPattern {
+  id: number
+  user_id: number
+  pattern_type: string
+  preferred_time: string
+  duration_minutes: number
+  start_date: string
+  end_date?: string
+  occurrences?: number
+  days_of_week?: number[]
+  day_of_month?: number
+  week_of_month?: number
+  barber_id?: number
+  service_id?: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface RecurringPatternCreate {
+  pattern_type: string
+  preferred_time: string
+  duration_minutes: number
+  start_date: string
+  end_date?: string
+  occurrences?: number
+  days_of_week?: number[]
+  day_of_month?: number
+  week_of_month?: number
+  barber_id?: number
+  service_id?: number
+}
+
+export interface RecurringPatternUpdate {
+  pattern_type?: string
+  preferred_time?: string
+  duration_minutes?: number
+  start_date?: string
+  end_date?: string
+  occurrences?: number
+  days_of_week?: number[]
+  day_of_month?: number
+  week_of_month?: number
+  barber_id?: number
+  service_id?: number
+  is_active?: boolean
+}
+
+export interface GeneratedAppointment {
+  date: string
+  time: string
+  duration_minutes: number
+  status: string
+  conflict_reason?: string
+}
+
+export interface UpcomingRecurringAppointment {
+  id: number
+  start_time: string
+  service_name: string
+  barber_name: string
+  pattern_id: number
+}
+
+// Recurring appointments endpoints
+export async function createRecurringPattern(patternData: RecurringPatternCreate): Promise<RecurringPattern> {
+  return fetchAPI('/api/v1/recurring-appointments/patterns', {
+    method: 'POST',
+    body: JSON.stringify(patternData),
+  })
+}
+
+export async function getRecurringPatterns(isActive?: boolean): Promise<RecurringPattern[]> {
+  const params = new URLSearchParams()
+  if (isActive !== undefined) params.append('is_active', isActive.toString())
+  
+  const query = params.toString()
+  return fetchAPI(`/api/v1/recurring-appointments/patterns${query ? '?' + query : ''}`)
+}
+
+export async function getRecurringPattern(patternId: number): Promise<RecurringPattern> {
+  return fetchAPI(`/api/v1/recurring-appointments/patterns/${patternId}`)
+}
+
+export async function updateRecurringPattern(
+  patternId: number,
+  updates: RecurringPatternUpdate
+): Promise<RecurringPattern> {
+  return fetchAPI(`/api/v1/recurring-appointments/patterns/${patternId}`, {
+    method: 'PUT',
+    body: JSON.stringify(updates),
+  })
+}
+
+export async function deleteRecurringPattern(patternId: number) {
+  return fetchAPI(`/api/v1/recurring-appointments/patterns/${patternId}`, {
+    method: 'DELETE',
+  })
+}
+
+export async function generateAppointmentsFromPattern(
+  patternId: number,
+  previewOnly: boolean = false,
+  maxAppointments: number = 50
+) {
+  const params = new URLSearchParams()
+  params.append('preview_only', previewOnly.toString())
+  params.append('max_appointments', maxAppointments.toString())
+  
+  return fetchAPI(`/api/v1/recurring-appointments/patterns/${patternId}/generate?${params.toString()}`, {
+    method: 'POST',
+  })
+}
+
+export async function getUpcomingRecurringAppointments(daysAhead: number = 30) {
+  const params = new URLSearchParams()
+  params.append('days_ahead', daysAhead.toString())
+  
+  return fetchAPI(`/api/v1/recurring-appointments/upcoming?${params.toString()}`)
+}
+
+export async function cancelRecurringSeries(patternId: number, cancelFutureOnly: boolean = true) {
+  const params = new URLSearchParams()
+  params.append('cancel_future_only', cancelFutureOnly.toString())
+  
+  return fetchAPI(`/api/v1/recurring-appointments/patterns/${patternId}/cancel?${params.toString()}`, {
+    method: 'POST',
+  })
+}
+
+export async function modifySingleOccurrence(
+  appointmentId: number,
+  newDate?: string,
+  newTime?: string,
+  newBarberId?: number,
+  cancel: boolean = false
+) {
+  const params = new URLSearchParams()
+  if (newDate) params.append('new_date', newDate)
+  if (newTime) params.append('new_time', newTime)
+  if (newBarberId) params.append('new_barber_id', newBarberId.toString())
+  params.append('cancel', cancel.toString())
+  
+  return fetchAPI(`/api/v1/recurring-appointments/appointments/${appointmentId}/modify?${params.toString()}`, {
+    method: 'PUT',
+  })
+}
+
+export async function previewPatternOccurrences(patternId: number, limit: number = 20) {
+  const params = new URLSearchParams()
+  params.append('limit', limit.toString())
+  
+  return fetchAPI(`/api/v1/recurring-appointments/patterns/${patternId}/preview?${params.toString()}`)
+}
+
+// ============================================================================
+// NOTIFICATIONS API
+// ============================================================================
+
+export interface NotificationPreference {
+  id: number
+  user_id: number
+  email_enabled: boolean
+  sms_enabled: boolean
+  email_appointment_confirmation: boolean
+  sms_appointment_confirmation: boolean
+  email_appointment_reminder: boolean
+  sms_appointment_reminder: boolean
+  email_appointment_changes: boolean
+  sms_appointment_changes: boolean
+  reminder_hours: number[]
+  created_at: string
+  updated_at: string
+}
+
+export interface NotificationPreferenceUpdate {
+  email_enabled?: boolean
+  sms_enabled?: boolean
+  email_appointment_confirmation?: boolean
+  sms_appointment_confirmation?: boolean
+  email_appointment_reminder?: boolean
+  sms_appointment_reminder?: boolean
+  email_appointment_changes?: boolean
+  sms_appointment_changes?: boolean
+  reminder_hours?: number[]
+}
+
+export interface NotificationTemplate {
+  id: number
+  name: string
+  template_type: string
+  subject?: string
+  content: string
+  is_active: boolean
+}
+
+export interface NotificationHistory {
+  id: number
+  user_id: number
+  appointment_id?: number
+  notification_type: string
+  status: string
+  sent_at?: string
+  error_message?: string
+}
+
+export interface NotificationStats {
+  period_days: number
+  since_date: string
+  email: {
+    sent: number
+    failed: number
+    pending: number
+    cancelled: number
+  }
+  sms: {
+    sent: number
+    failed: number
+    pending: number
+    cancelled: number
+  }
+  user_specific?: boolean
+}
+
+// Notifications endpoints
+
+
+
+
+
+
+export async function sendTestSms() {
+  return fetchAPI('/api/v1/notifications/test-sms', {
+    method: 'POST',
+  })
+}
+
+
+
+// ============================================================================
+// BARBER AVAILABILITY API
+// ============================================================================
+
+export interface BarberAvailability {
+  id: number
+  barber_id: number
+  day_of_week: number
+  start_time: string
+  end_time: string
+  created_at: string
+  updated_at: string
+}
+
+export interface BarberAvailabilityCreate {
+  day_of_week: number
+  start_time: string
+  end_time: string
+}
+
+export interface BarberAvailabilityUpdate {
+  day_of_week?: number
+  start_time?: string
+  end_time?: string
+}
+
+export interface BarberTimeOff {
+  id: number
+  barber_id: number
+  start_date: string
+  end_date: string
+  start_time?: string
+  end_time?: string
+  reason: string
+  notes?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface BarberTimeOffCreate {
+  start_date: string
+  end_date: string
+  start_time?: string
+  end_time?: string
+  reason: string
+  notes?: string
+}
+
+export interface BarberSpecialAvailability {
+  id: number
+  barber_id: number
+  date: string
+  start_time: string
+  end_time: string
+  availability_type: 'available' | 'unavailable'
+  notes?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface BarberSpecialAvailabilityCreate {
+  date: string
+  start_time: string
+  end_time: string
+  availability_type: 'available' | 'unavailable'
+  notes?: string
+}
+
+export interface BarberSchedule {
+  date: string
+  regular_availability: BarberAvailability[]
+  special_availability: BarberSpecialAvailability[]
+  time_off: BarberTimeOff[]
+  appointments: any[]
+  slots: Array<{
+    time: string
+    status: 'available' | 'booked' | 'blocked' | 'unavailable'
+    booking_id?: number
+  }>
+}
+
+export interface AvailableBarber {
+  barber_id: number
+  barber_name: string
+  available_slots: Array<{
+    time: string
+    available: boolean
+    is_next_available: boolean
+  }>
+}
+
+export interface AvailableBarbersResponse {
+  date: string
+  available_barbers: AvailableBarber[]
+}
+
+// Get comprehensive schedule for a barber
+export async function getBarberScheduleAvailability(
+  barberId: number,
+  startDate: string,
+  endDate: string,
+  timezone: string = 'UTC'
+): Promise<BarberSchedule> {
+  const params = new URLSearchParams({
+    start_date: startDate,
+    end_date: endDate,
+    timezone
+  })
+  return fetchAPI(`/barber-availability/schedule/${barberId}?${params.toString()}`)
+}
+
+// Get regular weekly availability for a barber (alternative endpoint)
+export async function getBarberWeeklyAvailability(
+  barberId: number,
+  dayOfWeek?: number
+): Promise<BarberAvailability[]> {
+  const params = new URLSearchParams()
+  if (dayOfWeek !== undefined) params.append('day_of_week', dayOfWeek.toString())
+  
+  const queryString = params.toString()
+  return fetchAPI(`/barber-availability/availability/${barberId}${queryString ? `?${queryString}` : ''}`)
+}
+
+// Create or update regular availability for a barber (alternative endpoint)
+export async function createBarberWeeklyAvailability(
+  barberId: number,
+  availabilityData: BarberAvailabilityCreate
+): Promise<BarberAvailability> {
+  return fetchAPI(`/barber-availability/availability/${barberId}`, {
+    method: 'POST',
+    body: JSON.stringify(availabilityData),
+  })
+}
+
+// Update barber availability (alternative endpoint)
+export async function updateBarberWeeklyAvailability(
+  availabilityId: number,
+  availabilityData: BarberAvailabilityUpdate
+): Promise<BarberAvailability> {
+  return fetchAPI(`/barber-availability/availability/${availabilityId}`, {
+    method: 'PUT',
+    body: JSON.stringify(availabilityData),
+  })
+}
+
+// Delete barber availability (alternative endpoint)
+export async function deleteBarberWeeklyAvailability(availabilityId: number) {
+  return fetchAPI(`/barber-availability/availability/${availabilityId}`, {
+    method: 'DELETE',
+  })
+}
+
+// Get time off requests for a barber
+export async function getBarberTimeOff(
+  barberId: number,
+  startDate?: string,
+  endDate?: string
+): Promise<BarberTimeOff[]> {
+  const params = new URLSearchParams()
+  if (startDate) params.append('start_date', startDate)
+  if (endDate) params.append('end_date', endDate)
+  
+  const queryString = params.toString()
+  return fetchAPI(`/barber-availability/time-off/${barberId}${queryString ? `?${queryString}` : ''}`)
+}
+
+// Create a time off request for a barber
+export async function createTimeOffRequest(
+  barberId: number,
+  timeOffData: BarberTimeOffCreate
+): Promise<BarberTimeOff> {
+  return fetchAPI(`/barber-availability/time-off/${barberId}`, {
+    method: 'POST',
+    body: JSON.stringify(timeOffData),
+  })
+}
+
+// Get special availability for a barber
+export async function getSpecialAvailability(
+  barberId: number,
+  date?: string
+): Promise<BarberSpecialAvailability[]> {
+  const params = new URLSearchParams()
+  if (date) params.append('date', date)
+  
+  const queryString = params.toString()
+  return fetchAPI(`/barber-availability/special/${barberId}${queryString ? `?${queryString}` : ''}`)
+}
+
+// Create special availability for a specific date
+export async function createSpecialAvailability(
+  barberId: number,
+  specialData: BarberSpecialAvailabilityCreate
+): Promise<BarberSpecialAvailability> {
+  return fetchAPI(`/barber-availability/special/${barberId}`, {
+    method: 'POST',
+    body: JSON.stringify(specialData),
+  })
+}
+
+// Check if a barber is available during a specific time slot
+export async function checkBarberAvailability(
+  barberId: number,
+  checkDate: string,
+  startTime: string,
+  endTime: string,
+  excludeAppointmentId?: number
+): Promise<{
+  barber_id: number
+  date: string
+  start_time: string
+  end_time: string
+  is_available: boolean
+}> {
+  const params = new URLSearchParams({
+    check_date: checkDate,
+    start_time: startTime,
+    end_time: endTime
+  })
+  if (excludeAppointmentId) params.append('exclude_appointment_id', excludeAppointmentId.toString())
+  
+  return fetchAPI(`/barber-availability/check/${barberId}?${params.toString()}`)
+}
+
+// Get all barbers available for a specific time slot
+export async function getAvailableBarbers(
+  checkDate: string,
+  startTime: string,
+  endTime: string,
+  serviceId?: number
+): Promise<AvailableBarbersResponse> {
+  const params = new URLSearchParams({
+    check_date: checkDate,
+    start_time: startTime,
+    end_time: endTime
+  })
+  if (serviceId) params.append('service_id', serviceId.toString())
+  
+  return fetchAPI(`/barber-availability/available-barbers?${params.toString()}`)
+}
+
+// Bulk operations for availability management
+export async function bulkUpdateAvailability(
+  barberId: number,
+  operations: Array<{
+    action: 'create' | 'update' | 'delete'
+    availability_id?: number
+    availability_data?: BarberAvailabilityCreate | BarberAvailabilityUpdate
+  }>
+) {
+  return fetchAPI(`/barber-availability/bulk/${barberId}`, {
+    method: 'POST',
+    body: JSON.stringify({ operations }),
+  })
+}
+
+// Copy availability from one week to another
+export async function copyWeeklyAvailability(
+  barberId: number,
+  sourceWeek: string,
+  targetWeek: string
+) {
+  return fetchAPI(`/barber-availability/copy-week/${barberId}`, {
+    method: 'POST',
+    body: JSON.stringify({
+      source_week: sourceWeek,
+      target_week: targetWeek
+    }),
+  })
+}
+
+// ============================================================================
+// SERVICES API
+// ============================================================================
+
+export interface Service {
+  id: number
+  name: string
+  description?: string
+  category: string
+  sku?: string
+  base_price: number
+  min_price?: number
+  max_price?: number
+  duration_minutes: number
+  buffer_time_minutes: number
+  is_active: boolean
+  is_bookable_online: boolean
+  max_advance_booking_days?: number
+  min_advance_booking_hours?: number
+  is_package: boolean
+  package_discount_percent?: number
+  package_discount_amount?: number
+  display_order: number
+  image_url?: string
+  created_at: string
+  updated_at: string
+  created_by_id?: number
+  package_items?: Service[]
+  pricing_rules?: ServicePricingRule[]
+  booking_rules?: ServiceBookingRule[]
+}
+
+export interface ServiceCreate {
+  name: string
+  description?: string
+  category: string
+  sku?: string
+  base_price: number
+  min_price?: number
+  max_price?: number
+  duration_minutes: number
+  buffer_time_minutes?: number
+  is_active?: boolean
+  is_bookable_online?: boolean
+  max_advance_booking_days?: number
+  min_advance_booking_hours?: number
+  is_package?: boolean
+  package_discount_percent?: number
+  package_discount_amount?: number
+  display_order?: number
+  image_url?: string
+  package_item_ids?: number[]
+}
+
+export interface ServiceUpdate {
+  name?: string
+  description?: string
+  category?: string
+  sku?: string
+  base_price?: number
+  min_price?: number
+  max_price?: number
+  duration_minutes?: number
+  buffer_time_minutes?: number
+  is_active?: boolean
+  is_bookable_online?: boolean
+  max_advance_booking_days?: number
+  min_advance_booking_hours?: number
+  is_package?: boolean
+  package_discount_percent?: number
+  package_discount_amount?: number
+  display_order?: number
+  image_url?: string
+  package_item_ids?: number[]
+}
+
+export interface ServiceCategory {
+  value: string
+  name: string
+  label: string
+}
+
+export interface ServicePricingRule {
+  id: number
+  service_id: number
+  rule_type: string
+  start_time?: string
+  end_time?: string
+  day_of_week?: number
+  start_date?: string
+  end_date?: string
+  price_adjustment_type: string
+  price_adjustment_value: number
+  priority: number
+  is_active: boolean
+  created_at: string
+}
+
+export interface ServiceBookingRule {
+  id: number
+  service_id: number
+  rule_type: string
+  min_age?: number
+  max_age?: number
+  requires_consultation: boolean
+  requires_patch_test: boolean
+  patch_test_hours_before: number
+  max_bookings_per_day?: number
+  min_days_between_bookings?: number
+  blocked_days_of_week?: number[]
+  required_service_ids?: number[]
+  incompatible_service_ids?: number[]
+  is_active: boolean
+  message?: string
+  created_at: string
+}
+
+export interface ServiceListParams {
+  category?: string
+  barber_id?: number
+  is_active?: boolean
+  is_bookable_online?: boolean
+  skip?: number
+  limit?: number
+}
+
+// Get all service categories
+export async function getServiceCategories(): Promise<ServiceCategory[]> {
+  return fetchAPI('/api/v1/services/categories')
+}
+
+// Get services with optional filtering
+export async function getServices(params: ServiceListParams = {}): Promise<Service[]> {
+  const queryParams = new URLSearchParams()
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      queryParams.append(key, value.toString())
+    }
+  })
+  
+  const queryString = queryParams.toString()
+  return fetchAPI(`/api/v1/services${queryString ? `?${queryString}` : ''}`)
+}
+
+// Get a specific service by ID
+export async function getService(serviceId: number, barberId?: number): Promise<Service> {
+  const params = barberId ? `?barber_id=${barberId}` : ''
+  return fetchAPI(`/api/v1/services/${serviceId}${params}`)
+}
+
+// Create a new service
+export async function createService(serviceData: ServiceCreate): Promise<Service> {
+  return fetchAPI('/api/v1/services/', {
+    method: 'POST',
+    body: JSON.stringify(serviceData),
+  })
+}
+
+// Update an existing service
+export async function updateService(serviceId: number, serviceData: ServiceUpdate): Promise<Service> {
+  return fetchAPI(`/api/v1/services/${serviceId}`, {
+    method: 'PUT',
+    body: JSON.stringify(serviceData),
+  })
+}
+
+// Delete a service
+export async function deleteService(serviceId: number): Promise<{ message: string }> {
+  return fetchAPI(`/api/v1/services/${serviceId}`, {
+    method: 'DELETE',
+  })
+}
+
+// Get services for a specific barber
+export async function getBarberServices(barberId: number, isAvailable?: boolean): Promise<any[]> {
+  const params = isAvailable !== undefined ? `?is_available=${isAvailable}` : ''
+  return fetchAPI(`/api/v1/services/barbers/${barberId}${params}`)
+}
+
+// Assign service to barber
+export async function assignServiceToBarber(
+  serviceId: number,
+  barberId: number,
+  customPrice?: number,
+  customDuration?: number
+): Promise<{ message: string }> {
+  const params = new URLSearchParams()
+  if (customPrice !== undefined) params.append('custom_price', customPrice.toString())
+  if (customDuration !== undefined) params.append('custom_duration', customDuration.toString())
+  
+  return fetchAPI(`/api/v1/services/${serviceId}/barbers/${barberId}`, {
+    method: 'POST',
+    body: params.toString(),
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+  })
+}
+
+// Remove service from barber
+export async function removeServiceFromBarber(serviceId: number, barberId: number): Promise<{ message: string }> {
+  return fetchAPI(`/api/v1/services/${serviceId}/barbers/${barberId}`, {
+    method: 'DELETE',
+  })
+}
+
+// Calculate service price
+export async function calculateServicePrice(
+  serviceId: number,
+  barberId?: number,
+  bookingDate?: string,
+  bookingTime?: string
+): Promise<{
+  service_id: number
+  base_price: number
+  calculated_price: number
+  barber_id?: number
+  booking_date?: string
+  booking_time?: string
+}> {
+  const params = new URLSearchParams()
+  if (barberId) params.append('barber_id', barberId.toString())
+  if (bookingDate) params.append('booking_date', bookingDate)
+  if (bookingTime) params.append('booking_time', bookingTime)
+  
+  const queryString = params.toString()
+  return fetchAPI(`/api/v1/services/${serviceId}/calculate-price${queryString ? `?${queryString}` : ''}`)
+}
+
+// Notification API functions
+export interface NotificationPreferences {
+  id: number
+  user_id: number
+  email_enabled: boolean
+  email_appointment_confirmation: boolean
+  email_appointment_reminder: boolean
+  email_appointment_changes: boolean
+  email_marketing: boolean
+  sms_enabled: boolean
+  sms_appointment_confirmation: boolean
+  sms_appointment_reminder: boolean
+  sms_appointment_changes: boolean
+  sms_marketing: boolean
+  reminder_hours: number[]
+  created_at: string
+  updated_at: string
+}
+
+export interface NotificationTemplate {
+  id: number
+  name: string
+  template_type: string
+  subject?: string
+  variables: string[]
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface NotificationHistory {
+  id: number
+  notification_type: string
+  template_name: string
+  recipient: string
+  subject?: string
+  status: string
+  scheduled_for: string
+  sent_at?: string
+  attempts: number
+  error_message?: string
+  created_at: string
+}
+
+export interface NotificationStats {
+  period_days: number
+  since_date: string
+  email: { [key: string]: number }
+  sms: { [key: string]: number }
+  service_stats?: { [key: string]: any }
+  user_specific?: boolean
+}
+
+export interface NotificationPreferencesUpdate {
+  email_enabled?: boolean
+  email_appointment_confirmation?: boolean
+  email_appointment_reminder?: boolean
+  email_appointment_changes?: boolean
+  email_marketing?: boolean
+  sms_enabled?: boolean
+  sms_appointment_confirmation?: boolean
+  sms_appointment_reminder?: boolean
+  sms_appointment_changes?: boolean
+  sms_marketing?: boolean
+  reminder_hours?: number[]
+}
+
+export async function getNotificationPreferences(): Promise<NotificationPreferences> {
+  return fetchAPI('/notifications/preferences')
+}
+
+export async function updateNotificationPreferences(
+  preferences: NotificationPreferencesUpdate
+): Promise<NotificationPreferences> {
+  return fetchAPI('/notifications/preferences', {
+    method: 'PUT',
+    body: JSON.stringify(preferences),
+  })
+}
+
+export async function getNotificationTemplates(
+  templateType?: string,
+  activeOnly: boolean = true
+): Promise<NotificationTemplate[]> {
+  const params = new URLSearchParams()
+  if (templateType) params.append('template_type', templateType)
+  params.append('active_only', activeOnly.toString())
+  
+  const queryString = params.toString()
+  return fetchAPI(`/notifications/templates${queryString ? `?${queryString}` : ''}`)
+}
+
+export async function getNotificationHistory(
+  limit: number = 50,
+  appointmentId?: number,
+  notificationType?: string,
+  status?: string
+): Promise<NotificationHistory[]> {
+  const params = new URLSearchParams()
+  params.append('limit', limit.toString())
+  if (appointmentId) params.append('appointment_id', appointmentId.toString())
+  if (notificationType) params.append('notification_type', notificationType)
+  if (status) params.append('status', status)
+  
+  return fetchAPI(`/notifications/history?${params.toString()}`)
+}
+
+export async function getNotificationStats(days: number = 7): Promise<NotificationStats> {
+  return fetchAPI(`/notifications/stats?days=${days}`)
+}
+
+export async function sendTestEmail(): Promise<any> {
+  return fetchAPI('/notifications/test-email', {
+    method: 'POST',
+  })
+}
+
+export async function sendTestSMS(): Promise<any> {
+  return fetchAPI('/notifications/test-sms', {
+    method: 'POST',
+  })
+}
+
+export async function processNotificationQueue(batchSize: number = 50): Promise<any> {
+  return fetchAPI(`/notifications/process-queue?batch_size=${batchSize}`, {
+    method: 'POST',
+  })
+}
+
+export async function cancelNotification(notificationId: number) {
+  return fetchAPI(`/api/v1/notifications/history/${notificationId}`, {
+    method: 'DELETE',
+  })
+}
+
+// ============================================================================
+// BOOKING RULES API
+// ============================================================================
+
+export interface BookingRule {
+  id: number
+  rule_name: string
+  rule_type: string
+  rule_params: Record<string, any>
+  applies_to: string
+  service_ids?: number[]
+  barber_ids?: number[]
+  client_types?: string[]
+  priority: number
+  is_active: boolean
+  created_by_id: number
+  created_at: string
+  updated_at: string
+}
+
+export interface BookingRuleCreate {
+  rule_name: string
+  rule_type: string
+  rule_params: Record<string, any>
+  applies_to: string
+  service_ids?: number[]
+  barber_ids?: number[]
+  client_types?: string[]
+  priority?: number
+}
+
+export interface BookingRuleUpdate {
+  rule_name?: string
+  rule_type?: string
+  rule_params?: Record<string, any>
+  applies_to?: string
+  service_ids?: number[]
+  barber_ids?: number[]
+  client_types?: string[]
+  priority?: number
+  is_active?: boolean
+}
+
+export interface BookingValidation {
+  service_id: number
+  barber_id?: number
+  booking_date: string
+  booking_time: string
+  duration_minutes: number
+  client_id?: number
+}
+
+export interface BookingValidationResponse {
+  is_valid: boolean
+  violations: string[]
+  booking_allowed: boolean
+}
+
+export interface ServiceBookingRule {
+  id: number
+  service_id: number
+  rule_type: string
+  is_active: boolean
+  min_age?: number
+  max_age?: number
+  requires_consultation?: boolean
+  requires_patch_test?: boolean
+  patch_test_hours_before?: number
+  max_bookings_per_day?: number
+  min_days_between_bookings?: number
+  blocked_days_of_week?: number[]
+}
+
+export interface ServiceBookingRuleCreate {
+  rule_type: string
+  min_age?: number
+  max_age?: number
+  requires_consultation?: boolean
+  requires_patch_test?: boolean
+  patch_test_hours_before?: number
+  max_bookings_per_day?: number
+  min_days_between_bookings?: number
+  blocked_days_of_week?: number[]
+}
+
+// Booking rules endpoints
+export async function getBookingRules(
+  ruleType?: string,
+  isActive?: boolean
+): Promise<BookingRule[]> {
+  const params = new URLSearchParams()
+  if (ruleType) params.append('rule_type', ruleType)
+  if (isActive !== undefined) params.append('is_active', isActive.toString())
+  
+  const query = params.toString()
+  return fetchAPI(`/api/v1/booking-rules/${query ? '?' + query : ''}`)
+}
+
+export async function createBookingRule(ruleData: BookingRuleCreate): Promise<BookingRule> {
+  return fetchAPI('/api/v1/booking-rules/', {
+    method: 'POST',
+    body: JSON.stringify(ruleData),
+  })
+}
+
+export async function getBookingRule(ruleId: number): Promise<BookingRule> {
+  return fetchAPI(`/api/v1/booking-rules/${ruleId}`)
+}
+
+export async function updateBookingRule(ruleId: number, updates: BookingRuleUpdate): Promise<BookingRule> {
+  return fetchAPI(`/api/v1/booking-rules/${ruleId}`, {
+    method: 'PUT',
+    body: JSON.stringify(updates),
+  })
+}
+
+export async function deleteBookingRule(ruleId: number) {
+  return fetchAPI(`/api/v1/booking-rules/${ruleId}`, {
+    method: 'DELETE',
+  })
+}
+
+export async function validateBooking(bookingData: BookingValidation): Promise<BookingValidationResponse> {
+  return fetchAPI('/api/v1/booking-rules/validate', {
+    method: 'POST',
+    body: JSON.stringify(bookingData),
+  })
+}
+
+export async function getServiceBookingRules(serviceId: number): Promise<ServiceBookingRule[]> {
+  return fetchAPI(`/api/v1/booking-rules/services/${serviceId}/rules`)
+}
+
+export async function createServiceBookingRule(
+  serviceId: number,
+  ruleData: ServiceBookingRuleCreate
+): Promise<ServiceBookingRule> {
+  return fetchAPI(`/api/v1/booking-rules/services/${serviceId}/rules`, {
+    method: 'POST',
+    body: JSON.stringify(ruleData),
+  })
+}
+
+export async function getRuleTypes() {
+  return fetchAPI('/api/v1/booking-rules/rule-types')
+}
+
+// ============================================================================
+// WEBHOOKS API
+// ============================================================================
+
+export async function webhookHealth() {
+  return fetchAPI('/api/v1/webhooks/health')
+}
+
+// ============================================================================
+// CALENDAR INTEGRATION API
+// ============================================================================
+
+export interface CalendarConnectionStatus {
+  connected: boolean
+  valid?: boolean
+  calendar_count?: number
+  error?: string
+}
+
+export interface CalendarInfo {
+  id: string
+  summary: string
+  primary: boolean
+  accessRole: string
+}
+
+export interface CalendarListResponse {
+  calendars: CalendarInfo[]
+}
+
+export interface CalendarSelectRequest {
+  calendar_id: string
+}
+
+export interface CalendarAvailabilityResponse {
+  available: boolean
+  start_time: string
+  end_time: string
+}
+
+export interface CalendarFreeBusyResponse {
+  start_time: string
+  end_time: string
+  calendar_id: string
+  busy_periods: Array<{
+    start: string
+    end: string
+  }>
+}
+
+export interface CalendarEventResponse {
+  message: string
+  google_event_id?: string
+}
+
+export interface CalendarSyncRequest {
+  start_date: string
+  end_date: string
+}
+
+export interface CalendarSyncResponse {
+  message: string
+  results: any
+}
+
+export interface CalendarValidationResponse {
+  connected: boolean
+  valid_credentials: boolean
+  can_list_calendars: boolean
+  can_create_events: boolean
+  selected_calendar?: string
+  errors?: string[]
+}
+
+// Calendar integration endpoints
+export async function initiateCalendarAuth() {
+  return fetchAPI('/api/calendar/auth')
+}
+
+export async function disconnectCalendar() {
+  return fetchAPI('/api/calendar/disconnect', {
+    method: 'DELETE',
+  })
+}
+
+export async function getCalendarStatus(): Promise<CalendarConnectionStatus> {
+  return fetchAPI('/api/calendar/status')
+}
+
+export async function listCalendars(): Promise<CalendarListResponse> {
+  return fetchAPI('/api/calendar/list')
+}
+
+export async function selectCalendar(request: CalendarSelectRequest): Promise<CalendarEventResponse> {
+  return fetchAPI('/api/calendar/select-calendar', {
+    method: 'POST',
+    body: JSON.stringify(request),
+  })
+}
+
+export async function checkCalendarAvailability(
+  startTime: string,
+  endTime: string
+): Promise<CalendarAvailabilityResponse> {
+  const params = new URLSearchParams()
+  params.append('start_time', startTime)
+  params.append('end_time', endTime)
+  
+  return fetchAPI(`/api/calendar/availability?${params.toString()}`)
+}
+
+export async function getCalendarFreeBusy(
+  startDate: string,
+  endDate: string
+): Promise<CalendarFreeBusyResponse> {
+  const params = new URLSearchParams()
+  params.append('start_date', startDate)
+  params.append('end_date', endDate)
+  
+  return fetchAPI(`/api/calendar/free-busy?${params.toString()}`)
+}
+
+export async function syncAppointmentToGoogle(appointmentId: number): Promise<CalendarEventResponse> {
+  return fetchAPI(`/api/calendar/sync-appointment/${appointmentId}`, {
+    method: 'POST',
+  })
+}
+
+export async function syncAppointmentsToGoogle(request: CalendarSyncRequest): Promise<CalendarSyncResponse> {
+  return fetchAPI('/api/calendar/sync-appointments', {
+    method: 'POST',
+    body: JSON.stringify(request),
+  })
+}
+
+export async function unsyncAppointmentFromGoogle(appointmentId: number) {
+  return fetchAPI(`/api/calendar/unsync-appointment/${appointmentId}`, {
+    method: 'DELETE',
+  })
+}
+
+export async function validateCalendarIntegration(): Promise<CalendarValidationResponse> {
+  return fetchAPI('/api/calendar/validate', {
+    method: 'POST',
+  })
+}
+
+export async function getCalendarSyncStatus() {
+  return fetchAPI('/api/calendar/sync-status')
+}
+
+export async function checkAppointmentConflicts(appointmentId: number) {
+  return fetchAPI(`/api/calendar/check-conflicts/${appointmentId}`, {
+    method: 'POST',
+  })
+}
+
+export async function bulkSyncAppointments(request: CalendarSyncRequest) {
+  return fetchAPI('/api/calendar/bulk-sync', {
+    method: 'POST',
+    body: JSON.stringify(request),
+  })
+}
+
+export async function cleanupOrphanedEvents() {
+  return fetchAPI('/api/calendar/cleanup-orphaned', {
+    method: 'POST',
+  })
+}
+
+// ============================================================================
+// IMPORTS API
+// ============================================================================
+
+export interface ImportUploadResponse {
+  import_id: string
+  filename: string
+  source_type: string
+  import_type: string
+  file_size: number
+  status: string
+  message: string
+  uploaded_at: string
+}
+
+export interface ImportStatusResponse {
+  import_id: string
+  filename?: string
+  source_type?: string
+  import_type?: string
+  status: string
+  progress: number
+  total_records: number
+  processed_records: number
+  successful_imports: number
+  failed_imports: number
+  errors: string[]
+  warnings: string[]
+  uploaded_at?: string
+  started_at?: string
+  completed_at?: string
+  estimated_completion?: string
+}
+
+export interface ImportPreviewRequest {
+  field_mapping?: Record<string, string>
+  max_preview_records?: number
+}
+
+export interface ImportPreviewResponse {
+  import_id: string
+  preview_records: any[]
+  total_records: number
+  field_mapping: Record<string, string>
+  validation_results: any
+  potential_duplicates: any[]
+  data_quality_issues: any[]
+  import_recommendations: string[]
+  estimated_duration: string
+}
+
+export interface ImportExecutionRequest {
+  field_mapping: Record<string, string>
+  skip_duplicates?: boolean
+  validation_level?: string
+  rollback_on_error?: boolean
+}
+
+export interface ImportExecutionResponse {
+  import_id: string
+  status: string
+  message: string
+  started_at: string
+  execution_options: any
+}
+
+export interface ImportRollbackRequest {
+  rollback_type: string
+  selective_criteria?: Record<string, any>
+}
+
+export interface ImportRollbackResponse {
+  import_id: string
+  rollback_id: string
+  status: string
+  message: string
+  rollback_type: string
+  started_at: string
+}
+
+export interface ImportHistoryResponse {
+  imports: Array<{
+    import_id: string
+    filename: string
+    source_type: string
+    import_type: string
+    status: string
+    total_records: number
+    successful_imports: number
+    failed_imports: number
+    uploaded_at: string
+    completed_at?: string
+    uploaded_by: number
+  }>
+  total: number
+  page: number
+  page_size: number
+  total_pages: number
+}
+
+// Imports endpoints
+export async function uploadImportFile(
+  file: File,
+  sourceType: string,
+  importType: string
+): Promise<ImportUploadResponse> {
+  const formData = new FormData()
+  formData.append('file', file)
+  
+  const params = new URLSearchParams()
+  params.append('source_type', sourceType)
+  params.append('import_type', importType)
+  
+  return fetchAPI(`/api/v1/imports/upload?${params.toString()}`, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      // Don't set Content-Type for FormData, let browser set it with boundary
+    },
+  })
+}
+
+export async function getImportStatus(importId: string): Promise<ImportStatusResponse> {
+  return fetchAPI(`/api/v1/imports/${importId}/status`)
+}
+
+export async function previewImportData(
+  importId: string,
+  previewRequest: ImportPreviewRequest
+): Promise<ImportPreviewResponse> {
+  return fetchAPI(`/api/v1/imports/${importId}/preview`, {
+    method: 'POST',
+    body: JSON.stringify(previewRequest),
+  })
+}
+
+export async function executeImport(
+  importId: string,
+  executionRequest: ImportExecutionRequest
+): Promise<ImportExecutionResponse> {
+  return fetchAPI(`/api/v1/imports/${importId}/execute`, {
+    method: 'POST',
+    body: JSON.stringify(executionRequest),
+  })
+}
+
+export async function rollbackImport(
+  importId: string,
+  rollbackRequest: ImportRollbackRequest
+): Promise<ImportRollbackResponse> {
+  return fetchAPI(`/api/v1/imports/${importId}/rollback`, {
+    method: 'DELETE',
+    body: JSON.stringify(rollbackRequest),
+  })
+}
+
+export async function getImportHistory(
+  page: number = 1,
+  pageSize: number = 20,
+  statusFilter?: string,
+  importTypeFilter?: string,
+  dateFrom?: string,
+  dateTo?: string
+): Promise<ImportHistoryResponse> {
+  const params = new URLSearchParams()
+  params.append('page', page.toString())
+  params.append('page_size', pageSize.toString())
+  if (statusFilter) params.append('status_filter', statusFilter)
+  if (importTypeFilter) params.append('import_type_filter', importTypeFilter)
+  if (dateFrom) params.append('date_from', dateFrom)
+  if (dateTo) params.append('date_to', dateTo)
+  
+  return fetchAPI(`/api/v1/imports/history?${params.toString()}`)
+}
+
+// ============================================================================
+// EXPORTS API
+// ============================================================================
+
+export interface ExportResponse {
+  content: string
+  filename: string
+  mime_type: string
+  encoding: string
+  size_bytes?: number
+  record_count?: number
+}
+
+export interface ExportFilters {
+  date_from?: string
+  date_to?: string
+  customer_type?: string
+  preferred_barber_id?: number
+  tags?: string
+  min_visits?: number
+  min_spent?: number
+  status?: string[]
+  barber_id?: number
+  service_name?: string
+  min_price?: number
+  max_price?: number
+}
+
+// Exports endpoints
+export async function exportClients(
+  format: string = 'csv',
+  includePii: boolean = false,
+  filters?: ExportFilters
+): Promise<ExportResponse> {
+  const params = new URLSearchParams()
+  params.append('format', format)
+  params.append('include_pii', includePii.toString())
+  
+  if (filters) {
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        if (Array.isArray(value)) {
+          value.forEach(v => params.append(key, v.toString()))
+        } else {
+          params.append(key, value.toString())
+        }
+      }
+    })
+  }
+  
+  return fetchAPI(`/api/v1/exports/clients?${params.toString()}`)
+}
+
+export async function exportAppointments(
+  format: string = 'csv',
+  includeDetails: boolean = true,
+  filters?: ExportFilters
+): Promise<ExportResponse> {
+  const params = new URLSearchParams()
+  params.append('format', format)
+  params.append('include_details', includeDetails.toString())
+  
+  if (filters) {
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        if (Array.isArray(value)) {
+          value.forEach(v => params.append(key, v.toString()))
+        } else {
+          params.append(key, value.toString())
+        }
+      }
+    })
+  }
+  
+  return fetchAPI(`/api/v1/exports/appointments?${params.toString()}`)
+}
+
+export async function exportAnalytics(
+  format: string = 'excel',
+  includeCharts: boolean = true,
+  dateFrom?: string,
+  dateTo?: string
+): Promise<ExportResponse> {
+  const params = new URLSearchParams()
+  params.append('format', format)
+  params.append('include_charts', includeCharts.toString())
+  if (dateFrom) params.append('date_from', dateFrom)
+  if (dateTo) params.append('date_to', dateTo)
+  
+  return fetchAPI(`/api/v1/exports/analytics?${params.toString()}`)
+}
+
+export async function customExport(
+  config: {
+    table: string
+    fields: string[]
+    filters?: Record<string, any>
+    joins?: string[]
+    order_by?: string
+    limit?: number
+  },
+  format: string = 'csv'
+): Promise<ExportResponse> {
+  const params = new URLSearchParams()
+  params.append('format', format)
+  
+  return fetchAPI(`/api/v1/exports/custom?${params.toString()}`, {
+    method: 'POST',
+    body: JSON.stringify(config),
+  })
+}
+
+export async function getSupportedExportFormats() {
+  return fetchAPI('/api/v1/exports/formats')
+}
+
+export async function clearExportCache() {
+  return fetchAPI('/api/v1/exports/cache', {
+    method: 'DELETE',
+  })
+}
+
+// ============================================================================
+// TIMEZONES API
+// ============================================================================
+
+export interface TimezoneInfo {
+  name: string
+  offset: string
+  display_name: string
+}
+
+export interface TimezoneListResponse {
+  timezones: TimezoneInfo[]
+  total: number
+}
+
+// Timezone endpoints
+export async function getAllTimezones(
+  search?: string,
+  limit: number = 100,
+  offset: number = 0
+): Promise<TimezoneListResponse> {
+  const params = new URLSearchParams()
+  if (search) params.append('search', search)
+  params.append('limit', limit.toString())
+  params.append('offset', offset.toString())
+  
+  return fetchAPI(`/api/v1/timezones?${params.toString()}`)
+}
+
+export async function getCommonTimezones(): Promise<TimezoneListResponse> {
+  return fetchAPI('/api/v1/timezones/common')
+}
+
+export async function getTimezoneDetails(timezoneName: string): Promise<TimezoneInfo> {
+  // Encode timezone name for URL
+  const encodedName = encodeURIComponent(timezoneName)
+  return fetchAPI(`/api/v1/timezones/${encodedName}`)
+}
+
+// ============================================================================
+// EXTENDED ANALYTICS API
+// ============================================================================
+
+export async function getAppointmentAnalytics(
+  userId?: number,
+  startDate?: string,
+  endDate?: string
+) {
+  const params = new URLSearchParams()
+  if (userId) params.append('user_id', userId.toString())
+  if (startDate) params.append('start_date', startDate)
+  if (endDate) params.append('end_date', endDate)
+  
+  const query = params.toString()
+  return fetchAPI(`/api/v1/analytics/appointments${query ? '?' + query : ''}`)
+}
+
+export async function getAppointmentPatterns(
+  userId?: number,
+  startDate?: string,
+  endDate?: string
+) {
+  const params = new URLSearchParams()
+  if (userId) params.append('user_id', userId.toString())
+  if (startDate) params.append('start_date', startDate)
+  if (endDate) params.append('end_date', endDate)
+  
+  const query = params.toString()
+  return fetchAPI(`/api/v1/analytics/appointment-patterns${query ? '?' + query : ''}`)
+}
+
+export async function getClientRetentionAnalytics(
+  userId?: number,
+  startDate?: string,
+  endDate?: string
+) {
+  const params = new URLSearchParams()
+  if (userId) params.append('user_id', userId.toString())
+  if (startDate) params.append('start_date', startDate)
+  if (endDate) params.append('end_date', endDate)
+  
+  const query = params.toString()
+  return fetchAPI(`/api/v1/analytics/client-retention${query ? '?' + query : ''}`)
+}
+
+export async function getClientLifetimeValueAnalytics(
+  userId?: number,
+  startDate?: string,
+  endDate?: string
+) {
+  const params = new URLSearchParams()
+  if (userId) params.append('user_id', userId.toString())
+  if (startDate) params.append('start_date', startDate)
+  if (endDate) params.append('end_date', endDate)
+  
+  const query = params.toString()
+  return fetchAPI(`/api/v1/analytics/client-lifetime-value${query ? '?' + query : ''}`)
+}
+
+export async function getBarberPerformanceMetrics(
+  userId?: number,
+  startDate?: string,
+  endDate?: string
+) {
+  const params = new URLSearchParams()
+  if (userId) params.append('user_id', userId.toString())
+  if (startDate) params.append('start_date', startDate)
+  if (endDate) params.append('end_date', endDate)
+  
+  const query = params.toString()
+  return fetchAPI(`/api/v1/analytics/barber-performance${query ? '?' + query : ''}`)
+}
+
+export async function getComparativeAnalytics(
+  comparisonPeriod: string = 'previous_month',
+  userId?: number
+) {
+  const params = new URLSearchParams()
+  params.append('comparison_period', comparisonPeriod)
+  if (userId) params.append('user_id', userId.toString())
+  
+  return fetchAPI(`/api/v1/analytics/comparative?${params.toString()}`)
+}
+
+export async function exportAnalyticsData(
+  exportType: string = 'dashboard',
+  format: string = 'json',
+  startDate?: string,
+  endDate?: string,
+  userId?: number
+) {
+  const params = new URLSearchParams()
+  params.append('export_type', exportType)
+  params.append('format', format)
+  if (startDate) params.append('start_date', startDate)
+  if (endDate) params.append('end_date', endDate)
+  if (userId) params.append('user_id', userId.toString())
+  
+  return fetchAPI(`/api/v1/analytics/export?${params.toString()}`)
+}
+
+export async function getBusinessInsights(
+  userId?: number,
+  startDate?: string,
+  endDate?: string
+) {
+  const params = new URLSearchParams()
+  if (userId) params.append('user_id', userId.toString())
+  if (startDate) params.append('start_date', startDate)
+  if (endDate) params.append('end_date', endDate)
+  
+  const query = params.toString()
+  return fetchAPI(`/api/v1/analytics/insights${query ? '?' + query : ''}`)
+}
+
+// ============================================================================
+// EXTENDED PAYMENTS API
+// ============================================================================
+
+export interface RefundCreate {
+  payment_id: number
+  amount?: number
+  reason: string
+}
+
+export interface RefundResponse {
+  id: number
+  payment_id: number
+  amount: number
+  reason: string
+  status: string
+  stripe_refund_id?: string
+  initiated_by_id: number
+  created_at: string
+}
+
+export interface GiftCertificateCreate {
+  amount: number
+  purchaser_name: string
+  purchaser_email: string
+  recipient_name?: string
+  recipient_email?: string
+  message?: string
+  validity_months?: number
+}
+
+export interface GiftCertificateResponse {
+  id: number
+  code: string
+  amount: number
+  balance: number
+  purchaser_name: string
+  recipient_name?: string
+  status: string
+  valid_until: string
+  created_at: string
+}
+
+export interface GiftCertificateValidate {
+  code: string
+}
+
+export interface PaymentHistoryResponse {
+  payments: Array<{
+    id: number
+    amount: number
+    status: string
+    payment_method: string
+    created_at: string
+    appointment_id?: number
+    stripe_payment_intent_id?: string
+  }>
+  total: number
+  page: number
+  page_size: number
+}
+
+export interface PaymentReportRequest {
+  start_date: string
+  end_date: string
+  barber_id?: number
+}
+
+export interface PaymentReportResponse {
+  total_revenue: number
+  total_transactions: number
+  average_transaction: number
+  payment_methods: Record<string, number>
+  daily_breakdown: Array<{
+    date: string
+    revenue: number
+    transactions: number
+  }>
+  refunds_total: number
+  gift_certificates_sold: number
+  generated_at: string
+}
+
+export interface PayoutCreate {
+  barber_id: number
+  start_date: string
+  end_date: string
+}
+
+export interface PayoutResponse {
+  id: number
+  barber_id: number
+  amount: number
+  status: string
+  stripe_transfer_id?: string
+  created_at: string
+  processed_at?: string
+}
+
+export interface StripeConnectOnboardingResponse {
+  account_id: string
+  onboarding_url: string
+  expires_at: string
+}
+
+export interface StripeConnectStatusResponse {
+  connected: boolean
+  account_id?: string
+  charges_enabled: boolean
+  payouts_enabled: boolean
+  requirements?: string[]
+}
+
+// Extended payment endpoints
+export async function processRefund(refundData: RefundCreate): Promise<RefundResponse> {
+  return fetchAPI('/api/v1/payments/refund', {
+    method: 'POST',
+    body: JSON.stringify(refundData),
+  })
+}
+
+
+
+
+export async function generatePaymentReport(reportRequest: PaymentReportRequest): Promise<PaymentReportResponse> {
+  return fetchAPI('/api/v1/payments/reports', {
+    method: 'POST',
+    body: JSON.stringify(reportRequest),
+  })
+}
+
+export async function processPayout(payoutData: PayoutCreate): Promise<PayoutResponse> {
+  return fetchAPI('/api/v1/payments/payouts', {
+    method: 'POST',
+    body: JSON.stringify(payoutData),
+  })
+}
+
+export async function listGiftCertificates(): Promise<GiftCertificateResponse[]> {
+  return fetchAPI('/api/v1/payments/gift-certificates')
+}
+
+export async function createStripeConnectAccount(): Promise<StripeConnectOnboardingResponse> {
+  return fetchAPI('/api/v1/payments/stripe-connect/onboard', {
+    method: 'POST',
+  })
+}
+
+export async function getStripeConnectStatus(): Promise<StripeConnectStatusResponse> {
+  return fetchAPI('/api/v1/payments/stripe-connect/status')
+}
+
+// SMS Conversation Types
+export interface SMSMessage {
+  id: number
+  conversation_id: number
+  body: string
+  direction: 'inbound' | 'outbound'
+  from_phone: string
+  to_phone: string
+  status: string
+  twilio_sid?: string
+  sent_by_user_id?: number
+  sent_at?: string
+  delivered_at?: string
+  read_at?: string
+  failed_at?: string
+  error_code?: string
+  error_message?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface SMSConversation {
+  id: number
+  customer_phone: string
+  customer_name?: string
+  client_id?: number
+  barber_id?: number
+  status: string
+  last_message_at?: string
+  last_message_from?: string
+  total_messages: number
+  unread_customer_messages: number
+  tags?: string[]
+  notes?: string
+  created_at: string
+  updated_at: string
+  messages?: SMSMessage[]
+  client?: any
+  barber?: any
+}
+
+export interface SMSMessageCreate {
+  body: string
+  from_phone: string
+}
+
+export interface SMSConversationCreate {
+  customer_phone: string
+  customer_name?: string
+}
+
+export interface SMSConversationUpdate {
+  customer_name?: string
+  barber_id?: number
+  status?: string
+  tags?: string[]
+  notes?: string
+}
+
+// SMS API Functions - For Real Customer Text Messaging
+export async function getSMSConversations(
+  limit: number = 50,
+  status?: string,
+  unread_only: boolean = false,
+  search?: string
+): Promise<SMSConversation[]> {
+  const params = new URLSearchParams()
+  params.append('limit', limit.toString())
+  if (status) params.append('status', status)
+  if (unread_only) params.append('unread_only', 'true')
+  if (search) params.append('search', search)
+  
+  return fetchAPI(`/api/v1/sms/conversations?${params.toString()}`)
+}
+
+export async function getSMSConversation(conversationId: number): Promise<SMSConversation> {
+  return fetchAPI(`/api/v1/sms/conversations/${conversationId}`)
+}
+
+export async function getConversationMessages(
+  conversationId: number,
+  limit: number = 100,
+  offset: number = 0
+): Promise<SMSMessage[]> {
+  const params = new URLSearchParams()
+  params.append('limit', limit.toString())
+  params.append('offset', offset.toString())
+  
+  return fetchAPI(`/api/v1/sms/conversations/${conversationId}/messages?${params.toString()}`)
+}
+
+export async function sendSMSMessage(
+  conversationId: number,
+  messageData: SMSMessageCreate
+): Promise<SMSMessage> {
+  return fetchAPI(`/api/v1/sms/conversations/${conversationId}/messages`, {
+    method: 'POST',
+    body: JSON.stringify(messageData),
+  })
+}
+
+export async function createSMSConversation(
+  conversationData: SMSConversationCreate
+): Promise<SMSConversation> {
+  return fetchAPI('/api/v1/sms/conversations', {
+    method: 'POST',
+    body: JSON.stringify(conversationData),
+  })
+}
+
+export async function updateSMSConversation(
+  conversationId: number,
+  updateData: SMSConversationUpdate
+): Promise<SMSConversation> {
+  return fetchAPI(`/api/v1/sms/conversations/${conversationId}`, {
+    method: 'PUT',
+    body: JSON.stringify(updateData),
+  })
+}
+
+export async function archiveSMSConversation(conversationId: number): Promise<{ message: string }> {
+  return fetchAPI(`/api/v1/sms/conversations/${conversationId}`, {
+    method: 'DELETE',
+  })
+}
+
+export async function getSMSStats(): Promise<{
+  conversations: {
+    total: number
+    active: number
+    unread: number
+    recent_week: number
+  }
+  messages: {
+    total: number
+    inbound: number
+    outbound: number
+    ratio: number
+  }
+  user_context: {
+    role: string
+    user_id: number
+  }
+}> {
+  return fetchAPI('/api/v1/sms/stats')
+}
+
+// ============================================================================
+// ENHANCED PAYMENT API
+// ============================================================================
+
+export interface PaymentHistoryFilter {
+  user_id?: number
+  barber_id?: number
+  start_date?: string
+  end_date?: string
+  status?: string
+  page?: number
+  page_size?: number
+}
+
+export interface PaymentHistoryResponse {
+  payments: Payment[]
+  total: number
+  page: number
+  page_size: number
+  total_pages: number
+}
+
+export interface Payment {
+  id: number
+  amount: number
+  status: string
+  stripe_payment_intent_id?: string
+  platform_fee: number
+  barber_amount: number
+  commission_rate: number
+  refund_amount: number
+  gift_certificate_amount_used: number
+  created_at: string
+  appointment?: {
+    id: number
+    service_name: string
+    start_time: string
+    duration_minutes?: number
+    user?: {
+      id: number
+      first_name: string
+      last_name: string
+      email: string
+      phone?: string
+    }
+    barber?: {
+      id: number
+      first_name: string
+      last_name: string
+      email?: string
+    }
+  }
+}
+
+export interface RefundCreate {
+  payment_id: number
+  amount: number
+  reason: string
+}
+
+export interface RefundResponse {
+  id: number
+  payment_id: number
+  amount: number
+  reason: string
+  status: string
+  stripe_refund_id?: string
+  initiated_by_id: number
+  created_at: string
+  processed_at?: string
+}
+
+export interface GiftCertificateCreate {
+  amount: number
+  purchaser_name: string
+  purchaser_email: string
+  recipient_name?: string
+  recipient_email?: string
+  message?: string
+  validity_months?: number
+}
+
+export interface GiftCertificate {
+  id: number
+  code: string
+  amount: number
+  balance: number
+  status: string
+  purchaser_name: string
+  purchaser_email: string
+  recipient_name?: string
+  recipient_email?: string
+  message?: string
+  valid_from: string
+  valid_until: string
+  created_at: string
+  used_at?: string
+}
+
+export interface PaymentReportRequest {
+  start_date: string
+  end_date: string
+  barber_id?: number
+}
+
+export interface PaymentReportResponse {
+  period: {
+    start: string
+    end: string
+  }
+  revenue: {
+    total: number
+    credit_card: number
+    gift_certificates_used: number
+    refunds: number
+    net: number
+  }
+  commissions: {
+    platform_fees: number
+    barber_payouts: number
+    average_commission_rate: number
+  }
+  transactions: {
+    total: number
+    succeeded: number
+    failed: number
+    refunded: number
+    partially_refunded: number
+  }
+  averages: {
+    transaction_amount: number
+    daily_revenue: number
+    transactions_per_day: number
+  }
+  daily_breakdown?: Array<{
+    date: string
+    revenue: number
+    transactions: number
+    refunds: number
+  }>
+  barber_breakdown?: Array<{
+    barber_id: number
+    barber_name: string
+    revenue: number
+    transactions: number
+    commission_earned: number
+  }>
+  service_breakdown?: Array<{
+    service_name: string
+    revenue: number
+    transactions: number
+  }>
+}
+
+// Payment History
+export async function getPaymentHistory(filters?: PaymentHistoryFilter): Promise<PaymentHistoryResponse> {
+  const params = new URLSearchParams()
+  if (filters?.user_id) params.append('user_id', filters.user_id.toString())
+  if (filters?.barber_id) params.append('barber_id', filters.barber_id.toString())
+  if (filters?.start_date) params.append('start_date', filters.start_date)
+  if (filters?.end_date) params.append('end_date', filters.end_date)
+  if (filters?.status) params.append('status', filters.status)
+  if (filters?.page) params.append('page', filters.page.toString())
+  if (filters?.page_size) params.append('page_size', filters.page_size.toString())
+  
+  const query = params.toString()
+  return fetchAPI(`/api/v1/payments/history${query ? '?' + query : ''}`)
+}
+
+// Refunds
+export async function createRefund(refundData: RefundCreate): Promise<RefundResponse> {
+  return fetchAPI('/api/v1/payments/refund', {
+    method: 'POST',
+    body: JSON.stringify(refundData),
+  })
+}
+
+// Gift Certificates
+export async function createGiftCertificate(data: GiftCertificateCreate): Promise<GiftCertificate> {
+  return fetchAPI('/api/v1/payments/gift-certificates', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+export async function getGiftCertificates(): Promise<GiftCertificate[]> {
+  return fetchAPI('/api/v1/payments/gift-certificates')
+}
+
+export async function validateGiftCertificate(code: string): Promise<{
+  valid: boolean
+  balance: number
+  amount: number
+  valid_until: string
+}> {
+  return fetchAPI('/api/v1/payments/gift-certificates/validate', {
+    method: 'POST',
+    body: JSON.stringify({ code }),
+  })
+}
+
+export async function sendGiftCertificateEmail(certificateId: number): Promise<{ message: string }> {
+  return fetchAPI(`/api/v1/payments/gift-certificates/${certificateId}/send`, {
+    method: 'POST',
+  })
+}
+
+// Payment Reports
+export async function getPaymentReport(request: PaymentReportRequest): Promise<PaymentReportResponse> {
+  return fetchAPI('/api/v1/payments/reports', {
+    method: 'POST',
+    body: JSON.stringify(request),
+  })
+}
+
+// Stripe Connect (simple version)
+export async function createStripeConnectAccountSimple(): Promise<{
+  account_id: string
+  onboarding_url: string
+}> {
+  return fetchAPI('/api/v1/payments/stripe-connect/onboard', {
+    method: 'POST',
+  })
+}
+
+export async function getStripeConnectStatusDetail(): Promise<{
+  has_account: boolean
+  account_id?: string
+  charges_enabled: boolean
+  payouts_enabled: boolean
+  details_submitted: boolean
+  requirements?: string[]
+}> {
+  return fetchAPI('/api/v1/payments/stripe-connect/status')
+}
+
+// Payment Receipt
+export async function sendPaymentReceipt(paymentId: number): Promise<{ message: string }> {
+  return fetchAPI(`/api/v1/payments/${paymentId}/receipt`, {
+    method: 'POST',
+  })
+}
+
+// Notification endpoints
+export async function sendRefundNotification(data: {
+  payment_id: number
+  email: string
+  amount: number
+  reason: string
+}): Promise<{ message: string }> {
+  return fetchAPI('/api/v1/notifications/refund', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+// ============================================================================
+// CALENDAR API
+// ============================================================================
+
+export interface CalendarConnectionStatus {
+  connected: boolean
+  valid?: boolean
+  calendar_count?: number
+  selected_calendar_id?: string
+  error?: string
+}
+
+export interface GoogleCalendar {
+  id: string
+  summary: string
+  primary: boolean
+  accessRole: string
+  timeZone?: string
+}
+
+export interface CalendarListResponse {
+  calendars: GoogleCalendar[]
+}
+
+export interface CalendarAvailabilityRequest {
+  start_time: string
+  end_time: string
+}
+
+export interface CalendarAvailabilityResponse {
+  available: boolean
+  start_time: string
+  end_time: string
+}
+
+export interface CalendarFreeBusyRequest {
+  start_date: string
+  end_date: string
+}
+
+export interface BusyPeriod {
+  start: string
+  end: string
+}
+
+export interface CalendarFreeBusyResponse {
+  start_time: string
+  end_time: string
+  calendar_id: string
+  busy_periods: BusyPeriod[]
+}
+
+export interface CalendarSyncRequest {
+  start_date: string
+  end_date: string
+}
+
+export interface CalendarSyncResponse {
+  message: string
+  results: {
+    synced?: number
+    failed?: number
+    conflicts?: number
+    errors?: string[]
+    deleted?: number
+  }
+}
+
+export interface CalendarSyncStatus {
+  connected: boolean
+  total_appointments: number
+  synced_appointments: number
+  unsynced_appointments: number
+  sync_percentage: number
+  last_sync?: string
+  error?: string
+}
+
+// Calendar API endpoints
+export const calendarAPI = {
+  // Authentication
+  initiateAuth: async (): Promise<{ authorization_url: string }> => {
+    return fetchAPI('/api/calendar/auth')
+  },
+
+  // Status and connection management
+  getStatus: async (): Promise<CalendarConnectionStatus> => {
+    return fetchAPI('/api/calendar/status')
+  },
+
+  disconnect: async (): Promise<{ message: string }> => {
+    return fetchAPI('/api/calendar/disconnect', { method: 'DELETE' })
+  },
+
+  // Calendar management
+  listCalendars: async (): Promise<CalendarListResponse> => {
+    return fetchAPI('/api/calendar/list')
+  },
+
+  selectCalendar: async (calendarId: string): Promise<{ message: string }> => {
+    return fetchAPI('/api/calendar/select-calendar', {
+      method: 'POST',
+      body: JSON.stringify({ calendar_id: calendarId }),
+    })
+  },
+
+  // Availability checking
+  checkAvailability: async (request: CalendarAvailabilityRequest): Promise<CalendarAvailabilityResponse> => {
+    const params = new URLSearchParams({
+      start_time: request.start_time,
+      end_time: request.end_time,
+    })
+    return fetchAPI(`/api/calendar/availability?${params.toString()}`)
+  },
+
+  getFreeBusy: async (request: CalendarFreeBusyRequest): Promise<CalendarFreeBusyResponse> => {
+    const params = new URLSearchParams({
+      start_date: request.start_date,
+      end_date: request.end_date,
+    })
+    return fetchAPI(`/api/calendar/free-busy?${params.toString()}`)
+  },
+
+  // Sync operations
+  syncAppointment: async (appointmentId: number): Promise<{ message: string; google_event_id?: string }> => {
+    return fetchAPI(`/api/calendar/sync-appointment/${appointmentId}`, { method: 'POST' })
+  },
+
+  bulkSync: async (request: CalendarSyncRequest): Promise<CalendarSyncResponse> => {
+    return fetchAPI('/api/calendar/bulk-sync', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    })
+  },
+
+  getSyncStatus: async (): Promise<CalendarSyncStatus> => {
+    return fetchAPI('/api/calendar/sync-status')
+  },
+
+  // Conflict management
+  checkConflicts: async (appointmentId: number): Promise<{
+    appointment_id: number
+    conflicts: any[]
+    has_conflicts: boolean
+  }> => {
+    return fetchAPI(`/api/calendar/check-conflicts/${appointmentId}`, { method: 'POST' })
+  },
+
+  cleanupOrphaned: async (): Promise<{ message: string; results: any }> => {
+    return fetchAPI('/api/calendar/cleanup-orphaned', { method: 'POST' })
+  },
+
+  // Validation
+  validateIntegration: async (): Promise<{
+    connected: boolean
+    valid_credentials: boolean
+    can_list_calendars: boolean
+    can_create_events: boolean
+    selected_calendar: GoogleCalendar | null
+    errors: string[]
+  }> => {
+    return fetchAPI('/api/calendar/validate', { method: 'POST' })
+  },
+}
+
+// Appointments API extension for calendar integration
+export const appointmentsAPI = {
+  list: async (params: {
+    start_date?: string
+    end_date?: string
+    status?: string
+    barber_id?: number
+  }): Promise<BookingListResponse> => {
+    const searchParams = new URLSearchParams()
+    if (params.start_date) searchParams.append('start_date', params.start_date)
+    if (params.end_date) searchParams.append('end_date', params.end_date)
+    if (params.status) searchParams.append('status', params.status)
+    if (params.barber_id) searchParams.append('barber_id', params.barber_id.toString())
+    
+    const query = searchParams.toString()
+    return fetchAPI(`/api/v1/appointments${query ? '?' + query : ''}`)
+  },
+
+  reschedule: async (appointmentId: number, data: { date: string; time: string }): Promise<BookingResponse> => {
+    return fetchAPI(`/api/v1/appointments/${appointmentId}/reschedule`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+}
+
+// Webhook Management API
+export const webhooksAPI = {
+  // List webhooks
+  list: async (params?: {
+    is_active?: boolean
+    event_type?: string
+    skip?: number
+    limit?: number
+  }): Promise<WebhookEndpoint[]> => {
+    const searchParams = new URLSearchParams()
+    if (params?.is_active !== undefined) searchParams.append('is_active', params.is_active.toString())
+    if (params?.event_type) searchParams.append('event_type', params.event_type)
+    if (params?.skip !== undefined) searchParams.append('skip', params.skip.toString())
+    if (params?.limit !== undefined) searchParams.append('limit', params.limit.toString())
+    
+    const query = searchParams.toString()
+    return fetchAPI(`/api/v1/webhooks${query ? '?' + query : ''}`)
+  },
+
+  // Get webhook details
+  get: async (id: string): Promise<WebhookEndpoint> => {
+    return fetchAPI(`/api/v1/webhooks/${id}`)
+  },
+
+  // Create webhook
+  create: async (data: {
+    url: string
+    name: string
+    description?: string
+    events: string[]
+    auth_type?: 'none' | 'bearer' | 'basic' | 'hmac' | 'api_key'
+    auth_config?: Record<string, any>
+    headers?: Record<string, string>
+    max_retries?: number
+    retry_delay_seconds?: number
+    timeout_seconds?: number
+  }): Promise<WebhookEndpoint> => {
+    return fetchAPI('/api/v1/webhooks', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  // Update webhook
+  update: async (id: string, data: Partial<{
+    url: string
+    name: string
+    description: string
+    events: string[]
+    auth_type: 'none' | 'bearer' | 'basic' | 'hmac' | 'api_key'
+    auth_config: Record<string, any>
+    headers: Record<string, string>
+    is_active: boolean
+    max_retries: number
+    retry_delay_seconds: number
+    timeout_seconds: number
+  }>): Promise<WebhookEndpoint> => {
+    return fetchAPI(`/api/v1/webhooks/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+
+  // Delete webhook
+  delete: async (id: string): Promise<void> => {
+    return fetchAPI(`/api/v1/webhooks/${id}`, {
+      method: 'DELETE',
+    })
+  },
+
+  // Get webhook logs
+  getLogs: async (id: string, params?: {
+    status?: 'pending' | 'success' | 'failed' | 'retrying'
+    event_type?: string
+    start_date?: string
+    end_date?: string
+    skip?: number
+    limit?: number
+  }): Promise<WebhookLog[]> => {
+    const searchParams = new URLSearchParams()
+    if (params?.status) searchParams.append('status', params.status)
+    if (params?.event_type) searchParams.append('event_type', params.event_type)
+    if (params?.start_date) searchParams.append('start_date', params.start_date)
+    if (params?.end_date) searchParams.append('end_date', params.end_date)
+    if (params?.skip !== undefined) searchParams.append('skip', params.skip.toString())
+    if (params?.limit !== undefined) searchParams.append('limit', params.limit.toString())
+    
+    const query = searchParams.toString()
+    return fetchAPI(`/api/v1/webhooks/${id}/logs${query ? '?' + query : ''}`)
+  },
+
+  // Test webhook
+  test: async (id: string, eventType: string): Promise<WebhookLog> => {
+    return fetchAPI(`/api/v1/webhooks/${id}/test`, {
+      method: 'POST',
+      body: JSON.stringify({ event_type: eventType }),
+    })
+  },
+
+  // Retry webhook delivery
+  retryDelivery: async (id: string, logId: string): Promise<WebhookLog> => {
+    return fetchAPI(`/api/v1/webhooks/${id}/logs/${logId}/retry`, {
+      method: 'POST',
+    })
+  },
+
+  // Get available events
+  getEvents: async (): Promise<WebhookEvent[]> => {
+    return fetchAPI('/api/v1/webhooks/events')
+  },
+
+  // Get webhook statistics
+  getStats: async (): Promise<WebhookStats> => {
+    return fetchAPI('/api/v1/webhooks/stats/summary')
+  },
+}
+
+// Import types
+export interface ImportUploadResponse {
+  import_id: string
+  filename: string
+  source_type: string
+  import_type: string
+  file_size: number
+  status: string
+  message: string
+  uploaded_at: string
+}
+
+export interface ImportStatusResponse {
+  import_id: string
+  filename?: string
+  source_type?: string
+  import_type?: string
+  status: string
+  progress: number
+  total_records: number
+  processed_records: number
+  successful_imports: number
+  failed_imports: number
+  errors: string[]
+  warnings: string[]
+  uploaded_at?: string
+  started_at?: string
+  completed_at?: string
+  estimated_completion?: string
+}
+
+export interface ImportPreviewRequest {
+  field_mapping?: Record<string, string>
+  max_preview_records?: number
+  validation_level?: 'strict' | 'moderate' | 'lenient'
+}
+
+export interface ImportPreviewRecord {
+  row_number: number
+  data: Record<string, any>
+  validation_status: string
+  validation_messages: string[]
+  is_duplicate: boolean
+  suggested_action: string
+}
+
+export interface ImportValidationResult {
+  total_records: number
+  valid_records: number
+  warning_records: number
+  error_records: number
+  validation_errors: string[]
+  field_mapping_issues: string[]
+}
+
+export interface ImportPreviewResponse {
+  import_id: string
+  preview_records: ImportPreviewRecord[]
+  total_records: number
+  field_mapping: Record<string, string>
+  validation_results: ImportValidationResult
+  potential_duplicates: number
+  data_quality_issues: string[]
+  import_recommendations: string[]
+  estimated_duration: string
+}
+
+export interface ImportExecutionRequest {
+  field_mapping: Record<string, string>
+  duplicate_handling?: 'skip' | 'update' | 'merge'
+  validation_level?: 'strict' | 'moderate' | 'lenient'
+  rollback_on_error?: boolean
+  error_threshold?: number
+  notify_on_completion?: boolean
+  batch_size?: number
+}
+
+export interface ImportExecutionResponse {
+  import_id: string
+  status: string
+  message: string
+  started_at: string
+  execution_options: Record<string, any>
+}
+
+export interface ImportRollbackRequest {
+  rollback_type: 'soft_delete' | 'hard_delete' | 'deactivate'
+  reason: string
+  selective_criteria?: Record<string, any>
+  confirm_rollback: boolean
+}
+
+export interface ImportRollbackResponse {
+  import_id: string
+  rollback_id: string
+  status: string
+  message: string
+  rollback_type: string
+  started_at: string
+}
+
+export interface ImportHistoryItem {
+  import_id: string
+  filename: string
+  source_type: string
+  import_type: string
+  status: string
+  total_records: number
+  successful_imports: number
+  failed_imports: number
+  uploaded_at: string
+  completed_at?: string
+  uploaded_by: number
+}
+
+export interface ImportHistoryResponse {
+  imports: ImportHistoryItem[]
+  total: number
+  page: number
+  page_size: number
+  total_pages: number
+}
+
+export type ImportSourceType = 'booksy' | 'square' | 'acuity' | 'mindbody' | 'csv' | 'json'
+export type ImportType = 'clients' | 'appointments' | 'services' | 'barbers' | 'payments'
+
+// Export types
+export interface ExportFilters {
+  date_from?: string
+  date_to?: string
+}
+
+export interface ClientExportFilters extends ExportFilters {
+  customer_type?: string
+  preferred_barber_id?: number
+  tags?: string
+  min_visits?: number
+  min_spent?: number
+}
+
+export interface AppointmentExportFilters extends ExportFilters {
+  status?: string[]
+  barber_id?: number
+  service_name?: string
+  min_price?: number
+  max_price?: number
+}
+
+export interface CustomExportConfig {
+  table: string
+  fields: string[]
+  filters?: Record<string, any>
+  joins?: string[]
+  order_by?: string
+  limit?: number
+}
+
+export interface ExportResponse {
+  content: string
+  filename: string
+  mime_type: string
+  encoding?: string
+  size_bytes?: number
+  record_count?: number
+}
+
+export interface ExportProgress {
+  export_id: string
+  status: 'pending' | 'processing' | 'completed' | 'failed'
+  progress_percent: number
+  message?: string
+  created_at: string
+  completed_at?: string
+  download_url?: string
+}
+
+export interface ExportFormat {
+  name: string
+  display_name: string
+  description: string
+  mime_type: string
+  supports_charts: boolean
+  max_records: number
+}
+
+export interface ExportFormatsResponse {
+  formats: ExportFormat[]
+  max_export_records: number
+}
+
+// Import API
+export const importsAPI = {
+  // Upload file for import
+  upload: async (
+    file: File,
+    sourceType: ImportSourceType,
+    importType: ImportType,
+    onProgress?: (progress: number) => void
+  ): Promise<ImportUploadResponse> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    
+    const params = new URLSearchParams({
+      source_type: sourceType,
+      import_type: importType,
+    })
+    
+    // If progress tracking is needed, use XMLHttpRequest
+    if (onProgress) {
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest()
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+        
+        xhr.upload.addEventListener('progress', (e) => {
+          if (e.lengthComputable) {
+            const progress = (e.loaded / e.total) * 100
+            onProgress(progress)
+          }
+        })
+        
+        xhr.addEventListener('load', () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const response = JSON.parse(xhr.responseText)
+              resolve(response)
+            } catch (e) {
+              reject(new Error('Failed to parse response'))
+            }
+          } else {
+            reject(new Error(`Upload failed with status ${xhr.status}`))
+          }
+        })
+        
+        xhr.addEventListener('error', () => {
+          reject(new Error('Upload failed'))
+        })
+        
+        xhr.open('POST', `${API_URL}/imports/upload?${params.toString()}`)
+        if (token) {
+          xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+        }
+        xhr.send(formData)
+      })
+    }
+    
+    // Otherwise use standard fetch
+    return fetchAPI(`/imports/upload?${params.toString()}`, {
+      method: 'POST',
+      body: formData,
+    })
+  },
+
+  // Get import status
+  getStatus: async (importId: string): Promise<ImportStatusResponse> => {
+    return fetchAPI(`/imports/${importId}/status`)
+  },
+
+  // Preview import data
+  preview: async (
+    importId: string,
+    request: ImportPreviewRequest
+  ): Promise<ImportPreviewResponse> => {
+    return fetchAPI(`/imports/${importId}/preview`, {
+      method: 'POST',
+      body: JSON.stringify(request),
+    })
+  },
+
+  // Execute import
+  execute: async (
+    importId: string,
+    request: ImportExecutionRequest
+  ): Promise<ImportExecutionResponse> => {
+    return fetchAPI(`/imports/${importId}/execute`, {
+      method: 'POST',
+      body: JSON.stringify(request),
+    })
+  },
+
+  // Rollback import
+  rollback: async (
+    importId: string,
+    request: ImportRollbackRequest
+  ): Promise<ImportRollbackResponse> => {
+    return fetchAPI(`/imports/${importId}/rollback`, {
+      method: 'DELETE',
+      body: JSON.stringify(request),
+    })
+  },
+
+  // Get import history
+  getHistory: async (params?: {
+    page?: number
+    page_size?: number
+    status_filter?: string
+    import_type_filter?: string
+    date_from?: string
+    date_to?: string
+  }): Promise<ImportHistoryResponse> => {
+    const searchParams = new URLSearchParams()
+    if (params?.page) searchParams.append('page', params.page.toString())
+    if (params?.page_size) searchParams.append('page_size', params.page_size.toString())
+    if (params?.status_filter) searchParams.append('status_filter', params.status_filter)
+    if (params?.import_type_filter) searchParams.append('import_type_filter', params.import_type_filter)
+    if (params?.date_from) searchParams.append('date_from', params.date_from)
+    if (params?.date_to) searchParams.append('date_to', params.date_to)
+    
+    const query = searchParams.toString()
+    return fetchAPI(`/imports/history${query ? '?' + query : ''}`)
+  },
+}
+
+// Export API
+export const exportsAPI = {
+  // Export clients
+  exportClients: async (params?: {
+    format?: 'csv' | 'excel' | 'json' | 'pdf'
+    include_pii?: boolean
+    filters?: ClientExportFilters
+  }): Promise<ExportResponse> => {
+    const searchParams = new URLSearchParams()
+    if (params?.format) searchParams.append('format', params.format)
+    if (params?.include_pii !== undefined) searchParams.append('include_pii', params.include_pii.toString())
+    
+    // Add filter parameters
+    if (params?.filters) {
+      if (params.filters.date_from) searchParams.append('date_from', params.filters.date_from)
+      if (params.filters.date_to) searchParams.append('date_to', params.filters.date_to)
+      if (params.filters.customer_type) searchParams.append('customer_type', params.filters.customer_type)
+      if (params.filters.preferred_barber_id) searchParams.append('preferred_barber_id', params.filters.preferred_barber_id.toString())
+      if (params.filters.tags) searchParams.append('tags', params.filters.tags)
+      if (params.filters.min_visits !== undefined) searchParams.append('min_visits', params.filters.min_visits.toString())
+      if (params.filters.min_spent !== undefined) searchParams.append('min_spent', params.filters.min_spent.toString())
+    }
+    
+    const query = searchParams.toString()
+    return fetchAPI(`/exports/clients${query ? '?' + query : ''}`)
+  },
+
+  // Export appointments
+  exportAppointments: async (params?: {
+    format?: 'csv' | 'excel' | 'json' | 'pdf'
+    include_details?: boolean
+    filters?: AppointmentExportFilters
+  }): Promise<ExportResponse> => {
+    const searchParams = new URLSearchParams()
+    if (params?.format) searchParams.append('format', params.format)
+    if (params?.include_details !== undefined) searchParams.append('include_details', params.include_details.toString())
+    
+    // Add filter parameters
+    if (params?.filters) {
+      if (params.filters.date_from) searchParams.append('date_from', params.filters.date_from)
+      if (params.filters.date_to) searchParams.append('date_to', params.filters.date_to)
+      if (params.filters.status) {
+        params.filters.status.forEach(status => searchParams.append('status', status))
+      }
+      if (params.filters.barber_id) searchParams.append('barber_id', params.filters.barber_id.toString())
+      if (params.filters.service_name) searchParams.append('service_name', params.filters.service_name)
+      if (params.filters.min_price !== undefined) searchParams.append('min_price', params.filters.min_price.toString())
+      if (params.filters.max_price !== undefined) searchParams.append('max_price', params.filters.max_price.toString())
+    }
+    
+    const query = searchParams.toString()
+    return fetchAPI(`/exports/appointments${query ? '?' + query : ''}`)
+  },
+
+  // Export analytics
+  exportAnalytics: async (params?: {
+    format?: 'excel' | 'json' | 'pdf'
+    include_charts?: boolean
+    date_from?: string
+    date_to?: string
+  }): Promise<ExportResponse> => {
+    const searchParams = new URLSearchParams()
+    if (params?.format) searchParams.append('format', params.format)
+    if (params?.include_charts !== undefined) searchParams.append('include_charts', params.include_charts.toString())
+    if (params?.date_from) searchParams.append('date_from', params.date_from)
+    if (params?.date_to) searchParams.append('date_to', params.date_to)
+    
+    const query = searchParams.toString()
+    return fetchAPI(`/exports/analytics${query ? '?' + query : ''}`)
+  },
+
+  // Custom export
+  customExport: async (
+    config: CustomExportConfig,
+    format?: 'csv' | 'excel' | 'json'
+  ): Promise<ExportResponse> => {
+    const searchParams = new URLSearchParams()
+    if (format) searchParams.append('format', format)
+    
+    const query = searchParams.toString()
+    return fetchAPI(`/exports/custom${query ? '?' + query : ''}`, {
+      method: 'POST',
+      body: JSON.stringify(config),
+    })
+  },
+
+  // Download export
+  downloadExport: async (exportId: string): Promise<ExportProgress> => {
+    return fetchAPI(`/exports/download/${exportId}`)
+  },
+
+  // Get export progress
+  getProgress: async (exportId: string): Promise<ExportProgress> => {
+    return fetchAPI(`/exports/progress/${exportId}`)
+  },
+
+  // Get supported formats
+  getFormats: async (): Promise<ExportFormatsResponse> => {
+    return fetchAPI('/exports/formats')
+  },
+
+  // Clear export cache (admin only)
+  clearCache: async (): Promise<{ message: string }> => {
+    return fetchAPI('/exports/cache', {
+      method: 'DELETE',
+    })
+  },
+
+  // Helper to download export as file
+  downloadAsFile: (exportResponse: ExportResponse) => {
+    // Decode base64 content
+    const byteCharacters = atob(exportResponse.content)
+    const byteNumbers = new Array(byteCharacters.length)
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i)
+    }
+    const byteArray = new Uint8Array(byteNumbers)
+    
+    // Create blob and download
+    const blob = new Blob([byteArray], { type: exportResponse.mime_type })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = exportResponse.filename
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+  },
+}
+

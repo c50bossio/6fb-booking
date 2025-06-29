@@ -5,9 +5,11 @@ module.exports = {
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './lib/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
+        // Existing teal/turquoise brand colors (preserved)
         primary: {
           50: '#f0fdfa',
           100: '#ccfbf1',
@@ -33,22 +35,219 @@ module.exports = {
           800: '#1e293b',
           900: '#0f172a',
         },
+        
+        // iOS System Colors
+        success: {
+          50: '#f0fdf4',
+          100: '#dcfce7',
+          200: '#bbf7d0',
+          300: '#86efac',
+          400: '#4ade80',
+          500: '#32d74b', // iOS Green
+          600: '#16a34a',
+          700: '#15803d',
+          800: '#166534',
+          900: '#14532d',
+          950: '#052e16',
+        },
+        
+        // Dark mode specific colors
+        'dark-surface': {
+          50: '#18181b',
+          100: '#27272a',
+          200: '#3f3f46',
+          300: '#52525b',
+          400: '#71717a',
+          500: '#a1a1aa',
+          600: '#d4d4d8',
+          700: '#e4e4e7',
+          800: '#f4f4f5',
+          900: '#fafafa',
+        },
+        
+        'dark-elevated': {
+          50: '#09090b',
+          100: '#18181b',
+          200: '#27272a',
+          300: '#3f3f46',
+          400: '#52525b',
+          500: '#71717a',
+          600: '#a1a1aa',
+          700: '#d4d4d8',
+          800: '#e4e4e7',
+          900: '#f4f4f5',
+        },
+        
+        // iOS Gray colors with dark variants
+        'ios-gray': {
+          50: '#f9fafb',
+          100: '#f3f4f6',
+          200: '#e5e7eb',
+          300: '#d1d5db',
+          400: '#9ca3af',
+          500: '#6b7280',
+          600: '#4b5563',
+          700: '#374151',
+          800: '#1f2937',
+          900: '#111827',
+          950: '#030712',
+        },
+        warning: {
+          50: '#fffbeb',
+          100: '#fef3c7',
+          200: '#fde68a',
+          300: '#fcd34d',
+          400: '#fbbf24',
+          500: '#ff9f0a', // iOS Orange
+          600: '#d97706',
+          700: '#b45309',
+          800: '#92400e',
+          900: '#78350f',
+        },
+        error: {
+          50: '#fef2f2',
+          100: '#fee2e2',
+          200: '#fecaca',
+          300: '#fca5a5',
+          400: '#f87171',
+          500: '#ff453a', // iOS Red
+          600: '#dc2626',
+          700: '#b91c1c',
+          800: '#991b1b',
+          900: '#7f1d1d',
+        },
+        info: {
+          50: '#eff6ff',
+          100: '#dbeafe',
+          200: '#bfdbfe',
+          300: '#93c5fd',
+          400: '#60a5fa',
+          500: '#007aff', // iOS Blue
+          600: '#2563eb',
+          700: '#1d4ed8',
+          800: '#1e40af',
+          900: '#1e3a8a',
+        },
+        
+        // Premium Accent Colors
+        gold: {
+          50: '#fffbeb',
+          100: '#fef3c7',
+          200: '#fde68a',
+          300: '#fcd34d',
+          400: '#fbbf24',
+          500: '#ffd60a', // iOS Gold
+          600: '#d97706',
+          700: '#b45309',
+          800: '#92400e',
+          900: '#78350f',
+        },
+        purple: {
+          50: '#faf5ff',
+          100: '#f3e8ff',
+          200: '#e9d5ff',
+          300: '#d8b4fe',
+          400: '#c084fc',
+          500: '#bf5af2', // iOS Purple
+          600: '#9333ea',
+          700: '#7c3aed',
+          800: '#6b21a8',
+          900: '#581c87',
+        },
+        
+        // Dark Mode Specific Colors
+        'dark-surface': {
+          50: '#2c2c2e',
+          100: '#1c1c1e', // iOS Dark Surface
+          200: '#141414',
+          300: '#0d0d0d',
+        },
+        'dark-elevated': {
+          50: '#3a3a3c',
+          100: '#2c2c2e', // iOS Dark Elevated
+          200: '#1c1c1e',
+          300: '#141414',
+        },
+        
+        // iOS System Grays
+        'ios-gray': {
+          50: '#f9f9f9',
+          100: '#f2f2f7', // iOS System Gray 6
+          200: '#e5e5ea', // iOS System Gray 5
+          300: '#d1d1d6', // iOS System Gray 4
+          400: '#c7c7cc', // iOS System Gray 3
+          500: '#aeaeb2', // iOS System Gray 2
+          600: '#8e8e93', // iOS System Gray
+          700: '#636366', // iOS System Gray (Dark)
+          800: '#48484a', // iOS System Gray 2 (Dark)
+          900: '#3a3a3c', // iOS System Gray 3 (Dark)
+        },
       },
+      
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: [
+          'Inter',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'San Francisco',
+          'Segoe UI',
+          'Roboto',
+          'Helvetica Neue',
+          'sans-serif'
+        ],
+        display: [
+          'Inter',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'San Francisco',
+          'Segoe UI',
+          'sans-serif'
+        ],
       },
+      
+      // Enhanced Shadow System for Glass Morphism
       boxShadow: {
+        // Existing shadows (preserved)
         'glow-primary': '0 0 20px rgba(20, 184, 166, 0.5)',
         'glow-accent': '0 0 20px rgba(30, 41, 59, 0.5)',
         'glow-success': '0 0 20px rgba(5, 150, 105, 0.5)',
+        
+        // iOS-style shadows
+        'ios-sm': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+        'ios': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+        'ios-md': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        'ios-lg': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+        'ios-xl': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        'ios-2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        
+        // Glass morphism shadows
+        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+        'glass-dark': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+        'glass-light': '0 8px 32px 0 rgba(255, 255, 255, 0.1)',
+        
+        // Premium shadows
+        'premium': '0 20px 40px -12px rgba(0, 0, 0, 0.25), 0 8px 16px -8px rgba(0, 0, 0, 0.1)',
+        'premium-colored': '0 20px 40px -12px rgba(20, 184, 166, 0.4)',
       },
+      
+      // iOS-style Animation Curves and Durations
       animation: {
+        // Existing animations (preserved)
         'fade-in': 'fadeIn 0.2s ease-out',
         'slide-up': 'slideUp 0.3s ease-out',
         'pulse-gentle': 'pulseGentle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        
+        // iOS-style animations
+        'ios-bounce': 'iosBounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+        'ios-scale': 'iosScale 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        'ios-slide-up': 'iosSlideUp 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        'ios-slide-down': 'iosSlideDown 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        'ios-fade': 'iosFade 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        'glass-morph': 'glassMorph 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
       },
+      
       keyframes: {
+        // Existing keyframes (preserved)
         fadeIn: {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
@@ -61,6 +260,94 @@ module.exports = {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.8' },
         },
+        
+        // iOS-style keyframes
+        iosBounce: {
+          '0%': { transform: 'scale(0.8)', opacity: '0' },
+          '50%': { transform: 'scale(1.05)' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        iosScale: {
+          '0%': { transform: 'scale(0.95)' },
+          '100%': { transform: 'scale(1)' },
+        },
+        iosSlideUp: {
+          '0%': { transform: 'translateY(20px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        iosSlideDown: {
+          '0%': { transform: 'translateY(-20px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        iosFade: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        glassMorph: {
+          '0%': { 
+            backdropFilter: 'blur(0px)',
+            background: 'rgba(255, 255, 255, 0)',
+          },
+          '100%': { 
+            backdropFilter: 'blur(20px)',
+            background: 'rgba(255, 255, 255, 0.1)',
+          },
+        },
+      },
+      
+      // Mobile-first Spacing Scale
+      spacing: {
+        '18': '4.5rem',
+        '88': '22rem',
+        '128': '32rem',
+        '144': '36rem',
+      },
+      
+      // Enhanced Border Radius for iOS-style Design
+      borderRadius: {
+        'ios': '10px',
+        'ios-lg': '16px',
+        'ios-xl': '20px',
+        'ios-2xl': '24px',
+      },
+      
+      // Custom Blur Values for Glass Morphism
+      backdropBlur: {
+        'xs': '2px',
+        'ios': '20px',
+        'glass': '40px',
+      },
+      
+      // iOS-style Typography Scale
+      fontSize: {
+        'ios-caption2': ['11px', { lineHeight: '13px', fontWeight: '400' }],
+        'ios-caption1': ['12px', { lineHeight: '16px', fontWeight: '400' }],
+        'ios-footnote': ['13px', { lineHeight: '18px', fontWeight: '400' }],
+        'ios-subheadline': ['15px', { lineHeight: '20px', fontWeight: '400' }],
+        'ios-callout': ['16px', { lineHeight: '21px', fontWeight: '400' }],
+        'ios-body': ['17px', { lineHeight: '22px', fontWeight: '400' }],
+        'ios-headline': ['17px', { lineHeight: '22px', fontWeight: '600' }],
+        'ios-title3': ['20px', { lineHeight: '25px', fontWeight: '400' }],
+        'ios-title2': ['22px', { lineHeight: '28px', fontWeight: '400' }],
+        'ios-title1': ['28px', { lineHeight: '34px', fontWeight: '400' }],
+        'ios-large-title': ['34px', { lineHeight: '41px', fontWeight: '400' }],
+      },
+      
+      // Safe area insets for iOS devices
+      padding: {
+        'safe-top': 'env(safe-area-inset-top)',
+        'safe-bottom': 'env(safe-area-inset-bottom)',
+        'safe-left': 'env(safe-area-inset-left)',
+        'safe-right': 'env(safe-area-inset-right)',
+      },
+      margin: {
+        'safe-top': 'env(safe-area-inset-top)',
+        'safe-bottom': 'env(safe-area-inset-bottom)',
+        'safe-left': 'env(safe-area-inset-left)',
+        'safe-right': 'env(safe-area-inset-right)',
+      },
+      height: {
+        'safe-area-inset-bottom': 'env(safe-area-inset-bottom)',
       },
     },
   },

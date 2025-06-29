@@ -14,19 +14,7 @@ export const breakpoints = {
 // Type for breakpoint keys
 export type Breakpoint = keyof typeof breakpoints
 
-// Hook to get current breakpoint
-export function useBreakpoint() {
-  if (typeof window === 'undefined') return 'sm'
-  
-  const width = window.innerWidth
-  
-  if (width < breakpoints.sm) return 'xs'
-  if (width < breakpoints.md) return 'sm'
-  if (width < breakpoints.lg) return 'md'
-  if (width < breakpoints.xl) return 'lg'
-  if (width < breakpoints['2xl']) return 'xl'
-  return '2xl'
-}
+// Note: useBreakpoint hook has been moved to hooks/useResponsive.ts for proper SSR handling
 
 // Responsive container classes
 export const containerClasses = {
