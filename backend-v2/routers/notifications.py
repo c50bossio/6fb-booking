@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import Optional, List
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from database import get_db
 from models import (
@@ -18,6 +18,9 @@ from services.notification_service import NotificationService
 import logging
 
 logger = logging.getLogger(__name__)
+
+# Create notification service instance
+notification_service = NotificationService()
 
 router = APIRouter(prefix="/notifications", tags=["notifications"])
 
@@ -67,10 +70,10 @@ async def update_notification_preferences(
         db.add(preferences)
     
     # Update preferences
-    for field, value in preferences_data.dict(exclude_unset=True).items():
+    for field, value in preferences_data.model_dump(exclude_unset=True).items():
         setattr(preferences, field, value)
     
-    preferences.updated_at = datetime.utcnow()
+    preferences.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(preferences)
     
@@ -134,7 +137,7 @@ async def get_notification_stats(
         stats = notification_service.get_notification_stats(db=db, days=days)
     else:
         # Regular users only see their own stats
-        since_date = datetime.utcnow() - timedelta(days=days)
+        since_date = datetime.now(timezone.utc) - timedelta(days=days)
         user_notifications = db.query(NotificationQueue).filter(
             NotificationQueue.user_id == current_user.id,
             NotificationQueue.created_at >= since_date
@@ -298,7 +301,7 @@ async def cancel_notification(
         )
     
     notification.status = NotificationStatus.CANCELLED
-    notification.updated_at = datetime.utcnow()
+    notification.updated_at = datetime.now(timezone.utc)
     db.commit()
     
     logger.info(f"Cancelled notification {notification_id} by user {current_user.id}")

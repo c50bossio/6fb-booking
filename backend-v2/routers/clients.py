@@ -2,7 +2,7 @@ from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
-from datetime import datetime
+from datetime import datetime, timezone
 
 from database import get_db
 from models import Client, User, Appointment
@@ -31,7 +31,7 @@ async def create_client(
     try:
         new_client = client_service.create_client(
             db=db,
-            client_data=client_data.dict(),
+            client_data=client_data.model_dump(),
             created_by_id=current_user.id
         )
         return new_client
@@ -120,12 +120,12 @@ async def update_client(
         )
     
     # Update only provided fields
-    update_data = client_update.dict(exclude_unset=True)
+    update_data = client_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(client, field, value)
     
     # Update the updated_at timestamp
-    client.updated_at = datetime.utcnow()
+    client.updated_at = datetime.now(timezone.utc)
     
     db.commit()
     db.refresh(client)
@@ -222,7 +222,7 @@ async def update_customer_type(
         )
     
     client.customer_type = customer_type
-    client.updated_at = datetime.utcnow()
+    client.updated_at = datetime.now(timezone.utc)
     
     db.commit()
     

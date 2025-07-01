@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
-from datetime import datetime, date, time
+from datetime import datetime, date, time, timezone
 import enum
 
 from database import get_db
@@ -115,7 +115,7 @@ async def create_service(
         raise HTTPException(status_code=400, detail="Service with this name already exists")
     
     db_service = Service(
-        **service.dict(exclude={"package_item_ids"}),
+        **service.model_dump(exclude={"package_item_ids"}),
         created_by_id=current_user.id
     )
     
@@ -160,12 +160,12 @@ async def update_service(
             raise HTTPException(status_code=400, detail="Service with this name already exists")
     
     # Update fields
-    update_data = service.dict(exclude_unset=True, exclude={"package_item_ids"})
+    update_data = service.model_dump(exclude_unset=True, exclude={"package_item_ids"})
     for field, value in update_data.items():
         setattr(db_service, field, value)
     
     # Update package items if provided and this is a package
-    if db_service.is_package and "package_item_ids" in service.dict(exclude_unset=True):
+    if db_service.is_package and "package_item_ids" in service.model_dump(exclude_unset=True):
         if service.package_item_ids:
             package_items = db.query(Service).filter(
                 Service.id.in_(service.package_item_ids),
@@ -179,7 +179,7 @@ async def update_service(
         else:
             db_service.package_items = []
     
-    db_service.updated_at = datetime.utcnow()
+    db_service.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(db_service)
     
@@ -235,7 +235,7 @@ async def create_pricing_rule(
     
     db_rule = ServicePricingRule(
         service_id=service_id,
-        **rule.dict()
+        **rule.model_dump()
     )
     
     db.add(db_rule)
@@ -302,7 +302,7 @@ async def create_booking_rule(
     
     db_rule = ServiceBookingRule(
         service_id=service_id,
-        **rule.dict()
+        **rule.model_dump()
     )
     
     db.add(db_rule)

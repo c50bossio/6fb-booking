@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.orm import Session
 from typing import Dict, List, Optional
 from datetime import datetime
 from database import get_db
 from services.payment_service import PaymentService
+from utils.rate_limit import payment_intent_rate_limit, payment_confirm_rate_limit, refund_rate_limit
 from schemas import (
     PaymentIntentCreate, PaymentIntentResponse, PaymentConfirm, PaymentResponse,
     RefundCreate, RefundResponse, GiftCertificateCreate, GiftCertificateResponse,
@@ -20,7 +21,9 @@ router = APIRouter(
 )
 
 @router.post("/create-intent", response_model=PaymentIntentResponse)
+@payment_intent_rate_limit
 def create_payment_intent(
+    request: Request,
     payment_data: PaymentIntentCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -69,7 +72,9 @@ def create_payment_intent(
         )
 
 @router.post("/confirm")
+@payment_confirm_rate_limit
 def confirm_payment(
+    request: Request,
     payment_data: PaymentConfirm,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -116,7 +121,9 @@ def confirm_payment(
         )
 
 @router.post("/refund", response_model=RefundResponse)
+@refund_rate_limit
 def create_refund(
+    request: Request,
     refund_data: RefundCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)

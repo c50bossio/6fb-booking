@@ -104,7 +104,7 @@ async def forgot_password(
     reset_token = create_password_reset_token(db, user)
     
     # Send email (in production, this would be async)
-    send_reset_email(user.email, reset_token.token)
+    send_reset_email(user.email, reset_token.token, user.name)
     
     return {"message": "If the email exists, a reset link has been sent"}
 

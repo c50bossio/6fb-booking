@@ -89,3 +89,47 @@ def get_all_users(
         query = query.filter(models.User.role == role)
     
     return query.all()
+
+@router.put("/{user_id}/role", response_model=schemas.UserResponse)
+def update_user_role(
+    user_id: int,
+    role_update: schemas.RoleUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """Update a user's role (admin only)"""
+    # Check if current user is admin
+    if current_user.role not in ["admin", "super_admin"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admins can change user roles"
+        )
+    
+    # Prevent users from changing their own role
+    if user_id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You cannot change your own role"
+        )
+    
+    # Get the user to update
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    # Prevent changing super_admin roles unless current user is super_admin
+    if user.role == "super_admin" and current_user.role != "super_admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only super admins can modify super admin roles"
+        )
+    
+    # Update the role
+    user.role = role_update.role
+    db.commit()
+    db.refresh(user)
+    
+    return user

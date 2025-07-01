@@ -52,8 +52,56 @@ def get_available_appointment_slots(
         )
     
     try:
-        slots_data = booking_service.get_available_slots(db, appointment_date, user_timezone=user_timezone)
-        return slots_data
+        # Use the barber-aware version to get slots for all available barbers
+        # This prevents the issue where ALL slots are marked unavailable
+        slots_data = booking_service.get_available_slots_with_barber_availability(
+            db, 
+            appointment_date, 
+            barber_id=None,  # Get slots for all available barbers
+            user_timezone=user_timezone
+        )
+        
+        # Convert the barber-specific format to the expected format
+        # Aggregate all available slots from all barbers
+        all_slots = []
+        seen_times = set()
+        
+        for barber_info in slots_data.get("available_barbers", []):
+            for slot in barber_info.get("slots", []):
+                if slot["time"] not in seen_times and slot.get("available", False):
+                    seen_times.add(slot["time"])
+                    all_slots.append({
+                        "time": slot["time"],
+                        "available": True,
+                        "is_next_available": False
+                    })
+        
+        # Sort slots by time
+        all_slots.sort(key=lambda s: s["time"])
+        
+        # Mark the first available slot if needed
+        if all_slots and slots_data.get("next_available"):
+            next_time = slots_data["next_available"].get("time")
+            for slot in all_slots:
+                if slot["time"] == next_time:
+                    slot["is_next_available"] = True
+                    break
+        
+        # Fix next_available to include datetime field
+        next_available = slots_data.get("next_available")
+        if next_available and "datetime" not in next_available:
+            # Construct datetime from date and time
+            date_str = next_available.get("date", appointment_date.isoformat())
+            time_str = next_available.get("time", "00:00")
+            next_available["datetime"] = f"{date_str}T{time_str}:00"
+        
+        return {
+            "date": appointment_date.isoformat(),
+            "slots": all_slots,
+            "next_available": next_available,
+            "business_hours": slots_data.get("business_hours"),
+            "slot_duration_minutes": slots_data.get("slot_duration_minutes", 30)
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -65,16 +113,23 @@ def create_appointment(
 ):
     """Create a new appointment."""
     try:
-        # Convert AppointmentCreate to format expected by service layer
-        booking_data = {
-            "date": appointment.date,
-            "time": appointment.time,
-            "service": appointment.service,
-            "notes": getattr(appointment, 'notes', None)
-        }
+        # Convert date string to date object if needed
+        from datetime import datetime
+        if isinstance(appointment.date, str):
+            booking_date = datetime.strptime(appointment.date, "%Y-%m-%d").date()
+        else:
+            booking_date = appointment.date
         
-        # Use existing booking service (will be renamed to appointment service later)
-        db_appointment = booking_service.create_booking(db, booking_data, current_user.id)
+        # Use existing booking service with correct signature
+        db_appointment = booking_service.create_booking(
+            db=db,
+            user_id=current_user.id,
+            booking_date=booking_date,
+            booking_time=appointment.time,
+            service=appointment.service,
+            user_timezone=getattr(current_user, 'timezone', None),
+            notes=getattr(appointment, 'notes', None)
+        )
         return db_appointment
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -253,7 +308,20 @@ def create_enhanced_appointment(
         if 'appointment_time' in enhanced_data:
             enhanced_data['time'] = enhanced_data.pop('appointment_time')
         
-        db_appointment = booking_service.create_enhanced_booking(db, enhanced_data, current_user.id)
+        # Use create_booking with enhanced data
+        db_appointment = booking_service.create_booking(
+            db=db,
+            user_id=current_user.id,
+            booking_date=enhanced_data.get('date'),
+            booking_time=enhanced_data.get('time'),
+            service=enhanced_data.get('service'),
+            user_timezone=enhanced_data.get('user_timezone'),
+            client_id=enhanced_data.get('client_id'),
+            notes=enhanced_data.get('notes'),
+            barber_id=enhanced_data.get('barber_id'),
+            buffer_time_before=enhanced_data.get('buffer_time_before', 0),
+            buffer_time_after=enhanced_data.get('buffer_time_after', 0)
+        )
         return db_appointment
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -283,4 +351,182 @@ def validate_appointment(
             appointment_allowed=validation_result['booking_allowed']
         )
     except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# Missing endpoints migrated from bookings router
+
+@router.get("/slots/next-available", response_model=schemas.NextAvailableSlot)
+def get_next_available_appointment_slot(
+    current_user: Optional[schemas.User] = Depends(get_current_user_optional),
+    db: Session = Depends(get_db)
+):
+    """Get the next available appointment slot."""
+    try:
+        # Use the same service as the deprecated bookings router
+        # Start from today's date
+        from datetime import date
+        next_slot = booking_service.get_next_available_slot(db, start_date=date.today())
+        if next_slot:
+            return {
+                "date": next_slot.date().isoformat(),
+                "time": next_slot.strftime("%H:%M"),
+                "datetime": next_slot.isoformat()
+            }
+        else:
+            raise HTTPException(status_code=404, detail="No available slots found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/settings", response_model=schemas.BookingSettingsResponse)
+def get_appointment_settings(
+    current_user: schemas.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get appointment booking settings."""
+    settings = booking_service.get_booking_settings(db)
+    return settings
+
+
+@router.put("/settings", response_model=schemas.BookingSettingsResponse) 
+def update_appointment_settings(
+    updates: schemas.BookingSettingsUpdate,
+    current_user: schemas.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update appointment booking settings (admin only)."""
+    require_admin_role(current_user)
+    settings = booking_service.update_booking_settings(db, updates)
+    return settings
+
+
+@router.put("/{appointment_id}/cancel", response_model=schemas.AppointmentResponse)
+def cancel_appointment(
+    appointment_id: int,
+    current_user: schemas.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Cancel an appointment."""
+    # Get the appointment
+    appointment = db.query(models.Appointment).filter(
+        models.Appointment.id == appointment_id
+    ).first()
+    
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    # Check permissions
+    if (current_user.role not in ["admin", "super_admin"] and 
+        appointment.user_id != current_user.id):
+        raise HTTPException(status_code=403, detail="Not authorized to cancel this appointment")
+    
+    # Update status
+    appointment.status = "cancelled"
+    db.commit()
+    db.refresh(appointment)
+    
+    return appointment
+
+
+@router.post("/guest", response_model=schemas.GuestBookingResponse)
+def create_guest_appointment(
+    booking: schemas.GuestBookingCreate,
+    db: Session = Depends(get_db)
+):
+    """Create appointment for guest user (no authentication required)."""
+    try:
+        # Use the booking service to create the appointment
+        from datetime import datetime
+        
+        # Convert date string to date object if needed
+        if isinstance(booking.date, str):
+            booking_date = datetime.strptime(booking.date, "%Y-%m-%d").date()
+        else:
+            booking_date = booking.date
+        
+        # Handle guest_info - check if it's already a dict or pydantic model
+        if hasattr(booking.guest_info, 'first_name'):
+            # It's a pydantic model
+            guest_info_dict = {
+                "first_name": booking.guest_info.first_name,
+                "last_name": booking.guest_info.last_name,
+                "email": booking.guest_info.email,
+                "phone": booking.guest_info.phone
+            }
+        else:
+            # It's already a dict
+            guest_info_dict = booking.guest_info
+        
+        result = booking_service.create_guest_booking(
+            db=db,
+            booking_date=booking_date,
+            booking_time=booking.time,
+            service=booking.service,
+            guest_info=guest_info_dict,
+            user_timezone=getattr(booking, 'timezone', None),
+            notes=getattr(booking, 'notes', None)
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/guest/quick", response_model=schemas.GuestBookingResponse) 
+def create_guest_quick_appointment(
+    booking: schemas.GuestQuickBookingCreate,
+    db: Session = Depends(get_db)
+):
+    """Create quick appointment for guest user (next available slot)."""
+    try:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"Guest quick booking request: {booking}")
+        logger.info(f"Guest info type: {type(booking.guest_info)}")
+        logger.info(f"Guest info value: {booking.guest_info}")
+        
+        # Find next available slot
+        from datetime import date
+        next_slot = booking_service.get_next_available_slot(db, start_date=date.today())
+        if not next_slot:
+            raise HTTPException(status_code=404, detail="No available slots found")
+        
+        # Handle guest_info - try multiple approaches
+        try:
+            # Try as pydantic model first
+            guest_info_dict = {
+                "first_name": booking.guest_info.first_name,
+                "last_name": booking.guest_info.last_name,
+                "email": booking.guest_info.email,
+                "phone": booking.guest_info.phone
+            }
+        except AttributeError:
+            # Try as dict
+            try:
+                guest_info_dict = {
+                    "first_name": booking.guest_info["first_name"],
+                    "last_name": booking.guest_info["last_name"],
+                    "email": booking.guest_info["email"],
+                    "phone": booking.guest_info["phone"]
+                }
+            except (KeyError, TypeError):
+                # Use the dict directly if it's already properly formatted
+                guest_info_dict = booking.guest_info
+        
+        logger.info(f"Final guest_info_dict: {guest_info_dict}")
+        
+        # Create the guest booking using the next available slot
+        result = booking_service.create_guest_booking(
+            db=db,
+            booking_date=next_slot.date(),
+            booking_time=next_slot.strftime("%H:%M"),
+            service=booking.service,
+            guest_info=guest_info_dict,
+            user_timezone=getattr(booking, 'timezone', None),
+            notes=getattr(booking, 'notes', None)
+        )
+        return result
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Guest quick booking error: {e}")
         raise HTTPException(status_code=400, detail=str(e))

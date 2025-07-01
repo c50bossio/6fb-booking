@@ -1,7 +1,7 @@
 """
 Client management service with analytics and engagement tracking.
 """
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, timezone
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, func, desc, asc
@@ -80,7 +80,12 @@ def get_client_analytics(db: Session, client_id: int) -> Dict[str, Any]:
     
     # Calculate retention metrics
     last_visit_date = completed_appointments[0].start_time if completed_appointments else None
-    days_since_last_visit = (datetime.utcnow() - last_visit_date).days if last_visit_date else None
+    days_since_last_visit = None
+    if last_visit_date:
+        # Handle timezone-naive datetime objects from database
+        if last_visit_date.tzinfo is None:
+            last_visit_date = last_visit_date.replace(tzinfo=timezone.utc)
+        days_since_last_visit = (datetime.now(timezone.utc) - last_visit_date).days
     
     # Calculate booking patterns
     booking_patterns = analyze_booking_patterns(completed_appointments)
@@ -116,7 +121,10 @@ def determine_customer_type(
     
     # At risk criteria: recent no-shows/cancellations or long absence
     if last_visit:
-        days_since_visit = (datetime.utcnow() - last_visit).days
+        # Handle timezone-naive datetime objects from database
+        if last_visit.tzinfo is None:
+            last_visit = last_visit.replace(tzinfo=timezone.utc)
+        days_since_visit = (datetime.now(timezone.utc) - last_visit).days
         if days_since_visit > 90 or (no_shows + cancellations) >= 3:
             return "at_risk"
     
@@ -184,7 +192,7 @@ def update_client_metrics(db: Session, client_id: int) -> Client:
     client.visit_frequency_days = analytics["visit_frequency_days"]
     client.customer_type = analytics["customer_type"]
     client.last_visit_date = analytics["last_visit_date"]
-    client.updated_at = datetime.utcnow()
+    client.updated_at = datetime.now(timezone.utc)
     
     # Set first visit date if this is the first completed appointment
     if analytics["total_visits"] == 1 and analytics["last_visit_date"]:
@@ -295,7 +303,7 @@ def search_clients_advanced(
     
     # Recent activity filter
     if max_days_since_visit is not None:
-        cutoff_date = datetime.utcnow() - timedelta(days=max_days_since_visit)
+        cutoff_date = datetime.now(timezone.utc) - timedelta(days=max_days_since_visit)
         query_obj = query_obj.filter(Client.last_visit_date >= cutoff_date)
     
     return query_obj.limit(limit).all()
@@ -354,7 +362,7 @@ def update_client_communication_preferences(
     if "marketing" in preferences:
         client.marketing_enabled = preferences["marketing"]
     
-    client.updated_at = datetime.utcnow()
+    client.updated_at = datetime.now(timezone.utc)
     
     db.commit()
     db.refresh(client)
@@ -380,7 +388,7 @@ def add_client_note(
     
     # Create timestamp and user info
     user = db.query(User).filter(User.id == added_by_id).first()
-    timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M")
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
     author = user.name if user else f"User {added_by_id}"
     
     # Format new note
@@ -392,7 +400,7 @@ def add_client_note(
     else:
         client.notes = new_note
     
-    client.updated_at = datetime.utcnow()
+    client.updated_at = datetime.now(timezone.utc)
     
     db.commit()
     db.refresh(client)
@@ -418,7 +426,7 @@ def update_client_tags(
     
     # Store tags as comma-separated string
     client.tags = ", ".join(tags) if tags else None
-    client.updated_at = datetime.utcnow()
+    client.updated_at = datetime.now(timezone.utc)
     
     db.commit()
     db.refresh(client)
@@ -439,7 +447,7 @@ def get_client_dashboard_metrics(db: Session) -> Dict[str, Any]:
     
     # Recent activity
     recent_clients = db.query(Client).filter(
-        Client.created_at >= datetime.utcnow() - timedelta(days=30)
+        Client.created_at >= datetime.now(timezone.utc) - timedelta(days=30)
     ).count()
     
     # At-risk clients

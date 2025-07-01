@@ -8,7 +8,7 @@ import logging
 from pydantic import BaseModel, Field
 
 from database import get_db
-from utils.auth import get_current_user, require_role
+from utils.auth import get_current_user, require_admin_role
 from services.export_service import export_service
 import models
 
@@ -457,7 +457,7 @@ async def get_supported_formats(
 
 @router.delete("/cache")
 async def clear_export_cache(
-    current_user: models.User = Depends(require_role("admin"))
+    current_user: models.User = Depends(require_admin_role)
 ):
     """
     Clear export cache and temporary files

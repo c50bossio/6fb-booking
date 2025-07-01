@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 import stripe
 import logging
 from typing import Dict, Any
+from datetime import datetime
 
 from database import get_db
 from config import settings
@@ -51,8 +52,9 @@ async def handle_stripe_webhook(
         
         # Parse the event
         try:
+            import json
             event = stripe.Event.construct_from(
-                stripe.util.json.loads(payload), settings.stripe_secret_key
+                json.loads(payload), settings.stripe_secret_key
             )
         except ValueError as e:
             logger.error(f"Invalid payload: {e}")
@@ -101,7 +103,12 @@ async def handle_payment_intent_succeeded(payment_intent: Dict[str, Any], db: Se
         # Update payment status if not already confirmed
         if payment.status == "pending":
             payment.status = "completed"
-            payment.stripe_payment_id = payment_intent['id']
+            # Extract charge ID if available
+            charges = payment_intent.get('charges', {}).get('data', [])
+            if charges and len(charges) > 0:
+                payment.stripe_payment_id = charges[0]['id']
+            else:
+                payment.stripe_payment_id = payment_intent['id']
             
             # Update appointment status
             if payment.appointment:
@@ -129,6 +136,11 @@ async def handle_payment_intent_failed(payment_intent: Dict[str, Any], db: Sessi
         
         # Update payment status
         payment.status = "failed"
+        
+        # Extract failure reason if available
+        last_error = payment_intent.get('last_payment_error', {})
+        if last_error and 'message' in last_error:
+            payment.failure_reason = last_error['message']
         
         # Update appointment status
         if payment.appointment:
@@ -164,6 +176,11 @@ async def handle_charge_dispute_created(dispute: Dict[str, Any], db: Session):
             logger.warning(f"Payment not found for disputed charge: {charge_id}")
             return
         
+        # Update payment status to disputed
+        payment.status = "disputed"
+        payment.dispute_status = dispute.get('status', 'unknown')
+        db.commit()
+        
         # Log the dispute
         audit_logger.log_security_violation(
             payment.user_id, "payment_disputed", 
@@ -184,6 +201,11 @@ async def handle_transfer_created(transfer: Dict[str, Any], db: Session):
         ).first()
         
         if payout:
+            # Update payout status if it was created
+            if transfer.get('status') == 'paid':
+                payout.status = "completed"
+                payout.paid_at = datetime.utcnow()
+                db.commit()
             logger.info(f"Transfer {transfer['id']} created for payout {payout.id}")
         
     except Exception as e:
@@ -203,6 +225,8 @@ async def handle_transfer_failed(transfer: Dict[str, Any], db: Session):
         
         # Update payout status
         payout.status = "failed"
+        if 'failure_message' in transfer:
+            payout.failure_reason = transfer['failure_message']
         db.commit()
         
         logger.error(f"Transfer {transfer['id']} failed for payout {payout.id}")
@@ -220,4 +244,4 @@ async def handle_transfer_failed(transfer: Dict[str, Any], db: Session):
 @router.get("/health")
 def webhook_health():
     """Health check for webhook endpoint"""
-    return {"status": "healthy", "timestamp": stripe.util.datetime.utcnow().isoformat()}
+    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
