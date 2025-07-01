@@ -7,6 +7,9 @@ import { isToday as checkIsToday, parseAPIDate } from '@/lib/timezone'
 import { conflictManager, ConflictAnalysis, ConflictResolution } from '@/lib/appointment-conflicts'
 import ConflictResolutionModal from './modals/ConflictResolutionModal'
 import { useCalendarPerformance } from '@/hooks/useCalendarPerformance'
+import { useCalendarAccessibility } from '@/hooks/useCalendarAccessibility'
+import { useCalendarErrorReporting } from './calendar/CalendarErrorBoundary'
+import type { CalendarError } from '@/types/calendar'
 
 interface Appointment {
   id: number
@@ -59,6 +62,8 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
   className = ""
 }: CalendarMonthViewProps) {
   const { measureRender, optimizedAppointmentFilter, memoizedDateCalculations } = useCalendarPerformance()
+  const { announce, keyboardNav, getGridProps, getGridCellProps, isHighContrast } = useCalendarAccessibility()
+  const { reportError } = useCalendarErrorReporting()
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [hoveredDay, setHoveredDay] = useState<number | null>(null)
   const [hoveredAppointment, setHoveredAppointment] = useState<Appointment | null>(null)
@@ -117,12 +122,16 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
   const { daysInMonth, startingDayOfWeek } = monthData
 
   const previousMonth = useCallback(() => {
-    setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1))
-  }, [])
+    const newMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1)
+    setCurrentMonth(newMonth)
+    announce(`Navigated to ${format(newMonth, 'MMMM yyyy')}`)
+  }, [currentMonth, announce])
 
   const nextMonth = useCallback(() => {
-    setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1))
-  }, [])
+    const newMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1)
+    setCurrentMonth(newMonth)
+    announce(`Navigated to ${format(newMonth, 'MMMM yyyy')}`)
+  }, [currentMonth, announce])
 
   const isToday = (day: number) => {
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
@@ -144,7 +153,8 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
   const handleDateClick = useCallback((day: number) => {
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day, 12, 0, 0)
     onDateSelect(date)
-  }, [currentMonth, onDateSelect])
+    announce(`Selected ${format(date, 'EEEE, MMMM d, yyyy')}`)
+  }, [currentMonth, onDateSelect, announce])
 
   const handleDayDoubleClick = useCallback((day: number) => {
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day, 12, 0, 0)
@@ -202,68 +212,138 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
   // Check for conflicts before updating appointment
-  const checkAndUpdateAppointment = (appointmentId: number, newStartTime: string) => {
-    const appointment = appointments.find(apt => apt.id === appointmentId)
-    if (!appointment) return
-
-    // Create updated appointment for conflict checking
-    const updatedAppointment = {
-      ...appointment,
-      start_time: newStartTime,
-      id: appointmentId
-    }
-
-    // Analyze conflicts
-    const analysis = conflictManager.analyzeConflicts(
-      updatedAppointment,
-      appointments,
-      {
-        bufferTime: 15,
-        checkBarberAvailability: true,
-        workingHours: { start: 8, end: 20 },
-        allowAdjacent: false
+  const checkAndUpdateAppointment = async (appointmentId: number, newStartTime: string) => {
+    try {
+      const appointment = appointments.find(apt => apt.id === appointmentId)
+      if (!appointment) {
+        throw {
+          name: 'AppointmentNotFound',
+          message: `Appointment with ID ${appointmentId} not found`,
+          code: 'VALIDATION_ERROR',
+          recoverable: false
+        } as CalendarError
       }
-    )
 
-    if (analysis.hasConflicts && analysis.riskScore > 30) {
-      // Show conflict resolution modal
-      setConflictAnalysis(analysis)
-      setPendingUpdate({ appointmentId, newStartTime })
-      setShowConflictModal(true)
-    } else {
-      // No significant conflicts, proceed with update
-      onAppointmentUpdate?.(appointmentId, newStartTime)
+      // Create updated appointment for conflict checking
+      const updatedAppointment = {
+        ...appointment,
+        start_time: newStartTime,
+        id: appointmentId
+      }
+
+      // Analyze conflicts
+      const analysis = conflictManager.analyzeConflicts(
+        updatedAppointment,
+        appointments,
+        {
+          bufferTime: 15,
+          checkBarberAvailability: true,
+          workingHours: { start: 8, end: 20 },
+          allowAdjacent: false
+        }
+      )
+
+      if (analysis.hasConflicts && analysis.riskScore > 30) {
+        // Show conflict resolution modal
+        setConflictAnalysis(analysis)
+        setPendingUpdate({ appointmentId, newStartTime })
+        setShowConflictModal(true)
+      } else {
+        // No significant conflicts, proceed with update
+        if (onAppointmentUpdate) {
+          try {
+            await onAppointmentUpdate(appointmentId, newStartTime)
+          } catch (updateError: any) {
+            // Report error to monitoring
+            reportError(updateError, {
+              context: 'appointment-update',
+              appointmentId,
+              newStartTime,
+              originalStartTime: appointment.start_time
+            })
+            
+            // Re-throw with calendar-specific error
+            throw {
+              name: 'AppointmentUpdateFailed',
+              message: updateError.message || 'Failed to update appointment',
+              code: updateError.response?.status >= 500 ? 'SERVER_ERROR' : 'CALENDAR_SYNC_ERROR',
+              recoverable: true,
+              context: { appointmentId, newStartTime }
+            } as CalendarError
+          }
+        }
+      }
+    } catch (error: any) {
+      // Report to error tracking
+      reportError(error, {
+        context: 'checkAndUpdateAppointment',
+        appointmentId,
+        newStartTime
+      })
+      
+      // Show user-friendly error message
+      if (error.code === 'VALIDATION_ERROR') {
+        console.error('Validation error:', error.message)
+      } else {
+        console.error('Failed to update appointment:', error)
+        // You might want to show a toast or notification here
+      }
     }
   }
 
   // Handle conflict resolution
-  const handleConflictResolution = (resolution: ConflictResolution) => {
+  const handleConflictResolution = async (resolution: ConflictResolution) => {
     if (!pendingUpdate) return
 
-    let finalStartTime = pendingUpdate.newStartTime
-    let finalAppointmentId = pendingUpdate.appointmentId
+    try {
+      let finalStartTime = pendingUpdate.newStartTime
+      let finalAppointmentId = pendingUpdate.appointmentId
 
-    // Apply resolution changes
-    if (resolution.suggestedStartTime) {
-      finalStartTime = resolution.suggestedStartTime
+      // Apply resolution changes
+      if (resolution.suggestedStartTime) {
+        finalStartTime = resolution.suggestedStartTime
+      }
+      
+      if (onAppointmentUpdate) {
+        await onAppointmentUpdate(finalAppointmentId, finalStartTime)
+      }
+      
+      setShowConflictModal(false)
+      setConflictAnalysis(null)
+      setPendingUpdate(null)
+    } catch (error: any) {
+      reportError(error, {
+        context: 'conflict-resolution',
+        resolution,
+        pendingUpdate
+      })
+      
+      // Keep modal open and show error
+      console.error('Failed to apply conflict resolution:', error)
     }
-    
-    onAppointmentUpdate?.(finalAppointmentId, finalStartTime)
-    
-    setShowConflictModal(false)
-    setConflictAnalysis(null)
-    setPendingUpdate(null)
   }
 
   // Handle proceeding despite conflicts
-  const handleProceedAnyway = () => {
+  const handleProceedAnyway = async () => {
     if (!pendingUpdate) return
     
-    onAppointmentUpdate?.(pendingUpdate.appointmentId, pendingUpdate.newStartTime)
-    
-    setShowConflictModal(false)
-    setConflictAnalysis(null)
-    setPendingUpdate(null)
+    try {
+      if (onAppointmentUpdate) {
+        await onAppointmentUpdate(pendingUpdate.appointmentId, pendingUpdate.newStartTime)
+      }
+      
+      setShowConflictModal(false)
+      setConflictAnalysis(null)
+      setPendingUpdate(null)
+    } catch (error: any) {
+      reportError(error, {
+        context: 'proceed-anyway',
+        pendingUpdate,
+        conflicts: conflictAnalysis?.conflicts
+      })
+      
+      console.error('Failed to update appointment despite conflicts:', error)
+    }
   }
 
   // Handle cancelling the update
@@ -273,14 +353,25 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
     setPendingUpdate(null)
   }
 
+  // Keyboard navigation handler
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    keyboardNav.handleKeyDown(e, 'month')
+  }, [keyboardNav])
+
   return (
-    <div className={`w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 ${className}`}>
+    <div 
+      className={`w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm border ${isHighContrast ? 'border-2 border-black dark:border-white' : 'border-gray-200 dark:border-gray-700'} ${className}`}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      role="application"
+      aria-label="Calendar month view"
+    >
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
         <button
           onClick={previousMonth}
-          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-          aria-label="Previous month"
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+          aria-label={`Previous month, ${format(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1), 'MMMM yyyy')}`}
         >
           <ChevronLeftIcon className="w-5 h-5" />
         </button>
@@ -291,24 +382,31 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
         
         <button
           onClick={nextMonth}
-          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-          aria-label="Next month"
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+          aria-label={`Next month, ${format(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1), 'MMMM yyyy')}`}
         >
           <ChevronRightIcon className="w-5 h-5" />
         </button>
       </div>
 
       {/* Days of week header */}
-      <div className="grid grid-cols-7 border-b border-gray-200 dark:border-gray-700">
-        {dayNames.map(day => (
-          <div key={day} className="p-3 text-center text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800">
-            {day}
+      <div className="grid grid-cols-7 border-b border-gray-200 dark:border-gray-700" role="row">
+        {dayNames.map((day, index) => (
+          <div 
+            key={day} 
+            className="p-3 text-center text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800"
+            role="columnheader"
+            aria-label={['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][index]}
+          >
+            <abbr title={['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][index]} className="no-underline">
+              {day}
+            </abbr>
           </div>
         ))}
       </div>
 
       {/* Calendar grid */}
-      <div className="grid grid-cols-7">
+      <div className="grid grid-cols-7" role="grid" {...getGridProps()}>
         {/* Empty cells for days before month starts */}
         {Array.from({ length: startingDayOfWeek }).map((_, index) => (
           <div key={`empty-${index}`} className="h-32 border-b border-r border-gray-100 dark:border-gray-700" />
@@ -322,6 +420,13 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
           const hiddenCount = dayAppointments.length - 3
           const isPast = isPastDate(day)
           
+          const hasAppointments = dayAppointments.length > 0
+          const cellProps = getGridCellProps(
+            new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day),
+            hasAppointments,
+            isSelected(day)
+          )
+
           return (
             <div 
               key={day} 
@@ -339,12 +444,13 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
                 isDragging ? 'cursor-crosshair' : ''
               }`}
               onClick={() => {
-                if (!isDragging) {
+                if (!isDragging && !isPast) {
                   handleDateClick(day)
                   // Trigger create appointment on single click
                   onDayClick?.(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day))
                 }
               }}
+              {...cellProps}
               onDoubleClick={() => handleDayDoubleClick(day)}
               onMouseEnter={() => setHoveredDay(day)}
               onMouseLeave={() => setHoveredDay(null)}
@@ -497,18 +603,18 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
       )}
 
       {/* Legend */}
-      <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
+      <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between text-xs text-gray-600 dark:text-gray-400" role="region" aria-label="Calendar legend">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-green-500 rounded"></div>
+            <div className="w-3 h-3 bg-green-500 rounded" aria-hidden="true"></div>
             <span>Confirmed</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-yellow-500 rounded"></div>
+            <div className="w-3 h-3 bg-yellow-500 rounded" aria-hidden="true"></div>
             <span>Pending</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-blue-500 rounded"></div>
+            <div className="w-3 h-3 bg-blue-500 rounded" aria-hidden="true"></div>
             <span>Completed</span>
           </div>
           {isDragging && (
@@ -520,6 +626,16 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
         <div className="text-gray-500 dark:text-gray-400">
           💡 Drag appointments to reschedule • Click any day to add appointment
         </div>
+      </div>
+
+      {/* Screen reader live region */}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {keyboardNav.focusedDate && format(keyboardNav.focusedDate, 'EEEE, MMMM d, yyyy')}
       </div>
     </div>
   )
