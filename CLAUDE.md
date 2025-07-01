@@ -370,3 +370,229 @@ cd frontend && npm run validate-build
    - Nice-to-have features
    - Code refactoring
    - Test coverage improvements
+
+## 🧭 Function Reference Map
+
+### Authentication & Authorization
+- **Backend**: `backend/api/v1/auth.py`, `backend/utils/security.py`
+- **Frontend**: `frontend/src/lib/auth.ts`, `frontend/src/hooks/useAuth.ts`
+- **Middleware**: `backend/middleware/security.py`
+
+### Payment Processing
+- **Backend**: `backend/services/payment_service.py`, `backend/api/v1/endpoints/payments.py`
+- **Frontend**: `frontend/src/lib/stripe.ts`, `frontend/src/components/payment/`
+- **Webhooks**: `backend/api/v1/endpoints/webhooks.py`
+
+### Booking System
+- **Backend**: `backend/api/v1/bookings.py`, `backend/services/booking_service.py`
+- **Frontend**: `frontend/src/components/booking/`, `frontend/src/app/(public)/book/`
+- **Models**: `backend/models/booking.py`, `backend/models/appointment.py`
+
+### Analytics & Reporting
+- **Backend**: `backend/services/analytics_service.py`, `backend/api/v1/analytics.py`
+- **Frontend**: `frontend/src/components/analytics/`, `frontend/src/app/(auth)/analytics/`
+
+### Notifications
+- **Backend**: `backend/services/notification_service.py`
+- **Email**: `backend/services/email_service.py` (SendGrid)
+- **SMS**: `backend/services/sms_service.py` (Twilio)
+
+### Calendar Integration
+- **Backend**: `backend/services/google_calendar_service.py`
+- **Frontend**: `frontend/src/components/calendar/`
+- **Sync**: `backend/api/v1/endpoints/calendar.py`
+
+## 🛡️ Verification Protocol
+
+### Before Implementing ANY Feature:
+
+1. **Search for existing implementations**:
+   ```bash
+   # Search for similar features
+   grep -r "feature_name" backend/ frontend/
+   
+   # Find related components
+   find . -name "*feature*" -type f
+   
+   # Check for existing patterns
+   rg "pattern" --type py --type ts
+   ```
+
+2. **Verify dependencies**:
+   ```bash
+   # Backend dependencies
+   cat backend/requirements.txt | grep package_name
+   
+   # Frontend dependencies
+   cat frontend/package.json | grep package_name
+   ```
+
+3. **Check file existence before reading**:
+   ```bash
+   # Verify file exists
+   ls -la path/to/file
+   
+   # Check directory structure
+   tree -L 2 backend/services/
+   ```
+
+4. **Read actual function signatures**:
+   ```bash
+   # Don't guess - read the actual code
+   head -50 backend/services/payment_service.py
+   
+   # Check imports to understand dependencies
+   grep "^import\|^from" backend/services/payment_service.py
+   ```
+
+## 🚫 Do NOT Assume
+
+1. **Package Availability**:
+   - ALWAYS check `requirements.txt` or `package.json`
+   - NEVER assume a library is installed
+   - Verify exact version if version-specific features needed
+
+2. **File Locations**:
+   - Use search tools (`grep`, `find`, `rg`) first
+   - Don't guess directory structure
+   - Verify with `ls` before reading
+
+3. **Function Signatures**:
+   - Read the actual function definition
+   - Check parameter types and return values
+   - Look for docstrings and type hints
+
+4. **API Endpoints**:
+   - Check `backend/main.py` for router includes
+   - Verify exact endpoint paths in router files
+   - Don't assume REST conventions without checking
+
+## 🔍 Common Patterns & Conventions
+
+### API Calls (Frontend)
+```typescript
+// ALWAYS use the api client functions
+import { apiClient } from '@/lib/api';
+
+// DON'T use fetch directly
+// ❌ fetch('/api/endpoint')
+// ✅ apiClient.get('/endpoint')
+```
+
+### State Management
+```typescript
+// Server state: React Query
+import { useQuery } from '@tanstack/react-query';
+
+// Auth state: Context API
+import { useAuth } from '@/hooks/useAuth';
+
+// Local state: useState for UI-only state
+```
+
+### Error Handling
+```python
+# Backend: Use FastAPI's HTTPException
+from fastapi import HTTPException
+raise HTTPException(status_code=400, detail="Error message")
+
+# Frontend: Use error boundaries and try-catch
+try {
+  await apiClient.post('/endpoint', data);
+} catch (error) {
+  handleApiError(error);
+}
+```
+
+### Database Operations
+```python
+# Always use the service layer
+from services.user_service import UserService
+
+# Don't access models directly in API endpoints
+# ❌ db.query(User).filter(...)
+# ✅ UserService.get_user_by_email(email)
+```
+
+## 📝 Context Maintenance Tips
+
+1. **Use specific file references**:
+   ```
+   "Looking at backend/services/payment_service.py:45-67, 
+   I see the refund method signature..."
+   ```
+
+2. **Reference previous decisions**:
+   ```
+   "As established earlier when we reviewed the auth flow,
+   we're using JWT tokens with..."
+   ```
+
+3. **Maintain task continuity**:
+   ```
+   "Continuing with task #3 from our todo list: 
+   implementing the email notification template..."
+   ```
+
+4. **Checkpoint after complex operations**:
+   ```
+   "Summary of changes so far:
+   1. Added refund method to payment service
+   2. Created new API endpoint
+   3. Next: Update frontend to call new endpoint"
+   ```
+
+## 🤖 Hallucination Prevention Guidelines
+
+### 1. **Always Verify Before Acting**
+- Check if a file/function exists before referencing it
+- Read actual code instead of assuming implementations
+- Use search tools to find correct locations
+- Verify package installation before importing
+
+### 2. **Maintain Explicit Context**
+- Reference specific file paths and line numbers
+- Quote actual code when discussing implementations
+- Keep a running summary of changes made
+- Use TodoWrite to track multi-step processes
+
+### 3. **Ask When Uncertain**
+Instead of guessing:
+- "I need to check the exact location of the payment service"
+- "Let me verify the function signature before proceeding"
+- "I'll search for existing implementations first"
+
+### 4. **Use Verification Commands**
+```bash
+# Before reading a file
+ls -la path/to/file
+
+# Before using a function
+grep -n "function_name" file.py
+
+# Before importing a package
+cat requirements.txt | grep package
+
+# To understand structure
+find . -name "*.py" | grep service
+```
+
+### 5. **Common Hallucination Triggers to Avoid**
+- ❌ "This should be in the utils folder" (verify first)
+- ❌ "The function probably takes these parameters" (read the actual code)
+- ❌ "Next.js typically uses..." (check this specific project)
+- ✅ "Let me check where this is implemented"
+- ✅ "I'll verify the exact function signature"
+
+### 6. **Recovery from Confusion**
+If context is lost:
+1. Use `TodoRead` to check current task
+2. Review recent file changes with `git diff`
+3. Re-read the main files being modified
+4. Ask user for clarification rather than guessing
+
+# important-instruction-reminders
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
