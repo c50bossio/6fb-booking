@@ -1,0 +1,56 @@
+[run]
+# Source files to include in coverage
+source = .
+omit = 
+    venv/*
+    */venv/*
+    tests/*
+    */tests/*
+    test_*.py
+    */test_*.py
+    */__pycache__/*
+    */migrations/*
+    */alembic/*
+    setup.py
+    */site-packages/*
+    */distutils/*
+    create_admin_user.py
+    migrate.py
+
+[report]
+# Reporting options
+precision = 2
+show_missing = True
+skip_covered = False
+sort = Cover
+
+# Exclude lines from coverage
+exclude_lines =
+    # Standard pragma
+    pragma: no cover
+    
+    # Debug-only code
+    def __repr__
+    if self\.debug
+    
+    # Defensive programming
+    raise AssertionError
+    raise NotImplementedError
+    
+    # Non-runnable code
+    if 0:
+    if False:
+    if __name__ == .__main__.:
+    
+    # Type checking
+    if TYPE_CHECKING:
+    
+    # Abstract methods
+    @abstractmethod
+    @abc.abstractmethod
+
+[html]
+directory = coverage/backend-html
+
+[json]
+output = coverage/backend-coverage.json

@@ -1,0 +1,28 @@
+# OPTIONAL: Pre-commit hooks for duplicate detection
+# To enable: pre-commit install
+# To disable: pre-commit uninstall
+# Recommended: Run manually before phase completion instead
+
+repos:
+  - repo: local
+    hooks:
+      - id: check-duplicates
+        name: Check for duplicate features
+        entry: python backend-v2/utils/duplication_detector.py
+        language: system
+        pass_filenames: false
+        always_run: false  # Changed to optional
+        
+      - id: verify-feature-registry
+        name: Verify features are registered
+        entry: python backend-v2/utils/check_new_features.py
+        language: system
+        files: '\.(py|ts|tsx)$'
+        
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
