@@ -33,7 +33,7 @@ interface FeaturesGridProps {
   className?: string
 }
 
-// Features data (extracted from page-complex.tsx)
+// Features data (extracted from page.tsx)
 const features: Feature[] = [
   {
     name: 'Automated Payouts',

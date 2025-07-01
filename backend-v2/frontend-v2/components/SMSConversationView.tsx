@@ -70,7 +70,7 @@ export default function SMSConversationView({ onClose }: SMSConversationViewProp
         .map(msg => msg.id)
       
       if (unreadMessageIds.length > 0) {
-        await markSMSMessagesAsRead(conversationId, unreadMessageIds)
+        await markSMSMessagesAsRead(conversationId.toString())
         // Update local conversation state
         setConversations(prev => 
           prev.map(conv => 

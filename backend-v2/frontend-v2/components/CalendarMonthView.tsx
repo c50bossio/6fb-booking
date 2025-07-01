@@ -222,7 +222,8 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
           name: 'AppointmentNotFound',
           message: `Appointment with ID ${appointmentId} not found`,
           code: 'VALIDATION_ERROR',
-          recoverable: false
+          recoverable: false,
+          timestamp: new Date()
         } as CalendarError
       }
 
@@ -270,6 +271,7 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
               message: updateError.message || 'Failed to update appointment',
               code: updateError.response?.status >= 500 ? 'SERVER_ERROR' : 'CALENDAR_SYNC_ERROR',
               recoverable: true,
+              timestamp: new Date(),
               context: { appointmentId, newStartTime }
             } as CalendarError
           }
@@ -446,15 +448,22 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
               } ${
                 isDragging ? 'cursor-crosshair' : ''
               }`}
-              onClick={() => {
+              onClick={(e) => {
                 if (!isDragging && !isPast) {
+                  const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
+                  // Use unified interaction pattern - single click to select
                   handleDateClick(day)
-                  // Trigger create appointment on single click
-                  onDayClick?.(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day))
+                  onDayClick?.(date)
+                }
+              }}
+              onDoubleClick={(e) => {
+                if (!isPast) {
+                  const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
+                  // Double click to create appointment
+                  onDayDoubleClick?.(date)
                 }
               }}
               {...cellProps}
-              onDoubleClick={() => handleDayDoubleClick(day)}
               onMouseEnter={() => setHoveredDay(day)}
               onMouseLeave={() => setHoveredDay(null)}
               title={isPast ? 'Past date' : isDragging ? 'Drop to reschedule' : 'Click to create appointment'}
@@ -564,10 +573,21 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
                 )}
               </div>
 
-              {/* Hover indicator */}
+              {/* Enhanced hover indicator with better UX */}
               {!isPast && hoveredDay === day && (
-                <div className="absolute bottom-1 right-1 text-xs text-primary-600 dark:text-primary-400 font-medium">
-                  + Add appointment
+                <div className="absolute inset-0 bg-primary-50 dark:bg-primary-900/20 border-2 border-primary-300 dark:border-primary-700 rounded transition-all duration-150 pointer-events-none">
+                  <div className="absolute bottom-1 right-1 text-xs text-primary-600 dark:text-primary-400 font-medium bg-white dark:bg-gray-800 px-1 rounded shadow-sm">
+                    Click to select • Double-click to create
+                  </div>
+                </div>
+              )}
+              
+              {/* Visual feedback for drag operations */}
+              {dragOverDay === day && draggedAppointment && !isPast && (
+                <div className="absolute inset-0 bg-green-100 dark:bg-green-900/30 border-2 border-green-500 border-dashed rounded animate-pulse pointer-events-none">
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-green-500 text-white px-2 py-1 rounded text-xs font-medium">
+                    Drop to reschedule
+                  </div>
                 </div>
               )}
             </div>

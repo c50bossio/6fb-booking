@@ -2,20 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { getProfile, changePassword, updateUserTimezone, updateUserProfile } from '@/lib/api'
+import { getProfile, changePassword, updateUserTimezone, updateUserProfile, type User } from '@/lib/api'
 import TimezoneSelector from '@/components/TimezoneSelector'
-
-interface User {
-  id?: string
-  email: string
-  name: string
-  timezone?: string
-  role?: string
-  createdAt?: string
-  lastLogin?: string
-  isActive?: boolean
-  emailVerified?: boolean
-}
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -346,34 +334,14 @@ export default function ProfilePage() {
                       Contact an administrator to change your role
                     </p>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">Account Status</label>
-                    <p className="mt-1">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        user.isActive ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
-                      }`}>
-                        {user.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                    </p>
-                  </div>
+                  {/* Account status removed - not available in current API */}
                   {user.id && (
                     <div>
                       <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">User ID</label>
                       <p className="mt-1 text-gray-900 dark:text-white font-mono text-sm">{user.id}</p>
                     </div>
                   )}
-                  {user.createdAt && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">Member Since</label>
-                      <p className="mt-1 text-gray-900 dark:text-white">
-                        {new Date(user.createdAt).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                      </p>
-                    </div>
-                  )}
+                  {/* Member since removed - not available in current API */}
                 </div>
               </div>
             )}
@@ -481,25 +449,7 @@ export default function ProfilePage() {
 
             {/* Additional Security Info */}
             <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Security Information</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Email Verified</span>
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    user.emailVerified ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
-                  }`}>
-                    {user.emailVerified ? 'Verified' : 'Unverified'}
-                  </span>
-                </div>
-                {user.lastLogin && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Last Login</span>
-                    <span className="text-sm text-gray-900 dark:text-white">
-                      {new Date(user.lastLogin).toLocaleString()}
-                    </span>
-                  </div>
-                )}
-              </div>
+              {/* Security information removed - not available in current API */}
             </div>
           </div>
         )}

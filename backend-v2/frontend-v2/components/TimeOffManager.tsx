@@ -191,7 +191,11 @@ export default function TimeOffManager({ barberId, onSuccess, onError }: TimeOff
             <div className="flex flex-col sm:flex-row gap-3">
               <Select
                 value={viewFilter}
-                onChange={(e) => setViewFilter(e.target.value as any)}
+                onChange={(value) => {
+                  if (value && !Array.isArray(value)) {
+                    setViewFilter(value as any)
+                  }
+                }}
                 options={[
                   { value: 'all', label: 'All Requests' },
                   { value: 'upcoming', label: 'Upcoming' },
@@ -427,9 +431,12 @@ function AddTimeOffModal({
             <Select
               label="Reason"
               value={formData.reason}
-              onChange={(e) => handleInputChange('reason', e.target.value)}
+              onChange={(value) => {
+                if (value && !Array.isArray(value)) {
+                  handleInputChange('reason', value)
+                }
+              }}
               options={TIME_OFF_REASONS}
-              required
             />
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

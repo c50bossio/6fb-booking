@@ -127,7 +127,7 @@
     "jest": "^30.0.0",
     "jest-environment-jsdom": "^30.0.0",
     "nodemon": "^3.1.10",
-    "puppeteer": "^24.10.2",
+    "puppeteer": "^24.11.2",
     "typescript": "^5.8.3",
     "webpack-bundle-analyzer": "^4.10.2"
   }

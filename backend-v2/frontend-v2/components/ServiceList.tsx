@@ -51,7 +51,7 @@ export default function ServiceList({ services, onEdit, onDelete, onManagePricin
     const aVal = a[sortField]
     const bVal = b[sortField]
     
-    if (aVal === bVal) return 0
+    if (aVal === bVal || aVal === undefined || bVal === undefined) return 0
     
     const comparison = aVal < bVal ? -1 : 1
     return sortDirection === 'asc' ? comparison : -comparison

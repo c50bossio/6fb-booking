@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import Calendar from '@/components/Calendar'
 import CalendarWeekView from '@/components/CalendarWeekView'
 import CalendarDayView from '@/components/CalendarDayView'
+import { useResponsiveCalendar } from '@/hooks/useResponsiveCalendar'
+import ResponsiveCalendar from '@/components/ResponsiveCalendar'
 import CalendarMonthView from '@/components/CalendarMonthView'
 import CalendarSync from '@/components/CalendarSync'
 import CalendarConflictResolver from '@/components/CalendarConflictResolver'
@@ -15,12 +17,19 @@ import { Card, CardContent, CardHeader } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { LoadingButton, ErrorDisplay } from '@/components/LoadingStates'
 import { getMyBookings, cancelBooking, rescheduleBooking, getProfile, type BookingResponse } from '@/lib/api'
-import { toastError, toastSuccess } from '@/hooks/use-toast'
+import { useCalendarOptimisticUpdates } from '@/lib/calendar-optimistic-updates'
+import { useCalendarApiEnhanced } from '@/lib/calendar-api-enhanced'
+import { useRequestDeduplication } from '@/lib/request-deduplication'
+import { toastError, toastSuccess, toastInfo } from '@/hooks/use-toast'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { CalendarErrorBoundary } from '@/components/calendar/CalendarErrorBoundary'
 import { CalendarSkeleton, CalendarEmptyState, CalendarErrorState } from '@/components/calendar/CalendarLoadingStates'
 import { useCalendarPerformance } from '@/hooks/useCalendarPerformance'
-import type { Appointment, CalendarView, User } from '@/types/calendar'
+import { useCalendarInteractionManager } from '@/lib/calendar-interaction-manager'
+import { CalendarVisualFeedback, useCalendarVisualFeedback } from '@/components/calendar/CalendarVisualFeedback'
+import { CalendarMobileMenu } from '@/components/calendar/CalendarMobileMenu'
+import { CalendarNetworkStatus, CalendarRequestQueue } from '@/components/calendar/CalendarNetworkStatus'
+import type { Appointment, CalendarView, User, CalendarInteraction } from '@/types/calendar'
 import { 
   formatDateForAPI, 
   parseAPIDate, 
@@ -45,12 +54,10 @@ import {
 
 export default function CalendarPage() {
   const router = useRouter()
+  const responsive = useResponsiveCalendar()
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date())
-  const [bookings, setBookings] = useState<BookingResponse[]>([])
   const [filteredBookings, setFilteredBookings] = useState<BookingResponse[]>([])
   const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [cancelingId, setCancelingId] = useState<number | null>(null)
   const [viewMode, setViewMode] = useState<CalendarView>('week')
   const [selectedBarberId, setSelectedBarberId] = useState<number | 'all'>('all')
@@ -63,29 +70,145 @@ export default function CalendarPage() {
   const [todayRevenue, setTodayRevenue] = useState(0)
   const [todayAppointmentCount, setTodayAppointmentCount] = useState(0)
 
+  // Enhanced API integration with optimistic updates
+  const {
+    appointments: bookings,
+    loading,
+    error,
+    setAppointments,
+    refreshAppointments: refreshOptimistic
+  } = useCalendarOptimisticUpdates()
+  
+  const {
+    getAppointments,
+    cancelAppointment: cancelOptimistic,
+    rescheduleAppointment: rescheduleOptimistic,
+    moveAppointment,
+    refreshAppointments,
+    getDebugStats
+  } = useCalendarApiEnhanced()
+  
+  const { executeRequest, abortRequests, clearCache } = useRequestDeduplication()
+
   // Performance optimizations
   const { measureRender, optimizedAppointmentFilter } = useCalendarPerformance()
+  
+  // Visual feedback system
+  const { 
+    visualState, 
+    dragState, 
+    updateVisualState, 
+    updateDragState,
+    clearAllStates 
+  } = useCalendarVisualFeedback()
+  
+  // Unified interaction management
+  const { handlers: interactionHandlers } = useCalendarInteractionManager(
+    {
+      singleClickAction: 'select',
+      doubleClickAction: 'create',
+      enableTouchDrag: true,
+      enableKeyboardNavigation: true,
+      announceActions: true,
+      showHoverStates: true,
+      highlightDropZones: true,
+      animateTransitions: true
+    },
+    handleCalendarInteraction,
+    updateVisualState,
+    (message, priority) => {
+      // Announce to screen readers via toast system
+      if (priority === 'assertive') {
+        toastInfo('Calendar Action', message)
+      }
+    }
+  )
+  
+  // Handle unified calendar interactions
+  function handleCalendarInteraction(interaction: CalendarInteraction) {
+    switch (interaction.type) {
+      case 'select':
+        if (interaction.target === 'date' && interaction.data instanceof Date) {
+          setSelectedDate(interaction.data)
+        } else if (interaction.target === 'appointment') {
+          // Handle appointment selection
+          const appointment = interaction.data as Appointment
+          // Could show appointment details modal here
+        }
+        break
+        
+      case 'create':
+        if (interaction.target === 'date' && interaction.data instanceof Date) {
+          setSelectedDate(interaction.data)
+          setPreselectedTime('09:00')
+          setShowCreateModal(true)
+        } else if (interaction.target === 'time-slot') {
+          const date = interaction.data as Date
+          setSelectedDate(date)
+          setPreselectedTime(format(date, 'HH:mm'))
+          setShowCreateModal(true)
+        }
+        break
+        
+      case 'edit':
+        if (interaction.target === 'appointment') {
+          const appointment = interaction.data as Appointment
+          // Handle appointment editing
+          console.log('Edit appointment:', appointment)
+        }
+        break
+        
+      case 'move':
+        if (interaction.data?.appointment && interaction.data?.newDate) {
+          const { appointment, newDate } = interaction.data
+          handleAppointmentUpdate(appointment.id, newDate.toISOString())
+        }
+        break
+        
+      case 'delete':
+        if (interaction.target === 'appointment') {
+          const appointmentIds = Array.isArray(interaction.data) 
+            ? interaction.data 
+            : [interaction.data]
+          
+          // Handle bulk delete
+          appointmentIds.forEach(id => {
+            if (typeof id === 'number') {
+              handleCancelBooking(id)
+            }
+          })
+        }
+        break
+    }
+  }
 
-  // Load user profile and bookings
+  // Load user profile and bookings with enhanced API
   useEffect(() => {
     const loadData = async () => {
       try {
-        setLoading(true)
-        const [userProfile, userBookings] = await Promise.all([
-          getProfile(),
-          getMyBookings()
-        ])
+        console.log('📅 Loading calendar data with enhanced API...')
+        
+        // Load user profile with request deduplication
+        const userProfile = await executeRequest(
+          {
+            key: 'get-profile',
+            endpoint: '/profile',
+            method: 'GET'
+          },
+          () => getProfile()
+        )
         
         setUser(userProfile)
-        setBookings(userBookings.bookings || [])
-        setError(null)
+        
+        // Load appointments with optimistic updates manager
+        const userBookings = await getAppointments()
+        setAppointments(userBookings.bookings || [])
+        
+        console.log('✅ Calendar data loaded successfully')
       } catch (err) {
-        console.error('Failed to load calendar data:', err)
+        console.error('❌ Failed to load calendar data:', err)
         const errorMessage = 'Failed to load calendar data. Please try again.'
-        setError(errorMessage)
         toastError('Loading Error', errorMessage)
-      } finally {
-        setLoading(false)
       }
     }
 
@@ -158,16 +281,16 @@ export default function CalendarPage() {
 
     try {
       setCancelingId(bookingId)
-      await cancelBooking(bookingId)
+      console.log(`🗑️ Canceling appointment ${bookingId} with optimistic update...`)
       
-      // Refresh bookings
-      const updatedBookings = await getMyBookings()
-      setBookings(updatedBookings.bookings || [])
+      // Use optimistic cancel with automatic rollback on failure
+      await cancelOptimistic(bookingId)
+      
       toastSuccess('Appointment Canceled', 'Your appointment has been successfully canceled.')
+      console.log(`✅ Appointment ${bookingId} canceled successfully`)
     } catch (err) {
-      console.error('Failed to cancel booking:', err)
+      console.error('❌ Failed to cancel booking:', err)
       const errorMessage = 'Failed to cancel appointment. Please try again.'
-      setError(errorMessage)
       toastError('Cancellation Failed', errorMessage)
     } finally {
       setCancelingId(null)
@@ -187,19 +310,17 @@ export default function CalendarPage() {
       
       // Show confirmation dialog
       if (confirm(`Reschedule this appointment to ${format(newDate, 'MMM d, h:mm a')}?`)) {
-        // Update the appointment via API with separate date and time parameters
-        await rescheduleBooking(appointmentId, dateStr, timeStr)
+        console.log(`📅 Rescheduling appointment ${appointmentId} with optimistic update...`)
         
-        // Refresh the bookings
-        const updatedBookings = await getMyBookings()
-        setBookings(updatedBookings.bookings || [])
+        // Use enhanced API with optimistic updates and automatic rollback
+        await rescheduleOptimistic(appointmentId, dateStr, timeStr)
         
         toastSuccess('Appointment Rescheduled', 'Your appointment has been successfully rescheduled.')
+        console.log(`✅ Appointment ${appointmentId} rescheduled successfully`)
       }
     } catch (err) {
-      console.error('Failed to reschedule appointment:', err)
+      console.error('❌ Failed to reschedule appointment:', err)
       const errorMessage = 'Failed to reschedule appointment. Please try again.'
-      setError(errorMessage)
       toastError('Reschedule Failed', errorMessage)
     }
   }
@@ -241,38 +362,43 @@ export default function CalendarPage() {
 
   return (
     <ErrorBoundary>
-      <div className="p-6 space-y-6">
+      <div className="calendar-page p-6 space-y-6 md:p-6 sm:p-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Calendar</h1>
-          <p className="text-gray-600 dark:text-gray-400">
+      <div className="calendar-header flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="order-1 lg:order-1">
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">Calendar</h1>
+          <p className="text-gray-600 dark:text-gray-400 text-sm lg:text-base">
             Manage your appointments and schedule
           </p>
         </div>
         
-        {/* Today's Stats */}
-        <div className="flex items-center gap-6 mr-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+        {/* Today's Stats - Responsive */}
+        <div className="calendar-stats order-3 lg:order-2 flex flex-row lg:flex-row items-center justify-center lg:justify-start gap-4 lg:gap-6">
+          <div className="calendar-stat-item text-center p-3 lg:p-0 bg-gray-50 dark:bg-gray-800 lg:bg-transparent rounded-lg lg:rounded-none flex-1 lg:flex-initial">
+            <div className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
               {todayAppointmentCount}
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">Today's Appointments</div>
+            <div className="text-xs lg:text-sm text-gray-500 dark:text-gray-400">Today's Appointments</div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+          <div className="calendar-stat-item text-center p-3 lg:p-0 bg-gray-50 dark:bg-gray-800 lg:bg-transparent rounded-lg lg:rounded-none flex-1 lg:flex-initial">
+            <div className="text-xl lg:text-2xl font-bold text-green-600 dark:text-green-400">
               ${todayRevenue.toFixed(2)}
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">Today's Revenue</div>
+            <div className="text-xs lg:text-sm text-gray-500 dark:text-gray-400">Today's Revenue</div>
+          </div>
+          
+          {/* Network Status Indicator */}
+          <div className="hidden lg:block">
+            <CalendarNetworkStatus />
           </div>
         </div>
         
-        <div className="flex items-center gap-3">
-          {/* View Mode Switcher */}
-          <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+        <div className="order-2 lg:order-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+          {/* View Mode Switcher - Mobile Optimized */}
+          <div className="calendar-view-switcher flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1 w-full sm:w-auto">
             <button
               onClick={() => setViewMode('day')}
-              className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+              className={`calendar-nav-button flex-1 sm:flex-initial px-4 py-2 text-sm font-medium rounded transition-colors min-h-[44px] ${
                 viewMode === 'day' 
                   ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
@@ -282,7 +408,7 @@ export default function CalendarPage() {
             </button>
             <button
               onClick={() => setViewMode('week')}
-              className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+              className={`calendar-nav-button flex-1 sm:flex-initial px-4 py-2 text-sm font-medium rounded transition-colors min-h-[44px] ${
                 viewMode === 'week' 
                   ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
@@ -292,7 +418,7 @@ export default function CalendarPage() {
             </button>
             <button
               onClick={() => setViewMode('month')}
-              className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+              className={`calendar-nav-button flex-1 sm:flex-initial px-4 py-2 text-sm font-medium rounded transition-colors min-h-[44px] ${
                 viewMode === 'month' 
                   ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
@@ -302,57 +428,66 @@ export default function CalendarPage() {
             </button>
           </div>
           
-          {/* Action Buttons */}
-          <div className="flex items-center gap-2">
+          {/* Action Buttons - Mobile Optimized */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
             <Button 
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2"
+              className="calendar-action-button flex items-center justify-center gap-2 min-h-[44px] w-full sm:w-auto"
             >
               <PlusIcon className="w-4 h-4" />
-              New Appointment
+              <span className="hidden sm:inline">New Appointment</span>
+              <span className="sm:hidden">New</span>
             </Button>
             
-            {/* Google Calendar Sync Button - Only for barbers */}
+            {/* Google Calendar Sync Button - Only for barbers - Mobile Responsive */}
             {user?.role === 'barber' && (
-              <>
+              <div className="hidden sm:flex items-center gap-2">
                 <Button 
                   variant="outline"
                   onClick={() => setShowSyncPanel(!showSyncPanel)}
-                  className="flex items-center gap-2"
+                  className="calendar-action-button flex items-center gap-2 min-h-[44px]"
                 >
                   <ArrowsRightLeftIcon className="w-4 h-4" />
-                  Sync
+                  <span className="hidden lg:inline">Sync</span>
                 </Button>
                 
                 <Button 
                   variant="outline"
                   onClick={() => setShowConflictResolver(!showConflictResolver)}
-                  className="flex items-center gap-2"
+                  className="calendar-action-button flex items-center gap-2 min-h-[44px]"
                 >
                   <ExclamationTriangleIcon className="w-4 h-4" />
-                  Conflicts
+                  <span className="hidden lg:inline">Conflicts</span>
                 </Button>
                 
                 <Button 
                   variant="outline"
                   onClick={() => router.push('/barber-availability')}
-                  className="flex items-center gap-2"
+                  className="calendar-action-button flex items-center gap-2 min-h-[44px]"
                 >
                   <CalendarDaysIcon className="w-4 h-4" />
-                  Availability
+                  <span className="hidden lg:inline">Availability</span>
                 </Button>
-              </>
+              </div>
             )}
             
             {/* Recurring Appointments Button - For all users */}
             <Button 
               variant="outline"
               onClick={() => router.push('/recurring')}
-              className="flex items-center gap-2"
+              className="calendar-action-button flex items-center justify-center gap-2 min-h-[44px] w-full sm:w-auto"
             >
               <ClockIcon className="w-4 h-4" />
-              Recurring
+              <span className="hidden sm:inline">Recurring</span>
+              <span className="sm:hidden">Recurring</span>
             </Button>
+            
+            {/* Mobile menu for additional options */}
+            <CalendarMobileMenu
+              user={user}
+              onSyncToggle={() => setShowSyncPanel(!showSyncPanel)}
+              onConflictToggle={() => setShowConflictResolver(!showConflictResolver)}
+            />
           </div>
         </div>
       </div>
@@ -481,17 +616,14 @@ export default function CalendarPage() {
         preselectedDate={selectedDate || undefined}
         preselectedTime={preselectedTime}
         onSuccess={async () => {
-          // Refresh appointments after successful creation
-          console.log('📅 Appointment created, refreshing calendar...')
+          // Refresh appointments after successful creation using enhanced API
+          console.log('📅 Appointment created, refreshing calendar with enhanced API...')
           try {
-            // Add a small delay to ensure database transaction is committed
-            await new Promise(resolve => setTimeout(resolve, 200))
-            
-            const userBookings = await getMyBookings()
-            console.log('📊 Fetched bookings:', userBookings)
-            setBookings(userBookings.bookings || [])
+            // Use enhanced refresh that automatically handles optimistic updates
+            await refreshAppointments()
             setPreselectedTime(undefined)
-            console.log('✅ Calendar refreshed with', userBookings.bookings?.length || 0, 'appointments')
+            
+            console.log('✅ Calendar refreshed successfully with optimistic updates')
             
             // Show success notification
             toastSuccess('Appointment Created', 'Your appointment has been successfully created and added to the calendar.')
@@ -518,6 +650,17 @@ export default function CalendarPage() {
           setPendingDate(null)
         }}
       />
+      
+      {/* Visual feedback overlay */}
+      <CalendarVisualFeedback
+        visualState={visualState}
+        dragState={dragState}
+        enableAnimations={true}
+      />
+      
+      {/* Debug request queue (development only) */}
+      <CalendarRequestQueue />
+      
       </div>
     </ErrorBoundary>
   )

@@ -258,3 +258,178 @@ export interface CalendarPreferences {
   timeFormat: '12h' | '24h'
   theme: 'light' | 'dark' | 'auto'
 }
+
+// Enhanced UX interaction types for unified calendar experience
+export interface CalendarInteraction {
+  type: 'select' | 'create' | 'edit' | 'move' | 'delete'
+  target: 'date' | 'appointment' | 'time-slot'
+  data?: any
+  event?: React.MouseEvent | React.KeyboardEvent | React.TouchEvent
+}
+
+// Visual states for improved UX
+export interface VisualState {
+  hoveredDate: Date | null
+  hoveredAppointment: Appointment | null
+  selectedAppointments: Set<number>
+  highlightedTimeSlots: Date[]
+  isSelectionMode: boolean
+  dragOverTarget: {
+    type: 'date' | 'time-slot'
+    date: Date
+    timeSlot?: { hour: number; minute: number }
+  } | null
+}
+
+// Enhanced event handlers for unified interaction
+export interface CalendarEventHandlers {
+  // Unified click handlers - standardized across all views
+  onDateClick: (date: Date, event: React.MouseEvent) => void
+  onDateDoubleClick: (date: Date, event: React.MouseEvent) => void
+  onAppointmentClick: (appointment: Appointment, event: React.MouseEvent) => void
+  onAppointmentDoubleClick: (appointment: Appointment, event: React.MouseEvent) => void
+  
+  // Keyboard navigation for accessibility
+  onKeyDown: (event: React.KeyboardEvent) => void
+  
+  // Hover states for better visual feedback
+  onMouseEnter: (target: Date | Appointment, event: React.MouseEvent) => void
+  onMouseLeave: (target: Date | Appointment, event: React.MouseEvent) => void
+  
+  // Touch gestures for mobile optimization
+  onTouchStart: (event: React.TouchEvent) => void
+  onTouchMove: (event: React.TouchEvent) => void
+  onTouchEnd: (event: React.TouchEvent) => void
+  
+  // Enhanced drag and drop with visual feedback
+  onDragStart: (appointment: Appointment, event: React.DragEvent) => void
+  onDragEnter: (target: Date, event: React.DragEvent) => void
+  onDragOver: (target: Date, event: React.DragEvent) => void
+  onDragLeave: (target: Date, event: React.DragEvent) => void
+  onDrop: (appointment: Appointment, target: Date, event: React.DragEvent) => void
+  onDragEnd: (event: React.DragEvent) => void
+}
+
+// Enhanced accessibility state
+export interface AccessibilityState {
+  announcements: string[]
+  focusedDate: Date | null
+  keyboardNavigation: boolean
+  highContrast: boolean
+  screenReaderMode: boolean
+  focusedAppointment: Appointment | null
+  ariaLiveRegion: string
+}
+
+// Performance monitoring interface
+export interface CalendarPerformanceMetrics {
+  renderTime: number
+  appointmentCount: number
+  memoryUsage?: number
+  lastRenderTimestamp: number
+  cacheHitRate: number
+  componentName: string
+  interactionLatency: number
+  dragPerformance?: {
+    startTime: number
+    moveCount: number
+    averageFrameTime: number
+  }
+}
+
+// Enhanced error interface
+export interface CalendarError extends Error {
+  code: string
+  context?: Record<string, any>
+  recoverable: boolean
+  userMessage?: string
+  timestamp: Date
+  componentStack?: string
+}
+
+// Action types for state management
+export type CalendarAction = 
+  | { type: 'SET_APPOINTMENTS'; payload: Appointment[] }
+  | { type: 'ADD_APPOINTMENT'; payload: Appointment }
+  | { type: 'UPDATE_APPOINTMENT'; payload: { id: number; updates: Partial<Appointment> } }
+  | { type: 'DELETE_APPOINTMENT'; payload: number }
+  | { type: 'SET_VIEW'; payload: CalendarView }
+  | { type: 'SET_SELECTED_DATE'; payload: Date | null }
+  | { type: 'SET_CURRENT_DATE'; payload: Date }
+  | { type: 'SET_SELECTED_BARBER'; payload: number | 'all' }
+  | { type: 'SET_VISUAL_STATE'; payload: Partial<VisualState> }
+  | { type: 'SET_DRAG_STATE'; payload: Partial<DragState> }
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'SET_ERROR'; payload: CalendarError | null }
+  | { type: 'TOGGLE_MODAL'; payload: { modal: string; open: boolean } }
+  | { type: 'SET_ACCESSIBILITY_STATE'; payload: Partial<AccessibilityState> }
+
+// Constants for consistent UX behavior
+export const CALENDAR_CONSTANTS = {
+  // Timing
+  DRAG_THRESHOLD: 10, // pixels
+  LONG_PRESS_DELAY: 500, // milliseconds  
+  DOUBLE_CLICK_DELAY: 300, // milliseconds
+  HOVER_DELAY: 150, // milliseconds
+  
+  // Sizing (accessibility compliant)
+  MIN_TOUCH_TARGET: 44, // pixels (WCAG AAA)
+  TIME_SLOT_HEIGHT: 40, // pixels
+  APPOINTMENT_MIN_HEIGHT: 24, // pixels
+  
+  // Colors (consistent with status types)
+  STATUS_COLORS: {
+    pending: 'bg-yellow-500 border-yellow-600 text-white',
+    confirmed: 'bg-green-500 border-green-600 text-white', 
+    scheduled: 'bg-green-500 border-green-600 text-white',
+    completed: 'bg-blue-500 border-blue-600 text-white',
+    cancelled: 'bg-red-500 border-red-600 text-white',
+    no_show: 'bg-gray-500 border-gray-600 text-white'
+  },
+  
+  // Animation durations for smooth UX
+  ANIMATION_DURATION: {
+    fast: 150,
+    normal: 300,
+    slow: 500
+  },
+  
+  // Z-index layers for proper stacking
+  Z_INDEX: {
+    BASE: 1,
+    HOVER: 10,
+    DRAG_GHOST: 50,
+    MODAL: 1000,
+    TOOLTIP: 1050
+  }
+} as const
+
+// Component display names for debugging
+export const CALENDAR_COMPONENT_NAMES = {
+  CALENDAR_PAGE: 'CalendarPage',
+  MONTH_VIEW: 'CalendarMonthView', 
+  WEEK_VIEW: 'CalendarWeekView',
+  DAY_VIEW: 'CalendarDayView',
+  APPOINTMENT_MODAL: 'CreateAppointmentModal',
+  TIME_PICKER: 'TimePickerModal',
+  CONFLICT_RESOLVER: 'ConflictResolutionModal'
+} as const
+
+// Hook return types for calendar functionality
+export interface UseCalendarReturn {
+  state: CalendarState & {
+    visualState: VisualState
+    accessibilityState: AccessibilityState  
+    dragState: DragState
+  }
+  handlers: CalendarEventHandlers
+  utils: {
+    getAppointmentsForDate: (date: Date) => Appointment[]
+    getAppointmentsForTimeSlot: (date: Date, hour: number, minute: number) => Appointment[]
+    isDateAvailable: (date: Date) => boolean
+    formatAppointmentTime: (appointment: Appointment) => string
+    getStatusColor: (status: AppointmentStatus) => string
+    validateAppointmentTime: (startTime: Date, duration: number) => ValidationResult
+    announceToScreenReader: (message: string, priority?: 'polite' | 'assertive') => void
+  }
+}

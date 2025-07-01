@@ -40,6 +40,8 @@ export function useCalendarPerformance(): CalendarPerformanceHook {
   const cacheHitsRef = useRef(0)
   const cacheMissesRef = useRef(0)
   const lastClearRef = useRef(Date.now())
+  const intervalRefs = useRef<Set<NodeJS.Timeout>>(new Set())
+  const timeoutRefs = useRef<Set<NodeJS.Timeout>>(new Set())
 
   // Measure component render performance with throttling
   const measureRender = useCallback((componentName: string) => {
@@ -129,10 +131,17 @@ export function useCalendarPerformance(): CalendarPerformanceHook {
       
       cacheRef.current.set(cacheKey, sorted)
       
-      // Aggressive cache management
-      if (cacheRef.current.size > 20) {
-        const keysToDelete = Array.from(cacheRef.current.keys()).slice(0, 10)
+          // Enhanced cache management with LRU-style eviction
+      if (cacheRef.current.size > 50) {
+        // Clear oldest entries, keeping most recent 25
+        const entries = Array.from(cacheRef.current.entries())
+        const keysToDelete = entries.slice(0, entries.length - 25).map(([key]) => key)
         keysToDelete.forEach(key => cacheRef.current.delete(key))
+        
+        // Reset counters proportionally
+        const retainRatio = 25 / entries.length
+        cacheHitsRef.current = Math.floor(cacheHitsRef.current * retainRatio)
+        cacheMissesRef.current = Math.floor(cacheMissesRef.current * retainRatio)
       }
       
       return sorted
@@ -191,39 +200,69 @@ export function useCalendarPerformance(): CalendarPerformanceHook {
     }
   }, [])
 
-  // Debounced callback for expensive operations
+  // Debounced callback for expensive operations with timeout tracking
   const debounceCallback = useCallback((callback: Function, delay: number) => {
     let timeoutId: NodeJS.Timeout
     
     return (...args: any[]) => {
-      clearTimeout(timeoutId)
-      timeoutId = setTimeout(() => callback(...args), delay)
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+        timeoutRefs.current.delete(timeoutId)
+      }
+      
+      timeoutId = setTimeout(() => {
+        callback(...args)
+        timeoutRefs.current.delete(timeoutId)
+      }, delay)
+      
+      timeoutRefs.current.add(timeoutId)
     }
   }, [])
 
-  // Monitor memory usage in development
+  // Clear cache function
+  const clearCache = useCallback(() => {
+    cacheRef.current.clear()
+    cacheHitsRef.current = 0
+    cacheMissesRef.current = 0
+    lastClearRef.current = Date.now()
+  }, [])
+
+  // Monitor memory usage in development with proper cleanup
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development' && 'memory' in performance) {
+    if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined' && 'memory' in performance) {
       const interval = setInterval(() => {
         const memInfo = (performance as any).memory
-        if (memInfo) {
+        if (memInfo && metricsRef.current) {
           metricsRef.current = {
             ...metricsRef.current,
             memoryUsage: memInfo.usedJSHeapSize / 1024 / 1024, // MB
             renderTime: metricsRef.current?.renderTime || 0,
-            appointmentCount: metricsRef.current?.appointmentCount || 0
+            appointmentCount: metricsRef.current?.appointmentCount || 0,
+            lastRenderTimestamp: metricsRef.current?.lastRenderTimestamp || Date.now(),
+            cacheHitRate: metricsRef.current?.cacheHitRate || 0
           }
           
           // Warn if memory usage is high
-          if (memInfo.usedJSHeapSize > 100 * 1024 * 1024) { // 100MB
-            console.warn('High memory usage detected:', memInfo.usedJSHeapSize / 1024 / 1024, 'MB')
+          if (memInfo.usedJSHeapSize > 75 * 1024 * 1024) { // Reduced threshold to 75MB
+            console.warn('High memory usage detected:', Math.round(memInfo.usedJSHeapSize / 1024 / 1024), 'MB')
+            
+            // Trigger emergency cleanup if memory usage is critical
+            if (memInfo.usedJSHeapSize > 150 * 1024 * 1024) { // 150MB critical threshold
+              console.warn('Critical memory usage - triggering emergency cleanup')
+              clearCache()
+            }
           }
         }
       }, 5000) // Check every 5 seconds
       
-      return () => clearInterval(interval)
+      intervalRefs.current.add(interval)
+      
+      return () => {
+        clearInterval(interval)
+        intervalRefs.current.delete(interval)
+      }
     }
-  }, [])
+  }, [clearCache])
 
   // New optimized appointments by day function
   const optimizedAppointmentsByDay = useCallback((appointments: any[], dateRange: { start: Date; end: Date }) => {
@@ -280,36 +319,92 @@ export function useCalendarPerformance(): CalendarPerformanceHook {
     }
   }, [])
   
-  // Throttle function for expensive operations
+  // Throttle function for expensive operations with timeout tracking
   const throttle = useCallback(<T extends (...args: any[]) => any>(func: T, limit: number): T => {
     let inThrottle: boolean
     return ((...args: any[]) => {
       if (!inThrottle) {
         func.apply(null, args)
         inThrottle = true
-        setTimeout(() => inThrottle = false, limit)
+        const timeoutId = setTimeout(() => {
+          inThrottle = false
+          timeoutRefs.current.delete(timeoutId)
+        }, limit)
+        timeoutRefs.current.add(timeoutId)
       }
     }) as T
   }, [])
   
-  // Clear cache function
-  const clearCache = useCallback(() => {
-    cacheRef.current.clear()
-    cacheHitsRef.current = 0
-    cacheMissesRef.current = 0
-    lastClearRef.current = Date.now()
-  }, [])
-  
-  // Auto-clear cache periodically
+  // Auto-clear cache periodically with memory monitoring
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now()
-      if (now - lastClearRef.current > 300000) { // 5 minutes
+      
+      // Clear cache every 5 minutes or if memory usage is high
+      const shouldClear = now - lastClearRef.current > 300000 || // 5 minutes
+        (metricsRef.current?.memoryUsage && metricsRef.current.memoryUsage > 100) // 100MB
+      
+      if (shouldClear) {
+        clearCache()
+      }
+      
+      // Emergency cache clearing if size grows too large
+      if (cacheRef.current.size > 100) {
+        console.warn('Calendar cache size exceeded safe limits, performing emergency clear')
         clearCache()
       }
     }, 60000) // Check every minute
     
-    return () => clearInterval(interval)
+    intervalRefs.current.add(interval)
+    
+    return () => {
+      clearInterval(interval)
+      intervalRefs.current.delete(interval)
+    }
+  }, [clearCache])
+
+  // Comprehensive cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // Clear all intervals
+      intervalRefs.current.forEach(interval => clearInterval(interval))
+      intervalRefs.current.clear()
+      
+      // Clear all timeouts
+      timeoutRefs.current.forEach(timeout => clearTimeout(timeout))
+      timeoutRefs.current.clear()
+      
+      // Clear all caches and refs
+      cacheRef.current.clear()
+      renderTimersRef.current.clear()
+      
+      // Reset counters
+      cacheHitsRef.current = 0
+      cacheMissesRef.current = 0
+      
+      // Clear metrics
+      metricsRef.current = null
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Calendar performance hook cleaned up successfully')
+      }
+    }
+  }, [])
+  
+  // Memory pressure listener for browsers that support it
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'memory' in performance) {
+      const handleMemoryPressure = () => {
+        console.warn('Memory pressure detected, clearing calendar cache')
+        clearCache()
+      }
+      
+      // Listen for memory pressure events (experimental API)
+      if ('onmemorywarning' in window) {
+        window.addEventListener('memorywarning', handleMemoryPressure)
+        return () => window.removeEventListener('memorywarning', handleMemoryPressure)
+      }
+    }
   }, [clearCache])
 
   return {

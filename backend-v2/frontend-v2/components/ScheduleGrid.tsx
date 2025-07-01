@@ -485,7 +485,11 @@ function AddAvailabilityModal({
             <Select
               label="Day of Week"
               value={dayOfWeek.toString()}
-              onChange={(e) => setDayOfWeek(parseInt(e.target.value))}
+              onChange={(value) => {
+                if (value && !Array.isArray(value)) {
+                  setDayOfWeek(parseInt(value))
+                }
+              }}
               options={[
                 { value: '0', label: 'Sunday' },
                 { value: '1', label: 'Monday' },

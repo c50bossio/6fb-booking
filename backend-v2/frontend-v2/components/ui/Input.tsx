@@ -356,11 +356,13 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         <div className="relative">
           <textarea
             ref={(node) => {
-              textareaRef.current = node
+              if (node) {
+                (textareaRef as any).current = node
+              }
               if (typeof ref === 'function') {
                 ref(node)
-              } else if (ref) {
-                ref.current = node
+              } else if (ref && node) {
+                (ref as any).current = node
               }
             }}
             id={textareaId}

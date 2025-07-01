@@ -11,7 +11,7 @@ import {
   PhotoIcon,
   VariableIcon,
   EyeIcon,
-  SaveIcon,
+  BookmarkIcon as SaveIcon,
   XMarkIcon,
   CodeBracketIcon,
   AtSymbolIcon
@@ -211,7 +211,7 @@ export default function TemplateEditor({ template, onSave, onCancel }: TemplateE
                 </label>
                 <div className="flex gap-2">
                   <Button
-                    variant={type === 'email' ? 'default' : 'outline'}
+                    variant={type === 'email' ? 'primary' : 'outline'}
                     size="sm"
                     onClick={() => setType('email')}
                     className="flex-1"
@@ -220,7 +220,7 @@ export default function TemplateEditor({ template, onSave, onCancel }: TemplateE
                     Email
                   </Button>
                   <Button
-                    variant={type === 'sms' ? 'default' : 'outline'}
+                    variant={type === 'sms' ? 'primary' : 'outline'}
                     size="sm"
                     onClick={() => setType('sms')}
                     className="flex-1"

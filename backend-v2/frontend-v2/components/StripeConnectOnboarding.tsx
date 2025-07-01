@@ -29,7 +29,14 @@ export default function StripeConnectOnboarding({ onComplete }: StripeConnectOnb
     try {
       setLoading(true);
       const result = await getStripeConnectStatus();
-      setStatus(result);
+      setStatus({
+        has_account: result.connected,
+        account_id: result.account_id,
+        charges_enabled: result.charges_enabled,
+        payouts_enabled: result.payouts_enabled,
+        details_submitted: result.charges_enabled && result.payouts_enabled,
+        requirements: result.requirements
+      });
       
       if (result.charges_enabled && result.payouts_enabled && onComplete) {
         onComplete();
@@ -157,7 +164,7 @@ export default function StripeConnectOnboarding({ onComplete }: StripeConnectOnb
                 <div className="mb-6">
                   <h4 className="font-medium text-gray-900 mb-3">Outstanding Requirements:</h4>
                   <ul className="space-y-2">
-                    {status.requirements.map((req, index) => (
+                    {status.requirements?.map((req, index) => (
                       <li key={index} className="flex items-start gap-2">
                         <span className="text-gray-400">•</span>
                         <span className="text-gray-600">{req.replace(/_/g, ' ')}</span>

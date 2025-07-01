@@ -13,7 +13,7 @@ import {
   ArrowDownTrayIcon,
   ChevronDownIcon
 } from '@heroicons/react/24/outline'
-import { UsageChart } from '@/components/marketing/UsageChart'
+import UsageChart from '@/components/marketing/UsageChart'
 
 interface CampaignMetric {
   id: string

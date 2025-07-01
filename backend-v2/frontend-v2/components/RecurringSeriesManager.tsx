@@ -492,7 +492,7 @@ export default function RecurringSeriesManager({ pattern, onUpdate, onClose }: R
         <CardContent>
           {error && (
             <ErrorDisplay
-              message={error}
+              error={error}
               onRetry={() => setError(null)}
             />
           )}

@@ -174,7 +174,7 @@ export default function CreateAppointmentModal({
       const response = isDemoMode 
         ? await demoApi.services.list()
         : await getServices()
-      setServices(response)
+      setServices(response as Service[])
     } catch (err) {
       console.error('Failed to load services:', err)
       setError('Failed to load services')
@@ -280,7 +280,7 @@ export default function CreateAppointmentModal({
       const response = isDemoMode
         ? await demoApi.clients.create(newClientData)
         : await createClient(newClientData)
-      setSelectedClient(response)
+      setSelectedClient(response as Client)
       setShowCreateClient(false)
       setIsClientDropdownOpen(false)
       setNewClientData({ first_name: '', last_name: '', email: '', phone: '' })

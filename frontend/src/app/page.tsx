@@ -1,8 +1,11 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
+import RemoveTopBar from '@/components/RemoveTopBar'
 import {
   CheckIcon,
   StarIcon,
@@ -165,6 +168,7 @@ const testimonials = [
 function PremiumTrialButton() {
   const [isHovered, setIsHovered] = useState(false)
   const [isClicked, setIsClicked] = useState(false)
+  const router = useRouter()
 
   const x = useMotionValue(0)
   const y = useMotionValue(0)
@@ -179,9 +183,14 @@ function PremiumTrialButton() {
     y.set(event.clientY - centerY)
   }
 
+  const handleClick = (e: React.MouseEvent) => {
+    // Don't prevent default - let the navigation happen
+    router.push('/signup')
+  }
+
   return (
     <motion.div
-      style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+      style={{ rotateX, rotateY, transformStyle: "preserve-3d", perspective: "1000px" }}
       onMouseMove={handleMouse}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => {
@@ -190,24 +199,23 @@ function PremiumTrialButton() {
         y.set(0)
       }}
       whileTap={{ scale: 0.95 }}
-      className="perspective-1000"
     >
-      <Link href="/signup">
-        <motion.div
-          className="demo-button text-lg px-10 py-4 relative overflow-hidden group cursor-pointer"
-          initial={{ scale: 1 }}
-          whileHover={{
-            scale: 1.05,
-            boxShadow: "0 20px 40px rgba(20, 184, 166, 0.4)",
-          }}
-          whileTap={{ scale: 0.98 }}
-          transition={{
-            type: "spring",
-            stiffness: 400,
-            damping: 17
-          }}
-          onTapStart={() => setIsClicked(true)}
-          onTap={() => setTimeout(() => setIsClicked(false), 150)}
+      <motion.button
+        onClick={handleClick}
+        className="text-lg px-10 py-4 relative overflow-hidden group cursor-pointer block rounded-xl font-semibold"
+        initial={{ scale: 1 }}
+        whileHover={{
+          scale: 1.05,
+          boxShadow: "0 20px 40px rgba(20, 184, 166, 0.4)",
+        }}
+        whileTap={{ scale: 0.98 }}
+        transition={{
+          type: "spring",
+          stiffness: 400,
+          damping: 17
+        }}
+        onTapStart={() => setIsClicked(true)}
+        onTap={() => setTimeout(() => setIsClicked(false), 150)}
         >
           {/* Gradient Background with Animation */}
           <motion.div
@@ -286,8 +294,7 @@ function PremiumTrialButton() {
               ease: "easeInOut"
             }}
           />
-        </motion.div>
-      </Link>
+        </motion.button>
     </motion.div>
   )
 }
@@ -295,9 +302,38 @@ function PremiumTrialButton() {
 export default function LandingPage() {
   const [email, setEmail] = useState('')
   const [isMounted, setIsMounted] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     setIsMounted(true)
+    
+    // Remove any dark slate bar with BookBarber text
+    const removeDarkSlateBar = () => {
+      // Find and remove any element at the top with BookBarber text
+      document.querySelectorAll('body > *').forEach((element, index) => {
+        if (index < 3) { // Only check first few elements
+          const el = element as HTMLElement
+          const text = el.textContent || ''
+          if ((text.includes('BookBarber') || text.includes('BookedBarber')) && 
+              !el.querySelector('img') && // Not the logo
+              !el.querySelector('nav') && // Not navigation
+              !el.querySelector('header')) { // Not the header
+            const style = window.getComputedStyle(el)
+            // Check if it has a dark/slate background
+            if (style.backgroundColor.includes('rgb') || 
+                el.className.includes('slate') ||
+                el.className.includes('dark')) {
+              console.log('Removing dark slate bar:', el.className, text.substring(0, 50))
+              el.remove()
+            }
+          }
+        }
+      })
+    }
+    
+    // Run immediately and after a delay
+    removeDarkSlateBar()
+    setTimeout(removeDarkSlateBar, 100)
   }, [])
 
   const handleEmailSubmit = (e: React.FormEvent) => {
@@ -310,39 +346,43 @@ export default function LandingPage() {
 
   return (
     <>
+      <style jsx>{`
+        /* Hide any dark slate bar at the top */
+        body > div[class*="slate"]:first-child,
+        body > div[class*="dark"]:first-child,
+        body > *:first-child:has(*:contains("BookBarber")),
+        body > *:first-child:not(.min-h-screen):not(#__next) {
+          display: none !important;
+        }
+      `}</style>
+      <RemoveTopBar />
       <div className="min-h-screen bg-gray-50">
-      {/* Free Trial Banner */}
-      <div className="bg-gradient-to-r from-slate-700 to-slate-800 text-white py-3">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-sm font-medium">
-            🎉 Start your 30-day free trial today - no credit card required!{' '}
-            <Link href="/signup" className="underline font-semibold hover:text-slate-300">
-              Get Started Free →
-            </Link>
-          </p>
-        </div>
-      </div>
-
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-gray-200 backdrop-blur-xl bg-white/95">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-slate-600 to-slate-700 rounded-xl blur opacity-75"></div>
-                <div className="relative bg-gradient-to-r from-slate-600 to-slate-700 p-2 rounded-xl">
-                  <CurrencyDollarIcon className="h-6 w-6 text-white" />
-                </div>
-              </div>
-              <span className="ml-3 text-2xl font-bold text-slate-900">Booked Barber</span>
+              <Image
+                src="/logos/bookedbarber-black.png"
+                alt="BookedBarber Logo"
+                width={200}
+                height={60}
+                className="h-12 w-auto header-logo"
+                priority
+              />
             </div>
             <div className="flex items-center space-x-4">
-              <Link href="/login" className="header-nav-link transition-colors" style={{color: '#111827', fontWeight: '600', opacity: 1}}>
-                Sign In
+              <Link 
+                href="/login" 
+                className="inline-block bg-white border-2 border-gray-800 text-gray-900 font-semibold px-6 py-2 rounded-lg hover:bg-gray-50 transition-colors relative"
+                style={{color: '#000000', fontWeight: '700', zIndex: 10}}
+              >
+                Login
               </Link>
               <Link
                 href="/signup"
-                className="premium-button hover-lift"
+                className="inline-block bg-teal-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-teal-700 transition-colors relative"
+                style={{zIndex: 10}}
               >
                 Start Free Trial
               </Link>
@@ -352,9 +392,8 @@ export default function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 bg-white">
-
-        <div className="max-w-7xl mx-auto text-center relative">
+      <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 bg-white overflow-hidden">
+        <div className="max-w-7xl mx-auto text-center relative z-10">
           {/* Trust Badge */}
           <div className="inline-flex items-center bg-white border border-slate-300 rounded-full px-6 py-3 mb-8 shadow-lg hover:shadow-xl transition-all duration-300">
             <ShieldCheckIcon className="h-4 w-4 text-emerald-600 mr-2" />
@@ -363,12 +402,12 @@ export default function LandingPage() {
           </div>
 
           <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-8 tracking-tight leading-tight">
-            The Complete Platform for
-            <br />
             <span className="text-teal-600 relative">
-              Six-Figure Barbers.
+              OWN THE CHAIR.
               <div className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-teal-500 to-teal-600 rounded-full opacity-30"></div>
             </span>
+            <br />
+            OWN THE BRAND.
           </h1>
 
           <p className="text-xl md:text-2xl mb-12 max-w-4xl mx-auto leading-relaxed text-gray-700">

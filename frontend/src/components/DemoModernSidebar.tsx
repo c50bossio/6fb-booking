@@ -224,7 +224,7 @@ export default function DemoModernSidebar({ user, onLogout }: SidebarProps) {
               </div>
               <div>
                 <h1 className={`font-bold text-lg ${theme === 'dark' || theme === 'charcoal' ? 'text-white' : 'text-gray-900'}`}>
-                  BookBarber
+                  BookedBarber
                 </h1>
                 <p className={`text-xs ${theme === 'dark' || theme === 'charcoal' ? 'text-gray-400' : 'text-gray-500'}`}>
                   Professional Platform

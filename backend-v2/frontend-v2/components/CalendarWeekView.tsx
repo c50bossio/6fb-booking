@@ -83,13 +83,15 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
   const isTouchDevice = TouchDragManager.isTouchDevice()
   
   // Performance monitoring and optimization
-  const { measureRender, optimizedAppointmentFilter, memoizedDateCalculations } = useCalendarPerformance()
+  const { measureRender, optimizedAppointmentFilter, memoizedDateCalculations, memoizedStatusColor } = useCalendarPerformance()
   
   // Performance monitoring
   useEffect(() => {
-    const endMeasure = measureRender('CalendarWeekView')
-    return endMeasure
-  })
+    if (appointments.length > 50) { // Only measure when there are many appointments
+      const endMeasure = measureRender('CalendarWeekView')
+      return endMeasure
+    }
+  }, [appointments.length, measureRender])
 
   // Sync currentWeek with currentDate prop changes
   useEffect(() => {
@@ -122,7 +124,24 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
 
   const { weekStart, weekEnd, timeSlots, weekDays } = weekData
 
-  // Optimized appointment filtering and preprocessing
+  // Get status color for background style (moved up to be available earlier)
+  const getStatusColorValue = useCallback((status: string) => {
+    switch (status) {
+      case 'confirmed':
+      case 'scheduled':
+        return '#10b981' // green-500
+      case 'pending':
+        return '#f59e0b' // yellow-500
+      case 'cancelled':
+        return '#ef4444' // red-500
+      case 'completed':
+        return '#3b82f6' // blue-500
+      default:
+        return '#8b5cf6' // purple-500
+    }
+  }, [])
+
+  // Optimized appointment filtering and preprocessing with error handling
   const processedAppointments = useMemo(() => {
     const filtered = optimizedAppointmentFilter(appointments, {
       barberId: selectedBarberId,
@@ -131,37 +150,61 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
     })
     
     // Pre-calculate styles and dates to avoid repeated parsing
-    return filtered.map(appointment => {
-      const start = parseAPIDate(appointment.start_time)
-      let end: Date
-      
-      if (appointment.end_time) {
-        end = parseAPIDate(appointment.end_time)
-      } else if (appointment.duration_minutes) {
-        end = addMinutes(start, appointment.duration_minutes)
-      } else {
-        // Default to 30 minutes if no end time or duration
-        end = addMinutes(start, 30)
+    return filtered.filter(appointment => {
+      // Filter out appointments with invalid dates
+      try {
+        const testDate = parseAPIDate(appointment.start_time)
+        return !isNaN(testDate.getTime())
+      } catch {
+        return false
       }
-      
-      const startMinutes = start.getHours() * 60 + start.getMinutes()
-      const endMinutes = end.getHours() * 60 + end.getMinutes()
-      const slotStartMinutes = startHour * 60
-      
-      const top = ((startMinutes - slotStartMinutes) / slotDuration) * 48 // 48px per slot
-      const height = ((endMinutes - startMinutes) / slotDuration) * 48
-      
-      return {
-        ...appointment,
-        parsedStartTime: start,
-        parsedEndTime: end,
-        style: {
-          top: `${top}px`,
-          height: `${Math.max(height, 20)}px`
+    }).map(appointment => {
+      try {
+        const start = parseAPIDate(appointment.start_time)
+        let end: Date
+        
+        if (appointment.end_time) {
+          end = parseAPIDate(appointment.end_time)
+        } else if (appointment.duration_minutes) {
+          end = addMinutes(start, appointment.duration_minutes)
+        } else {
+          // Default to 30 minutes if no end time or duration
+          end = addMinutes(start, 30)
         }
+      
+        const startMinutes = start.getHours() * 60 + start.getMinutes()
+        const endMinutes = end.getHours() * 60 + end.getMinutes()
+        const slotStartMinutes = startHour * 60
+        
+        const top = ((startMinutes - slotStartMinutes) / slotDuration) * 48 // 48px per slot
+        const height = ((endMinutes - startMinutes) / slotDuration) * 48
+        
+        return {
+          ...appointment,
+          parsedStartTime: start,
+          parsedEndTime: end,
+          style: {
+            top: `${top}px`,
+            height: `${Math.max(height, 20)}px`,
+            backgroundColor: getStatusColorValue(appointment.status),
+            color: 'white',
+            padding: '2px 4px',
+            margin: '1px',
+            borderRadius: '2px',
+            fontSize: '12px',
+            overflow: 'hidden',
+            position: 'absolute' as const,
+            left: '2px',
+            right: '2px',
+            zIndex: 1
+          }
+        }
+      } catch (error) {
+        console.warn('Error processing appointment:', appointment, error)
+        return null
       }
-    })
-  }, [appointments, selectedBarberId, weekStart, weekEnd, optimizedAppointmentFilter, startHour, slotDuration])
+    }).filter(Boolean) // Remove null entries
+  }, [appointments, selectedBarberId, weekStart, weekEnd, optimizedAppointmentFilter, startHour, slotDuration, getStatusColorValue])
 
   // Navigate weeks (memoized)
   const previousWeek = useCallback(() => {
@@ -187,11 +230,18 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
     const byDay: { [key: string]: any[] } = {}
     
     processedAppointments.forEach(appointment => {
-      const dayKey = format(appointment.parsedStartTime, 'yyyy-MM-dd')
-      if (!byDay[dayKey]) {
-        byDay[dayKey] = []
+      try {
+        // Validate the date before formatting
+        if (appointment.parsedStartTime && !isNaN(appointment.parsedStartTime.getTime())) {
+          const dayKey = format(appointment.parsedStartTime, 'yyyy-MM-dd')
+          if (!byDay[dayKey]) {
+            byDay[dayKey] = []
+          }
+          byDay[dayKey].push(appointment)
+        }
+      } catch (error) {
+        console.warn('Invalid date in appointment:', appointment, error)
       }
-      byDay[dayKey].push(appointment)
     })
     
     return byDay
@@ -202,14 +252,14 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
     return isSameDay(processedAppointment.parsedStartTime, day)
   }
 
-  // Get appointments for a specific day (optimized)
-  const getAppointmentsForDay = (day: Date) => {
+  // Get appointments for a specific day (optimized and memoized)
+  const getAppointmentsForDay = useCallback((day: Date) => {
     const dayKey = format(day, 'yyyy-MM-dd')
     return appointmentsByDay[dayKey] || []
-  }
+  }, [appointmentsByDay])
 
-  // Get status color
-  const getStatusColor = (status: string) => {
+  // Get status color for CSS classes (memoized)
+  const getStatusColor = useCallback((status: string) => {
     switch (status) {
       case 'confirmed':
       case 'scheduled':
@@ -223,14 +273,14 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
       default:
         return 'bg-purple-500 hover:bg-purple-600'
     }
-  }
+  }, [])
 
-  // Format barber name
-  const getBarberName = (barber: Barber) => {
+  // Format barber name (memoized)
+  const getBarberName = useCallback((barber: Barber) => {
     return barber.name || 
            (barber.first_name && barber.last_name ? `${barber.first_name} ${barber.last_name}` : '') ||
            barber.email.split('@')[0]
-  }
+  }, [])
 
   // Check for conflicts before updating appointment
   const checkAndUpdateAppointment = (appointmentId: number, newStartTime: string) => {
@@ -303,6 +353,44 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
     setConflictAnalysis(null)
     setPendingUpdate(null)
   }
+
+  // Memoized drag over handler
+  const handleDragOver = useCallback((e: React.DragEvent, day: Date, hour: number, minute: number) => {
+    if (draggedAppointment) {
+      e.preventDefault()
+      e.dataTransfer.dropEffect = 'move'
+      setDragOverSlot({ day, hour, minute })
+    }
+  }, [draggedAppointment])
+
+  // Memoized drag leave handler
+  const handleDragLeave = useCallback(() => {
+    setDragOverSlot(null)
+  }, [])
+
+  // Memoized time slot click handler
+  const handleTimeSlotClick = useCallback((day: Date, hour: number, minute: number) => {
+    const slotDate = new Date(day)
+    slotDate.setHours(hour, minute, 0, 0)
+    if (selectedBarberId !== 'all') {
+      onTimeSlotClick?.(slotDate, selectedBarberId as number)
+    } else {
+      onTimeSlotClick?.(slotDate)
+    }
+  }, [selectedBarberId, onTimeSlotClick])
+
+  // Memoized client click handler
+  const handleClientClick = useCallback((appointment: any) => {
+    // Find client by name and open detail modal
+    const client = clients.find(c => 
+      `${c.first_name} ${c.last_name}` === appointment.client_name ||
+      c.email === appointment.client_email
+    )
+    if (client) {
+      setSelectedClient(client)
+      setShowClientModal(true)
+    }
+  }, [clients])
 
   // Touch drag support for appointments
   useEffect(() => {
@@ -481,38 +569,24 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
                     {timeSlots.map((slot, idx) => (
                       <div 
                         key={idx}
-                        className={`h-12 border-b border-gray-100 dark:border-gray-700 cursor-pointer transition-colors ${
+                        className={`h-12 border-b border-gray-100 dark:border-gray-700 cursor-pointer transition-all duration-200 relative group ${
                           dragOverSlot && 
                           isSameDay(dragOverSlot.day, day) && 
                           dragOverSlot.hour === slot.hour && 
                           dragOverSlot.minute === slot.minute
-                            ? 'bg-primary-100 dark:bg-primary-900/30 ring-2 ring-primary-500 ring-inset'
+                            ? 'bg-green-100 dark:bg-green-900/30 ring-2 ring-green-500 ring-inset border-2 border-green-400 border-dashed'
                             : dropSuccess &&
                               isSameDay(dropSuccess.day, day) &&
                               dropSuccess.hour === slot.hour &&
                               dropSuccess.minute === slot.minute
-                            ? 'bg-green-100 dark:bg-green-900/30 ring-2 ring-green-500 ring-inset animate-pulse'
+                            ? 'bg-green-200 dark:bg-green-800/40 ring-2 ring-green-400 animate-pulse'
+                            : isDragging
+                            ? 'hover:bg-green-50 dark:hover:bg-green-900/10 hover:border-green-300 hover:border-dashed'
                             : 'hover:bg-gray-50 dark:hover:bg-gray-700'
                         }`}
-                        onClick={() => {
-                          const slotDate = new Date(day)
-                          slotDate.setHours(slot.hour, slot.minute, 0, 0)
-                          if (selectedBarberId !== 'all') {
-                            onTimeSlotClick?.(slotDate, selectedBarberId as number)
-                          } else {
-                            onTimeSlotClick?.(slotDate)
-                          }
-                        }}
-                        onDragOver={useCallback((e) => {
-                          if (draggedAppointment) {
-                            e.preventDefault()
-                            e.dataTransfer.dropEffect = 'move'
-                            setDragOverSlot({ day, hour: slot.hour, minute: slot.minute })
-                          }
-                        }, [draggedAppointment, day, slot.hour, slot.minute])}
-                        onDragLeave={() => {
-                          setDragOverSlot(null)
-                        }}
+                        onClick={() => handleTimeSlotClick(day, slot.hour, slot.minute)}
+                        onDragOver={(e) => handleDragOver(e, day, slot.hour, slot.minute)}
+                        onDragLeave={handleDragLeave}
                         onDrop={(e) => {
                           e.preventDefault()
                           if (draggedAppointment && onAppointmentUpdate) {
@@ -538,62 +612,67 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
                     ))}
                     
                     {/* Appointments - optimized rendering */}
-                    {useMemo(() => getAppointmentsForDay(day).map((appointment) => (
-                        <div
-                          key={appointment.id}
-                          data-appointment-id={appointment.id}
-                          draggable={appointment.status !== 'completed' && appointment.status !== 'cancelled'}
-                          className={`calendar-appointment-week absolute left-1 right-1 rounded cursor-pointer transition-all text-white p-1 text-xs overflow-hidden ${
-                            getStatusColor(appointment.status)
-                          } ${
-                            draggedAppointment?.id === appointment.id ? 'opacity-50' : ''
-                          } ${
-                            appointment.status !== 'completed' && appointment.status !== 'cancelled' 
-                              ? 'cursor-move hover:shadow-lg hover:z-10' 
-                              : 'cursor-pointer'
-                          }`}
-                          style={appointment.style}
+                    {getAppointmentsForDay(day).map((appointment) => (
+                      <div
+                        key={appointment.id}
+                        data-appointment-id={appointment.id}
+                        draggable={appointment.status !== 'completed' && appointment.status !== 'cancelled'}
+                        className={`calendar-appointment-week absolute left-1 right-1 rounded cursor-pointer transition-all text-white p-1 text-xs overflow-hidden ${
+                          getStatusColor(appointment.status)
+                        } ${
+                          draggedAppointment?.id === appointment.id 
+                            ? 'opacity-30 scale-95 animate-pulse ring-2 ring-white ring-opacity-50' 
+                            : 'hover:shadow-xl hover:scale-105 hover:z-20 hover:ring-2 hover:ring-white hover:ring-opacity-60'
+                        } ${
+                          appointment.status !== 'completed' && appointment.status !== 'cancelled' 
+                            ? 'cursor-move group' 
+                            : 'cursor-pointer'
+                        }`}
+                        style={appointment.style}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (!isDragging) {
+                            onAppointmentClick?.(appointment)
+                          }
+                        }}
+                        onDragStart={(e) => {
+                          if (appointment.status !== 'completed' && appointment.status !== 'cancelled') {
+                            e.dataTransfer.effectAllowed = 'move'
+                            setDraggedAppointment(appointment)
+                            setIsDragging(true)
+                          } else {
+                            e.preventDefault()
+                          }
+                        }}
+                        onDragEnd={() => {
+                          setDraggedAppointment(null)
+                          setDragOverSlot(null)
+                          setIsDragging(false)
+                        }}
+                      >
+                        {/* Drop zone indicator when dragging */}
+                        {isDragging && (
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                            <div className="bg-green-500 text-white px-2 py-1 rounded text-xs font-medium shadow-lg">
+                              Drop here
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Success animation on drop - removed as it's not needed inside appointment */}
+                        
+                        <div 
+                          className="font-semibold truncate hover:underline cursor-pointer"
                           onClick={(e) => {
                             e.stopPropagation()
-                            if (!isDragging) {
-                              onAppointmentClick?.(appointment)
-                            }
-                          }}
-                          onDragStart={(e) => {
-                            if (appointment.status !== 'completed' && appointment.status !== 'cancelled') {
-                              e.dataTransfer.effectAllowed = 'move'
-                              setDraggedAppointment(appointment)
-                              setIsDragging(true)
-                            } else {
-                              e.preventDefault()
-                            }
-                          }}
-                          onDragEnd={() => {
-                            setDraggedAppointment(null)
-                            setDragOverSlot(null)
-                            setIsDragging(false)
+                            handleClientClick(appointment)
                           }}
                         >
-                          <div 
-                            className="font-semibold truncate hover:underline cursor-pointer"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              // Find client by name and open detail modal
-                              const client = clients.find(c => 
-                                `${c.first_name} ${c.last_name}` === appointment.client_name ||
-                                c.email === appointment.client_email
-                              )
-                              if (client) {
-                                setSelectedClient(client)
-                                setShowClientModal(true)
-                              }
-                            }}
-                          >
-                            {appointment.client_name || 'Client'}
-                          </div>
-                          <div className="truncate opacity-90">{appointment.service_name}</div>
+                          {appointment.client_name || 'Client'}
                         </div>
-                      )), [getAppointmentsForDay, day, isDragging, draggedAppointment, onAppointmentClick, clients, setSelectedClient, setShowClientModal, getStatusColor])}
+                        <div className="truncate opacity-90">{appointment.service_name}</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ))}
@@ -646,13 +725,23 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
       />
 
       {/* Conflict Resolution Modal */}
-      <ConflictResolutionModal
-        isOpen={showConflictModal}
-        onClose={handleCancelConflictResolution}
-        analysis={conflictAnalysis}
-        onResolve={handleConflictResolution}
-        onProceedAnyway={handleProceedAnyway}
-      />
+      {showConflictModal && conflictAnalysis && (
+        <ConflictResolutionModal
+          isOpen={showConflictModal}
+          onClose={handleCancelConflictResolution}
+          analysis={conflictAnalysis}
+          appointmentData={{
+            client_name: appointments.find(apt => apt.id === pendingUpdate?.appointmentId)?.client_name,
+            service_name: appointments.find(apt => apt.id === pendingUpdate?.appointmentId)?.service_name || '',
+            start_time: pendingUpdate?.newStartTime || '',
+            duration_minutes: appointments.find(apt => apt.id === pendingUpdate?.appointmentId)?.duration_minutes,
+            barber_name: appointments.find(apt => apt.id === pendingUpdate?.appointmentId)?.barber_name
+          }}
+          onResolveConflict={handleConflictResolution}
+          onProceedAnyway={handleProceedAnyway}
+          onCancel={handleCancelConflictResolution}
+        />
+      )}
     </div>
   )
 })

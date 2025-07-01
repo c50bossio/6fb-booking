@@ -41,14 +41,45 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Full stack: Run `./scripts/test-integration.sh` for cross-system changes
 - **Note**: Demo mode has been removed. Authentication is required to access the platform.
 
+## Company Name
+**BookedBarber** - OWN THE CHAIR. OWN THE BRAND.
+
 ## Project Overview
 
-6FB Booking Platform is a comprehensive booking and business management system for barber shops, built on the Six Figure Barber methodology. It features:
+6FB Booking Platform (BookedBarber) is a comprehensive booking and business management system for barber shops, built on the Six Figure Barber methodology. It features:
 
 - **Backend**: FastAPI (Python) with SQLAlchemy ORM, PostgreSQL/SQLite database
 - **Frontend**: Next.js 14 with TypeScript, Tailwind CSS, and Radix UI
 - **Integrations**: Stripe Connect, Google Calendar, SendGrid, Twilio
 - **Deployment**: Render (current production), supports Docker, Railway, Vercel
+
+## 🎨 Brand Assets & Logos
+
+### BookedBarber Logo Files
+The following logo variants are available for use in the application:
+
+**Location**: `/Users/bossio/Downloads/224381543/Logo Files/png/`
+
+- **Black logo - no background.png** - Use for light backgrounds, headers, and general branding
+- **White logo - no background.png** - Use for dark backgrounds, overlays, and dark themes
+- **Color logo - no background.png** - Primary brand logo with colors, transparent background
+- **Color logo with background.png** - Full logo with brand background, use sparingly
+
+### Logo Usage Guidelines
+- **Homepage header**: Use black logo for maximum visibility against light backgrounds
+- **Dark sections**: Use white logo for contrast
+- **Hero sections**: Consider color logo for brand impact
+- **Background watermarks**: Use white logo with reduced opacity for subtle branding
+
+### Current Logo Issues Fixed
+- ✅ Enhanced header logo visibility with text shadow and pure black color
+- ✅ Added prominent Login button to homepage header
+- ⚠️ Background "BOOKEDBARBER" watermark text needs replacement with proper logo image
+
+### Implementation Notes
+- Copy logo files to `frontend/public/logos/` directory for use in components
+- Use Next.js Image component for optimized loading
+- Maintain aspect ratios and provide alt text for accessibility
 
 ## Common Development Commands
 

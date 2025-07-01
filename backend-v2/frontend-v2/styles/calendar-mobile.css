@@ -1,0 +1,250 @@
+/* Mobile Calendar Enhancements */
+
+/* Smooth scrolling for mobile */
+.calendar-scroll-container {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Larger touch targets for mobile */
+@media (max-width: 768px) {
+  /* Minimum touch target size (44x44px) */
+  .calendar-touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Appointment cards on mobile */
+  .calendar-appointment {
+    min-height: 48px;
+    padding: 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  /* Time slot buttons */
+  .calendar-time-slot {
+    min-height: 56px;
+    padding: 0.5rem;
+  }
+
+  /* Day cells in month view */
+  .calendar-day-cell {
+    min-height: 80px;
+    padding: 0.25rem;
+  }
+
+  /* Reduce font sizes for better mobile fit */
+  .calendar-month-view .calendar-day-number {
+    font-size: 0.875rem;
+  }
+
+  .calendar-month-view .calendar-appointment {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  /* Week view adjustments */
+  .calendar-week-view .calendar-hour-label {
+    font-size: 0.75rem;
+    width: 3rem;
+  }
+
+  .calendar-week-view .calendar-day-header {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.25rem;
+  }
+}
+
+/* Swipe gestures visual feedback */
+.calendar-swipeable {
+  transition: transform 0.3s ease-out;
+}
+
+.calendar-swiping-left {
+  transform: translateX(-10px);
+}
+
+.calendar-swiping-right {
+  transform: translateX(10px);
+}
+
+/* Pull to refresh indicator */
+.calendar-pull-refresh {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: top 0.3s ease-out;
+}
+
+.calendar-pull-refresh.active {
+  top: 10px;
+}
+
+/* Mobile loading states */
+.calendar-skeleton-mobile {
+  animation: shimmer 2s infinite;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.05) 25%,
+    rgba(0, 0, 0, 0.1) 50%,
+    rgba(0, 0, 0, 0.05) 75%
+  );
+  background-size: 200% 100%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Floating action button */
+.calendar-fab {
+  position: fixed;
+  bottom: 5rem;
+  right: 1rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 30;
+  transition: all 0.3s ease;
+}
+
+.calendar-fab:active {
+  transform: scale(0.95);
+}
+
+/* Mobile modal adjustments */
+@media (max-width: 768px) {
+  .calendar-modal {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 90vh;
+    border-radius: 1rem 1rem 0 0;
+    animation: slideUp 0.3s ease-out;
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Haptic feedback simulation */
+.calendar-haptic {
+  transition: transform 0.1s ease;
+}
+
+.calendar-haptic:active {
+  transform: scale(0.98);
+}
+
+/* Mobile drag indicators */
+.calendar-draggable-mobile {
+  position: relative;
+}
+
+.calendar-draggable-mobile::before {
+  content: '⋮⋮';
+  position: absolute;
+  left: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.75rem;
+  color: rgba(0, 0, 0, 0.3);
+  letter-spacing: -2px;
+}
+
+/* Responsive grid adjustments */
+@media (max-width: 640px) {
+  .calendar-week-view {
+    font-size: 0.75rem;
+  }
+
+  .calendar-week-view .calendar-appointment {
+    padding: 0.25rem;
+    font-size: 0.7rem;
+  }
+
+  /* Stack view mode buttons vertically on very small screens */
+  .calendar-view-switcher {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .calendar-view-switcher button {
+    width: 100%;
+  }
+}
+
+/* Landscape mode optimizations */
+@media (max-width: 768px) and (orientation: landscape) {
+  .calendar-header {
+    padding: 0.5rem 1rem;
+  }
+
+  .calendar-day-view .calendar-time-slot {
+    min-height: 48px;
+  }
+
+  .calendar-month-view .calendar-day-cell {
+    min-height: 60px;
+  }
+}
+
+/* Dark mode adjustments for mobile */
+@media (max-width: 768px) {
+  .dark .calendar-appointment {
+    border-width: 1px;
+  }
+
+  .dark .calendar-day-cell {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .dark .calendar-time-slot:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* Accessibility improvements for mobile */
+@media (max-width: 768px) {
+  /* Focus indicators */
+  .calendar-touch-target:focus {
+    outline: 3px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .calendar-appointment {
+      border-width: 2px;
+    }
+
+    .calendar-day-cell {
+      border-width: 2px;
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .calendar-swipeable,
+    .calendar-modal,
+    .calendar-fab {
+      animation: none;
+      transition: none;
+    }
+  }
+}

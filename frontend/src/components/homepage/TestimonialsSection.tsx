@@ -16,7 +16,7 @@ interface Metric {
   gradientColors: string
 }
 
-// Testimonials data extracted from page-complex.tsx
+// Testimonials data extracted from page.tsx
 const testimonials: Testimonial[] = [
   {
     name: 'Marcus Johnson',

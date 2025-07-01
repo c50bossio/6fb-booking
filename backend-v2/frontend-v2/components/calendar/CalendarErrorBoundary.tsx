@@ -1,11 +1,84 @@
 'use client'
 
-import React, { Component, ReactNode } from 'react'
+import React, { Component, ReactNode, useCallback } from 'react'
 import { ExclamationTriangleIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import type { CalendarError } from '@/types/calendar'
 import { retryWithBackoff, isOnline } from '@/lib/RetryManager'
+
+// Enhanced error reporting hook
+export function useCalendarErrorReporting() {
+  const reportError = useCallback((error: any, context?: Record<string, any>) => {
+    // Enhanced error object
+    const calendarError: CalendarError = {
+      name: error.name || 'CalendarError',
+      message: error.message || 'Unknown calendar error',
+      code: error.code || 'UNKNOWN_ERROR',
+      recoverable: error.recoverable !== false,
+      timestamp: new Date(),
+      context: {
+        ...context,
+        userAgent: navigator.userAgent,
+        timestamp: new Date().toISOString(),
+        pathname: window.location.pathname,
+        currentView: context?.view || 'unknown'
+      }
+    }
+    
+    // Send to monitoring service
+    if (typeof window !== 'undefined') {
+      // Sentry
+      if ((window as any).Sentry) {
+        (window as any).Sentry.captureException(error, {
+          tags: {
+            section: 'calendar',
+            errorCode: calendarError.code,
+            recoverable: calendarError.recoverable
+          },
+          contexts: {
+            calendar: calendarError.context
+          }
+        })
+      }
+      
+      // Custom analytics
+      if ((window as any).gtag) {
+        (window as any).gtag('event', 'exception', {
+          description: calendarError.message,
+          fatal: false,
+          custom_map: {
+            error_code: calendarError.code,
+            calendar_context: JSON.stringify(calendarError.context)
+          }
+        })
+      }
+      
+      // Local storage for offline reporting
+      try {
+        const errorLog = localStorage.getItem('calendar_errors') || '[]'
+        const errors = JSON.parse(errorLog)
+        errors.push({
+          ...calendarError,
+          stack: error.stack
+        })
+        
+        // Keep only last 20 errors
+        if (errors.length > 20) {
+          errors.splice(0, errors.length - 20)
+        }
+        
+        localStorage.setItem('calendar_errors', JSON.stringify(errors))
+      } catch (storageError) {
+        console.warn('Failed to store error locally:', storageError)
+      }
+    }
+    
+    return calendarError
+  }, [])
+  
+  return { reportError }
+}
 
 interface Props {
   children: ReactNode
@@ -46,6 +119,7 @@ export class CalendarErrorBoundary extends Component<Props, State> {
     const calendarError: CalendarError = {
       ...error,
       code: error.name || 'CALENDAR_ERROR',
+      timestamp: new Date(),
       context: { timestamp: new Date().toISOString() },
       recoverable: true
     }
@@ -74,8 +148,16 @@ export class CalendarErrorBoundary extends Component<Props, State> {
       this.props.onError(this.state.error, errorInfo)
     }
 
-    // Send error to monitoring service (if available)
+      // Send error to monitoring service (if available)
     this.sendErrorToMonitoring(error, errorInfo)
+    
+    // Auto-retry for recoverable errors
+    if (this.state.error?.recoverable && this.state.retryCount < this.maxRetries) {
+      console.log(`Attempting auto-retry ${this.state.retryCount + 1}/${this.maxRetries}`)
+      setTimeout(() => {
+        this.handleRetry()
+      }, Math.pow(2, this.state.retryCount) * 1000) // Exponential backoff
+    }
   }
 
   private sendErrorToMonitoring = (error: Error, errorInfo: React.ErrorInfo) => {
@@ -299,41 +381,6 @@ export function withCalendarErrorBoundary<P extends object>(
       </CalendarErrorBoundary>
     )
   }
-}
-
-// Hook for manual error reporting
-export function useCalendarErrorReporting() {
-  const reportError = (error: Error, context?: Record<string, any>) => {
-    const calendarError: CalendarError = {
-      ...error,
-      code: error.name || 'MANUAL_ERROR',
-      context: {
-        ...context,
-        timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent
-      },
-      recoverable: true
-    }
-
-    console.error('Manual calendar error reported:', calendarError)
-    
-    // Send to monitoring service
-    try {
-      if (typeof window !== 'undefined' && (window as any).Sentry) {
-        (window as any).Sentry.captureException(error, {
-          tags: {
-            section: 'calendar',
-            type: 'manual'
-          },
-          extra: context
-        })
-      }
-    } catch (monitoringError) {
-      console.warn('Failed to send manual error to monitoring:', monitoringError)
-    }
-  }
-
-  return { reportError }
 }
 
 // Fallback component for simpler error displays

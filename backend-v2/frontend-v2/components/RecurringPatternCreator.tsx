@@ -306,14 +306,16 @@ export default function RecurringPatternCreator({ onPatternCreated, onCancel }: 
               </label>
               <Select
                 value={duration.toString()}
-                onChange={(e) => setDuration(parseInt(e.target.value))}
-              >
-                {DURATIONS.map(d => (
-                  <option key={d.value} value={d.value}>
-                    {d.label}
-                  </option>
-                ))}
-              </Select>
+                onChange={(value) => {
+                  if (value && !Array.isArray(value)) {
+                    setDuration(parseInt(value))
+                  }
+                }}
+                options={DURATIONS.map(d => ({
+                  value: d.value.toString(),
+                  label: d.label
+                }))}
+              />
             </div>
           </div>
         )
@@ -328,16 +330,20 @@ export default function RecurringPatternCreator({ onPatternCreated, onCancel }: 
                 Service
               </label>
               <Select
-                value={serviceId || ''}
-                onChange={(e) => setServiceId(parseInt(e.target.value))}
-              >
-                <option value="">Select a service</option>
-                {services.map(service => (
-                  <option key={service.id} value={service.id}>
-                    {service.name} - ${service.price}
-                  </option>
-                ))}
-              </Select>
+                value={serviceId?.toString() || ''}
+                onChange={(value) => {
+                  if (value && !Array.isArray(value)) {
+                    setServiceId(parseInt(value))
+                  }
+                }}
+                options={[
+                  { value: '', label: 'Select a service' },
+                  ...services.map(service => ({
+                    value: service.id.toString(),
+                    label: `${service.name} - $${service.price}`
+                  }))
+                ]}
+              />
             </div>
 
             <div>
@@ -345,16 +351,20 @@ export default function RecurringPatternCreator({ onPatternCreated, onCancel }: 
                 Barber
               </label>
               <Select
-                value={barberId || ''}
-                onChange={(e) => setBarberId(parseInt(e.target.value))}
-              >
-                <option value="">Select a barber</option>
-                {barbers.map(barber => (
-                  <option key={barber.id} value={barber.id}>
-                    {barber.name}
-                  </option>
-                ))}
-              </Select>
+                value={barberId?.toString() || ''}
+                onChange={(value) => {
+                  if (value && !Array.isArray(value)) {
+                    setBarberId(parseInt(value))
+                  }
+                }}
+                options={[
+                  { value: '', label: 'Select a barber' },
+                  ...barbers.map(barber => ({
+                    value: barber.id.toString(),
+                    label: barber.name
+                  }))
+                ]}
+              />
             </div>
           </div>
         )
@@ -559,7 +569,7 @@ export default function RecurringPatternCreator({ onPatternCreated, onCancel }: 
       <CardContent>
         {error && (
           <ErrorDisplay
-            message={error}
+            error={error}
             onRetry={() => setError(null)}
           />
         )}

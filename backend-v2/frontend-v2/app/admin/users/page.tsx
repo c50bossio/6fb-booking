@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { getAllUsers, updateUserRole, getProfile } from '@/lib/api'
+import { getAllUsers, updateUserRole, getProfile, type User } from '@/lib/api'
 import { LoadingButton, ErrorDisplay } from '@/components/LoadingStates'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
@@ -17,14 +17,6 @@ import {
   UsersIcon,
   MagnifyingGlassIcon 
 } from '@heroicons/react/24/outline'
-
-interface User {
-  id: number
-  email: string
-  name: string
-  role: string
-  created_at: string
-}
 
 const ROLE_OPTIONS = [
   { value: 'user', label: 'User', icon: UserIcon, color: 'bg-gray-100 text-gray-800' },
@@ -57,7 +49,11 @@ export default function AdminUsersPage() {
   const loadCurrentUser = async () => {
     try {
       const user = await getProfile()
-      setCurrentUser(user)
+      // Ensure role is always defined
+      setCurrentUser({
+        ...user,
+        role: user.role || 'user'
+      })
     } catch (error) {
       console.error('Failed to load current user:', error)
     }
@@ -182,15 +178,17 @@ export default function AdminUsersPage() {
               </div>
               <Select
                 value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
-              >
-                <option value="">All Roles</option>
-                {ROLE_OPTIONS.map(role => (
-                  <option key={role.value} value={role.value}>
-                    {role.label}
-                  </option>
-                ))}
-              </Select>
+                onChange={(value) => setRoleFilter(value as string || '')}
+                options={[
+                  { value: '', label: 'All Roles' },
+                  ...ROLE_OPTIONS.map(role => ({
+                    value: role.value,
+                    label: role.label,
+                    icon: React.createElement(role.icon, { className: 'w-4 h-4' })
+                  }))
+                ]}
+                placeholder="Filter by role"
+              />
               <div className="flex items-center gap-2">
                 <UsersIcon className="h-5 w-5 text-gray-500" />
                 <span className="text-sm text-gray-600 dark:text-gray-400">
@@ -230,7 +228,7 @@ export default function AdminUsersPage() {
                 </thead>
                 <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                   {filteredUsers.map((user) => {
-                    const roleInfo = getRoleInfo(user.role)
+                    const roleInfo = getRoleInfo(user.role || 'user')
                     const isCurrentUser = currentUser?.id === user.id
                     const isSuperAdmin = user.role === 'super_admin'
                     const canEdit = !isCurrentUser && (!isSuperAdmin || currentUser?.role === 'super_admin')
@@ -266,21 +264,17 @@ export default function AdminUsersPage() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           {canEdit ? (
                             <Select
-                              value={user.role}
-                              onChange={(e) => handleRoleChange(user.id, e.target.value, user.name)}
+                              value={user.role || 'user'}
+                              onChange={(value) => handleRoleChange(user.id, value as string, user.name || user.email)}
                               disabled={updatingUserId === user.id}
                               className="w-40"
-                            >
-                              {ROLE_OPTIONS.map(role => (
-                                <option 
-                                  key={role.value} 
-                                  value={role.value}
-                                  disabled={role.value === 'super_admin' && currentUser?.role !== 'super_admin'}
-                                >
-                                  {role.label}
-                                </option>
-                              ))}
-                            </Select>
+                              options={ROLE_OPTIONS.map(role => ({
+                                value: role.value,
+                                label: role.label,
+                                disabled: role.value === 'super_admin' && currentUser?.role !== 'super_admin',
+                                icon: React.createElement(role.icon, { className: 'w-4 h-4' })
+                              }))}
+                            />
                           ) : (
                             <span className="text-sm text-gray-400">
                               {isCurrentUser ? 'Cannot edit own role' : 'Protected'}

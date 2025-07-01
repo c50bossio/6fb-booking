@@ -68,21 +68,21 @@ export default function UsageChart({
           <CalendarIcon className="w-5 h-5 text-gray-500" />
           <div className="flex gap-1">
             <Button
-              variant={timeRange === '7d' ? 'default' : 'outline'}
+              variant={timeRange === '7d' ? 'primary' : 'outline'}
               size="sm"
               onClick={() => setTimeRange('7d')}
             >
               7 days
             </Button>
             <Button
-              variant={timeRange === '30d' ? 'default' : 'outline'}
+              variant={timeRange === '30d' ? 'primary' : 'outline'}
               size="sm"
               onClick={() => setTimeRange('30d')}
             >
               30 days
             </Button>
             <Button
-              variant={timeRange === '90d' ? 'default' : 'outline'}
+              variant={timeRange === '90d' ? 'primary' : 'outline'}
               size="sm"
               onClick={() => setTimeRange('90d')}
             >

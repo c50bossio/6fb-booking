@@ -155,7 +155,10 @@ export function AnimatedCalendarView({
     <div className={`relative ${className}`} ref={viewRef}>
       {/* Loading overlay */}
       <animated.div
-        style={loadingAnimation}
+        style={{
+          opacity: loadingAnimation.opacity,
+          pointerEvents: loadingAnimation.pointerEvents as any
+        }}
         className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm z-40 flex items-center justify-center"
       >
         <CalendarLoadingAnimation view={view} />

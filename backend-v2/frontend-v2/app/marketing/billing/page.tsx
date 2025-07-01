@@ -505,7 +505,7 @@ export default function MarketingBillingPage() {
                       </ul>
                       <Button 
                         className="w-full" 
-                        variant={plan.isPopular ? 'default' : 'outline'}
+                        variant={plan.isPopular ? 'primary' : 'outline'}
                         onClick={() => setShowUpgradeModal(false)}
                       >
                         {plan.name === usageStats?.currentPlan ? 'Current Plan' : 'Select Plan'}

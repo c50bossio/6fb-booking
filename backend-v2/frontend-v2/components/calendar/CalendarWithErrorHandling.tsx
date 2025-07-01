@@ -1,9 +1,9 @@
 'use client'
 
 import React from 'react'
-import { CalendarMonthView } from '../CalendarMonthView'
-import { CalendarWeekView } from '../CalendarWeekView'
-import { CalendarDayView } from '../CalendarDayView'
+import CalendarMonthView from '../CalendarMonthView'
+import CalendarWeekView from '../CalendarWeekView'
+import CalendarDayView from '../CalendarDayView'
 import { CalendarErrorBoundary, withCalendarErrorBoundary } from './CalendarErrorBoundary'
 import { CalendarSkeleton, CalendarEmptyState, CalendarErrorState } from './CalendarLoadingStates'
 import { useRetry, useNetworkStatus } from '@/lib/RetryManager'
@@ -214,7 +214,7 @@ export function CalendarExample() {
         loading={loading}
         error={error}
         onRetry={retry}
-        onAppointmentClick={(apt) => console.log('Clicked appointment:', apt)}
+        onAppointmentClick={(apt: any) => console.log('Clicked appointment:', apt)}
         onCreateAppointment={() => console.log('Create new appointment')}
       />
     </div>

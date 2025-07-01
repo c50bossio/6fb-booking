@@ -19,7 +19,7 @@ interface PricingCardProps {
   plan: PricingPlan;
 }
 
-// Pricing data extracted from page-complex.tsx
+// Pricing data extracted from page.tsx
 const pricingPlans: PricingPlan[] = [
   {
     name: 'Starter',

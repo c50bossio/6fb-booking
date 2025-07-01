@@ -109,7 +109,7 @@ export default function SendNotification() {
   const renderTemplatePreview = () => {
     if (!selectedTemplate) return ''
     
-    let preview = selectedTemplate.body || customMessage
+    let preview = customMessage
     Object.entries(variables).forEach(([key, value]) => {
       const regex = new RegExp(`{{\\s*${key}\\s*}}`, 'g')
       preview = preview.replace(regex, value)

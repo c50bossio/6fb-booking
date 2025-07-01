@@ -2,6 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Remove any dark slate bar at the top with BookBarber text */
+body > div:first-of-type:not(#__next) {
+  display: none !important;
+}
+
+/* Hide any element that contains BookBarber (not BookedBarber) and has dark background */
+*:has-text("BookBarber"):not(:has-text("BookedBarber")) {
+  display: none !important;
+}
+
+/* Target specific dark bars at the top */
+body > *:not(#__next) {
+  &:has(*:contains("BookBarber")) {
+    &:not(:has(*:contains("BookedBarber"))) {
+      display: none !important;
+    }
+  }
+}
+
+/* Fix for Next.js Link components to ensure they're clickable */
+@layer base {
+  a {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+/* Hide any potential dark slate bar at the top */
+@layer utilities {
+  /* Target dark slate-colored elements that might be a top bar */
+  body > div[class*="slate-"]:first-child:not([class*="min-h-"]) {
+    display: none !important;
+  }
+  
+  /* Hide any element with slate background that's fixed/sticky at top */
+  body > *[class*="bg-slate-"]:not(.min-h-screen) {
+    &[class*="fixed"],
+    &[class*="sticky"] {
+      &[class*="top-0"] {
+        display: none !important;
+      }
+    }
+  }
+}
+
 /* Enhanced Global Input Styles - Fix white text on white background issue with high specificity */
 @layer base {
   /* High-specificity base rules for all form inputs */
@@ -661,4 +706,30 @@ button.demo-button:hover,
 .demo-button {
   background-size: 200% 200%;
   animation: gradientShift 3s ease infinite;
+}
+
+/* Hide any faint background BOOKEDBARBER text and replace with proper logo */
+body *[style*="BOOKEDBARBER"],
+*:before:contains("BOOKEDBARBER"),
+*:after:contains("BOOKEDBARBER"),
+*[class*="bookedbarber"],
+*[class*="BOOKEDBARBER"] {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Enhanced logo visibility in headers */
+.header-logo {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+/* Background logo positioning and visibility */
+.hero-background-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1.5);
+  opacity: 0.05;
+  pointer-events: none;
+  z-index: 0;
 }
