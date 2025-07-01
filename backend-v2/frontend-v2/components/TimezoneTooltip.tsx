@@ -37,7 +37,7 @@ export default function TimezoneTooltip({ timezone, className = '', content, chi
       )}
       
       {showTooltip && (
-        <div className="absolute z-10 w-64 p-2 mt-1 text-sm text-gray-700 bg-white border border-gray-200 rounded-md shadow-lg -left-20">
+        <div className="absolute z-10 w-64 p-2 mt-1 text-sm text-gray-700 dark:text-gray-300 bg-white border border-gray-200 rounded-md shadow-lg -left-20">
           {content ? (
             <p>{content}</p>
           ) : (

@@ -337,7 +337,7 @@ export default function BulkAvailabilityUpdater({
                         const dayAvailability = template.availability[index] || []
                         return (
                           <div key={index} className="bg-gray-50 rounded p-2">
-                            <div className="font-medium text-gray-700 mb-1">{dayName.substring(0, 3)}</div>
+                            <div className="font-medium text-gray-700 dark:text-gray-300 mb-1">{dayName.substring(0, 3)}</div>
                             {dayAvailability.length === 0 ? (
                               <div className="text-gray-400">Closed</div>
                             ) : (
@@ -390,7 +390,7 @@ export default function BulkAvailabilityUpdater({
                   </p>
                   <Button
                     onClick={handleClearAllAvailability}
-                    variant="danger"
+                    variant="destructive"
                     size="md"
                     disabled={currentAvailability.length === 0}
                   >
@@ -505,19 +505,17 @@ function CopyScheduleForm({
         <Select
           label="Copy from (Source Week)"
           value={sourceWeek}
-          onChange={(e) => setSourceWeek(e.target.value)}
+          onChange={(value) => setSourceWeek(value as string)}
           options={getWeekOptions()}
           placeholder="Select source week"
-          required
         />
         
         <Select
           label="Copy to (Target Week)"
           value={targetWeek}
-          onChange={(e) => setTargetWeek(e.target.value)}
+          onChange={(value) => setTargetWeek(value as string)}
           options={getWeekOptions()}
           placeholder="Select target week"
-          required
         />
       </div>
 

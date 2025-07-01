@@ -81,7 +81,7 @@ export default function AppointmentPatterns({ userId, timeRange }: AppointmentPa
           <CardTitle>Appointment Patterns</CardTitle>
         </CardHeader>
         <CardContent>
-          <ErrorDisplay message={error} onRetry={() => window.location.reload()} />
+          <ErrorDisplay error={error} onRetry={() => window.location.reload()} />
         </CardContent>
       </Card>
     )

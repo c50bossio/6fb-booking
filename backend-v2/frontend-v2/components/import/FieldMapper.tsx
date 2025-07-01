@@ -252,14 +252,14 @@ export default function FieldMapper({
                           handleSelectChange(e.target.value, field.field)
                         }
                       }}
-                      className="w-full px-3 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="">-- Select a column --</option>
                       {sourceFields.map(sourceField => (
                         <option 
                           key={sourceField} 
                           value={sourceField}
-                          disabled={mapping[sourceField] && mapping[sourceField] !== field.field}
+                          disabled={Boolean(mapping[sourceField] && mapping[sourceField] !== field.field)}
                         >
                           {sourceField}
                         </option>

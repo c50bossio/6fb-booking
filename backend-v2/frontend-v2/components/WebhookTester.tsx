@@ -109,13 +109,13 @@ export default function WebhookTester({ selectedWebhookId, onWebhookSelect }: We
     <div className="p-6">
       {/* Webhook Selector */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Select Webhook to Test
         </label>
         <select
           value={selectedWebhookId || ''}
           onChange={(e) => onWebhookSelect(e.target.value || null)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+          className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
         >
           <option value="">Select a webhook...</option>
           {webhooks.map((webhook) => (
@@ -149,13 +149,13 @@ export default function WebhookTester({ selectedWebhookId, onWebhookSelect }: We
 
           {/* Event Selection */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Select Event Type
             </label>
             <select
               value={selectedEvent}
               onChange={(e) => setSelectedEvent(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
               disabled={testing}
             >
               {Object.entries(getEventsByCategory()).map(([category, categoryEvents]) => (

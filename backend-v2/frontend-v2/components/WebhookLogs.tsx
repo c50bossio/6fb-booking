@@ -120,13 +120,13 @@ export default function WebhookLogs({ selectedWebhookId, onWebhookSelect }: Webh
     <div className="p-6">
       {/* Webhook Selector */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Select Webhook
         </label>
         <select
           value={selectedWebhookId || ''}
           onChange={(e) => onWebhookSelect(e.target.value || null)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+          className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
         >
           <option value="">Select a webhook...</option>
           {webhooks.map((webhook) => (
@@ -142,13 +142,13 @@ export default function WebhookLogs({ selectedWebhookId, onWebhookSelect }: Webh
           {/* Filters */}
           <div className="flex gap-4 mb-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Status
               </label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
                 <option value="all">All Statuses</option>
                 <option value="success">Success</option>
@@ -159,13 +159,13 @@ export default function WebhookLogs({ selectedWebhookId, onWebhookSelect }: Webh
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Event Type
               </label>
               <select
                 value={eventTypeFilter}
                 onChange={(e) => setEventTypeFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
                 <option value="all">All Events</option>
                 <option value="booking.created">Booking Created</option>
@@ -179,7 +179,7 @@ export default function WebhookLogs({ selectedWebhookId, onWebhookSelect }: Webh
             <div className="ml-auto">
               <button
                 onClick={loadLogs}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+                className="px-4 py-2 bg-gray-100 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 transition-colors"
               >
                 Refresh
               </button>

@@ -133,7 +133,7 @@ export default function WebhookConfiguration({ onWebhookSelect, onUpdate }: Webh
                       {webhook.events.slice(0, 3).map((event) => (
                         <span
                           key={event}
-                          className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded"
+                          className="px-2 py-1 text-xs bg-gray-100 text-gray-700 dark:text-gray-300 rounded"
                         >
                           {event}
                         </span>
@@ -177,7 +177,7 @@ export default function WebhookConfiguration({ onWebhookSelect, onUpdate }: Webh
                         setEditingWebhook(webhook)
                         setShowCreateModal(true)
                       }}
-                      className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+                      className="px-3 py-1 text-sm bg-gray-100 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200"
                     >
                       Edit
                     </button>
@@ -335,39 +335,39 @@ function WebhookModal({ webhook, events, onClose, onSave }: WebhookModalProps) {
             
             {/* Basic Information */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Webhook Name
               </label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                 placeholder="My Integration Webhook"
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Endpoint URL
               </label>
               <input
                 type="url"
                 value={formData.url}
                 onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                 placeholder="https://example.com/webhook"
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Description (optional)
               </label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                 rows={2}
                 placeholder="Describe what this webhook is for..."
               />
@@ -375,7 +375,7 @@ function WebhookModal({ webhook, events, onClose, onSave }: WebhookModalProps) {
             
             {/* Event Selection */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Events to Subscribe
               </label>
               <div className="space-y-4 border border-gray-200 rounded-md p-4 max-h-64 overflow-y-auto">
@@ -407,13 +407,13 @@ function WebhookModal({ webhook, events, onClose, onSave }: WebhookModalProps) {
             
             {/* Authentication */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Authentication Type
               </label>
               <select
                 value={formData.auth_type}
                 onChange={(e) => setFormData({ ...formData, auth_type: e.target.value as any })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
                 <option value="none">None</option>
                 <option value="bearer">Bearer Token</option>
@@ -426,7 +426,7 @@ function WebhookModal({ webhook, events, onClose, onSave }: WebhookModalProps) {
             {/* Auth Configuration */}
             {formData.auth_type === 'bearer' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Bearer Token
                 </label>
                 <input
@@ -436,7 +436,7 @@ function WebhookModal({ webhook, events, onClose, onSave }: WebhookModalProps) {
                     ...formData,
                     auth_config: { token: e.target.value }
                   })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                   placeholder="Your bearer token"
                 />
               </div>
@@ -445,7 +445,7 @@ function WebhookModal({ webhook, events, onClose, onSave }: WebhookModalProps) {
             {formData.auth_type === 'basic' && (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Username
                   </label>
                   <input
@@ -455,11 +455,11 @@ function WebhookModal({ webhook, events, onClose, onSave }: WebhookModalProps) {
                       ...formData,
                       auth_config: { ...formData.auth_config, username: e.target.value }
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Password
                   </label>
                   <input
@@ -469,7 +469,7 @@ function WebhookModal({ webhook, events, onClose, onSave }: WebhookModalProps) {
                       ...formData,
                       auth_config: { ...formData.auth_config, password: e.target.value }
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                   />
                 </div>
               </div>
@@ -478,7 +478,7 @@ function WebhookModal({ webhook, events, onClose, onSave }: WebhookModalProps) {
             {formData.auth_type === 'api_key' && (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Header Name
                   </label>
                   <input
@@ -488,11 +488,11 @@ function WebhookModal({ webhook, events, onClose, onSave }: WebhookModalProps) {
                       ...formData,
                       auth_config: { ...formData.auth_config, key_name: e.target.value }
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     API Key
                   </label>
                   <input
@@ -502,7 +502,7 @@ function WebhookModal({ webhook, events, onClose, onSave }: WebhookModalProps) {
                       ...formData,
                       auth_config: { ...formData.auth_config, key_value: e.target.value }
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                   />
                 </div>
               </div>
@@ -523,7 +523,7 @@ function WebhookModal({ webhook, events, onClose, onSave }: WebhookModalProps) {
               <div className="space-y-4 p-4 bg-gray-50 rounded-md">
                 {/* Custom Headers */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Custom Headers
                   </label>
                   {Object.entries(formData.headers).map(([key, value]) => (
@@ -551,7 +551,7 @@ function WebhookModal({ webhook, events, onClose, onSave }: WebhookModalProps) {
                 {/* Retry Configuration */}
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Max Retries
                     </label>
                     <input
@@ -563,12 +563,12 @@ function WebhookModal({ webhook, events, onClose, onSave }: WebhookModalProps) {
                         ...formData,
                         max_retries: parseInt(e.target.value)
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Retry Delay (seconds)
                     </label>
                     <input
@@ -580,12 +580,12 @@ function WebhookModal({ webhook, events, onClose, onSave }: WebhookModalProps) {
                         ...formData,
                         retry_delay_seconds: parseInt(e.target.value)
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Timeout (seconds)
                     </label>
                     <input
@@ -597,7 +597,7 @@ function WebhookModal({ webhook, events, onClose, onSave }: WebhookModalProps) {
                         ...formData,
                         timeout_seconds: parseInt(e.target.value)
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                   </div>
                 </div>
@@ -609,7 +609,7 @@ function WebhookModal({ webhook, events, onClose, onSave }: WebhookModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50"
             >
               Cancel
             </button>

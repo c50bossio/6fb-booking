@@ -252,15 +252,15 @@ export default function FileUpload({ onFileUpload, isLoading }: FileUploadProps)
             <h4 className="font-medium text-gray-900 mb-2">Supported Formats:</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div>
-                <div className="font-medium text-gray-700">CSV Files</div>
+                <div className="font-medium text-gray-700 dark:text-gray-300">CSV Files</div>
                 <div className="text-gray-600">Comma-separated values (.csv)</div>
               </div>
               <div>
-                <div className="font-medium text-gray-700">Excel Files</div>
+                <div className="font-medium text-gray-700 dark:text-gray-300">Excel Files</div>
                 <div className="text-gray-600">Spreadsheet files (.xlsx, .xls)</div>
               </div>
               <div>
-                <div className="font-medium text-gray-700">JSON Files</div>
+                <div className="font-medium text-gray-700 dark:text-gray-300">JSON Files</div>
                 <div className="text-gray-600">JavaScript Object Notation (.json)</div>
               </div>
             </div>

@@ -109,10 +109,13 @@ export default function PricingRuleEditor({ serviceId, serviceName, basePrice }:
   }
 
   const calculateNewPrice = (rule: ServicePricingRule | ServicePricingRuleCreate) => {
-    if (rule.price_modifier_type === 'percentage') {
-      return basePrice * (1 + rule.price_modifier_value / 100)
+    const adjustmentType = 'price_modifier_type' in rule ? rule.price_modifier_type : rule.price_adjustment_type
+    const adjustmentValue = 'price_modifier_value' in rule ? rule.price_modifier_value : rule.price_adjustment_value
+    
+    if (adjustmentType === 'percentage') {
+      return basePrice * (1 + adjustmentValue / 100)
     } else {
-      return basePrice + rule.price_modifier_value
+      return basePrice + adjustmentValue
     }
   }
 
@@ -145,10 +148,10 @@ export default function PricingRuleEditor({ serviceId, serviceName, basePrice }:
         break
     }
 
-    if (rule.price_modifier_type === 'percentage') {
-      parts.push(`${rule.price_modifier_value > 0 ? '+' : ''}${rule.price_modifier_value}%`)
+    if (rule.price_adjustment_type === 'percentage') {
+      parts.push(`${rule.price_adjustment_value > 0 ? '+' : ''}${rule.price_adjustment_value}%`)
     } else {
-      parts.push(`${rule.price_modifier_value > 0 ? '+' : ''}$${Math.abs(rule.price_modifier_value)}`)
+      parts.push(`${rule.price_adjustment_value > 0 ? '+' : ''}$${Math.abs(rule.price_adjustment_value)}`)
     }
 
     return parts.join(' - ')
@@ -234,13 +237,13 @@ export default function PricingRuleEditor({ serviceId, serviceName, basePrice }:
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Rule Type
               </label>
               <select
                 value={newRule.rule_type}
                 onChange={(e) => setNewRule({ ...newRule, rule_type: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
                 {RULE_TYPES.map((type) => (
                   <option key={type.value} value={type.value}>
@@ -251,14 +254,14 @@ export default function PricingRuleEditor({ serviceId, serviceName, basePrice }:
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Priority
               </label>
               <input
                 type="number"
                 value={newRule.priority}
                 onChange={(e) => setNewRule({ ...newRule, priority: parseInt(e.target.value) || 1 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                 min="1"
                 max="100"
               />
@@ -267,13 +270,13 @@ export default function PricingRuleEditor({ serviceId, serviceName, basePrice }:
             {/* Conditional fields based on rule type */}
             {newRule.rule_type === 'day_of_week' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Day of Week
                 </label>
                 <select
                   value={newRule.day_of_week || 0}
                   onChange={(e) => setNewRule({ ...newRule, day_of_week: parseInt(e.target.value) })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                 >
                   {DAYS_OF_WEEK.map((day) => (
                     <option key={day.value} value={day.value}>
@@ -287,25 +290,25 @@ export default function PricingRuleEditor({ serviceId, serviceName, basePrice }:
             {(newRule.rule_type === 'time_based' || newRule.rule_type === 'happy_hour') && (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Start Time
                   </label>
                   <input
                     type="time"
                     value={newRule.start_time || ''}
                     onChange={(e) => setNewRule({ ...newRule, start_time: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     End Time
                   </label>
                   <input
                     type="time"
                     value={newRule.end_time || ''}
                     onChange={(e) => setNewRule({ ...newRule, end_time: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                   />
                 </div>
               </>
@@ -314,38 +317,38 @@ export default function PricingRuleEditor({ serviceId, serviceName, basePrice }:
             {newRule.rule_type === 'date_range' && (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Start Date
                   </label>
                   <input
                     type="date"
                     value={newRule.start_date || ''}
                     onChange={(e) => setNewRule({ ...newRule, start_date: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     End Date
                   </label>
                   <input
                     type="date"
                     value={newRule.end_date || ''}
                     onChange={(e) => setNewRule({ ...newRule, end_date: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                   />
                 </div>
               </>
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Price Adjustment Type
               </label>
               <select
                 value={newRule.price_modifier_type}
                 onChange={(e) => setNewRule({ ...newRule, price_modifier_type: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
                 {PRICE_MODIFIER_TYPES.map((type) => (
                   <option key={type.value} value={type.value}>
@@ -356,14 +359,14 @@ export default function PricingRuleEditor({ serviceId, serviceName, basePrice }:
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 {newRule.price_modifier_type === 'percentage' ? 'Percentage' : 'Amount'} (+ or -)
               </label>
               <input
                 type="number"
                 value={newRule.price_modifier_value}
                 onChange={(e) => setNewRule({ ...newRule, price_modifier_value: parseFloat(e.target.value) || 0 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                 step={newRule.price_modifier_type === 'percentage' ? '1' : '0.01'}
                 placeholder={newRule.price_modifier_type === 'percentage' ? 'e.g., 10 for 10%' : 'e.g., 5.00'}
               />
@@ -382,7 +385,7 @@ export default function PricingRuleEditor({ serviceId, serviceName, basePrice }:
                 setShowAddForm(false)
                 resetForm()
               }}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 hover:bg-gray-50"
             >
               Cancel
             </button>

@@ -281,13 +281,13 @@ export default function PaymentReports({ onBack }: PaymentReportsProps) {
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <div className="flex flex-wrap gap-4 items-end">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Quick Select
               </label>
               <select
                 value={selectedPeriod}
                 onChange={(e) => handlePeriodChange(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500"
               >
                 {PRESET_PERIODS.map(period => (
                   <option key={period.label} value={period.label}>
@@ -299,7 +299,7 @@ export default function PaymentReports({ onBack }: PaymentReportsProps) {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Start Date
               </label>
               <input
@@ -309,12 +309,12 @@ export default function PaymentReports({ onBack }: PaymentReportsProps) {
                   setDateRange({ ...dateRange, start: e.target.value });
                   setSelectedPeriod('custom');
                 }}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500"
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 End Date
               </label>
               <input
@@ -324,7 +324,7 @@ export default function PaymentReports({ onBack }: PaymentReportsProps) {
                   setDateRange({ ...dateRange, end: e.target.value });
                   setSelectedPeriod('custom');
                 }}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500"
               />
             </div>
             

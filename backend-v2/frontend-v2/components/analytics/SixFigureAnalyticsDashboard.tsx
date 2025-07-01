@@ -215,7 +215,7 @@ export default function SixFigureAnalyticsDashboard({
   if (error) {
     return (
       <ErrorDisplay 
-        message={error}
+        error={error}
         onRetry={handleRetry}
       />
     )
@@ -519,23 +519,24 @@ export default function SixFigureAnalyticsDashboard({
           {action_items && action_items.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {action_items.map((item, index) => (
-                <div key={item.id || `action-item-${index}`} className="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div key={`action-item-${index}`} className="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <div className="flex-shrink-0 w-6 h-6 bg-primary-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
                     {index + 1}
                   </div>
                   <div className="text-sm text-gray-700 dark:text-gray-300">
-                    <h4 className="font-medium text-gray-900 dark:text-white">{item.title}</h4>
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">{item.description}</p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        item.priority === 'high' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300' :
-                        item.priority === 'medium' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300' :
-                        'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                      }`}>
-                        {item.priority}
-                      </span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">{item.category}</span>
-                    </div>
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      {typeof item === 'string' ? item : item.title || item.description || 'Action item'}
+                    </p>
+                    {typeof item === 'object' && item.description && item.title !== item.description && (
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                        {item.description}
+                      </p>
+                    )}
+                    {typeof item === 'object' && item.expected_impact && (
+                      <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                        Expected impact: {item.expected_impact}
+                      </p>
+                    )}
                   </div>
                 </div>
               ))}

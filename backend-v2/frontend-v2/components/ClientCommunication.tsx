@@ -35,6 +35,16 @@ interface MessageTemplate {
   type: 'email' | 'sms'
 }
 
+interface MessageHistory {
+  id: number
+  type: string
+  subject: string
+  content: string
+  sent_at: string
+  status: string
+  template_used: string
+}
+
 export default function ClientCommunication({ clientId, preferences, client, onRefresh }: CommunicationProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -53,7 +63,7 @@ export default function ClientCommunication({ clientId, preferences, client, onR
   })
   
   const [activeTab, setActiveTab] = useState('preferences')
-  const [messageHistory, setMessageHistory] = useState([])
+  const [messageHistory, setMessageHistory] = useState<MessageHistory[]>([])
   const [composeMode, setComposeMode] = useState(false)
   const [newMessage, setNewMessage] = useState({
     type: 'email',
@@ -317,7 +327,7 @@ export default function ClientCommunication({ clientId, preferences, client, onR
                         onChange={(e) => handlePreferenceChange('email_notifications', e.target.checked)}
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <span className="ml-3 text-sm text-gray-700">Email Notifications</span>
+                      <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">Email Notifications</span>
                     </label>
                   </div>
                   <div>
@@ -328,7 +338,7 @@ export default function ClientCommunication({ clientId, preferences, client, onR
                         onChange={(e) => handlePreferenceChange('sms_notifications', e.target.checked)}
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <span className="ml-3 text-sm text-gray-700">SMS Notifications</span>
+                      <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">SMS Notifications</span>
                     </label>
                   </div>
                 </div>
@@ -346,7 +356,7 @@ export default function ClientCommunication({ clientId, preferences, client, onR
                         onChange={(e) => handlePreferenceChange('appointment_reminders', e.target.checked)}
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <span className="ml-3 text-sm text-gray-700">Appointment Reminders</span>
+                      <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">Appointment Reminders</span>
                     </label>
                   </div>
                   <div>
@@ -357,7 +367,7 @@ export default function ClientCommunication({ clientId, preferences, client, onR
                         onChange={(e) => handlePreferenceChange('marketing_emails', e.target.checked)}
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <span className="ml-3 text-sm text-gray-700">Marketing Emails</span>
+                      <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">Marketing Emails</span>
                     </label>
                   </div>
                   <div>
@@ -368,7 +378,7 @@ export default function ClientCommunication({ clientId, preferences, client, onR
                         onChange={(e) => handlePreferenceChange('promotional_offers', e.target.checked)}
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <span className="ml-3 text-sm text-gray-700">Promotional Offers</span>
+                      <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">Promotional Offers</span>
                     </label>
                   </div>
                   <div>
@@ -379,7 +389,7 @@ export default function ClientCommunication({ clientId, preferences, client, onR
                         onChange={(e) => handlePreferenceChange('newsletter', e.target.checked)}
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <span className="ml-3 text-sm text-gray-700">Newsletter</span>
+                      <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">Newsletter</span>
                     </label>
                   </div>
                 </div>
@@ -390,13 +400,13 @@ export default function ClientCommunication({ clientId, preferences, client, onR
                 <h4 className="text-lg font-medium text-gray-900 mb-4">Advanced Settings</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Preferred Contact Method
                     </label>
                     <select
                       value={currentPreferences.preferred_contact_method}
                       onChange={(e) => handlePreferenceChange('preferred_contact_method', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="email">Email</option>
                       <option value="sms">SMS</option>
@@ -405,13 +415,13 @@ export default function ClientCommunication({ clientId, preferences, client, onR
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Reminder Timing (hours before appointment)
                     </label>
                     <select
                       value={currentPreferences.reminder_timing}
                       onChange={(e) => handlePreferenceChange('reminder_timing', parseInt(e.target.value))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value={1}>1 hour</option>
                       <option value={2}>2 hours</option>
@@ -423,13 +433,13 @@ export default function ClientCommunication({ clientId, preferences, client, onR
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Language Preference
                     </label>
                     <select
                       value={currentPreferences.language_preference}
                       onChange={(e) => handlePreferenceChange('language_preference', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="en">English</option>
                       <option value="es">Spanish</option>
@@ -438,13 +448,13 @@ export default function ClientCommunication({ clientId, preferences, client, onR
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Timezone
                     </label>
                     <select
                       value={currentPreferences.timezone}
                       onChange={(e) => handlePreferenceChange('timezone', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="America/New_York">Eastern Time</option>
                       <option value="America/Chicago">Central Time</option>
@@ -504,7 +514,7 @@ export default function ClientCommunication({ clientId, preferences, client, onR
                       <h4 className="font-medium text-gray-900 mb-2">{message.subject}</h4>
                     )}
                     
-                    <p className="text-gray-700 text-sm bg-gray-50 p-3 rounded">
+                    <p className="text-gray-700 dark:text-gray-300 text-sm bg-gray-50 p-3 rounded">
                       {message.content}
                     </p>
                     
@@ -545,7 +555,7 @@ export default function ClientCommunication({ clientId, preferences, client, onR
                   </div>
                   
                   {template.subject && (
-                    <p className="text-sm font-medium text-gray-700 mb-2">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Subject: {template.subject}
                     </p>
                   )}
@@ -579,11 +589,11 @@ export default function ClientCommunication({ clientId, preferences, client, onR
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Message Type</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Message Type</label>
                   <select
                     value={newMessage.type}
                     onChange={(e) => setNewMessage(prev => ({ ...prev, type: e.target.value as 'email' | 'sms' }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="email">Email</option>
                     <option value="sms">SMS</option>
@@ -592,24 +602,24 @@ export default function ClientCommunication({ clientId, preferences, client, onR
                 
                 {newMessage.type === 'email' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subject</label>
                     <input
                       type="text"
                       value={newMessage.subject}
                       onChange={(e) => setNewMessage(prev => ({ ...prev, subject: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Enter email subject"
                     />
                   </div>
                 )}
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Message Content</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Message Content</label>
                   <textarea
                     value={newMessage.content}
                     onChange={(e) => setNewMessage(prev => ({ ...prev, content: e.target.value }))}
                     rows={newMessage.type === 'email' ? 8 : 4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder={newMessage.type === 'email' ? 'Enter your email message...' : 'Enter your SMS message (160 characters max)...'}
                   />
                   {newMessage.type === 'sms' && (
@@ -620,13 +630,13 @@ export default function ClientCommunication({ clientId, preferences, client, onR
                 </div>
                 
                 <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded">
-                  <strong>Available variables:</strong> {{client_name}}, {{appointment_date}}, {{appointment_time}}
+                  <strong>Available variables:</strong> {`{{client_name}}, {{appointment_date}}, {{appointment_time}}`}
                 </div>
                 
                 <div className="flex justify-end space-x-3 pt-4">
                   <button
                     onClick={() => setComposeMode(false)}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                    className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-400"
                   >
                     Cancel
                   </button>

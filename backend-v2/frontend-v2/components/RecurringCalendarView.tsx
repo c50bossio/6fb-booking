@@ -262,10 +262,10 @@ export default function RecurringCalendarView({ patterns, onPatternSelect }: Rec
                             <div
                               key={aptIndex}
                               className={`text-xs px-1 py-0.5 rounded border cursor-pointer transition-opacity ${
-                                patternColorMap.get(apt.pattern_id)
+                                apt.pattern_id ? patternColorMap.get(apt.pattern_id) : ''
                               } ${hoveredPattern && hoveredPattern !== apt.pattern_id ? 'opacity-30' : ''}`}
                               onClick={() => onPatternSelect(pattern)}
-                              onMouseEnter={() => setHoveredPattern(apt.pattern_id)}
+                              onMouseEnter={() => setHoveredPattern(apt.pattern_id || null)}
                               onMouseLeave={() => setHoveredPattern(null)}
                               title={`${pattern.service?.name} - ${new Date(apt.start_time).toLocaleTimeString([], {
                                 hour: '2-digit',

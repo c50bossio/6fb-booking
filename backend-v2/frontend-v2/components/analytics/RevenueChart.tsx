@@ -96,7 +96,7 @@ export default function RevenueChart({
         )}
         <CardContent>
           <ErrorDisplay 
-            message={error} 
+            error={error} 
             onRetry={() => fetchAnalytics(selectedPeriod)} 
           />
         </CardContent>

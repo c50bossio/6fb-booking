@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { fetchAPI } from '@/lib/api';
 import { format, parseISO, addMonths } from 'date-fns';
-import { Gift, Plus, Search, Download, Mail, Copy, CheckCircle, AlertCircle } from 'lucide-react';
+import { Gift, Plus, Search, Download, Mail, Copy, CheckCircle, AlertCircle, X } from 'lucide-react';
 
 interface GiftCertificate {
   id: number;
@@ -237,7 +237,7 @@ export default function GiftCertificates({ onClose }: GiftCertificatesProps) {
                 placeholder="Search by code, purchaser, or recipient..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -245,7 +245,7 @@ export default function GiftCertificates({ onClose }: GiftCertificatesProps) {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+            className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -374,7 +374,7 @@ export default function GiftCertificates({ onClose }: GiftCertificatesProps) {
                 {/* Amount and Quantity */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Amount
                     </label>
                     <div className="relative">
@@ -388,13 +388,13 @@ export default function GiftCertificates({ onClose }: GiftCertificatesProps) {
                         required
                         value={formData.amount}
                         onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                        className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full pl-8 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       />
                     </div>
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Quantity
                     </label>
                     <input
@@ -404,7 +404,7 @@ export default function GiftCertificates({ onClose }: GiftCertificatesProps) {
                       required
                       value={formData.quantity}
                       onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -419,7 +419,7 @@ export default function GiftCertificates({ onClose }: GiftCertificatesProps) {
                       required
                       value={formData.purchaser_name}
                       onChange={(e) => setFormData({ ...formData, purchaser_name: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                     <input
                       type="email"
@@ -427,7 +427,7 @@ export default function GiftCertificates({ onClose }: GiftCertificatesProps) {
                       required
                       value={formData.purchaser_email}
                       onChange={(e) => setFormData({ ...formData, purchaser_email: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -441,21 +441,21 @@ export default function GiftCertificates({ onClose }: GiftCertificatesProps) {
                       placeholder="Recipient Name"
                       value={formData.recipient_name}
                       onChange={(e) => setFormData({ ...formData, recipient_name: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                     <input
                       type="email"
                       placeholder="Recipient Email"
                       value={formData.recipient_email}
                       onChange={(e) => setFormData({ ...formData, recipient_email: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
                 </div>
                 
                 {/* Message */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Personal Message (Optional)
                   </label>
                   <textarea
@@ -463,19 +463,19 @@ export default function GiftCertificates({ onClose }: GiftCertificatesProps) {
                     placeholder="Enter a personal message for the recipient..."
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
                 
                 {/* Validity Period */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Validity Period
                   </label>
                   <select
                     value={formData.validity_months}
                     onChange={(e) => setFormData({ ...formData, validity_months: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   >
                     <option value="6">6 months</option>
                     <option value="12">12 months</option>
@@ -496,7 +496,7 @@ export default function GiftCertificates({ onClose }: GiftCertificatesProps) {
                 <button
                   type="button"
                   onClick={() => setShowCreateForm(false)}
-                  className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+                  className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-400 transition-colors"
                 >
                   Cancel
                 </button>

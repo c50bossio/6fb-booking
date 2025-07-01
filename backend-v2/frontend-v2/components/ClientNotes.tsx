@@ -317,22 +317,22 @@ export default function ClientNotes({ clientId, client, onRefresh }: NotesProps)
         
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search</label>
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search notes and tags..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Note Type</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Note Type</label>
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             >
               <option value="all">All Types</option>
               {noteTypes.map(type => (
@@ -342,11 +342,11 @@ export default function ClientNotes({ clientId, client, onRefresh }: NotesProps)
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sort By</label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             >
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
@@ -363,7 +363,7 @@ export default function ClientNotes({ clientId, client, onRefresh }: NotesProps)
                 onChange={(e) => setShowPrivate(e.target.checked)}
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              <span className="ml-2 text-sm text-gray-700">Show Private Notes</span>
+              <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Show Private Notes</span>
             </label>
           </div>
 
@@ -375,7 +375,7 @@ export default function ClientNotes({ clientId, client, onRefresh }: NotesProps)
                 setSortBy('newest')
                 setShowPrivate(true)
               }}
-              className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm"
+              className="w-full px-4 py-2 bg-gray-100 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 transition-colors text-sm"
             >
               Clear Filters
             </button>
@@ -435,7 +435,7 @@ export default function ClientNotes({ clientId, client, onRefresh }: NotesProps)
                 {note.tags.length > 0 && (
                   <div className="mt-4 flex flex-wrap gap-2">
                     {note.tags.map((tag, index) => (
-                      <span key={index} className="inline-flex px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full">
+                      <span key={index} className="inline-flex px-2 py-1 text-xs bg-gray-100 text-gray-700 dark:text-gray-300 rounded-full">
                         #{tag}
                       </span>
                     ))}
@@ -476,11 +476,11 @@ export default function ClientNotes({ clientId, client, onRefresh }: NotesProps)
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Note Type</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Note Type</label>
                   <select
                     value={newNote.note_type}
                     onChange={(e) => setNewNote(prev => ({ ...prev, note_type: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     {noteTypes.map(type => (
                       <option key={type.value} value={type.value}>
@@ -491,18 +491,18 @@ export default function ClientNotes({ clientId, client, onRefresh }: NotesProps)
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Note Content</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Note Content</label>
                   <textarea
                     value={newNote.content}
                     onChange={(e) => setNewNote(prev => ({ ...prev, content: e.target.value }))}
                     rows={6}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Enter your note here..."
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tags</label>
                   <div className="flex flex-wrap gap-2 mb-2">
                     {newNote.tags.map((tag, index) => (
                       <span key={index} className="inline-flex items-center px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
@@ -519,7 +519,7 @@ export default function ClientNotes({ clientId, client, onRefresh }: NotesProps)
                   <input
                     type="text"
                     placeholder="Add tags (press Enter)"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     onKeyPress={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault()
@@ -541,7 +541,7 @@ export default function ClientNotes({ clientId, client, onRefresh }: NotesProps)
                       onChange={(e) => setNewNote(prev => ({ ...prev, is_private: e.target.checked }))}
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <span className="ml-2 text-sm text-gray-700">
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                       Make this note private (only visible to managers and above)
                     </span>
                   </label>
@@ -550,7 +550,7 @@ export default function ClientNotes({ clientId, client, onRefresh }: NotesProps)
                 <div className="flex justify-end space-x-3 pt-4">
                   <button
                     onClick={() => setShowAddModal(false)}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                    className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-400"
                   >
                     Cancel
                   </button>
@@ -587,11 +587,11 @@ export default function ClientNotes({ clientId, client, onRefresh }: NotesProps)
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Note Type</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Note Type</label>
                   <select
                     value={editingNote.note_type}
                     onChange={(e) => setEditingNote(prev => prev ? { ...prev, note_type: e.target.value } : null)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     {noteTypes.map(type => (
                       <option key={type.value} value={type.value}>
@@ -602,12 +602,12 @@ export default function ClientNotes({ clientId, client, onRefresh }: NotesProps)
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Note Content</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Note Content</label>
                   <textarea
                     value={editingNote.content}
                     onChange={(e) => setEditingNote(prev => prev ? { ...prev, content: e.target.value } : null)}
                     rows={6}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Enter your note here..."
                   />
                 </div>
@@ -620,7 +620,7 @@ export default function ClientNotes({ clientId, client, onRefresh }: NotesProps)
                       onChange={(e) => setEditingNote(prev => prev ? { ...prev, is_private: e.target.checked } : null)}
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <span className="ml-2 text-sm text-gray-700">
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                       Make this note private (only visible to managers and above)
                     </span>
                   </label>
@@ -629,7 +629,7 @@ export default function ClientNotes({ clientId, client, onRefresh }: NotesProps)
                 <div className="flex justify-end space-x-3 pt-4">
                   <button
                     onClick={() => setEditingNote(null)}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                    className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-400"
                   >
                     Cancel
                   </button>

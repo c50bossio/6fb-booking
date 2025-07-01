@@ -206,7 +206,7 @@ export default function RefundManager({ payment, onClose, onComplete }: RefundMa
                 <button
                   onClick={() => setShowConfirmation(false)}
                   disabled={processing}
-                  className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-400 transition-colors disabled:opacity-50"
                 >
                   Back
                 </button>
@@ -224,7 +224,7 @@ export default function RefundManager({ payment, onClose, onComplete }: RefundMa
             <div className="space-y-4">
               {/* Refund Type */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Refund Type
                 </label>
                 <div className="grid grid-cols-2 gap-3">
@@ -253,7 +253,7 @@ export default function RefundManager({ payment, onClose, onComplete }: RefundMa
 
               {/* Refund Amount */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Refund Amount
                 </label>
                 <div className="relative">
@@ -265,7 +265,7 @@ export default function RefundManager({ payment, onClose, onComplete }: RefundMa
                     value={refundAmount}
                     onChange={(e) => handleRefundAmountChange(e.target.value)}
                     disabled={refundType === 'full'}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-gray-50"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-gray-50"
                     placeholder="0.00"
                   />
                 </div>
@@ -278,13 +278,13 @@ export default function RefundManager({ payment, onClose, onComplete }: RefundMa
 
               {/* Reason */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Reason for Refund
                 </label>
                 <select
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                 >
                   <option value="">Select a reason</option>
                   {REFUND_REASONS.map((r) => (
@@ -298,14 +298,14 @@ export default function RefundManager({ payment, onClose, onComplete }: RefundMa
               {/* Custom Reason */}
               {reason === 'other' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Please specify
                   </label>
                   <textarea
                     value={customReason}
                     onChange={(e) => setCustomReason(e.target.value)}
                     rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                     placeholder="Enter the reason for refund..."
                   />
                 </div>
@@ -320,7 +320,7 @@ export default function RefundManager({ payment, onClose, onComplete }: RefundMa
                   onChange={(e) => setNotifyCustomer(e.target.checked)}
                   className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
                 />
-                <label htmlFor="notify-customer" className="ml-2 text-sm text-gray-700">
+                <label htmlFor="notify-customer" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                   Send refund notification to customer
                 </label>
               </div>
@@ -347,7 +347,7 @@ export default function RefundManager({ payment, onClose, onComplete }: RefundMa
               <div className="flex gap-3 pt-4">
                 <button
                   onClick={onClose}
-                  className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+                  className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-400 transition-colors"
                 >
                   Cancel
                 </button>

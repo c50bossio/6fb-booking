@@ -41,7 +41,7 @@ export default function ComparisonChart({
 
   const calculateDateRanges = useCallback((type: ComparisonType) => {
     const now = new Date()
-    const currentEnd = new Date(now)
+    let currentEnd = new Date(now)
     let currentStart = new Date(now)
     let previousEnd = new Date()
     let previousStart = new Date()
@@ -208,7 +208,7 @@ export default function ComparisonChart({
         )}
         <CardContent>
           <ErrorDisplay 
-            message={error} 
+            error={error} 
             onRetry={() => fetchComparisonData(selectedComparison)} 
           />
         </CardContent>

@@ -238,7 +238,7 @@ export default function SendNotification() {
         <div className="px-6 py-6 space-y-6">
           {/* Notification Type */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Communication Method
             </label>
             <div className="space-y-3">
@@ -285,7 +285,7 @@ export default function SendNotification() {
 
           {/* Template or Custom Message */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Message Source
             </label>
             <div className="flex space-x-4 mb-4">
@@ -296,7 +296,7 @@ export default function SendNotification() {
                   onChange={() => setUseTemplate(true)}
                   className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300"
                 />
-                <span className="ml-2 text-sm text-gray-700">Use Template</span>
+                <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Use Template</span>
               </label>
               <label className="flex items-center">
                 <input
@@ -305,13 +305,13 @@ export default function SendNotification() {
                   onChange={() => setUseTemplate(false)}
                   className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300"
                 />
-                <span className="ml-2 text-sm text-gray-700">Custom Message</span>
+                <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Custom Message</span>
               </label>
             </div>
 
             {useTemplate ? (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Select Template
                 </label>
                 <select
@@ -320,7 +320,7 @@ export default function SendNotification() {
                     const template = templates.find(t => t.id === parseInt(e.target.value))
                     setSelectedTemplate(template || null)
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                 >
                   <option value="">Select a template...</option>
                   {templates.map((template) => (
@@ -334,7 +334,7 @@ export default function SendNotification() {
               <div className="space-y-4">
                 {notificationType === 'email' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Subject
                     </label>
                     <input
@@ -342,12 +342,12 @@ export default function SendNotification() {
                       value={customSubject}
                       onChange={(e) => setCustomSubject(e.target.value)}
                       placeholder="Enter email subject..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                   </div>
                 )}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Message
                   </label>
                   <textarea
@@ -355,7 +355,7 @@ export default function SendNotification() {
                     onChange={(e) => setCustomMessage(e.target.value)}
                     placeholder="Enter your message..."
                     rows={6}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                   />
                 </div>
               </div>
@@ -365,7 +365,7 @@ export default function SendNotification() {
           {/* Template Variables */}
           {useTemplate && selectedTemplate && selectedTemplate.variables.length > 0 && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
                 Template Variables
               </label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -379,7 +379,7 @@ export default function SendNotification() {
                       value={variables[variable] || ''}
                       onChange={(e) => handleVariableChange(variable, e.target.value)}
                       placeholder={`Enter ${variable}...`}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                   </div>
                 ))}
@@ -390,7 +390,7 @@ export default function SendNotification() {
           {/* Subject Override for Templates */}
           {useTemplate && selectedTemplate && notificationType === 'email' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Email Subject {selectedTemplate.subject && '(Override)'}
               </label>
               <input
@@ -398,14 +398,14 @@ export default function SendNotification() {
                 value={customSubject}
                 onChange={(e) => setCustomSubject(e.target.value)}
                 placeholder={selectedTemplate.subject || "Enter email subject..."}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
             </div>
           )}
 
           {/* Recipients */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {notificationType === 'sms' ? (
                 <span>
                   <span className="text-teal-700 font-semibold">Customer Phone Numbers (REAL MOBILE PHONES)</span>
@@ -425,7 +425,7 @@ export default function SendNotification() {
                 : "Enter customer mobile phone numbers (e.g., +1234567890, +1987654321)..."
               }
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
             <div className="mt-2 space-y-1">
               {notificationType === 'sms' ? (
@@ -453,7 +453,7 @@ export default function SendNotification() {
 
           {/* Quick Add Recipients */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Quick Add Recipients
             </label>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
@@ -480,14 +480,14 @@ export default function SendNotification() {
 
           {/* Schedule (Optional) */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Schedule For (Optional)
             </label>
             <input
               type="datetime-local"
               value={scheduleFor}
               onChange={(e) => setScheduleFor(e.target.value)}
-              className="w-full max-w-md px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full max-w-md px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
             <p className="text-sm text-gray-500 mt-1">
               Leave empty to send immediately
@@ -509,7 +509,7 @@ export default function SendNotification() {
                   setError('')
                   setSuccess('')
                 }}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
                 Clear Form
               </button>
@@ -540,14 +540,14 @@ export default function SendNotification() {
           <div className="px-6 py-6">
             {notificationType === 'email' && customSubject && (
               <div className="mb-4">
-                <div className="text-sm font-medium text-gray-700 mb-2">Subject:</div>
+                <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subject:</div>
                 <div className="bg-gray-50 p-3 rounded border text-sm">
                   {renderSubjectPreview()}
                 </div>
               </div>
             )}
             <div>
-              <div className="text-sm font-medium text-gray-700 mb-2">Message:</div>
+              <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Message:</div>
               <div className="bg-gray-50 p-4 rounded border text-sm whitespace-pre-wrap">
                 {useTemplate ? renderTemplatePreview() : customMessage}
               </div>
@@ -555,7 +555,7 @@ export default function SendNotification() {
             
             {Object.keys(variables).length > 0 && (
               <div className="mt-4 pt-4 border-t border-gray-200">
-                <div className="text-sm font-medium text-gray-700 mb-2">Variables Used:</div>
+                <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Variables Used:</div>
                 <div className="bg-blue-50 p-3 rounded text-xs">
                   {Object.entries(variables).map(([key, value], index) => (
                     <div key={index} className="flex justify-between py-1">

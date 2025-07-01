@@ -22,14 +22,14 @@ export default function WebhookDocumentation() {
           <div className="prose max-w-none">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Webhook Overview</h2>
             
-            <p className="text-gray-700 mb-4">
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
               Webhooks allow your application to receive real-time notifications when events occur in the 6FB Booking platform. 
               Instead of polling our API for changes, you can register webhook endpoints that will receive HTTP POST requests 
               whenever specific events happen.
             </p>
 
             <h3 className="text-lg font-semibold text-gray-900 mt-6 mb-3">Key Features</h3>
-            <ul className="list-disc pl-6 space-y-2 text-gray-700">
+            <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
               <li>Real-time event notifications</li>
               <li>Automatic retry mechanism for failed deliveries</li>
               <li>Multiple authentication methods supported</li>
@@ -38,7 +38,7 @@ export default function WebhookDocumentation() {
             </ul>
 
             <h3 className="text-lg font-semibold text-gray-900 mt-6 mb-3">How It Works</h3>
-            <ol className="list-decimal pl-6 space-y-2 text-gray-700">
+            <ol className="list-decimal pl-6 space-y-2 text-gray-700 dark:text-gray-300">
               <li>Register a webhook endpoint URL in the admin panel</li>
               <li>Select the events you want to receive</li>
               <li>Configure authentication (optional but recommended)</li>
@@ -53,7 +53,7 @@ export default function WebhookDocumentation() {
           <div className="prose max-w-none">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Authentication Methods</h2>
             
-            <p className="text-gray-700 mb-4">
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
               We support multiple authentication methods to secure your webhook endpoints. Choose the method that best fits 
               your security requirements and infrastructure.
             </p>
@@ -61,7 +61,7 @@ export default function WebhookDocumentation() {
             <div className="space-y-6">
               <div className="bg-gray-50 rounded-lg p-4">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Bearer Token</h3>
-                <p className="text-gray-700 mb-2">
+                <p className="text-gray-700 dark:text-gray-300 mb-2">
                   Send a static bearer token in the Authorization header.
                 </p>
                 <div className="bg-white rounded border border-gray-200 p-3 font-mono text-sm">
@@ -71,7 +71,7 @@ export default function WebhookDocumentation() {
 
               <div className="bg-gray-50 rounded-lg p-4">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Basic Authentication</h3>
-                <p className="text-gray-700 mb-2">
+                <p className="text-gray-700 dark:text-gray-300 mb-2">
                   Use HTTP Basic Authentication with username and password.
                 </p>
                 <div className="bg-white rounded border border-gray-200 p-3 font-mono text-sm">
@@ -81,7 +81,7 @@ export default function WebhookDocumentation() {
 
               <div className="bg-gray-50 rounded-lg p-4">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">HMAC Signature</h3>
-                <p className="text-gray-700 mb-2">
+                <p className="text-gray-700 dark:text-gray-300 mb-2">
                   Verify webhook authenticity using HMAC-SHA256 signatures.
                 </p>
                 <div className="bg-white rounded border border-gray-200 p-3 font-mono text-sm">
@@ -94,7 +94,7 @@ export default function WebhookDocumentation() {
 
               <div className="bg-gray-50 rounded-lg p-4">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">API Key</h3>
-                <p className="text-gray-700 mb-2">
+                <p className="text-gray-700 dark:text-gray-300 mb-2">
                   Include an API key in a custom header.
                 </p>
                 <div className="bg-white rounded border border-gray-200 p-3 font-mono text-sm">
@@ -110,7 +110,7 @@ export default function WebhookDocumentation() {
           <div className="prose max-w-none">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Event Types</h2>
             
-            <p className="text-gray-700 mb-4">
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
               The following events can trigger webhook notifications. Subscribe only to the events relevant to your integration.
             </p>
 
@@ -120,30 +120,30 @@ export default function WebhookDocumentation() {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Event</th>
-                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Description</th>
+                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Event</th>
+                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Description</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
                     <tr>
                       <td className="px-4 py-2 font-mono text-sm">booking.created</td>
-                      <td className="px-4 py-2 text-sm text-gray-700">A new booking has been created</td>
+                      <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">A new booking has been created</td>
                     </tr>
                     <tr>
                       <td className="px-4 py-2 font-mono text-sm">booking.updated</td>
-                      <td className="px-4 py-2 text-sm text-gray-700">Booking details have been modified</td>
+                      <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">Booking details have been modified</td>
                     </tr>
                     <tr>
                       <td className="px-4 py-2 font-mono text-sm">booking.cancelled</td>
-                      <td className="px-4 py-2 text-sm text-gray-700">A booking has been cancelled</td>
+                      <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">A booking has been cancelled</td>
                     </tr>
                     <tr>
                       <td className="px-4 py-2 font-mono text-sm">booking.confirmed</td>
-                      <td className="px-4 py-2 text-sm text-gray-700">A booking has been confirmed</td>
+                      <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">A booking has been confirmed</td>
                     </tr>
                     <tr>
                       <td className="px-4 py-2 font-mono text-sm">booking.completed</td>
-                      <td className="px-4 py-2 text-sm text-gray-700">A booking has been marked as completed</td>
+                      <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">A booking has been marked as completed</td>
                     </tr>
                   </tbody>
                 </table>
@@ -154,22 +154,22 @@ export default function WebhookDocumentation() {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Event</th>
-                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Description</th>
+                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Event</th>
+                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Description</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
                     <tr>
                       <td className="px-4 py-2 font-mono text-sm">payment.completed</td>
-                      <td className="px-4 py-2 text-sm text-gray-700">Payment successfully processed</td>
+                      <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">Payment successfully processed</td>
                     </tr>
                     <tr>
                       <td className="px-4 py-2 font-mono text-sm">payment.failed</td>
-                      <td className="px-4 py-2 text-sm text-gray-700">Payment processing failed</td>
+                      <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">Payment processing failed</td>
                     </tr>
                     <tr>
                       <td className="px-4 py-2 font-mono text-sm">payment.refunded</td>
-                      <td className="px-4 py-2 text-sm text-gray-700">Payment has been refunded</td>
+                      <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">Payment has been refunded</td>
                     </tr>
                   </tbody>
                 </table>
@@ -183,7 +183,7 @@ export default function WebhookDocumentation() {
           <div className="prose max-w-none">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Payload Structure</h2>
             
-            <p className="text-gray-700 mb-4">
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
               All webhook payloads follow a consistent structure with event-specific data included in the data field.
             </p>
 
@@ -251,16 +251,16 @@ export default function WebhookDocumentation() {
           <div className="prose max-w-none">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Retry Logic</h2>
             
-            <p className="text-gray-700 mb-4">
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
               We implement automatic retry logic to ensure reliable webhook delivery. Understanding how retries work 
               helps you design resilient webhook endpoints.
             </p>
 
             <h3 className="text-lg font-semibold text-gray-900 mb-3">Retry Schedule</h3>
-            <p className="text-gray-700 mb-4">
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
               Failed webhook deliveries are retried with exponential backoff:
             </p>
-            <ul className="list-disc pl-6 space-y-2 text-gray-700 mb-4">
+            <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300 mb-4">
               <li>1st retry: 1 minute after initial failure</li>
               <li>2nd retry: 5 minutes after 1st retry</li>
               <li>3rd retry: 30 minutes after 2nd retry</li>
@@ -288,7 +288,7 @@ export default function WebhookDocumentation() {
             </div>
 
             <h3 className="text-lg font-semibold text-gray-900 mb-3">Best Practices</h3>
-            <ul className="list-disc pl-6 space-y-2 text-gray-700">
+            <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
               <li>Respond quickly with a 2xx status, then process asynchronously</li>
               <li>Implement idempotency to handle duplicate deliveries</li>
               <li>Log all received webhooks for debugging</li>
@@ -303,12 +303,12 @@ export default function WebhookDocumentation() {
           <div className="prose max-w-none">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Security Best Practices</h2>
             
-            <p className="text-gray-700 mb-4">
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
               Securing your webhook endpoints is crucial to prevent unauthorized access and ensure data integrity.
             </p>
 
             <h3 className="text-lg font-semibold text-gray-900 mb-3">Verify Webhook Signatures</h3>
-            <p className="text-gray-700 mb-4">
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
               Always verify the HMAC signature to ensure webhooks are coming from our servers:
             </p>
             <div className="bg-gray-50 rounded-lg p-4 mb-4">
@@ -331,7 +331,7 @@ function verifyWebhookSignature(payload, signature, secret) {
             </div>
 
             <h3 className="text-lg font-semibold text-gray-900 mb-3">Additional Security Measures</h3>
-            <ul className="list-disc pl-6 space-y-2 text-gray-700">
+            <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
               <li>
                 <strong>Use HTTPS:</strong> Always use HTTPS endpoints to encrypt data in transit
               </li>
@@ -359,7 +359,7 @@ function verifyWebhookSignature(payload, signature, secret) {
           <div className="prose max-w-none">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Implementation Examples</h2>
             
-            <p className="text-gray-700 mb-4">
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
               Here are example implementations for handling webhooks in different programming languages.
             </p>
 

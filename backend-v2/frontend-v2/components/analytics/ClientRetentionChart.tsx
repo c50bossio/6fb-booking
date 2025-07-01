@@ -81,7 +81,7 @@ export default function ClientRetentionChart({ userId, timeRange }: ClientRetent
           <CardTitle>Client Retention Analytics</CardTitle>
         </CardHeader>
         <CardContent>
-          <ErrorDisplay message={error} onRetry={() => window.location.reload()} />
+          <ErrorDisplay error={error} onRetry={() => window.location.reload()} />
         </CardContent>
       </Card>
     )

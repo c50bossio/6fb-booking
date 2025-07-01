@@ -63,7 +63,7 @@ export default function ImportProgress({
       const errors: any[] = []
       const successful: any[] = []
 
-      for (const [index, batch] of batches.entries()) {
+      for (const [index, batch] of Array.from(batches.entries())) {
         try {
           // Import batch
           const result = await importClients(batch)
@@ -170,10 +170,10 @@ export default function ImportProgress({
           {progress.isImporting && (
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Importing... {progress.completed} of {progress.total}
                 </span>
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   {Math.round(progress.progress)}%
                 </span>
               </div>
@@ -272,7 +272,7 @@ export default function ImportProgress({
                 <svg className="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="text-gray-700">
+                <span className="text-gray-700 dark:text-gray-300">
                   Successfully imported {progress.results.successful} customer records
                 </span>
               </div>
@@ -280,7 +280,7 @@ export default function ImportProgress({
                 <svg className="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                <span className="text-gray-700">
+                <span className="text-gray-700 dark:text-gray-300">
                   Data imported from: {importedData.filename}
                 </span>
               </div>
@@ -288,7 +288,7 @@ export default function ImportProgress({
                 <svg className="w-5 h-5 text-purple-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="text-gray-700">
+                <span className="text-gray-700 dark:text-gray-300">
                   Import completed at: {new Date().toLocaleString()}
                 </span>
               </div>

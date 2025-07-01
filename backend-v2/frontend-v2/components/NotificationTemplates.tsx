@@ -40,16 +40,8 @@ export default function NotificationTemplates() {
   }
 
   const renderTemplatePreview = (template: NotificationTemplate) => {
-    if (!template.body) return 'No content available'
-    
-    // Simple template variable replacement for preview
-    let preview = template.body
-    Object.entries(previewData).forEach(([key, value]) => {
-      const regex = new RegExp(`{{\\s*${key}\\s*}}`, 'g')
-      preview = preview.replace(regex, String(value))
-    })
-    
-    return preview
+    // Since body is not available in the interface, show template info
+    return `Template: ${template.name} (${template.template_type})`
   }
 
   const getStatusBadge = (isActive: boolean) => {
@@ -111,11 +103,11 @@ export default function NotificationTemplates() {
             <div className="flex items-center space-x-4">
               {/* Filter Controls */}
               <div className="flex items-center space-x-2">
-                <label className="text-sm font-medium text-gray-700">Type:</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Type:</label>
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
-                  className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                 >
                   <option value="all">All Types</option>
                   <option value="email">Email</option>
@@ -130,7 +122,7 @@ export default function NotificationTemplates() {
                   onChange={(e) => setShowInactive(e.target.checked)}
                   className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
                 />
-                <label htmlFor="showInactive" className="ml-2 text-sm text-gray-700">
+                <label htmlFor="showInactive" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                   Show inactive
                 </label>
               </div>
@@ -175,7 +167,7 @@ export default function NotificationTemplates() {
 
                     {template.subject && (
                       <div className="mb-3">
-                        <div className="text-xs font-medium text-gray-700 mb-1">Subject:</div>
+                        <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Subject:</div>
                         <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
                           {template.subject}
                         </div>
@@ -183,7 +175,7 @@ export default function NotificationTemplates() {
                     )}
 
                     <div className="mb-3">
-                      <div className="text-xs font-medium text-gray-700 mb-1">Variables:</div>
+                      <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Variables:</div>
                       <div className="flex flex-wrap gap-1">
                         {template.variables.map((variable, index) => (
                           <span
@@ -316,7 +308,7 @@ export default function NotificationTemplates() {
                   </div>
                   
                   <div className="mt-4">
-                    <h5 className="text-sm font-medium text-gray-700 mb-2">Sample Data Used:</h5>
+                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sample Data Used:</h5>
                     <div className="bg-blue-50 p-3 rounded text-xs">
                       {Object.entries(previewData).map(([key, value], index) => (
                         <div key={index} className="flex justify-between py-1">
@@ -333,7 +325,7 @@ export default function NotificationTemplates() {
             <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
               <button
                 onClick={() => setShowPreview(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 rounded-md hover:bg-gray-200"
               >
                 Close
               </button>

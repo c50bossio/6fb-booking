@@ -95,7 +95,7 @@ export default function ServiceRevenueChart({
         )}
         <CardContent>
           <ErrorDisplay 
-            message={error} 
+            error={error} 
             onRetry={fetchAnalytics} 
           />
         </CardContent>

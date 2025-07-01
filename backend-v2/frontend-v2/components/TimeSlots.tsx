@@ -77,7 +77,7 @@ export default function TimeSlots({ slots, selectedTime, onTimeSelect, loading =
 
     return (
       <div className="mb-6 last:mb-0">
-        <h3 className="text-sm font-medium text-gray-700 mb-3">{title}</h3>
+        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{title}</h3>
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
           {slots.map((slot) => (
             <div key={slot.time} className="relative">

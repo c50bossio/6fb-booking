@@ -176,7 +176,7 @@ export default function CalendarConflictResolver() {
       setResolving('bulk')
       
       // Process each selected conflict
-      for (const conflictId of selectedConflicts) {
+      for (const conflictId of Array.from(selectedConflicts)) {
         await handleResolveConflict(conflictId, action)
       }
       
@@ -388,7 +388,7 @@ export default function CalendarConflictResolver() {
                         <p className="text-sm text-gray-800">
                           {conflict.google_event.summary}
                         </p>
-                        <p className="text-sm text-gray-700 mt-1">
+                        <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
                           {format(new Date(conflict.google_event.start), 'MMM d, h:mm a')} - 
                           {format(new Date(conflict.google_event.end), 'h:mm a')}
                         </p>

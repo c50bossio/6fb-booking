@@ -460,7 +460,7 @@ function AddTimeOffModal({
                 onChange={(e) => setIsFullDay(e.target.checked)}
                 className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
               />
-              <label htmlFor="fullDay" className="text-sm font-medium text-gray-700">
+              <label htmlFor="fullDay" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Full day(s) off
               </label>
             </div>
@@ -486,7 +486,7 @@ function AddTimeOffModal({
             )}
             
             <div>
-              <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="notes" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Notes (optional)
               </label>
               <textarea
@@ -494,7 +494,7 @@ function AddTimeOffModal({
                 value={formData.notes}
                 onChange={(e) => handleInputChange('notes', e.target.value)}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 placeholder="Add any additional information about this time off..."
               />
             </div>

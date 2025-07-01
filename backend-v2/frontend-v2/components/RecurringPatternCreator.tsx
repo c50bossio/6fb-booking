@@ -305,7 +305,7 @@ export default function RecurringPatternCreator({ onPatternCreated, onCancel }: 
                 Duration
               </label>
               <Select
-                value={duration}
+                value={duration.toString()}
                 onChange={(e) => setDuration(parseInt(e.target.value))}
               >
                 {DURATIONS.map(d => (

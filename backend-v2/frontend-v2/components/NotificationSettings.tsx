@@ -6,12 +6,12 @@ import {
   updateNotificationPreferences, 
   sendTestEmail, 
   sendTestSMS,
-  NotificationPreferences,
-  NotificationPreferencesUpdate 
+  NotificationPreference,
+  NotificationPreferenceUpdate 
 } from '../lib/api'
 
 export default function NotificationSettings() {
-  const [preferences, setPreferences] = useState<NotificationPreferences | null>(null)
+  const [preferences, setPreferences] = useState<NotificationPreference | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -19,7 +19,7 @@ export default function NotificationSettings() {
   const [testingEmail, setTestingEmail] = useState(false)
   const [testingSMS, setTestingSMS] = useState(false)
   
-  const [formData, setFormData] = useState<NotificationPreferencesUpdate>({})
+  const [formData, setFormData] = useState<NotificationPreferenceUpdate>({})
 
   useEffect(() => {
     loadPreferences()
@@ -36,12 +36,10 @@ export default function NotificationSettings() {
         email_appointment_confirmation: userPreferences.email_appointment_confirmation,
         email_appointment_reminder: userPreferences.email_appointment_reminder,
         email_appointment_changes: userPreferences.email_appointment_changes,
-        email_marketing: userPreferences.email_marketing,
         sms_enabled: userPreferences.sms_enabled,
         sms_appointment_confirmation: userPreferences.sms_appointment_confirmation,
         sms_appointment_reminder: userPreferences.sms_appointment_reminder,
         sms_appointment_changes: userPreferences.sms_appointment_changes,
-        sms_marketing: userPreferences.sms_marketing,
         reminder_hours: userPreferences.reminder_hours
       })
     } catch (err: any) {
@@ -51,7 +49,7 @@ export default function NotificationSettings() {
     }
   }
 
-  const handleInputChange = (field: keyof NotificationPreferencesUpdate, value: any) => {
+  const handleInputChange = (field: keyof NotificationPreferenceUpdate, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     setError('')
     setSuccess('')
@@ -173,7 +171,7 @@ export default function NotificationSettings() {
                   onChange={(e) => handleInputChange('email_enabled', e.target.checked)}
                   className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
                 />
-                <label htmlFor="email_enabled" className="ml-3 text-sm font-medium text-gray-700">
+                <label htmlFor="email_enabled" className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">
                   Enable email notifications
                 </label>
               </div>
@@ -216,18 +214,6 @@ export default function NotificationSettings() {
                       Appointment changes and cancellations
                     </label>
                   </div>
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id="email_marketing"
-                      checked={formData.email_marketing || false}
-                      onChange={(e) => handleInputChange('email_marketing', e.target.checked)}
-                      className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
-                    />
-                    <label htmlFor="email_marketing" className="ml-3 text-sm text-gray-600">
-                      Marketing and promotional emails
-                    </label>
-                  </div>
                 </div>
               )}
             </div>
@@ -248,7 +234,7 @@ export default function NotificationSettings() {
                   onChange={(e) => handleInputChange('sms_enabled', e.target.checked)}
                   className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
                 />
-                <label htmlFor="sms_enabled" className="ml-3 text-sm font-medium text-gray-700">
+                <label htmlFor="sms_enabled" className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">
                   Enable SMS notifications
                 </label>
               </div>
@@ -291,18 +277,6 @@ export default function NotificationSettings() {
                       Appointment changes and cancellations
                     </label>
                   </div>
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id="sms_marketing"
-                      checked={formData.sms_marketing || false}
-                      onChange={(e) => handleInputChange('sms_marketing', e.target.checked)}
-                      className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
-                    />
-                    <label htmlFor="sms_marketing" className="ml-3 text-sm text-gray-600">
-                      Marketing and promotional messages
-                    </label>
-                  </div>
                 </div>
               )}
             </div>
@@ -316,7 +290,7 @@ export default function NotificationSettings() {
             </h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Send reminders (hours before appointment)
                 </label>
                 <input
@@ -324,7 +298,7 @@ export default function NotificationSettings() {
                   value={formData.reminder_hours?.join(', ') || ''}
                   onChange={(e) => handleReminderHoursChange(e.target.value)}
                   placeholder="e.g., 24, 2"
-                  className="w-full max-w-md px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full max-w-md px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
                 <p className="text-sm text-gray-500 mt-1">
                   Enter comma-separated hours (e.g., "24, 2" for 24 hours and 2 hours before)

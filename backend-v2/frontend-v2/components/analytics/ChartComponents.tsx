@@ -245,8 +245,6 @@ export function GaugeChart({
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        rotation: 270,
-        circumference: 180,
         plugins: {
           legend: {
             display: false,

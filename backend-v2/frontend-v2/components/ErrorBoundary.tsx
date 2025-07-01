@@ -1,31 +1,79 @@
 'use client'
 
-import React, { Component, ReactNode } from 'react'
+import React, { Component, ReactNode, ErrorInfo } from 'react'
+import { AlertTriangle, RefreshCw, Home } from 'lucide-react'
+import { Button } from './ui/Button'
+import { Alert, AlertDescription, AlertTitle } from './ui/alert'
 
 interface Props {
   children: ReactNode
   fallback?: ReactNode
   onError?: (error: Error, errorInfo: React.ErrorInfo) => void
+  resetKeys?: Array<string | number>
+  resetOnPropsChange?: boolean
 }
 
 interface State {
   hasError: boolean
   error?: Error
+  errorInfo?: ErrorInfo
+  errorCount: number
 }
 
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props)
-    this.state = { hasError: false }
+    this.state = { 
+      hasError: false,
+      errorCount: 0
+    }
   }
 
-  static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error }
+  static getDerivedStateFromError(error: Error): Partial<State> {
+    return { 
+      hasError: true, 
+      error
+    }
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo)
+    this.setState((prev) => ({ 
+      errorInfo,
+      errorCount: prev.errorCount + 1
+    }))
     this.props.onError?.(error, errorInfo)
+    
+    // Log to error tracking service in production
+    if (process.env.NODE_ENV === 'production') {
+      // TODO: Add error tracking service integration (e.g., Sentry)
+      console.error('Production error:', {
+        error: error.toString(),
+        componentStack: errorInfo.componentStack,
+        timestamp: new Date().toISOString()
+      })
+    }
+  }
+
+  componentDidUpdate(prevProps: Props) {
+    const { resetKeys, resetOnPropsChange } = this.props
+    const { hasError } = this.state
+    
+    if (hasError && resetOnPropsChange && prevProps.children !== this.props.children) {
+      this.resetErrorBoundary()
+    }
+    
+    if (hasError && resetKeys && resetKeys.some((key, idx) => key !== prevProps.resetKeys?.[idx])) {
+      this.resetErrorBoundary()
+    }
+  }
+
+  resetErrorBoundary = () => {
+    this.setState({ 
+      hasError: false, 
+      error: undefined,
+      errorInfo: undefined
+    })
   }
 
   render() {
@@ -34,45 +82,79 @@ export class ErrorBoundary extends Component<Props, State> {
         return this.props.fallback
       }
 
+      const isNetworkError = this.state.error?.message?.toLowerCase().includes('network') ||
+                           this.state.error?.message?.toLowerCase().includes('fetch')
+      
+      const isChunkLoadError = this.state.error?.message?.toLowerCase().includes('chunk') ||
+                              this.state.error?.message?.toLowerCase().includes('loading css chunk')
+
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-md w-full space-y-8">
-            <div className="text-center">
-              <div className="mx-auto h-12 w-12 text-red-600">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2} 
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" 
-                  />
-                </svg>
-              </div>
-              <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-                Something went wrong
-              </h2>
-              <p className="mt-2 text-sm text-gray-600">
-                We're sorry, but something unexpected happened. Please try refreshing the page.
-              </p>
-              {process.env.NODE_ENV === 'development' && this.state.error && (
-                <details className="mt-4 text-left">
-                  <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700">
-                    Technical Details
-                  </summary>
-                  <pre className="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded overflow-auto">
-                    {this.state.error.stack}
-                  </pre>
-                </details>
-              )}
-              <div className="mt-6">
-                <button
-                  onClick={() => window.location.reload()}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  Refresh Page
-                </button>
-              </div>
+        <div className="min-h-[400px] flex items-center justify-center p-4">
+          <div className="max-w-md w-full space-y-4">
+            <Alert variant="destructive" className="border-red-200 dark:border-red-800">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>
+                {isNetworkError ? 'Connection Error' : 
+                 isChunkLoadError ? 'Loading Error' : 
+                 'Something went wrong'}
+              </AlertTitle>
+              <AlertDescription className="mt-2">
+                <p className="text-sm">
+                  {isNetworkError ? 
+                    'Unable to connect to the server. Please check your internet connection.' :
+                   isChunkLoadError ?
+                    'Failed to load application resources. This can happen after an update.' :
+                   this.state.error?.message || 'An unexpected error occurred'}
+                </p>
+                {process.env.NODE_ENV === 'development' && this.state.errorInfo && (
+                  <details className="mt-4">
+                    <summary className="cursor-pointer text-xs font-medium">
+                      Error details
+                    </summary>
+                    <div className="mt-2 space-y-2">
+                      <pre className="text-xs overflow-auto p-2 bg-gray-100 dark:bg-gray-800 rounded max-h-48">
+                        {this.state.error?.stack}
+                      </pre>
+                      <pre className="text-xs overflow-auto p-2 bg-gray-100 dark:bg-gray-800 rounded max-h-48">
+                        {this.state.errorInfo.componentStack}
+                      </pre>
+                    </div>
+                  </details>
+                )}
+              </AlertDescription>
+            </Alert>
+            
+            <div className="flex gap-2 justify-center">
+              <Button 
+                onClick={() => {
+                  if (isChunkLoadError) {
+                    window.location.reload()
+                  } else {
+                    this.resetErrorBoundary()
+                  }
+                }}
+                variant="outline"
+                size="sm"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                {isChunkLoadError ? 'Reload Page' : 'Try Again'}
+              </Button>
+              <Button
+                onClick={() => window.location.href = '/'}
+                variant="outline"
+                size="sm"
+              >
+                <Home className="mr-2 h-4 w-4" />
+                Go Home
+              </Button>
             </div>
+            
+            {this.state.errorCount > 2 && (
+              <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+                This error has occurred {this.state.errorCount} times. 
+                Consider contacting support if the issue persists.
+              </p>
+            )}
           </div>
         </div>
       )

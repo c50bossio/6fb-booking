@@ -248,7 +248,7 @@ export default function ClientHistory({ clientId, history, client, onRefresh }: 
           <h3 className="text-lg font-semibold text-gray-900 mb-4 md:mb-0">Filter & Search</h3>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="md:hidden px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+            className="md:hidden px-4 py-2 bg-gray-100 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200"
           >
             {showFilters ? 'Hide Filters' : 'Show Filters'}
           </button>
@@ -257,23 +257,23 @@ export default function ClientHistory({ clientId, history, client, onRefresh }: 
         <div className={`grid grid-cols-1 md:grid-cols-5 gap-4 ${showFilters ? 'block' : 'hidden md:grid'}`}>
           {/* Search */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search</label>
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Service, barber, notes..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             />
           </div>
 
           {/* Status Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             >
               <option value="all">All Statuses</option>
               <option value="completed">Completed</option>
@@ -286,11 +286,11 @@ export default function ClientHistory({ clientId, history, client, onRefresh }: 
 
           {/* Date Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date Range</label>
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             >
               <option value="all">All Time</option>
               <option value="last_month">Last Month</option>
@@ -302,11 +302,11 @@ export default function ClientHistory({ clientId, history, client, onRefresh }: 
 
           {/* Sort By */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sort By</label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             >
               <option value="date_desc">Date (Newest)</option>
               <option value="date_asc">Date (Oldest)</option>
@@ -326,7 +326,7 @@ export default function ClientHistory({ clientId, history, client, onRefresh }: 
                 setSortBy('date_desc')
                 setSearchTerm('')
               }}
-              className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm"
+              className="w-full px-4 py-2 bg-gray-100 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 transition-colors text-sm"
             >
               Clear Filters
             </button>

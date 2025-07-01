@@ -303,27 +303,27 @@ export default function BookingRuleEditor({
           <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Rule Name
               </label>
               <input
                 type="text"
                 value={ruleName}
                 onChange={(e) => setRuleName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="e.g., Weekend advance booking limit"
                 required
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Rule Type
               </label>
               <select
                 value={ruleType}
                 onChange={(e) => setRuleType(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               >
                 <option value="">Select a rule type</option>
@@ -344,14 +344,14 @@ export default function BookingRuleEditor({
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Priority
               </label>
               <input
                 type="number"
                 value={priority}
                 onChange={(e) => setPriority(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="0"
                 min="0"
               />
@@ -368,7 +368,7 @@ export default function BookingRuleEditor({
                 onChange={(e) => setIsActive(e.target.checked)}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
-              <label htmlFor="is_active" className="ml-2 block text-sm text-gray-700">
+              <label htmlFor="is_active" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
                 Rule is active
               </label>
             </div>
@@ -386,14 +386,14 @@ export default function BookingRuleEditor({
                     type="text"
                     value={param.key}
                     onChange={(e) => handleParamChange(index, 'key', e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Parameter name"
                   />
                   
                   <select
                     value={param.type}
                     onChange={(e) => handleParamChange(index, 'type', e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="string">Text</option>
                     <option value="number">Number</option>
@@ -407,7 +407,7 @@ export default function BookingRuleEditor({
                       type="text"
                       value={param.value}
                       onChange={(e) => handleParamChange(index, 'value', e.target.value)}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Value"
                     />
                   )}
@@ -417,7 +417,7 @@ export default function BookingRuleEditor({
                       type="number"
                       value={param.value}
                       onChange={(e) => handleParamChange(index, 'value', e.target.value)}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="0"
                     />
                   )}
@@ -426,7 +426,7 @@ export default function BookingRuleEditor({
                     <select
                       value={param.value.toString()}
                       onChange={(e) => handleParamChange(index, 'value', e.target.value === 'true')}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="true">Yes</option>
                       <option value="false">No</option>
@@ -438,7 +438,7 @@ export default function BookingRuleEditor({
                       type="text"
                       value={Array.isArray(param.value) ? param.value.join(', ') : ''}
                       onChange={(e) => handleArrayValueChange(index, e.target.value)}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Comma-separated values"
                     />
                   )}
@@ -448,7 +448,7 @@ export default function BookingRuleEditor({
                       type="date"
                       value={param.value}
                       onChange={(e) => handleParamChange(index, 'value', e.target.value)}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   )}
                   
@@ -480,13 +480,13 @@ export default function BookingRuleEditor({
           <h3 className="text-lg font-medium text-gray-900 mb-4">Rule Application</h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Applies To
               </label>
               <select
                 value={appliesTo}
                 onChange={(e) => setAppliesTo(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Bookings</option>
                 <option value="service">Specific Services</option>
@@ -497,10 +497,10 @@ export default function BookingRuleEditor({
             
             {appliesTo === 'service' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Select Services
                 </label>
-                <div className="border border-gray-300 rounded-md p-4 max-h-48 overflow-y-auto">
+                <div className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md p-4 max-h-48 overflow-y-auto">
                   {services.map(service => (
                     <label key={service.id} className="flex items-center mb-2">
                       <input
@@ -515,7 +515,7 @@ export default function BookingRuleEditor({
                         }}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
-                      <span className="ml-2 text-sm text-gray-700">{service.name}</span>
+                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{service.name}</span>
                     </label>
                   ))}
                 </div>
@@ -524,10 +524,10 @@ export default function BookingRuleEditor({
             
             {appliesTo === 'barber' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Select Barbers
                 </label>
-                <div className="border border-gray-300 rounded-md p-4 max-h-48 overflow-y-auto">
+                <div className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md p-4 max-h-48 overflow-y-auto">
                   {barbers.map(barber => (
                     <label key={barber.id} className="flex items-center mb-2">
                       <input
@@ -542,7 +542,7 @@ export default function BookingRuleEditor({
                         }}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
-                      <span className="ml-2 text-sm text-gray-700">
+                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                         {barber.first_name} {barber.last_name}
                       </span>
                     </label>
@@ -553,10 +553,10 @@ export default function BookingRuleEditor({
             
             {appliesTo === 'client_type' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Select Client Types
                 </label>
-                <div className="border border-gray-300 rounded-md p-4">
+                <div className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md p-4">
                   {clientTypes.map(type => (
                     <label key={type} className="flex items-center mb-2">
                       <input
@@ -571,7 +571,7 @@ export default function BookingRuleEditor({
                         }}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
-                      <span className="ml-2 text-sm text-gray-700">
+                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                         {type.charAt(0).toUpperCase() + type.slice(1)}
                       </span>
                     </label>
@@ -588,7 +588,7 @@ export default function BookingRuleEditor({
             <button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               Cancel
             </button>

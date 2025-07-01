@@ -185,7 +185,7 @@ export default function StripeConnectOnboarding({ onComplete }: StripeConnectOnb
                 
                 <button
                   onClick={checkStatus}
-                  className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                  className="w-full px-4 py-2 bg-gray-200 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 transition-colors"
                 >
                   Refresh Status
                 </button>

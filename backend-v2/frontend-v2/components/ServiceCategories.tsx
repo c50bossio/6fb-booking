@@ -242,7 +242,7 @@ export default function ServiceCategories({
             <select
               value={targetCategory}
               onChange={(e) => setTargetCategory(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+              className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
             >
               <option value="">Select target category</option>
               {categories
@@ -257,7 +257,7 @@ export default function ServiceCategories({
             <div className="flex justify-end space-x-3">
               <button
                 onClick={() => setShowMoveDialog(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50"
               >
                 Cancel
               </button>

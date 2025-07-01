@@ -249,13 +249,13 @@ export default function BusinessHours({ onError, onSuccess }: BusinessHoursProps
         <h3 className="text-lg font-medium text-gray-900 mb-4">General Settings</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Timezone
             </label>
             <select
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="America/New_York">Eastern Time</option>
               <option value="America/Chicago">Central Time</option>
@@ -268,13 +268,13 @@ export default function BusinessHours({ onError, onSuccess }: BusinessHoursProps
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Default Slot Duration
             </label>
             <select
               value={slotDuration}
               onChange={(e) => setSlotDuration(Number(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value={15}>15 minutes</option>
               <option value={30}>30 minutes</option>
@@ -284,13 +284,13 @@ export default function BusinessHours({ onError, onSuccess }: BusinessHoursProps
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Buffer Time Between Appointments
             </label>
             <select
               value={bufferTime}
               onChange={(e) => setBufferTime(Number(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value={0}>No buffer</option>
               <option value={5}>5 minutes</option>
@@ -329,7 +329,7 @@ export default function BusinessHours({ onError, onSuccess }: BusinessHoursProps
                     onChange={() => handleDayToggle(slot.dayIndex)}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <label htmlFor={`day-${slot.dayIndex}`} className="ml-3 text-sm font-medium text-gray-700">
+                  <label htmlFor={`day-${slot.dayIndex}`} className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">
                     {slot.day}
                   </label>
                 </div>
@@ -353,7 +353,7 @@ export default function BusinessHours({ onError, onSuccess }: BusinessHoursProps
                         type="time"
                         value={slot.openTime}
                         onChange={(e) => handleTimeChange(slot.dayIndex, 'openTime', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                     <div className="flex-1">
@@ -362,7 +362,7 @@ export default function BusinessHours({ onError, onSuccess }: BusinessHoursProps
                         type="time"
                         value={slot.closeTime}
                         onChange={(e) => handleTimeChange(slot.dayIndex, 'closeTime', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                   </div>
@@ -376,14 +376,14 @@ export default function BusinessHours({ onError, onSuccess }: BusinessHoursProps
                             type="time"
                             value={brk.start}
                             onChange={(e) => handleBreakTimeChange(slot.dayIndex, breakIndex, 'start', e.target.value)}
-                            className="px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                           />
                           <span className="text-gray-500">to</span>
                           <input
                             type="time"
                             value={brk.end}
                             onChange={(e) => handleBreakTimeChange(slot.dayIndex, breakIndex, 'end', e.target.value)}
-                            className="px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                           />
                           <button
                             onClick={() => handleRemoveBreak(slot.dayIndex, breakIndex)}
@@ -413,7 +413,7 @@ export default function BusinessHours({ onError, onSuccess }: BusinessHoursProps
               type="date"
               value={newHoliday}
               onChange={(e) => setNewHoliday(e.target.value)}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Select date"
             />
             <button
@@ -431,7 +431,7 @@ export default function BusinessHours({ onError, onSuccess }: BusinessHoursProps
             {holidays.map((holiday) => (
               <span
                 key={holiday}
-                className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700"
+                className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700 dark:text-gray-300"
               >
                 {new Date(holiday).toLocaleDateString()}
                 <button

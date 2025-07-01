@@ -82,7 +82,7 @@ export default function PerformanceMetrics({ userId, timeRange }: PerformanceMet
           <CardTitle>Performance Metrics</CardTitle>
         </CardHeader>
         <CardContent>
-          <ErrorDisplay message={error} onRetry={() => window.location.reload()} />
+          <ErrorDisplay error={error} onRetry={() => window.location.reload()} />
         </CardContent>
       </Card>
     )

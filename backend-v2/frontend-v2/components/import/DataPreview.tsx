@@ -103,13 +103,13 @@ export default function DataPreview({ data, onDataMapped, existingMapping = {} }
             </div>
             
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300">
+              <table className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full border-collapse border border-gray-300 dark:border-gray-600">
                 <thead>
                   <tr className="bg-gray-50">
                     {CUSTOMER_SCHEMA_FIELDS
                       .filter(field => Object.values(currentMapping).includes(field.field))
                       .map(field => (
-                        <th key={field.field} className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-900">
+                        <th key={field.field} className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 px-3 py-2 text-left text-sm font-medium text-gray-900">
                           {field.label}
                           {field.required && <span className="text-red-500 ml-1">*</span>}
                         </th>
@@ -122,7 +122,7 @@ export default function DataPreview({ data, onDataMapped, existingMapping = {} }
                       {CUSTOMER_SCHEMA_FIELDS
                         .filter(field => Object.values(currentMapping).includes(field.field))
                         .map(field => (
-                          <td key={field.field} className="border border-gray-300 px-3 py-2 text-sm text-gray-900">
+                          <td key={field.field} className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900">
                             {row[field.field] || '-'}
                           </td>
                         ))}

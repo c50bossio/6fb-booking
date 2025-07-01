@@ -6,19 +6,24 @@ import { format } from 'date-fns'
 
 interface NotificationHistoryItem {
   id: number
-  user_id: number
+  notification_type: string
+  template_name: string
+  recipient: string
+  subject?: string
+  status: string
+  scheduled_for: string
+  sent_at?: string
+  attempts: number
+  error_message?: string
+  created_at: string
+  // Additional fields for UI enrichment
+  user_id?: number
   user_name?: string
   user_email?: string
   phone_number?: string
   appointment_id?: number
-  notification_type: string
-  channel: string
-  status: string
-  template_name?: string
-  sent_at?: string
-  error_message?: string
+  channel?: string
   metadata?: any
-  created_at: string
 }
 
 interface SMSConversation {
@@ -58,8 +63,24 @@ export default function NotificationHistory() {
     try {
       setLoading(true)
       const data = await getNotificationHistory()
+      // Enrich data with inferred channel and phone number
+      const enrichedData = data.map(item => {
+        // Infer channel from recipient format
+        const isEmail = item.recipient.includes('@')
+        const channel = isEmail ? 'email' : 'sms'
+        const phone_number = !isEmail ? item.recipient : undefined
+        const user_email = isEmail ? item.recipient : undefined
+        
+        return {
+          ...item,
+          channel,
+          phone_number,
+          user_email,
+          user_name: item.recipient // Use recipient as name fallback
+        } as NotificationHistoryItem
+      })
       // Sort by created_at descending
-      const sortedData = data.sort((a, b) => 
+      const sortedData = enrichedData.sort((a, b) => 
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       )
       setNotifications(sortedData)
@@ -200,7 +221,7 @@ export default function NotificationHistory() {
               </button>
               <button
                 onClick={loadNotifications}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50"
               >
                 Refresh
               </button>
@@ -218,7 +239,7 @@ export default function NotificationHistory() {
                   setSearchTerm(e.target.value)
                   setCurrentPage(1)
                 }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
             </div>
             
@@ -231,7 +252,7 @@ export default function NotificationHistory() {
                       setStatusFilter(e.target.value)
                       setCurrentPage(1)
                     }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                   >
                     <option value="all">All Statuses</option>
                     <option value="sent">Sent</option>
@@ -247,7 +268,7 @@ export default function NotificationHistory() {
                       setChannelFilter(e.target.value)
                       setCurrentPage(1)
                     }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                   >
                     <option value="all">All Channels</option>
                     <option value="sms">SMS</option>
@@ -402,7 +423,7 @@ export default function NotificationHistory() {
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         notification.channel === 'sms' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
                       }`}>
-                        {notification.channel.toUpperCase()}
+                        {(notification.channel || 'unknown').toUpperCase()}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -435,7 +456,7 @@ export default function NotificationHistory() {
                 <button
                   onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
-                  className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Previous
                 </button>
@@ -463,7 +484,7 @@ export default function NotificationHistory() {
                 <button
                   onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
-                  className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Next
                 </button>
