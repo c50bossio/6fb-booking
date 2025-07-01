@@ -1,20 +1,21 @@
-# Railway deployment configuration for 6FB Booking Platform - Backend
+# Railway deployment configuration for 6FB Booking Platform
+
+# Frontend service configuration
 [build]
 builder = "NIXPACKS"
-buildCommand = "cd backend && pip install -r requirements.txt"
+buildCommand = "cd backend-v2/frontend-v2 && npm install && npm run build"
 
 [deploy]
-startCommand = "cd backend && python -m uvicorn main:app --host 0.0.0.0 --port $PORT --workers 2"
-healthcheckPath = "/api/v1/health"
+startCommand = "cd backend-v2/frontend-v2 && node .next/standalone/server.js"
+healthcheckPath = "/"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
 
 [env]
+NODE_ENV = "production"
+NEXT_TELEMETRY_DISABLED = "1"
 ENVIRONMENT = "production"
-WORKERS = "2"
-DB_POOL_SIZE = "20"
-PYTHONPATH = "/app/backend"
 
-# Railway provides DATABASE_URL automatically if you have a database service
-# PORT is automatically provided by Railway
+# Railway provides PORT automatically
+# Frontend environment variables should be set in Railway dashboard

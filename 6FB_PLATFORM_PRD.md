@@ -1,5 +1,33 @@
 # 6FB Booking Platform - Product Requirements Document (PRD)
 
+**Last Updated**: 2025-06-29
+**Version**: 2.0
+**Status**: Active Development
+
+## Table of Contents
+
+1. [Executive Summary](#executive-summary)
+2. [Product Vision](#product-vision)
+3. [Core Components](#core-components)
+   - [Foundation & Core Dashboard](#1-foundation--core-dashboard)
+   - [Trafft Integration & Real-time Sync](#2-trafft-integration--real-time-sync)
+   - [Automation Engine](#3-automation-engine)
+   - [Admin & Mentor Portal](#4-admin--mentor-portal)
+4. [User Roles & Permissions](#user-roles--permissions)
+5. [Data Models](#data-models)
+6. [API Endpoints](#api-endpoints)
+7. [Integration Points](#integration-points)
+8. [Performance Metrics](#performance-metrics)
+9. [Security & Compliance](#security--compliance)
+10. [Development Phases](#development-phases)
+11. [Success Metrics](#success-metrics)
+12. [Future Enhancements](#future-enhancements)
+13. [Technology Stack](#technology-stack)
+14. [Testing Strategy](#testing-strategy)
+15. [Documentation](#documentation)
+16. [Support & Maintenance](#support--maintenance)
+17. [Related Specifications](#related-specifications)
+
 ## Executive Summary
 
 The 6FB (Six Figure Barber) Platform is a comprehensive business management system designed to help barbershops achieve six-figure revenue through data-driven insights, automation, and mentorship. The platform integrates with existing booking systems, provides advanced analytics, and includes training and certification programs.
@@ -106,6 +134,60 @@ Transform the barbering industry by providing a complete business management pla
 - Client check-in
 - Limited reporting
 
+## Compensation Models
+
+### Flexible Compensation Support
+The platform adapts to various barbershop compensation structures, with analytics and dashboards that automatically adjust to reflect the chosen model:
+
+#### 1. Booth/Chair Rental Model
+- **Structure**: Fixed monthly/weekly rental fees per chair/booth
+- **Revenue**: Barbers keep 100% of service revenue after rental
+- **Dashboard Metrics**:
+  - Rental payment status and history
+  - Net profit calculations (revenue minus rental)
+  - Break-even analysis and targets
+  - Chair utilization rates
+  - Vacancy cost tracking
+  - ROI per chair/booth
+
+#### 2. Commission-Based Model
+- **Structure**: Percentage-based revenue sharing
+- **Revenue**: Shop receives percentage of barber's revenue
+- **Dashboard Metrics**:
+  - Gross revenue vs. net earnings
+  - Real-time commission calculations
+  - Performance-based tier progression
+  - Service-level commission breakdown
+  - Comparative commission analysis
+  - Retention bonus tracking
+
+#### 3. Hybrid Model
+- **Structure**: Base rental plus commission above threshold
+- **Revenue**: Combined fixed and variable components
+- **Dashboard Metrics**:
+  - Base rental obligations
+  - Commission on revenue above threshold
+  - Optimal revenue target zones
+  - Model efficiency comparison
+  - Threshold visualization
+  - Dual metric tracking
+
+#### 4. Custom Models
+- **Structure**: Fully configurable compensation rules
+- **Features**:
+  - Multi-tier commission structures
+  - Time-based rate adjustments (new barber rates)
+  - Performance incentives
+  - Special arrangements and overrides
+  - Seasonal adjustments
+
+### Compensation Analytics Features
+- **Model Comparison**: Side-by-side analysis of different compensation structures
+- **Profitability Analysis**: Net revenue impact by model type
+- **Barber Satisfaction**: Retention metrics correlated with compensation model
+- **Optimization Recommendations**: AI-driven suggestions for model improvements
+- **Historical Tracking**: Model performance over time
+
 ## Data Models
 
 ### Core Entities
@@ -118,6 +200,10 @@ Transform the barbering industry by providing a complete business management pla
 7. **Training**: Modules, certifications, and progress
 8. **AutomationRule**: Workflow automation configuration
 9. **RevenueShare**: Commission and payout tracking
+10. **CompensationPlan**: Flexible compensation model configurations
+11. **PayoutRule**: Dynamic payout calculations based on model
+12. **RevenueAllocation**: Revenue distribution tracking by model type
+13. **ChairInventory**: Chair/booth tracking for rental models
 
 ## API Endpoints
 
@@ -135,6 +221,10 @@ Transform the barbering industry by providing a complete business management pla
 - `/api/v1/training` - Training management
 - `/api/v1/automation` - Automation rules
 - `/api/v1/revenue` - Revenue tracking
+- `/api/v1/compensation` - Compensation plan management
+- `/api/v1/compensation/calculate` - Dynamic calculation engine
+- `/api/v1/analytics/compensation` - Model-specific analytics
+- `/api/v1/analytics/enterprise` - Enterprise-level aggregated analytics
 
 ## Integration Points
 
@@ -228,13 +318,48 @@ Transform the barbering industry by providing a complete business management pla
 - Real-time updates
 - Error handling
 
-### Phase 6: Testing & Optimization (Next)
-- Unit testing
-- Integration testing
-- Performance optimization
-- Security audit
+### Phase 6: Payment Integration (Complete)
+- Stripe Connect integration
+- Payment processing
+- Payout system
+- Commission tracking
+- Payment security
 
-### Phase 7: Deployment
+### Phase 7: Testing & Optimization (In Progress)
+- Unit testing coverage (80%+ target)
+- Integration testing
+- Performance optimization (65% improvement achieved)
+- Security audit
+- Load testing
+
+### Phase 8: Production Deployment (In Progress)
+- Railway deployment configuration
+- Environment management
+- CI/CD pipeline setup
+- Monitoring and alerting
+- Backup and recovery procedures
+
+### Phase 9: V2 Clean Architecture (In Progress)
+- Clean codebase implementation
+- Enhanced testing framework
+- Improved authentication with refresh tokens
+- Rate limiting implementation
+- Duplication prevention system
+
+### Phase 10: Enterprise Hierarchical Dashboard (In Progress)
+- Multi-location enterprise dashboard
+- Hierarchical navigation (Enterprise → Barbershop → Barber)
+- Aggregated KPIs across all locations
+- Chair inventory tracking
+- Location performance matrix
+- Real-time occupancy monitoring
+- Compensation model configuration per location
+- Dynamic KPI adjustment based on compensation type
+- Model-specific performance metrics
+- Revenue allocation visualization
+- Flexible dashboard views by compensation model
+
+### Phase 11: Production Launch
 - Production setup
 - CI/CD pipeline
 - Monitoring setup
@@ -287,9 +412,10 @@ Transform the barbering industry by providing a complete business management pla
 
 ### Infrastructure
 - **Development**: Local SQLite
-- **Production**: PostgreSQL
-- **Deployment**: Docker + Kubernetes
-- **Monitoring**: Prometheus + Grafana
+- **Production**: PostgreSQL on Railway/Render
+- **Deployment**: Railway (primary), Docker support
+- **Monitoring**: Sentry for error tracking
+- **Current Production**: https://web-production-92a6c.up.railway.app
 
 ## Testing Strategy
 
@@ -336,6 +462,28 @@ Transform the barbering industry by providing a complete business management pla
 - Scheduled: Sunday 2-4 AM EST
 - Emergency: As needed with notification
 
+## Related Specifications
+
+### Technical Specifications
+- **Demo Flow**: See [`DEMO_FLOW_SPECIFICATION.md`](./DEMO_FLOW_SPECIFICATION.md) for demo mode implementation details
+- **API Documentation**: See [`docs/API_DOCUMENTATION.md`](./docs/API_DOCUMENTATION.md) for detailed API specifications
+- **Trafft Integration**: See [`TRAFFT_INTEGRATION_DOCUMENTATION.md`](./TRAFFT_INTEGRATION_DOCUMENTATION.md) for integration details
+- **Payout System**: See [`backend/PAYOUT_API_DOCUMENTATION.md`](./backend/PAYOUT_API_DOCUMENTATION.md) for payout implementation
+
+### Project Management
+- **Current Status**: See [`backend-v2/PROJECT_STATUS.md`](./backend-v2/PROJECT_STATUS.md) for real-time development status
+- **Claude Guidelines**: See [`CLAUDE.md`](./CLAUDE.md) for AI assistant instructions
+- **V2 Guidelines**: See [`backend-v2/CLAUDE.md`](./backend-v2/CLAUDE.md) for V2-specific development guidelines
+
+### Additional Resources
+- **Performance Baseline**: See [`monitoring/PERFORMANCE_BASELINE_DOCUMENTATION.md`](./monitoring/PERFORMANCE_BASELINE_DOCUMENTATION.md)
+- **Payment System**: See [`backend-v2/PAYMENT_SYSTEM_DOCUMENTATION.md`](./backend-v2/PAYMENT_SYSTEM_DOCUMENTATION.md)
+- **Notification System**: See [`backend-v2/NOTIFICATION_SYSTEM_DOCUMENTATION.md`](./backend-v2/NOTIFICATION_SYSTEM_DOCUMENTATION.md)
+
 ## Conclusion
 
 The 6FB Platform represents a comprehensive solution for barbershop management, combining booking integration, analytics, automation, and training into a single platform. By following this PRD, we ensure consistent development, clear communication, and successful delivery of a platform that helps barbers achieve six-figure revenues.
+
+---
+
+*This document is the primary source of truth for product requirements. For implementation details and technical specifications, refer to the linked documents above.*
