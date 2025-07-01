@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     secret_key: str = "your-secret-key-here"
     
     # Stripe settings
-    stripe_secret_key: str = "sk_test_4eC39HqLyjWDarjtT1zdp7dc"  # Stripe's official test key
+    stripe_secret_key: str = "sk_test_your_stripe_test_secret_key_here"  # Replace with your test key
     stripe_publishable_key: str = "pk_test_default"
     stripe_webhook_secret: str = "whsec_default"
     
