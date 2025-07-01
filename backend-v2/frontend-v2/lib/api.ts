@@ -1,4 +1,6 @@
 import { validateAPIRequest, validateAPIResponse, APIPerformanceMonitor, retryOperation, defaultRetryConfigs } from './apiUtils'
+import { toastError, toastSuccess, toastInfo } from '@/hooks/use-toast'
+import type { APIError, ValidationError } from '@/types/api'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -105,7 +107,19 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
     },
   }
 
-  const response = await fetch(`${API_URL}${endpoint}`, config)
+  let response: Response
+  try {
+    response = await fetch(`${API_URL}${endpoint}`, config)
+  } catch (error) {
+    // Network error or CORS issue
+    console.error(`Network error calling ${endpoint}:`, error)
+    console.error('API URL:', API_URL)
+    console.error('Full URL:', `${API_URL}${endpoint}`)
+    console.error('Token present:', !!token)
+    const errorMessage = 'Failed to connect to server. Please check your connection and try again.'
+    toastError('Connection Error', errorMessage)
+    throw new Error(`${errorMessage} (${error})`)
+  }
   
   // Handle 401 with automatic token refresh
   if (response.status === 401 && retry && endpoint !== '/api/v1/auth/refresh') {
@@ -150,33 +164,45 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
     // Handle specific error types
     if (response.status === 429) {
       const retryAfter = errorData.retry_after || 60
-      throw new Error(`Rate limit exceeded. Please try again in ${retryAfter} seconds.`)
+      const message = `Rate limit exceeded. Please try again in ${retryAfter} seconds.`
+      toastError('Too Many Requests', message)
+      throw new Error(message)
     }
     
     if (response.status === 422) {
       // Validation errors - extract more specific message
       if (Array.isArray(errorData.detail)) {
         const messages = errorData.detail.map((err: ValidationError) => err.msg).join(', ')
+        toastError('Validation Error', messages)
         throw new Error(messages)
       }
     }
     
     if (response.status === 401) {
-      throw new Error('Authentication failed. Please log in again.')
+      const message = 'Authentication failed. Please log in again.'
+      toastError('Authentication Error', message)
+      throw new Error(message)
     }
     
     if (response.status === 403) {
-      throw new Error('Access denied. You do not have permission to perform this action.')
+      const message = 'Access denied. You do not have permission to perform this action.'
+      toastError('Permission Denied', message)
+      throw new Error(message)
     }
     
     if (response.status >= 500) {
-      throw new Error('Server error. Please try again later or contact support.')
+      const message = 'Server error. Please try again later or contact support.'
+      toastError('Server Error', message)
+      throw new Error(message)
     }
     
     // Handle both string and object detail formats
     const message = typeof errorData.detail === 'string' 
       ? errorData.detail 
       : errorData.message || `API Error: ${response.status}`
+    
+    // Show toast notification
+    toastError('Request Failed', message)
     
     // Record error for monitoring
     APIPerformanceMonitor.recordError(endpoint)
@@ -287,7 +313,7 @@ export async function getProfile(): Promise<User> {
 }
 
 export async function getAppointments() {
-  return fetchAPI('/api/v1/appointments')
+  return fetchAPI('/api/v1/appointments/')
 }
 
 export async function createAppointment(data: any) {
@@ -401,6 +427,18 @@ export interface BookingResponse {
   price: number
   status: string
   created_at: string
+  // Additional fields from appointments
+  barber_id?: number
+  barber_name?: string
+  client_id?: number
+  client_name?: string
+  client_email?: string
+  client_phone?: string
+  end_time?: string
+  notes?: string
+  service_id?: number
+  recurring_pattern_id?: number
+  google_event_id?: string
 }
 
 export interface BookingListResponse {
@@ -474,21 +512,28 @@ export interface ClientListResponse {
   page_size: number
 }
 
-// Booking functions
-export async function getAvailableSlots(date: string): Promise<SlotsResponse> {
-  return fetchAPI(`/api/v1/bookings/slots?booking_date=${date}`)
+// Booking functions (migrated to use standardized /appointments endpoints)
+export async function getAvailableSlots(params: { date: string; service_id?: number }): Promise<SlotsResponse> {
+  const queryParams = new URLSearchParams()
+  // Backend expects 'appointment_date' as the parameter name
+  queryParams.append('appointment_date', params.date)
+  if (params.service_id) {
+    queryParams.append('service_id', params.service_id.toString())
+  }
+  console.log('🔗 Calling slots API:', `/api/v1/appointments/slots?${queryParams.toString()}`)
+  return fetchAPI(`/api/v1/appointments/slots?${queryParams.toString()}`)
 }
 
 export async function getNextAvailableSlot(): Promise<NextAvailableSlot> {
-  return fetchAPI('/api/v1/bookings/slots/next-available')
+  return fetchAPI('/api/v1/appointments/slots/next-available')
 }
 
 export async function getBookingSettings(): Promise<BookingSettings> {
-  return fetchAPI('/api/v1/bookings/settings/booking')
+  return fetchAPI('/api/v1/appointments/settings')
 }
 
 export async function updateBookingSettings(updates: BookingSettingsUpdate): Promise<BookingSettings> {
-  return fetchAPI('/api/v1/bookings/settings/booking', {
+  return fetchAPI('/api/v1/appointments/settings', {
     method: 'PUT',
     body: JSON.stringify(updates),
   })
@@ -496,7 +541,7 @@ export async function updateBookingSettings(updates: BookingSettingsUpdate): Pro
 
 export async function createBooking(date: string, time: string, service: string): Promise<BookingResponse> {
   return retryOperation(
-    () => fetchAPI('/api/v1/bookings', {
+    () => fetchAPI('/api/v1/appointments', {
       method: 'POST',
       body: JSON.stringify({ date, time, service }),
     }),
@@ -508,9 +553,25 @@ export async function createBooking(date: string, time: string, service: string)
   )
 }
 
+// Helper function to map AppointmentResponse to BookingResponse
+function mapAppointmentToBooking(appointment: AppointmentResponse): BookingResponse {
+  return {
+    id: appointment.id,
+    user_id: appointment.user_id,
+    service_name: appointment.service_name,
+    start_time: appointment.start_time,
+    duration_minutes: appointment.duration_minutes,
+    price: appointment.price,
+    status: appointment.status,
+    created_at: appointment.created_at,
+    // Add any additional fields that might be present
+    ...(appointment as any)
+  }
+}
+
 export async function quickBooking(bookingData: QuickBookingData): Promise<BookingResponse> {
-  return retryOperation(
-    () => fetchAPI('/api/v1/bookings/quick', {
+  const appointment = await retryOperation(
+    () => fetchAPI('/api/v1/appointments/quick', {
       method: 'POST',
       body: JSON.stringify(bookingData),
     }),
@@ -520,21 +581,27 @@ export async function quickBooking(bookingData: QuickBookingData): Promise<Booki
       return !error.message?.includes('422') && !error.message?.includes('Invalid')
     }
   )
+  
+  return mapAppointmentToBooking(appointment)
 }
 
 export async function getMyBookings(): Promise<BookingListResponse> {
-  const response = await fetchAPI('/api/v1/bookings')
-  // Ensure we return bookings in the expected format
+  const response = await fetchAPI('/api/v1/appointments')
+  
+  // Map AppointmentResponse to BookingResponse format
+  const bookings: BookingResponse[] = (response.appointments || []).map(mapAppointmentToBooking)
+  
   return {
-    bookings: response.appointments || response.bookings || [],
+    bookings,
     total: response.total || 0
   }
 }
 
-export async function cancelBooking(bookingId: number): Promise<{ message: string }> {
-  return fetchAPI(`/api/v1/bookings/${bookingId}/cancel`, {
-    method: 'POST',
+export async function cancelBooking(bookingId: number): Promise<BookingResponse> {
+  const appointment = await fetchAPI(`/api/v1/appointments/${bookingId}/cancel`, {
+    method: 'PUT',
   })
+  return mapAppointmentToBooking(appointment)
 }
 
 export async function updateBooking(bookingId: number, data: {
@@ -543,17 +610,19 @@ export async function updateBooking(bookingId: number, data: {
   service?: string
   notes?: string
 }): Promise<BookingResponse> {
-  return fetchAPI(`/api/v1/bookings/${bookingId}`, {
+  const appointment = await fetchAPI(`/api/v1/appointments/${bookingId}`, {
     method: 'PUT',
     body: JSON.stringify(data),
   })
+  return mapAppointmentToBooking(appointment)
 }
 
 export async function rescheduleBooking(bookingId: number, date: string, time: string): Promise<BookingResponse> {
-  return fetchAPI(`/api/v1/bookings/${bookingId}/reschedule`, {
-    method: 'PUT',
+  const appointment = await fetchAPI(`/api/v1/appointments/${bookingId}/reschedule`, {
+    method: 'POST',
     body: JSON.stringify({ date, time }),
   })
+  return mapAppointmentToBooking(appointment)
 }
 
 // Client management functions
@@ -630,9 +699,23 @@ export async function exportClients(params: {
   filters?: Record<string, any>
   date_range?: { start: string; end: string }
 }) {
-  return fetchAPI('/api/v1/clients/export', {
-    method: 'POST',
-    body: JSON.stringify(params),
+  const queryParams = new URLSearchParams({
+    format: params.format,
+    ...(params.date_range?.start && { date_from: params.date_range.start }),
+    ...(params.date_range?.end && { date_to: params.date_range.end }),
+  })
+  
+  // Add filters as query params
+  if (params.filters) {
+    Object.entries(params.filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        queryParams.append(key, String(value))
+      }
+    })
+  }
+  
+  return fetchAPI(`/api/v1/exports/clients?${queryParams.toString()}`, {
+    method: 'GET',
   })
 }
 
@@ -642,9 +725,19 @@ export async function exportAppointments(params: {
   date_range?: { start: string; end: string }
   status?: string[]
 }) {
-  return fetchAPI('/api/v1/appointments/export', {
-    method: 'POST',
-    body: JSON.stringify(params),
+  const queryParams = new URLSearchParams({
+    format: params.format,
+    ...(params.date_range?.start && { date_from: params.date_range.start }),
+    ...(params.date_range?.end && { date_to: params.date_range.end }),
+  })
+  
+  // Add status array as query params
+  if (params.status) {
+    params.status.forEach(s => queryParams.append('status', s))
+  }
+  
+  return fetchAPI(`/api/v1/exports/appointments?${queryParams.toString()}`, {
+    method: 'GET',
   })
 }
 
@@ -654,9 +747,21 @@ export async function exportTransactions(params: {
   date_range?: { start: string; end: string }
   status?: string[]
 }) {
-  return fetchAPI('/api/v1/payments/export', {
-    method: 'POST',
-    body: JSON.stringify(params),
+  // Note: The backend exports router doesn't have a specific transactions endpoint
+  // We'll need to use the appointments endpoint with payment data included
+  const queryParams = new URLSearchParams({
+    format: params.format,
+    include_details: 'true',
+    ...(params.date_range?.start && { date_from: params.date_range.start }),
+    ...(params.date_range?.end && { date_to: params.date_range.end }),
+  })
+  
+  if (params.status) {
+    params.status.forEach(s => queryParams.append('status', s))
+  }
+  
+  return fetchAPI(`/api/v1/exports/appointments?${queryParams.toString()}`, {
+    method: 'GET',
   })
 }
 
@@ -666,9 +771,15 @@ export async function exportAnalytics(params: {
   date_range?: { start: string; end: string }
   group_by?: 'day' | 'week' | 'month'
 }) {
-  return fetchAPI('/api/v1/analytics/export', {
-    method: 'POST',
-    body: JSON.stringify(params),
+  const queryParams = new URLSearchParams({
+    format: params.format,
+    include_charts: 'true',
+    ...(params.date_range?.start && { date_from: params.date_range.start }),
+    ...(params.date_range?.end && { date_to: params.date_range.end }),
+  })
+  
+  return fetchAPI(`/api/v1/exports/analytics?${queryParams.toString()}`, {
+    method: 'GET',
   })
 }
 
@@ -748,6 +859,18 @@ export async function updateUserProfile(profileData: { name?: string; email?: st
     method: 'PUT',
     body: JSON.stringify(profileData),
   })
+}
+
+export async function updateUserRole(userId: number, role: string): Promise<User> {
+  return fetchAPI(`/api/v1/users/${userId}/role`, {
+    method: 'PUT',
+    body: JSON.stringify({ role }),
+  })
+}
+
+export async function getAllUsers(role?: string): Promise<User[]> {
+  const params = role ? `?role=${encodeURIComponent(role)}` : ''
+  return fetchAPI(`/api/v1/users${params}`)
 }
 
 export interface Timezone {
@@ -833,7 +956,7 @@ export interface SixFigureBarberMetrics {
       additional_hours_needed: number
     }
   }
-  action_items: string[]
+  action_items: (string | ActionItem)[]
 }
 
 export interface DashboardAnalytics {
@@ -4933,6 +5056,21 @@ export interface QuickAppointmentCreate {
   notes?: string
 }
 
+export interface EnhancedAppointmentCreate {
+  service_id?: number
+  service_name?: string
+  barber_id?: number
+  client_id?: number
+  appointment_date: string    // YYYY-MM-DD format
+  appointment_time: string    // HH:MM format
+  duration_minutes?: number
+  price?: number
+  notes?: string
+  buffer_time_before?: number
+  buffer_time_after?: number
+  timezone?: string
+}
+
 export interface AppointmentResponse {
   id: number
   user_id: number
@@ -4992,6 +5130,15 @@ export const appointmentsAPI = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(quickData)
+    })
+  },
+
+  // Create enhanced appointment with full options (admin/staff only)
+  async createEnhanced(enhancedData: EnhancedAppointmentCreate): Promise<AppointmentResponse> {
+    return fetchAPI('/api/v1/appointments/enhanced', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(enhancedData)
     })
   },
 
@@ -5073,4 +5220,142 @@ export const appointmentsAPI = {
 // updateBooking function is defined earlier in the file
 
 // rescheduleBooking function is defined earlier in the file
+
+// ============================================================================
+// GUEST BOOKING API (No Authentication Required)
+// ============================================================================
+
+export interface GuestInformation {
+  first_name: string
+  last_name: string
+  email: string
+  phone: string
+}
+
+export interface GuestBookingCreate {
+  date: string // YYYY-MM-DD format
+  time: string // HH:MM format
+  service: string
+  notes?: string
+  guest_info: GuestInformation
+  timezone?: string
+}
+
+export interface GuestQuickBookingCreate {
+  service: string
+  guest_info: GuestInformation
+}
+
+export interface GuestBookingResponse {
+  id: number
+  service: string
+  date: string
+  time: string
+  guest_name: string
+  guest_email: string
+  guest_phone: string
+  amount: number
+  status: string
+  created_at: string
+  confirmation_code?: string
+}
+
+// Create a booking for a guest user (no authentication required)
+export async function createGuestBooking(bookingData: GuestBookingCreate): Promise<GuestBookingResponse> {
+  // Don't include Authorization header for guest bookings
+  const response = await fetch(`${API_URL}/api/v1/appointments/guest`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(bookingData),
+  })
+  
+  if (!response.ok) {
+    let errorData: APIError
+    try {
+      errorData = await response.json()
+    } catch {
+      throw new Error(`Network error: ${response.status} ${response.statusText}`)
+    }
+    
+    // Handle specific error types
+    if (response.status === 422) {
+      if (Array.isArray(errorData.detail)) {
+        const messages = errorData.detail.map((err: ValidationError) => err.msg).join(', ')
+        throw new Error(messages)
+      }
+    }
+    
+    const message = typeof errorData.detail === 'string' 
+      ? errorData.detail 
+      : errorData.message || `API Error: ${response.status}`
+    
+    throw new Error(message)
+  }
+
+  return response.json()
+}
+
+// Create a quick booking for guest user (next available slot)
+export async function createGuestQuickBooking(bookingData: GuestQuickBookingCreate): Promise<GuestBookingResponse> {
+  // Don't include Authorization header for guest bookings
+  const response = await fetch(`${API_URL}/api/v1/appointments/guest/quick`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(bookingData),
+  })
+  
+  if (!response.ok) {
+    let errorData: APIError
+    try {
+      errorData = await response.json()
+    } catch {
+      throw new Error(`Network error: ${response.status} ${response.statusText}`)
+    }
+    
+    const message = typeof errorData.detail === 'string' 
+      ? errorData.detail 
+      : errorData.message || `API Error: ${response.status}`
+    
+    throw new Error(message)
+  }
+
+  return response.json()
+}
+
+// ============================================================================
+// SMS AND MESSAGING API
+// ============================================================================
+
+export async function markSMSMessagesAsRead(conversationId: string): Promise<{ message: string }> {
+  return fetchAPI(`/api/v1/sms/conversations/${conversationId}/mark-read`, {
+    method: 'POST',
+  })
+}
+
+
+
+// ============================================================================
+// PERFORMANCE ANALYTICS API
+// ============================================================================
+
+export async function getPerformanceAnalytics(params?: {
+  start_date?: string
+  end_date?: string
+  barber_id?: number
+  location_id?: number
+}): Promise<any> {
+  const searchParams = new URLSearchParams()
+  if (params?.start_date) searchParams.append('start_date', params.start_date)
+  if (params?.end_date) searchParams.append('end_date', params.end_date)
+  if (params?.barber_id) searchParams.append('barber_id', params.barber_id.toString())
+  if (params?.location_id) searchParams.append('location_id', params.location_id.toString())
+  
+  const query = searchParams.toString()
+  return fetchAPI(`/api/v1/analytics/performance${query ? '?' + query : ''}`)
+}
+
 

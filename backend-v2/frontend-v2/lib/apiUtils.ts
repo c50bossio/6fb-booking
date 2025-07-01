@@ -1,5 +1,7 @@
 'use client'
 
+import { toastError, toastInfo } from '@/hooks/use-toast'
+
 // API validation schemas for common endpoints
 const API_SCHEMAS: Record<string, any> = {
   '/api/v1/auth/login': {
@@ -33,6 +35,33 @@ const API_SCHEMAS: Record<string, any> = {
       start_time: 'string',
       service_name: 'string',
       status: 'string'
+    }
+  },
+  '/api/v1/appointments': {
+    request: {
+      date: 'string',
+      time: 'string',
+      service: 'string'
+    },
+    response: {
+      // GET request returns a list
+      appointments: 'array?',
+      total: 'number?',
+      // POST request returns single appointment
+      id: 'number?',
+      user_id: 'number?',
+      barber_id: 'number?',
+      client_id: 'number?',
+      service_id: 'number?',
+      service_name: 'string?',
+      start_time: 'string?',
+      duration_minutes: 'number?',
+      price: 'number?',
+      status: 'string?',
+      notes: 'string?',
+      recurring_pattern_id: 'number?',
+      google_event_id: 'string?',
+      created_at: 'string?'
     }
   }
 }

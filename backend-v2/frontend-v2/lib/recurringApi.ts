@@ -1,6 +1,20 @@
 import { API_URL } from './api'
 
 // Types
+export interface Service {
+  id: number
+  name: string
+  price: number
+  duration: number
+}
+
+export interface Barber {
+  id: number
+  name: string
+  email: string
+}
+
+// Recurring pattern types
 export interface RecurringPattern {
   id: number
   user_id: number
@@ -110,7 +124,7 @@ export interface UpcomingAppointmentsResult {
 
 // Helper function for auth headers
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('access_token')
+  const token = localStorage.getItem('token')
   if (!token) throw new Error('No access token found')
   
   return {
@@ -360,20 +374,51 @@ export async function previewPatternOccurrences(
   }
 }
 
-// Fetch services (hardcoded for now as the endpoint might not exist)
-export async function getServices(): Promise<any[]> {
-  // Return hardcoded services for now
-  return [
-    { id: 1, name: 'Haircut', price: 30, duration: 30 },
-    { id: 2, name: 'Shave', price: 20, duration: 20 },
-    { id: 3, name: 'Haircut & Shave', price: 45, duration: 45 }
-  ]
+// Fetch services from the API
+export async function getServices(): Promise<Service[]> {
+  try {
+    const response = await fetch(`${API_URL}/services`, {
+      headers: getAuthHeaders()
+    })
+
+    if (!response.ok) {
+      console.error('Failed to fetch services:', response.status)
+      return []
+    }
+
+    const services = await response.json()
+    return services.map((service: any) => ({
+      id: service.id,
+      name: service.name,
+      price: service.price,
+      duration: service.duration_minutes || 30
+    }))
+  } catch (error) {
+    console.error('Error fetching services:', error)
+    return []
+  }
 }
 
-// Fetch barbers (simplified for now)
-export async function getBarbers(): Promise<any[]> {
-  // Return a default barber for now
-  return [
-    { id: 1, name: 'Default Barber', email: 'barber@sixfb.com' }
-  ]
+// Fetch barbers from the API
+export async function getBarbers(): Promise<Barber[]> {
+  try {
+    const response = await fetch(`${API_URL}/barbers`, {
+      headers: getAuthHeaders()
+    })
+
+    if (!response.ok) {
+      console.error('Failed to fetch barbers:', response.status)
+      return []
+    }
+
+    const barbers = await response.json()
+    return barbers.map((barber: any) => ({
+      id: barber.id,
+      name: `${barber.first_name} ${barber.last_name}`.trim() || barber.email,
+      email: barber.email
+    }))
+  } catch (error) {
+    console.error('Error fetching barbers:', error)
+    return []
+  }
 }
