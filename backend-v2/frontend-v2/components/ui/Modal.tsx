@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 
 const modalVariants = cva(
-  'relative bg-white dark:bg-dark-elevated-100 rounded-t-ios-2xl overflow-hidden shadow-ios-2xl transform transition-all duration-300 ease-out',
+  'relative bg-white dark:bg-dark-elevated-100 rounded-t-ios-2xl shadow-ios-2xl transform transition-all duration-300 ease-out',
   {
     variants: {
       size: {
@@ -30,11 +30,17 @@ const modalVariants = cva(
         bottom: 'rounded-t-ios-2xl rounded-b-none',
         top: 'rounded-b-ios-2xl rounded-t-none',
       },
+      overflow: {
+        hidden: 'overflow-hidden',
+        visible: 'overflow-visible',
+        auto: 'overflow-auto',
+      },
     },
     defaultVariants: {
       size: 'md',
       variant: 'default',
       position: 'bottom',
+      overflow: 'visible',
     },
   }
 )
@@ -68,6 +74,7 @@ export interface ModalProps extends VariantProps<typeof modalVariants> {
   trapFocus?: boolean
   className?: string
   overlayClassName?: string
+  overflow?: 'hidden' | 'visible' | 'auto'
 }
 
 const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
@@ -80,6 +87,7 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
     size,
     variant,
     position,
+    overflow,
     showCloseButton = true,
     closeOnOverlayClick = true,
     closeOnEscape = true,
@@ -212,6 +220,7 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
             size, 
             variant, 
             position,
+            overflow,
             className: `${slideTransform} ${className || ''}` 
           })}
           onClick={(e) => e.stopPropagation()}
@@ -302,7 +311,7 @@ const ModalBody = React.forwardRef<HTMLDivElement, ModalBodyProps>(
     return (
       <div
         ref={ref}
-        className={`px-6 py-4 ${className || ''}`}
+        className={`px-6 py-4 overflow-visible ${className || ''}`}
         {...props}
       >
         {children}

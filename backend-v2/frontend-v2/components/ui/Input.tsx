@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 
 const inputVariants = cva(
-  'w-full rounded-ios border bg-white dark:bg-zinc-800 text-accent-900 dark:text-white placeholder:text-ios-gray-400 dark:placeholder:text-zinc-400 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 peer',
+  'w-full rounded-ios border bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 peer',
   {
     variants: {
       variant: {
@@ -47,7 +47,7 @@ const labelVariants = cva(
         lg: 'text-ios-callout peer-focus:text-ios-subheadline peer-placeholder-shown:text-ios-callout left-5 peer-placeholder-shown:top-4 peer-focus:top-1 peer-focus:-translate-y-2',
       },
       floating: {
-        true: 'peer-placeholder-shown:scale-100 peer-focus:scale-90 peer-focus:bg-white dark:peer-focus:bg-zinc-800 peer-focus:px-2',
+        true: 'peer-placeholder-shown:scale-100 peer-focus:scale-90 peer-focus:bg-white dark:peer-focus:bg-gray-700 peer-focus:px-2',
         false: '',
       },
     },
@@ -133,7 +133,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && !floatingLabel && (
           <label 
             htmlFor={inputId}
-            className="block text-ios-subheadline font-medium text-accent-700 dark:text-ios-gray-300 mb-2"
+            className="block text-ios-subheadline font-medium text-gray-700 dark:text-gray-300 mb-2"
           >
             {label}
           </label>
@@ -174,7 +174,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 variant: hasError ? 'error' : 'default',
                 size,
                 floating: true,
-                className: hasValue || isFocused ? 'scale-90 -translate-y-2 bg-white dark:bg-zinc-800 px-2' : ''
+                className: hasValue || isFocused ? 'scale-90 -translate-y-2 bg-white dark:bg-gray-700 px-2' : ''
               })}
             >
               {label}
@@ -255,7 +255,7 @@ Input.displayName = 'Input'
 
 // Textarea component using similar styling
 const textareaVariants = cva(
-  'w-full rounded-ios border bg-white dark:bg-zinc-800 text-accent-900 dark:text-white placeholder:text-ios-gray-400 dark:placeholder:text-zinc-400 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 resize-y min-h-[100px]',
+  'w-full rounded-ios border bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 resize-y min-h-[100px]',
   {
     variants: {
       variant: {
@@ -347,7 +347,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         {label && !floatingLabel && (
           <label 
             htmlFor={textareaId}
-            className="block text-ios-subheadline font-medium text-accent-700 dark:text-ios-gray-300 mb-2"
+            className="block text-ios-subheadline font-medium text-gray-700 dark:text-gray-300 mb-2"
           >
             {label}
           </label>
@@ -385,7 +385,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
                 variant: hasError ? 'error' : 'default',
                 size,
                 floating: true,
-                className: hasValue || isFocused ? 'scale-90 -translate-y-2 bg-white dark:bg-zinc-800 px-2' : ''
+                className: hasValue || isFocused ? 'scale-90 -translate-y-2 bg-white dark:bg-gray-700 px-2' : ''
               })}
             >
               {label}

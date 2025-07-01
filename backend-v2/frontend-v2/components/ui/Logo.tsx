@@ -14,19 +14,19 @@ interface LogoProps {
 }
 
 const sizeClasses = {
-  xs: 'h-6',
-  sm: 'h-8',
-  md: 'h-10',
-  lg: 'h-12',
-  xl: 'h-16'
+  xs: 'h-8',
+  sm: 'h-10',
+  md: 'h-13',
+  lg: 'h-16',
+  xl: 'h-20'
 }
 
 const sizePixels = {
-  xs: 24,
-  sm: 32,
-  md: 40,
-  lg: 48,
-  xl: 64
+  xs: 31,
+  sm: 42,
+  md: 52,
+  lg: 62,
+  xl: 83
 }
 
 export function Logo({ 
@@ -59,13 +59,22 @@ export function Logo({
   const widthPx = showTagline ? heightPx * 6 : heightPx * 5
   
   const logoImage = (
-    <div className={`relative ${sizeClasses[size]} ${className}`}>
+    <div 
+      className={`relative ${sizeClasses[size]} ${className} transition-all duration-300 hover:scale-105`}
+      style={{
+        filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.06))',
+      }}
+    >
       <Image
         src={logoSrc}
         alt="Booked Barber"
         width={widthPx}
         height={heightPx}
-        className="h-full w-auto object-contain"
+        className="h-full object-contain transition-all duration-300"
+        style={{ 
+          width: 'auto',
+          filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.05))'
+        }}
         priority
       />
     </div>
