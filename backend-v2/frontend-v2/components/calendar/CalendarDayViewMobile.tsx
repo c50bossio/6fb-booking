@@ -48,17 +48,43 @@ export default function CalendarDayViewMobile({
   className = ''
 }: CalendarDayViewMobileProps) {
   const [currentTime, setCurrentTime] = useState(new Date())
+  const [animationDirection, setAnimationDirection] = useState<'left' | 'right' | null>(null)
+  const [isAnimating, setIsAnimating] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const currentTimeRef = useRef<HTMLDivElement>(null)
 
-  // Swipe gesture handling
+  // Swipe gesture handling with animations
   const handleSwipeLeft = useCallback(() => {
-    onDateChange?.(addDays(selectedDate, 1))
-  }, [selectedDate, onDateChange])
+    if (isAnimating) return
+    
+    setAnimationDirection('left')
+    setIsAnimating(true)
+    
+    setTimeout(() => {
+      onDateChange?.(addDays(selectedDate, 1))
+      
+      setTimeout(() => {
+        setIsAnimating(false)
+        setAnimationDirection(null)
+      }, 300)
+    }, 150)
+  }, [selectedDate, onDateChange, isAnimating])
 
   const handleSwipeRight = useCallback(() => {
-    onDateChange?.(subDays(selectedDate, 1))
-  }, [selectedDate, onDateChange])
+    if (isAnimating) return
+    
+    setAnimationDirection('right')
+    setIsAnimating(true)
+    
+    setTimeout(() => {
+      onDateChange?.(subDays(selectedDate, 1))
+      
+      setTimeout(() => {
+        setIsAnimating(false)
+        setAnimationDirection(null)
+      }, 300)
+    }, 150)
+  }, [selectedDate, onDateChange, isAnimating])
 
   const { attachToElement } = useSwipeGesture(
     {
@@ -157,7 +183,14 @@ export default function CalendarDayViewMobile({
       {/* Time slots */}
       <div 
         ref={scrollContainerRef}
-        className="h-full overflow-y-auto pb-20"
+        className={`h-full overflow-y-auto pb-20 transition-transform duration-300 ${
+          animationDirection === 'left' 
+            ? 'transform translate-x-full opacity-0' 
+            : animationDirection === 'right'
+            ? 'transform -translate-x-full opacity-0'
+            : 'transform translate-x-0 opacity-100'
+        }`}
+        key={selectedDate.toISOString()} // Force re-render for animation
       >
         {timeSlots.map((slotTime, index) => {
           const appointment = getAppointmentForSlot(slotTime)

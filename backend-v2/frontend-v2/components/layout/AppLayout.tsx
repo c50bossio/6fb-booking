@@ -70,7 +70,9 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       try {
         setLoading(true)
+        console.log('AppLayout: Fetching user profile...')
         const userData = await getProfile()
+        console.log('AppLayout: User data received:', userData)
         setUser(userData)
         setError(null)
         
@@ -81,14 +83,17 @@ export function AppLayout({ children }: AppLayoutProps) {
           router.replace(permission.redirectTo)
         }
       } catch (err: any) {
-        console.error('Failed to load user profile:', err)
+        console.error('AppLayout: Failed to load user profile:', err)
+        console.log('AppLayout: Error details:', err.response?.status, err.message)
         
         // Only show error for actual network errors, not authentication errors
         if (err.response?.status === 401 || err.response?.status === 403) {
+          console.log('AppLayout: Auth error detected, isPublicRoute:', isPublicRoute)
           // User is not authenticated, redirect to login for protected routes
           setUser(null)
           setError(null)
           if (!isPublicRoute) {
+            console.log('AppLayout: Redirecting to login')
             router.replace('/login')
           }
         } else {

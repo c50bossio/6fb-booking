@@ -90,9 +90,12 @@ function DashboardContent() {
   useEffect(() => {
     async function fetchDashboardData() {
       try {
+        console.log('Dashboard: Fetching user profile...')
         // Check authentication first
         const userData = await getProfile()
+        console.log('Dashboard: User data received:', userData)
         if (!userData) {
+          console.log('Dashboard: No user data, will redirect to login')
           return
         }
         setUser(userData)
@@ -143,7 +146,12 @@ function DashboardContent() {
           }
         }
       } catch (error) {
-        console.warn('Failed to load dashboard data:', error)
+        console.error('Dashboard: Failed to load data:', error)
+        // Check if it's an auth error
+        if (error && (error as any).message?.includes('401')) {
+          console.log('Dashboard: Auth error, redirecting to login')
+          router.push('/login')
+        }
         setUser(null)
         setBookings([])
         setClientMetrics(null)
@@ -164,11 +172,16 @@ function DashboardContent() {
 
   // Handle redirect to login if user is not authenticated
   useEffect(() => {
-    if (!loading && !user) {
-      // Add a small delay to prevent premature redirects
+    // Check if we have a token in localStorage
+    const token = localStorage.getItem('token')
+    console.log('Dashboard: Checking auth - token exists:', !!token, 'loading:', loading, 'user:', !!user)
+    
+    if (!loading && !user && !token) {
+      // Only redirect if we truly have no authentication
+      console.log('Dashboard: No token and no user, redirecting to login')
       const redirectTimer = setTimeout(() => {
         router.push('/login')
-      }, 100)
+      }, 500) // Increased delay to allow for profile fetch
       return () => clearTimeout(redirectTimer)
     }
   }, [loading, user, router])

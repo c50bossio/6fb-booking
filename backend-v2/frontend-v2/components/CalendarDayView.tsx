@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { format, addHours, addMinutes, isSameDay, startOfDay, addDays } from 'date-fns'
-import { ChevronLeftIcon, ChevronRightIcon, PlusIcon } from '@heroicons/react/24/outline'
+import { format, addHours, addMinutes, isSameDay, startOfDay, addDays, subDays } from 'date-fns'
+import { ChevronLeftIcon, ChevronRightIcon, PlusIcon, ArrowPathIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
 import { Button } from './ui/Button'
 import { parseAPIDate } from '@/lib/timezone'
 import Image from 'next/image'
@@ -13,6 +13,7 @@ import ConflictResolutionModal from './modals/ConflictResolutionModal'
 import { useCalendarPerformance } from '@/hooks/useCalendarPerformance'
 import { useResponsive } from '@/hooks/useResponsive'
 import CalendarDayViewMobile from './calendar/CalendarDayViewMobile'
+import '@/styles/calendar-animations.css'
 
 interface Appointment {
   id: number
@@ -53,7 +54,36 @@ interface CalendarDayViewProps {
   slotDuration?: number
   currentDate?: Date
   onDateChange?: (date: Date) => void
+  onPreloadDate?: (date: Date) => void
+  isLoading?: boolean
+  onRefresh?: () => void
 }
+
+// Memoized current time indicator component
+const CurrentTimeIndicator = React.memo(({ startHour, slotDuration }: { startHour: number; slotDuration: number }) => {
+  const [currentTime, setCurrentTime] = useState(new Date())
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date())
+    }, 60000) // Update every minute
+    
+    return () => clearInterval(interval)
+  }, [])
+  
+  const top = ((currentTime.getHours() * 60 + currentTime.getMinutes() - startHour * 60) / slotDuration) * 40
+  
+  return (
+    <div
+      className="absolute left-0 right-0 h-0.5 bg-red-500 z-10 calendar-today-indicator"
+      style={{ top: `${top}px` }}
+    >
+      <div className="absolute -left-2 -top-1.5 w-3 h-3 bg-red-500 rounded-full"></div>
+    </div>
+  )
+})
+
+CurrentTimeIndicator.displayName = 'CurrentTimeIndicator'
 
 const CalendarDayView = React.memo(function CalendarDayView({
   appointments,
@@ -69,7 +99,10 @@ const CalendarDayView = React.memo(function CalendarDayView({
   endHour = 22,
   slotDuration = 30,
   currentDate = new Date(),
-  onDateChange
+  onDateChange,
+  onPreloadDate,
+  isLoading = false,
+  onRefresh
 }: CalendarDayViewProps) {
   const [currentDay, setCurrentDay] = useState(() => currentDate)
   const [selectedClient, setSelectedClient] = useState<any | null>(null)
@@ -84,8 +117,18 @@ const CalendarDayView = React.memo(function CalendarDayView({
   const [conflictAnalysis, setConflictAnalysis] = useState<ConflictAnalysis | null>(null)
   const [pendingUpdate, setPendingUpdate] = useState<{ appointmentId: number; newStartTime: string } | null>(null)
   const [showConflictModal, setShowConflictModal] = useState(false)
+  const [animationDirection, setAnimationDirection] = useState<'prev' | 'next' | null>(null)
+  const [isAnimating, setIsAnimating] = useState(false)
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [pullToRefreshDistance, setPullToRefreshDistance] = useState(0)
+  const [isPulling, setIsPulling] = useState(false)
   const scheduleColumnRef = useRef<HTMLDivElement>(null)
+  const scheduleContainerRef = useRef<HTMLDivElement>(null)
   const isTouchDevice = TouchDragManager.isTouchDevice()
+  const navigationDebounceRef = useRef<NodeJS.Timeout | null>(null)
+  const preloadedDatesRef = useRef<Set<string>>(new Set())
+  const touchStartY = useRef<number | null>(null)
   
   // Responsive hook
   const { isMobile } = useResponsive()
@@ -105,6 +148,44 @@ const CalendarDayView = React.memo(function CalendarDayView({
       setCurrentDay(currentDate)
     }
   }, [currentDate, currentDay])
+
+  // Preload adjacent days data
+  useEffect(() => {
+    if (!onPreloadDate) return
+
+    const dateKey = currentDay.toISOString().split('T')[0]
+    const prevDateKey = subDays(currentDay, 1).toISOString().split('T')[0]
+    const nextDateKey = addDays(currentDay, 1).toISOString().split('T')[0]
+
+    // Preload adjacent days if not already loaded
+    const toPreload: Date[] = []
+    
+    if (!preloadedDatesRef.current.has(prevDateKey)) {
+      toPreload.push(subDays(currentDay, 1))
+      preloadedDatesRef.current.add(prevDateKey)
+    }
+    
+    if (!preloadedDatesRef.current.has(nextDateKey)) {
+      toPreload.push(addDays(currentDay, 1))
+      preloadedDatesRef.current.add(nextDateKey)
+    }
+
+    // Mark current date as loaded
+    preloadedDatesRef.current.add(dateKey)
+
+    // Clean up old dates (keep only 7 days in cache)
+    if (preloadedDatesRef.current.size > 7) {
+      const dates = Array.from(preloadedDatesRef.current).sort()
+      const toRemove = dates.slice(0, dates.length - 7)
+      toRemove.forEach(date => preloadedDatesRef.current.delete(date))
+    }
+
+    // Trigger preloading
+    toPreload.forEach(date => {
+      // Delay preloading to avoid blocking main thread
+      setTimeout(() => onPreloadDate(date), 100)
+    })
+  }, [currentDay, onPreloadDate])
 
   // Memoized time slots generation
   const timeSlots = useMemo(() => {
@@ -126,27 +207,59 @@ const CalendarDayView = React.memo(function CalendarDayView({
     })
   }, [appointments, selectedBarberId, currentDay, optimizedAppointmentFilter])
 
-  // Optimized navigation functions with useCallback
+  // Debounced navigation function
+  const navigateToDate = useCallback((direction: 'prev' | 'next' | 'today') => {
+    if (navigationDebounceRef.current) {
+      clearTimeout(navigationDebounceRef.current)
+    }
+
+    navigationDebounceRef.current = setTimeout(() => {
+      if (isAnimating) return
+
+      let newDate: Date
+      if (direction === 'today') {
+        newDate = new Date()
+      } else {
+        newDate = direction === 'next' 
+          ? addDays(currentDay, 1) 
+          : addDays(currentDay, -1)
+      }
+
+      // Skip if already on that date
+      if (isSameDay(newDate, currentDay)) return
+
+      setAnimationDirection(direction === 'today' 
+        ? (newDate > currentDay ? 'next' : 'prev')
+        : direction
+      )
+      setIsAnimating(true)
+      
+      setCurrentDay(newDate)
+      onDateChange?.(newDate)
+      
+      // Reset animation state after animation completes
+      setTimeout(() => {
+        setIsAnimating(false)
+        setAnimationDirection(null)
+      }, 300)
+    }, 150) // 150ms debounce delay
+  }, [currentDay, onDateChange, isAnimating])
+
+  // Optimized navigation functions
   const previousDay = useCallback(() => {
-    const newDate = addDays(currentDay, -1)
-    setCurrentDay(newDate)
-    onDateChange?.(newDate)
-  }, [currentDay, onDateChange])
+    navigateToDate('prev')
+  }, [navigateToDate])
 
   const nextDay = useCallback(() => {
-    const newDate = addDays(currentDay, 1)
-    setCurrentDay(newDate)
-    onDateChange?.(newDate)
-  }, [currentDay, onDateChange])
+    navigateToDate('next')
+  }, [navigateToDate])
 
   const goToToday = useCallback(() => {
-    const today = new Date()
-    setCurrentDay(today)
-    onDateChange?.(today)
-  }, [onDateChange])
+    navigateToDate('today')
+  }, [navigateToDate])
 
-  // Get appointment position and height
-  const getAppointmentStyle = (appointment: Appointment) => {
+  // Memoized appointment style calculation
+  const getAppointmentStyle = useCallback((appointment: Appointment) => {
     const start = parseAPIDate(appointment.start_time)
     let end: Date
     
@@ -174,10 +287,10 @@ const CalendarDayView = React.memo(function CalendarDayView({
       top: `${top}px`,
       height: `${Math.max(height, 40)}px`, // Minimum height of 40px
     }
-  }
+  }, [startHour, slotDuration])
 
-  // Get status color
-  const getStatusColor = (status: string) => {
+  // Memoized status color getter
+  const getStatusColor = useCallback((status: string) => {
     switch (status) {
       case 'confirmed':
       case 'scheduled':
@@ -191,7 +304,7 @@ const CalendarDayView = React.memo(function CalendarDayView({
       default:
         return 'bg-purple-500 hover:bg-purple-600 border-purple-600'
     }
-  }
+  }, [])
 
   // Format barber name
   const getBarberName = (barber: Barber) => {
@@ -200,8 +313,8 @@ const CalendarDayView = React.memo(function CalendarDayView({
            barber.email.split('@')[0]
   }
 
-  // Check if it's current time slot
-  const isCurrentTimeSlot = (hour: number, minute: number) => {
+  // Memoized current time slot check
+  const isCurrentTimeSlot = useCallback((hour: number, minute: number) => {
     const now = new Date()
     const isToday = isSameDay(currentDay, now)
     if (!isToday) return false
@@ -210,7 +323,30 @@ const CalendarDayView = React.memo(function CalendarDayView({
     const currentMinute = now.getMinutes()
     
     return hour === currentHour && minute <= currentMinute && currentMinute < minute + slotDuration
-  }
+  }, [currentDay, slotDuration])
+
+  // Memoized slot booking check
+  const isSlotBooked = useCallback((hour: number, minute: number) => {
+    return filteredAppointments.some(appointment => {
+      const start = parseAPIDate(appointment.start_time)
+      const startHour = start.getHours()
+      const startMinute = start.getMinutes()
+      return startHour === hour && startMinute === minute
+    })
+  }, [filteredAppointments])
+
+  // Memoized service badge class getter
+  const getServiceBadgeClass = useCallback((serviceName: string) => {
+    const lowerService = serviceName.toLowerCase()
+    if (lowerService.includes('haircut') || lowerService.includes('cut')) {
+      return 'service-badge-haircut'
+    } else if (lowerService.includes('shave') || lowerService.includes('beard')) {
+      return 'service-badge-shave'
+    } else if (lowerService.includes('color') || lowerService.includes('dye')) {
+      return 'service-badge-color'
+    }
+    return 'service-badge-treatment'
+  }, [])
 
   // Get time slot from screen position (for touch drag)
   const getTimeSlotFromPosition = (clientY: number) => {
@@ -258,6 +394,7 @@ const CalendarDayView = React.memo(function CalendarDayView({
     } else {
       // No significant conflicts, proceed with update
       onAppointmentUpdate?.(appointmentId, newStartTime)
+      showSuccess()
     }
   }
 
@@ -276,6 +413,7 @@ const CalendarDayView = React.memo(function CalendarDayView({
     // For now, we'll just update the time. In a full implementation, 
     // you'd also handle barber changes and duration adjustments
     onAppointmentUpdate?.(finalAppointmentId, finalStartTime)
+    showSuccess()
     
     setShowConflictModal(false)
     setConflictAnalysis(null)
@@ -287,6 +425,7 @@ const CalendarDayView = React.memo(function CalendarDayView({
     if (!pendingUpdate) return
     
     onAppointmentUpdate?.(pendingUpdate.appointmentId, pendingUpdate.newStartTime)
+    showSuccess()
     
     setShowConflictModal(false)
     setConflictAnalysis(null)
@@ -448,6 +587,90 @@ const CalendarDayView = React.memo(function CalendarDayView({
     setIsSelectionMode(selectedAppointments.size > 0)
   }, [selectedAppointments])
   
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (navigationDebounceRef.current) {
+        clearTimeout(navigationDebounceRef.current)
+      }
+    }
+  }, [])
+
+  // Pull-to-refresh support for touch devices
+  useEffect(() => {
+    if (!isTouchDevice || !scheduleContainerRef.current || !onRefresh) return
+
+    const container = scheduleContainerRef.current
+    let startY = 0
+    let currentY = 0
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (container.scrollTop === 0) {
+        startY = e.touches[0].pageY
+        touchStartY.current = startY
+        setIsPulling(true)
+      }
+    }
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!touchStartY.current) return
+      
+      currentY = e.touches[0].pageY
+      const distance = currentY - startY
+
+      if (distance > 0 && container.scrollTop === 0) {
+        e.preventDefault()
+        setPullToRefreshDistance(Math.min(distance, 150))
+      }
+    }
+
+    const handleTouchEnd = () => {
+      if (pullToRefreshDistance > 80 && onRefresh) {
+        setIsRefreshing(true)
+        onRefresh()
+        
+        // Reset after a delay
+        setTimeout(() => {
+          setIsRefreshing(false)
+        }, 1000)
+      }
+      
+      setPullToRefreshDistance(0)
+      setIsPulling(false)
+      touchStartY.current = null
+    }
+
+    container.addEventListener('touchstart', handleTouchStart, { passive: true })
+    container.addEventListener('touchmove', handleTouchMove, { passive: false })
+    container.addEventListener('touchend', handleTouchEnd)
+
+    return () => {
+      container.removeEventListener('touchstart', handleTouchStart)
+      container.removeEventListener('touchmove', handleTouchMove)
+      container.removeEventListener('touchend', handleTouchEnd)
+    }
+  }, [isTouchDevice, onRefresh, pullToRefreshDistance])
+
+  // Handle refresh button click
+  const handleRefresh = useCallback(() => {
+    if (onRefresh && !isRefreshing) {
+      setIsRefreshing(true)
+      onRefresh()
+      
+      // Reset after a delay
+      setTimeout(() => {
+        setIsRefreshing(false)
+      }, 1000)
+    }
+  }, [onRefresh, isRefreshing])
+
+  // Show success animation when appointment is updated
+  const showSuccess = useCallback(() => {
+    setShowSuccessAnimation(true)
+    setTimeout(() => {
+      setShowSuccessAnimation(false)
+    }, 2000)
+  }, [])
 
   // Render mobile view on small screens
   if (isMobile) {
@@ -475,7 +698,45 @@ const CalendarDayView = React.memo(function CalendarDayView({
 
   // Desktop view
   return (
-    <div className="w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm h-full flex flex-col">
+    <div className="w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm h-full flex flex-col relative">
+      {/* Loading overlay */}
+      {isLoading && (
+        <div className="absolute inset-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm z-50 flex items-center justify-center rounded-lg">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-sm text-gray-600 dark:text-gray-400">Loading appointments...</span>
+          </div>
+        </div>
+      )}
+
+      {/* Success animation overlay */}
+      {showSuccessAnimation && (
+        <div className="absolute inset-0 pointer-events-none z-50 flex items-center justify-center">
+          <div className="bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-bounce-in">
+            <CheckCircleIcon className="w-6 h-6" />
+            <span className="font-medium">Appointment updated successfully!</span>
+          </div>
+        </div>
+      )}
+
+      {/* Pull-to-refresh indicator */}
+      {isPulling && pullToRefreshDistance > 0 && (
+        <div 
+          className="absolute top-0 left-0 right-0 flex items-center justify-center transition-all"
+          style={{ 
+            height: `${pullToRefreshDistance}px`,
+            opacity: Math.min(pullToRefreshDistance / 80, 1)
+          }}
+        >
+          <div className={`flex items-center gap-2 ${pullToRefreshDistance > 80 ? 'text-primary-600' : 'text-gray-400'}`}>
+            <ArrowPathIcon className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span className="text-sm font-medium">
+              {pullToRefreshDistance > 80 ? 'Release to refresh' : 'Pull to refresh'}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Selection toolbar */}
       {isSelectionMode && (
         <div className="bg-primary-50 dark:bg-primary-900/20 border-b border-primary-200 dark:border-primary-800 p-3 flex items-center justify-between animate-slide-down">
@@ -563,30 +824,81 @@ const CalendarDayView = React.memo(function CalendarDayView({
 
         {/* Day Navigation */}
         <div className="flex items-center justify-between">
-          <button onClick={previousDay} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+          <button 
+            onClick={previousDay} 
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isAnimating}
+          >
             <ChevronLeftIcon className="w-5 h-5" />
           </button>
           
           <div className="flex items-center gap-4">
             <button 
               onClick={goToToday}
-              className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+              className="text-sm text-primary-600 hover:text-primary-700 font-medium transition-colors disabled:opacity-50"
+              disabled={isAnimating}
             >
               Today
             </button>
-            <h3 className="text-xl font-semibold">
-              {format(currentDay, 'EEEE, MMMM d, yyyy')}
+            <h3 className="text-xl font-semibold relative overflow-hidden">
+              <span 
+                className={`block transition-all duration-300 ${
+                  animationDirection === 'next' 
+                    ? 'animate-slide-out-left' 
+                    : animationDirection === 'prev' 
+                    ? 'animate-slide-out-right' 
+                    : ''
+                }`}
+                style={{
+                  opacity: isAnimating ? 0 : 1,
+                  transform: isAnimating 
+                    ? animationDirection === 'next' 
+                      ? 'translateX(-20px)' 
+                      : 'translateX(20px)'
+                    : 'translateX(0)',
+                }}
+              >
+                {format(currentDay, 'EEEE, MMMM d, yyyy')}
+              </span>
             </h3>
+            {onRefresh && (
+              <button
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Refresh appointments"
+              >
+                <ArrowPathIcon className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              </button>
+            )}
           </div>
           
-          <button onClick={nextDay} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+          <button 
+            onClick={nextDay} 
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isAnimating}
+          >
             <ChevronRightIcon className="w-5 h-5" />
           </button>
         </div>
       </div>
 
       {/* Day Schedule */}
-      <div className="flex-1 overflow-y-auto">
+      <div 
+        ref={scheduleContainerRef}
+        key={currentDay.toISOString()} // Force re-render on date change
+        className={`flex-1 overflow-y-auto ${
+          animationDirection === 'prev' 
+            ? 'calendar-date-transition prev' 
+            : animationDirection === 'next'
+            ? 'calendar-date-transition'
+            : ''
+        }`}
+        style={{
+          transform: isPulling ? `translateY(${pullToRefreshDistance}px)` : 'translateY(0)',
+          transition: isPulling ? 'none' : 'transform 0.3s ease-out'
+        }}
+      >
         <div className="flex">
           {/* Time column */}
           <div className="w-20 flex-shrink-0 border-r border-gray-200 dark:border-gray-700">
@@ -620,6 +932,8 @@ const CalendarDayView = React.memo(function CalendarDayView({
                     : ''
                 } ${
                   isDragging ? 'bg-gray-25 dark:bg-gray-800/50' : ''
+                } ${
+                  isSlotBooked(slot.hour, slot.minute) ? 'slot-booked' : 'slot-available'
                 }`}
                 onClick={() => {
                   if (!isDragging) {
@@ -694,18 +1008,14 @@ const CalendarDayView = React.memo(function CalendarDayView({
 
             {/* Current time indicator */}
             {isSameDay(currentDay, new Date()) && (
-              <div
-                className="absolute left-0 right-0 h-0.5 bg-red-500 z-10"
-                style={{
-                  top: `${((new Date().getHours() * 60 + new Date().getMinutes() - startHour * 60) / slotDuration) * 40}px`
-                }}
-              >
-                <div className="absolute -left-2 -top-1.5 w-3 h-3 bg-red-500 rounded-full"></div>
-              </div>
+              <CurrentTimeIndicator 
+                startHour={startHour} 
+                slotDuration={slotDuration} 
+              />
             )}
             
             {/* Appointments */}
-            {filteredAppointments.map((appointment) => (
+            {filteredAppointments.map((appointment, index) => (
               <div
                 key={appointment.id}
                 data-appointment-id={appointment.id}
@@ -719,7 +1029,10 @@ const CalendarDayView = React.memo(function CalendarDayView({
                     ? 'cursor-move hover:shadow-lg hover:scale-[1.02] hover:z-10 touch-target' 
                     : 'cursor-pointer'
                 }`}
-                style={getAppointmentStyle(appointment)}
+                style={{
+                  ...getAppointmentStyle(appointment),
+                  animationDelay: `${index * 30}ms` // Stagger appointments
+                }}
                 onClick={(e) => {
                   e.stopPropagation()
                   if (!isDragging) {
@@ -771,7 +1084,11 @@ const CalendarDayView = React.memo(function CalendarDayView({
                 >
                   {appointment.client_name || 'Client'}
                 </div>
-                <div className="text-xs opacity-90 truncate">{appointment.service_name}</div>
+                <div className="text-xs opacity-90 truncate">
+                  <span className={`service-badge ${getServiceBadgeClass(appointment.service_name)}`}>
+                    {appointment.service_name}
+                  </span>
+                </div>
                 <div className="text-xs opacity-75 mt-1">
                   {format(parseAPIDate(appointment.start_time), 'h:mm a')}
                   {appointment.duration_minutes && ` (${appointment.duration_minutes}m)`}
@@ -855,6 +1172,19 @@ const CalendarDayView = React.memo(function CalendarDayView({
         />
       )}
     </div>
+  )
+}, (prevProps, nextProps) => {
+  // Custom comparison function for React.memo
+  // Only re-render if critical props change
+  return (
+    prevProps.appointments === nextProps.appointments &&
+    prevProps.selectedBarberId === nextProps.selectedBarberId &&
+    prevProps.currentDate?.getTime() === nextProps.currentDate?.getTime() &&
+    prevProps.barbers === nextProps.barbers &&
+    prevProps.clients === nextProps.clients &&
+    prevProps.startHour === nextProps.startHour &&
+    prevProps.endHour === nextProps.endHour &&
+    prevProps.slotDuration === nextProps.slotDuration
   )
 })
 

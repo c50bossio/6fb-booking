@@ -1384,4 +1384,70 @@
     animation: slideUp 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
     will-change: opacity, transform;
   }
+
+  /* Calendar date navigation animations */
+  @keyframes dateSlideOutLeft {
+    from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+  }
+
+  @keyframes dateSlideOutRight {
+    from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+  }
+
+  @keyframes dateSlideInFromRight {
+    from {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes dateSlideInFromLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .animate-slide-out-left {
+    animation: dateSlideOutLeft 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .animate-slide-out-right {
+    animation: dateSlideOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .animate-slide-in-from-right {
+    animation: dateSlideInFromRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .animate-slide-in-from-left {
+    animation: dateSlideInFromLeft 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  /* Fade animation for date text */
+  .date-fade-transition {
+    transition: opacity 0.2s ease-out, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 }

@@ -34,19 +34,31 @@ function LoginContent() {
     e.preventDefault()
 
     try {
+      console.log('Starting login...')
       const response = await loginActions.execute(() => login(email, password))
+      console.log('Login response:', response)
+      
       if (response.access_token) {
+        console.log('Token received, fetching profile...')
         // Token is already stored in the login function
         // Fetch user profile to determine role
         try {
           const userProfile = await getProfile()
-          const dashboardUrl = getDefaultDashboard(userProfile)
-          router.push(dashboardUrl)
+          console.log('User profile:', userProfile)
+          // For now, always redirect to dashboard since admin requires special handling
+          const dashboardUrl = '/dashboard'
+          console.log('Redirecting to:', dashboardUrl)
+          
+          // Use window.location for immediate redirect
+          window.location.href = dashboardUrl
         } catch (profileError) {
           // If profile fetch fails, fallback to default dashboard
           console.error('Failed to fetch user profile:', profileError)
+          console.log('Redirecting to default dashboard...')
           router.push('/dashboard')
         }
+      } else {
+        console.log('No access token in response')
       }
     } catch (err) {
       // Error is already handled by useAsyncOperation
