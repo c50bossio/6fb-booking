@@ -5,7 +5,7 @@ from slowapi.errors import RateLimitExceeded
 from database import engine, Base
 import models
 import location_models
-from routers import auth, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise
+from routers import auth, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing
 from utils.rate_limit import limiter, rate_limit_exceeded_handler
 
 # Create database tables
@@ -76,6 +76,7 @@ app.include_router(sms_conversations.router, prefix="/api/v1")
 app.include_router(sms_webhooks.router, prefix="/api/v1")
 app.include_router(webhook_management.router, prefix="/api/v1")  # Re-enabled with webhook models
 app.include_router(enterprise.router, prefix="/api/v1")
+app.include_router(marketing.router, prefix="/api/v1")
 
 @app.get("/")
 def root():

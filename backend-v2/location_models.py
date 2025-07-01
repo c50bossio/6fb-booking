@@ -71,6 +71,7 @@ class BarbershopLocation(Base):
     # Relationships
     chair_inventory = relationship("ChairInventory", back_populates="location", cascade="all, delete-orphan")
     compensation_plans = relationship("CompensationPlan", back_populates="location", cascade="all, delete-orphan")
+    # barbers = relationship("User", secondary="barber_locations", back_populates="locations")
 
 
 class BarberLocation(Base):
