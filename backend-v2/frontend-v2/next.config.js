@@ -49,14 +49,7 @@ const nextConfig = {
     return config
   },
   
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/:path*`,
-      },
-    ];
-  },
+  // Removed rewrites to use direct API calls
 }
 
 module.exports = withBundleAnalyzer(nextConfig)
