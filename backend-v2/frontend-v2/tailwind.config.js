@@ -205,7 +205,7 @@ module.exports = {
         ],
       },
       
-      // Enhanced Shadow System for Glass Morphism
+      // Enhanced Shadow & Glow System for Premium iOS Feel
       boxShadow: {
         // Existing shadows (preserved)
         'glow-primary': '0 0 20px rgba(20, 184, 166, 0.5)',
@@ -219,6 +219,21 @@ module.exports = {
         'ios-lg': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
         'ios-xl': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
         'ios-2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        
+        // Premium Glow Effects
+        'glow-primary-subtle': 'var(--glow-primary)',
+        'glow-primary-strong': 'var(--glow-primary-strong)',
+        'glow-success-subtle': 'var(--glow-success)',
+        'glow-warning-subtle': 'var(--glow-warning)',
+        'glow-error-subtle': 'var(--glow-error)',
+        
+        // Surface & Elevation
+        'surface-glow': 'var(--surface-glow)',
+        'elevated-glow': 'var(--elevated-glow)',
+        
+        // Dynamic Island Style
+        'island': '0 8px 30px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.05)',
+        'island-hover': '0 12px 40px rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(255, 255, 255, 0.08)',
         
         // Glass morphism shadows
         'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
@@ -348,6 +363,30 @@ module.exports = {
       },
       height: {
         'safe-area-inset-bottom': 'env(safe-area-inset-bottom)',
+      },
+      
+      // Premium Gradient System
+      backgroundImage: {
+        // Ambient lighting gradients
+        'ambient-light': 'var(--ambient-light)',
+        'ambient-warm': 'var(--ambient-warm)',
+        'ambient-cool': 'var(--ambient-cool)',
+        
+        // Premium surface gradients
+        'surface-gradient': 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+        'surface-gradient-dark': 'linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%)',
+        
+        // Dynamic Island gradients
+        'island-gradient': 'linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.9) 100%)',
+        'island-gradient-hover': 'linear-gradient(135deg, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.85) 100%)',
+        
+        // Premium button gradients
+        'premium-primary': 'linear-gradient(135deg, rgb(20, 184, 166) 0%, rgb(13, 148, 136) 100%)',
+        'premium-primary-hover': 'linear-gradient(135deg, rgb(13, 148, 136) 0%, rgb(15, 118, 110) 100%)',
+        
+        // Glass surface gradients
+        'glass-gradient': 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%)',
+        'glass-gradient-dark': 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%)',
       },
     },
   },
