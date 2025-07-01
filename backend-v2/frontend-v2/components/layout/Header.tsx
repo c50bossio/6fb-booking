@@ -9,7 +9,8 @@ import {
   UserCircleIcon,
   BellIcon,
   MagnifyingGlassIcon,
-  CalendarIcon
+  CalendarIcon,
+  ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline'
 import { type User, logout } from '@/lib/api'
 import { useThemeStyles } from '@/hooks/useTheme'
@@ -42,8 +43,13 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      // For user menu, check both the button ref and if target is inside the portal
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
-        setShowUserMenu(false)
+        // Also check if clicking inside the portal dropdown
+        const portalDropdown = document.querySelector('[data-user-menu-portal]')
+        if (!portalDropdown || !portalDropdown.contains(event.target as Node)) {
+          setShowUserMenu(false)
+        }
       }
       if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
         setShowNotifications(false)
@@ -190,6 +196,22 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
           {/* Theme Toggle */}
           <SimpleThemeToggle className="hidden sm:block" />
 
+          {/* Quick Logout Button */}
+          {user && (
+            <button
+              onClick={handleLogout}
+              className={`
+                p-2 rounded-ios-lg ${colors.background.hover} ${colors.text.secondary}
+                hover:${colors.background.secondary} hover:text-red-600 dark:hover:text-red-400
+                transition-colors duration-200 hidden sm:block
+              `}
+              title="Sign Out"
+              aria-label="Sign out"
+            >
+              <ArrowRightOnRectangleIcon className="w-5 h-5" />
+            </button>
+          )}
+
           {/* Notifications */}
           <div className="relative" ref={notificationsRef}>
             <button
@@ -255,13 +277,20 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
               className={`
-                flex items-center space-x-3 p-2 rounded-ios-lg ${colors.background.hover}
-                hover:${colors.background.secondary} transition-colors duration-200
+                relative flex items-center space-x-3 p-2 rounded-lg 
+                bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600
+                transition-all duration-200
+                hover:scale-105 active:scale-95 cursor-pointer
+                ${showUserMenu ? 'ring-2 ring-primary-500 ring-opacity-50' : ''}
               `}
+              aria-label="User menu"
+              aria-expanded={showUserMenu}
+              aria-haspopup="true"
+              type="button"
             >
               {user ? (
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow duration-200">
                     <span className="text-sm font-semibold text-white">
                       {getUserInitials()}
                     </span>
@@ -274,93 +303,105 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
                       {getRoleDisplayName()}
                     </p>
                   </div>
+                  {/* Dropdown indicator */}
+                  <ChevronRightIcon className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${showUserMenu ? 'rotate-90' : ''}`} />
                 </div>
               ) : (
                 <UserCircleIcon className="w-8 h-8 text-gray-400" />
               )}
             </button>
 
-            {/* User Menu Dropdown */}
+            {/* User Menu Dropdown - Using Portal for proper rendering */}
             {showUserMenu && user && (
-              <div className={`
-                absolute right-0 mt-2 w-56 ${colors.background.card} rounded-ios-xl shadow-ios-xl
-                border ${colors.border.default} z-[10000]
-                animate-ios-slide-down
-              `}>
-                {/* User Info */}
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-semibold text-white">
-                        {getUserInitials()}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {user.name || 'User'}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {user.email}
-                      </p>
-                      <p className="text-xs text-primary-600 dark:text-primary-400 font-medium">
-                        {getRoleDisplayName()}
-                      </p>
+              <Portal>
+                <div 
+                  data-user-menu-portal
+                  className="fixed bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700"
+                  style={{ 
+                    position: 'fixed',
+                    top: '70px',
+                    right: '20px',
+                    width: '280px',
+                    zIndex: 2147483647,
+                    maxHeight: '400px',
+                    overflowY: 'auto'
+                  }}
+                >
+                  {/* User Info */}
+                  <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-semibold text-white">
+                          {getUserInitials()}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          {user.name || 'User'}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {user.email}
+                        </p>
+                        <p className="text-xs text-primary-600 dark:text-primary-400 font-medium">
+                          {getRoleDisplayName()}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Menu Items */}
-                <div className="py-2">
-                  {getUserMenuItems(user.role).map((item) => {
-                    const Icon = item.icon
-                    
-                    // Handle Sign Out separately
-                    if (item.name === 'Sign Out') {
-                      return null
-                    }
-                    
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className={`
-                          flex items-center px-4 py-2 text-sm ${colors.text.primary}
-                          hover:${colors.background.hover} transition-colors duration-200
-                        `}
-                        onClick={() => setShowUserMenu(false)}
-                        {...(item.isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                      >
-                        <Icon className="w-4 h-4 mr-3" />
-                        {item.name}
-                      </Link>
-                    )
-                  })}
-                </div>
+                  {/* Menu Items */}
+                  <div className="py-2">
+                    {getUserMenuItems(user.role).map((item) => {
+                      const Icon = item.icon
+                      
+                      // Handle Sign Out separately
+                      if (item.name === 'Sign Out') {
+                        return null
+                      }
+                      
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className={`
+                            flex items-center px-4 py-2 text-sm ${colors.text.primary}
+                            hover:${colors.background.hover} transition-colors duration-200
+                          `}
+                          onClick={() => setShowUserMenu(false)}
+                          {...(item.isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                        >
+                          <Icon className="w-4 h-4 mr-3" />
+                          {item.name}
+                        </Link>
+                      )
+                    })}
+                  </div>
 
-                {/* Logout */}
-                <div className="border-t border-gray-200 dark:border-gray-700 py-2">
-                  {(() => {
-                    const signOutItem = getUserMenuItems(user.role).find(item => item.name === 'Sign Out')
-                    const SignOutIcon = signOutItem?.icon || UserCircleIcon
-                    
-                    return (
-                      <button
-                        onClick={() => {
-                          setShowUserMenu(false)
-                          handleLogout()
-                        }}
-                        className={`
-                          flex items-center w-full px-4 py-2 text-sm text-error-600 dark:text-error-400
-                          hover:bg-error-50 dark:hover:bg-error-900/20 transition-colors duration-200
-                        `}
-                      >
-                        <SignOutIcon className="w-4 h-4 mr-3" />
-                        Sign Out
-                      </button>
-                    )
-                  })()}
+                  {/* Logout */}
+                  <div className="border-t border-gray-200 dark:border-gray-700 py-2">
+                    {(() => {
+                      const signOutItem = getUserMenuItems(user.role).find(item => item.name === 'Sign Out')
+                      const SignOutIcon = signOutItem?.icon || UserCircleIcon
+                      
+                      return (
+                        <button
+                          onClick={() => {
+                            setShowUserMenu(false)
+                            handleLogout()
+                          }}
+                          className={`
+                            flex items-center w-full px-4 py-2 text-sm text-error-600 dark:text-error-400
+                            hover:bg-error-50 dark:hover:bg-error-900/20 transition-colors duration-200
+                          `}
+                        >
+                          <SignOutIcon className="w-4 h-4 mr-3" />
+                          Sign Out
+                        </button>
+                      )
+                    })()}
+                  </div>
                 </div>
-              </div>
+              </Portal>
             )}
           </div>
         </div>
