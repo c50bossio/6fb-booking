@@ -90,6 +90,19 @@ class User(UserBase):
     class Config:
         from_attributes = True
 
+class UserResponse(User):
+    pass
+
+class RoleUpdate(BaseModel):
+    role: str = Field(..., description="New role for the user")
+    
+    @validator('role')
+    def validate_role(cls, v):
+        valid_roles = ["user", "admin", "super_admin", "barber", "manager"]
+        if v not in valid_roles:
+            raise ValueError(f"Role must be one of: {', '.join(valid_roles)}")
+        return v
+
 class UserInDB(User):
     hashed_password: str
 
@@ -1606,6 +1619,323 @@ BookingReschedule = AppointmentReschedule  # Alias for backward compatibility
 BookingValidationRequest = AppointmentValidationRequest  # Alias for backward compatibility
 BookingValidationResponse = AppointmentValidationResponse  # Alias for backward compatibility
 EnhancedBookingCreate = EnhancedAppointmentCreate  # Alias for backward compatibility
+
+# Guest booking schemas for public booking API
+class GuestInfo(BaseModel):
+    """Guest contact information for bookings"""
+    name: str = Field(..., min_length=1, max_length=100)
+    email: EmailStr
+    phone: Optional[str] = Field(None, pattern=r'^\+?[\d\s\-\(\)]+$')
+
+class GuestBookingCreate(BaseModel):
+    """Create booking for guest user (no authentication required)"""
+    date: Date = Field(..., description="Booking date")
+    time: str = Field(..., pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", description="Time in HH:MM format")
+    service: str = Field(..., description="Service name")
+    guest_info: GuestInfo = Field(..., description="Guest contact information")
+    notes: Optional[str] = Field(None, max_length=500, description="Additional notes")
+    timezone: Optional[str] = Field(None, description="Guest timezone")
+
+class GuestQuickBookingCreate(BaseModel):
+    """Create quick booking for guest user (next available slot)"""
+    service: str = Field(..., description="Service name")
+    guest_info: GuestInfo = Field(..., description="Guest contact information")
+    notes: Optional[str] = Field(None, max_length=500, description="Additional notes")
+    timezone: Optional[str] = Field(None, description="Guest timezone")
+
+class GuestBookingResponse(BaseModel):
+    """Response for guest booking creation"""
+    id: int
+    date: Date
+    time: str
+    service: str
+    guest_name: str
+    guest_email: str
+    guest_phone: Optional[str] = None
+    notes: Optional[str] = None
+    status: str
+    created_at: datetime
+    booking_reference: Optional[str] = None
+    
+    class Config:
+        from_attributes = True
+
+# Marketing Suite Schemas
+class MarketingCampaignCreate(BaseModel):
+    """Create a new marketing campaign"""
+    name: str = Field(..., min_length=1, max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
+    campaign_type: str = Field(..., description="email or sms")
+    template_id: Optional[int] = Field(None, description="Marketing template to use")
+    subject: Optional[str] = Field(None, description="Email subject (required for email campaigns)")
+    content: str = Field(..., description="Campaign content (plain text or HTML for email)")
+    recipient_list_id: Optional[int] = Field(None, description="Contact list to send to")
+    recipient_segment_id: Optional[int] = Field(None, description="Segment to send to")
+    scheduled_for: Optional[datetime] = Field(None, description="Schedule for future sending")
+    tags: Optional[List[str]] = Field(default_factory=list)
+    
+    @validator('campaign_type')
+    def validate_campaign_type(cls, v):
+        if v not in ['email', 'sms']:
+            raise ValueError('Campaign type must be email or sms')
+        return v
+    
+    @validator('subject')
+    def validate_subject(cls, v, values):
+        if values.get('campaign_type') == 'email' and not v:
+            raise ValueError('Subject is required for email campaigns')
+        return v
+
+class MarketingCampaignUpdate(BaseModel):
+    """Update a marketing campaign"""
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
+    template_id: Optional[int] = None
+    subject: Optional[str] = None
+    content: Optional[str] = None
+    recipient_list_id: Optional[int] = None
+    recipient_segment_id: Optional[int] = None
+    scheduled_for: Optional[datetime] = None
+    tags: Optional[List[str]] = None
+
+class MarketingCampaignResponse(BaseModel):
+    """Marketing campaign response"""
+    id: int
+    name: str
+    description: Optional[str] = None
+    campaign_type: str
+    template_id: Optional[int] = None
+    subject: Optional[str] = None
+    content: str
+    recipient_list_id: Optional[int] = None
+    recipient_segment_id: Optional[int] = None
+    status: str  # draft, scheduled, sending, sent, failed
+    scheduled_for: Optional[datetime] = None
+    sent_at: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
+    created_by_id: int
+    tags: List[str] = []
+    
+    # Analytics fields
+    total_recipients: int = 0
+    sent_count: int = 0
+    delivered_count: int = 0
+    opened_count: int = 0
+    clicked_count: int = 0
+    bounced_count: int = 0
+    unsubscribed_count: int = 0
+    
+    class Config:
+        from_attributes = True
+
+class MarketingCampaignListResponse(BaseModel):
+    """List response for marketing campaigns"""
+    campaigns: List[MarketingCampaignResponse]
+    total: int
+    skip: int
+    limit: int
+
+class MarketingTemplateCreate(BaseModel):
+    """Create a new marketing template"""
+    name: str = Field(..., min_length=1, max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
+    template_type: str = Field(..., description="email or sms")
+    category: Optional[str] = Field(None, description="Template category")
+    subject: Optional[str] = Field(None, description="Email subject template")
+    content: str = Field(..., description="Template content with variables")
+    variables: Optional[List[str]] = Field(default_factory=list, description="Available template variables")
+    preview_data: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Sample data for preview")
+    
+    @validator('template_type')
+    def validate_template_type(cls, v):
+        if v not in ['email', 'sms']:
+            raise ValueError('Template type must be email or sms')
+        return v
+
+class MarketingTemplateUpdate(BaseModel):
+    """Update a marketing template"""
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
+    category: Optional[str] = None
+    subject: Optional[str] = None
+    content: Optional[str] = None
+    variables: Optional[List[str]] = None
+    preview_data: Optional[Dict[str, Any]] = None
+    is_active: Optional[bool] = None
+
+class MarketingTemplateResponse(BaseModel):
+    """Marketing template response"""
+    id: int
+    name: str
+    description: Optional[str] = None
+    template_type: str
+    category: Optional[str] = None
+    subject: Optional[str] = None
+    content: str
+    variables: List[str] = []
+    preview_data: Dict[str, Any] = {}
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+    created_by_id: int
+    usage_count: int = 0
+    
+    class Config:
+        from_attributes = True
+
+class ContactListCreate(BaseModel):
+    """Create a new contact list"""
+    name: str = Field(..., min_length=1, max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
+
+class ContactListResponse(BaseModel):
+    """Contact list response"""
+    id: int
+    name: str
+    description: Optional[str] = None
+    contact_count: int = 0
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class ContactSegmentCreate(BaseModel):
+    """Create a new contact segment with dynamic criteria"""
+    name: str = Field(..., min_length=1, max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
+    criteria: Dict[str, Any] = Field(..., description="Segment criteria as JSON")
+    
+    @validator('criteria')
+    def validate_criteria(cls, v):
+        # Validate that criteria has required structure
+        if not isinstance(v, dict):
+            raise ValueError('Criteria must be a dictionary')
+        return v
+
+class ContactSegmentResponse(BaseModel):
+    """Contact segment response"""
+    id: int
+    name: str
+    description: Optional[str] = None
+    criteria: Dict[str, Any]
+    contact_count: int = 0
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class CampaignSendRequest(BaseModel):
+    """Request to send a campaign"""
+    test_mode: bool = Field(False, description="Send as test to limited recipients")
+    test_recipients: Optional[List[str]] = Field(None, description="Test recipient emails/phones")
+
+class ContactImportResponse(BaseModel):
+    """Response for contact import operation"""
+    imported: int
+    updated: int
+    skipped: int
+    errors: List[Dict[str, str]] = []
+    total_processed: int
+
+class ContactExportRequest(BaseModel):
+    """Request to export contacts"""
+    list_id: Optional[int] = None
+    segment_id: Optional[int] = None
+    fields: List[str] = Field(default_factory=lambda: ['name', 'email', 'phone', 'subscribed'])
+
+class ContactBulkActionRequest(BaseModel):
+    """Bulk action on contacts"""
+    contact_ids: List[int] = Field(..., min_items=1)
+    action: str = Field(..., description="subscribe, unsubscribe, add_to_list, remove_from_list, delete")
+    action_data: Optional[Dict[str, Any]] = Field(None, description="Additional data for action")
+    
+    @validator('action')
+    def validate_action(cls, v):
+        valid_actions = ['subscribe', 'unsubscribe', 'add_to_list', 'remove_from_list', 'delete']
+        if v not in valid_actions:
+            raise ValueError(f'Action must be one of {valid_actions}')
+        return v
+
+class CampaignAnalyticsResponse(BaseModel):
+    """Detailed analytics for a campaign"""
+    campaign_id: int
+    campaign_name: str
+    campaign_type: str
+    status: str
+    sent_at: Optional[datetime] = None
+    
+    # Delivery metrics
+    total_recipients: int
+    sent_count: int
+    delivered_count: int
+    delivery_rate: float
+    
+    # Engagement metrics
+    opened_count: int
+    open_rate: float
+    clicked_count: int
+    click_rate: float
+    click_to_open_rate: float
+    
+    # Negative metrics
+    bounced_count: int
+    bounce_rate: float
+    unsubscribed_count: int
+    unsubscribe_rate: float
+    spam_reports: int
+    
+    # Time-based metrics
+    first_open_time: Optional[datetime] = None
+    last_open_time: Optional[datetime] = None
+    average_time_to_open: Optional[float] = None  # in hours
+    
+    # Device/client breakdown (for email)
+    device_stats: Optional[Dict[str, int]] = None
+    client_stats: Optional[Dict[str, int]] = None
+    
+    # Geographic data
+    location_stats: Optional[Dict[str, int]] = None
+    
+    # Link performance (for email)
+    link_clicks: Optional[List[Dict[str, Any]]] = None
+    
+    class Config:
+        from_attributes = True
+
+class MarketingUsageResponse(BaseModel):
+    """Marketing usage statistics"""
+    period: str
+    start_date: datetime
+    end_date: datetime
+    
+    # Email usage
+    emails_sent: int
+    email_limit: Optional[int] = None
+    email_usage_percentage: Optional[float] = None
+    
+    # SMS usage
+    sms_sent: int
+    sms_limit: Optional[int] = None
+    sms_usage_percentage: Optional[float] = None
+    
+    # Campaign stats
+    campaigns_created: int
+    campaigns_sent: int
+    
+    # Contact stats
+    total_contacts: int
+    new_contacts: int
+    unsubscribed_contacts: int
+    
+    # Cost estimation (if applicable)
+    estimated_cost: Optional[float] = None
+    cost_breakdown: Optional[Dict[str, float]] = None
+    
+    class Config:
+        from_attributes = True
 
 # Model rebuilds to resolve forward references
 SMSConversationResponse.model_rebuild()

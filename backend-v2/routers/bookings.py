@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date, datetime, time, timedelta
+import warnings
 import schemas
 import models
 from database import get_db
@@ -9,9 +10,19 @@ from routers.auth import get_current_user
 from utils.auth import require_admin_role, get_current_user_optional
 from services import booking_service
 
+# DEPRECATION WARNING: This router is deprecated in favor of /appointments
+# The /bookings endpoints will be removed in a future version
+warnings.warn(
+    "The /bookings router is deprecated. Please use /appointments endpoints instead. "
+    "This router will be removed in a future version.",
+    DeprecationWarning,
+    stacklevel=2
+)
+
 router = APIRouter(
     prefix="/bookings",
-    tags=["bookings"]
+    tags=["bookings (deprecated)"],
+    deprecated=True
 )
 
 @router.get("/slots", response_model=schemas.SlotsResponse)
@@ -539,6 +550,110 @@ def update_booking_settings(
         }
         
         return settings_dict
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Guest Booking Endpoints (No Authentication Required)
+@router.post("/guest", response_model=schemas.GuestBookingResponse)
+def create_guest_booking(
+    booking: schemas.GuestBookingCreate,
+    db: Session = Depends(get_db)
+):
+    """Create a booking for a guest user (no authentication required)."""
+    # Validate date
+    if booking.date < date.today():
+        raise HTTPException(status_code=400, detail="Cannot book appointments in the past")
+    
+    # Get booking settings for validation
+    settings = booking_service.get_booking_settings(db)
+    
+    # Parse booking datetime
+    try:
+        time_parts = booking.time.split(":")
+        hour = int(time_parts[0])
+        minute = int(time_parts[1])
+        booking_datetime = datetime.combine(booking.date, time(hour, minute))
+    except (ValueError, IndexError):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid time format: {booking.time}. Please use HH:MM format."
+        )
+    
+    # Make booking_datetime timezone-aware using business timezone
+    import pytz
+    business_tz = pytz.timezone(settings.business_timezone)
+    booking_datetime_aware = business_tz.localize(booking_datetime)
+    
+    # Use configurable lead time validation
+    min_booking_time = settings.get_min_booking_time(settings.business_timezone)
+    if booking_datetime_aware < min_booking_time:
+        next_available = min_booking_time.strftime('%H:%M')
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Cannot book appointments for {booking.time}. Please select a time at least {settings.min_lead_time_minutes} minutes from now ({next_available}) or choose a future date."
+        )
+    
+    # Use configurable max advance validation
+    max_booking_time = settings.get_max_booking_time(settings.business_timezone)
+    if booking_datetime_aware > max_booking_time:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Cannot book more than {settings.max_advance_days} days in advance"
+        )
+    
+    try:
+        # Create guest booking
+        appointment = booking_service.create_guest_booking(
+            db=db,
+            booking_date=booking.date,
+            booking_time=booking.time,
+            service=booking.service,
+            guest_info=booking.guest_info,
+            user_timezone=booking.timezone or settings.business_timezone,
+            notes=booking.notes
+        )
+        return appointment
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/guest/quick", response_model=schemas.GuestBookingResponse)
+def create_guest_quick_booking(
+    quick_booking: schemas.GuestQuickBookingCreate,
+    db: Session = Depends(get_db)
+):
+    """Create a quick booking for guest user (next available slot, no authentication required)."""
+    try:
+        # Get booking settings
+        settings = booking_service.get_booking_settings(db)
+        
+        # Get the next available slot starting from today in business timezone
+        next_slot = booking_service.get_next_available_slot(db, date.today(), user_timezone=settings.business_timezone)
+        
+        if not next_slot:
+            raise HTTPException(
+                status_code=400, 
+                detail="No available slots found. Please try booking for a later date."
+            )
+        
+        # Create guest booking for the next available slot
+        appointment = booking_service.create_guest_booking(
+            db=db,
+            booking_date=next_slot.date(),
+            booking_time=next_slot.strftime("%H:%M"),
+            service=quick_booking.service,
+            guest_info=quick_booking.guest_info,
+            user_timezone=settings.business_timezone
+        )
+        
+        return appointment
+        
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
