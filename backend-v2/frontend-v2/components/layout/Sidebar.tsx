@@ -23,7 +23,7 @@ interface SidebarProps {
 export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname()
   const { colors, isDark } = useThemeStyles()
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['dashboard']))
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['dashboard', 'calendar & scheduling']))
 
   const toggleSection = (sectionName: string) => {
     const newExpanded = new Set(expandedSections)
@@ -141,7 +141,9 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
         {collapsed ? (
-          <Logo size="xs" className="mx-auto" />
+          <div className="mx-auto w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-sm">BB</span>
+          </div>
         ) : (
           <Logo size="md" />
         )}
@@ -186,7 +188,7 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
       )}
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-4 py-4 space-y-1">
         {filteredNavigationItems.map((item, index) => renderNavigationItem(item, 0, index))}
       </nav>
 

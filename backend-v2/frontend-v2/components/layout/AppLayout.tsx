@@ -8,6 +8,7 @@ import { Sidebar } from './Sidebar'
 import { MobileNavigation } from './MobileNavigation'
 import { Header } from './Header'
 import { useResponsive } from '@/hooks/useResponsive'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -135,8 +136,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       
       breadcrumbs.push({
         label,
-        href: currentPath,
-        isLast: index === segments.length - 1
+        href: currentPath
       })
     })
     
@@ -168,7 +168,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             />
             
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 flex flex-col">
               {/* Header */}
               <Header
                 user={user}
@@ -201,7 +201,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                       </div>
                     </div>
                   ) : (
-                    children
+                    <ErrorBoundary>
+                      {children}
+                    </ErrorBoundary>
                   )}
                 </div>
               </main>
@@ -263,7 +265,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             />
             
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 flex flex-col">
               {/* Header */}
               <Header
                 user={user}
@@ -296,7 +298,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                       </div>
                     </div>
                   ) : (
-                    children
+                    <ErrorBoundary>
+                      {children}
+                    </ErrorBoundary>
                   )}
                 </div>
               </main>
@@ -307,7 +311,9 @@ export function AppLayout({ children }: AppLayoutProps) {
         {/* Public Route Layout - Simple layout for login, register, etc. */}
         {isPublicRoute && (
           <div className="min-h-screen">
-            {children}
+            <ErrorBoundary>
+              {children}
+            </ErrorBoundary>
           </div>
         )}
       </div>

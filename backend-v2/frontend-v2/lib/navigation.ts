@@ -29,6 +29,11 @@ import {
   QuestionMarkCircleIcon,
   ArrowRightOnRectangleIcon,
   MagnifyingGlassIcon,
+  EnvelopeIcon,
+  ChatBubbleLeftRightIcon,
+  UserCircleIcon,
+  ChartPieIcon,
+  CurrencyDollarIcon,
   // Solid versions for mobile
   HomeIcon as HomeIconSolid,
   CalendarIcon as CalendarIconSolid,
@@ -98,58 +103,57 @@ export function filterNavigationByRole(
 
 // Main navigation items (for sidebar)
 export const navigationItems: NavigationItem[] = [
-  // Common items available to all authenticated users
+  // Primary focal point - Business snapshot
   {
     name: 'Dashboard',
     href: '/dashboard',
     icon: HomeIcon,
-    description: 'Overview and quick stats'
-  },
-  {
-    name: 'Book Appointment',
-    href: '/book',
-    icon: CalendarIcon,
-    description: 'Schedule a new appointment'
-  },
-  {
-    name: 'My Bookings',
-    href: '/bookings',
-    icon: ClockIcon,
-    description: 'View and manage your appointments'
+    description: 'Business overview and quick stats'
   },
   
-  // Barber & Admin items
+  // Secondary focal point - Calendar & Scheduling section
+  {
+    name: 'Calendar & Scheduling',
+    href: '/calendar',
+    icon: CalendarIcon,
+    description: 'Manage appointments and schedule',
+    children: [
+      {
+        name: 'Calendar View',
+        href: '/calendar',
+        icon: CalendarIcon,
+        description: 'Main booking calendar'
+      },
+      {
+        name: 'My Bookings',
+        href: '/bookings',
+        icon: ClockIcon,
+        description: 'View and manage your appointments'
+      },
+      {
+        name: 'Availability',
+        href: '/barber-availability',
+        icon: ClockIcon,
+        roles: ['barber', 'admin', 'super_admin'],
+        description: 'Manage working hours'
+      },
+      {
+        name: 'Recurring',
+        href: '/recurring',
+        icon: ArrowPathIcon,
+        roles: ['admin', 'barber', 'super_admin'],
+        description: 'Manage recurring appointments'
+      }
+    ]
+  },
+  
+  // Business Management
   {
     name: 'Clients',
     href: '/clients',
     icon: UserGroupIcon,
     roles: ['barber', 'admin', 'super_admin'],
     description: 'Manage client information'
-  },
-  
-  // Barber-specific
-  {
-    name: 'Earnings',
-    href: '/barber/earnings',
-    icon: BanknotesIcon,
-    roles: ['barber'],
-    description: 'Track your income and payouts'
-  },
-  {
-    name: 'Availability',
-    href: '/barber-availability',
-    icon: ClockIcon,
-    roles: ['barber', 'admin', 'super_admin'],
-    description: 'Manage working hours'
-  },
-  
-  // Recurring appointments
-  {
-    name: 'Recurring',
-    href: '/recurring',
-    icon: ArrowPathIcon,
-    roles: ['admin', 'barber', 'super_admin'],
-    description: 'Manage recurring appointments'
   },
   
   // Communication
@@ -161,19 +165,73 @@ export const navigationItems: NavigationItem[] = [
     description: 'Send notifications and messages'
   },
   
-  // Payments section
+  // Marketing Suite
   {
-    name: 'Payments',
+    name: 'Marketing Suite',
+    href: '/marketing',
+    icon: EnvelopeIcon,
+    roles: ['admin', 'super_admin'],
+    description: 'Email and SMS marketing campaigns',
+    isNew: true,
+    children: [
+      {
+        name: 'Campaigns',
+        href: '/marketing/campaigns',
+        icon: ChatBubbleLeftRightIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Create and manage campaigns'
+      },
+      {
+        name: 'Templates',
+        href: '/marketing/templates',
+        icon: DocumentArrowDownIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Email and SMS templates'
+      },
+      {
+        name: 'Contacts',
+        href: '/marketing/contacts',
+        icon: UserCircleIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Manage contact lists'
+      },
+      {
+        name: 'Analytics',
+        href: '/marketing/analytics',
+        icon: ChartPieIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Campaign performance'
+      },
+      {
+        name: 'Usage & Billing',
+        href: '/marketing/billing',
+        icon: CurrencyDollarIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Credits and usage tracking'
+      }
+    ]
+  },
+  
+  // Payments & Earnings section
+  {
+    name: 'Payments & Earnings',
     href: '/payments',
     icon: CreditCardIcon,
     roles: ['admin', 'barber', 'super_admin'],
-    description: 'Payment management',
+    description: 'Payment and earnings management',
     children: [
       {
-        name: 'Overview',
+        name: 'Payment Overview',
         href: '/payments',
         icon: CreditCardIcon,
         roles: ['admin', 'barber', 'super_admin']
+      },
+      {
+        name: 'Earnings',
+        href: '/barber/earnings',
+        icon: BanknotesIcon,
+        roles: ['barber'],
+        description: 'Track your income and payouts'
       },
       {
         name: 'Gift Certificates',
@@ -182,6 +240,15 @@ export const navigationItems: NavigationItem[] = [
         roles: ['admin', 'super_admin']
       }
     ]
+  },
+  
+  // Analytics & Insights
+  {
+    name: 'Analytics',
+    href: '/analytics',
+    icon: ChartBarIcon,
+    roles: ['barber', 'admin', 'super_admin'],
+    description: 'Business performance insights'
   },
   
   // Enterprise section (super_admin only)
@@ -277,30 +344,23 @@ export const navigationItems: NavigationItem[] = [
     ]
   },
   
-  // Calendar Demo (development only)
-  {
-    name: 'Calendar Demo',
-    href: '/calendar-demo',
-    icon: CalendarIcon,
-    roles: ['admin', 'super_admin'],
-    description: 'Calendar integration demo',
-    isNew: true
-  }
 ]
 
 // Mobile navigation tabs (bottom navigation)
 export const mobileNavigationTabs: MobileTabItem[] = [
   {
-    name: 'Home',
+    name: 'Dashboard',
     href: '/dashboard',
     icon: HomeIcon,
-    iconSolid: HomeIconSolid
+    iconSolid: HomeIconSolid,
+    description: 'Business overview'
   },
   {
-    name: 'Book',
-    href: '/book',
+    name: 'Calendar',
+    href: '/calendar',
     icon: CalendarIcon,
-    iconSolid: CalendarIconSolid
+    iconSolid: CalendarIconSolid,
+    description: 'Schedule management'
   },
   {
     name: 'Clients',
@@ -310,13 +370,6 @@ export const mobileNavigationTabs: MobileTabItem[] = [
     roles: ['barber', 'admin', 'super_admin']
   },
   {
-    name: 'Earnings',
-    href: '/barber/earnings',
-    icon: BanknotesIcon,
-    iconSolid: BanknotesIconSolid,
-    roles: ['barber']
-  },
-  {
     name: 'Bookings',
     href: '/bookings',
     icon: ClockIcon,
@@ -324,17 +377,18 @@ export const mobileNavigationTabs: MobileTabItem[] = [
     roles: ['user']
   },
   {
+    name: 'Earnings',
+    href: '/barber/earnings',
+    icon: BanknotesIcon,
+    iconSolid: BanknotesIconSolid,
+    roles: ['barber']
+  },
+  {
     name: 'Admin',
     href: '/admin',
     icon: BuildingStorefrontIcon,
     iconSolid: BuildingStorefrontIconSolid,
     roles: ['admin', 'super_admin']
-  },
-  {
-    name: 'Settings',
-    href: '/settings',
-    icon: Cog6ToothIcon,
-    iconSolid: Cog6ToothIconSolid
   }
 ]
 
@@ -360,7 +414,7 @@ export const quickActions: QuickAction[] = [
   // Barber quick actions
   {
     name: 'Today\'s Schedule',
-    href: '/dashboard',
+    href: '/calendar',
     icon: CalendarIcon,
     description: 'View today\'s appointments',
     roles: ['barber'],

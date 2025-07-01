@@ -16,6 +16,7 @@ import { useThemeStyles } from '@/hooks/useTheme'
 import { SimpleThemeToggle } from '@/components/ThemeToggle'
 import { navigation, getUserMenuItems } from '@/lib/navigation'
 import { Logo } from '@/components/ui/Logo'
+import { Portal } from '@/components/ui/Portal'
 
 interface HeaderProps {
   user: User | null
@@ -31,8 +32,10 @@ interface HeaderProps {
 export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false }: HeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
+  const [notificationDropdownPosition, setNotificationDropdownPosition] = useState({ top: 0, left: 0 })
   const userMenuRef = useRef<HTMLDivElement>(null)
   const notificationsRef = useRef<HTMLDivElement>(null)
+  const notificationButtonRef = useRef<HTMLButtonElement>(null)
   const router = useRouter()
   const { colors, isDark } = useThemeStyles()
 
@@ -84,6 +87,33 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
     }
   }
 
+  const handleNotificationClick = () => {
+    if (!showNotifications && notificationButtonRef.current) {
+      const buttonRect = notificationButtonRef.current.getBoundingClientRect()
+      const dropdownWidth = 320
+      const gap = 8
+      
+      // Calculate position
+      let top = buttonRect.bottom + gap
+      let left = buttonRect.right - dropdownWidth
+      
+      // Ensure dropdown stays within viewport
+      if (left < 8) {
+        left = 8
+      }
+      
+      // If dropdown would go below viewport, show it above the button
+      const estimatedHeight = 400
+      if (top + estimatedHeight > window.innerHeight - 8) {
+        top = buttonRect.top - estimatedHeight - gap
+      }
+      
+      setNotificationDropdownPosition({ top, left })
+    }
+    setShowNotifications(!showNotifications)
+  }
+
+
   return (
     <header className={`
       sticky top-0 z-40 
@@ -94,9 +124,6 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
       <div className="flex items-center justify-between h-16 px-4 sm:px-6">
         {/* Left Section */}
         <div className="flex items-center space-x-4">
-          {/* Logo */}
-          <Logo size="sm" className="hidden sm:block" />
-          
           {/* Mobile Menu Toggle */}
           {showMenuToggle && (
             <button
@@ -166,7 +193,8 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
           {/* Notifications */}
           <div className="relative" ref={notificationsRef}>
             <button
-              onClick={() => setShowNotifications(!showNotifications)}
+              ref={notificationButtonRef}
+              onClick={handleNotificationClick}
               className={`
                 relative p-2 rounded-ios-lg ${colors.background.hover} ${colors.text.secondary}
                 hover:${colors.background.secondary} hover:${colors.text.primary}
@@ -178,55 +206,49 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
               <span className="absolute top-1 right-1 w-2 h-2 bg-error-500 rounded-full"></span>
             </button>
 
-            {/* Notifications Dropdown */}
+            {/* Notification Dropdown with Portal */}
             {showNotifications && (
-              <div className={`
-                absolute right-0 mt-2 w-80 ${colors.background.card} rounded-ios-xl shadow-ios-xl
-                border ${colors.border.default} z-50
-                animate-ios-slide-down
-              `}>
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Notifications
-                  </h3>
-                </div>
-                <div className="max-h-80 overflow-y-auto">
-                  {/* Sample notifications */}
-                  <div className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200">
-                    <div className="flex space-x-3">
-                      <div className="flex-shrink-0">
-                        <CalendarIcon className="w-5 h-5 text-primary-500" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">
-                          New booking request
-                        </p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          John Doe requested a haircut for tomorrow at 2 PM
-                        </p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                          5 minutes ago
-                        </p>
+              <Portal>
+                <div 
+                  className="fixed bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700"
+                  style={{ 
+                    zIndex: 2147483647, // Maximum z-index value
+                    top: `${notificationDropdownPosition.top}px`,
+                    left: `${notificationDropdownPosition.left}px`,
+                    width: '320px',
+                    maxWidth: 'calc(100vw - 40px)'
+                  }}
+                >
+                  <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      Notifications
+                    </h3>
+                  </div>
+                  <div className="max-h-80 overflow-y-auto">
+                    <div className="p-4">
+                      <div className="flex space-x-3">
+                        <div className="flex-shrink-0">
+                          <CalendarIcon className="w-5 h-5 text-blue-500" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            New booking request
+                          </p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            John Doe requested a haircut for tomorrow at 2 PM
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                    <p className="text-sm">No more notifications</p>
+                    <div className="p-4 text-center text-gray-500">
+                      <p className="text-sm">No more notifications</p>
+                    </div>
                   </div>
                 </div>
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-                  <Link
-                    href="/notifications"
-                    className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
-                    onClick={() => setShowNotifications(false)}
-                  >
-                    View all notifications
-                  </Link>
-                </div>
-              </div>
+              </Portal>
             )}
           </div>
+
 
           {/* User Menu */}
           <div className="relative" ref={userMenuRef}>
@@ -262,7 +284,7 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
             {showUserMenu && user && (
               <div className={`
                 absolute right-0 mt-2 w-56 ${colors.background.card} rounded-ios-xl shadow-ios-xl
-                border ${colors.border.default} z-50
+                border ${colors.border.default} z-[10000]
                 animate-ios-slide-down
               `}>
                 {/* User Info */}
