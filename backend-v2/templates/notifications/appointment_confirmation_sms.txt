@@ -1,0 +1,15 @@
+✅ APPOINTMENT CONFIRMED
+
+Hi {{ client_name }}! Your appointment is confirmed:
+
+📅 {{ appointment_date }}
+🕐 {{ appointment_time }}
+✂️ {{ service_name }}
+💰 ${{ "%.2f"|format(price) }}
+{% if barber_name %}👨‍💼 Barber: {{ barber_name }}{% endif %}
+
+Please arrive 5-10 minutes early. We'll send a reminder 24 hours before.
+
+Questions? Call {{ business_phone | default('us') }}
+
+- {{ business_name }}

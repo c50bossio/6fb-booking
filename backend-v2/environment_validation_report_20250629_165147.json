@@ -1,0 +1,25 @@
+{
+  "status": "WARNING",
+  "environment": "development",
+  "timestamp": "2025-06-29T16:51:47.930785",
+  "summary": {
+    "errors": 0,
+    "warnings": 5,
+    "info": 3,
+    "total_issues": 5
+  },
+  "errors": [],
+  "warnings": [
+    "APP_NAME not set",
+    "STRIPE_WEBHOOK_SECRET not set",
+    "No email service configured",
+    "No SMS service configured",
+    "REDIS_URL not configured"
+  ],
+  "info": [
+    "Using SQLite database",
+    "Using Stripe test key",
+    "Google Calendar integration not configured"
+  ],
+  "deployable": true
+}

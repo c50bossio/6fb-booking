@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Confirmation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 300;
+        }
+        .content {
+            padding: 30px;
+        }
+        .appointment-details {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        .detail-value {
+            color: #212529;
+        }
+        .button {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 25px;
+            margin: 20px 0;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        .button:hover {
+            background: #5a6fd8;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+            border-top: 1px solid #e9ecef;
+        }
+        .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        @media (max-width: 600px) {
+            .detail-row {
+                flex-direction: column;
+            }
+            .detail-label {
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">✅</div>
+            <h1>Appointment Confirmed!</h1>
+        </div>
+        
+        <div class="content">
+            <p>Hi {{ client_name }},</p>
+            
+            <p>Great news! Your appointment has been confirmed. We're looking forward to providing you with an exceptional service experience.</p>
+            
+            <div class="appointment-details">
+                <h3 style="margin-top: 0; color: #667eea;">Appointment Details</h3>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Service:</span>
+                    <span class="detail-value">{{ service_name }}</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Date:</span>
+                    <span class="detail-value">{{ appointment_date }}</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Time:</span>
+                    <span class="detail-value">{{ appointment_time }}</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Duration:</span>
+                    <span class="detail-value">{{ duration }} minutes</span>
+                </div>
+                
+                {% if barber_name %}
+                <div class="detail-row">
+                    <span class="detail-label">Barber:</span>
+                    <span class="detail-value">{{ barber_name }}</span>
+                </div>
+                {% endif %}
+                
+                <div class="detail-row">
+                    <span class="detail-label">Price:</span>
+                    <span class="detail-value">${{ "%.2f"|format(price) }}</span>
+                </div>
+            </div>
+            
+            <p><strong>What to expect:</strong></p>
+            <ul style="color: #6c757d;">
+                <li>Please arrive 5-10 minutes early for your appointment</li>
+                <li>Bring a valid ID and your confirmation details</li>
+                <li>We'll send you a reminder 24 hours before your appointment</li>
+                <li>If you need to reschedule, please give us at least 24 hours notice</li>
+            </ul>
+            
+            {% if business_address %}
+            <p><strong>Location:</strong><br>{{ business_address }}</p>
+            {% endif %}
+            
+            {% if business_phone %}
+            <p>Questions? Call us at <strong>{{ business_phone }}</strong></p>
+            {% endif %}
+            
+            <p>Thank you for choosing {{ business_name }}!</p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; {{ current_year }} {{ business_name }}. All rights reserved.</p>
+            <p>This is an automated confirmation email. Please do not reply directly to this message.</p>
+        </div>
+    </div>
+</body>
+</html>

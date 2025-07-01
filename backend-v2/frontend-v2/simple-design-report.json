@@ -1,0 +1,14 @@
+{
+  "homepage": {
+    "status": "failed",
+    "error": "Navigation timeout of 8000 ms exceeded"
+  },
+  "login": {
+    "status": "failed",
+    "error": "Navigation timeout of 8000 ms exceeded"
+  },
+  "dashboard": {
+    "status": "failed",
+    "error": "Navigation timeout of 8000 ms exceeded"
+  }
+}

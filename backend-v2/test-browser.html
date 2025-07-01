@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Browser Test</title>
+</head>
+<body>
+    <h1>Testing Connection to Local Servers</h1>
+    
+    <h2>Frontend Test (Port 3000)</h2>
+    <div id="frontend-status">Testing...</div>
+    
+    <h2>Backend Test (Port 8000)</h2>
+    <div id="backend-status">Testing...</div>
+    
+    <h2>Direct iFrame Test</h2>
+    <iframe src="http://localhost:3000" width="100%" height="400" style="border: 1px solid #ccc;"></iframe>
+    
+    <script>
+        // Test frontend
+        fetch('http://localhost:3000')
+            .then(res => {
+                document.getElementById('frontend-status').innerHTML = 
+                    `✅ Frontend is accessible! Status: ${res.status}`;
+            })
+            .catch(err => {
+                document.getElementById('frontend-status').innerHTML = 
+                    `❌ Frontend error: ${err.message}`;
+            });
+            
+        // Test backend
+        fetch('http://localhost:8000/health')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('backend-status').innerHTML = 
+                    `✅ Backend is healthy! Response: ${JSON.stringify(data)}`;
+            })
+            .catch(err => {
+                document.getElementById('backend-status').innerHTML = 
+                    `❌ Backend error: ${err.message}`;
+            });
+    </script>
+</body>
+</html>

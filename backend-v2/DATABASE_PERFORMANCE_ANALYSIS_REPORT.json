@@ -1,0 +1,657 @@
+{
+  "timestamp": "2025-06-30T02:22:09.285368",
+  "structure_analysis": {
+    "tables": {
+      "alembic_version": {
+        "columns": 1,
+        "indexes": 0,
+        "foreign_keys": 0,
+        "indexed_columns": []
+      },
+      "appointments": {
+        "columns": 16,
+        "indexes": 9,
+        "foreign_keys": 4,
+        "indexed_columns": [
+          "service_name",
+          "status",
+          "client_id",
+          "created_at",
+          "start_time",
+          "duration_minutes",
+          "id",
+          "user_id"
+        ]
+      },
+      "barber_availability": {
+        "columns": 8,
+        "indexes": 3,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "day_of_week",
+          "is_active",
+          "id",
+          "barber_id"
+        ]
+      },
+      "barber_locations": {
+        "columns": 10,
+        "indexes": 1,
+        "foreign_keys": 2,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "barber_services": {
+        "columns": 5,
+        "indexes": 0,
+        "foreign_keys": 2,
+        "indexed_columns": []
+      },
+      "barber_special_availability": {
+        "columns": 9,
+        "indexes": 2,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "date",
+          "id"
+        ]
+      },
+      "barber_time_off": {
+        "columns": 12,
+        "indexes": 4,
+        "foreign_keys": 2,
+        "indexed_columns": [
+          "start_date",
+          "end_date",
+          "id",
+          "barber_id"
+        ]
+      },
+      "barbershop_locations": {
+        "columns": 21,
+        "indexes": 2,
+        "foreign_keys": 2,
+        "indexed_columns": [
+          "name",
+          "id"
+        ]
+      },
+      "booking_rules": {
+        "columns": 14,
+        "indexes": 1,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "booking_settings": {
+        "columns": 16,
+        "indexes": 1,
+        "foreign_keys": 0,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "chair_assignment_history": {
+        "columns": 13,
+        "indexes": 1,
+        "foreign_keys": 3,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "chair_inventory": {
+        "columns": 26,
+        "indexes": 1,
+        "foreign_keys": 2,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "clients": {
+        "columns": 28,
+        "indexes": 9,
+        "foreign_keys": 3,
+        "indexed_columns": [
+          "total_visits",
+          "total_spent",
+          "email",
+          "created_at",
+          "id",
+          "first_visit_date",
+          "phone",
+          "customer_type",
+          "last_visit_date"
+        ]
+      },
+      "compensation_plans": {
+        "columns": 16,
+        "indexes": 1,
+        "foreign_keys": 3,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "gift_certificates": {
+        "columns": 16,
+        "indexes": 2,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "id",
+          "code"
+        ]
+      },
+      "notification_preferences": {
+        "columns": 15,
+        "indexes": 1,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "notification_queue": {
+        "columns": 16,
+        "indexes": 1,
+        "foreign_keys": 2,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "notification_templates": {
+        "columns": 9,
+        "indexes": 2,
+        "foreign_keys": 0,
+        "indexed_columns": [
+          "name",
+          "id"
+        ]
+      },
+      "password_reset_tokens": {
+        "columns": 6,
+        "indexes": 2,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "token",
+          "id"
+        ]
+      },
+      "payments": {
+        "columns": 19,
+        "indexes": 8,
+        "foreign_keys": 4,
+        "indexed_columns": [
+          "status",
+          "barber_id",
+          "created_at",
+          "id",
+          "amount",
+          "user_id"
+        ]
+      },
+      "payouts": {
+        "columns": 11,
+        "indexes": 1,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "recurring_appointment_patterns": {
+        "columns": 17,
+        "indexes": 1,
+        "foreign_keys": 4,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "refunds": {
+        "columns": 9,
+        "indexes": 1,
+        "foreign_keys": 2,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "service_booking_rules": {
+        "columns": 16,
+        "indexes": 1,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "service_package_items": {
+        "columns": 4,
+        "indexes": 0,
+        "foreign_keys": 2,
+        "indexed_columns": []
+      },
+      "service_pricing_rules": {
+        "columns": 13,
+        "indexes": 1,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "services": {
+        "columns": 22,
+        "indexes": 6,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "name",
+          "is_bookable_online",
+          "category",
+          "id",
+          "is_active"
+        ]
+      },
+      "sms_conversations": {
+        "columns": 14,
+        "indexes": 2,
+        "foreign_keys": 2,
+        "indexed_columns": [
+          "id",
+          "customer_phone"
+        ]
+      },
+      "sms_messages": {
+        "columns": 18,
+        "indexes": 2,
+        "foreign_keys": 2,
+        "indexed_columns": [
+          "id",
+          "twilio_sid"
+        ]
+      },
+      "users": {
+        "columns": 15,
+        "indexes": 4,
+        "foreign_keys": 0,
+        "indexed_columns": [
+          "email",
+          "role",
+          "created_at",
+          "id",
+          "is_active"
+        ]
+      },
+      "webhook_endpoints": {
+        "columns": 22,
+        "indexes": 2,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "is_active",
+          "events"
+        ]
+      },
+      "webhook_logs": {
+        "columns": 19,
+        "indexes": 4,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "status",
+          "created_at",
+          "event_type",
+          "endpoint_id"
+        ]
+      }
+    },
+    "missing_indexes": [
+      {
+        "table": "appointments",
+        "column": "recurring_pattern_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "appointments",
+        "column": "service_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "appointments",
+        "column": "barber_id",
+        "type": "query_optimization",
+        "reason": "Commonly filtered column in appointments"
+      },
+      {
+        "table": "barber_locations",
+        "column": "barber_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "barber_locations",
+        "column": "location_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "barber_services",
+        "column": "barber_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "barber_services",
+        "column": "service_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "barber_special_availability",
+        "column": "barber_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "barber_time_off",
+        "column": "approved_by_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "barbershop_locations",
+        "column": "manager_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "barbershop_locations",
+        "column": "owner_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "booking_rules",
+        "column": "created_by_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "chair_assignment_history",
+        "column": "chair_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "chair_assignment_history",
+        "column": "barber_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "chair_assignment_history",
+        "column": "location_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "chair_inventory",
+        "column": "location_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "chair_inventory",
+        "column": "assigned_barber_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "clients",
+        "column": "preferred_barber_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "clients",
+        "column": "barber_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "clients",
+        "column": "created_by_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "compensation_plans",
+        "column": "location_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "compensation_plans",
+        "column": "barber_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "compensation_plans",
+        "column": "created_by",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "gift_certificates",
+        "column": "created_by_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "notification_preferences",
+        "column": "user_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "notification_queue",
+        "column": "user_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "notification_queue",
+        "column": "appointment_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "password_reset_tokens",
+        "column": "user_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "payments",
+        "column": "appointment_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "payments",
+        "column": "gift_certificate_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "payments",
+        "column": "appointment_id",
+        "type": "query_optimization",
+        "reason": "Commonly filtered column in payments"
+      },
+      {
+        "table": "payouts",
+        "column": "barber_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "recurring_appointment_patterns",
+        "column": "user_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "recurring_appointment_patterns",
+        "column": "barber_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "recurring_appointment_patterns",
+        "column": "client_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "recurring_appointment_patterns",
+        "column": "service_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "refunds",
+        "column": "payment_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "refunds",
+        "column": "initiated_by_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "service_booking_rules",
+        "column": "service_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "service_package_items",
+        "column": "package_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "service_package_items",
+        "column": "service_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "service_pricing_rules",
+        "column": "service_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "services",
+        "column": "created_by_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "sms_conversations",
+        "column": "client_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "sms_conversations",
+        "column": "barber_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "sms_messages",
+        "column": "conversation_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "sms_messages",
+        "column": "sent_by_user_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "webhook_endpoints",
+        "column": "created_by",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      }
+    ],
+    "recommendations": []
+  },
+  "benchmarks": [],
+  "recommendations": [
+    {
+      "sql": "CREATE INDEX IF NOT EXISTS idx_appointments_start_time ON appointments(start_time);",
+      "priority": "high"
+    },
+    {
+      "sql": "CREATE INDEX IF NOT EXISTS idx_appointments_status ON appointments(status);",
+      "priority": "high"
+    },
+    {
+      "sql": "CREATE INDEX IF NOT EXISTS idx_appointments_barber_id ON appointments(barber_id);",
+      "priority": "high"
+    },
+    {
+      "sql": "CREATE INDEX IF NOT EXISTS idx_appointments_client_id ON appointments(client_id);",
+      "priority": "high"
+    },
+    {
+      "sql": "CREATE INDEX IF NOT EXISTS idx_payments_status ON payments(status);",
+      "priority": "high"
+    },
+    {
+      "sql": "CREATE INDEX IF NOT EXISTS idx_payments_created_at ON payments(created_at);",
+      "priority": "high"
+    },
+    {
+      "sql": "CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);",
+      "priority": "high"
+    },
+    {
+      "sql": "CREATE INDEX IF NOT EXISTS idx_users_is_active ON users(is_active);",
+      "priority": "high"
+    },
+    {
+      "sql": "CREATE INDEX IF NOT EXISTS idx_appointments_barber_date ON appointments(barber_id, start_time);",
+      "priority": "medium"
+    },
+    {
+      "sql": "CREATE INDEX IF NOT EXISTS idx_appointments_status_date ON appointments(status, start_time);",
+      "priority": "medium"
+    },
+    {
+      "sql": "CREATE INDEX IF NOT EXISTS idx_payments_user_status ON payments(user_id, status);",
+      "priority": "medium"
+    },
+    {
+      "sql": "CREATE INDEX IF NOT EXISTS idx_payments_appointment_status ON payments(appointment_id, status);",
+      "priority": "medium"
+    },
+    {
+      "sql": "CREATE INDEX IF NOT EXISTS idx_appointments_created_at ON appointments(created_at);",
+      "priority": "low"
+    },
+    {
+      "sql": "CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_expires_at ON password_reset_tokens(expires_at);",
+      "priority": "low"
+    },
+    {
+      "sql": "CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_used ON password_reset_tokens(used);",
+      "priority": "low"
+    }
+  ],
+  "script_path": "/Users/bossio/6fb-booking/backend-v2/scripts/apply_performance_optimizations.py"
+}

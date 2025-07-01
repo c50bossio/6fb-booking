@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { format, isSameDay, addDays, startOfMonth, endOfMonth, startOfWeek, endOfWeek } from 'date-fns'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import { isToday as checkIsToday, parseAPIDate } from '@/lib/timezone'
 import { conflictManager, ConflictAnalysis, ConflictResolution } from '@/lib/appointment-conflicts'
 import ConflictResolutionModal from './modals/ConflictResolutionModal'
+import { useCalendarPerformance } from '@/hooks/useCalendarPerformance'
 
 interface Appointment {
   id: number
@@ -42,10 +43,11 @@ interface CalendarMonthViewProps {
   onAppointmentUpdate?: (appointmentId: number, newStartTime: string) => void
   onDayDoubleClick?: (date: Date) => void
   onDayClick?: (date: Date) => void
+  selectedBarberId?: number | 'all'
   className?: string
 }
 
-export default function CalendarMonthView({ 
+const CalendarMonthView = React.memo(function CalendarMonthView({ 
   selectedDate, 
   onDateSelect, 
   appointments = [],
@@ -53,8 +55,10 @@ export default function CalendarMonthView({
   onAppointmentUpdate,
   onDayDoubleClick,
   onDayClick,
+  selectedBarberId = 'all',
   className = ""
 }: CalendarMonthViewProps) {
+  const { measureRender, optimizedAppointmentFilter, memoizedDateCalculations } = useCalendarPerformance()
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [hoveredDay, setHoveredDay] = useState<number | null>(null)
   const [hoveredAppointment, setHoveredAppointment] = useState<Appointment | null>(null)
@@ -65,6 +69,12 @@ export default function CalendarMonthView({
   const [conflictAnalysis, setConflictAnalysis] = useState<ConflictAnalysis | null>(null)
   const [pendingUpdate, setPendingUpdate] = useState<{ appointmentId: number; newStartTime: string } | null>(null)
   const [showConflictModal, setShowConflictModal] = useState(false)
+
+  // Performance monitoring
+  useEffect(() => {
+    const endMeasure = measureRender('CalendarMonthView')
+    return endMeasure
+  })
 
   // Create today's date at midnight in local timezone
   const today = new Date()
@@ -92,72 +102,74 @@ export default function CalendarMonthView({
     return ''
   }
 
-  const getDaysInMonth = (date: Date) => {
-    const year = date.getFullYear()
-    const month = date.getMonth()
+  // Memoized month calculations
+  const monthData = useMemo(() => {
+    const year = currentMonth.getFullYear()
+    const month = currentMonth.getMonth()
     const firstDay = new Date(year, month, 1)
     const lastDay = new Date(year, month + 1, 0)
     const daysInMonth = lastDay.getDate()
     const startingDayOfWeek = firstDay.getDay()
 
     return { daysInMonth, startingDayOfWeek }
-  }
+  }, [currentMonth])
 
-  const { daysInMonth, startingDayOfWeek } = getDaysInMonth(currentMonth)
+  const { daysInMonth, startingDayOfWeek } = monthData
 
-  const previousMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))
-  }
+  const previousMonth = useCallback(() => {
+    setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1))
+  }, [])
 
-  const nextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))
-  }
+  const nextMonth = useCallback(() => {
+    setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1))
+  }, [])
 
   const isToday = (day: number) => {
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
     return checkIsToday(date)
   }
 
-  const isSelected = (day: number) => {
+  const isSelected = useCallback((day: number) => {
     if (!selectedDate) return false
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
     return date.toDateString() === selectedDate.toDateString()
-  }
+  }, [selectedDate, currentMonth])
 
-  const isPastDate = (day: number) => {
+  const isPastDate = useCallback((day: number) => {
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
     date.setHours(0, 0, 0, 0)
     return date < today
-  }
+  }, [currentMonth, today])
 
-  const handleDateClick = (day: number) => {
+  const handleDateClick = useCallback((day: number) => {
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day, 12, 0, 0)
     onDateSelect(date)
-  }
+  }, [currentMonth, onDateSelect])
 
-  const handleDayDoubleClick = (day: number) => {
+  const handleDayDoubleClick = useCallback((day: number) => {
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day, 12, 0, 0)
     onDayDoubleClick?.(date)
-  }
+  }, [currentMonth, onDayDoubleClick])
 
-  // Get appointments for a specific day
-  const getAppointmentsForDay = (day: number) => {
+  // Optimized appointment filtering with memoization
+  const filteredAppointments = useMemo(() => {
+    return optimizedAppointmentFilter(appointments, {
+      barberId: selectedBarberId
+    })
+  }, [appointments, selectedBarberId, optimizedAppointmentFilter])
+
+  // Get appointments for a specific day (memoized)
+  const getAppointmentsForDay = useCallback((day: number) => {
     const dayDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
-    return appointments.filter(appointment => {
+    return filteredAppointments.filter(appointment => {
       try {
-        // Parse ISO datetime string directly
         const appointmentDate = new Date(appointment.start_time)
         return isSameDay(appointmentDate, dayDate)
       } catch {
         return false
       }
-    }).sort((a, b) => {
-      // Sort by start time
-      const timeA = new Date(a.start_time).getTime()
-      const timeB = new Date(b.start_time).getTime()
-      return timeA - timeB
     })
-  }
+  }, [currentMonth, filteredAppointments])
 
   // Get status color for appointment
   const getStatusColor = (status: string) => {
@@ -511,4 +523,9 @@ export default function CalendarMonthView({
       </div>
     </div>
   )
-}
+})
+
+// Add display name for debugging
+CalendarMonthView.displayName = 'CalendarMonthView'
+
+export default CalendarMonthView

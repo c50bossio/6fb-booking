@@ -1,0 +1,50 @@
+{
+  "timestamp": "2025-06-29T11:49:35.103Z",
+  "summary": {
+    "criticalIssues": 0,
+    "warnings": 2,
+    "recommendations": 0
+  },
+  "overallStatus": "attention",
+  "sections": {
+    "authentication": {
+      "issues": [],
+      "status": "analyzed"
+    },
+    "apiCommunication": {
+      "issues": [],
+      "status": "analyzed"
+    },
+    "dataFlow": {
+      "issues": [],
+      "status": "analyzed"
+    },
+    "payment": {
+      "issues": [],
+      "status": "analyzed"
+    },
+    "booking": {
+      "issues": [
+        {
+          "severity": "warning",
+          "message": "Available slots endpoint not found",
+          "recommendation": null
+        },
+        {
+          "severity": "warning",
+          "message": "Limited API integration in calendar component",
+          "recommendation": null
+        }
+      ],
+      "status": "analyzed"
+    },
+    "errorHandling": {
+      "issues": [],
+      "status": "analyzed"
+    },
+    "configuration": {
+      "issues": [],
+      "status": "analyzed"
+    }
+  }
+}

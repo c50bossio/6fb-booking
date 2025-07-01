@@ -51,8 +51,8 @@ class Settings(BaseSettings):
     
     # Notification settings
     sendgrid_api_key: str = ""
-    sendgrid_from_email: str = "noreply@6fb-booking.com"
-    sendgrid_from_name: str = "6FB Booking"
+    sendgrid_from_email: str = "support@em3014.6fbmentorship.com"  # Using verified sender
+    sendgrid_from_name: str = "BookedBarber"
     
     twilio_account_sid: str = ""
     twilio_auth_token: str = ""

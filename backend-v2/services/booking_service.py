@@ -712,46 +712,45 @@ def create_booking(
     # Send appointment confirmation notifications
     try:
         # TODO: Re-enable notification service when available
-        logger.info(f"Skipping notifications for appointment {appointment.id} - notification service disabled")
-        pass
-        
-        # notification_service = get_notification_service()
-        # if notification_service:
-        #     # Get client information for notifications
-        #     client = None
-        #     if client_id:
-        #         client = db.query(models.Client).filter(models.Client.id == client_id).first()
-        #     
-        #     # Get barber information
-        #     barber = db.query(models.User).filter(models.User.id == barber_id).first()
-        #     
-        #     # Create notification context
-        #     context = {
-        #         "client_name": client.first_name + " " + client.last_name if client else appointment.user.name,
-        #         "service_name": service,
-        #         "appointment_date": start_time_user.strftime("%B %d, %Y"),
-        #         "appointment_time": start_time_user.strftime("%I:%M %p"),
-        #         "duration": SERVICES[service]["duration"],
-        #         "price": SERVICES[service]["price"],
-        #         "barber_name": barber.name if barber else None,
-        #         "business_name": "6FB Booking",
-        #         "business_phone": "(555) 123-4567",  # TODO: Make configurable
-        #         "current_year": datetime.now().year
-        #     }
-        #     
-        #     # Queue confirmation notification
-        #     notification_service.queue_notification(
-        #         db=db,
-        #         user=appointment.user,
-        #         template_name="appointment_confirmation",
-        #         context=context,
-        #         appointment_id=appointment.id
-        #     )
-        #     
-        #     # Schedule reminder notifications
-        #     notification_service.schedule_appointment_reminders(db, appointment)
-        #     
-        #     logger.info(f"Queued confirmation and reminder notifications for appointment {appointment.id}")
+        notification_service = get_notification_service()
+        if notification_service:
+            # Get client information for notifications
+            client = None
+            if client_id:
+                client = db.query(models.Client).filter(models.Client.id == client_id).first()
+            
+            # Get barber information
+            barber = db.query(models.User).filter(models.User.id == barber_id).first()
+            
+            # Create notification context
+            context = {
+                "client_name": client.first_name + " " + client.last_name if client else appointment.user.name,
+                "service_name": service,
+                "appointment_date": start_time_user.strftime("%B %d, %Y"),
+                "appointment_time": start_time_user.strftime("%I:%M %p"),
+                "duration": SERVICES[service]["duration"],
+                "price": SERVICES[service]["price"],
+                "barber_name": barber.name if barber else None,
+                "business_name": "6FB Booking",
+                "business_phone": "(555) 123-4567",  # TODO: Make configurable
+                "current_year": datetime.now().year
+            }
+            
+            # Queue confirmation notification
+            notification_service.queue_notification(
+                db=db,
+                user=appointment.user,
+                template_name="appointment_confirmation",
+                context=context,
+                appointment_id=appointment.id
+            )
+            
+            # Schedule reminder notifications
+            notification_service.schedule_appointment_reminders(db, appointment)
+            
+            logger.info(f"Queued confirmation and reminder notifications for appointment {appointment.id}")
+        else:
+            logger.warning(f"Notification service not available for appointment {appointment.id}")
             
     except Exception as e:
         logger.error(f"Failed to queue appointment notifications: {e}")

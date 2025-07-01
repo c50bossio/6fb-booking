@@ -17,6 +17,10 @@ import { LoadingButton, ErrorDisplay } from '@/components/LoadingStates'
 import { getMyBookings, cancelBooking, rescheduleBooking, getProfile, type BookingResponse } from '@/lib/api'
 import { toastError, toastSuccess } from '@/hooks/use-toast'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { CalendarErrorBoundary } from '@/components/calendar/CalendarErrorBoundary'
+import { CalendarSkeleton, CalendarEmptyState, CalendarErrorState } from '@/components/calendar/CalendarLoadingStates'
+import { useCalendarPerformance } from '@/hooks/useCalendarPerformance'
+import type { Appointment, CalendarView, User } from '@/types/calendar'
 import { 
   formatDateForAPI, 
   parseAPIDate, 
@@ -37,14 +41,7 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 
-interface User {
-  id: number
-  email: string
-  first_name?: string
-  last_name?: string
-  role?: string
-  timezone?: string
-}
+// Use CalendarUser type from our standardized types
 
 export default function CalendarPage() {
   const router = useRouter()
@@ -55,7 +52,7 @@ export default function CalendarPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [cancelingId, setCancelingId] = useState<number | null>(null)
-  const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('week')
+  const [viewMode, setViewMode] = useState<CalendarView>('week')
   const [selectedBarberId, setSelectedBarberId] = useState<number | 'all'>('all')
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showTimePickerModal, setShowTimePickerModal] = useState(false)
@@ -65,6 +62,9 @@ export default function CalendarPage() {
   const [showConflictResolver, setShowConflictResolver] = useState(false)
   const [todayRevenue, setTodayRevenue] = useState(0)
   const [todayAppointmentCount, setTodayAppointmentCount] = useState(0)
+
+  // Performance optimizations
+  const { measureRender, optimizedAppointmentFilter } = useCalendarPerformance()
 
   // Load user profile and bookings
   useEffect(() => {
@@ -221,24 +221,22 @@ export default function CalendarPage() {
 
   if (loading) {
     return (
-      <div className="p-6">
-        <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="h-96 bg-gray-200 rounded"></div>
-            <div className="space-y-4">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="h-24 bg-gray-200 rounded"></div>
-              ))}
-            </div>
-          </div>
-        </div>
+      <div className="p-6 space-y-6">
+        <CalendarSkeleton view={viewMode} showStats={true} />
       </div>
     )
   }
 
   if (error) {
-    return <ErrorDisplay error={error} onRetry={() => window.location.reload()} />
+    return (
+      <div className="p-6">
+        <CalendarErrorState 
+          error={error} 
+          onRetry={() => window.location.reload()}
+          context="calendar-page-load"
+        />
+      </div>
+    )
   }
 
   return (
@@ -359,80 +357,83 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      {viewMode === 'day' ? (
-        // Day View
-        <Card variant="glass" padding="none" className="col-span-full h-[800px]">
-          <CalendarDayView
-            appointments={bookings}
-            selectedBarberId={selectedBarberId}
-            onBarberSelect={setSelectedBarberId}
-            onAppointmentClick={(appointment) => {
-              // Set selected date to appointment date
-              const appointmentDate = new Date(appointment.start_time)
-              setSelectedDate(appointmentDate)
-            }}
-            onTimeSlotClick={(date) => {
-              // Open modal with pre-selected date/time
-              setSelectedDate(date)
-              setPreselectedTime(format(date, 'HH:mm'))
-              setShowCreateModal(true)
-            }}
-            onAppointmentUpdate={handleAppointmentUpdate}
-            currentDate={selectedDate || new Date()}
-            onDateChange={setSelectedDate}
-          />
-        </Card>
-      ) : viewMode === 'week' ? (
-        // Week View
-        <Card variant="glass" padding="none" className="col-span-full">
-          <CalendarWeekView
-            appointments={bookings}
-            selectedBarberId={selectedBarberId}
-            onBarberSelect={setSelectedBarberId}
-            onAppointmentClick={(appointment) => {
-              // Set selected date to appointment date
-              const appointmentDate = new Date(appointment.start_time)
-              setSelectedDate(appointmentDate)
-            }}
-            onTimeSlotClick={(date) => {
-              // Open modal with pre-selected date/time
-              setSelectedDate(date)
-              setPreselectedTime(format(date, 'HH:mm'))
-              setShowCreateModal(true)
-            }}
-            onAppointmentUpdate={handleAppointmentUpdate}
-            currentDate={selectedDate || new Date()}
-            onDateChange={setSelectedDate}
-          />
-        </Card>
-      ) : (
-        // Enhanced Month View
-        <Card variant="glass" padding="none" className="col-span-full">
-          <CalendarMonthView
-            selectedDate={selectedDate}
-            onDateSelect={setSelectedDate}
-            appointments={bookings}
-            onAppointmentClick={(appointment) => {
-              // Set selected date to appointment date and view details
-              const appointmentDate = new Date(appointment.start_time)
-              setSelectedDate(appointmentDate)
-              // Could open appointment details modal here
-            }}
-            onAppointmentUpdate={handleAppointmentUpdate}
-            onDayClick={(date) => {
-              // Single click to create new appointment with time picker
-              setPendingDate(date)
-              setShowTimePickerModal(true)
-            }}
-            onDayDoubleClick={(date) => {
-              // Double-click also creates appointment (backward compatibility)
-              setSelectedDate(date)
-              setPreselectedTime('09:00') // Default time
-              setShowCreateModal(true)
-            }}
-          />
-        </Card>
-      )}
+      <CalendarErrorBoundary context={`calendar-${viewMode}-view`}>
+        {viewMode === 'day' ? (
+          // Day View
+          <Card variant="glass" padding="none" className="col-span-full h-[800px]">
+            <CalendarDayView
+              appointments={bookings}
+              selectedBarberId={selectedBarberId}
+              onBarberSelect={setSelectedBarberId}
+              onAppointmentClick={(appointment) => {
+                // Set selected date to appointment date
+                const appointmentDate = new Date(appointment.start_time)
+                setSelectedDate(appointmentDate)
+              }}
+              onTimeSlotClick={(date) => {
+                // Open modal with pre-selected date/time
+                setSelectedDate(date)
+                setPreselectedTime(format(date, 'HH:mm'))
+                setShowCreateModal(true)
+              }}
+              onAppointmentUpdate={handleAppointmentUpdate}
+              currentDate={selectedDate || new Date()}
+              onDateChange={setSelectedDate}
+            />
+          </Card>
+        ) : viewMode === 'week' ? (
+          // Week View
+          <Card variant="glass" padding="none" className="col-span-full">
+            <CalendarWeekView
+              appointments={bookings}
+              selectedBarberId={selectedBarberId}
+              onBarberSelect={setSelectedBarberId}
+              onAppointmentClick={(appointment) => {
+                // Set selected date to appointment date
+                const appointmentDate = new Date(appointment.start_time)
+                setSelectedDate(appointmentDate)
+              }}
+              onTimeSlotClick={(date) => {
+                // Open modal with pre-selected date/time
+                setSelectedDate(date)
+                setPreselectedTime(format(date, 'HH:mm'))
+                setShowCreateModal(true)
+              }}
+              onAppointmentUpdate={handleAppointmentUpdate}
+              currentDate={selectedDate || new Date()}
+              onDateChange={setSelectedDate}
+            />
+          </Card>
+        ) : (
+          // Enhanced Month View
+          <Card variant="glass" padding="none" className="col-span-full">
+            <CalendarMonthView
+              selectedDate={selectedDate}
+              onDateSelect={setSelectedDate}
+              appointments={bookings}
+              selectedBarberId={selectedBarberId}
+              onAppointmentClick={(appointment) => {
+                // Set selected date to appointment date and view details
+                const appointmentDate = new Date(appointment.start_time)
+                setSelectedDate(appointmentDate)
+                // Could open appointment details modal here
+              }}
+              onAppointmentUpdate={handleAppointmentUpdate}
+              onDayClick={(date) => {
+                // Single click to create new appointment with time picker
+                setPendingDate(date)
+                setShowTimePickerModal(true)
+              }}
+              onDayDoubleClick={(date) => {
+                // Double-click also creates appointment (backward compatibility)
+                setSelectedDate(date)
+                setPreselectedTime('09:00') // Default time
+                setShowCreateModal(true)
+              }}
+            />
+          </Card>
+        )}
+      </CalendarErrorBoundary>
 
       {/* Google Calendar Sync Panel */}
       {user?.role === 'barber' && showSyncPanel && (
@@ -483,13 +484,20 @@ export default function CalendarPage() {
           // Refresh appointments after successful creation
           console.log('📅 Appointment created, refreshing calendar...')
           try {
+            // Add a small delay to ensure database transaction is committed
+            await new Promise(resolve => setTimeout(resolve, 200))
+            
             const userBookings = await getMyBookings()
             console.log('📊 Fetched bookings:', userBookings)
             setBookings(userBookings.bookings || [])
             setPreselectedTime(undefined)
             console.log('✅ Calendar refreshed with', userBookings.bookings?.length || 0, 'appointments')
+            
+            // Show success notification
+            toastSuccess('Appointment Created', 'Your appointment has been successfully created and added to the calendar.')
           } catch (err) {
             console.error('❌ Failed to refresh bookings:', err)
+            toastError('Refresh Failed', 'Appointment was created but calendar refresh failed. Please refresh the page.')
           }
         }}
       />

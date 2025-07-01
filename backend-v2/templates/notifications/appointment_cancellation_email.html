@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Cancelled</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+            color: #2d3436;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 300;
+        }
+        .content {
+            padding: 30px;
+        }
+        .appointment-details {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #fd79a8;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        .detail-value {
+            color: #212529;
+        }
+        .button {
+            display: inline-block;
+            background: #fd79a8;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 25px;
+            margin: 20px 10px 20px 0;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        .button:hover {
+            background: #e84393;
+        }
+        .button.secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .button.secondary:hover {
+            background: #5a6268;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+            border-top: 1px solid #e9ecef;
+        }
+        .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .refund-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .refund-info h4 {
+            color: #0c5460;
+            margin-top: 0;
+        }
+        @media (max-width: 600px) {
+            .detail-row {
+                flex-direction: column;
+            }
+            .detail-label {
+                margin-bottom: 5px;
+            }
+            .button {
+                display: block;
+                text-align: center;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">❌</div>
+            <h1>Appointment Cancelled</h1>
+        </div>
+        
+        <div class="content">
+            <p>Hi {{ client_name }},</p>
+            
+            {% if cancelled_by == 'client' %}
+            <p>We've received your cancellation request and your appointment has been successfully cancelled. We understand that plans can change, and we appreciate you letting us know in advance.</p>
+            {% else %}
+            <p>We regret to inform you that we had to cancel your upcoming appointment due to {{ cancellation_reason | default('unforeseen circumstances') }}. We sincerely apologize for any inconvenience this may cause.</p>
+            {% endif %}
+            
+            <div class="appointment-details">
+                <h3 style="margin-top: 0; color: #fd79a8;">Cancelled Appointment Details</h3>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Service:</span>
+                    <span class="detail-value">{{ service_name }}</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Date:</span>
+                    <span class="detail-value">{{ appointment_date }}</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Time:</span>
+                    <span class="detail-value">{{ appointment_time }}</span>
+                </div>
+                
+                {% if barber_name %}
+                <div class="detail-row">
+                    <span class="detail-label">Barber:</span>
+                    <span class="detail-value">{{ barber_name }}</span>
+                </div>
+                {% endif %}
+                
+                <div class="detail-row">
+                    <span class="detail-label">Cancellation Date:</span>
+                    <span class="detail-value" style="text-decoration: none; opacity: 1; font-weight: 600;">{{ cancellation_date }}</span>
+                </div>
+            </div>
+            
+            {% if refund_amount and refund_amount > 0 %}
+            <div class="refund-info">
+                <h4>💰 Refund Information</h4>
+                <p>A refund of <strong>${{ "%.2f"|format(refund_amount) }}</strong> will be processed and should appear in your account within {{ refund_timeframe | default('3-5 business days') }}.</p>
+                {% if refund_method %}
+                <p><strong>Refund Method:</strong> {{ refund_method }}</p>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            {% if cancelled_by != 'client' %}
+            <p><strong>We'd like to make this right:</strong></p>
+            <ul style="color: #6c757d;">
+                <li>Book a new appointment at your convenience</li>
+                <li>Call us to discuss alternative times</li>
+                <li>We'll prioritize your next booking</li>
+                {% if compensation_offered %}
+                <li>{{ compensation_offered }}</li>
+                {% endif %}
+            </ul>
+            {% endif %}
+            
+            <p style="text-align: center;">
+                <a href="{{ book_new_url | default('#') }}" class="button">Book New Appointment</a>
+                {% if business_phone %}
+                <a href="tel:{{ business_phone }}" class="button secondary">Call Us</a>
+                {% endif %}
+            </p>
+            
+            {% if business_phone %}
+            <p>Questions about your cancellation? Call us at <strong>{{ business_phone }}</strong></p>
+            {% endif %}
+            
+            {% if cancelled_by == 'client' %}
+            <p>Thank you for choosing {{ business_name }}. We hope to serve you again soon!</p>
+            {% else %}
+            <p>We sincerely apologize for this inconvenience and appreciate your understanding. We look forward to serving you soon at {{ business_name }}.</p>
+            {% endif %}
+        </div>
+        
+        <div class="footer">
+            <p>&copy; {{ current_year }} {{ business_name }}. All rights reserved.</p>
+            <p>This is an automated cancellation notification. Please do not reply directly to this message.</p>
+        </div>
+    </div>
+</body>
+</html>

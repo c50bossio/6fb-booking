@@ -1,0 +1,455 @@
+{
+  "summary": {
+    "total_tests": 41,
+    "passed": 24,
+    "failed": 17,
+    "success_rate": "58.5%",
+    "test_completion_time": "2025-06-29T14:43:55.161627"
+  },
+  "test_results": {
+    "endpoints_tested": [],
+    "authentication_tests": [
+      {
+        "test_name": "admin_login",
+        "status": "PASSED",
+        "details": "Successfully authenticated admin",
+        "response_time_ms": 191.7111873626709,
+        "timestamp": "2025-06-29T14:43:54.690181"
+      },
+      {
+        "test_name": "admin_me_endpoint",
+        "status": "PASSED",
+        "details": "User info correct for admin",
+        "response_time_ms": 1.657247543334961,
+        "timestamp": "2025-06-29T14:43:54.691855"
+      },
+      {
+        "test_name": "barber_login",
+        "status": "PASSED",
+        "details": "Successfully authenticated barber",
+        "response_time_ms": 186.04612350463867,
+        "timestamp": "2025-06-29T14:43:54.877916"
+      },
+      {
+        "test_name": "barber_me_endpoint",
+        "status": "PASSED",
+        "details": "User info correct for barber",
+        "response_time_ms": 1.4951229095458984,
+        "timestamp": "2025-06-29T14:43:54.879432"
+      },
+      {
+        "test_name": "user_login",
+        "status": "PASSED",
+        "details": "Successfully authenticated user",
+        "response_time_ms": 185.1217746734619,
+        "timestamp": "2025-06-29T14:43:55.064570"
+      },
+      {
+        "test_name": "user_me_endpoint",
+        "status": "PASSED",
+        "details": "User info correct for user",
+        "response_time_ms": 1.50299072265625,
+        "timestamp": "2025-06-29T14:43:55.066094"
+      }
+    ],
+    "authorization_tests": [
+      {
+        "test_name": "/auth/me_user_allowed",
+        "status": "PASSED",
+        "details": "user correctly allowed access to /auth/me",
+        "response_time_ms": 1.107931137084961,
+        "timestamp": "2025-06-29T14:43:55.067216"
+      },
+      {
+        "test_name": "/auth/me_barber_allowed",
+        "status": "PASSED",
+        "details": "barber correctly allowed access to /auth/me",
+        "response_time_ms": 0.9551048278808594,
+        "timestamp": "2025-06-29T14:43:55.068178"
+      },
+      {
+        "test_name": "/auth/me_admin_allowed",
+        "status": "PASSED",
+        "details": "admin correctly allowed access to /auth/me",
+        "response_time_ms": 0.9658336639404297,
+        "timestamp": "2025-06-29T14:43:55.069152"
+      },
+      {
+        "test_name": "/bookings/slots_user_allowed",
+        "status": "FAILED",
+        "details": "user incorrectly denied access to /bookings/slots: No response",
+        "response_time_ms": 1.1818408966064453,
+        "timestamp": "2025-06-29T14:43:55.070349"
+      },
+      {
+        "test_name": "/bookings/slots_barber_allowed",
+        "status": "FAILED",
+        "details": "barber incorrectly denied access to /bookings/slots: No response",
+        "response_time_ms": 1.013040542602539,
+        "timestamp": "2025-06-29T14:43:55.071373"
+      },
+      {
+        "test_name": "/bookings/slots_admin_allowed",
+        "status": "FAILED",
+        "details": "admin incorrectly denied access to /bookings/slots: No response",
+        "response_time_ms": 1.0561943054199219,
+        "timestamp": "2025-06-29T14:43:55.072439"
+      },
+      {
+        "test_name": "/bookings_user_allowed",
+        "status": "PASSED",
+        "details": "user correctly allowed access to /bookings",
+        "response_time_ms": 2.374887466430664,
+        "timestamp": "2025-06-29T14:43:55.074821"
+      },
+      {
+        "test_name": "/bookings_barber_allowed",
+        "status": "PASSED",
+        "details": "barber correctly allowed access to /bookings",
+        "response_time_ms": 1.7189979553222656,
+        "timestamp": "2025-06-29T14:43:55.076550"
+      },
+      {
+        "test_name": "/bookings_admin_allowed",
+        "status": "PASSED",
+        "details": "admin correctly allowed access to /bookings",
+        "response_time_ms": 1.7642974853515625,
+        "timestamp": "2025-06-29T14:43:55.078324"
+      },
+      {
+        "test_name": "/enterprise/dashboard_user_denied",
+        "status": "FAILED",
+        "details": "user incorrectly allowed access to /enterprise/dashboard: No response",
+        "response_time_ms": 1.0728836059570312,
+        "timestamp": "2025-06-29T14:43:55.079409"
+      },
+      {
+        "test_name": "/enterprise/dashboard_barber_denied",
+        "status": "FAILED",
+        "details": "barber incorrectly allowed access to /enterprise/dashboard: No response",
+        "response_time_ms": 0.9999275207519531,
+        "timestamp": "2025-06-29T14:43:55.080417"
+      },
+      {
+        "test_name": "/enterprise/dashboard_admin_allowed",
+        "status": "PASSED",
+        "details": "admin correctly allowed access to /enterprise/dashboard",
+        "response_time_ms": 1.383066177368164,
+        "timestamp": "2025-06-29T14:43:55.081807"
+      },
+      {
+        "test_name": "/enterprise/locations_user_denied",
+        "status": "FAILED",
+        "details": "user incorrectly allowed access to /enterprise/locations: No response",
+        "response_time_ms": 1.0361671447753906,
+        "timestamp": "2025-06-29T14:43:55.082852"
+      },
+      {
+        "test_name": "/enterprise/locations_barber_denied",
+        "status": "FAILED",
+        "details": "barber incorrectly allowed access to /enterprise/locations: No response",
+        "response_time_ms": 1.0342597961425781,
+        "timestamp": "2025-06-29T14:43:55.083895"
+      },
+      {
+        "test_name": "/enterprise/locations_admin_allowed",
+        "status": "FAILED",
+        "details": "admin incorrectly denied access to /enterprise/locations: No response",
+        "response_time_ms": 1.016855239868164,
+        "timestamp": "2025-06-29T14:43:55.084922"
+      },
+      {
+        "test_name": "/analytics/dashboard_user_denied",
+        "status": "FAILED",
+        "details": "user incorrectly allowed access to /analytics/dashboard: 200",
+        "response_time_ms": 6.6699981689453125,
+        "timestamp": "2025-06-29T14:43:55.091599"
+      },
+      {
+        "test_name": "/analytics/dashboard_barber_allowed",
+        "status": "PASSED",
+        "details": "barber correctly allowed access to /analytics/dashboard",
+        "response_time_ms": 4.197120666503906,
+        "timestamp": "2025-06-29T14:43:55.095804"
+      },
+      {
+        "test_name": "/analytics/dashboard_admin_allowed",
+        "status": "PASSED",
+        "details": "admin correctly allowed access to /analytics/dashboard",
+        "response_time_ms": 8.439064025878906,
+        "timestamp": "2025-06-29T14:43:55.104251"
+      },
+      {
+        "test_name": "/clients_user_denied",
+        "status": "FAILED",
+        "details": "user incorrectly allowed access to /clients: 200",
+        "response_time_ms": 4.873037338256836,
+        "timestamp": "2025-06-29T14:43:55.109133"
+      },
+      {
+        "test_name": "/clients_barber_allowed",
+        "status": "PASSED",
+        "details": "barber correctly allowed access to /clients",
+        "response_time_ms": 2.969026565551758,
+        "timestamp": "2025-06-29T14:43:55.112111"
+      },
+      {
+        "test_name": "/clients_admin_allowed",
+        "status": "PASSED",
+        "details": "admin correctly allowed access to /clients",
+        "response_time_ms": 2.8510093688964844,
+        "timestamp": "2025-06-29T14:43:55.114972"
+      },
+      {
+        "test_name": "/appointments_user_denied",
+        "status": "FAILED",
+        "details": "user incorrectly allowed access to /appointments: No response",
+        "response_time_ms": 1.8000602722167969,
+        "timestamp": "2025-06-29T14:43:55.116785"
+      },
+      {
+        "test_name": "/appointments_barber_allowed",
+        "status": "FAILED",
+        "details": "barber incorrectly denied access to /appointments: No response",
+        "response_time_ms": 1.547098159790039,
+        "timestamp": "2025-06-29T14:43:55.118345"
+      },
+      {
+        "test_name": "/appointments_admin_allowed",
+        "status": "FAILED",
+        "details": "admin incorrectly denied access to /appointments: No response",
+        "response_time_ms": 1.50299072265625,
+        "timestamp": "2025-06-29T14:43:55.119860"
+      }
+    ],
+    "schema_validation": [
+      {
+        "test_name": "auth_me_schema",
+        "status": "PASSED",
+        "details": "All required fields present in /auth/me",
+        "response_time_ms": 0.8890628814697266,
+        "timestamp": "2025-06-29T14:43:55.120766"
+      },
+      {
+        "test_name": "booking_slots_schema",
+        "status": "PASSED",
+        "details": "Booking slots response has expected structure",
+        "response_time_ms": 1.9989013671875,
+        "timestamp": "2025-06-29T14:43:55.122787"
+      }
+    ],
+    "integration_tests": [
+      {
+        "test_name": "get_booking_slots",
+        "status": "PASSED",
+        "details": "Successfully retrieved booking slots",
+        "response_time_ms": 2.0589828491210938,
+        "timestamp": "2025-06-29T14:43:55.124860"
+      },
+      {
+        "test_name": "create_booking",
+        "status": "FAILED",
+        "details": "No response from booking creation",
+        "response_time_ms": 15.969038009643555,
+        "timestamp": "2025-06-29T14:43:55.140837"
+      }
+    ],
+    "performance_metrics": [
+      {
+        "test_name": "health_endpoint_performance",
+        "status": "PASSED",
+        "details": "Health endpoint avg: 0.001s, max: 0.002s",
+        "response_time_ms": 1.1842012405395508,
+        "timestamp": "2025-06-29T14:43:55.154398"
+      },
+      {
+        "test_name": "auth_endpoint_performance",
+        "status": "PASSED",
+        "details": "Auth endpoint avg: 0.001s",
+        "response_time_ms": 0.9179115295410156,
+        "timestamp": "2025-06-29T14:43:55.159031"
+      }
+    ],
+    "security_tests": [],
+    "cors_tests": [
+      {
+        "test_name": "cors_allow_localhost:3000",
+        "status": "PASSED",
+        "details": "CORS correctly configured for http://localhost:3000",
+        "response_time_ms": 0,
+        "timestamp": "2025-06-29T14:43:55.160003"
+      },
+      {
+        "test_name": "cors_allow_localhost:3001",
+        "status": "PASSED",
+        "details": "CORS correctly configured for http://localhost:3001",
+        "response_time_ms": 0,
+        "timestamp": "2025-06-29T14:43:55.160802"
+      },
+      {
+        "test_name": "cors_test_malicious-site.com",
+        "status": "FAILED",
+        "details": "CORS preflight failed for https://malicious-site.com: 400",
+        "response_time_ms": 0,
+        "timestamp": "2025-06-29T14:43:55.161595"
+      }
+    ],
+    "error_handling_tests": [
+      {
+        "test_name": "invalid_date_format",
+        "status": "FAILED",
+        "details": "Did not handle invalid date format correctly: No response",
+        "response_time_ms": 1.1739730834960938,
+        "timestamp": "2025-06-29T14:43:55.142029"
+      },
+      {
+        "test_name": "unauthorized_access",
+        "status": "FAILED",
+        "details": "Did not handle unauthorized access correctly: No response",
+        "response_time_ms": 0.5002021789550781,
+        "timestamp": "2025-06-29T14:43:55.142541"
+      }
+    ]
+  },
+  "issues_by_severity": {
+    "critical": [
+      {
+        "test_name": "unauthorized_access",
+        "status": "FAILED",
+        "details": "Did not handle unauthorized access correctly: No response",
+        "response_time_ms": 0.5002021789550781,
+        "timestamp": "2025-06-29T14:43:55.142541"
+      }
+    ],
+    "high": [],
+    "medium": [],
+    "low": [
+      {
+        "test_name": "/bookings/slots_user_allowed",
+        "status": "FAILED",
+        "details": "user incorrectly denied access to /bookings/slots: No response",
+        "response_time_ms": 1.1818408966064453,
+        "timestamp": "2025-06-29T14:43:55.070349"
+      },
+      {
+        "test_name": "/bookings/slots_barber_allowed",
+        "status": "FAILED",
+        "details": "barber incorrectly denied access to /bookings/slots: No response",
+        "response_time_ms": 1.013040542602539,
+        "timestamp": "2025-06-29T14:43:55.071373"
+      },
+      {
+        "test_name": "/bookings/slots_admin_allowed",
+        "status": "FAILED",
+        "details": "admin incorrectly denied access to /bookings/slots: No response",
+        "response_time_ms": 1.0561943054199219,
+        "timestamp": "2025-06-29T14:43:55.072439"
+      },
+      {
+        "test_name": "/enterprise/dashboard_user_denied",
+        "status": "FAILED",
+        "details": "user incorrectly allowed access to /enterprise/dashboard: No response",
+        "response_time_ms": 1.0728836059570312,
+        "timestamp": "2025-06-29T14:43:55.079409"
+      },
+      {
+        "test_name": "/enterprise/dashboard_barber_denied",
+        "status": "FAILED",
+        "details": "barber incorrectly allowed access to /enterprise/dashboard: No response",
+        "response_time_ms": 0.9999275207519531,
+        "timestamp": "2025-06-29T14:43:55.080417"
+      },
+      {
+        "test_name": "/enterprise/locations_user_denied",
+        "status": "FAILED",
+        "details": "user incorrectly allowed access to /enterprise/locations: No response",
+        "response_time_ms": 1.0361671447753906,
+        "timestamp": "2025-06-29T14:43:55.082852"
+      },
+      {
+        "test_name": "/enterprise/locations_barber_denied",
+        "status": "FAILED",
+        "details": "barber incorrectly allowed access to /enterprise/locations: No response",
+        "response_time_ms": 1.0342597961425781,
+        "timestamp": "2025-06-29T14:43:55.083895"
+      },
+      {
+        "test_name": "/enterprise/locations_admin_allowed",
+        "status": "FAILED",
+        "details": "admin incorrectly denied access to /enterprise/locations: No response",
+        "response_time_ms": 1.016855239868164,
+        "timestamp": "2025-06-29T14:43:55.084922"
+      },
+      {
+        "test_name": "/analytics/dashboard_user_denied",
+        "status": "FAILED",
+        "details": "user incorrectly allowed access to /analytics/dashboard: 200",
+        "response_time_ms": 6.6699981689453125,
+        "timestamp": "2025-06-29T14:43:55.091599"
+      },
+      {
+        "test_name": "/clients_user_denied",
+        "status": "FAILED",
+        "details": "user incorrectly allowed access to /clients: 200",
+        "response_time_ms": 4.873037338256836,
+        "timestamp": "2025-06-29T14:43:55.109133"
+      },
+      {
+        "test_name": "/appointments_user_denied",
+        "status": "FAILED",
+        "details": "user incorrectly allowed access to /appointments: No response",
+        "response_time_ms": 1.8000602722167969,
+        "timestamp": "2025-06-29T14:43:55.116785"
+      },
+      {
+        "test_name": "/appointments_barber_allowed",
+        "status": "FAILED",
+        "details": "barber incorrectly denied access to /appointments: No response",
+        "response_time_ms": 1.547098159790039,
+        "timestamp": "2025-06-29T14:43:55.118345"
+      },
+      {
+        "test_name": "/appointments_admin_allowed",
+        "status": "FAILED",
+        "details": "admin incorrectly denied access to /appointments: No response",
+        "response_time_ms": 1.50299072265625,
+        "timestamp": "2025-06-29T14:43:55.119860"
+      },
+      {
+        "test_name": "create_booking",
+        "status": "FAILED",
+        "details": "No response from booking creation",
+        "response_time_ms": 15.969038009643555,
+        "timestamp": "2025-06-29T14:43:55.140837"
+      },
+      {
+        "test_name": "invalid_date_format",
+        "status": "FAILED",
+        "details": "Did not handle invalid date format correctly: No response",
+        "response_time_ms": 1.1739730834960938,
+        "timestamp": "2025-06-29T14:43:55.142029"
+      },
+      {
+        "test_name": "cors_test_malicious-site.com",
+        "status": "FAILED",
+        "details": "CORS preflight failed for https://malicious-site.com: 400",
+        "response_time_ms": 0,
+        "timestamp": "2025-06-29T14:43:55.161595"
+      }
+    ]
+  },
+  "recommendations": [
+    {
+      "priority": "CRITICAL",
+      "category": "Security",
+      "issue": "Authentication/Authorization failures detected",
+      "recommendation": "Review and fix authentication mechanisms immediately"
+    },
+    {
+      "priority": "MEDIUM",
+      "category": "Security",
+      "issue": "CORS configuration issues detected",
+      "recommendation": "Review and update CORS settings for production security"
+    }
+  ]
+}

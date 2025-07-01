@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booked Barber Logo Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        .logo-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        .logo-item {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .logo-item h3 {
+            margin-top: 1rem;
+            color: #333;
+        }
+        .logo-item img {
+            max-width: 100%;
+            height: auto;
+            max-height: 200px;
+        }
+        .dark-bg {
+            background: #1a1a1a;
+        }
+        .dark-bg h3 {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Booked Barber Logo Test Page</h1>
+    <p>This page displays all logo variants to verify they are loading correctly.</p>
+    
+    <div class="logo-container">
+        <div class="logo-item">
+            <h3>Black Logo (Light Background)</h3>
+            <img src="/logos/logo-black.png" alt="Booked Barber Black Logo">
+        </div>
+        
+        <div class="logo-item dark-bg">
+            <h3>White Logo (Dark Background)</h3>
+            <img src="/logos/logo-white.png" alt="Booked Barber White Logo">
+        </div>
+        
+        <div class="logo-item">
+            <h3>Color Logo (No Background)</h3>
+            <img src="/logos/logo-color.png" alt="Booked Barber Color Logo">
+        </div>
+        
+        <div class="logo-item">
+            <h3>Color Logo with Background</h3>
+            <img src="/logos/logo-color-bg.png" alt="Booked Barber Color Logo with Background">
+        </div>
+    </div>
+    
+    <h2>Different Sizes</h2>
+    <div class="logo-container">
+        <div class="logo-item">
+            <h3>Small (32px height)</h3>
+            <img src="/logos/logo-color.png" alt="Booked Barber" style="height: 32px;">
+        </div>
+        
+        <div class="logo-item">
+            <h3>Medium (64px height)</h3>
+            <img src="/logos/logo-color.png" alt="Booked Barber" style="height: 64px;">
+        </div>
+        
+        <div class="logo-item">
+            <h3>Large (128px height)</h3>
+            <img src="/logos/logo-color.png" alt="Booked Barber" style="height: 128px;">
+        </div>
+    </div>
+</body>
+</html>

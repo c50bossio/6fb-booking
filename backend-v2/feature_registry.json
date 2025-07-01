@@ -1,0 +1,390 @@
+{
+  "features": {
+    "basic_auth": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/routers/auth.py",
+      "timestamp": "2025-06-28",
+      "description": "JWT-based authentication with login/logout"
+    },
+    "basic_booking": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/routers/bookings.py",
+      "timestamp": "2025-06-28",
+      "description": "Simple appointment booking system"
+    },
+    "basic_payments": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/routers/payments.py",
+      "timestamp": "2025-06-28",
+      "description": "Stripe payment intent creation"
+    },
+    "refresh_tokens": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/routers/auth.py and utils/auth.py",
+      "timestamp": "2025-06-28",
+      "description": "JWT refresh token support with 7-day expiry and token rotation"
+    },
+    "rate_limiting": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/utils/rate_limit.py",
+      "timestamp": "2025-06-28",
+      "description": "Rate limiting for auth endpoints to prevent brute force attacks"
+    },
+    "password_reset": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/utils/password_reset.py, models.py, routers/auth.py",
+      "timestamp": "2025-06-28",
+      "description": "Complete password reset flow with secure tokens and email notifications"
+    },
+    "user_registration": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/routers/auth.py",
+      "timestamp": "2025-06-28",
+      "description": "User registration with strong password validation and rate limiting"
+    },
+    "change_password": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/routers/auth.py",
+      "timestamp": "2025-06-28",
+      "description": "Change password for authenticated users"
+    },
+    "client_management": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/routers/clients.py, models.py",
+      "timestamp": "2025-06-28",
+      "description": "Complete client management with search, filtering, and history tracking"
+    },
+    "service_categories_pricing": {
+      "migrated_from": "new_implementation",
+      "migrated_to": "backend-v2/routers/services.py, models.py, schemas.py",
+      "timestamp": "2025-06-28",
+      "description": "Complete service management with categories, dynamic pricing rules, booking rules, and barber-specific pricing"
+    },
+    "analytics_consolidation": {
+      "migrated_from": "duplicate_components",
+      "migrated_to": "backend-v2/frontend-v2/components/analytics/SixFigureAnalyticsDashboard.tsx",
+      "timestamp": "2025-06-29",
+      "description": "Consolidated analytics dashboard combining SixFigureBarberDashboard, SixFigureCoach, and RevenueTrends into unified component. Removed duplicate /analytics route and integrated into main dashboard."
+    },
+    "booking_appointment_consolidation": {
+      "migrated_from": "original",
+      "migrated_to": "routers/appointments.py",
+      "timestamp": "2025-06-29",
+      "description": "Consolidated duplicate booking and appointment endpoints into standardized /appointments router. Deprecated /bookings router with migration plan."
+    }
+  },
+  "models": {
+    "User": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/models.py",
+      "timestamp": "2025-06-28",
+      "description": "Basic user model with authentication"
+    },
+    "Appointment": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/models.py",
+      "timestamp": "2025-06-28",
+      "description": "Simple appointment model"
+    },
+    "Payment": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/models.py",
+      "timestamp": "2025-06-28",
+      "description": "Payment tracking model"
+    },
+    "PasswordResetToken": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/models.py",
+      "timestamp": "2025-06-28",
+      "description": "Token model for secure password reset functionality"
+    },
+    "Client": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/models.py",
+      "timestamp": "2025-06-28",
+      "description": "Client model with customer classification and engagement metrics"
+    },
+    "Service": {
+      "migrated_from": "original",
+      "migrated_to": "models.py",
+      "timestamp": "2025-06-28",
+      "description": "Service management with categories, pricing rules, and booking rules"
+    },
+    "ServiceCategoryEnum": {
+      "migrated_from": "original",
+      "migrated_to": "models.py",
+      "timestamp": "2025-06-28",
+      "description": "Service category enumeration (haircut, shave, beard, etc.)"
+    },
+    "ServicePricingRule": {
+      "migrated_from": "new_implementation",
+      "migrated_to": "backend-v2/models.py",
+      "timestamp": "2025-06-28",
+      "description": "Dynamic pricing rules for services (time-based, day-based, seasonal)"
+    },
+    "ServiceBookingRule": {
+      "migrated_from": "new_implementation",
+      "migrated_to": "backend-v2/models.py",
+      "timestamp": "2025-06-28",
+      "description": "Booking rules and restrictions (age limits, patch tests, consultation requirements)"
+    }
+  },
+  "endpoints": {
+    "POST /auth/login": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/routers/auth.py",
+      "timestamp": "2025-06-28",
+      "description": "User login endpoint"
+    },
+    "POST /auth/logout": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/routers/auth.py",
+      "timestamp": "2025-06-28",
+      "description": "User logout endpoint"
+    },
+    "GET /bookings": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/routers/bookings.py",
+      "timestamp": "2025-06-28",
+      "description": "List user bookings"
+    },
+    "POST /bookings": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/routers/bookings.py",
+      "timestamp": "2025-06-28",
+      "description": "Create new booking"
+    },
+    "POST /payments/create-intent": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/routers/payments.py",
+      "timestamp": "2025-06-28",
+      "description": "Create Stripe payment intent"
+    },
+    "POST /auth/refresh": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/routers/auth.py",
+      "timestamp": "2025-06-28",
+      "description": "Refresh token endpoint for getting new access tokens"
+    },
+    "POST /auth/forgot-password": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/routers/auth.py",
+      "timestamp": "2025-06-28",
+      "description": "Request password reset via email"
+    },
+    "POST /auth/reset-password": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/routers/auth.py",
+      "timestamp": "2025-06-28",
+      "description": "Reset password with valid token"
+    },
+    "POST /auth/register": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/routers/auth.py",
+      "timestamp": "2025-06-28",
+      "description": "User registration with email validation"
+    },
+    "POST /auth/change-password": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/routers/auth.py",
+      "timestamp": "2025-06-28",
+      "description": "Change password for authenticated users"
+    },
+    "POST /clients/": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/routers/clients.py",
+      "timestamp": "2025-06-28",
+      "description": "Create a new client with email uniqueness validation"
+    },
+    "GET /clients/": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/routers/clients.py",
+      "timestamp": "2025-06-28",
+      "description": "List clients with pagination, search, and filtering by customer type or tags"
+    },
+    "GET /clients/{id}": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/routers/clients.py",
+      "timestamp": "2025-06-28",
+      "description": "Get specific client details by ID"
+    },
+    "PUT /clients/{id}": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/routers/clients.py",
+      "timestamp": "2025-06-28",
+      "description": "Update client information with partial updates support"
+    },
+    "DELETE /clients/{id}": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/routers/clients.py",
+      "timestamp": "2025-06-28",
+      "description": "Delete a client (admin only) with role-based access control"
+    },
+    "GET /clients/{id}/history": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/routers/clients.py",
+      "timestamp": "2025-06-28",
+      "description": "Get client appointment history with statistics (visits, spending, no-shows)"
+    },
+    "PUT /clients/{id}/customer-type": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/routers/clients.py",
+      "timestamp": "2025-06-28",
+      "description": "Update customer classification type (new, returning, vip, at_risk)"
+    },
+    "POST /clients/search": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/routers/clients.py",
+      "timestamp": "2025-06-28",
+      "description": "Quick search for clients with autocomplete support"
+    },
+    "Services API": {
+      "migrated_from": "original",
+      "migrated_to": "routers/services.py",
+      "timestamp": "2025-06-28",
+      "description": "CRUD endpoints for service management with pricing and booking rules"
+    },
+    "GET /services/categories": {
+      "migrated_from": "new_implementation",
+      "migrated_to": "backend-v2/routers/services.py",
+      "timestamp": "2025-06-28",
+      "description": "Get all available service categories"
+    },
+    "GET /services/": {
+      "migrated_from": "new_implementation",
+      "migrated_to": "backend-v2/routers/services.py",
+      "timestamp": "2025-06-28",
+      "description": "List services with filtering by category, barber, and availability"
+    },
+    "GET /services/{id}": {
+      "migrated_from": "new_implementation",
+      "migrated_to": "backend-v2/routers/services.py",
+      "timestamp": "2025-06-28",
+      "description": "Get specific service details"
+    },
+    "POST /services/": {
+      "migrated_from": "new_implementation",
+      "migrated_to": "backend-v2/routers/services.py",
+      "timestamp": "2025-06-28",
+      "description": "Create new service (admin/barber only)"
+    },
+    "PUT /services/{id}": {
+      "migrated_from": "new_implementation",
+      "migrated_to": "backend-v2/routers/services.py",
+      "timestamp": "2025-06-28",
+      "description": "Update service (admin/barber only)"
+    },
+    "DELETE /services/{id}": {
+      "migrated_from": "new_implementation",
+      "migrated_to": "backend-v2/routers/services.py",
+      "timestamp": "2025-06-28",
+      "description": "Delete or deactivate service (admin only)"
+    },
+    "POST /services/{id}/pricing-rules": {
+      "migrated_from": "new_implementation",
+      "migrated_to": "backend-v2/routers/services.py",
+      "timestamp": "2025-06-28",
+      "description": "Create pricing rule for service"
+    },
+    "GET /services/{id}/pricing-rules": {
+      "migrated_from": "new_implementation",
+      "migrated_to": "backend-v2/routers/services.py",
+      "timestamp": "2025-06-28",
+      "description": "Get pricing rules for service"
+    },
+    "DELETE /services/{id}/pricing-rules/{rule_id}": {
+      "migrated_from": "new_implementation",
+      "migrated_to": "backend-v2/routers/services.py",
+      "timestamp": "2025-06-28",
+      "description": "Delete pricing rule"
+    },
+    "POST /services/{id}/booking-rules": {
+      "migrated_from": "new_implementation",
+      "migrated_to": "backend-v2/routers/services.py",
+      "timestamp": "2025-06-28",
+      "description": "Create booking rule for service"
+    },
+    "GET /services/{id}/booking-rules": {
+      "migrated_from": "new_implementation",
+      "migrated_to": "backend-v2/routers/services.py",
+      "timestamp": "2025-06-28",
+      "description": "Get booking rules for service"
+    },
+    "DELETE /services/{id}/booking-rules/{rule_id}": {
+      "migrated_from": "new_implementation",
+      "migrated_to": "backend-v2/routers/services.py",
+      "timestamp": "2025-06-28",
+      "description": "Delete booking rule"
+    },
+    "POST /services/{id}/barbers/{barber_id}": {
+      "migrated_from": "new_implementation",
+      "migrated_to": "backend-v2/routers/services.py",
+      "timestamp": "2025-06-28",
+      "description": "Assign service to barber with custom pricing"
+    },
+    "DELETE /services/{id}/barbers/{barber_id}": {
+      "migrated_from": "new_implementation",
+      "migrated_to": "backend-v2/routers/services.py",
+      "timestamp": "2025-06-28",
+      "description": "Remove service from barber"
+    },
+    "GET /services/barbers/{barber_id}": {
+      "migrated_from": "new_implementation",
+      "migrated_to": "backend-v2/routers/services.py",
+      "timestamp": "2025-06-28",
+      "description": "Get services offered by barber"
+    },
+    "GET /services/{id}/calculate-price": {
+      "migrated_from": "new_implementation",
+      "migrated_to": "backend-v2/routers/services.py",
+      "timestamp": "2025-06-28",
+      "description": "Calculate dynamic price based on rules"
+    }
+  },
+  "components": {
+    "HomePage": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/frontend-v2/src/app/page.tsx",
+      "timestamp": "2025-06-28",
+      "description": "Landing page component"
+    },
+    "LoginPage": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/frontend-v2/src/app/login/page.tsx",
+      "timestamp": "2025-06-28",
+      "description": "User login page"
+    },
+    "DashboardPage": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/frontend-v2/src/app/dashboard/page.tsx",
+      "timestamp": "2025-06-28",
+      "description": "Main dashboard page"
+    },
+    "BookingPage": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/frontend-v2/src/app/book/page.tsx",
+      "timestamp": "2025-06-28",
+      "description": "Booking interface page"
+    },
+    "SixFigureAnalyticsDashboard": {
+      "migrated_from": "consolidation",
+      "migrated_to": "backend-v2/frontend-v2/components/analytics/SixFigureAnalyticsDashboard.tsx",
+      "timestamp": "2025-06-29",
+      "description": "Unified analytics dashboard component combining Six Figure Barber methodology, AI coaching insights, and comprehensive business metrics. Replaced duplicate SixFigureBarberDashboard, SixFigureCoach, and RevenueTrends components."
+    }
+  },
+  "services": {
+    "auth_service": {
+      "migrated_from": "original",
+      "migrated_to": "backend-v2/services/auth.py",
+      "timestamp": "2025-06-28",
+      "description": "Authentication business logic"
+    },
+    "ClientManagementEnhancement": {
+      "migrated_from": "original",
+      "migrated_to": "Enhanced client management with analytics, preferences, notes, tags, and booking integration",
+      "timestamp": "2025-06-28",
+      "description": "services/client_service.py, routers/clients.py, frontend-v2/app/clients/"
+    }
+  }
+}

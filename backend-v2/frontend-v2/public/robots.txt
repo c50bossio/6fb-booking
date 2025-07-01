@@ -1,0 +1,22 @@
+# robots.txt for 6FB Booking Platform
+
+User-agent: *
+Allow: /
+
+# Public pages
+Allow: /login
+Allow: /register
+Allow: /forgot-password
+Allow: /reset-password
+
+# Disallow admin and sensitive areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /dashboard/
+Disallow: /settings/
+Disallow: /analytics/
+Disallow: /payments/
+
+# Sitemap
+Sitemap: https://6fb-booking.com/sitemap.xml

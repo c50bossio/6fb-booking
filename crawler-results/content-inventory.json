@@ -1,0 +1,197 @@
+{
+  "overview": {
+    "totalPagesDiscovered": 70,
+    "workingPages": 5,
+    "siteHealthScore": 7,
+    "technologies": [
+      "react",
+      "nextjs",
+      "tailwind",
+      "login",
+      "booking",
+      "signup",
+      "dashboard",
+      "calendar",
+      "bootstrap",
+      "payment",
+      "analytics"
+    ],
+    "generatedAt": "2025-06-28T06:27:22.991Z"
+  },
+  "workingRoutes": [
+    {
+      "route": "/",
+      "title": "6FB Booking",
+      "status": 200,
+      "responseTime": 25,
+      "components": [
+        "react",
+        "nextjs",
+        "tailwind",
+        "login",
+        "booking"
+      ],
+      "forms": 0,
+      "purpose": "Landing page - main entry point",
+      "accessibility": {
+        "imagesWithoutAlt": 0,
+        "seoScore": 7
+      }
+    },
+    {
+      "route": "/login",
+      "title": "6FB Booking",
+      "status": 200,
+      "responseTime": 17,
+      "components": [
+        "react",
+        "nextjs",
+        "tailwind",
+        "login",
+        "booking"
+      ],
+      "forms": 1,
+      "purpose": "User authentication",
+      "accessibility": {
+        "imagesWithoutAlt": 0,
+        "seoScore": 5
+      }
+    },
+    {
+      "route": "/dashboard",
+      "title": "6FB Booking",
+      "status": 200,
+      "responseTime": 14,
+      "components": [
+        "react",
+        "nextjs",
+        "tailwind",
+        "booking",
+        "dashboard"
+      ],
+      "forms": 0,
+      "purpose": "Main dashboard - authenticated user home",
+      "accessibility": {
+        "imagesWithoutAlt": 0,
+        "seoScore": 5
+      }
+    },
+    {
+      "route": "/book",
+      "title": "6FB Booking",
+      "status": 200,
+      "responseTime": 300,
+      "components": [
+        "react",
+        "nextjs",
+        "tailwind",
+        "bootstrap",
+        "booking",
+        "payment"
+      ],
+      "forms": 0,
+      "purpose": "Booking flow - appointment scheduling",
+      "accessibility": {
+        "imagesWithoutAlt": 0,
+        "seoScore": 7
+      }
+    },
+    {
+      "route": "/api/health",
+      "title": "",
+      "status": 200,
+      "responseTime": 9,
+      "components": [],
+      "forms": 0,
+      "purpose": "API health check endpoint",
+      "accessibility": {
+        "imagesWithoutAlt": 0,
+        "seoScore": 0
+      }
+    }
+  ],
+  "siteArchitecture": {
+    "coreFeatures": [
+      "Landing Page",
+      "Authentication",
+      "Dashboard",
+      "Booking System",
+      "API Layer"
+    ],
+    "authenticationFlow": {
+      "availablePages": [
+        "/login"
+      ],
+      "status": "Partially Implemented",
+      "notes": "Login page exists but signup/register pages are missing"
+    },
+    "bookingFlow": {
+      "availablePages": [
+        "/book"
+      ],
+      "status": "Basic Implementation",
+      "notes": "/book page exists and loads successfully"
+    },
+    "userJourneys": [
+      {
+        "journey": "New User Registration",
+        "steps": [
+          "/ (Landing)",
+          "/signup (404)",
+          "/login (Working)"
+        ],
+        "status": "Broken - signup page missing",
+        "completion": "33%"
+      },
+      {
+        "journey": "Existing User Login",
+        "steps": [
+          "/ (Landing)",
+          "/login (Working)",
+          "/dashboard (Working)"
+        ],
+        "status": "Working",
+        "completion": "100%"
+      },
+      {
+        "journey": "Booking Appointment",
+        "steps": [
+          "/book (Working)",
+          "/payment/* (404)",
+          "/confirmation (404)"
+        ],
+        "status": "Partially Broken",
+        "completion": "33%"
+      },
+      {
+        "journey": "Dashboard Management",
+        "steps": [
+          "/dashboard (Working)",
+          "/dashboard/* (All 404)"
+        ],
+        "status": "Broken - sub-pages missing",
+        "completion": "10%"
+      }
+    ]
+  },
+  "recommendations": {
+    "immediate": [
+      "Only 5 out of 70 tested routes are working - investigate Next.js routing configuration",
+      "Many pages exist in src/app but are returning 404 - check route structure",
+      "Implement proper error pages for 404s",
+      "Add authentication guards for protected routes"
+    ],
+    "development": [
+      "Complete the dashboard implementation",
+      "Implement customer portal routes",
+      "Add settings and configuration pages",
+      "Build out analytics and reporting pages"
+    ],
+    "production": [
+      "Add proper meta descriptions and SEO tags",
+      "Implement proper error handling",
+      "Add loading states and skeleton screens",
+      "Optimize performance and bundle size"
+    ]
+  }
+}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { format, addHours, addMinutes, isSameDay, startOfDay, addDays } from 'date-fns'
 import { ChevronLeftIcon, ChevronRightIcon, PlusIcon } from '@heroicons/react/24/outline'
 import { Button } from './ui/Button'
@@ -10,6 +10,7 @@ import ClientDetailModal from './modals/ClientDetailModal'
 import { touchDragManager, TouchDragManager } from '@/lib/touch-utils'
 import { conflictManager, ConflictAnalysis, ConflictResolution } from '@/lib/appointment-conflicts'
 import ConflictResolutionModal from './modals/ConflictResolutionModal'
+import { useCalendarPerformance } from '@/hooks/useCalendarPerformance'
 
 interface Appointment {
   id: number
@@ -52,7 +53,7 @@ interface CalendarDayViewProps {
   onDateChange?: (date: Date) => void
 }
 
-export default function CalendarDayView({
+const CalendarDayView = React.memo(function CalendarDayView({
   appointments,
   barbers = [],
   selectedBarberId = 'all',
@@ -83,6 +84,15 @@ export default function CalendarDayView({
   const [showConflictModal, setShowConflictModal] = useState(false)
   const scheduleColumnRef = useRef<HTMLDivElement>(null)
   const isTouchDevice = TouchDragManager.isTouchDevice()
+  
+  // Performance monitoring and optimization
+  const { measureRender, optimizedAppointmentFilter, memoizedDateCalculations } = useCalendarPerformance()
+  
+  // Performance monitoring
+  useEffect(() => {
+    const endMeasure = measureRender('CalendarDayView')
+    return endMeasure
+  })
 
   // Sync currentDay with currentDate prop changes
   useEffect(() => {
@@ -91,40 +101,44 @@ export default function CalendarDayView({
     }
   }, [currentDate, currentDay])
 
-  // Generate time slots for the entire day
-  const timeSlots: { hour: number; minute: number }[] = []
-  for (let hour = startHour; hour < endHour; hour++) {
-    for (let minute = 0; minute < 60; minute += slotDuration) {
-      timeSlots.push({ hour, minute })
+  // Memoized time slots generation
+  const timeSlots = useMemo(() => {
+    const slots: { hour: number; minute: number }[] = []
+    for (let hour = startHour; hour < endHour; hour++) {
+      for (let minute = 0; minute < 60; minute += slotDuration) {
+        slots.push({ hour, minute })
+      }
     }
-  }
+    return slots
+  }, [startHour, endHour, slotDuration])
 
-  // Filter appointments by selected barber and day
-  const filteredAppointments = appointments
-    .filter(apt => {
-      const isOnDay = isSameDay(parseAPIDate(apt.start_time), currentDay)
-      const matchesBarber = selectedBarberId === 'all' || apt.barber_id === selectedBarberId
-      return isOnDay && matchesBarber
+  // Optimized appointment filtering with performance hook
+  const filteredAppointments = useMemo(() => {
+    return optimizedAppointmentFilter(appointments, {
+      barberId: selectedBarberId,
+      startDate: currentDay,
+      endDate: addDays(currentDay, 1)
     })
+  }, [appointments, selectedBarberId, currentDay, optimizedAppointmentFilter])
 
-  // Navigate days
-  const previousDay = () => {
+  // Optimized navigation functions with useCallback
+  const previousDay = useCallback(() => {
     const newDate = addDays(currentDay, -1)
     setCurrentDay(newDate)
     onDateChange?.(newDate)
-  }
+  }, [currentDay, onDateChange])
 
-  const nextDay = () => {
+  const nextDay = useCallback(() => {
     const newDate = addDays(currentDay, 1)
     setCurrentDay(newDate)
     onDateChange?.(newDate)
-  }
+  }, [currentDay, onDateChange])
 
-  const goToToday = () => {
+  const goToToday = useCallback(() => {
     const today = new Date()
     setCurrentDay(today)
     onDateChange?.(today)
-  }
+  }, [onDateChange])
 
   // Get appointment position and height
   const getAppointmentStyle = (appointment: Appointment) => {
@@ -812,4 +826,9 @@ export default function CalendarDayView({
       )}
     </div>
   )
-}
+})
+
+// Add display name for debugging
+CalendarDayView.displayName = 'CalendarDayView'
+
+export default CalendarDayView

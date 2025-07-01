@@ -1,0 +1,637 @@
+{
+  "summary": {
+    "total_tests": 29,
+    "passed": 10,
+    "failed": 19,
+    "success_rate": "34.5%",
+    "avg_response_time_ms": 38.002836293187634
+  },
+  "detailed_results": [
+    {
+      "endpoint": "/",
+      "method": "GET",
+      "status": "PASSED",
+      "response_time_ms": 0.0,
+      "details": "Root endpoint accessible",
+      "expected_status": 200,
+      "actual_status": 0,
+      "timestamp": "2025-06-29T14:41:37.945444"
+    },
+    {
+      "endpoint": "/health",
+      "method": "GET",
+      "status": "PASSED",
+      "response_time_ms": 0.0,
+      "details": "Health check passed",
+      "expected_status": 200,
+      "actual_status": 0,
+      "timestamp": "2025-06-29T14:41:37.947246"
+    },
+    {
+      "endpoint": "/auth/register",
+      "method": "POST",
+      "status": "FAILED",
+      "response_time_ms": 34.3012809753418,
+      "details": "Response: 400 - {\"detail\":\"Email already registered\"}",
+      "expected_status": 201,
+      "actual_status": 400,
+      "timestamp": "2025-06-29T14:41:37.981577"
+    },
+    {
+      "endpoint": "/auth/login",
+      "method": "POST",
+      "status": "FAILED",
+      "response_time_ms": 202.10576057434082,
+      "details": "Response: 401 - {\"detail\":\"Incorrect username or password\"}",
+      "expected_status": 200,
+      "actual_status": 401,
+      "timestamp": "2025-06-29T14:41:38.183693"
+    },
+    {
+      "endpoint": "/auth/me",
+      "method": "GET",
+      "status": "FAILED",
+      "response_time_ms": 0.8270740509033203,
+      "details": "Response: 403 - {\"detail\":\"Not authenticated\"}",
+      "expected_status": 200,
+      "actual_status": 403,
+      "timestamp": "2025-06-29T14:41:38.184536"
+    },
+    {
+      "endpoint": "/auth/forgot-password",
+      "method": "POST",
+      "status": "PASSED",
+      "response_time_ms": 4.831075668334961,
+      "details": "Response: 200 - {\"message\":\"If the email exists, a reset link has been sent\",\"detail\":null}",
+      "expected_status": 200,
+      "actual_status": 200,
+      "timestamp": "2025-06-29T14:41:38.189376"
+    },
+    {
+      "endpoint": "/auth/me",
+      "method": "GET",
+      "status": "FAILED",
+      "response_time_ms": 0.6382465362548828,
+      "details": "Response: 403 - {\"detail\":\"Not authenticated\"}",
+      "expected_status": 401,
+      "actual_status": 403,
+      "timestamp": "2025-06-29T14:41:38.190032"
+    },
+    {
+      "endpoint": "/auth/me",
+      "method": "GET",
+      "status": "PASSED",
+      "response_time_ms": 0.7307529449462891,
+      "details": "Response: 401 - {\"detail\":\"Could not validate credentials\"}",
+      "expected_status": 401,
+      "actual_status": 401,
+      "timestamp": "2025-06-29T14:41:38.190772"
+    },
+    {
+      "endpoint": "/auth/login",
+      "method": "POST",
+      "status": "PASSED",
+      "response_time_ms": 185.41216850280762,
+      "details": "Response: 401 - {\"detail\":\"Incorrect username or password\"}",
+      "expected_status": 401,
+      "actual_status": 401,
+      "timestamp": "2025-06-29T14:41:38.376196"
+    },
+    {
+      "endpoint": "/auth/login",
+      "method": "POST",
+      "status": "PASSED",
+      "response_time_ms": 203.1409740447998,
+      "details": "Response: 401 - {\"detail\":\"Incorrect username or password\"}",
+      "expected_status": 401,
+      "actual_status": 401,
+      "timestamp": "2025-06-29T14:41:38.679469"
+    },
+    {
+      "endpoint": "/auth/login",
+      "method": "POST",
+      "status": "PASSED",
+      "response_time_ms": 200.1791000366211,
+      "details": "Response: 401 - {\"detail\":\"Incorrect username or password\"}",
+      "expected_status": 401,
+      "actual_status": 401,
+      "timestamp": "2025-06-29T14:41:38.983376"
+    },
+    {
+      "endpoint": "/auth/login",
+      "method": "POST",
+      "status": "PASSED",
+      "response_time_ms": 200.4241943359375,
+      "details": "Response: 401 - {\"detail\":\"Incorrect username or password\"}",
+      "expected_status": 401,
+      "actual_status": 401,
+      "timestamp": "2025-06-29T14:41:39.286590"
+    },
+    {
+      "endpoint": "/auth/login",
+      "method": "POST",
+      "status": "FAILED",
+      "response_time_ms": 2.2971630096435547,
+      "details": "Response: 429 - {\"detail\":\"Rate limit exceeded: 5 per 1 minute\",\"retry_after\":60}",
+      "expected_status": 401,
+      "actual_status": 429,
+      "timestamp": "2025-06-29T14:41:39.389710"
+    },
+    {
+      "endpoint": "/auth/login",
+      "method": "POST",
+      "status": "FAILED",
+      "response_time_ms": 2.035856246948242,
+      "details": "Response: 429 - {\"detail\":\"Rate limit exceeded: 5 per 1 minute\",\"retry_after\":60}",
+      "expected_status": 401,
+      "actual_status": 429,
+      "timestamp": "2025-06-29T14:41:39.494190"
+    },
+    {
+      "endpoint": "/auth/login",
+      "method": "POST",
+      "status": "FAILED",
+      "response_time_ms": 3.0922889709472656,
+      "details": "Response: 429 - {\"detail\":\"Rate limit exceeded: 5 per 1 minute\",\"retry_after\":60}",
+      "expected_status": 401,
+      "actual_status": 429,
+      "timestamp": "2025-06-29T14:41:39.601291"
+    },
+    {
+      "endpoint": "/auth/login",
+      "method": "POST",
+      "status": "FAILED",
+      "response_time_ms": 3.6499500274658203,
+      "details": "Response: 429 - {\"detail\":\"Rate limit exceeded: 5 per 1 minute\",\"retry_after\":60}",
+      "expected_status": 401,
+      "actual_status": 429,
+      "timestamp": "2025-06-29T14:41:39.708093"
+    },
+    {
+      "endpoint": "/auth/login",
+      "method": "POST",
+      "status": "FAILED",
+      "response_time_ms": 5.9070587158203125,
+      "details": "Response: 429 - {\"detail\":\"Rate limit exceeded: 5 per 1 minute\",\"retry_after\":60}",
+      "expected_status": 401,
+      "actual_status": 429,
+      "timestamp": "2025-06-29T14:41:39.819124"
+    },
+    {
+      "endpoint": "/auth/login",
+      "method": "POST",
+      "status": "FAILED",
+      "response_time_ms": 4.46009635925293,
+      "details": "Response: 429 - {\"detail\":\"Rate limit exceeded: 5 per 1 minute\",\"retry_after\":60}",
+      "expected_status": 401,
+      "actual_status": 429,
+      "timestamp": "2025-06-29T14:41:39.926865"
+    },
+    {
+      "endpoint": "/bookings/slots?booking_date=2025-06-30",
+      "method": "GET",
+      "status": "PASSED",
+      "response_time_ms": 36.45205497741699,
+      "details": "Response: 200 - {\"date\":\"2025-06-30\",\"slots\":[{\"time\":\"09:00\",\"available\":true,\"is_next_available\":true},{\"time\":\"09:30\",\"available\":true,\"is_next_available\":false},{\"time\":\"10:30\",\"available\":true,\"is_next_available...",
+      "expected_status": 200,
+      "actual_status": 200,
+      "timestamp": "2025-06-29T14:41:40.068591"
+    },
+    {
+      "endpoint": "/bookings",
+      "method": "POST",
+      "status": "FAILED",
+      "response_time_ms": 2.0537376403808594,
+      "details": "Response: 403 - {\"detail\":\"Not authenticated\"}",
+      "expected_status": 201,
+      "actual_status": 403,
+      "timestamp": "2025-06-29T14:41:40.070678"
+    },
+    {
+      "endpoint": "/bookings",
+      "method": "GET",
+      "status": "FAILED",
+      "response_time_ms": 1.529693603515625,
+      "details": "Response: 403 - {\"detail\":\"Not authenticated\"}",
+      "expected_status": 200,
+      "actual_status": 403,
+      "timestamp": "2025-06-29T14:41:40.072223"
+    },
+    {
+      "endpoint": "/enterprise/dashboard",
+      "method": "GET",
+      "status": "FAILED",
+      "response_time_ms": 0.9260177612304688,
+      "details": "Response: 403 - {\"detail\":\"Not authenticated\"}",
+      "expected_status": 200,
+      "actual_status": 403,
+      "timestamp": "2025-06-29T14:41:40.073174"
+    },
+    {
+      "endpoint": "/enterprise/locations",
+      "method": "GET",
+      "status": "FAILED",
+      "response_time_ms": 0.8766651153564453,
+      "details": "Response: 403 - {\"detail\":\"Not authenticated\"}",
+      "expected_status": 200,
+      "actual_status": 403,
+      "timestamp": "2025-06-29T14:41:40.074066"
+    },
+    {
+      "endpoint": "/appointments",
+      "method": "GET",
+      "status": "FAILED",
+      "response_time_ms": 1.5859603881835938,
+      "details": "Response: 403 - {\"detail\":\"Not authenticated\"}",
+      "expected_status": 200,
+      "actual_status": 403,
+      "timestamp": "2025-06-29T14:41:40.075667"
+    },
+    {
+      "endpoint": "/clients",
+      "method": "GET",
+      "status": "FAILED",
+      "response_time_ms": 1.764059066772461,
+      "details": "Response: 403 - {\"detail\":\"Not authenticated\"}",
+      "expected_status": 200,
+      "actual_status": 403,
+      "timestamp": "2025-06-29T14:41:40.077442"
+    },
+    {
+      "endpoint": "/analytics/dashboard",
+      "method": "GET",
+      "status": "FAILED",
+      "response_time_ms": 0.7638931274414062,
+      "details": "Response: 403 - {\"detail\":\"Not authenticated\"}",
+      "expected_status": 200,
+      "actual_status": 403,
+      "timestamp": "2025-06-29T14:41:40.078217"
+    },
+    {
+      "endpoint": "/services",
+      "method": "GET",
+      "status": "FAILED",
+      "response_time_ms": 1.4591217041015625,
+      "details": "Response: 403 - {\"detail\":\"Not authenticated\"}",
+      "expected_status": 200,
+      "actual_status": 403,
+      "timestamp": "2025-06-29T14:41:40.079687"
+    },
+    {
+      "endpoint": "/timezones",
+      "method": "GET",
+      "status": "FAILED",
+      "response_time_ms": 0.6380081176757812,
+      "details": "Response: 403 - {\"detail\":\"Not authenticated\"}",
+      "expected_status": 200,
+      "actual_status": 403,
+      "timestamp": "2025-06-29T14:41:40.080336"
+    },
+    {
+      "endpoint": "/auth/me",
+      "method": "OPTIONS",
+      "status": "PASSED",
+      "response_time_ms": 0,
+      "details": "CORS preflight successful",
+      "expected_status": 200,
+      "actual_status": 0,
+      "timestamp": "2025-06-29T14:41:40.081773"
+    }
+  ],
+  "failed_tests": [
+    {
+      "endpoint": "/auth/register",
+      "method": "POST",
+      "status": "FAILED",
+      "response_time_ms": 34.3012809753418,
+      "details": "Response: 400 - {\"detail\":\"Email already registered\"}",
+      "expected_status": 201,
+      "actual_status": 400,
+      "timestamp": "2025-06-29T14:41:37.981577"
+    },
+    {
+      "endpoint": "/auth/login",
+      "method": "POST",
+      "status": "FAILED",
+      "response_time_ms": 202.10576057434082,
+      "details": "Response: 401 - {\"detail\":\"Incorrect username or password\"}",
+      "expected_status": 200,
+      "actual_status": 401,
+      "timestamp": "2025-06-29T14:41:38.183693"
+    },
+    {
+      "endpoint": "/auth/me",
+      "method": "GET",
+      "status": "FAILED",
+      "response_time_ms": 0.8270740509033203,
+      "details": "Response: 403 - {\"detail\":\"Not authenticated\"}",
+      "expected_status": 200,
+      "actual_status": 403,
+      "timestamp": "2025-06-29T14:41:38.184536"
+    },
+    {
+      "endpoint": "/auth/me",
+      "method": "GET",
+      "status": "FAILED",
+      "response_time_ms": 0.6382465362548828,
+      "details": "Response: 403 - {\"detail\":\"Not authenticated\"}",
+      "expected_status": 401,
+      "actual_status": 403,
+      "timestamp": "2025-06-29T14:41:38.190032"
+    },
+    {
+      "endpoint": "/auth/login",
+      "method": "POST",
+      "status": "FAILED",
+      "response_time_ms": 2.2971630096435547,
+      "details": "Response: 429 - {\"detail\":\"Rate limit exceeded: 5 per 1 minute\",\"retry_after\":60}",
+      "expected_status": 401,
+      "actual_status": 429,
+      "timestamp": "2025-06-29T14:41:39.389710"
+    },
+    {
+      "endpoint": "/auth/login",
+      "method": "POST",
+      "status": "FAILED",
+      "response_time_ms": 2.035856246948242,
+      "details": "Response: 429 - {\"detail\":\"Rate limit exceeded: 5 per 1 minute\",\"retry_after\":60}",
+      "expected_status": 401,
+      "actual_status": 429,
+      "timestamp": "2025-06-29T14:41:39.494190"
+    },
+    {
+      "endpoint": "/auth/login",
+      "method": "POST",
+      "status": "FAILED",
+      "response_time_ms": 3.0922889709472656,
+      "details": "Response: 429 - {\"detail\":\"Rate limit exceeded: 5 per 1 minute\",\"retry_after\":60}",
+      "expected_status": 401,
+      "actual_status": 429,
+      "timestamp": "2025-06-29T14:41:39.601291"
+    },
+    {
+      "endpoint": "/auth/login",
+      "method": "POST",
+      "status": "FAILED",
+      "response_time_ms": 3.6499500274658203,
+      "details": "Response: 429 - {\"detail\":\"Rate limit exceeded: 5 per 1 minute\",\"retry_after\":60}",
+      "expected_status": 401,
+      "actual_status": 429,
+      "timestamp": "2025-06-29T14:41:39.708093"
+    },
+    {
+      "endpoint": "/auth/login",
+      "method": "POST",
+      "status": "FAILED",
+      "response_time_ms": 5.9070587158203125,
+      "details": "Response: 429 - {\"detail\":\"Rate limit exceeded: 5 per 1 minute\",\"retry_after\":60}",
+      "expected_status": 401,
+      "actual_status": 429,
+      "timestamp": "2025-06-29T14:41:39.819124"
+    },
+    {
+      "endpoint": "/auth/login",
+      "method": "POST",
+      "status": "FAILED",
+      "response_time_ms": 4.46009635925293,
+      "details": "Response: 429 - {\"detail\":\"Rate limit exceeded: 5 per 1 minute\",\"retry_after\":60}",
+      "expected_status": 401,
+      "actual_status": 429,
+      "timestamp": "2025-06-29T14:41:39.926865"
+    },
+    {
+      "endpoint": "/bookings",
+      "method": "POST",
+      "status": "FAILED",
+      "response_time_ms": 2.0537376403808594,
+      "details": "Response: 403 - {\"detail\":\"Not authenticated\"}",
+      "expected_status": 201,
+      "actual_status": 403,
+      "timestamp": "2025-06-29T14:41:40.070678"
+    },
+    {
+      "endpoint": "/bookings",
+      "method": "GET",
+      "status": "FAILED",
+      "response_time_ms": 1.529693603515625,
+      "details": "Response: 403 - {\"detail\":\"Not authenticated\"}",
+      "expected_status": 200,
+      "actual_status": 403,
+      "timestamp": "2025-06-29T14:41:40.072223"
+    },
+    {
+      "endpoint": "/enterprise/dashboard",
+      "method": "GET",
+      "status": "FAILED",
+      "response_time_ms": 0.9260177612304688,
+      "details": "Response: 403 - {\"detail\":\"Not authenticated\"}",
+      "expected_status": 200,
+      "actual_status": 403,
+      "timestamp": "2025-06-29T14:41:40.073174"
+    },
+    {
+      "endpoint": "/enterprise/locations",
+      "method": "GET",
+      "status": "FAILED",
+      "response_time_ms": 0.8766651153564453,
+      "details": "Response: 403 - {\"detail\":\"Not authenticated\"}",
+      "expected_status": 200,
+      "actual_status": 403,
+      "timestamp": "2025-06-29T14:41:40.074066"
+    },
+    {
+      "endpoint": "/appointments",
+      "method": "GET",
+      "status": "FAILED",
+      "response_time_ms": 1.5859603881835938,
+      "details": "Response: 403 - {\"detail\":\"Not authenticated\"}",
+      "expected_status": 200,
+      "actual_status": 403,
+      "timestamp": "2025-06-29T14:41:40.075667"
+    },
+    {
+      "endpoint": "/clients",
+      "method": "GET",
+      "status": "FAILED",
+      "response_time_ms": 1.764059066772461,
+      "details": "Response: 403 - {\"detail\":\"Not authenticated\"}",
+      "expected_status": 200,
+      "actual_status": 403,
+      "timestamp": "2025-06-29T14:41:40.077442"
+    },
+    {
+      "endpoint": "/analytics/dashboard",
+      "method": "GET",
+      "status": "FAILED",
+      "response_time_ms": 0.7638931274414062,
+      "details": "Response: 403 - {\"detail\":\"Not authenticated\"}",
+      "expected_status": 200,
+      "actual_status": 403,
+      "timestamp": "2025-06-29T14:41:40.078217"
+    },
+    {
+      "endpoint": "/services",
+      "method": "GET",
+      "status": "FAILED",
+      "response_time_ms": 1.4591217041015625,
+      "details": "Response: 403 - {\"detail\":\"Not authenticated\"}",
+      "expected_status": 200,
+      "actual_status": 403,
+      "timestamp": "2025-06-29T14:41:40.079687"
+    },
+    {
+      "endpoint": "/timezones",
+      "method": "GET",
+      "status": "FAILED",
+      "response_time_ms": 0.6380081176757812,
+      "details": "Response: 403 - {\"detail\":\"Not authenticated\"}",
+      "expected_status": 200,
+      "actual_status": 403,
+      "timestamp": "2025-06-29T14:41:40.080336"
+    }
+  ],
+  "security_issues": [],
+  "performance_issues": [],
+  "schema_mismatches": [
+    {
+      "endpoint": "/bookings/slots",
+      "issue": "Missing field: available_slots",
+      "expected": "available_slots",
+      "actual": {
+        "date": "2025-06-30",
+        "slots": [
+          {
+            "time": "09:00",
+            "available": true,
+            "is_next_available": true
+          },
+          {
+            "time": "09:30",
+            "available": true,
+            "is_next_available": false
+          },
+          {
+            "time": "10:30",
+            "available": true,
+            "is_next_available": false
+          },
+          {
+            "time": "11:00",
+            "available": true,
+            "is_next_available": false
+          },
+          {
+            "time": "11:30",
+            "available": true,
+            "is_next_available": false
+          },
+          {
+            "time": "12:30",
+            "available": true,
+            "is_next_available": false
+          },
+          {
+            "time": "13:30",
+            "available": true,
+            "is_next_available": false
+          },
+          {
+            "time": "14:30",
+            "available": true,
+            "is_next_available": false
+          },
+          {
+            "time": "16:00",
+            "available": true,
+            "is_next_available": false
+          },
+          {
+            "time": "16:30",
+            "available": true,
+            "is_next_available": false
+          }
+        ],
+        "next_available": {
+          "date": "2025-06-30",
+          "time": "09:00",
+          "datetime": "2025-06-30T09:00:00-04:00"
+        },
+        "business_hours": {
+          "start": "09:00",
+          "end": "17:00"
+        },
+        "slot_duration_minutes": 30
+      }
+    },
+    {
+      "endpoint": "/bookings/slots",
+      "issue": "Missing field: booking_date",
+      "expected": "booking_date",
+      "actual": {
+        "date": "2025-06-30",
+        "slots": [
+          {
+            "time": "09:00",
+            "available": true,
+            "is_next_available": true
+          },
+          {
+            "time": "09:30",
+            "available": true,
+            "is_next_available": false
+          },
+          {
+            "time": "10:30",
+            "available": true,
+            "is_next_available": false
+          },
+          {
+            "time": "11:00",
+            "available": true,
+            "is_next_available": false
+          },
+          {
+            "time": "11:30",
+            "available": true,
+            "is_next_available": false
+          },
+          {
+            "time": "12:30",
+            "available": true,
+            "is_next_available": false
+          },
+          {
+            "time": "13:30",
+            "available": true,
+            "is_next_available": false
+          },
+          {
+            "time": "14:30",
+            "available": true,
+            "is_next_available": false
+          },
+          {
+            "time": "16:00",
+            "available": true,
+            "is_next_available": false
+          },
+          {
+            "time": "16:30",
+            "available": true,
+            "is_next_available": false
+          }
+        ],
+        "next_available": {
+          "date": "2025-06-30",
+          "time": "09:00",
+          "datetime": "2025-06-30T09:00:00-04:00"
+        },
+        "business_hours": {
+          "start": "09:00",
+          "end": "17:00"
+        },
+        "slot_duration_minutes": 30
+      }
+    }
+  ]
+}

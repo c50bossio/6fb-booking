@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Reminder</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            color: #8b4513;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 300;
+        }
+        .content {
+            padding: 30px;
+        }
+        .appointment-details {
+            background: #fff3cd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0e7aa;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: #856404;
+        }
+        .detail-value {
+            color: #212529;
+        }
+        .button {
+            display: inline-block;
+            background: #ffc107;
+            color: #212529;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 25px;
+            margin: 20px 10px 20px 0;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        .button:hover {
+            background: #e0a800;
+        }
+        .button.secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .button.secondary:hover {
+            background: #5a6268;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+            border-top: 1px solid #e9ecef;
+        }
+        .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .urgent {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
+        @media (max-width: 600px) {
+            .detail-row {
+                flex-direction: column;
+            }
+            .detail-label {
+                margin-bottom: 5px;
+            }
+            .button {
+                display: block;
+                text-align: center;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">⏰</div>
+            <h1>Appointment Reminder</h1>
+        </div>
+        
+        <div class="content">
+            <p>Hi {{ client_name }},</p>
+            
+            {% if hours_until <= 2 %}
+            <p><strong>Your appointment is coming up soon!</strong> This is a friendly reminder about your upcoming appointment.</p>
+            {% else %}
+            <p>This is a friendly reminder about your upcoming appointment tomorrow.</p>
+            {% endif %}
+            
+            <div class="appointment-details {% if hours_until <= 2 %}urgent{% endif %}">
+                <h3 style="margin-top: 0; color: {% if hours_until <= 2 %}#dc3545{% else %}#ffc107{% endif %};">
+                    {% if hours_until <= 2 %}
+                        🚨 Appointment in {{ hours_until }} hour{{ 's' if hours_until != 1 else '' }}!
+                    {% else %}
+                        📅 Tomorrow's Appointment
+                    {% endif %}
+                </h3>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Service:</span>
+                    <span class="detail-value">{{ service_name }}</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Date:</span>
+                    <span class="detail-value">{{ appointment_date }}</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Time:</span>
+                    <span class="detail-value">{{ appointment_time }}</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Duration:</span>
+                    <span class="detail-value">{{ duration }} minutes</span>
+                </div>
+                
+                {% if barber_name %}
+                <div class="detail-row">
+                    <span class="detail-label">Barber:</span>
+                    <span class="detail-value">{{ barber_name }}</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <p><strong>Preparation reminders:</strong></p>
+            <ul style="color: #6c757d;">
+                <li>Please arrive 5-10 minutes early</li>
+                <li>Bring a valid ID</li>
+                <li>Wear clothing that allows easy access to the service area</li>
+                {% if hours_until <= 2 %}
+                <li><strong>🚗 Allow extra time for travel and parking</strong></li>
+                {% endif %}
+            </ul>
+            
+            {% if business_address %}
+            <p><strong>📍 Location:</strong><br>{{ business_address }}</p>
+            {% endif %}
+            
+            {% if business_phone %}
+            <p>Need to make changes? Call us at <strong>{{ business_phone }}</strong></p>
+            {% endif %}
+            
+            {% if cancellation_policy %}
+            <p style="font-size: 14px; color: #6c757d;"><strong>Cancellation Policy:</strong> {{ cancellation_policy }}</p>
+            {% endif %}
+            
+            <p>We look forward to seeing you{% if hours_until <= 2 %} soon{% endif %}!</p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; {{ current_year }} {{ business_name }}. All rights reserved.</p>
+            <p>This is an automated reminder email. Please do not reply directly to this message.</p>
+        </div>
+    </div>
+</body>
+</html>

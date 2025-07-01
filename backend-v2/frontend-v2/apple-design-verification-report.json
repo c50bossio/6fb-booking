@@ -1,0 +1,41 @@
+{
+  "timestamp": "2025-06-29T04:53:56.364Z",
+  "summary": {
+    "totalPages": 3,
+    "successfulPages": 0,
+    "failedPages": 3,
+    "averageLoadTime": 0,
+    "totalErrors": 0,
+    "designSystemCoverage": {
+      "pagesWithGlass": 0,
+      "pagesWithIosColors": 0,
+      "pagesWithPremiumShadows": 0,
+      "pagesWithIosTypography": 0,
+      "overallCoverageScore": 0
+    }
+  },
+  "pages": {
+    "homepage": {
+      "url": "http://localhost:3001/",
+      "status": "failed",
+      "error": "Navigation timeout of 15000 ms exceeded"
+    },
+    "login": {
+      "url": "http://localhost:3001/login",
+      "status": "failed",
+      "error": "Navigation timeout of 15000 ms exceeded"
+    },
+    "register": {
+      "url": "http://localhost:3001/register",
+      "status": "failed",
+      "error": "Navigation timeout of 15000 ms exceeded"
+    }
+  },
+  "performance": {},
+  "errors": [],
+  "designSystem": {
+    "appliedPages": [],
+    "missingFeatures": [],
+    "inconsistencies": []
+  }
+}

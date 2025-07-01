@@ -1,12 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { format, startOfWeek, endOfWeek, addDays, isSameDay, startOfDay, addHours, addMinutes } from 'date-fns'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import { Button } from './ui/Button'
 import { parseAPIDate } from '@/lib/timezone'
 import Image from 'next/image'
 import ClientDetailModal from './modals/ClientDetailModal'
+import { touchDragManager, TouchDragManager } from '@/lib/touch-utils'
+import { conflictManager, ConflictAnalysis, ConflictResolution } from '@/lib/appointment-conflicts'
+import ConflictResolutionModal from './modals/ConflictResolutionModal'
+import { useCalendarPerformance } from '@/hooks/useCalendarPerformance'
 
 interface Appointment {
   id: number
@@ -49,7 +53,7 @@ interface CalendarWeekViewProps {
   onDateChange?: (date: Date) => void
 }
 
-export default function CalendarWeekView({
+const CalendarWeekView = React.memo(function CalendarWeekView({
   appointments,
   barbers = [],
   selectedBarberId = 'all',
@@ -70,6 +74,22 @@ export default function CalendarWeekView({
   const [dragOverSlot, setDragOverSlot] = useState<{ day: Date; hour: number; minute: number } | null>(null)
   const [selectedClient, setSelectedClient] = useState<any | null>(null)
   const [showClientModal, setShowClientModal] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const [dropSuccess, setDropSuccess] = useState<{ day: Date; hour: number; minute: number } | null>(null)
+  const [conflictAnalysis, setConflictAnalysis] = useState<ConflictAnalysis | null>(null)
+  const [pendingUpdate, setPendingUpdate] = useState<{ appointmentId: number; newStartTime: string } | null>(null)
+  const [showConflictModal, setShowConflictModal] = useState(false)
+  const scheduleGridRef = useRef<HTMLDivElement>(null)
+  const isTouchDevice = TouchDragManager.isTouchDevice()
+  
+  // Performance monitoring and optimization
+  const { measureRender, optimizedAppointmentFilter, memoizedDateCalculations } = useCalendarPerformance()
+  
+  // Performance monitoring
+  useEffect(() => {
+    const endMeasure = measureRender('CalendarWeekView')
+    return endMeasure
+  })
 
   // Sync currentWeek with currentDate prop changes
   useEffect(() => {
@@ -78,47 +98,57 @@ export default function CalendarWeekView({
     }
   }, [currentDate, currentWeek])
 
-  // Get week start and end dates
-  const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 }) // Monday
-  const weekEnd = endOfWeek(currentWeek, { weekStartsOn: 1 })
-
-  // Generate time slots
-  const timeSlots: { hour: number; minute: number }[] = []
-  for (let hour = startHour; hour < endHour; hour++) {
-    for (let minute = 0; minute < 60; minute += slotDuration) {
-      timeSlots.push({ hour, minute })
+  // Memoized week calculations
+  const weekData = useMemo(() => {
+    const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 }) // Monday
+    const weekEnd = endOfWeek(currentWeek, { weekStartsOn: 1 })
+    
+    // Generate time slots
+    const timeSlots: { hour: number; minute: number }[] = []
+    for (let hour = startHour; hour < endHour; hour++) {
+      for (let minute = 0; minute < 60; minute += slotDuration) {
+        timeSlots.push({ hour, minute })
+      }
     }
-  }
 
-  // Generate week days
-  const weekDays = []
-  for (let i = 0; i < 7; i++) {
-    weekDays.push(addDays(weekStart, i))
-  }
+    // Generate week days
+    const weekDays = []
+    for (let i = 0; i < 7; i++) {
+      weekDays.push(addDays(weekStart, i))
+    }
 
-  // Filter appointments by selected barber
-  const filteredAppointments = selectedBarberId === 'all' 
-    ? appointments 
-    : appointments.filter(apt => apt.barber_id === selectedBarberId)
+    return { weekStart, weekEnd, timeSlots, weekDays }
+  }, [currentWeek, startHour, endHour, slotDuration])
 
-  // Navigate weeks
-  const previousWeek = () => {
+  const { weekStart, weekEnd, timeSlots, weekDays } = weekData
+
+  // Optimized appointment filtering
+  const filteredAppointments = useMemo(() => {
+    return optimizedAppointmentFilter(appointments, {
+      barberId: selectedBarberId,
+      startDate: weekStart,
+      endDate: weekEnd
+    })
+  }, [appointments, selectedBarberId, weekStart, weekEnd, optimizedAppointmentFilter])
+
+  // Navigate weeks (memoized)
+  const previousWeek = useCallback(() => {
     const newDate = addDays(currentWeek, -7)
     setCurrentWeek(newDate)
     onDateChange?.(newDate)
-  }
+  }, [currentWeek, onDateChange])
 
-  const nextWeek = () => {
+  const nextWeek = useCallback(() => {
     const newDate = addDays(currentWeek, 7)
     setCurrentWeek(newDate)
     onDateChange?.(newDate)
-  }
+  }, [currentWeek, onDateChange])
 
-  const goToToday = () => {
+  const goToToday = useCallback(() => {
     const today = new Date()
     setCurrentWeek(today)
     onDateChange?.(today)
-  }
+  }, [onDateChange])
 
   // Get appointment position and height
   const getAppointmentStyle = (appointment: Appointment) => {
@@ -175,6 +205,149 @@ export default function CalendarWeekView({
            (barber.first_name && barber.last_name ? `${barber.first_name} ${barber.last_name}` : '') ||
            barber.email.split('@')[0]
   }
+
+  // Check for conflicts before updating appointment
+  const checkAndUpdateAppointment = (appointmentId: number, newStartTime: string) => {
+    const appointment = appointments.find(apt => apt.id === appointmentId)
+    if (!appointment) return
+
+    // Create updated appointment for conflict checking
+    const updatedAppointment = {
+      ...appointment,
+      start_time: newStartTime,
+      id: appointmentId
+    }
+
+    // Analyze conflicts
+    const analysis = conflictManager.analyzeConflicts(
+      updatedAppointment,
+      appointments,
+      {
+        bufferTime: 15,
+        checkBarberAvailability: true,
+        workingHours: { start: startHour, end: endHour },
+        allowAdjacent: false
+      }
+    )
+
+    if (analysis.hasConflicts && analysis.riskScore > 30) {
+      // Show conflict resolution modal
+      setConflictAnalysis(analysis)
+      setPendingUpdate({ appointmentId, newStartTime })
+      setShowConflictModal(true)
+    } else {
+      // No significant conflicts, proceed with update
+      onAppointmentUpdate?.(appointmentId, newStartTime)
+    }
+  }
+
+  // Handle conflict resolution
+  const handleConflictResolution = (resolution: ConflictResolution) => {
+    if (!pendingUpdate) return
+
+    let finalStartTime = pendingUpdate.newStartTime
+    let finalAppointmentId = pendingUpdate.appointmentId
+
+    // Apply resolution changes
+    if (resolution.suggestedStartTime) {
+      finalStartTime = resolution.suggestedStartTime
+    }
+    
+    onAppointmentUpdate?.(finalAppointmentId, finalStartTime)
+    
+    setShowConflictModal(false)
+    setConflictAnalysis(null)
+    setPendingUpdate(null)
+  }
+
+  // Handle proceeding despite conflicts
+  const handleProceedAnyway = () => {
+    if (!pendingUpdate) return
+    
+    onAppointmentUpdate?.(pendingUpdate.appointmentId, pendingUpdate.newStartTime)
+    
+    setShowConflictModal(false)
+    setConflictAnalysis(null)
+    setPendingUpdate(null)
+  }
+
+  // Handle cancelling the update
+  const handleCancelConflictResolution = () => {
+    setShowConflictModal(false)
+    setConflictAnalysis(null)
+    setPendingUpdate(null)
+  }
+
+  // Touch drag support for appointments
+  useEffect(() => {
+    if (!isTouchDevice) return
+
+    const appointments = document.querySelectorAll('.calendar-appointment-week')
+    const cleanupFunctions: (() => void)[] = []
+
+    appointments.forEach((appointmentEl) => {
+      const appointmentId = appointmentEl.getAttribute('data-appointment-id')
+      const appointment = filteredAppointments.find(apt => apt.id.toString() === appointmentId)
+      
+      if (!appointment || appointment.status === 'completed' || appointment.status === 'cancelled') {
+        return
+      }
+
+      const cleanup = touchDragManager.initializeTouchDrag(appointmentEl as HTMLElement, {
+        onDragStart: (element) => {
+          setDraggedAppointment(appointment)
+          setIsDragging(true)
+          return true
+        },
+        onDragMove: (element, position) => {
+          // Find which day and time slot we're over
+          const weekGrid = scheduleGridRef.current
+          if (!weekGrid) return
+          
+          const rect = weekGrid.getBoundingClientRect()
+          const relativeX = position.clientX - rect.left
+          const relativeY = position.clientY - rect.top
+          
+          // Calculate day (7 columns)
+          const dayWidth = rect.width / 7
+          const dayIndex = Math.floor(relativeX / dayWidth)
+          
+          // Calculate time slot
+          const slotHeight = 48 // 48px per slot
+          const slotIndex = Math.floor(relativeY / slotHeight)
+          
+          if (dayIndex >= 0 && dayIndex < 7 && slotIndex >= 0 && slotIndex < timeSlots.length) {
+            const targetDay = weekDays[dayIndex]
+            const slot = timeSlots[slotIndex]
+            setDragOverSlot({ day: targetDay, hour: slot.hour, minute: slot.minute })
+          }
+        },
+        onDragEnd: (element, dropTarget) => {
+          if (draggedAppointment && onAppointmentUpdate && dragOverSlot) {
+            const newDate = new Date(dragOverSlot.day)
+            newDate.setHours(dragOverSlot.hour, dragOverSlot.minute, 0, 0)
+            
+            // Check if the new time is valid (not in the past for today)
+            const now = new Date()
+            const isToday = isSameDay(dragOverSlot.day, now)
+            if (!isToday || newDate > now) {
+              checkAndUpdateAppointment(draggedAppointment.id, newDate.toISOString())
+            }
+          }
+          setDraggedAppointment(null)
+          setDragOverSlot(null)
+          setIsDragging(false)
+        },
+        canDrag: () => appointment.status !== 'completed' && appointment.status !== 'cancelled'
+      })
+
+      cleanupFunctions.push(cleanup)
+    })
+
+    return () => {
+      cleanupFunctions.forEach(cleanup => cleanup())
+    }
+  }, [filteredAppointments, weekDays, timeSlots, onAppointmentUpdate, isTouchDevice])
 
   return (
     <div className="w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm">
@@ -264,7 +437,7 @@ export default function CalendarWeekView({
             </div>
 
             {/* Days columns */}
-            <div className="flex-1 grid grid-cols-7">
+            <div ref={scheduleGridRef} className="flex-1 grid grid-cols-7">
               {weekDays.map((day, dayIdx) => (
                 <div key={dayIdx} className="border-r border-gray-200 dark:border-gray-700 last:border-r-0">
                   {/* Day header */}
@@ -288,6 +461,11 @@ export default function CalendarWeekView({
                           dragOverSlot.hour === slot.hour && 
                           dragOverSlot.minute === slot.minute
                             ? 'bg-primary-100 dark:bg-primary-900/30 ring-2 ring-primary-500 ring-inset'
+                            : dropSuccess &&
+                              isSameDay(dropSuccess.day, day) &&
+                              dropSuccess.hour === slot.hour &&
+                              dropSuccess.minute === slot.minute
+                            ? 'bg-green-100 dark:bg-green-900/30 ring-2 ring-green-500 ring-inset animate-pulse'
                             : 'hover:bg-gray-50 dark:hover:bg-gray-700'
                         }`}
                         onClick={() => {
@@ -315,13 +493,20 @@ export default function CalendarWeekView({
                             const newDate = new Date(day)
                             newDate.setHours(slot.hour, slot.minute, 0, 0)
                             
-                            // Check if the new time is valid (not in the past)
-                            if (newDate > new Date()) {
-                              onAppointmentUpdate(draggedAppointment.id, newDate.toISOString())
+                            // Check if the new time is valid (not in the past for today)
+                            const now = new Date()
+                            const isToday = isSameDay(day, now)
+                            if (!isToday || newDate > now) {
+                              // Show success animation
+                              setDropSuccess({ day, hour: slot.hour, minute: slot.minute })
+                              setTimeout(() => setDropSuccess(null), 600)
+                              
+                              checkAndUpdateAppointment(draggedAppointment.id, newDate.toISOString())
                             }
                           }
                           setDraggedAppointment(null)
                           setDragOverSlot(null)
+                          setIsDragging(false)
                         }}
                       />
                     ))}
@@ -332,8 +517,9 @@ export default function CalendarWeekView({
                       .map((appointment) => (
                         <div
                           key={appointment.id}
+                          data-appointment-id={appointment.id}
                           draggable={appointment.status !== 'completed' && appointment.status !== 'cancelled'}
-                          className={`absolute left-1 right-1 rounded cursor-pointer transition-all text-white p-1 text-xs overflow-hidden ${
+                          className={`calendar-appointment-week absolute left-1 right-1 rounded cursor-pointer transition-all text-white p-1 text-xs overflow-hidden ${
                             getStatusColor(appointment.status)
                           } ${
                             draggedAppointment?.id === appointment.id ? 'opacity-50' : ''
@@ -345,15 +531,23 @@ export default function CalendarWeekView({
                           style={getAppointmentStyle(appointment)}
                           onClick={(e) => {
                             e.stopPropagation()
-                            onAppointmentClick?.(appointment)
+                            if (!isDragging) {
+                              onAppointmentClick?.(appointment)
+                            }
                           }}
                           onDragStart={(e) => {
-                            e.dataTransfer.effectAllowed = 'move'
-                            setDraggedAppointment(appointment)
+                            if (appointment.status !== 'completed' && appointment.status !== 'cancelled') {
+                              e.dataTransfer.effectAllowed = 'move'
+                              setDraggedAppointment(appointment)
+                              setIsDragging(true)
+                            } else {
+                              e.preventDefault()
+                            }
                           }}
                           onDragEnd={() => {
                             setDraggedAppointment(null)
                             setDragOverSlot(null)
+                            setIsDragging(false)
                           }}
                         >
                           <div 
@@ -426,6 +620,20 @@ export default function CalendarWeekView({
           // Could trigger appointment modal here
         }}
       />
+
+      {/* Conflict Resolution Modal */}
+      <ConflictResolutionModal
+        isOpen={showConflictModal}
+        onClose={handleCancelConflictResolution}
+        analysis={conflictAnalysis}
+        onResolve={handleConflictResolution}
+        onProceedAnyway={handleProceedAnyway}
+      />
     </div>
   )
-}
+})
+
+// Add display name for debugging
+CalendarWeekView.displayName = 'CalendarWeekView'
+
+export default CalendarWeekView

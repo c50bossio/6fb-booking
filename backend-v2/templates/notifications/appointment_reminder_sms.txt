@@ -1,0 +1,16 @@
+{% if hours_until <= 2 %}🚨 APPOINTMENT REMINDER - {{ hours_until }}H{% else %}📅 APPOINTMENT REMINDER{% endif %}
+
+Hi {{ client_name }}! {% if hours_until <= 2 %}Your appointment is TODAY:{% else %}Reminder for tomorrow:{% endif %}
+
+📅 {{ appointment_date }}
+🕐 {{ appointment_time }}
+✂️ {{ service_name }}
+{% if barber_name %}👨‍💼 {{ barber_name }}{% endif %}
+
+{% if hours_until <= 2 %}Please leave now if you haven't already! {% endif %}Arrive 5-10 minutes early.
+
+{% if business_address %}📍 {{ business_address }}{% endif %}
+
+Need to reschedule? Call {{ business_phone | default('us') }}
+
+- {{ business_name }}

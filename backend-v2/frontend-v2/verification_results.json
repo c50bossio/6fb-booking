@@ -1,0 +1,177 @@
+{
+  "backend": {
+    "health": {
+      "status": "PASS",
+      "data": {
+        "status": "healthy"
+      }
+    },
+    "docs": {
+      "status": "PASS"
+    }
+  },
+  "frontend": {
+    "homepage": {
+      "status": "PASS",
+      "title": "Booked Barber - Own The Chair. Own The Brand.",
+      "url": "http://localhost:3000/"
+    },
+    "navigation": {
+      "status": "FAIL",
+      "linksFound": 0,
+      "links": []
+    },
+    "pages": {
+      "/login": {
+        "status": "PASS",
+        "title": "Booked Barber - Own The Chair. Own The Brand."
+      },
+      "/book": {
+        "status": "PASS",
+        "title": "Booked Barber - Own The Chair. Own The Brand."
+      },
+      "/dashboard": {
+        "status": "PASS",
+        "title": "Booked Barber - Own The Chair. Own The Brand."
+      }
+    },
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "networkErrors": [
+      {
+        "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1751230727973",
+        "status": 404
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/webpack.js?v=1751230727973",
+        "status": 404
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/main-app.js?v=1751230727973",
+        "status": 404
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/app/page.js",
+        "status": 404
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/app-pages-internals.js",
+        "status": 404
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/app/layout.js",
+        "status": 404
+      },
+      {
+        "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1751230728959",
+        "status": 404
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/main-app.js?v=1751230728959",
+        "status": 404
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/app/login/page.js",
+        "status": 404
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/app/layout.js",
+        "status": 404
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/app-pages-internals.js",
+        "status": 404
+      },
+      {
+        "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1751230730292",
+        "status": 404
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/main-app.js?v=1751230730292",
+        "status": 404
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/app-pages-internals.js",
+        "status": 404
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/app/layout.js",
+        "status": 404
+      },
+      {
+        "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1751230730951",
+        "status": 404
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/main-app.js?v=1751230730951",
+        "status": 404
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/app-pages-internals.js",
+        "status": 404
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/app/layout.js",
+        "status": 404
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/app/dashboard/page.js",
+        "status": 404
+      },
+      {
+        "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1751230731953",
+        "status": 404
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/main-app.js?v=1751230731953",
+        "status": 404
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/app/layout.js",
+        "status": 404
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/app-pages-internals.js",
+        "status": 404
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/app/page.js",
+        "status": 404
+      }
+    ]
+  },
+  "integration": {
+    "apiFromFrontend": {
+      "status": "PASS",
+      "data": {
+        "status": "healthy"
+      }
+    }
+  },
+  "errors": []
+}

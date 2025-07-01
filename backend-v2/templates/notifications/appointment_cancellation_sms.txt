@@ -1,0 +1,14 @@
+❌ APPOINTMENT CANCELLED
+
+Hi {{ client_name }}, {% if cancelled_by == 'client' %}your cancellation is confirmed{% else %}we had to cancel your appointment{% endif %}:
+
+📅 {{ appointment_date }} at {{ appointment_time }}
+✂️ {{ service_name }}
+
+{% if refund_amount and refund_amount > 0 %}💰 Refund: ${{ "%.2f"|format(refund_amount) }} ({{ refund_timeframe | default('3-5 days') }}){% endif %}
+
+{% if cancelled_by != 'client' %}We apologize for the inconvenience. {% endif %}Book again: {{ book_new_url | default('call us') }}
+
+Call {{ business_phone | default('us') }} for assistance.
+
+- {{ business_name }}
