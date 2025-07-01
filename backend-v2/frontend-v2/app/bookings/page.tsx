@@ -74,7 +74,7 @@ export default function MyBookingsPage() {
     
     setLoadingSlots(true)
     try {
-      const response = await getAvailableSlots(date)
+      const response = await getAvailableSlots({ date })
       setAvailableSlots(response.slots)
     } catch (err: any) {
       console.error('Failed to load available slots:', err)
@@ -289,7 +289,7 @@ export default function MyBookingsPage() {
                     <div className="flex items-start justify-between">
                       <div>
                         <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-medium text-gray-700">{booking.service_name}</h3>
+                          <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">{booking.service_name}</h3>
                           <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(booking.status)}`}>
                             {getStatusIcon(booking.status)}
                             {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
@@ -359,7 +359,7 @@ export default function MyBookingsPage() {
 
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="reschedule-date" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="reschedule-date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Select New Date
                   </label>
                   <input
@@ -368,13 +368,13 @@ export default function MyBookingsPage() {
                     value={rescheduleDate}
                     onChange={(e) => handleDateChange(e.target.value)}
                     min={new Date().toISOString().split('T')[0]}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   />
                 </div>
 
                 {rescheduleDate && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Select New Time
                     </label>
                     {loadingSlots ? (

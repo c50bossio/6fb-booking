@@ -2,11 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import Calendar from '@/components/Calendar';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs';
+import { Switch } from '@/components/ui/Switch';
+import { Label } from '@/components/ui/Label';
+import { Calendar } from '@/components/ui/Calendar';
 import { Clock, CalendarOff, CalendarCheck } from 'lucide-react';
+import { format } from 'date-fns';
 
 interface RegularAvailability {
   id?: number;
@@ -68,7 +72,7 @@ export default function BarberAvailabilityPage() {
 
   const fetchAvailabilityData = async (barberId: number) => {
     try {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem('token');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
       // Fetch regular availability
@@ -80,9 +84,12 @@ export default function BarberAvailabilityPage() {
         const data = await regularResponse.json();
         // Initialize all days of week with existing data or defaults
         const availabilityByDay = new Map(data.map((av: RegularAvailability) => [av.day_of_week, av]));
-        const allDays = Array.from({ length: 7 }, (_, i) => {
+        const allDays: RegularAvailability[] = Array.from({ length: 7 }, (_, i): RegularAvailability => {
           const existing = availabilityByDay.get(i);
-          return existing || {
+          if (existing) {
+            return existing as RegularAvailability;
+          }
+          return {
             day_of_week: i,
             start_time: '09:00',
             end_time: '17:00',
@@ -133,7 +140,7 @@ export default function BarberAvailabilityPage() {
     setRegularAvailability(newAvailability);
 
     try {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem('token');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
       if (updatedDay.id) {
@@ -199,7 +206,7 @@ export default function BarberAvailabilityPage() {
     };
 
     try {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem('token');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
       const response = await fetch(`${apiUrl}/barber-availability/time-off/${barberId}`, {
@@ -241,7 +248,7 @@ export default function BarberAvailabilityPage() {
     };
 
     try {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem('token');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
       const response = await fetch(`${apiUrl}/barber-availability/special/${barberId}`, {
@@ -307,25 +314,25 @@ export default function BarberAvailabilityPage() {
                 <div key={index} className="flex items-center gap-4 p-4 border rounded-lg">
                   <Switch
                     checked={day.is_active}
-                    onCheckedChange={(checked) => updateRegularAvailability(index, { is_active: checked })}
+                    onCheckedChange={(checked: boolean) => updateRegularAvailability(index, { is_active: checked })}
                   />
                   <Label className="w-24">{DAYS_OF_WEEK[index]}</Label>
                   <div className="flex items-center gap-2 flex-1">
-                    <Clock className="h-4 w-4 text-gray-500" />
+                    <Clock className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                     <Input
                       type="time"
                       value={day.start_time}
                       onChange={(e) => updateRegularAvailability(index, { start_time: e.target.value })}
                       disabled={!day.is_active}
-                      className="w-32"
+                      className="w-32 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                     />
-                    <span>to</span>
+                    <span className="text-gray-900 dark:text-white">to</span>
                     <Input
                       type="time"
                       value={day.end_time}
                       onChange={(e) => updateRegularAvailability(index, { end_time: e.target.value })}
                       disabled={!day.is_active}
-                      className="w-32"
+                      className="w-32 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                     />
                   </div>
                 </div>

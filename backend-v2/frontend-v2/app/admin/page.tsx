@@ -179,8 +179,17 @@ export default function AdminPage() {
           <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
             <div className="flex flex-wrap gap-2">
               <button
+                onClick={() => router.push('/admin/users')}
+                className="px-3 py-2 text-sm bg-white border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 flex items-center"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Users
+              </button>
+              <button
                 onClick={() => router.push('/admin/services')}
-                className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center"
+                className="px-3 py-2 text-sm bg-white border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 flex items-center"
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -189,7 +198,7 @@ export default function AdminPage() {
               </button>
               <button
                 onClick={() => router.push('/clients')}
-                className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center"
+                className="px-3 py-2 text-sm bg-white border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 flex items-center"
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
@@ -198,7 +207,7 @@ export default function AdminPage() {
               </button>
               <button
                 onClick={() => router.push('/analytics')}
-                className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center"
+                className="px-3 py-2 text-sm bg-white border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 flex items-center"
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -207,7 +216,7 @@ export default function AdminPage() {
               </button>
               <button
                 onClick={() => router.push('/barber-availability')}
-                className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center"
+                className="px-3 py-2 text-sm bg-white border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 flex items-center"
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -216,7 +225,7 @@ export default function AdminPage() {
               </button>
               <button
                 onClick={() => router.push('/admin/booking-rules')}
-                className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center"
+                className="px-3 py-2 text-sm bg-white border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 flex items-center"
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -225,7 +234,7 @@ export default function AdminPage() {
               </button>
               <button
                 onClick={() => router.push('/notifications')}
-                className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center"
+                className="px-3 py-2 text-sm bg-white border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 flex items-center"
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5-5-5h5v-5a7.5 7.5 0 11-15 0v5z" />
@@ -234,7 +243,7 @@ export default function AdminPage() {
               </button>
               <button
                 onClick={() => router.push('/admin/webhooks')}
-                className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center"
+                className="px-3 py-2 text-sm bg-white border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 flex items-center"
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -263,25 +272,25 @@ export default function AdminPage() {
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Business Information</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Business Name
                     </label>
                     <input
                       type="text"
                       value={formData.business_name || ''}
                       onChange={(e) => handleInputChange('business_name', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Enter business name"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Business Type
                     </label>
                     <select
                       value={formData.business_type || ''}
                       onChange={(e) => handleInputChange('business_type', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="general">General</option>
                       <option value="barbershop">Barbershop</option>
@@ -298,35 +307,35 @@ export default function AdminPage() {
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Business Hours</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Start Time (24-hour format)
                     </label>
                     <input
                       type="time"
                       value={formData.business_start_time || ''}
                       onChange={(e) => handleInputChange('business_start_time', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       End Time (24-hour format)
                     </label>
                     <input
                       type="time"
                       value={formData.business_end_time || ''}
                       onChange={(e) => handleInputChange('business_end_time', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Slot Duration (minutes)
                     </label>
                     <select
                       value={formData.slot_duration_minutes || ''}
                       onChange={(e) => handleInputChange('slot_duration_minutes', parseInt(e.target.value))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value={15}>15 minutes</option>
                       <option value={30}>30 minutes</option>
@@ -342,7 +351,7 @@ export default function AdminPage() {
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Booking Rules</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Minimum Lead Time (minutes)
                     </label>
                     <input
@@ -350,12 +359,12 @@ export default function AdminPage() {
                       min="0"
                       value={formData.min_lead_time_minutes || ''}
                       onChange={(e) => handleInputChange('min_lead_time_minutes', parseInt(e.target.value))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., 60"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Maximum Advance Days
                     </label>
                     <input
@@ -363,19 +372,19 @@ export default function AdminPage() {
                       min="1"
                       value={formData.max_advance_days || ''}
                       onChange={(e) => handleInputChange('max_advance_days', parseInt(e.target.value))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., 30"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Same-day Cutoff Time (optional)
                     </label>
                     <input
                       type="time"
                       value={formData.same_day_cutoff_time || ''}
                       onChange={(e) => handleInputChange('same_day_cutoff_time', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                 </div>
@@ -393,7 +402,7 @@ export default function AdminPage() {
                       onChange={(e) => handleInputChange('show_soonest_available', e.target.checked)}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
-                    <label htmlFor="show_soonest_available" className="ml-2 block text-sm text-gray-700">
+                    <label htmlFor="show_soonest_available" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
                       Show soonest available slot
                     </label>
                   </div>
@@ -405,7 +414,7 @@ export default function AdminPage() {
                       onChange={(e) => handleInputChange('allow_same_day_booking', e.target.checked)}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
-                    <label htmlFor="allow_same_day_booking" className="ml-2 block text-sm text-gray-700">
+                    <label htmlFor="allow_same_day_booking" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
                       Allow same-day booking
                     </label>
                   </div>
@@ -417,7 +426,7 @@ export default function AdminPage() {
                       onChange={(e) => handleInputChange('require_advance_booking', e.target.checked)}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
-                    <label htmlFor="require_advance_booking" className="ml-2 block text-sm text-gray-700">
+                    <label htmlFor="require_advance_booking" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
                       Require advance booking
                     </label>
                   </div>
@@ -430,7 +439,7 @@ export default function AdminPage() {
                   <button
                     type="button"
                     onClick={() => router.push('/dashboard')}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     Cancel
                   </button>
@@ -456,31 +465,31 @@ export default function AdminPage() {
             <div className="px-6 py-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                 <div>
-                  <span className="font-medium text-gray-700">Business Hours:</span>
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Business Hours:</span>
                   <span className="ml-2 text-gray-600">
                     {settings.business_start_time} - {settings.business_end_time}
                   </span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">Slot Duration:</span>
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Slot Duration:</span>
                   <span className="ml-2 text-gray-600">{settings.slot_duration_minutes} minutes</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">Lead Time:</span>
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Lead Time:</span>
                   <span className="ml-2 text-gray-600">{settings.min_lead_time_minutes} minutes</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">Max Advance:</span>
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Max Advance:</span>
                   <span className="ml-2 text-gray-600">{settings.max_advance_days} days</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">Same-day Cutoff:</span>
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Same-day Cutoff:</span>
                   <span className="ml-2 text-gray-600">
                     {settings.same_day_cutoff_time || 'Not set'}
                   </span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">Last Updated:</span>
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Last Updated:</span>
                   <span className="ml-2 text-gray-600">
                     {new Date(settings.updated_at).toLocaleString()}
                   </span>

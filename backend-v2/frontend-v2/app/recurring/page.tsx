@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
+import { Label } from '@/components/ui/Label';
 import { Select } from '@/components/ui/Select';
-// Note: date-fns functions moved inline
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs';
+import { format, addDays } from 'date-fns';
 import { Repeat, Calendar, Clock, Trash2, Play, Pause } from 'lucide-react';
 
 interface RecurringPattern {
@@ -45,7 +47,11 @@ const DAYS_OF_WEEK = [
   'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
 ];
 
-const SERVICES = ['Haircut', 'Shave', 'Haircut & Shave'];
+const SERVICES = [
+  { value: 'Haircut', label: 'Haircut' },
+  { value: 'Shave', label: 'Shave' },
+  { value: 'Haircut & Shave', label: 'Haircut & Shave' }
+];
 
 export default function RecurringAppointmentsPage() {
   const [patterns, setPatterns] = useState<RecurringPattern[]>([]);
@@ -72,7 +78,7 @@ export default function RecurringAppointmentsPage() {
 
   const fetchPatterns = async () => {
     try {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem('token');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
       const response = await fetch(`${apiUrl}/api/v1/recurring-appointments/patterns`, {
@@ -97,7 +103,7 @@ export default function RecurringAppointmentsPage() {
 
   const fetchUpcomingAppointments = async () => {
     try {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem('token');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
       const response = await fetch(`${apiUrl}/api/v1/recurring-appointments/upcoming?days_ahead=30`, {
@@ -118,7 +124,7 @@ export default function RecurringAppointmentsPage() {
   const createPattern = async () => {
     setCreating(true);
     try {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem('token');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
       const response = await fetch(`${apiUrl}/api/v1/recurring-appointments/patterns`, {
@@ -167,7 +173,7 @@ export default function RecurringAppointmentsPage() {
 
   const generateAppointments = async (patternId: number) => {
     try {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem('token');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
       const response = await fetch(
@@ -200,7 +206,7 @@ export default function RecurringAppointmentsPage() {
 
   const deletePattern = async (patternId: number) => {
     try {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem('token');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
       const response = await fetch(
@@ -298,9 +304,13 @@ export default function RecurringAppointmentsPage() {
                         <CardTitle className="flex items-center gap-2">
                           <Repeat className="h-5 w-5" />
                           {pattern.service_name || 'Recurring Appointment'}
-                          <Badge variant={pattern.is_active ? 'default' : 'secondary'}>
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            pattern.is_active 
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                              : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                          }`}>
                             {pattern.is_active ? 'Active' : 'Inactive'}
-                          </Badge>
+                          </span>
                         </CardTitle>
                         <CardDescription>
                           {getPatternDescription(pattern)}
@@ -365,38 +375,18 @@ export default function RecurringAppointmentsPage() {
                   <Label htmlFor="pattern_type">Pattern Type</Label>
                   <Select
                     value={newPattern.pattern_type}
-                    onValueChange={(value) => setNewPattern({...newPattern, pattern_type: value})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PATTERN_TYPES.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onChange={(value) => setNewPattern({...newPattern, pattern_type: value as string})}
+                    options={PATTERN_TYPES}
+                  />
                 </div>
 
                 <div>
                   <Label htmlFor="service_name">Service</Label>
                   <Select
                     value={newPattern.service_name}
-                    onValueChange={(value) => setNewPattern({...newPattern, service_name: value})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SERVICES.map((service) => (
-                        <SelectItem key={service} value={service}>
-                          {service}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onChange={(value) => setNewPattern({...newPattern, service_name: value as string})}
+                    options={SERVICES}
+                  />
                 </div>
 
                 <div>
@@ -510,15 +500,15 @@ export default function RecurringAppointmentsPage() {
                           </p>
                         </div>
                       </div>
-                      <Badge 
-                        variant={
-                          appointment.status === 'scheduled' ? 'default' :
-                          appointment.status === 'pending_creation' ? 'secondary' :
-                          'outline'
-                        }
-                      >
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        appointment.status === 'scheduled' 
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                          : appointment.status === 'pending_creation'
+                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                          : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                      }`}>
                         {appointment.status === 'pending_creation' ? 'Pending' : appointment.status}
-                      </Badge>
+                      </span>
                     </div>
                   </CardContent>
                 </Card>

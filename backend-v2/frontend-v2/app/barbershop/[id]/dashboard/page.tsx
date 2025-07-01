@@ -46,9 +46,10 @@ interface BarbershopData {
   barbers: BarberInfo[]
   chairs: ChairInfo[]
   compensation_models: {
-    commission: number
-    booth_rental: number
-    salary: number
+    commission_count: number
+    booth_rental_count: number
+    salary_count: number
+    total_compensation_cost: number
   }
 }
 
@@ -68,12 +69,12 @@ async function getBarbershopData(locationId: string): Promise<BarbershopData> {
     appointments: locationAnalytics.appointment_summary.total_appointments,
     clients: locationAnalytics.client_summary.total_clients,
     average_rating: 4.7,
-    chair_occupancy: Math.round(locationAnalytics.chair_inventory.filter(c => c.status === 'occupied').length / locationAnalytics.chair_inventory.length * 100),
+    chair_occupancy: Math.round(locationAnalytics.chair_inventory.filter((c: any) => c.status === 'occupied').length / locationAnalytics.chair_inventory.length * 100),
     growth_percentage: locationAnalytics.revenue_summary.revenue_growth
   }
 
   // Transform barber performance data
-  const barbers: BarberInfo[] = locationAnalytics.barber_performance.map(barber => ({
+  const barbers: BarberInfo[] = locationAnalytics.barber_performance.map((barber: any) => ({
     id: barber.id,
     name: barber.name,
     revenue: barber.revenue,
@@ -86,7 +87,7 @@ async function getBarbershopData(locationId: string): Promise<BarbershopData> {
   }))
 
   // Transform chair inventory data
-  const chairs: ChairInfo[] = locationAnalytics.chair_inventory.map(chair => ({
+  const chairs: ChairInfo[] = locationAnalytics.chair_inventory.map((chair: any) => ({
     id: chair.id,
     name: chair.name,
     barber: chair.barber_name,
@@ -138,25 +139,29 @@ export default function BarbershopDashboardPage() {
     checkAuth()
   }, [router])
   
-  const { 
-    data: barbershopData, 
-    loading, 
-    error, 
-    execute: loadData 
-  } = useAsyncOperation(
-    () => getBarbershopData(locationId),
-    { 
-      autoExecute: !authLoading && !!user,
-      showErrorAlert: true 
+  const [
+    { data: barbershopData, loading, error }, 
+    { execute: loadData }
+  ] = useAsyncOperation(null)
+
+  // Load barbershop data when auth completes
+  useEffect(() => {
+    if (!authLoading && user) {
+      loadData(() => getBarbershopData(locationId))
     }
-  )
+  }, [authLoading, user, locationId, loadData])
+
+  // Retry function for error display
+  const handleRetry = () => {
+    loadData(() => getBarbershopData(locationId))
+  }
 
   if (authLoading || loading) {
     return <PageLoading message="Loading barbershop dashboard..." />
   }
 
   if (error) {
-    return <ErrorDisplay error={error} onRetry={loadData} />
+    return <ErrorDisplay error={error} onRetry={handleRetry} />
   }
 
   if (!barbershopData) {
@@ -175,9 +180,9 @@ export default function BarbershopDashboardPage() {
 
   // Calculate chair status summary
   const chairStatusSummary = {
-    occupied: chairs.filter(c => c.status === 'occupied').length,
-    available: chairs.filter(c => c.status === 'available').length,
-    maintenance: chairs.filter(c => c.status === 'maintenance').length,
+    occupied: chairs.filter((c: ChairInfo) => c.status === 'occupied').length,
+    available: chairs.filter((c: ChairInfo) => c.status === 'available').length,
+    maintenance: chairs.filter((c: ChairInfo) => c.status === 'maintenance').length,
     total: chairs.length
   }
 
@@ -279,7 +284,7 @@ export default function BarbershopDashboardPage() {
 
             {/* Chair Grid */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              {chairs.map((chair) => (
+              {chairs.map((chair: ChairInfo) => (
                 <div 
                   key={chair.id}
                   className={`p-4 rounded-lg border-2 text-center transition-all ${
@@ -332,7 +337,7 @@ export default function BarbershopDashboardPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {barbers.map((barber) => (
+                  {barbers.map((barber: BarberInfo) => (
                     <tr key={barber.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
                       <td className="py-3 px-4">
                         <button 

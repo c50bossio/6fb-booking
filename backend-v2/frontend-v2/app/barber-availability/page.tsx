@@ -153,7 +153,7 @@ function BarberAvailabilityContent() {
             {(user.role === 'admin' || user.role === 'super_admin') && barbers.length > 1 && (
               <Select
                 value={selectedBarberId?.toString() || ''}
-                onChange={(e) => handleBarberChange(e.target.value)}
+                onChange={(value) => value && handleBarberChange(typeof value === 'string' ? value : value[0])}
                 options={barbers.map(barber => ({
                   value: barber.id.toString(),
                   label: barber.name
@@ -241,7 +241,7 @@ function BarberAvailabilityContent() {
 
               {/* View Controls */}
               <div className="flex items-center gap-4">
-                <div className="flex rounded-lg border border-gray-300 p-1">
+                <div className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white flex rounded-lg border border-gray-300 dark:border-gray-600 p-1">
                   <button
                     onClick={() => handleViewModeChange('week')}
                     className={`px-3 py-1 text-sm font-medium rounded-md transition-all ${

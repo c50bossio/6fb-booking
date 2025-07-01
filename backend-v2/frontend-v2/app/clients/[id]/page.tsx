@@ -12,30 +12,9 @@ import {
   getClientCommunicationPreferences,
   updateClientCommunicationPreferences,
   addClientNote,
-  updateClientTags
+  updateClientTags,
+  type Client
 } from '@/lib/api'
-
-type Client = {
-  id: number
-  first_name: string
-  last_name: string
-  email: string
-  phone: string | null
-  date_of_birth: string | null
-  customer_type: string
-  total_visits: number
-  total_spent: number
-  average_ticket: number
-  no_show_count: number
-  cancellation_count: number
-  referral_count: number
-  first_visit_date: string | null
-  last_visit_date: string | null
-  notes: string | null
-  tags: string | null
-  created_at: string
-  updated_at: string
-}
 
 type ClientHistory = {
   appointments: any[]
@@ -117,9 +96,9 @@ export default function ClientDetailPage() {
     try {
       const updates = {
         ...editForm,
-        phone: editForm.phone || null,
-        notes: editForm.notes || null,
-        tags: editForm.tags || null
+        phone: editForm.phone || undefined,
+        notes: editForm.notes || undefined,
+        tags: editForm.tags || undefined
       }
       
       const updatedClient = await updateClient(clientId, updates)
@@ -152,7 +131,7 @@ export default function ClientDetailPage() {
     }
   }
 
-  const formatDate = (dateString: string | null) => {
+  const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return 'N/A'
     return new Date(dateString).toLocaleDateString()
   }
@@ -231,68 +210,68 @@ export default function ClientDetailPage() {
                 <form onSubmit={handleUpdate} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">First Name</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">First Name</label>
                       <input
                         name="first_name"
                         value={editForm.first_name}
                         onChange={handleChange}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Last Name</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Last Name</label>
                       <input
                         name="last_name"
                         value={editForm.last_name}
                         onChange={handleChange}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md"
                         required
                       />
                     </div>
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Email</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
                     <input
                       name="email"
                       type="email"
                       value={editForm.email}
                       onChange={handleChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md"
                       required
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Phone</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone</label>
                     <input
                       name="phone"
                       value={editForm.phone}
                       onChange={handleChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Tags</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tags</label>
                     <input
                       name="tags"
                       value={editForm.tags}
                       onChange={handleChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md"
                       placeholder="VIP, Referral, Student"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Notes</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Notes</label>
                     <textarea
                       name="notes"
                       value={editForm.notes}
                       onChange={handleChange}
                       rows={3}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md"
                     />
                   </div>
                   
@@ -489,11 +468,11 @@ export default function ClientDetailPage() {
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Add Note</h3>
                 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Note Type</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Note Type</label>
                   <select
                     value={noteType}
                     onChange={(e) => setNoteType(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="general">General</option>
                     <option value="service">Service Related</option>
@@ -504,12 +483,12 @@ export default function ClientDetailPage() {
                 </div>
                 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Note</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Note</label>
                   <textarea
                     value={newNote}
                     onChange={(e) => setNewNote(e.target.value)}
                     rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Enter your note here..."
                   />
                 </div>
@@ -527,7 +506,7 @@ export default function ClientDetailPage() {
                       setNewNote('')
                       setNoteType('general')
                     }}
-                    className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                    className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-400"
                   >
                     Cancel
                   </button>

@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/Button'
 import { 
   CurrencyDollarIcon,
   ArrowPathIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
   CalendarDaysIcon,
   ChartBarIcon,
   ExclamationTriangleIcon,
@@ -166,9 +166,9 @@ export default function RevenuePage({}: RevenuePageProps) {
 
   const getTrendIcon = (trend: string, trendValue: number) => {
     if (trend === 'up') {
-      return <TrendingUpIcon className="w-4 h-4 text-green-500" />
+      return <ArrowTrendingUpIcon className="w-4 h-4 text-green-500" />
     } else if (trend === 'down') {
-      return <TrendingDownIcon className="w-4 h-4 text-red-500" />
+      return <ArrowTrendingDownIcon className="w-4 h-4 text-red-500" />
     }
     return <div className="w-4 h-4 bg-gray-300 dark:bg-gray-600 rounded"></div>
   }
@@ -388,7 +388,7 @@ export default function RevenuePage({}: RevenuePageProps) {
             <div className="space-y-4">
               <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                 <div className="flex items-center space-x-3">
-                  <TrendingUpIcon className="w-5 h-5 text-green-600 dark:text-green-400" />
+                  <ArrowTrendingUpIcon className="w-5 h-5 text-green-600 dark:text-green-400" />
                   <span className="text-sm font-medium text-gray-900 dark:text-white">
                     Best Performing Service
                   </span>

@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { AppLayout } from '@/components/layout/AppLayout'
+import { Toaster } from '@/components/ui/toaster'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -152,6 +153,7 @@ export default function RootLayout({
           <AppLayout>
             {children}
           </AppLayout>
+          <Toaster />
         </ErrorBoundary>
         
         {/* Performance monitoring script */}

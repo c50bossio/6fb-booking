@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Calendar from '@/components/Calendar'
 import TimeSlots from '@/components/TimeSlots'
 import PaymentForm from '@/components/PaymentForm'
@@ -9,7 +9,9 @@ import TimezoneTooltip from '@/components/TimezoneTooltip'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
 import { LoadingButton, TimeSlotsLoadingSkeleton, ErrorDisplay } from '@/components/LoadingStates'
-import { getAvailableSlots, createBooking, getMyBookings, getProfile, getNextAvailableSlot, quickBooking as quickBookingAPI, type SlotsResponse, type NextAvailableSlot } from '@/lib/api'
+import { getAvailableSlots, createBooking, getMyBookings, getProfile, getNextAvailableSlot, quickBooking as quickBookingAPI, type SlotsResponse, type TimeSlot, type NextAvailableSlot, createGuestBooking, createGuestQuickBooking, type GuestInformation, type GuestBookingCreate, type GuestQuickBookingCreate, type GuestBookingResponse } from '@/lib/api'
+import { toastError, toastSuccess } from '@/hooks/use-toast'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { 
   formatDateForAPI, 
   parseAPIDate, 
@@ -33,7 +35,7 @@ export default function BookPage() {
   const [selectedService, setSelectedService] = useState<string | null>(null)
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
-  const [timeSlots, setTimeSlots] = useState<any[]>([])
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([])
   const [loadingSlots, setLoadingSlots] = useState(false)
   const [nextAvailable, setNextAvailable] = useState<NextAvailableSlot | null>(null)
   const [loadingNextAvailable, setLoadingNextAvailable] = useState(false)
@@ -42,21 +44,51 @@ export default function BookPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [bookingId, setBookingId] = useState<number | null>(null)
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+  const [guestInfo, setGuestInfo] = useState<GuestInformation>({ first_name: '', last_name: '', email: '', phone: '' })
+  const [guestBookingResponse, setGuestBookingResponse] = useState<GuestBookingResponse | null>(null)
 
   // State for timezone display
   const [userTimezone, setUserTimezone] = useState<string>('')
   
-  // Get user timezone on mount
+  // Get user timezone on mount and parse URL parameters
+  const searchParams = useSearchParams()
+  
   useEffect(() => {
     setUserTimezone(getTimezoneDisplayName())
-  }, [])
+    
+    // Parse URL parameters to pre-populate fields
+    const urlService = searchParams.get('service')
+    const urlDate = searchParams.get('date')
+    const urlTime = searchParams.get('time')
+    
+    if (urlService && SERVICES.find(s => s.id === urlService)) {
+      setSelectedService(urlService)
+      setStep(2)
+    }
+    
+    if (urlDate) {
+      const date = new Date(urlDate)
+      if (!isNaN(date.getTime())) {
+        setSelectedDate(date)
+      }
+    }
+    
+    if (urlTime && /^\d{1,2}:\d{2}$/.test(urlTime)) {
+      setSelectedTime(urlTime)
+      if (selectedDate && selectedService) {
+        setStep(3)
+      }
+    }
+  }, [searchParams])
 
-  // Optionally fetch user's existing bookings if authenticated (but don't require it)
+  // Check authentication status and optionally fetch user's existing bookings
   useEffect(() => {
     async function checkAuthAndFetchBookings() {
       try {
-        // Try to check if user is authenticated (optional)
+        // Try to check if user is authenticated
         await getProfile()
+        setIsAuthenticated(true)
         
         // If authenticated, fetch existing bookings to show on calendar
         const response = await getMyBookings()
@@ -67,9 +99,9 @@ export default function BookPage() {
         })
         setBookingDates(dates)
       } catch (err) {
-        console.log('User not authenticated - public booking mode')
-        // Don't redirect - allow public booking
-        // Just skip loading existing bookings
+        console.log('User not authenticated - guest booking mode')
+        setIsAuthenticated(false)
+        // Don't redirect - allow guest booking
       }
     }
     checkAuthAndFetchBookings()
@@ -105,7 +137,7 @@ export default function BookPage() {
     
     try {
       const dateStr = formatDateForAPI(date)
-      const response: SlotsResponse = await getAvailableSlots(dateStr)
+      const response: SlotsResponse = await getAvailableSlots({ date: dateStr })
       setTimeSlots(response.slots || [])
       
       // If no slots available for selected date, show helpful message
@@ -209,11 +241,27 @@ export default function BookPage() {
     setError(null)
 
     try {
-      const booking = await quickBookingAPI({ service: selectedService })
-      
-      // Store booking ID and proceed to payment
-      setBookingId(booking.id)
-      setStep(4)
+      if (isAuthenticated) {
+        // Authenticated user quick booking
+        const booking = await quickBookingAPI({ service: selectedService })
+        setBookingId(booking.id)
+        setStep(4)
+      } else {
+        // Guest user quick booking - need guest info first
+        if (!guestInfo.first_name || !guestInfo.last_name || !guestInfo.email || !guestInfo.phone) {
+          setStep(3.5) // Guest info step
+          return
+        }
+        
+        const guestBooking = await createGuestQuickBooking({
+          service: selectedService,
+          guest_info: guestInfo
+        })
+        
+        setGuestBookingResponse(guestBooking)
+        setBookingId(guestBooking.id)
+        setStep(4)
+      }
     } catch (err: any) {
       console.error('Quick booking failed:', err)
       setError(getErrorMessage(err))
@@ -230,11 +278,31 @@ export default function BookPage() {
 
     try {
       const dateStr = formatDateForAPI(selectedDate)
-      const booking = await createBooking(dateStr, selectedTime, selectedService)
       
-      // Store booking ID and proceed to payment
-      setBookingId(booking.id)
-      setStep(4)
+      if (isAuthenticated) {
+        // Authenticated user booking
+        const booking = await createBooking(dateStr, selectedTime, selectedService)
+        setBookingId(booking.id)
+        setStep(4)
+      } else {
+        // Guest user booking
+        if (!guestInfo.first_name || !guestInfo.last_name || !guestInfo.email || !guestInfo.phone) {
+          setStep(3.5) // Guest info step
+          return
+        }
+        
+        const guestBooking = await createGuestBooking({
+          date: dateStr,
+          time: selectedTime,
+          service: selectedService,
+          guest_info: guestInfo,
+          timezone: userTimezone
+        })
+        
+        setGuestBookingResponse(guestBooking)
+        setBookingId(guestBooking.id)
+        setStep(4)
+      }
     } catch (err: any) {
       console.error('Booking failed:', err)
       setError(getErrorMessage(err))
@@ -264,8 +332,13 @@ export default function BookPage() {
   }
 
   const handlePaymentSuccess = () => {
-    // Redirect to dashboard with success message
-    router.push('/dashboard?booking=success&payment=complete')
+    if (isAuthenticated) {
+      // Redirect to dashboard with success message
+      router.push('/dashboard?booking=success&payment=complete')
+    } else {
+      // For guest users, show confirmation and option to create account
+      setStep(5) // Success step for guests
+    }
   }
 
   const handlePaymentError = (errorMsg: string) => {
@@ -308,7 +381,7 @@ export default function BookPage() {
         {/* Progress indicator */}
         <div className="mb-8">
           <div className="flex items-center justify-center">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 md:space-x-4">
               <div className={`flex items-center ${step >= 1 ? 'text-primary-600' : 'text-gray-400'}`}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                   step >= 1 ? 'bg-primary-600 text-white' : 'bg-gray-200'
@@ -318,7 +391,7 @@ export default function BookPage() {
                 <span className="ml-2 font-medium hidden sm:inline">Service</span>
               </div>
               
-              <div className={`h-px w-16 ${step >= 2 ? 'bg-primary-600' : 'bg-gray-300'}`} />
+              <div className={`h-px w-8 md:w-16 ${step >= 2 ? 'bg-primary-600' : 'bg-gray-300'}`} />
               
               <div className={`flex items-center ${step >= 2 ? 'text-primary-600' : 'text-gray-400'}`}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
@@ -329,7 +402,7 @@ export default function BookPage() {
                 <span className="ml-2 font-medium hidden sm:inline">Date & Time</span>
               </div>
               
-              <div className={`h-px w-16 ${step >= 3 ? 'bg-primary-600' : 'bg-gray-300'}`} />
+              <div className={`h-px w-8 md:w-16 ${step >= 3 ? 'bg-primary-600' : 'bg-gray-300'}`} />
               
               <div className={`flex items-center ${step >= 3 ? 'text-primary-600' : 'text-gray-400'}`}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
@@ -337,16 +410,32 @@ export default function BookPage() {
                 }`}>
                   3
                 </div>
-                <span className="ml-2 font-medium hidden sm:inline">Confirm</span>
+                <span className="ml-2 font-medium hidden sm:inline">{isAuthenticated === false ? 'Info' : 'Confirm'}</span>
               </div>
               
-              <div className={`h-px w-16 ${step >= 4 ? 'bg-primary-600' : 'bg-gray-300'}`} />
+              {/* Show additional steps for guests */}
+              {isAuthenticated === false && (
+                <>
+                  <div className={`h-px w-8 md:w-16 ${step >= 3.5 ? 'bg-primary-600' : 'bg-gray-300'}`} />
+                  
+                  <div className={`flex items-center ${step >= 3.5 ? 'text-primary-600' : 'text-gray-400'}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      step >= 3.5 ? 'bg-primary-600 text-white' : 'bg-gray-200'
+                    }`}>
+                      4
+                    </div>
+                    <span className="ml-2 font-medium hidden sm:inline">Confirm</span>
+                  </div>
+                </>
+              )}
+              
+              <div className={`h-px w-8 md:w-16 ${step >= 4 ? 'bg-primary-600' : 'bg-gray-300'}`} />
               
               <div className={`flex items-center ${step >= 4 ? 'text-primary-600' : 'text-gray-400'}`}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                   step >= 4 ? 'bg-primary-600 text-white' : 'bg-gray-200'
                 }`}>
-                  4
+                  {isAuthenticated === false ? '5' : '4'}
                 </div>
                 <span className="ml-2 font-medium hidden sm:inline">Payment</span>
               </div>
@@ -611,6 +700,123 @@ export default function BookPage() {
           </div>
         )}
 
+        {/* Step 3.5: Guest Information (for non-authenticated users) */}
+        {step === 3.5 && isAuthenticated === false && (
+          <div className="max-w-md mx-auto">
+            <div className="flex items-center justify-between mb-8">
+              <Button
+                onClick={() => setStep(3)}
+                variant="ghost"
+                size="sm"
+                leftIcon={
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                }
+              >
+                Back
+              </Button>
+              <h1 className="text-2xl font-bold">Your Information</h1>
+              <div className="w-16" /> {/* Spacer for centering */}
+            </div>
+
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <p className="text-gray-600 mb-6">Please provide your contact information to complete the booking.</p>
+              
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      First Name *
+                    </label>
+                    <input
+                      type="text"
+                      id="firstName"
+                      value={guestInfo.first_name}
+                      onChange={(e) => setGuestInfo({ ...guestInfo, first_name: e.target.value })}
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      placeholder="John"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Last Name *
+                    </label>
+                    <input
+                      type="text"
+                      id="lastName"
+                      value={guestInfo.last_name}
+                      onChange={(e) => setGuestInfo({ ...guestInfo, last_name: e.target.value })}
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      placeholder="Doe"
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    value={guestInfo.email}
+                    onChange={(e) => setGuestInfo({ ...guestInfo, email: e.target.value })}
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="john.doe@example.com"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Phone Number *
+                  </label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    value={guestInfo.phone}
+                    onChange={(e) => setGuestInfo({ ...guestInfo, phone: e.target.value })}
+                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="(555) 123-4567"
+                    required
+                  />
+                </div>
+              </div>
+
+              {error && (
+                <div className="mt-4">
+                  <div className="text-red-600 text-sm">{error}</div>
+                </div>
+              )}
+
+              <Button
+                onClick={() => {
+                  if (!guestInfo.first_name || !guestInfo.last_name || !guestInfo.email || !guestInfo.phone) {
+                    setError('Please fill in all required fields')
+                    return
+                  }
+                  setError(null)
+                  // For guest users, go back to create the booking
+                  if (quickBooking) {
+                    handleQuickBooking()
+                  } else {
+                    handleConfirmBooking()
+                  }
+                }}
+                variant="primary"
+                size="lg"
+                fullWidth
+                className="mt-6"
+              >
+                Continue to Confirmation
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Step 4: Payment */}
         {step === 4 && bookingId && (
           <div className="max-w-md mx-auto">
@@ -622,6 +828,98 @@ export default function BookPage() {
               onSuccess={handlePaymentSuccess}
               onError={handlePaymentError}
             />
+          </div>
+        )}
+
+        {/* Step 5: Success (for guest users) */}
+        {step === 5 && isAuthenticated === false && guestBookingResponse && (
+          <div className="max-w-md mx-auto">
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">Booking Confirmed!</h1>
+              <p className="text-gray-600 mb-6">Your appointment has been successfully booked.</p>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+              <h2 className="text-lg font-semibold mb-4">Booking Details</h2>
+              
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Service:</span>
+                  <span className="font-medium">{guestBookingResponse.service}</span>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Date:</span>
+                  <span className="font-medium">{new Date(guestBookingResponse.date).toLocaleDateString()}</span>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Time:</span>
+                  <span className="font-medium">{guestBookingResponse.time}</span>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Name:</span>
+                  <span className="font-medium">{guestBookingResponse.guest_name}</span>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Email:</span>
+                  <span className="font-medium">{guestBookingResponse.guest_email}</span>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Phone:</span>
+                  <span className="font-medium">{guestBookingResponse.guest_phone}</span>
+                </div>
+                
+                {guestBookingResponse.confirmation_code && (
+                  <div className="flex justify-between border-t pt-3 mt-3">
+                    <span className="text-gray-600">Confirmation Code:</span>
+                    <span className="font-bold text-primary-600">{guestBookingResponse.confirmation_code}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <div className="flex items-start">
+                <svg className="w-5 h-5 text-blue-600 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-blue-900">What's Next?</h3>
+                  <p className="text-sm text-blue-700 mt-1">
+                    You'll receive a confirmation email shortly. Please arrive 5-10 minutes early for your appointment.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <Button
+                onClick={() => router.push('/register?email=' + encodeURIComponent(guestBookingResponse.guest_email))}
+                variant="primary"
+                size="lg"
+                fullWidth
+              >
+                Create Account to Manage Bookings
+              </Button>
+              
+              <Button
+                onClick={() => router.push('/book')}
+                variant="outline"
+                size="lg"
+                fullWidth
+              >
+                Book Another Appointment
+              </Button>
+            </div>
           </div>
         )}
       </div>

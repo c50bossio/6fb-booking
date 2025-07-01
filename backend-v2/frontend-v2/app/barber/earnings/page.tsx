@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { fetchAPI, getPaymentHistory, getStripeConnectStatus } from '@/lib/api';
+import { fetchAPI, getPaymentHistory, getStripeConnectStatus, getProfile } from '@/lib/api';
 import StripeConnectOnboarding from '@/components/StripeConnectOnboarding';
 import { format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
 import { DollarSign, TrendingUp, Calendar, CreditCard, Download, Eye } from 'lucide-react';
@@ -16,12 +16,23 @@ interface EarningsSummary {
   last_month: number;
 }
 
+interface UserProfile {
+  id: number;
+  email: string;
+  name: string;
+  role?: string;
+  first_name?: string;
+  last_name?: string;
+}
+
 export default function BarberEarningsPage() {
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [earnings, setEarnings] = useState<EarningsSummary | null>(null);
   const [payments, setPayments] = useState<any[]>([]);
   const [stripeStatus, setStripeStatus] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [authError, setAuthError] = useState(false);
   const [dateRange, setDateRange] = useState({
     start: startOfMonth(new Date()).toISOString().split('T')[0],
     end: endOfMonth(new Date()).toISOString().split('T')[0],
@@ -30,10 +41,37 @@ export default function BarberEarningsPage() {
   const router = useRouter();
 
   useEffect(() => {
-    fetchData();
-  }, [dateRange]);
+    // Fetch user profile first
+    const initializeUser = async () => {
+      try {
+        const profile = await getProfile();
+        
+        // Check if user has barber role
+        if (profile.role !== 'barber' && profile.role !== 'admin' && profile.role !== 'super_admin') {
+          setAuthError(true);
+          return;
+        }
+        
+        setUser(profile as UserProfile);
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+        setAuthError(true);
+        router.push('/login');
+      }
+    };
+
+    initializeUser();
+  }, [router]);
+
+  useEffect(() => {
+    if (user) {
+      fetchData();
+    }
+  }, [dateRange, user]);
 
   const fetchData = async () => {
+    if (!user) return;
+    
     try {
       setLoading(true);
       
@@ -47,11 +85,10 @@ export default function BarberEarningsPage() {
       }
 
       // Fetch earnings summary
-      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
       const summaryResponse = await fetchAPI('/api/v1/analytics/barber-earnings', {
         method: 'POST',
         body: JSON.stringify({
-          barber_id: currentUser.id,
+          barber_id: user.id,
           start_date: dateRange.start,
           end_date: dateRange.end,
         }),
@@ -68,7 +105,7 @@ export default function BarberEarningsPage() {
 
       // Fetch payment history
       const paymentHistory = await getPaymentHistory({
-        barber_id: currentUser.id,
+        barber_id: user.id,
         start_date: dateRange.start,
         end_date: dateRange.end,
         page: 1,
@@ -84,10 +121,11 @@ export default function BarberEarningsPage() {
   };
 
   const exportEarnings = async () => {
+    if (!user) return;
+    
     try {
-      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
       const params = new URLSearchParams({
-        barber_id: currentUser.id.toString(),
+        barber_id: user.id.toString(),
         start_date: dateRange.start,
         end_date: dateRange.end,
         format: 'csv',
@@ -119,6 +157,25 @@ export default function BarberEarningsPage() {
     return (
       <div className="min-h-screen bg-gray-50 p-8 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+      </div>
+    );
+  }
+
+  if (authError) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-8 flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h2>
+          <p className="text-gray-600 mb-6">
+            You need to be logged in as a barber to view this page.
+          </p>
+          <button
+            onClick={() => router.push('/login')}
+            className="w-full px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
+          >
+            Go to Login
+          </button>
+        </div>
       </div>
     );
   }
@@ -209,22 +266,22 @@ export default function BarberEarningsPage() {
           <div className="flex flex-wrap gap-4 items-center justify-between">
             <div className="flex gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
                 <input
                   type="date"
                   value={dateRange.start}
                   onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                  className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
                 <input
                   type="date"
                   value={dateRange.end}
                   onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                  className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500"
                 />
               </div>
             </div>

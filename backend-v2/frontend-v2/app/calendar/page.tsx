@@ -3,10 +3,20 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Calendar from '@/components/Calendar'
+import CalendarWeekView from '@/components/CalendarWeekView'
+import CalendarDayView from '@/components/CalendarDayView'
+import CalendarMonthView from '@/components/CalendarMonthView'
+import CalendarSync from '@/components/CalendarSync'
+import CalendarConflictResolver from '@/components/CalendarConflictResolver'
+import CreateAppointmentModal from '@/components/modals/CreateAppointmentModal'
+import TimePickerModal from '@/components/modals/TimePickerModal'
+import { format } from 'date-fns'
 import { Card, CardContent, CardHeader } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { LoadingButton, ErrorDisplay } from '@/components/LoadingStates'
 import { getMyBookings, cancelBooking, rescheduleBooking, getProfile, type BookingResponse } from '@/lib/api'
+import { toastError, toastSuccess } from '@/hooks/use-toast'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { 
   formatDateForAPI, 
   parseAPIDate, 
@@ -22,15 +32,17 @@ import {
   EnvelopeIcon,
   PencilIcon,
   TrashIcon,
-  PlusIcon
+  PlusIcon,
+  ArrowsRightLeftIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 
 interface User {
   id: number
   email: string
-  first_name: string
-  last_name: string
-  role: string
+  first_name?: string
+  last_name?: string
+  role?: string
   timezone?: string
 }
 
@@ -43,6 +55,16 @@ export default function CalendarPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [cancelingId, setCancelingId] = useState<number | null>(null)
+  const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('week')
+  const [selectedBarberId, setSelectedBarberId] = useState<number | 'all'>('all')
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showTimePickerModal, setShowTimePickerModal] = useState(false)
+  const [preselectedTime, setPreselectedTime] = useState<string | undefined>(undefined)
+  const [pendingDate, setPendingDate] = useState<Date | null>(null)
+  const [showSyncPanel, setShowSyncPanel] = useState(false)
+  const [showConflictResolver, setShowConflictResolver] = useState(false)
+  const [todayRevenue, setTodayRevenue] = useState(0)
+  const [todayAppointmentCount, setTodayAppointmentCount] = useState(0)
 
   // Load user profile and bookings
   useEffect(() => {
@@ -55,11 +77,13 @@ export default function CalendarPage() {
         ])
         
         setUser(userProfile)
-        setBookings(userBookings)
+        setBookings(userBookings.bookings || [])
         setError(null)
       } catch (err) {
         console.error('Failed to load calendar data:', err)
-        setError('Failed to load calendar data. Please try again.')
+        const errorMessage = 'Failed to load calendar data. Please try again.'
+        setError(errorMessage)
+        toastError('Loading Error', errorMessage)
       } finally {
         setLoading(false)
       }
@@ -78,7 +102,7 @@ export default function CalendarPage() {
     const selectedDateStr = formatDateForAPI(selectedDate)
     const dayBookings = bookings.filter(booking => {
       try {
-        const bookingDate = parseAPIDate(booking.start_time)
+        const bookingDate = new Date(booking.start_time)
         return formatDateForAPI(bookingDate) === selectedDateStr
       } catch {
         return false
@@ -87,8 +111,8 @@ export default function CalendarPage() {
 
     // Sort by time
     dayBookings.sort((a, b) => {
-      const timeA = parseAPIDate(a.start_time).getTime()
-      const timeB = parseAPIDate(b.start_time).getTime()
+      const timeA = new Date(a.start_time).getTime()
+      const timeB = new Date(b.start_time).getTime()
       return timeA - timeB
     })
 
@@ -96,13 +120,38 @@ export default function CalendarPage() {
   }, [selectedDate, bookings])
 
   // Get all booking dates for calendar highlighting
-  const bookingDates = bookings.map(booking => {
+  const bookingDates = (bookings || []).map(booking => {
     try {
-      return parseAPIDate(booking.start_time)
+      return new Date(booking.start_time)
     } catch {
       return null
     }
   }).filter(Boolean) as Date[]
+
+  // Calculate today's revenue and appointment count
+  useEffect(() => {
+    const today = new Date()
+    const todayStr = formatDateForAPI(today)
+    
+    const todayBookings = bookings.filter(booking => {
+      try {
+        const bookingDate = new Date(booking.start_time)
+        return formatDateForAPI(bookingDate) === todayStr
+      } catch {
+        return false
+      }
+    })
+
+    // Count all appointments for today
+    setTodayAppointmentCount(todayBookings.length)
+
+    // Calculate revenue from completed appointments
+    const revenue = todayBookings
+      .filter(booking => booking.status === 'completed')
+      .reduce((sum, booking) => sum + (booking.price || 0), 0)
+
+    setTodayRevenue(revenue)
+  }, [bookings])
 
   const handleCancelBooking = async (bookingId: number) => {
     if (!confirm('Are you sure you want to cancel this appointment?')) return
@@ -113,10 +162,13 @@ export default function CalendarPage() {
       
       // Refresh bookings
       const updatedBookings = await getMyBookings()
-      setBookings(updatedBookings)
+      setBookings(updatedBookings.bookings || [])
+      toastSuccess('Appointment Canceled', 'Your appointment has been successfully canceled.')
     } catch (err) {
       console.error('Failed to cancel booking:', err)
-      setError('Failed to cancel appointment. Please try again.')
+      const errorMessage = 'Failed to cancel appointment. Please try again.'
+      setError(errorMessage)
+      toastError('Cancellation Failed', errorMessage)
     } finally {
       setCancelingId(null)
     }
@@ -124,6 +176,32 @@ export default function CalendarPage() {
 
   const handleReschedule = (bookingId: number) => {
     router.push(`/bookings?reschedule=${bookingId}`)
+  }
+
+  const handleAppointmentUpdate = async (appointmentId: number, newStartTime: string) => {
+    try {
+      // Parse the date and time from newStartTime
+      const newDate = new Date(newStartTime)
+      const dateStr = format(newDate, 'yyyy-MM-dd')
+      const timeStr = format(newDate, 'HH:mm')
+      
+      // Show confirmation dialog
+      if (confirm(`Reschedule this appointment to ${format(newDate, 'MMM d, h:mm a')}?`)) {
+        // Update the appointment via API with separate date and time parameters
+        await rescheduleBooking(appointmentId, dateStr, timeStr)
+        
+        // Refresh the bookings
+        const updatedBookings = await getMyBookings()
+        setBookings(updatedBookings.bookings || [])
+        
+        toastSuccess('Appointment Rescheduled', 'Your appointment has been successfully rescheduled.')
+      }
+    } catch (err) {
+      console.error('Failed to reschedule appointment:', err)
+      const errorMessage = 'Failed to reschedule appointment. Please try again.'
+      setError(errorMessage)
+      toastError('Reschedule Failed', errorMessage)
+    }
   }
 
   const getStatusColor = (status: string) => {
@@ -160,11 +238,12 @@ export default function CalendarPage() {
   }
 
   if (error) {
-    return <ErrorDisplay message={error} onRetry={() => window.location.reload()} />
+    return <ErrorDisplay error={error} onRetry={() => window.location.reload()} />
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <ErrorBoundary>
+      <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -173,152 +252,204 @@ export default function CalendarPage() {
             Manage your appointments and schedule
           </p>
         </div>
-        <Button 
-          onClick={() => router.push('/book')}
-          className="flex items-center gap-2"
-        >
-          <PlusIcon className="w-4 h-4" />
-          New Appointment
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Calendar */}
-        <Card variant="glass" padding="lg">
-          <CardHeader>
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <CalendarDaysIcon className="w-5 h-5" />
-              Calendar View
-            </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Select a date to view appointments
-            </p>
-          </CardHeader>
-          <CardContent>
-            <Calendar
-              selectedDate={selectedDate}
-              onDateSelect={setSelectedDate}
-              bookingDates={bookingDates}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Appointments for Selected Date */}
-        <Card variant="glass" padding="lg">
-          <CardHeader>
-            <h2 className="text-lg font-semibold">
-              {selectedDate 
-                ? `Appointments for ${getFriendlyDateLabel(selectedDate)}`
-                : 'Select a Date'
-              }
-            </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {filteredBookings.length} appointment{filteredBookings.length !== 1 ? 's' : ''}
-              {user?.timezone && ` in ${getTimezoneDisplayName(user.timezone)}`}
-            </p>
-          </CardHeader>
-          <CardContent>
-            {filteredBookings.length === 0 ? (
-              <div className="text-center py-8">
-                <CalendarDaysIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-600 dark:text-gray-400">
-                  {selectedDate 
-                    ? 'No appointments scheduled for this date'
-                    : 'Select a date to view appointments'
-                  }
-                </p>
-                {selectedDate && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="mt-4"
-                    onClick={() => router.push('/book')}
-                  >
-                    Schedule Appointment
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {filteredBookings.map((booking) => (
-                  <div 
-                    key={booking.id}
-                    className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3"
-                  >
-                    {/* Time and Service */}
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
-                          <ClockIcon className="w-5 h-5 text-primary-600" />
-                          {formatTimeWithTimezone(parseAPIDate(booking.start_time), user?.timezone)}
-                        </div>
-                        <p className="text-gray-600 dark:text-gray-400 font-medium">
-                          {booking.service_name}
-                        </p>
-                      </div>
-                      <span className={`px-3 py-1 text-xs font-medium rounded-full border ${getStatusColor(booking.status)}`}>
-                        {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                      </span>
-                    </div>
-
-                    {/* Client Info */}
-                    {(booking.client_name || booking.client_email || booking.client_phone) && (
-                      <div className="space-y-1">
-                        {booking.client_name && (
-                          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                            <UserIcon className="w-4 h-4" />
-                            {booking.client_name}
-                          </div>
-                        )}
-                        {booking.client_email && (
-                          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                            <EnvelopeIcon className="w-4 h-4" />
-                            {booking.client_email}
-                          </div>
-                        )}
-                        {booking.client_phone && (
-                          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                            <PhoneIcon className="w-4 h-4" />
-                            {booking.client_phone}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Actions */}
-                    {booking.status !== 'cancelled' && booking.status !== 'completed' && (
-                      <div className="flex gap-2 pt-2 border-t border-gray-100 dark:border-gray-600">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleReschedule(booking.id)}
-                          className="flex-1"
-                        >
-                          <PencilIcon className="w-4 h-4 mr-1" />
-                          Reschedule
-                        </Button>
-                        <LoadingButton
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleCancelBooking(booking.id)}
-                          loading={cancelingId === booking.id}
-                          className="flex-1 text-red-600 border-red-200 hover:bg-red-50"
-                        >
-                          <TrashIcon className="w-4 h-4 mr-1" />
-                          Cancel
-                        </LoadingButton>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+        
+        {/* Today's Stats */}
+        <div className="flex items-center gap-6 mr-4">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+              {todayAppointmentCount}
+            </div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">Today's Appointments</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+              ${todayRevenue.toFixed(2)}
+            </div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">Today's Revenue</div>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          {/* View Mode Switcher */}
+          <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode('day')}
+              className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+                viewMode === 'day' 
+                  ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              Day
+            </button>
+            <button
+              onClick={() => setViewMode('week')}
+              className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+                viewMode === 'week' 
+                  ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              Week
+            </button>
+            <button
+              onClick={() => setViewMode('month')}
+              className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+                viewMode === 'month' 
+                  ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              Month
+            </button>
+          </div>
+          
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2">
+            <Button 
+              onClick={() => setShowCreateModal(true)}
+              className="flex items-center gap-2"
+            >
+              <PlusIcon className="w-4 h-4" />
+              New Appointment
+            </Button>
+            
+            {/* Google Calendar Sync Button - Only for barbers */}
+            {user?.role === 'barber' && (
+              <>
+                <Button 
+                  variant="outline"
+                  onClick={() => setShowSyncPanel(!showSyncPanel)}
+                  className="flex items-center gap-2"
+                >
+                  <ArrowsRightLeftIcon className="w-4 h-4" />
+                  Sync
+                </Button>
+                
+                <Button 
+                  variant="outline"
+                  onClick={() => setShowConflictResolver(!showConflictResolver)}
+                  className="flex items-center gap-2"
+                >
+                  <ExclamationTriangleIcon className="w-4 h-4" />
+                  Conflicts
+                </Button>
+                
+                <Button 
+                  variant="outline"
+                  onClick={() => router.push('/barber-availability')}
+                  className="flex items-center gap-2"
+                >
+                  <CalendarDaysIcon className="w-4 h-4" />
+                  Availability
+                </Button>
+              </>
             )}
-          </CardContent>
-        </Card>
+            
+            {/* Recurring Appointments Button - For all users */}
+            <Button 
+              variant="outline"
+              onClick={() => router.push('/recurring')}
+              className="flex items-center gap-2"
+            >
+              <ClockIcon className="w-4 h-4" />
+              Recurring
+            </Button>
+          </div>
+        </div>
       </div>
+
+      {viewMode === 'day' ? (
+        // Day View
+        <Card variant="glass" padding="none" className="col-span-full h-[800px]">
+          <CalendarDayView
+            appointments={bookings}
+            selectedBarberId={selectedBarberId}
+            onBarberSelect={setSelectedBarberId}
+            onAppointmentClick={(appointment) => {
+              // Set selected date to appointment date
+              const appointmentDate = new Date(appointment.start_time)
+              setSelectedDate(appointmentDate)
+            }}
+            onTimeSlotClick={(date) => {
+              // Open modal with pre-selected date/time
+              setSelectedDate(date)
+              setPreselectedTime(format(date, 'HH:mm'))
+              setShowCreateModal(true)
+            }}
+            onAppointmentUpdate={handleAppointmentUpdate}
+            currentDate={selectedDate || new Date()}
+            onDateChange={setSelectedDate}
+          />
+        </Card>
+      ) : viewMode === 'week' ? (
+        // Week View
+        <Card variant="glass" padding="none" className="col-span-full">
+          <CalendarWeekView
+            appointments={bookings}
+            selectedBarberId={selectedBarberId}
+            onBarberSelect={setSelectedBarberId}
+            onAppointmentClick={(appointment) => {
+              // Set selected date to appointment date
+              const appointmentDate = new Date(appointment.start_time)
+              setSelectedDate(appointmentDate)
+            }}
+            onTimeSlotClick={(date) => {
+              // Open modal with pre-selected date/time
+              setSelectedDate(date)
+              setPreselectedTime(format(date, 'HH:mm'))
+              setShowCreateModal(true)
+            }}
+            onAppointmentUpdate={handleAppointmentUpdate}
+            currentDate={selectedDate || new Date()}
+            onDateChange={setSelectedDate}
+          />
+        </Card>
+      ) : (
+        // Enhanced Month View
+        <Card variant="glass" padding="none" className="col-span-full">
+          <CalendarMonthView
+            selectedDate={selectedDate}
+            onDateSelect={setSelectedDate}
+            appointments={bookings}
+            onAppointmentClick={(appointment) => {
+              // Set selected date to appointment date and view details
+              const appointmentDate = new Date(appointment.start_time)
+              setSelectedDate(appointmentDate)
+              // Could open appointment details modal here
+            }}
+            onAppointmentUpdate={handleAppointmentUpdate}
+            onDayClick={(date) => {
+              // Single click to create new appointment with time picker
+              setPendingDate(date)
+              setShowTimePickerModal(true)
+            }}
+            onDayDoubleClick={(date) => {
+              // Double-click also creates appointment (backward compatibility)
+              setSelectedDate(date)
+              setPreselectedTime('09:00') // Default time
+              setShowCreateModal(true)
+            }}
+          />
+        </Card>
+      )}
+
+      {/* Google Calendar Sync Panel */}
+      {user?.role === 'barber' && showSyncPanel && (
+        <div className="mt-6">
+          <CalendarSync />
+        </div>
+      )}
+
+      {/* Conflict Resolver Panel */}
+      {user?.role === 'barber' && showConflictResolver && (
+        <div className="mt-6">
+          <CalendarConflictResolver />
+        </div>
+      )}
 
       {/* Calendar Integration Status */}
-      {user?.role === 'barber' && (
+      {user?.role === 'barber' && !showSyncPanel && (
         <Card variant="glass" padding="lg">
           <CardHeader>
             <h2 className="text-lg font-semibold">Calendar Integration</h2>
@@ -333,11 +464,53 @@ export default function CalendarPage() {
               className="flex items-center gap-2"
             >
               <CalendarDaysIcon className="w-4 h-4" />
-              Manage Calendar Sync
+              Manage Calendar Settings
             </Button>
           </CardContent>
         </Card>
       )}
-    </div>
+
+      {/* Create Appointment Modal */}
+      <CreateAppointmentModal
+        isOpen={showCreateModal}
+        onClose={() => {
+          setShowCreateModal(false)
+          setPreselectedTime(undefined)
+        }}
+        preselectedDate={selectedDate || undefined}
+        preselectedTime={preselectedTime}
+        onSuccess={async () => {
+          // Refresh appointments after successful creation
+          console.log('📅 Appointment created, refreshing calendar...')
+          try {
+            const userBookings = await getMyBookings()
+            console.log('📊 Fetched bookings:', userBookings)
+            setBookings(userBookings.bookings || [])
+            setPreselectedTime(undefined)
+            console.log('✅ Calendar refreshed with', userBookings.bookings?.length || 0, 'appointments')
+          } catch (err) {
+            console.error('❌ Failed to refresh bookings:', err)
+          }
+        }}
+      />
+
+      {/* Time Picker Modal */}
+      <TimePickerModal
+        isOpen={showTimePickerModal}
+        onClose={() => {
+          setShowTimePickerModal(false)
+          setPendingDate(null)
+        }}
+        selectedDate={pendingDate || undefined}
+        onSelectTime={(time) => {
+          setSelectedDate(pendingDate)
+          setPreselectedTime(time)
+          setShowTimePickerModal(false)
+          setShowCreateModal(true)
+          setPendingDate(null)
+        }}
+      />
+      </div>
+    </ErrorBoundary>
   )
 }

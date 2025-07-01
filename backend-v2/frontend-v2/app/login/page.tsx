@@ -34,7 +34,7 @@ function LoginContent() {
     try {
       const response = await loginActions.execute(() => login(email, password))
       if (response.access_token) {
-        localStorage.setItem('token', response.access_token)
+        // Token is already stored in the login function
         router.push('/dashboard')
       }
     } catch (err) {
@@ -47,9 +47,9 @@ function LoginContent() {
     <main className="flex min-h-screen flex-col items-center justify-center p-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center space-y-4">
-          <Logo variant="color" size="lg" className="mx-auto" href="#" />
-          <h2 className="text-3xl font-bold text-accent-900">Welcome Back</h2>
-          <p className="mt-2 text-gray-600">
+          <Logo variant="mono" size="lg" className="mx-auto" href="#" />
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome Back</h2>
+          <p className="mt-2 text-gray-700 dark:text-gray-300">
             Sign in to manage your barbershop
           </p>
         </div>
@@ -110,7 +110,7 @@ function LoginContent() {
           </div>
 
           <div className="text-center space-y-2">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-700 dark:text-gray-300">
               Don't have an account?{' '}
               <Link href="/register" className="font-medium text-primary-600 hover:text-primary-700">
                 Create account

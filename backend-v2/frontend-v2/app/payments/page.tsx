@@ -1,13 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { fetchAPI } from '@/lib/api';
-import PaymentDetails from '@/components/PaymentDetails';
-import RefundManager from '@/components/RefundManager';
-import PaymentReports from '@/components/PaymentReports';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns/format';
+import { parseISO } from 'date-fns/parseISO';
 import { Download, RefreshCw, DollarSign, TrendingUp, AlertCircle, Search, Filter, Gift } from 'lucide-react';
+
+// Dynamic imports for heavy components
+const PaymentDetails = lazy(() => import('@/components/PaymentDetails'));
+const RefundManager = lazy(() => import('@/components/RefundManager'));
+const PaymentReports = lazy(() => import('@/components/PaymentReports'));
 
 interface Payment {
   id: number;
@@ -199,7 +202,13 @@ export default function PaymentsPage() {
   }
 
   if (showReports) {
-    return <PaymentReports onBack={() => setShowReports(false)} />;
+    return (
+      <Suspense fallback={<div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>}>
+        <PaymentReports onBack={() => setShowReports(false)} />
+      </Suspense>
+    );
   }
 
   return (
@@ -277,7 +286,7 @@ export default function PaymentsPage() {
                   placeholder="Search by client name, email, or transaction ID..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                 />
               </div>
             </div>
@@ -286,7 +295,7 @@ export default function PaymentsPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500"
               >
                 <option value="all">All Status</option>
                 <option value="succeeded">Succeeded</option>
@@ -300,7 +309,7 @@ export default function PaymentsPage() {
                 type="date"
                 value={dateRange.start}
                 onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500"
                 placeholder="Start Date"
               />
               
@@ -308,7 +317,7 @@ export default function PaymentsPage() {
                 type="date"
                 value={dateRange.end}
                 onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500"
                 placeholder="End Date"
               />
               
@@ -452,21 +461,21 @@ export default function PaymentsPage() {
                 <button
                   onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
-                  className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                  className="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                 >
                   Previous
                 </button>
                 <button
                   onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
-                  className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                  className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                 >
                   Next
                 </button>
               </div>
               <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-sm text-gray-700">
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
                     Showing page <span className="font-medium">{currentPage}</span> of{' '}
                     <span className="font-medium">{totalPages}</span>
                   </p>
@@ -476,14 +485,14 @@ export default function PaymentsPage() {
                     <button
                       onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                       disabled={currentPage === 1}
-                      className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                      className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                     >
                       Previous
                     </button>
                     <button
                       onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                       disabled={currentPage === totalPages}
-                      className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                      className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                     >
                       Next
                     </button>
@@ -497,23 +506,31 @@ export default function PaymentsPage() {
 
       {/* Payment Details Modal */}
       {selectedPayment && !showRefundManager && (
-        <PaymentDetails
-          payment={selectedPayment}
-          onClose={() => setSelectedPayment(null)}
-          onRefund={() => handleRefund(selectedPayment)}
-        />
+        <Suspense fallback={<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+        </div>}>
+          <PaymentDetails
+            payment={selectedPayment}
+            onClose={() => setSelectedPayment(null)}
+            onRefund={() => handleRefund(selectedPayment)}
+          />
+        </Suspense>
       )}
 
       {/* Refund Manager Modal */}
       {showRefundManager && selectedPayment && (
-        <RefundManager
-          payment={selectedPayment}
-          onClose={() => {
-            setShowRefundManager(false);
-            setSelectedPayment(null);
-          }}
-          onComplete={handleRefundComplete}
-        />
+        <Suspense fallback={<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+        </div>}>
+          <RefundManager
+            payment={selectedPayment}
+            onClose={() => {
+              setShowRefundManager(false);
+              setSelectedPayment(null);
+            }}
+            onComplete={handleRefundComplete}
+          />
+        </Suspense>
       )}
     </div>
   );

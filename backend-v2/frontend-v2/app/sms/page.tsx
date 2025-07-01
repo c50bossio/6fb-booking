@@ -16,7 +16,7 @@ export default function SMSPage() {
       try {
         // Check if user is authenticated and has admin/barber role
         const userProfile = await getProfile()
-        if (!['admin', 'barber'].includes(userProfile.role)) {
+        if (!userProfile.role || !['admin', 'barber'].includes(userProfile.role)) {
           router.push('/dashboard')
           return
         }

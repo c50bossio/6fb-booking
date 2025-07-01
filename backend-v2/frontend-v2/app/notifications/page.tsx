@@ -24,7 +24,7 @@ export default function NotificationsPage() {
       try {
         // Check if user is authenticated and has admin/barber role
         const userProfile = await getProfile()
-        if (!['admin', 'barber'].includes(userProfile.role)) {
+        if (!userProfile.role || !['admin', 'barber'].includes(userProfile.role)) {
           router.push('/dashboard')
           return
         }
@@ -94,7 +94,7 @@ export default function NotificationsPage() {
               </div>
               <button
                 onClick={() => router.push('/dashboard')}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
                 Back to Dashboard
               </button>

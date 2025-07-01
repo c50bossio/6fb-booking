@@ -104,7 +104,7 @@ export default function AnalyticsLayout({ children }: AnalyticsLayoutProps) {
         breadcrumbs.push({
           label: navItem?.name || segment.charAt(0).toUpperCase() + segment.slice(1),
           href: currentPath,
-          icon: navItem?.icon || ChartBarIcon
+          icon: navItem?.icon as any || ChartBarIcon
         })
       }
     })
