@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Your Notification Preferences</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px 20px;
+        }
+        .intro {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .intro h2 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        .intro p {
+            color: #666;
+            font-size: 16px;
+            margin: 0;
+        }
+        .preferences-section {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        .preferences-section h3 {
+            color: #333;
+            font-size: 20px;
+            margin: 0 0 15px 0;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+        .preference-item {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            border-left: 4px solid #007bff;
+        }
+        .preference-icon {
+            width: 40px;
+            height: 40px;
+            background: #007bff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: white;
+            font-size: 18px;
+        }
+        .preference-content {
+            flex: 1;
+        }
+        .preference-title {
+            font-weight: 600;
+            color: #333;
+            margin: 0 0 5px 0;
+        }
+        .preference-description {
+            color: #666;
+            font-size: 14px;
+            margin: 0;
+        }
+        .cta-section {
+            text-align: center;
+            margin: 40px 0;
+        }
+        .btn {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 10px;
+            transition: background-color 0.3s ease;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn-secondary {
+            background: #6c757d;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .quick-actions {
+            background: #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        .quick-actions h4 {
+            color: #333;
+            font-size: 18px;
+            margin: 0 0 15px 0;
+        }
+        .quick-actions p {
+            color: #666;
+            margin: 0 0 15px 0;
+            font-size: 14px;
+        }
+        .quick-actions a {
+            display: inline-block;
+            color: #007bff;
+            text-decoration: none;
+            margin: 5px 15px 5px 0;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .quick-actions a:hover {
+            text-decoration: underline;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 25px 20px;
+            text-align: center;
+            border-top: 1px solid #dee2e6;
+        }
+        .footer p {
+            color: #666;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .footer a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        .gdpr-notice {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .gdpr-notice p {
+            color: #856404;
+            margin: 0;
+            font-size: 14px;
+        }
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                margin: 0;
+                border-radius: 0;
+            }
+            .content {
+                padding: 20px 15px;
+            }
+            .header {
+                padding: 20px 15px;
+            }
+            .header h1 {
+                font-size: 24px;
+            }
+            .btn {
+                display: block;
+                margin: 10px 0;
+            }
+            .preference-item {
+                flex-direction: column;
+                text-align: center;
+            }
+            .preference-icon {
+                margin: 0 0 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>Notification Preferences</h1>
+            <p>Take control of how BookedBarber communicates with you</p>
+        </div>
+        
+        <div class="content">
+            <div class="intro">
+                <h2>Manage Your Communication Preferences</h2>
+                <p>We want to make sure you receive the right notifications at the right time. 
+                   Update your preferences to customize your BookedBarber experience.</p>
+            </div>
+            
+            <div class="preferences-section">
+                <h3>📧 Email Notifications</h3>
+                <div class="preference-item">
+                    <div class="preference-icon">📅</div>
+                    <div class="preference-content">
+                        <div class="preference-title">Appointment Confirmations</div>
+                        <div class="preference-description">Receive confirmations when appointments are booked</div>
+                    </div>
+                </div>
+                <div class="preference-item">
+                    <div class="preference-icon">⏰</div>
+                    <div class="preference-content">
+                        <div class="preference-title">Appointment Reminders</div>
+                        <div class="preference-description">Get reminded before your upcoming appointments</div>
+                    </div>
+                </div>
+                <div class="preference-item">
+                    <div class="preference-icon">💳</div>
+                    <div class="preference-content">
+                        <div class="preference-title">Payment Notifications</div>
+                        <div class="preference-description">Updates about payment confirmations and issues</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="preferences-section">
+                <h3>📱 SMS Notifications</h3>
+                <div class="preference-item">
+                    <div class="preference-icon">💬</div>
+                    <div class="preference-content">
+                        <div class="preference-title">Text Reminders</div>
+                        <div class="preference-description">Quick SMS reminders for important updates</div>
+                    </div>
+                </div>
+                <div class="preference-item">
+                    <div class="preference-icon">🔔</div>
+                    <div class="preference-content">
+                        <div class="preference-title">Urgent Alerts</div>
+                        <div class="preference-description">Immediate notifications for time-sensitive matters</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="preferences-section">
+                <h3>🎯 Marketing Communications</h3>
+                <div class="preference-item">
+                    <div class="preference-icon">🎉</div>
+                    <div class="preference-content">
+                        <div class="preference-title">Promotions & Offers</div>
+                        <div class="preference-description">Special deals and limited-time offers</div>
+                    </div>
+                </div>
+                <div class="preference-item">
+                    <div class="preference-icon">📰</div>
+                    <div class="preference-content">
+                        <div class="preference-title">News & Updates</div>
+                        <div class="preference-description">Product updates and company news</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="cta-section">
+                <a href="{{ preference_center_url }}" class="btn">Update My Preferences</a>
+                <a href="https://app.bookedbarber.com/dashboard" class="btn btn-secondary">Go to Dashboard</a>
+            </div>
+            
+            <div class="quick-actions">
+                <h4>Quick Actions</h4>
+                <p>Need to make a quick change? Use these one-click options:</p>
+                <a href="{{ preference_center_url.replace('/preference-center/', '/unsubscribe?token=').replace(preference_center_url.split('/')[-1], preference_center_url.split('/')[-1] + '&unsubscribe_type=marketing_only') }}">Unsubscribe from marketing only</a>
+                <a href="{{ preference_center_url.replace('/preference-center/', '/unsubscribe?token=').replace(preference_center_url.split('/')[-1], preference_center_url.split('/')[-1] + '&unsubscribe_type=email_all') }}">Unsubscribe from all emails</a>
+                <a href="mailto:support@bookedbarber.com">Contact Support</a>
+            </div>
+            
+            <div class="gdpr-notice">
+                <p><strong>Your Privacy Rights:</strong> You have the right to control how we communicate with you. 
+                   You can update these preferences at any time, and we'll only send you notifications you've consented to receive. 
+                   Essential service communications (like appointment confirmations) may still be sent as they're necessary for our service.</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>BookedBarber</strong></p>
+            <p>Professional barbershop management made simple</p>
+            <p>
+                <a href="https://bookedbarber.com/privacy">Privacy Policy</a> | 
+                <a href="https://bookedbarber.com/terms">Terms of Service</a> | 
+                <a href="mailto:privacy@bookedbarber.com">Privacy Questions</a>
+            </p>
+            <p>© 2025 BookedBarber. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -54,7 +54,7 @@ def populate_templates(db: Session):
             "file": "appointment_confirmation_sms.txt",
             "variables": [
                 "client_name", "service_name", "appointment_date", "appointment_time", 
-                "price", "barber_name", "business_name", "business_phone"
+                "price", "barber_name", "business_name", "business_phone", "short_url", "business_url"
             ]
         },
         {
@@ -75,7 +75,7 @@ def populate_templates(db: Session):
             "file": "appointment_reminder_sms.txt",
             "variables": [
                 "client_name", "service_name", "appointment_date", "appointment_time", 
-                "barber_name", "business_name", "business_address", "business_phone", "hours_until"
+                "barber_name", "business_name", "business_address", "business_phone", "hours_until", "short_url", "business_url"
             ]
         },
         {
@@ -99,7 +99,7 @@ def populate_templates(db: Session):
             "variables": [
                 "client_name", "service_name", "appointment_date", "appointment_time", 
                 "business_name", "business_phone", "cancelled_by", "refund_amount", 
-                "refund_timeframe", "book_new_url"
+                "refund_timeframe", "book_new_url", "short_url", "business_url"
             ]
         },
         {
@@ -119,7 +119,7 @@ def populate_templates(db: Session):
             "file": None,  # Will create inline
             "variables": [
                 "client_name", "service_name", "old_appointment_date", "old_appointment_time",
-                "new_appointment_date", "new_appointment_time", "business_name"
+                "new_appointment_date", "new_appointment_time", "business_name", "short_url", "business_url"
             ]
         }
     ]
@@ -153,15 +153,17 @@ def populate_templates(db: Session):
 <p>Thank you,<br>{{ business_name }}</p>
 """
                 else:  # SMS
-                    body = """📅 APPOINTMENT RESCHEDULED
+                    body = """APPOINTMENT RESCHEDULED
 
-Hi {{ client_name }}! Your appointment has been moved:
+{{ client_name }}, your appointment has been moved:
 
-❌ Was: {{ old_appointment_date }} {{ old_appointment_time }}
-✅ Now: {{ new_appointment_date }} {{ new_appointment_time }}
-✂️ {{ service_name }}
+Was: {{ old_appointment_date }} {{ old_appointment_time }}
+Now: {{ new_appointment_date }} {{ new_appointment_time }}
+Service: {{ service_name }}
 
-- {{ business_name }}"""
+{{ short_url | default('View details: ' + business_url) }}
+
+{{ business_name }}"""
         
         if not body:
             logger.warning(f"Empty template body for {template_data['name']} ({template_data['template_type']})")

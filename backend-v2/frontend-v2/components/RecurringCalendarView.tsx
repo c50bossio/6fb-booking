@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader } from '@/components/ui/Card'
 import { LoadingSpinner } from '@/components/LoadingStates'
 import { getUpcomingAppointments, type RecurringPattern, type AppointmentOccurrence } from '@/lib/recurringApi'
+import { useCalendarPerformance } from '@/hooks/useCalendarPerformance'
 
 interface RecurringCalendarViewProps {
   patterns: RecurringPattern[]
@@ -18,6 +19,7 @@ interface CalendarDay {
   isToday: boolean
 }
 
+// Move outside component to avoid recreation
 const PATTERN_COLORS = [
   'bg-blue-100 border-blue-300 text-blue-900',
   'bg-green-100 border-green-300 text-green-900',
@@ -25,20 +27,37 @@ const PATTERN_COLORS = [
   'bg-pink-100 border-pink-300 text-pink-900',
   'bg-yellow-100 border-yellow-300 text-yellow-900',
   'bg-indigo-100 border-indigo-300 text-indigo-900',
-]
+] as const
 
-export default function RecurringCalendarView({ patterns, onPatternSelect }: RecurringCalendarViewProps) {
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+] as const
+
+const DAY_NAMES_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
+
+const RecurringCalendarView = React.memo(function RecurringCalendarView({ patterns, onPatternSelect }: RecurringCalendarViewProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([])
   const [appointments, setAppointments] = useState<AppointmentOccurrence[]>([])
   const [loading, setLoading] = useState(true)
   const [hoveredPattern, setHoveredPattern] = useState<number | null>(null)
+  const { measureRender, optimizedAppointmentsByDay } = useCalendarPerformance()
+  
+  // Performance monitoring
+  useEffect(() => {
+    const endMeasure = measureRender('RecurringCalendarView')
+    return endMeasure
+  }, [measureRender])
 
-  // Create pattern color map
-  const patternColorMap = new Map<number, string>()
-  patterns.forEach((pattern, index) => {
-    patternColorMap.set(pattern.id, PATTERN_COLORS[index % PATTERN_COLORS.length])
-  })
+  // Memoized pattern color map for better performance
+  const patternColorMap = useMemo(() => {
+    const map = new Map<number, string>()
+    patterns.forEach((pattern, index) => {
+      map.set(pattern.id, PATTERN_COLORS[index % PATTERN_COLORS.length])
+    })
+    return map
+  }, [patterns])
 
   useEffect(() => {
     fetchAllAppointments()
@@ -148,20 +167,14 @@ export default function RecurringCalendarView({ patterns, onPatternSelect }: Rec
     setCurrentMonth(new Date())
   }
 
-  const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ]
-
-  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-  const dayNamesShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  // Constants moved outside component
 
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">
-            {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+            {MONTH_NAMES[currentMonth.getMonth()]} {currentMonth.getFullYear()}
           </h2>
           <div className="flex items-center gap-2">
             <Button
@@ -219,7 +232,7 @@ export default function RecurringCalendarView({ patterns, onPatternSelect }: Rec
           <div className="overflow-hidden">
             {/* Day headers */}
             <div className="grid grid-cols-7 gap-0 mb-2">
-              {dayNamesShort.map(day => (
+              {DAY_NAMES_SHORT.map(day => (
                 <div
                   key={day}
                   className="text-center text-sm font-medium text-gray-600 py-2"
@@ -295,4 +308,9 @@ export default function RecurringCalendarView({ patterns, onPatternSelect }: Rec
       </CardContent>
     </Card>
   )
-}
+})
+
+// Add display name for debugging
+RecurringCalendarView.displayName = 'RecurringCalendarView'
+
+export default RecurringCalendarView

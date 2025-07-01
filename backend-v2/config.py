@@ -49,22 +49,25 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     allowed_origins: str = "http://localhost:3000"
     
-    # Notification settings
-    sendgrid_api_key: str = ""
-    sendgrid_from_email: str = "support@em3014.6fbmentorship.com"  # Using verified sender
+    # Email Configuration (SendGrid)
+    sendgrid_api_key: str = "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"
+    sendgrid_from_email: str = "support@em3014.6fbmentorship.com"
     sendgrid_from_name: str = "BookedBarber"
     
-    twilio_account_sid: str = ""
-    twilio_auth_token: str = ""
-    twilio_phone_number: str = ""
+    # SMS Configuration (Twilio)
+    twilio_account_sid: str = "ACe5b803b2dee8cfeffbfc19330838d25f"
+    twilio_auth_token: str = "f4a6b0c96d7394e3037b1c3063cf8369"
+    twilio_phone_number: str = "+18135483884"
     
-    # Redis settings for notification queue
+    # Redis Configuration
     redis_url: str = "redis://localhost:6379/0"
     
-    # Notification timing settings
+    # Notification Settings
     appointment_reminder_hours: list[int] = [24, 2]  # Send reminders 24h and 2h before
     notification_retry_attempts: int = 3
     notification_retry_delay_seconds: int = 60
-    
+    enable_email_notifications: bool = True
+    enable_sms_notifications: bool = True
+
 
 settings = Settings()

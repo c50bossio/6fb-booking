@@ -122,14 +122,46 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
 
   const { weekStart, weekEnd, timeSlots, weekDays } = weekData
 
-  // Optimized appointment filtering
-  const filteredAppointments = useMemo(() => {
-    return optimizedAppointmentFilter(appointments, {
+  // Optimized appointment filtering and preprocessing
+  const processedAppointments = useMemo(() => {
+    const filtered = optimizedAppointmentFilter(appointments, {
       barberId: selectedBarberId,
       startDate: weekStart,
       endDate: weekEnd
     })
-  }, [appointments, selectedBarberId, weekStart, weekEnd, optimizedAppointmentFilter])
+    
+    // Pre-calculate styles and dates to avoid repeated parsing
+    return filtered.map(appointment => {
+      const start = parseAPIDate(appointment.start_time)
+      let end: Date
+      
+      if (appointment.end_time) {
+        end = parseAPIDate(appointment.end_time)
+      } else if (appointment.duration_minutes) {
+        end = addMinutes(start, appointment.duration_minutes)
+      } else {
+        // Default to 30 minutes if no end time or duration
+        end = addMinutes(start, 30)
+      }
+      
+      const startMinutes = start.getHours() * 60 + start.getMinutes()
+      const endMinutes = end.getHours() * 60 + end.getMinutes()
+      const slotStartMinutes = startHour * 60
+      
+      const top = ((startMinutes - slotStartMinutes) / slotDuration) * 48 // 48px per slot
+      const height = ((endMinutes - startMinutes) / slotDuration) * 48
+      
+      return {
+        ...appointment,
+        parsedStartTime: start,
+        parsedEndTime: end,
+        style: {
+          top: `${top}px`,
+          height: `${Math.max(height, 20)}px`
+        }
+      }
+    })
+  }, [appointments, selectedBarberId, weekStart, weekEnd, optimizedAppointmentFilter, startHour, slotDuration])
 
   // Navigate weeks (memoized)
   const previousWeek = useCallback(() => {
@@ -150,36 +182,30 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
     onDateChange?.(today)
   }, [onDateChange])
 
-  // Get appointment position and height
-  const getAppointmentStyle = (appointment: Appointment) => {
-    const start = parseAPIDate(appointment.start_time)
-    let end: Date
+  // Pre-calculate appointments by day for faster filtering
+  const appointmentsByDay = useMemo(() => {
+    const byDay: { [key: string]: any[] } = {}
     
-    if (appointment.end_time) {
-      end = parseAPIDate(appointment.end_time)
-    } else if (appointment.duration_minutes) {
-      end = addMinutes(start, appointment.duration_minutes)
-    } else {
-      // Default to 30 minutes if no end time or duration
-      end = addMinutes(start, 30)
-    }
+    processedAppointments.forEach(appointment => {
+      const dayKey = format(appointment.parsedStartTime, 'yyyy-MM-dd')
+      if (!byDay[dayKey]) {
+        byDay[dayKey] = []
+      }
+      byDay[dayKey].push(appointment)
+    })
     
-    const startMinutes = start.getHours() * 60 + start.getMinutes()
-    const endMinutes = end.getHours() * 60 + end.getMinutes()
-    const slotStartMinutes = startHour * 60
-    
-    const top = ((startMinutes - slotStartMinutes) / slotDuration) * 48 // 48px per slot
-    const height = ((endMinutes - startMinutes) / slotDuration) * 48
-    
-    return {
-      top: `${top}px`,
-      height: `${Math.max(height, 20)}px`, // Minimum height of 20px
-    }
+    return byDay
+  }, [processedAppointments])
+
+  // Check if appointment is on a specific day (now using pre-parsed dates)
+  const isAppointmentOnDay = (processedAppointment: any, day: Date) => {
+    return isSameDay(processedAppointment.parsedStartTime, day)
   }
 
-  // Check if appointment is on a specific day
-  const isAppointmentOnDay = (appointment: Appointment, day: Date) => {
-    return isSameDay(parseAPIDate(appointment.start_time), day)
+  // Get appointments for a specific day (optimized)
+  const getAppointmentsForDay = (day: Date) => {
+    const dayKey = format(day, 'yyyy-MM-dd')
+    return appointmentsByDay[dayKey] || []
   }
 
   // Get status color
@@ -287,7 +313,7 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
 
     appointments.forEach((appointmentEl) => {
       const appointmentId = appointmentEl.getAttribute('data-appointment-id')
-      const appointment = filteredAppointments.find(apt => apt.id.toString() === appointmentId)
+      const appointment = processedAppointments.find(apt => apt.id.toString() === appointmentId)
       
       if (!appointment || appointment.status === 'completed' || appointment.status === 'cancelled') {
         return
@@ -347,7 +373,7 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
     return () => {
       cleanupFunctions.forEach(cleanup => cleanup())
     }
-  }, [filteredAppointments, weekDays, timeSlots, onAppointmentUpdate, isTouchDevice])
+  }, [processedAppointments, weekDays, timeSlots, onAppointmentUpdate, isTouchDevice])
 
   return (
     <div className="w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm">
@@ -477,13 +503,13 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
                             onTimeSlotClick?.(slotDate)
                           }
                         }}
-                        onDragOver={(e) => {
+                        onDragOver={useCallback((e) => {
                           if (draggedAppointment) {
                             e.preventDefault()
                             e.dataTransfer.dropEffect = 'move'
                             setDragOverSlot({ day, hour: slot.hour, minute: slot.minute })
                           }
-                        }}
+                        }, [draggedAppointment, day, slot.hour, slot.minute])}
                         onDragLeave={() => {
                           setDragOverSlot(null)
                         }}
@@ -511,10 +537,8 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
                       />
                     ))}
                     
-                    {/* Appointments */}
-                    {filteredAppointments
-                      .filter(apt => isAppointmentOnDay(apt, day))
-                      .map((appointment) => (
+                    {/* Appointments - optimized rendering */}
+                    {useMemo(() => getAppointmentsForDay(day).map((appointment) => (
                         <div
                           key={appointment.id}
                           data-appointment-id={appointment.id}
@@ -528,7 +552,7 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
                               ? 'cursor-move hover:shadow-lg hover:z-10' 
                               : 'cursor-pointer'
                           }`}
-                          style={getAppointmentStyle(appointment)}
+                          style={appointment.style}
                           onClick={(e) => {
                             e.stopPropagation()
                             if (!isDragging) {
@@ -569,7 +593,7 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
                           </div>
                           <div className="truncate opacity-90">{appointment.service_name}</div>
                         </div>
-                      ))}
+                      )), [getAppointmentsForDay, day, isDragging, draggedAppointment, onAppointmentClick, clients, setSelectedClient, setShowClientModal, getStatusColor])}
                   </div>
                 </div>
               ))}

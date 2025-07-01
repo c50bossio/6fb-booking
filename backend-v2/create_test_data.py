@@ -39,12 +39,14 @@ def create_test_data():
         clients = db.query(models.Client).filter(models.Client.created_by_id == barber.id).all()
         if len(clients) < 5:
             print("👥 Creating test clients...")
+            # IMPORTANT: Replace 'your-real-email@gmail.com' with your actual email address
+            # to receive test notifications
             client_list = [
-                {"name": "John Smith", "email": "john.smith@example.com", "phone": "+1234567890"},
-                {"name": "Mike Johnson", "email": "mike.j@example.com", "phone": "+1234567891"},
-                {"name": "David Brown", "email": "david.b@example.com", "phone": "+1234567892"},
-                {"name": "Chris Wilson", "email": "chris.w@example.com", "phone": "+1234567893"},
-                {"name": "James Davis", "email": "james.d@example.com", "phone": "+1234567894"},
+                {"name": "Test Client", "email": "your-real-email@gmail.com", "phone": "+1234567890"},
+                {"name": "John Smith", "email": "john.smith@example.com", "phone": "+1234567891"},
+                {"name": "Mike Johnson", "email": "mike.j@example.com", "phone": "+1234567892"},
+                {"name": "David Brown", "email": "david.b@example.com", "phone": "+1234567893"},
+                {"name": "Chris Wilson", "email": "chris.w@example.com", "phone": "+1234567894"},
             ]
             
             for cl in client_list:

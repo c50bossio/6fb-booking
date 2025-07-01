@@ -1,0 +1,218 @@
+{% extends "emails/base/layout.mjml" %}
+
+{% block content %}
+<!-- Hero Section -->
+<mj-section padding="32px 0">
+  <mj-column>
+    <mj-image
+      src="https://via.placeholder.com/80x80/0891b2/ffffff?text=✓"
+      alt="Confirmed"
+      width="80px"
+      height="80px"
+      border-radius="50%"
+      padding="0 0 16px 0"
+    />
+    <mj-text mj-class="heading" align="center" padding="0 0 8px 0">
+      Appointment Confirmed!
+    </mj-text>
+    <mj-text align="center" color="#6b7280" font-size="18px" padding="0 0 24px 0">
+      Hi {{ client_name }}, your appointment is all set.
+    </mj-text>
+  </mj-column>
+</mj-section>
+
+<!-- Appointment Details Card -->
+<mj-section padding="0 0 32px 0">
+  <mj-column>
+    <mj-wrapper css-class="card" padding="24px" background-color="#f9fafb" border-radius="12px">
+      <mj-section padding="0">
+        <mj-column>
+          <mj-text mj-class="subheading" padding="0 0 16px 0">
+            📅 Appointment Details
+          </mj-text>
+        </mj-column>
+      </mj-section>
+      
+      <!-- Service & Date -->
+      <mj-section padding="0">
+        <mj-column width="50%">
+          <mj-text font-weight="600" color="#374151" font-size="14px" padding="8px 0 4px 0">
+            SERVICE
+          </mj-text>
+          <mj-text font-size="16px" color="#1f2937" padding="0 0 16px 0">
+            {{ service_name }}
+          </mj-text>
+        </mj-column>
+        <mj-column width="50%">
+          <mj-text font-weight="600" color="#374151" font-size="14px" padding="8px 0 4px 0">
+            DATE & TIME
+          </mj-text>
+          <mj-text font-size="16px" color="#1f2937" padding="0 0 16px 0">
+            {{ appointment_date }}<br/>
+            {{ appointment_time }}
+          </mj-text>
+        </mj-column>
+      </mj-section>
+      
+      <!-- Duration & Price -->
+      <mj-section padding="0">
+        <mj-column width="50%">
+          <mj-text font-weight="600" color="#374151" font-size="14px" padding="8px 0 4px 0">
+            DURATION
+          </mj-text>
+          <mj-text font-size="16px" color="#1f2937" padding="0 0 16px 0">
+            {{ duration }} minutes
+          </mj-text>
+        </mj-column>
+        <mj-column width="50%">
+          <mj-text font-weight="600" color="#374151" font-size="14px" padding="8px 0 4px 0">
+            PRICE
+          </mj-text>
+          <mj-text font-size="16px" color="#0891b2" font-weight="600" padding="0 0 16px 0">
+            ${{ "%.2f"|format(price) }}
+          </mj-text>
+        </mj-column>
+      </mj-section>
+      
+      {% if barber_name %}
+      <!-- Barber -->
+      <mj-section padding="0">
+        <mj-column>
+          <mj-text font-weight="600" color="#374151" font-size="14px" padding="8px 0 4px 0">
+            YOUR BARBER
+          </mj-text>
+          <mj-text font-size="16px" color="#1f2937" padding="0 0 16px 0">
+            👨‍💼 {{ barber_name }}
+          </mj-text>
+        </mj-column>
+      </mj-section>
+      {% endif %}
+    </mj-wrapper>
+  </mj-column>
+</mj-section>
+
+<!-- Quick Actions -->
+<mj-section padding="0 0 32px 0">
+  <mj-column width="50%">
+    <mj-button
+      mj-class="button-primary"
+      href="{{ calendar_link }}"
+      width="100%"
+    >
+      📅 Add to Calendar
+    </mj-button>
+  </mj-column>
+  <mj-column width="50%">
+    <mj-button
+      background-color="#f3f4f6"
+      color="#374151"
+      font-size="16px"
+      font-weight="600"
+      inner-padding="16px 32px"
+      border-radius="8px"
+      href="{{ directions_link }}"
+      width="100%"
+    >
+      📍 Get Directions
+    </mj-button>
+  </mj-column>
+</mj-section>
+
+<!-- QR Code Section -->
+{% if qr_code_url %}
+<mj-section padding="0 0 32px 0">
+  <mj-column>
+    <mj-text mj-class="subheading" align="center" padding="0 0 16px 0">
+      Quick Check-In
+    </mj-text>
+    <mj-image
+      src="{{ qr_code_url }}"
+      alt="QR Code for Check-In"
+      width="120px"
+      height="120px"
+      padding="0 0 12px 0"
+    />
+    <mj-text align="center" color="#6b7280" font-size="14px">
+      Show this QR code when you arrive for instant check-in
+    </mj-text>
+  </mj-column>
+</mj-section>
+{% endif %}
+
+<!-- What to Expect -->
+<mj-section padding="0 0 32px 0">
+  <mj-column>
+    <mj-text mj-class="subheading" padding="0 0 16px 0">
+      ℹ️ What to Expect
+    </mj-text>
+    <mj-text color="#4b5563" line-height="24px">
+      • <strong>Arrive 5-10 minutes early</strong> for check-in<br/>
+      • Bring a valid ID for verification<br/>
+      • We'll send reminders 24 hours and 2 hours before<br/>
+      • For changes, give us at least 24 hours notice
+    </mj-text>
+  </mj-column>
+</mj-section>
+
+<!-- Location Info -->
+{% if business_address %}
+<mj-section padding="0 0 32px 0" border-top="1px solid #e5e7eb">
+  <mj-column width="70%">
+    <mj-text mj-class="subheading" padding="24px 0 8px 0">
+      📍 Location
+    </mj-text>
+    <mj-text color="#4b5563" padding="0 0 8px 0">
+      {{ business_address }}
+    </mj-text>
+    {% if business_phone %}
+    <mj-text color="#4b5563" font-size="14px">
+      📞 {{ business_phone }}
+    </mj-text>
+    {% endif %}
+  </mj-column>
+  <mj-column width="30%">
+    <!-- Map Preview Placeholder -->
+    <mj-image
+      src="https://via.placeholder.com/150x100/e5e7eb/6b7280?text=Map"
+      alt="Location Map"
+      width="150px"
+      height="100px"
+      border-radius="8px"
+      padding="24px 0 0 0"
+    />
+  </mj-column>
+</mj-section>
+{% endif %}
+
+<!-- Help Section -->
+<mj-section padding="0 0 24px 0" border-top="1px solid #e5e7eb">
+  <mj-column>
+    <mj-text align="center" color="#6b7280" font-size="14px" padding="24px 0 8px 0">
+      Questions? We're here to help!
+    </mj-text>
+    <mj-text align="center" padding="0">
+      <a href="tel:{{ business_phone }}" style="color: #0891b2; text-decoration: none; font-weight: 600;">
+        Call {{ business_phone | default('us') }}
+      </a>
+      •
+      <a href="{{ business_website }}" style="color: #0891b2; text-decoration: none; font-weight: 600;">
+        Visit Website
+      </a>
+    </mj-text>
+  </mj-column>
+</mj-section>
+
+<mj-section padding="0">
+  <mj-column>
+    <mj-text align="center" color="#0891b2" font-weight="600" font-size="16px">
+      Thank you for choosing {{ business_name }}!
+    </mj-text>
+  </mj-column>
+</mj-section>
+{% endblock %}
+
+{% block footer %}
+© {{ current_year }} {{ business_name }}. All rights reserved.<br/>
+<a href="{{ manage_appointment_url }}" style="color: #6b7280; text-decoration: underline;">Manage Appointment</a> | 
+<a href="{{ unsubscribe_url }}" style="color: #6b7280; text-decoration: underline;">Unsubscribe</a>
+{% endblock %}

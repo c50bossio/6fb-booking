@@ -1298,3 +1298,568 @@ class MarketingUsage(Base):
     __table_args__ = (
         Index('idx_usage_period_unique', 'period_start', 'period_end', unique=True),
     )
+
+
+# ================================================================================
+# ENHANCED NOTIFICATION PREFERENCES MODELS
+# ================================================================================
+
+class NotificationPreferences(Base):
+    """Enhanced user notification preferences with granular control"""
+    __tablename__ = "notification_preferences_v2"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
+    
+    # Global preferences
+    email_enabled = Column(Boolean, default=True)
+    sms_enabled = Column(Boolean, default=True)
+    timezone = Column(String(50), default='UTC')  # User's timezone for notifications
+    
+    # Email notification types
+    email_appointment_confirmation = Column(Boolean, default=True)
+    email_appointment_reminder = Column(Boolean, default=True)
+    email_appointment_changes = Column(Boolean, default=True)
+    email_appointment_cancellation = Column(Boolean, default=True)
+    email_payment_confirmation = Column(Boolean, default=True)
+    email_payment_failed = Column(Boolean, default=True)
+    email_marketing = Column(Boolean, default=False)
+    email_news_updates = Column(Boolean, default=False)
+    email_promotional = Column(Boolean, default=False)
+    email_system_alerts = Column(Boolean, default=True)
+    
+    # SMS notification types
+    sms_appointment_confirmation = Column(Boolean, default=True)
+    sms_appointment_reminder = Column(Boolean, default=True)
+    sms_appointment_changes = Column(Boolean, default=True)
+    sms_appointment_cancellation = Column(Boolean, default=True)
+    sms_payment_confirmation = Column(Boolean, default=False)
+    sms_payment_failed = Column(Boolean, default=True)
+    sms_marketing = Column(Boolean, default=False)
+    sms_promotional = Column(Boolean, default=False)
+    sms_system_alerts = Column(Boolean, default=False)
+    
+    # Frequency settings
+    email_frequency = Column(String(20), default="immediate")  # immediate, daily, weekly, never
+    sms_frequency = Column(String(20), default="immediate")    # immediate, daily, never
+    
+    # Reminder timing preferences (JSON array of hours before appointment)
+    reminder_hours = Column(JSON, default=[24, 2])  # Default: 24h and 2h before
+    
+    # Advanced preferences
+    quiet_hours_enabled = Column(Boolean, default=False)
+    quiet_hours_start = Column(String(5), default="22:00")  # HH:MM format
+    quiet_hours_end = Column(String(5), default="08:00")    # HH:MM format
+    weekend_notifications = Column(Boolean, default=True)
+    
+    # GDPR compliance
+    consent_given_at = Column(DateTime, default=utcnow)
+    consent_ip_address = Column(String(45), nullable=True)  # IPv6 compatible
+    last_updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+    data_processing_consent = Column(Boolean, default=True)
+    marketing_consent = Column(Boolean, default=False)
+    
+    # Unsubscribe token for one-click unsubscribe
+    unsubscribe_token = Column(String(64), unique=True, index=True)
+    
+    # Metadata
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+    
+    # Relationships
+    user = relationship("User", backref="enhanced_notification_preferences")
+    audit_logs = relationship("NotificationPreferenceAudit", back_populates="preferences", cascade="all, delete-orphan")
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if not self.unsubscribe_token:
+            self.unsubscribe_token = self.generate_unsubscribe_token()
+    
+    def generate_unsubscribe_token(self) -> str:
+        """Generate a unique unsubscribe token"""
+        import secrets
+        import hashlib
+        
+        random_string = secrets.token_urlsafe(32)
+        # Create a hash that includes user_id for added security
+        token_data = f"{self.user_id}:{random_string}:{utcnow().isoformat()}"
+        return hashlib.sha256(token_data.encode()).hexdigest()[:64]
+    
+    def should_send_notification(self, notification_type: str, channel: str = "email") -> bool:
+        """
+        Check if a notification should be sent based on user preferences
+        
+        Args:
+            notification_type: Type of notification (e.g., 'appointment_confirmation')
+            channel: Notification channel ('email' or 'sms')
+        
+        Returns:
+            bool: True if notification should be sent
+        """
+        # Check if channel is enabled
+        if channel == "email" and not self.email_enabled:
+            return False
+        elif channel == "sms" and not self.sms_enabled:
+            return False
+        
+        # Check frequency settings
+        frequency_attr = f"{channel}_frequency"
+        frequency = getattr(self, frequency_attr, "immediate")
+        if frequency == "never":
+            return False
+        
+        # Check specific notification type preferences
+        pref_attr = f"{channel}_{notification_type}"
+        if hasattr(self, pref_attr):
+            return getattr(self, pref_attr, False)
+        
+        # Default to True for unknown notification types if channel is enabled
+        return True
+    
+    def get_reminder_hours(self) -> list:
+        """Get reminder hours as a list, with fallback to default"""
+        if self.reminder_hours and isinstance(self.reminder_hours, list):
+            return self.reminder_hours
+        return [24, 2]  # Default fallback
+    
+    def is_quiet_time(self, check_time: datetime = None) -> bool:
+        """
+        Check if the given time falls within user's quiet hours
+        
+        Args:
+            check_time: Time to check (defaults to current time in user's timezone)
+        
+        Returns:
+            bool: True if it's quiet time
+        """
+        if not self.quiet_hours_enabled:
+            return False
+        
+        if not check_time:
+            check_time = datetime.now()
+        
+        # Parse quiet hours
+        start_hour, start_min = map(int, self.quiet_hours_start.split(':'))
+        end_hour, end_min = map(int, self.quiet_hours_end.split(':'))
+        
+        current_time = check_time.time()
+        start_time = datetime.min.time().replace(hour=start_hour, minute=start_min)
+        end_time = datetime.min.time().replace(hour=end_hour, minute=end_min)
+        
+        # Handle overnight quiet hours (e.g., 22:00 to 08:00)
+        if start_time > end_time:
+            return current_time >= start_time or current_time <= end_time
+        else:
+            return start_time <= current_time <= end_time
+    
+    def to_dict(self) -> dict:
+        """Convert preferences to dictionary for API responses"""
+        return {
+            "user_id": self.user_id,
+            "email_enabled": self.email_enabled,
+            "sms_enabled": self.sms_enabled,
+            "timezone": self.timezone,
+            "email_preferences": {
+                "appointment_confirmation": self.email_appointment_confirmation,
+                "appointment_reminder": self.email_appointment_reminder,
+                "appointment_changes": self.email_appointment_changes,
+                "appointment_cancellation": self.email_appointment_cancellation,
+                "payment_confirmation": self.email_payment_confirmation,
+                "payment_failed": self.email_payment_failed,
+                "marketing": self.email_marketing,
+                "news_updates": self.email_news_updates,
+                "promotional": self.email_promotional,
+                "system_alerts": self.email_system_alerts,
+                "frequency": self.email_frequency
+            },
+            "sms_preferences": {
+                "appointment_confirmation": self.sms_appointment_confirmation,
+                "appointment_reminder": self.sms_appointment_reminder,
+                "appointment_changes": self.sms_appointment_changes,
+                "appointment_cancellation": self.sms_appointment_cancellation,
+                "payment_confirmation": self.sms_payment_confirmation,
+                "payment_failed": self.sms_payment_failed,
+                "marketing": self.sms_marketing,
+                "promotional": self.sms_promotional,
+                "system_alerts": self.sms_system_alerts,
+                "frequency": self.sms_frequency
+            },
+            "advanced_settings": {
+                "reminder_hours": self.get_reminder_hours(),
+                "quiet_hours_enabled": self.quiet_hours_enabled,
+                "quiet_hours_start": self.quiet_hours_start,
+                "quiet_hours_end": self.quiet_hours_end,
+                "weekend_notifications": self.weekend_notifications
+            },
+            "compliance": {
+                "consent_given_at": self.consent_given_at.isoformat() if self.consent_given_at else None,
+                "data_processing_consent": self.data_processing_consent,
+                "marketing_consent": self.marketing_consent,
+                "last_updated_at": self.last_updated_at.isoformat() if self.last_updated_at else None
+            }
+        }
+
+
+class NotificationPreferenceAudit(Base):
+    """Audit log for notification preference changes (GDPR compliance)"""
+    __tablename__ = "notification_preference_audit"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    preferences_id = Column(Integer, ForeignKey("notification_preferences_v2.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    
+    # Change tracking
+    field_changed = Column(String(100), nullable=False)
+    old_value = Column(Text, nullable=True)
+    new_value = Column(Text, nullable=True)
+    change_reason = Column(String(200), nullable=True)  # user_update, admin_update, system_update
+    
+    # Metadata
+    changed_at = Column(DateTime, default=utcnow)
+    changed_by_ip = Column(String(45), nullable=True)
+    user_agent = Column(String(500), nullable=True)
+    
+    # Relationships
+    preferences = relationship("NotificationPreferences", back_populates="audit_logs")
+    user = relationship("User", backref="notification_preference_audits")
+
+
+class UnsubscribeRequest(Base):
+    """Track unsubscribe requests for compliance"""
+    __tablename__ = "unsubscribe_requests"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # May be null for non-users
+    email_address = Column(String(255), nullable=False, index=True)
+    phone_number = Column(String(20), nullable=True, index=True)
+    
+    # Unsubscribe details
+    unsubscribe_type = Column(String(50), nullable=False)  # email_all, sms_all, marketing_only, etc.
+    token_used = Column(String(64), nullable=True)  # The token used for unsubscribe
+    method = Column(String(20), nullable=False)  # one_click, preference_center, api, manual
+    
+    # Context
+    campaign_id = Column(String(100), nullable=True)  # If unsubscribed from specific campaign
+    ip_address = Column(String(45), nullable=True)
+    user_agent = Column(String(500), nullable=True)
+    
+    # Status
+    status = Column(String(20), default="active")  # active, reverted
+    processed_at = Column(DateTime, default=utcnow)
+    reverted_at = Column(DateTime, nullable=True)
+    
+    # Metadata
+    created_at = Column(DateTime, default=utcnow)
+    
+    # Relationships
+    user = relationship("User", backref="unsubscribe_requests")
+
+
+class NotificationChannel(Base):
+    """Define available notification channels and their settings"""
+    __tablename__ = "notification_channels"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(50), unique=True, nullable=False)  # email, sms, push, webhook
+    display_name = Column(String(100), nullable=False)
+    description = Column(Text, nullable=True)
+    
+    # Channel settings
+    is_active = Column(Boolean, default=True)
+    requires_consent = Column(Boolean, default=False)
+    supports_marketing = Column(Boolean, default=True)
+    supports_transactional = Column(Boolean, default=True)
+    
+    # Rate limiting
+    rate_limit_per_hour = Column(Integer, nullable=True)
+    rate_limit_per_day = Column(Integer, nullable=True)
+    
+    # Configuration
+    configuration = Column(JSON, nullable=True)  # Channel-specific config
+    
+    # Metadata
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+
+
+# ================================================================================
+# EMAIL ANALYTICS MODELS
+# ================================================================================
+
+class EmailAnalyticsEvent(Base):
+    """Track email engagement events for analytics"""
+    __tablename__ = "email_analytics_events"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Email identification
+    message_id = Column(String(255), nullable=False, index=True)  # SendGrid message ID
+    email_address = Column(String(255), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    notification_queue_id = Column(Integer, ForeignKey("notification_queue.id"), nullable=True)
+    
+    # Event details
+    event_type = Column(String(50), nullable=False, index=True)  # open, click, bounce, unsubscribe, delivered, etc.
+    timestamp = Column(DateTime, nullable=False, index=True)
+    
+    # Event-specific data
+    url = Column(String(500), nullable=True)  # For click events
+    user_agent = Column(String(500), nullable=True)
+    ip_address = Column(String(45), nullable=True)
+    
+    # Email client and device info
+    email_client = Column(String(100), nullable=True)
+    device_type = Column(String(50), nullable=True)  # desktop, mobile, tablet
+    operating_system = Column(String(100), nullable=True)
+    
+    # Geographic data
+    country = Column(String(2), nullable=True)  # ISO country code
+    region = Column(String(100), nullable=True)
+    city = Column(String(100), nullable=True)
+    
+    # Bounce/Error details
+    bounce_type = Column(String(50), nullable=True)  # hard, soft, block
+    bounce_reason = Column(String(255), nullable=True)
+    error_code = Column(String(20), nullable=True)
+    
+    # A/B Testing
+    ab_test_id = Column(Integer, ForeignKey("email_ab_tests.id"), nullable=True)
+    ab_variant = Column(String(10), nullable=True)  # A, B, C, etc.
+    
+    # Additional metadata
+    event_metadata = Column(JSON, nullable=True)
+    
+    created_at = Column(DateTime, default=utcnow)
+    
+    # Relationships
+    user = relationship("User", backref="email_analytics_events")
+    notification = relationship("NotificationQueue", backref="analytics_events")
+
+
+# Alias for backwards compatibility with analytics service
+EmailEvent = EmailAnalyticsEvent
+
+
+class EmailCampaign(Base):
+    """Email campaign tracking for analytics"""
+    __tablename__ = "email_campaigns"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Campaign details
+    name = Column(String(255), nullable=False)
+    template_name = Column(String(100), nullable=False)
+    subject = Column(String(255), nullable=False)
+    
+    # Sending metrics
+    sent_count = Column(Integer, default=0)
+    delivered_count = Column(Integer, default=0)
+    delivery_rate = Column(Float, default=0.0)
+    
+    # Engagement metrics
+    opened_count = Column(Integer, default=0)
+    unique_opens = Column(Integer, default=0)
+    open_rate = Column(Float, default=0.0)
+    
+    clicked_count = Column(Integer, default=0)
+    unique_clicks = Column(Integer, default=0)
+    click_rate = Column(Float, default=0.0)
+    
+    # Negative metrics
+    bounced_count = Column(Integer, default=0)
+    bounce_rate = Column(Float, default=0.0)
+    unsubscribed_count = Column(Integer, default=0)
+    unsubscribe_rate = Column(Float, default=0.0)
+    
+    # Timestamps
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, nullable=True)
+
+
+class EmailAnalyticsSummary(Base):
+    """Aggregated email analytics for performance reporting"""
+    __tablename__ = "email_analytics_summaries"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Time period
+    date = Column(Date, nullable=False, index=True)
+    hour = Column(Integer, nullable=True, index=True)  # For hourly breakdowns
+    
+    # Template/Campaign identification
+    template_name = Column(String(100), nullable=True, index=True)
+    campaign_id = Column(String(100), nullable=True, index=True)
+    
+    # Sending metrics
+    emails_sent = Column(Integer, default=0)
+    emails_delivered = Column(Integer, default=0)
+    delivery_rate = Column(Float, default=0.0)  # Delivered / Sent
+    
+    # Engagement metrics
+    unique_opens = Column(Integer, default=0)
+    total_opens = Column(Integer, default=0)
+    open_rate = Column(Float, default=0.0)  # Unique Opens / Delivered
+    
+    unique_clicks = Column(Integer, default=0)
+    total_clicks = Column(Integer, default=0)
+    click_rate = Column(Float, default=0.0)  # Unique Clicks / Delivered
+    click_to_open_rate = Column(Float, default=0.0)  # Unique Clicks / Unique Opens
+    
+    # Negative metrics
+    bounces = Column(Integer, default=0)
+    bounce_rate = Column(Float, default=0.0)  # Bounces / Sent
+    spam_reports = Column(Integer, default=0)
+    spam_rate = Column(Float, default=0.0)  # Spam / Delivered
+    unsubscribes = Column(Integer, default=0)
+    unsubscribe_rate = Column(Float, default=0.0)  # Unsubscribes / Delivered
+    
+    # Time-based metrics
+    avg_time_to_open = Column(Integer, nullable=True)  # Average seconds to first open
+    avg_time_to_click = Column(Integer, nullable=True)  # Average seconds to first click
+    
+    # Device breakdown (JSON)
+    device_stats = Column(JSON, default=dict)
+    client_stats = Column(JSON, default=dict)
+    location_stats = Column(JSON, default=dict)
+    
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+    
+    # Unique constraint for date/hour/template combination
+    __table_args__ = (
+        Index('idx_analytics_period_template', 'date', 'hour', 'template_name', unique=True),
+    )
+
+
+class EmailABTest(Base):
+    """A/B testing framework for email templates"""
+    __tablename__ = "email_ab_tests"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Test identification
+    name = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    
+    # Test configuration
+    base_template_name = Column(String(100), nullable=False)
+    test_type = Column(String(50), nullable=False)  # subject_line, content, send_time, from_name
+    
+    # Test variants (JSON array of variant configurations)
+    variants = Column(JSON, nullable=False)
+    traffic_split = Column(JSON, nullable=False)  # Percentage split for each variant
+    
+    # Test parameters
+    sample_size = Column(Integer, nullable=True)  # Target sample size
+    confidence_level = Column(Float, default=0.95)  # Statistical confidence (0.95 = 95%)
+    minimum_effect_size = Column(Float, default=0.05)  # Minimum detectable effect (5%)
+    
+    # Test status
+    status = Column(String(20), default="draft")  # draft, running, completed, stopped
+    winner_variant = Column(String(10), nullable=True)  # A, B, C, etc.
+    winner_confidence = Column(Float, nullable=True)  # Statistical confidence of winner
+    
+    # Time controls
+    start_time = Column(DateTime, nullable=True)
+    end_time = Column(DateTime, nullable=True)
+    max_duration_hours = Column(Integer, default=168)  # 1 week default
+    
+    # Success metrics
+    primary_metric = Column(String(50), nullable=False)  # open_rate, click_rate, conversion_rate
+    secondary_metrics = Column(JSON, nullable=True)  # Additional metrics to track
+    
+    # Results
+    results = Column(JSON, nullable=True)  # Test results and statistics
+    
+    # Metadata
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+    
+    # Relationships
+    created_by = relationship("User", backref="created_ab_tests")
+    analytics_events = relationship("EmailAnalyticsEvent", backref="ab_test")
+
+
+class EmailDeliverabilityTest(Base):
+    """Track email deliverability testing results"""
+    __tablename__ = "email_deliverability_tests"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Test identification
+    test_name = Column(String(255), nullable=False)
+    template_name = Column(String(100), nullable=True)
+    test_type = Column(String(50), nullable=False)  # spam_check, provider_test, preview_test
+    
+    # Test configuration
+    test_email_addresses = Column(JSON, nullable=False)  # List of test email addresses
+    from_address = Column(String(255), nullable=False)
+    from_name = Column(String(100), nullable=False)
+    subject_line = Column(String(255), nullable=False)
+    
+    # Test results
+    overall_score = Column(Float, nullable=True)  # Overall deliverability score (0-100)
+    spam_score = Column(Float, nullable=True)  # Spam score
+    
+    # Provider-specific results (JSON)
+    provider_results = Column(JSON, nullable=True)  # Gmail, Outlook, Yahoo, etc.
+    spam_filter_results = Column(JSON, nullable=True)  # SpamAssassin, etc.
+    
+    # Content analysis
+    content_issues = Column(JSON, nullable=True)  # Issues found in content
+    recommendations = Column(JSON, nullable=True)  # Improvement recommendations
+    
+    # Authentication checks
+    spf_valid = Column(Boolean, nullable=True)
+    dkim_valid = Column(Boolean, nullable=True)
+    dmarc_valid = Column(Boolean, nullable=True)
+    
+    # Test status and timing
+    status = Column(String(20), default="pending")  # pending, running, completed, failed
+    started_at = Column(DateTime, nullable=True)
+    completed_at = Column(DateTime, nullable=True)
+    
+    # Raw results storage
+    raw_results = Column(JSON, nullable=True)  # Full test results for debugging
+    
+    # Metadata
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime, default=utcnow)
+    
+    # Relationships
+    created_by = relationship("User", backref="deliverability_tests")
+
+
+class EmailPreview(Base):
+    """Store email previews for different clients and devices"""
+    __tablename__ = "email_previews"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Template identification
+    template_name = Column(String(100), nullable=False, index=True)
+    template_version = Column(String(50), nullable=True)  # For versioning
+    
+    # Preview configuration
+    client_name = Column(String(100), nullable=False)  # Outlook, Gmail, Apple Mail, etc.
+    device_type = Column(String(50), nullable=False)  # desktop, mobile, tablet
+    viewport_width = Column(Integer, nullable=True)
+    viewport_height = Column(Integer, nullable=True)
+    
+    # Preview data
+    preview_image_url = Column(String(500), nullable=True)  # Screenshot URL
+    preview_html = Column(Text, nullable=True)  # Rendered HTML
+    rendering_time_ms = Column(Integer, nullable=True)  # Time to generate preview
+    
+    # Analysis results
+    rendering_issues = Column(JSON, nullable=True)  # Issues found in rendering
+    accessibility_score = Column(Float, nullable=True)  # Accessibility score (0-100)
+    mobile_friendly = Column(Boolean, nullable=True)
+    
+    # Status
+    status = Column(String(20), default="pending")  # pending, completed, failed
+    
+    # Metadata
+    created_at = Column(DateTime, default=utcnow)
+    expires_at = Column(DateTime, nullable=True)  # When preview expires

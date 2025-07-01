@@ -18,9 +18,10 @@ from pathlib import Path
 from config import settings
 from models import (
     User, Appointment, NotificationTemplate, NotificationPreference,
-    NotificationQueue, NotificationStatus, Client
+    NotificationQueue, NotificationStatus, Client, NotificationPreferences
 )
 from database import get_db
+from utils.url_shortener import create_appointment_short_url, create_booking_short_url
 
 logger = logging.getLogger(__name__)
 
@@ -71,19 +72,35 @@ class NotificationService:
             'last_reset': datetime.utcnow()
         }
     
-    def render_template(self, template: NotificationTemplate, context: Dict[str, Any]) -> Dict[str, str]:
+    def render_template(self, template: NotificationTemplate, context: Dict[str, Any], db: Session = None) -> Dict[str, str]:
         """Render a notification template with the given context"""
         try:
+            # Enhance context with short URLs for SMS templates
+            enhanced_context = context.copy()
+            
+            if template.template_type == "sms" and db:
+                # Generate short URLs for SMS templates
+                appointment_id = context.get('appointment_id')
+                if appointment_id:
+                    # Create short URL for appointment viewing
+                    short_url = create_appointment_short_url(db, appointment_id, 'view')
+                    if short_url:
+                        enhanced_context['short_url'] = short_url
+                
+                # Add business URL if not present
+                if 'business_url' not in enhanced_context:
+                    enhanced_context['business_url'] = getattr(settings, 'app_url', 'https://app.bookedbarber.com')
+            
             # Render body
             body_template = Template(template.body)
-            rendered_body = body_template.render(**context)
+            rendered_body = body_template.render(**enhanced_context)
             
             result = {"body": rendered_body}
             
             # Render subject for emails
             if template.template_type == "email" and template.subject:
                 subject_template = Template(template.subject)
-                result["subject"] = subject_template.render(**context)
+                result["subject"] = subject_template.render(**enhanced_context)
             
             return result
         except Exception as e:
@@ -240,7 +257,7 @@ class NotificationService:
         scheduled_for: Optional[datetime] = None,
         appointment_id: Optional[int] = None
     ) -> List[NotificationQueue]:
-        """Queue notifications based on user preferences"""
+        """Queue notifications based on enhanced user preferences"""
         # Get template
         template_email = db.query(NotificationTemplate).filter(
             and_(
@@ -262,95 +279,185 @@ class NotificationService:
             logger.error(f"No active templates found for {template_name}")
             return []
         
-        # Get user preferences
-        preferences = db.query(NotificationPreference).filter(
+        # Get enhanced user preferences (fallback to legacy if not found)
+        enhanced_preferences = db.query(NotificationPreferences).filter(
+            NotificationPreferences.user_id == user.id
+        ).first()
+        
+        legacy_preferences = db.query(NotificationPreference).filter(
             NotificationPreference.user_id == user.id
         ).first()
         
-        # Default preferences if not set
-        if not preferences:
-            preferences = NotificationPreference(
+        # Create default enhanced preferences if not found
+        if not enhanced_preferences:
+            enhanced_preferences = NotificationPreferences(
                 user_id=user.id,
+                timezone=user.timezone or 'UTC',
                 email_enabled=True,
-                sms_enabled=True,
-                email_appointment_confirmation=True,
-                sms_appointment_confirmation=True,
-                email_appointment_reminder=True,
-                sms_appointment_reminder=True,
-                email_appointment_changes=True,
-                sms_appointment_changes=True
+                sms_enabled=bool(user.phone),
+                marketing_consent=False  # Default to false for GDPR compliance
             )
-            db.add(preferences)
+            db.add(enhanced_preferences)
             db.commit()
+            db.refresh(enhanced_preferences)
+        
+        # Check if sending time is within quiet hours
+        scheduled_time = scheduled_for or datetime.utcnow()
+        if enhanced_preferences.is_quiet_time(scheduled_time):
+            # Reschedule to after quiet hours if it's a non-urgent notification
+            if template_name not in ["appointment_confirmation", "payment_failed", "system_alert"]:
+                # Calculate next available time after quiet hours
+                quiet_end_hour, quiet_end_min = map(int, enhanced_preferences.quiet_hours_end.split(':'))
+                next_day = scheduled_time.date()
+                if scheduled_time.time() >= datetime.min.time().replace(hour=quiet_end_hour, minute=quiet_end_min):
+                    next_day = scheduled_time.date() + timedelta(days=1)
+                
+                scheduled_for = datetime.combine(
+                    next_day, 
+                    datetime.min.time().replace(hour=quiet_end_hour, minute=quiet_end_min)
+                )
+                logger.info(f"Rescheduled notification {template_name} for user {user.id} due to quiet hours")
         
         queued_notifications = []
         
-        # Check if email should be sent
-        should_send_email = False
-        if preferences.email_enabled and template_email and user.email:
-            if "confirmation" in template_name and preferences.email_appointment_confirmation:
-                should_send_email = True
-            elif "reminder" in template_name and preferences.email_appointment_reminder:
-                should_send_email = True
-            elif "change" in template_name and preferences.email_appointment_changes:
-                should_send_email = True
-            elif "confirmation" not in template_name and "reminder" not in template_name and "change" not in template_name:
-                should_send_email = True  # Other notification types
+        # Determine notification type from template name
+        notification_type = self._extract_notification_type(template_name)
         
-        if should_send_email:
-            rendered = self.render_template(template_email, context)
-            notification = NotificationQueue(
-                user_id=user.id,
-                appointment_id=appointment_id,
-                notification_type="email",
-                template_name=template_name,
-                recipient=user.email,
-                subject=rendered.get("subject", ""),
-                body=rendered["body"],
-                scheduled_for=scheduled_for or datetime.utcnow(),
-                status=NotificationStatus.PENDING
-            )
-            db.add(notification)
-            queued_notifications.append(notification)
+        # Check if email should be sent
+        should_send_email = enhanced_preferences.should_send_notification(notification_type, "email")
+        
+        if should_send_email and template_email and user.email:
+            # Check frequency constraints
+            if self._check_frequency_limit(db, user.id, "email", enhanced_preferences.email_frequency):
+                # Add appointment_id to context for URL generation
+                email_context = context.copy()
+                if appointment_id:
+                    email_context['appointment_id'] = appointment_id
+                
+                # Add unsubscribe token to context
+                email_context['unsubscribe_token'] = enhanced_preferences.unsubscribe_token
+                email_context['preference_center_url'] = f"{getattr(settings, 'app_url', 'https://app.bookedbarber.com')}/api/v1/notification-preferences/preference-center/{enhanced_preferences.unsubscribe_token}"
+                
+                rendered = self.render_template(template_email, email_context, db)
+                notification = NotificationQueue(
+                    user_id=user.id,
+                    appointment_id=appointment_id,
+                    notification_type="email",
+                    template_name=template_name,
+                    recipient=user.email,
+                    subject=rendered.get("subject", ""),
+                    body=rendered["body"],
+                    scheduled_for=scheduled_for or datetime.utcnow(),
+                    status=NotificationStatus.PENDING
+                )
+                db.add(notification)
+                queued_notifications.append(notification)
+            else:
+                logger.info(f"Email notification {template_name} skipped for user {user.id} due to frequency limits")
         
         # Check if SMS should be sent
-        should_send_sms = False
-        if preferences.sms_enabled and template_sms and user.phone:
-            if "confirmation" in template_name and preferences.sms_appointment_confirmation:
-                should_send_sms = True
-            elif "reminder" in template_name and preferences.sms_appointment_reminder:
-                should_send_sms = True
-            elif "change" in template_name and preferences.sms_appointment_changes:
-                should_send_sms = True
-            elif "confirmation" not in template_name and "reminder" not in template_name and "change" not in template_name:
-                should_send_sms = True  # Other notification types
+        should_send_sms = enhanced_preferences.should_send_notification(notification_type, "sms")
         
-        if should_send_sms:
-            rendered = self.render_template(template_sms, context)
-            notification = NotificationQueue(
-                user_id=user.id,
-                appointment_id=appointment_id,
-                notification_type="sms",
-                template_name=template_name,
-                recipient=user.phone,
-                body=rendered["body"],
-                scheduled_for=scheduled_for or datetime.utcnow(),
-                status=NotificationStatus.PENDING
-            )
-            db.add(notification)
-            queued_notifications.append(notification)
+        if should_send_sms and template_sms and user.phone:
+            # Check frequency constraints
+            if self._check_frequency_limit(db, user.id, "sms", enhanced_preferences.sms_frequency):
+                # Add appointment_id to context for URL generation
+                sms_context = context.copy()
+                if appointment_id:
+                    sms_context['appointment_id'] = appointment_id
+                
+                # Add unsubscribe info for SMS
+                sms_context['unsubscribe_info'] = f"Reply STOP to unsubscribe"
+                
+                rendered = self.render_template(template_sms, sms_context, db)
+                notification = NotificationQueue(
+                    user_id=user.id,
+                    appointment_id=appointment_id,
+                    notification_type="sms",
+                    template_name=template_name,
+                    recipient=user.phone,
+                    body=rendered["body"],
+                    scheduled_for=scheduled_for or datetime.utcnow(),
+                    status=NotificationStatus.PENDING
+                )
+                db.add(notification)
+                queued_notifications.append(notification)
+            else:
+                logger.info(f"SMS notification {template_name} skipped for user {user.id} due to frequency limits")
         
         db.commit()
         return queued_notifications
     
+    def _extract_notification_type(self, template_name: str) -> str:
+        """Extract notification type from template name"""
+        type_mapping = {
+            "appointment_confirmation": "appointment_confirmation",
+            "appointment_reminder": "appointment_reminder", 
+            "appointment_change": "appointment_changes",
+            "appointment_cancellation": "appointment_cancellation",
+            "payment_confirmation": "payment_confirmation",
+            "payment_failed": "payment_failed",
+            "marketing": "marketing",
+            "promotional": "promotional",
+            "news_update": "news_updates",
+            "system_alert": "system_alerts"
+        }
+        
+        for key, value in type_mapping.items():
+            if key in template_name.lower():
+                return value
+        
+        # Default fallback
+        return "system_alerts"
+    
+    def _check_frequency_limit(self, db: Session, user_id: int, channel: str, frequency: str) -> bool:
+        """Check if user hasn't exceeded their frequency limit"""
+        if frequency == "never":
+            return False
+        elif frequency == "immediate":
+            return True
+        elif frequency == "daily":
+            # Check if any notification was sent in the last 24 hours
+            since = datetime.utcnow() - timedelta(days=1)
+            recent_count = db.query(NotificationQueue).filter(
+                and_(
+                    NotificationQueue.user_id == user_id,
+                    NotificationQueue.notification_type == channel,
+                    NotificationQueue.status == NotificationStatus.SENT,
+                    NotificationQueue.sent_at >= since
+                )
+            ).count()
+            return recent_count == 0
+        elif frequency == "weekly":
+            # Check if any notification was sent in the last 7 days
+            since = datetime.utcnow() - timedelta(days=7)
+            recent_count = db.query(NotificationQueue).filter(
+                and_(
+                    NotificationQueue.user_id == user_id,
+                    NotificationQueue.notification_type == channel,
+                    NotificationQueue.status == NotificationStatus.SENT,
+                    NotificationQueue.sent_at >= since
+                )
+            ).count()
+            return recent_count == 0
+        
+        return True
+    
     def schedule_appointment_reminders(self, db: Session, appointment: Appointment):
         """Schedule reminder notifications for an appointment"""
-        # Get user preferences
-        preferences = db.query(NotificationPreference).filter(
-            NotificationPreference.user_id == appointment.user_id
+        # Get enhanced user preferences
+        enhanced_preferences = db.query(NotificationPreferences).filter(
+            NotificationPreferences.user_id == appointment.user_id
         ).first()
         
-        reminder_hours = preferences.reminder_hours if preferences else settings.appointment_reminder_hours
+        # Fallback to legacy preferences if enhanced not found
+        if not enhanced_preferences:
+            legacy_preferences = db.query(NotificationPreference).filter(
+                NotificationPreference.user_id == appointment.user_id
+            ).first()
+            reminder_hours = legacy_preferences.reminder_hours if legacy_preferences else [24, 2]
+        else:
+            reminder_hours = enhanced_preferences.get_reminder_hours()
         
         # Create context for templates
         client = db.query(Client).filter(Client.id == appointment.client_id).first() if appointment.client_id else None
@@ -362,7 +469,8 @@ class NotificationService:
             "appointment_time": appointment.start_time.strftime("%I:%M %p"),
             "duration": appointment.duration_minutes,
             "price": appointment.price,
-            "business_name": settings.app_name
+            "business_name": settings.app_name,
+            "appointment_id": appointment.id
         }
         
         # Schedule reminders
@@ -604,6 +712,49 @@ class NotificationService:
         
         logger.info(f"Bulk queued {len(queued_notifications)} notifications")
         return queued_notifications
+    
+    def handle_incoming_sms(self, db: Session, from_phone: str, message_body: str) -> Dict[str, Any]:
+        """
+        Handle incoming SMS messages and route to SMS response handler
+        
+        Args:
+            db: Database session
+            from_phone: Phone number that sent the SMS
+            message_body: Content of the SMS message
+            
+        Returns:
+            Dict with response and processing details
+        """
+        try:
+            # Import here to avoid circular imports
+            from services.sms_response_handler import sms_response_handler
+            
+            # Process the SMS response
+            result = sms_response_handler.process_sms_response(db, from_phone, message_body)
+            
+            # If there's a response to send, queue it
+            if result.get('response'):
+                # Send immediate response SMS
+                send_result = self.send_sms(from_phone, result['response'])
+                result['sms_sent'] = send_result.get('success', False)
+                result['sms_error'] = send_result.get('error') if not send_result.get('success') else None
+            
+            logger.info(f"Processed incoming SMS from {from_phone}: action={result.get('action')}, success={result.get('success')}")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error handling incoming SMS from {from_phone}: {str(e)}")
+            
+            # Send error response
+            error_response = f"Sorry, we couldn't process your message. Please call {getattr(settings, 'business_phone', 'us')} for assistance. - {getattr(settings, 'app_name', 'BookedBarber')}"
+            self.send_sms(from_phone, error_response)
+            
+            return {
+                'success': False,
+                'error': str(e),
+                'action': 'error',
+                'response': error_response
+            }
 
 
 # Singleton instance

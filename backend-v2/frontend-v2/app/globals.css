@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import calendar animations */
+@import '../styles/calendar-animations.css';
+
 /* CSS Variables for Dynamic Theming */
 :root {
   /* Light Theme Colors */

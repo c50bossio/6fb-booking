@@ -1937,5 +1937,217 @@ class MarketingUsageResponse(BaseModel):
     class Config:
         from_attributes = True
 
+# Notification Preferences Schemas
+class EmailPreferences(BaseModel):
+    """Email notification preferences"""
+    appointment_confirmation: Optional[bool] = True
+    appointment_reminder: Optional[bool] = True
+    appointment_changes: Optional[bool] = True
+    appointment_cancellation: Optional[bool] = True
+    payment_confirmation: Optional[bool] = True
+    payment_failed: Optional[bool] = True
+    marketing: Optional[bool] = False
+    news_updates: Optional[bool] = False
+    promotional: Optional[bool] = False
+    system_alerts: Optional[bool] = True
+    frequency: Optional[str] = "immediate"  # immediate, daily, weekly, never
+
+
+class SMSPreferences(BaseModel):
+    """SMS notification preferences"""
+    appointment_confirmation: Optional[bool] = True
+    appointment_reminder: Optional[bool] = True
+    appointment_changes: Optional[bool] = True
+    appointment_cancellation: Optional[bool] = True
+    payment_confirmation: Optional[bool] = False
+    payment_failed: Optional[bool] = True
+    marketing: Optional[bool] = False
+    promotional: Optional[bool] = False
+    system_alerts: Optional[bool] = False
+    frequency: Optional[str] = "immediate"  # immediate, daily, never
+
+
+class AdvancedSettings(BaseModel):
+    """Advanced notification settings"""
+    reminder_hours: Optional[List[int]] = [24, 2]
+    quiet_hours_enabled: Optional[bool] = False
+    quiet_hours_start: Optional[str] = "22:00"
+    quiet_hours_end: Optional[str] = "08:00"
+    weekend_notifications: Optional[bool] = True
+
+
+class ComplianceInfo(BaseModel):
+    """GDPR compliance information"""
+    consent_given_at: Optional[datetime] = None
+    data_processing_consent: Optional[bool] = True
+    marketing_consent: Optional[bool] = False
+    last_updated_at: Optional[datetime] = None
+
+
+class NotificationPreferencesResponse(BaseModel):
+    """Complete notification preferences response"""
+    user_id: int
+    email_enabled: bool
+    sms_enabled: bool
+    timezone: str
+    email_preferences: EmailPreferences
+    sms_preferences: SMSPreferences
+    advanced_settings: AdvancedSettings
+    compliance: ComplianceInfo
+
+    class Config:
+        from_attributes = True
+
+
+class NotificationPreferencesUpdate(BaseModel):
+    """Update notification preferences request"""
+    email_enabled: Optional[bool] = None
+    sms_enabled: Optional[bool] = None
+    timezone: Optional[str] = None
+    email_preferences: Optional[EmailPreferences] = None
+    sms_preferences: Optional[SMSPreferences] = None
+    advanced_settings: Optional[AdvancedSettings] = None
+    marketing_consent: Optional[bool] = None
+    data_processing_consent: Optional[bool] = None
+
+    @validator('timezone')
+    def validate_timezone(cls, v):
+        if v is not None:
+            try:
+                pytz.timezone(v)
+            except pytz.exceptions.UnknownTimeZoneError:
+                raise ValueError(f'Invalid timezone: {v}')
+        return v
+
+    @validator('email_preferences')
+    def validate_email_frequency(cls, v):
+        if v and hasattr(v, 'frequency') and v.frequency:
+            valid_frequencies = ['immediate', 'daily', 'weekly', 'never']
+            if v.frequency not in valid_frequencies:
+                raise ValueError(f'Invalid email frequency. Must be one of: {valid_frequencies}')
+        return v
+
+    @validator('sms_preferences')
+    def validate_sms_frequency(cls, v):
+        if v and hasattr(v, 'frequency') and v.frequency:
+            valid_frequencies = ['immediate', 'daily', 'never']
+            if v.frequency not in valid_frequencies:
+                raise ValueError(f'Invalid SMS frequency. Must be one of: {valid_frequencies}')
+        return v
+
+
+class UnsubscribeRequest(BaseModel):
+    """Unsubscribe request"""
+    token: str
+    unsubscribe_type: str = "marketing_only"  # marketing_only, email_all, sms_all, all
+
+    @validator('unsubscribe_type')
+    def validate_unsubscribe_type(cls, v):
+        valid_types = ['marketing_only', 'email_all', 'sms_all', 'all']
+        if v not in valid_types:
+            raise ValueError(f'Invalid unsubscribe type. Must be one of: {valid_types}')
+        return v
+
+
+class UnsubscribeResponse(BaseModel):
+    """Unsubscribe response"""
+    status: str
+    message: str
+    unsubscribe_type: str
+
+
+class NotificationChannelResponse(BaseModel):
+    """Notification channel information"""
+    name: str
+    display_name: str
+    description: Optional[str] = None
+    supports_marketing: bool
+    supports_transactional: bool
+    requires_consent: bool
+
+
+class PreferenceAuditLog(BaseModel):
+    """Preference change audit log entry"""
+    field_changed: str
+    old_value: Optional[str] = None
+    new_value: Optional[str] = None
+    change_reason: str
+    changed_at: datetime
+    changed_by_ip: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+# ================================================================================
+# EMAIL ANALYTICS SCHEMAS
+# ================================================================================
+
+class EmailMetricsResponse(BaseModel):
+    """Email performance metrics response"""
+    period: Dict[str, str]
+    counts: Dict[str, int]
+    rates: Dict[str, float]
+    total_sent: int
+    total_delivered: int
+
+    class Config:
+        from_attributes = True
+
+
+class EmailCampaignResponse(BaseModel):
+    """Email campaign performance response"""
+    id: int
+    name: str
+    template_name: str
+    subject: str
+    sent_count: int
+    delivered_count: int
+    opened_count: int
+    unique_opens: int
+    clicked_count: int
+    unique_clicks: int
+    bounced_count: int
+    unsubscribed_count: int
+    delivery_rate: float
+    open_rate: float
+    click_rate: float
+    bounce_rate: float
+    unsubscribe_rate: float
+    created_at: str
+    updated_at: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class EmailEngagementResponse(BaseModel):
+    """User email engagement response"""
+    user_id: int
+    engagement_score: float
+    emails_received: int
+    emails_opened: int
+    emails_clicked: int
+    last_activity: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class TopClickedUrl(BaseModel):
+    """Top clicked URL information"""
+    url: str
+    clicks: int
+    unique_clicks: int
+
+
+class TopClickedUrlsResponse(BaseModel):
+    """Top clicked URLs response"""
+    urls: List[TopClickedUrl]
+
+    class Config:
+        from_attributes = True
+
+
 # Model rebuilds to resolve forward references
 SMSConversationResponse.model_rebuild()

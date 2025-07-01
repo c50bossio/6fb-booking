@@ -9,6 +9,8 @@ const publicRoutes = [
   '/forgot-password',
   '/reset-password',
   '/book',
+  '/calendar', // Added temporarily for testing
+  '/calendar-debug', // Added temporarily for testing
 ]
 
 // List of routes that require admin role

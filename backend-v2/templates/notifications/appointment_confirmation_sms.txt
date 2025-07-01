@@ -1,15 +1,13 @@
-✅ APPOINTMENT CONFIRMED
+APPOINTMENT CONFIRMED
 
-Hi {{ client_name }}! Your appointment is confirmed:
+{{ client_name }}, your appointment is confirmed:
 
-📅 {{ appointment_date }}
-🕐 {{ appointment_time }}
-✂️ {{ service_name }}
-💰 ${{ "%.2f"|format(price) }}
-{% if barber_name %}👨‍💼 Barber: {{ barber_name }}{% endif %}
+{{ appointment_date }} at {{ appointment_time }}
+Service: {{ service_name }} (${{ "%.2f"|format(price) }})
+{% if barber_name %}With: {{ barber_name }}{% endif %}
 
-Please arrive 5-10 minutes early. We'll send a reminder 24 hours before.
+{{ short_url | default('View details: ' + business_url) }}
 
-Questions? Call {{ business_phone | default('us') }}
+Reply CANCEL to cancel or call {{ business_phone }}
 
-- {{ business_name }}
+{{ business_name }}

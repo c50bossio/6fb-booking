@@ -1,17 +1,18 @@
 """
-Webhook handlers for payment processing
+Webhook handlers for payment processing and SMS responses
 """
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status, Form
 from sqlalchemy.orm import Session
 import stripe
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from datetime import datetime
 
 from database import get_db
 from config import settings
 from models import Payment, Refund, Payout
 from services.payment_security import PaymentSecurity, audit_logger
+from services.notification_service import notification_service
 
 router = APIRouter(
     prefix="/webhooks",
@@ -240,6 +241,79 @@ async def handle_transfer_failed(transfer: Dict[str, Any], db: Session):
     except Exception as e:
         logger.error(f"Error handling transfer failure webhook: {str(e)}")
         db.rollback()
+
+@router.post("/sms")
+async def handle_sms_webhook(
+    From: str = Form(...),
+    Body: str = Form(...),
+    MessageSid: Optional[str] = Form(None),
+    AccountSid: Optional[str] = Form(None),
+    db: Session = Depends(get_db)
+):
+    """
+    Handle incoming SMS webhooks from Twilio
+    
+    This endpoint processes two-way SMS communication for appointment management.
+    Twilio sends form-encoded data with From, Body, and other parameters.
+    """
+    try:
+        # Log the incoming SMS
+        logger.info(f"Incoming SMS webhook - From: {From}, Body: {Body[:100]}{'...' if len(Body) > 100 else ''}")
+        
+        # Validate that this is from our configured Twilio account
+        if AccountSid and AccountSid != settings.twilio_account_sid:
+            logger.warning(f"SMS webhook from unknown account: {AccountSid}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Unauthorized account"
+            )
+        
+        # Process the SMS response
+        result = notification_service.handle_incoming_sms(db, From, Body)
+        
+        # Return TwiML response (empty response means no auto-reply)
+        # The notification service handles sending responses directly
+        return {
+            "status": "processed",
+            "action": result.get("action", "unknown"),
+            "success": result.get("success", False)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"SMS webhook error: {str(e)}")
+        # Still return success to Twilio to avoid retries
+        return {"status": "error", "message": "Processing failed"}
+
+@router.post("/sms/status")
+async def handle_sms_status_webhook(
+    MessageSid: str = Form(...),
+    MessageStatus: str = Form(...),
+    To: Optional[str] = Form(None),
+    From: Optional[str] = Form(None),
+    ErrorCode: Optional[str] = Form(None),
+    ErrorMessage: Optional[str] = Form(None),
+    db: Session = Depends(get_db)
+):
+    """
+    Handle SMS delivery status webhooks from Twilio
+    
+    This tracks the delivery status of outbound SMS messages.
+    """
+    try:
+        logger.info(f"SMS status webhook - SID: {MessageSid}, Status: {MessageStatus}")
+        
+        # You could update notification queue status here based on MessageSid
+        # For now, just log the status
+        if ErrorCode:
+            logger.error(f"SMS delivery error - SID: {MessageSid}, Code: {ErrorCode}, Message: {ErrorMessage}")
+        
+        return {"status": "processed"}
+        
+    except Exception as e:
+        logger.error(f"SMS status webhook error: {str(e)}")
+        return {"status": "error"}
 
 @router.get("/health")
 def webhook_health():

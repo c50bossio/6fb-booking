@@ -1,0 +1,322 @@
+/* Calendar Animation Styles */
+
+/* Ripple effect animation */
+@keyframes ripple {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 0.5;
+  }
+  100% {
+    width: 200px;
+    height: 200px;
+    opacity: 0;
+  }
+}
+
+.animate-ripple {
+  animation: ripple 0.6s ease-out;
+}
+
+/* Calendar slide animations */
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutToLeft {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+@keyframes slideOutToRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.calendar-view-transition {
+  animation-duration: 0.3s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  animation-fill-mode: both;
+}
+
+.calendar-view-enter-right {
+  animation-name: slideInFromRight;
+}
+
+.calendar-view-enter-left {
+  animation-name: slideInFromLeft;
+}
+
+.calendar-view-exit-left {
+  animation-name: slideOutToLeft;
+}
+
+.calendar-view-exit-right {
+  animation-name: slideOutToRight;
+}
+
+/* Appointment hover and drag animations */
+.calendar-appointment {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.calendar-appointment:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.calendar-appointment.dragging {
+  transform: scale(1.05) rotate(2deg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  opacity: 0.8;
+  cursor: grabbing !important;
+}
+
+/* Time slot hover animations */
+.calendar-time-slot {
+  transition: all 0.15s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.calendar-time-slot:hover {
+  background-color: rgba(99, 102, 241, 0.05);
+}
+
+.calendar-time-slot.drop-target {
+  background-color: rgba(99, 102, 241, 0.1);
+  border: 2px dashed rgb(99, 102, 241);
+}
+
+/* Drop success animation */
+@keyframes dropSuccess {
+  0% {
+    transform: scale(1);
+    background-color: rgba(34, 197, 94, 0.2);
+  }
+  50% {
+    transform: scale(1.05);
+    background-color: rgba(34, 197, 94, 0.3);
+  }
+  100% {
+    transform: scale(1);
+    background-color: transparent;
+  }
+}
+
+.drop-success {
+  animation: dropSuccess 0.6s ease-out;
+}
+
+/* Loading shimmer effect */
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.2) 20%,
+    rgba(255, 255, 255, 0.3) 60%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Skeleton pulse animation */
+@keyframes skeletonPulse {
+  0% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.7;
+  }
+}
+
+.skeleton-pulse {
+  animation: skeletonPulse 1.5s ease-in-out infinite;
+}
+
+/* Calendar day cell animations */
+.calendar-day-cell {
+  transition: all 0.2s ease-out;
+}
+
+.calendar-day-cell:hover {
+  transform: scale(1.05);
+  z-index: 10;
+}
+
+/* Appointment creation animation */
+@keyframes appointmentCreate {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1) rotate(10deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.appointment-create {
+  animation: appointmentCreate 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Month change animation */
+@keyframes monthFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.month-fade-in {
+  animation: monthFadeIn 0.3s ease-out;
+}
+
+/* Staggered appointment load */
+.appointment-stagger {
+  animation: slideInFromBottom 0.4s ease-out backwards;
+}
+
+@keyframes slideInFromBottom {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* For staggered animations */
+.appointment-stagger:nth-child(1) { animation-delay: 0.05s; }
+.appointment-stagger:nth-child(2) { animation-delay: 0.1s; }
+.appointment-stagger:nth-child(3) { animation-delay: 0.15s; }
+.appointment-stagger:nth-child(4) { animation-delay: 0.2s; }
+.appointment-stagger:nth-child(5) { animation-delay: 0.25s; }
+
+/* Smooth transitions for dark mode */
+@media (prefers-color-scheme: dark) {
+  * {
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  
+  .calendar-appointment:hover {
+    transform: none;
+  }
+  
+  .calendar-day-cell:hover {
+    transform: none;
+  }
+}
+
+/* Focus animations */
+.calendar-focusable:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  animation: focusPulse 0.4s ease-out;
+}
+
+@keyframes focusPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  }
+}
+
+/* Success state animations */
+@keyframes successBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+.success-bounce {
+  animation: successBounce 0.6s ease-out;
+}
+
+/* Error shake animation */
+@keyframes errorShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-2px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(2px);
+  }
+}
+
+.error-shake {
+  animation: errorShake 0.5s ease-out;
+}

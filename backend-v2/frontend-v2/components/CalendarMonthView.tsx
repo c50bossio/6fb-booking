@@ -61,7 +61,14 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
   selectedBarberId = 'all',
   className = ""
 }: CalendarMonthViewProps) {
-  const { measureRender, optimizedAppointmentFilter, memoizedDateCalculations } = useCalendarPerformance()
+  const { 
+    measureRender, 
+    optimizedAppointmentFilter, 
+    memoizedDateCalculations,
+    optimizedAppointmentsByDay,
+    memoizedStatusColor,
+    throttle
+  } = useCalendarPerformance()
   const { announce, keyboardNav, getGridProps, getGridCellProps, isHighContrast } = useCalendarAccessibility()
   const { reportError } = useCalendarErrorReporting()
   const [currentMonth, setCurrentMonth] = useState(new Date())
@@ -75,18 +82,18 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
   const [pendingUpdate, setPendingUpdate] = useState<{ appointmentId: number; newStartTime: string } | null>(null)
   const [showConflictModal, setShowConflictModal] = useState(false)
 
-  // Performance monitoring
+  // Enhanced performance monitoring
   useEffect(() => {
     const endMeasure = measureRender('CalendarMonthView')
     return endMeasure
-  })
+  }, [measureRender])
 
   // Create today's date at midnight in local timezone
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  // Helper function to get client name from appointment
-  const getClientName = (appointment: Appointment): string => {
+  // Memoized helper functions for better performance
+  const getClientName = useCallback((appointment: Appointment): string => {
     if (appointment.client_name) {
       return appointment.client_name
     }
@@ -94,10 +101,9 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
       return `${appointment.client.first_name} ${appointment.client.last_name}`.trim()
     }
     return 'Client'
-  }
+  }, [])
 
-  // Helper function to get barber name from appointment
-  const getBarberName = (appointment: Appointment): string => {
+  const getBarberName = useCallback((appointment: Appointment): string => {
     if (appointment.barber_name) {
       return appointment.barber_name
     }
@@ -105,7 +111,7 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
       return appointment.barber.name
     }
     return ''
-  }
+  }, [])
 
   // Memoized month calculations
   const monthData = useMemo(() => {
@@ -161,48 +167,44 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
     onDayDoubleClick?.(date)
   }, [currentMonth, onDayDoubleClick])
 
-  // Optimized appointment filtering with memoization
-  const filteredAppointments = useMemo(() => {
-    return optimizedAppointmentFilter(appointments, {
+  // Optimized appointment filtering and grouping
+  const { filteredAppointments, appointmentsByDay } = useMemo(() => {
+    const filtered = optimizedAppointmentFilter(appointments, {
       barberId: selectedBarberId
     })
-  }, [appointments, selectedBarberId, optimizedAppointmentFilter])
-
-  // Get appointments for a specific day (memoized)
-  const getAppointmentsForDay = useCallback((day: number) => {
-    const dayDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
-    return filteredAppointments.filter(appointment => {
-      try {
-        const appointmentDate = new Date(appointment.start_time)
-        return isSameDay(appointmentDate, dayDate)
-      } catch {
-        return false
-      }
+    
+    // Calculate month boundaries for optimized day grouping
+    const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1)
+    const monthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0)
+    monthEnd.setHours(23, 59, 59, 999)
+    
+    const dayMap = optimizedAppointmentsByDay(filtered, {
+      start: monthStart,
+      end: monthEnd
     })
-  }, [currentMonth, filteredAppointments])
-
-  // Get status color for appointment
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'confirmed':
-      case 'scheduled':
-        return 'bg-green-500 border-green-600 text-white'
-      case 'pending':
-        return 'bg-yellow-500 border-yellow-600 text-white'
-      case 'cancelled':
-        return 'bg-red-500 border-red-600 text-white'
-      case 'completed':
-        return 'bg-blue-500 border-blue-600 text-white'
-      default:
-        return 'bg-purple-500 border-purple-600 text-white'
+    
+    return {
+      filteredAppointments: filtered,
+      appointmentsByDay: dayMap
     }
-  }
+  }, [appointments, selectedBarberId, currentMonth, optimizedAppointmentFilter, optimizedAppointmentsByDay])
 
-  // Handle appointment hover for tooltip
-  const handleAppointmentHover = (appointment: Appointment, event: React.MouseEvent) => {
-    setHoveredAppointment(appointment)
-    setTooltipPosition({ x: event.clientX, y: event.clientY })
-  }
+  const getAppointmentsForDay = useCallback((day: number) => {
+    const dayKey = `${currentMonth.getFullYear()}-${currentMonth.getMonth()}-${day}`
+    return appointmentsByDay.get(dayKey) || []
+  }, [currentMonth, appointmentsByDay])
+
+  // Use memoized status color function
+  const getStatusColor = memoizedStatusColor
+
+  // Throttled appointment hover for better performance
+  const handleAppointmentHover = useCallback(
+    throttle((appointment: Appointment, event: React.MouseEvent) => {
+      setHoveredAppointment(appointment)
+      setTooltipPosition({ x: event.clientX, y: event.clientY })
+    }, 16), // ~60fps
+    [throttle]
+  )
 
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -416,8 +418,9 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
         {Array.from({ length: daysInMonth }).map((_, index) => {
           const day = index + 1
           const dayAppointments = getAppointmentsForDay(day)
-          const visibleAppointments = dayAppointments.slice(0, 3)
-          const hiddenCount = dayAppointments.length - 3
+          // Pre-calculate visible appointments and hidden count
+          const visibleAppointments = useMemo(() => dayAppointments.slice(0, 3), [dayAppointments])
+          const hiddenCount = useMemo(() => Math.max(0, dayAppointments.length - 3), [dayAppointments])
           const isPast = isPastDate(day)
           
           const hasAppointments = dayAppointments.length > 0
