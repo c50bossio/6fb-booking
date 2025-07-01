@@ -1,6 +1,9 @@
 from pydantic_settings import BaseSettings
+from pydantic import ConfigDict
 
 class Settings(BaseSettings):
+    model_config = ConfigDict(env_file=".env", extra="ignore")
+    
     # Database
     database_url: str = "sqlite:///./6fb_booking.db"
     
@@ -8,8 +11,19 @@ class Settings(BaseSettings):
     app_name: str = "6FB Booking API"
     debug: bool = True
     
-    # Simple secret key
+    # Security & Authentication
     secret_key: str = "your-secret-key-here"
+    jwt_secret_key: str = "test-jwt-secret-key-for-testing-only"
+    jwt_algorithm: str = "HS256"
+    jwt_expiration_delta: str = "30"
+    access_token_expire_minutes: int = 30
+    refresh_token_expire_days: int = 7
+    bcrypt_rounds: int = 12
+    
+    # CORS and URLs
+    cors_origins: str = '["http://localhost:3000", "http://localhost:8000"]'
+    frontend_url: str = "http://localhost:3000"
+    backend_url: str = "http://localhost:8000"
     
     # Stripe settings
     stripe_secret_key: str = "sk_test_your_stripe_test_secret_key_here"  # Replace with your test key
@@ -52,7 +66,5 @@ class Settings(BaseSettings):
     notification_retry_attempts: int = 3
     notification_retry_delay_seconds: int = 60
     
-    class Config:
-        env_file = ".env"
 
 settings = Settings()

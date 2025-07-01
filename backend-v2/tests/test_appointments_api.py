@@ -18,21 +18,27 @@ class TestAppointmentsAPI:
         """Test getting available appointment slots for a specific date"""
         test_date = (date.today() + timedelta(days=7)).isoformat()
         
-        # Mock the booking service response
-        mock_slots = {
+        # Mock the booking service response for the barber-aware function
+        mock_barber_slots = {
             "date": test_date,
-            "slots": [
+            "available_barbers": [
                 {
-                    "time": "09:00",
-                    "available": True,
-                    "duration_minutes": 30,
-                    "price": 45.0
-                },
-                {
-                    "time": "09:30", 
-                    "available": True,
-                    "duration_minutes": 30,
-                    "price": 45.0
+                    "barber_id": 1,
+                    "barber_name": "Test Barber",
+                    "slots": [
+                        {
+                            "time": "09:00",
+                            "available": True,
+                            "duration_minutes": 30,
+                            "price": 45.0
+                        },
+                        {
+                            "time": "09:30", 
+                            "available": True,
+                            "duration_minutes": 30,
+                            "price": 45.0
+                        }
+                    ]
                 }
             ],
             "business_hours": {
@@ -42,7 +48,7 @@ class TestAppointmentsAPI:
             "slot_duration_minutes": 30
         }
         
-        with patch.object(booking_service, 'get_available_slots', return_value=mock_slots):
+        with patch.object(booking_service, 'get_available_slots_with_barber_availability', return_value=mock_barber_slots):
             with patch.object(booking_service, 'get_booking_settings', return_value=Mock(max_advance_days=30)):
                 response = client.get(
                     f"/api/v1/appointments/slots?appointment_date={test_date}",
