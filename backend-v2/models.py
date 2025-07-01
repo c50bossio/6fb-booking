@@ -1,9 +1,15 @@
-from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey, Boolean, Text, JSON, Time, Enum, Table, Date
+from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey, Boolean, Text, JSON, Time, Enum, Table, Date, Index
 from sqlalchemy.orm import relationship
 from database import Base
-from datetime import datetime, timedelta, time
+from datetime import datetime, timedelta, time, timezone
 import enum
 from utils.encryption import EncryptedString, EncryptedText, SearchableEncryptedString
+
+# Helper function for UTC datetime (replaces deprecated utcnow())
+def utcnow():
+    return datetime.now(timezone.utc).replace(tzinfo=None)  # SQLite doesn't handle timezone-aware datetimes well
+
+# Marketing models removed - causing import conflicts
 
 # Webhook models will be defined at the end of this file
 
@@ -18,7 +24,7 @@ class User(Base):
     role = Column(String, default="user")  # user, barber, admin
     timezone = Column(String(50), default='UTC')
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
     
     # Stripe Connect fields for barbers
     stripe_account_id = Column(String, nullable=True)  # Stripe Connect account ID
@@ -35,9 +41,9 @@ class User(Base):
     password_reset_tokens = relationship("PasswordResetToken", back_populates="user")
     payouts = relationship("Payout", back_populates="barber")
     gift_certificates_created = relationship("GiftCertificate", back_populates="created_by")
-    # Location relationships (will be added via migration)
+    # Location relationships
+    # Note: need to use string reference since BarbershopLocation is defined in location_models.py
     # locations = relationship("BarbershopLocation", secondary="barber_locations", back_populates="barbers")
-    # location_id = Column(Integer, ForeignKey("barbershop_locations.id"), nullable=True)
 
 class Appointment(Base):
     __tablename__ = "appointments"
@@ -53,7 +59,7 @@ class Appointment(Base):
     duration_minutes = Column(Integer)
     price = Column(Float)
     status = Column(String, default="pending")  # pending, confirmed, cancelled, completed, no_show
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
     
     # Buffer times for enhanced booking
     buffer_time_before = Column(Integer, default=0)  # Minutes of buffer before appointment
@@ -102,8 +108,8 @@ class Payment(Base):
     gift_certificate_id = Column(Integer, ForeignKey("gift_certificates.id"), nullable=True)
     gift_certificate_amount_used = Column(Float, default=0)
     
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     
     # Relationships
     user = relationship("User", back_populates="payments", foreign_keys=[user_id])
@@ -120,14 +126,14 @@ class PasswordResetToken(Base):
     token = Column(String, unique=True, index=True)
     expires_at = Column(DateTime)
     used = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
     
     # Relationships
     user = relationship("User", back_populates="password_reset_tokens")
     
     def is_expired(self):
         """Check if token has expired"""
-        return datetime.utcnow() > self.expires_at
+        return utcnow() > self.expires_at
     
     def is_valid(self):
         """Check if token is valid (not used and not expired)"""
@@ -163,8 +169,8 @@ class BookingSettings(Base):
     business_type = Column(String, default="general")  # hair_salon, medical, restaurant, consultation
     
     # Metadata
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     
     def get_min_booking_time(self, timezone_str: str = None) -> datetime:
         """Calculate the minimum time a booking can be made for
@@ -266,15 +272,24 @@ class Client(Base):
     email_enabled = Column(Boolean, default=True)
     marketing_enabled = Column(Boolean, default=True)
     
+    # Marketing opt-in fields
+    email_opt_in = Column(Boolean, default=True)  # For marketing emails
+    sms_opt_in = Column(Boolean, default=False)  # For marketing SMS
+    
     # Metadata
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     created_by_id = Column(Integer, ForeignKey("users.id"))
     
     # Relationships
     appointments = relationship("Appointment", back_populates="client", foreign_keys="Appointment.client_id")
     preferred_barber = relationship("User", foreign_keys=[preferred_barber_id])
     created_by = relationship("User", foreign_keys=[created_by_id])
+    
+    @property
+    def name(self) -> str:
+        """Full name of the client"""
+        return f"{self.first_name} {self.last_name}".strip()
 
 
 class Refund(Base):
@@ -287,7 +302,7 @@ class Refund(Base):
     status = Column(String, default="pending")  # pending, completed, failed
     stripe_refund_id = Column(String, nullable=True)
     initiated_by_id = Column(Integer, ForeignKey("users.id"))
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
     processed_at = Column(DateTime, nullable=True)
     
     # Relationships
@@ -307,7 +322,7 @@ class Payout(Base):
     payment_count = Column(Integer, default=0)
     stripe_payout_id = Column(String, nullable=True)
     stripe_transfer_id = Column(String, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
     processed_at = Column(DateTime, nullable=True)
     
     # Relationships
@@ -331,13 +346,13 @@ class GiftCertificate(Base):
     message = Column(Text, nullable=True)
     
     # Validity
-    valid_from = Column(DateTime, default=datetime.utcnow)
+    valid_from = Column(DateTime, default=utcnow)
     valid_until = Column(DateTime)
     
     # Tracking
     created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     stripe_payment_intent_id = Column(String, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
     used_at = Column(DateTime, nullable=True)
     
     # Relationships
@@ -350,9 +365,9 @@ class GiftCertificate(Base):
             return False
         if self.balance <= 0:
             return False
-        if datetime.utcnow() < self.valid_from:
+        if utcnow() < self.valid_from:
             return False
-        if datetime.utcnow() > self.valid_until:
+        if utcnow() > self.valid_until:
             return False
         return True
 
@@ -428,8 +443,8 @@ class Service(Base):
     image_url = Column(String, nullable=True)
     
     # Metadata
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     created_by_id = Column(Integer, ForeignKey("users.id"))
     
     # Relationships
@@ -508,7 +523,7 @@ class ServicePricingRule(Base):
     
     # Metadata
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
     
     # Relationships
     service = relationship("Service", back_populates="pricing_rules")
@@ -553,7 +568,7 @@ class ServiceBookingRule(Base):
     # Metadata
     is_active = Column(Boolean, default=True)
     message = Column(Text, nullable=True)  # Custom message to show when rule applies
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
     
     # Relationships
     service = relationship("Service", back_populates="booking_rules")
@@ -569,8 +584,8 @@ class NotificationTemplate(Base):
     body = Column(Text)  # Jinja2 template
     variables = Column(JSON)  # List of available variables for this template
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
 
 
 class NotificationPreference(Base):
@@ -596,8 +611,8 @@ class NotificationPreference(Base):
     # Reminder timing preferences (hours before appointment)
     reminder_hours = Column(JSON, default=[24, 2])  # Default: 24h and 2h before
     
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     
     # Relationships
     user = relationship("User", backref="notification_preferences")
@@ -627,8 +642,8 @@ class NotificationQueue(Base):
     attempts = Column(Integer, default=0)
     error_message = Column(Text, nullable=True)
     notification_metadata = Column(JSON, nullable=True)  # Additional data
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     
     # Relationships
     user = relationship("User", backref="notifications")
@@ -659,8 +674,8 @@ class SMSConversation(Base):
     tags = Column(JSON, nullable=True)  # Tags for organizing conversations
     notes = Column(Text, nullable=True)  # Internal notes about customer
     
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     
     # Relationships
     client = relationship("Client", backref="sms_conversations")
@@ -716,8 +731,8 @@ class SMSMessage(Base):
     # Message metadata
     message_metadata = Column(JSON, nullable=True)  # Additional Twilio data, attachments, etc.
     
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     
     # Relationships
     conversation = relationship("SMSConversation", back_populates="messages")
@@ -743,8 +758,8 @@ class BarberAvailability(Base):
     is_active = Column(Boolean, default=True)
     
     # Metadata
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     
     # Relationships
     barber = relationship("User", backref="availability_schedule")
@@ -774,8 +789,8 @@ class BarberTimeOff(Base):
     approved_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     
     # Metadata
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     
     # Relationships
     barber = relationship("User", foreign_keys=[barber_id], backref="time_off_requests")
@@ -803,8 +818,8 @@ class BarberSpecialAvailability(Base):
     notes = Column(Text, nullable=True)
     
     # Metadata
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     
     # Relationships
     barber = relationship("User", backref="special_availability")
@@ -842,8 +857,8 @@ class RecurringAppointmentPattern(Base):
     
     # Status and metadata
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     
     # Relationships
     user = relationship("User", foreign_keys=[user_id], backref="recurring_patterns")
@@ -884,8 +899,8 @@ class BookingRule(Base):
     is_active = Column(Boolean, default=True)
     
     # Metadata
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     
     # Relationships
@@ -950,8 +965,8 @@ class WebhookEndpoint(Base):
     timeout_seconds = Column(Integer, default=30)
     
     # Audit fields
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     created_by = Column(String, ForeignKey("users.id"), nullable=True)
     
     # Statistics
@@ -976,14 +991,14 @@ class WebhookEndpoint(Base):
     def increment_stats(self, success: bool):
         """Increment delivery statistics"""
         self.total_deliveries += 1
-        self.last_triggered_at = datetime.utcnow()
+        self.last_triggered_at = utcnow()
         
         if success:
             self.successful_deliveries += 1
-            self.last_success_at = datetime.utcnow()
+            self.last_success_at = utcnow()
         else:
             self.failed_deliveries += 1
-            self.last_failure_at = datetime.utcnow()
+            self.last_failure_at = utcnow()
 
 
 class WebhookLog(Base):
@@ -1018,7 +1033,7 @@ class WebhookLog(Base):
     next_retry_at = Column(DateTime, nullable=True)
     
     # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
     delivered_at = Column(DateTime, nullable=True)
     completed_at = Column(DateTime, nullable=True)
     
@@ -1038,12 +1053,12 @@ class WebhookLog(Base):
         return (
             self.status in [WebhookStatus.failed, WebhookStatus.retrying] and
             self.retry_count < self.endpoint.max_retries and
-            datetime.utcnow() >= (self.next_retry_at or datetime.utcnow())
+            utcnow() >= (self.next_retry_at or utcnow())
         )
     
     def mark_delivered(self, status_code: int, response_body: str = None, response_headers: dict = None, response_time_ms: int = None):
         """Mark webhook as delivered with response details"""
-        self.delivered_at = datetime.utcnow()
+        self.delivered_at = utcnow()
         self.status_code = status_code
         self.response_body = response_body
         self.response_headers = response_headers
@@ -1052,24 +1067,24 @@ class WebhookLog(Base):
         # Determine status based on response code
         if 200 <= status_code < 300:
             self.status = WebhookStatus.success
-            self.completed_at = datetime.utcnow()
+            self.completed_at = utcnow()
         else:
             self.status = WebhookStatus.failed
             if self.can_retry:
                 self.schedule_retry()
             else:
-                self.completed_at = datetime.utcnow()
+                self.completed_at = utcnow()
     
     def mark_failed(self, error_message: str):
         """Mark webhook as failed with error message"""
         self.status = WebhookStatus.failed
         self.error_message = error_message
-        self.delivered_at = datetime.utcnow()
+        self.delivered_at = utcnow()
         
         if self.can_retry:
             self.schedule_retry()
         else:
-            self.completed_at = datetime.utcnow()
+            self.completed_at = utcnow()
     
     def schedule_retry(self):
         """Schedule next retry attempt"""
@@ -1079,7 +1094,207 @@ class WebhookLog(Base):
             
             # Calculate exponential backoff: base_delay * (2 ^ retry_count)
             delay_seconds = self.endpoint.retry_delay_seconds * (2 ** (self.retry_count - 1))
-            self.next_retry_at = datetime.utcnow() + timedelta(seconds=delay_seconds)
+            self.next_retry_at = utcnow() + timedelta(seconds=delay_seconds)
         else:
             self.status = WebhookStatus.failed
-            self.completed_at = datetime.utcnow()
+            self.completed_at = utcnow()
+
+
+# Marketing Suite Models
+class MarketingCampaign(Base):
+    """Marketing campaign for email/SMS marketing"""
+    __tablename__ = "marketing_campaigns"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    description = Column(String(500), nullable=True)
+    campaign_type = Column(String(20), nullable=False)  # email, sms
+    
+    # Template and content
+    template_id = Column(Integer, ForeignKey("marketing_templates.id"), nullable=True)
+    subject = Column(String(200), nullable=True)  # For email campaigns
+    content = Column(Text, nullable=False)  # Plain text or HTML
+    
+    # Recipients
+    recipient_list_id = Column(Integer, ForeignKey("contact_lists.id"), nullable=True)
+    recipient_segment_id = Column(Integer, ForeignKey("contact_segments.id"), nullable=True)
+    
+    # Status and scheduling
+    status = Column(String(20), default="draft")  # draft, scheduled, sending, sent, failed
+    scheduled_for = Column(DateTime, nullable=True)
+    sent_at = Column(DateTime, nullable=True)
+    
+    # Metadata
+    tags = Column(JSON, default=list)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    
+    # Relationships
+    template = relationship("MarketingTemplate", backref="campaigns")
+    recipient_list = relationship("ContactList", backref="campaigns")
+    recipient_segment = relationship("ContactSegment", backref="campaigns")
+    created_by = relationship("User", backref="marketing_campaigns")
+    analytics = relationship("CampaignAnalytics", back_populates="campaign", uselist=False)
+
+
+class MarketingTemplate(Base):
+    """Reusable templates for marketing campaigns"""
+    __tablename__ = "marketing_templates"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    description = Column(String(500), nullable=True)
+    template_type = Column(String(20), nullable=False)  # email, sms
+    category = Column(String(50), nullable=True)  # promotional, transactional, etc.
+    
+    # Template content
+    subject = Column(String(200), nullable=True)  # For email templates
+    content = Column(Text, nullable=False)  # Template with variables
+    variables = Column(JSON, default=list)  # List of available variables
+    preview_data = Column(JSON, default=dict)  # Sample data for preview
+    
+    # Status
+    is_active = Column(Boolean, default=True)
+    usage_count = Column(Integer, default=0)
+    
+    # Metadata
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    
+    # Relationships
+    created_by = relationship("User", backref="marketing_templates")
+
+
+class ContactList(Base):
+    """Contact lists for marketing campaigns"""
+    __tablename__ = "contact_lists"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    description = Column(String(500), nullable=True)
+    contact_count = Column(Integer, default=0)
+    
+    # Metadata
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    
+    # Relationships
+    created_by = relationship("User", backref="contact_lists")
+    members = relationship("ContactListMember", back_populates="contact_list", cascade="all, delete-orphan")
+
+
+class ContactSegment(Base):
+    """Dynamic segments for targeting contacts based on criteria"""
+    __tablename__ = "contact_segments"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    description = Column(String(500), nullable=True)
+    criteria = Column(JSON, nullable=False)  # JSON criteria for dynamic segmentation
+    contact_count = Column(Integer, default=0)  # Cached count
+    
+    # Metadata
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    
+    # Relationships
+    created_by = relationship("User", backref="contact_segments")
+
+
+class ContactListMember(Base):
+    """Many-to-many relationship between contacts and lists"""
+    __tablename__ = "contact_list_members"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    list_id = Column(Integer, ForeignKey("contact_lists.id"), nullable=False)
+    contact_id = Column(Integer, ForeignKey("clients.id"), nullable=False)
+    added_at = Column(DateTime, default=utcnow)
+    
+    # Relationships
+    contact_list = relationship("ContactList", back_populates="members")
+    contact = relationship("Client", backref="list_memberships")
+    
+    # Unique constraint to prevent duplicates
+    __table_args__ = (
+        Index('idx_list_contact_unique', 'list_id', 'contact_id', unique=True),
+    )
+
+
+class CampaignAnalytics(Base):
+    """Analytics data for marketing campaigns"""
+    __tablename__ = "campaign_analytics"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    campaign_id = Column(Integer, ForeignKey("marketing_campaigns.id"), nullable=False, unique=True)
+    
+    # Delivery metrics
+    total_recipients = Column(Integer, default=0)
+    sent_count = Column(Integer, default=0)
+    delivered_count = Column(Integer, default=0)
+    
+    # Engagement metrics (email)
+    opened_count = Column(Integer, default=0)
+    clicked_count = Column(Integer, default=0)
+    
+    # Negative metrics
+    bounced_count = Column(Integer, default=0)
+    unsubscribed_count = Column(Integer, default=0)
+    spam_reports = Column(Integer, default=0)
+    
+    # Time-based metrics
+    first_open_time = Column(DateTime, nullable=True)
+    last_open_time = Column(DateTime, nullable=True)
+    
+    # Additional data
+    device_stats = Column(JSON, default=dict)  # Device breakdown
+    client_stats = Column(JSON, default=dict)  # Email client breakdown
+    location_stats = Column(JSON, default=dict)  # Geographic breakdown
+    link_clicks = Column(JSON, default=list)  # Individual link performance
+    
+    # Timestamps
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+    
+    # Relationships
+    campaign = relationship("MarketingCampaign", back_populates="analytics")
+
+
+class MarketingUsage(Base):
+    """Track marketing usage for billing purposes"""
+    __tablename__ = "marketing_usage"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    period_start = Column(Date, nullable=False)
+    period_end = Column(Date, nullable=False)
+    
+    # Usage counts
+    emails_sent = Column(Integer, default=0)
+    email_limit = Column(Integer, nullable=True)
+    sms_sent = Column(Integer, default=0)
+    sms_limit = Column(Integer, nullable=True)
+    
+    # Campaign stats
+    campaigns_created = Column(Integer, default=0)
+    campaigns_sent = Column(Integer, default=0)
+    
+    # Contact stats
+    total_contacts = Column(Integer, default=0)
+    new_contacts = Column(Integer, default=0)
+    unsubscribed_contacts = Column(Integer, default=0)
+    
+    # Cost tracking
+    estimated_cost = Column(Float, default=0.0)
+    cost_breakdown = Column(JSON, default=dict)
+    
+    # Timestamps
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+    
+    # Unique constraint for period
+    __table_args__ = (
+        Index('idx_usage_period_unique', 'period_start', 'period_end', unique=True),
+    )

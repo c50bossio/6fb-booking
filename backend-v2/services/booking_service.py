@@ -392,6 +392,7 @@ def get_available_slots_with_barber_availability(
                         overall_next_available = {
                             "date": target_date.isoformat(),
                             "time": first_available["time"],
+                            "datetime": f"{target_date.isoformat()}T{first_available['time']}:00",
                             "barber_id": barber.id,
                             "barber_name": barber.name
                         }
@@ -756,7 +757,192 @@ def create_booking(
         logger.error(f"Failed to queue appointment notifications: {e}")
         # Don't fail the booking if notification fails
     
+    # Refresh and load relationships
+    db.refresh(appointment)
+    
+    # Explicitly load client relationship if exists
+    if appointment.client_id:
+        appointment.client = db.query(models.Client).filter(
+            models.Client.id == appointment.client_id
+        ).first()
+    
+    # Explicitly load barber relationship if exists  
+    if appointment.barber_id:
+        appointment.barber = db.query(models.User).filter(
+            models.User.id == appointment.barber_id
+        ).first()
+    
     return appointment
+
+
+def create_guest_booking(
+    db: Session,
+    booking_date: date,
+    booking_time: str,
+    service: str,
+    guest_info: Dict[str, Any],
+    user_timezone: Optional[str] = None,
+    notes: Optional[str] = None
+) -> Dict[str, Any]:
+    """Create a booking for a guest user (no authentication required).
+    
+    Args:
+        db: Database session
+        booking_date: Date of the booking
+        booking_time: Time of the booking in HH:MM format
+        service: Name of the service
+        guest_info: Guest information dictionary with keys: first_name, last_name, email, phone
+        user_timezone: User's timezone string. If None, uses business timezone.
+        notes: Optional notes for the booking
+        
+    Returns:
+        Dictionary with booking details for guest
+    """
+    import secrets
+    
+    # Get booking settings
+    settings = get_booking_settings(db)
+    
+    # Set up timezones
+    business_tz = pytz.timezone(settings.business_timezone)
+    user_tz = pytz.timezone(user_timezone) if user_timezone else business_tz
+    
+    logger.info(f"Creating guest booking: Business TZ={settings.business_timezone}, User TZ={user_timezone or settings.business_timezone}")
+    
+    # Validate service
+    if service not in SERVICES:
+        raise ValueError(f"Invalid service. Available services: {', '.join(SERVICES.keys())}")
+    
+    # Parse time and create timezone-aware datetime in business timezone
+    hour, minute = map(int, booking_time.split(":"))
+    start_time_business = business_tz.localize(datetime.combine(booking_date, time(hour, minute)))
+    
+    # Convert to UTC for storage
+    start_time_utc = start_time_business.astimezone(pytz.UTC)
+    
+    # Find an available barber for this slot
+    available_barbers = barber_availability_service.get_available_barbers_for_slot(
+        db=db,
+        check_date=booking_date,
+        start_time=start_time_business.time(),
+        end_time=(start_time_business + timedelta(minutes=SERVICES[service]["duration"])).time()
+    )
+    
+    if not available_barbers:
+        raise ValueError(f"No barbers available at {booking_time} on {booking_date}")
+    
+    # Assign first available barber
+    barber = available_barbers[0]
+    barber_id = barber.id
+    logger.info(f"Auto-assigned barber {barber.name} (ID: {barber_id}) for guest booking")
+    
+    # Check if slot is available
+    end_time_utc = start_time_utc + timedelta(minutes=SERVICES[service]["duration"])
+    
+    # Check for conflicts - get all appointments that might overlap (in UTC)
+    potential_conflicts = db.query(models.Appointment).filter(
+        and_(
+            models.Appointment.status != "cancelled",
+            models.Appointment.start_time >= start_time_utc - timedelta(hours=2),
+            models.Appointment.start_time <= start_time_utc + timedelta(hours=2)
+        )
+    ).all()
+    
+    # Check for actual conflicts by calculating end times
+    existing = None
+    for appointment in potential_conflicts:
+        # Ensure appointment times are timezone-aware
+        if appointment.start_time.tzinfo is None:
+            appointment_start = pytz.UTC.localize(appointment.start_time)
+        else:
+            appointment_start = appointment.start_time
+            
+        appointment_end = appointment_start + timedelta(minutes=appointment.duration_minutes)
+        
+        # Check if there's any overlap
+        if not (end_time_utc <= appointment_start or start_time_utc >= appointment_end):
+            existing = appointment
+            break
+    
+    if existing:
+        raise ValueError("This time slot is already booked")
+    
+    # Create or find client record for guest
+    client_id = None
+    try:
+        from services import client_service
+        
+        # Try to find existing client by email
+        existing_client = db.query(models.Client).filter(
+            models.Client.email == guest_info["email"]
+        ).first()
+        
+        if existing_client:
+            client_id = existing_client.id
+            logger.info(f"Found existing client {client_id} for email {guest_info['email']}")
+        else:
+            # Create new client record for the guest
+            client_data = {
+                "first_name": guest_info["first_name"],
+                "last_name": guest_info["last_name"],
+                "email": guest_info["email"],
+                "phone": guest_info["phone"],
+                "communication_preferences": {
+                    "sms": True,
+                    "email": True, 
+                    "marketing": False,
+                    "reminders": True,
+                    "confirmations": True
+                }
+            }
+            
+            new_client = client_service.create_client(
+                db=db,
+                client_data=client_data,
+                created_by_id=None  # Guest booking, no creating user
+            )
+            client_id = new_client.id
+            logger.info(f"Created new client {client_id} for guest {guest_info['email']}")
+    except Exception as e:
+        logger.warning(f"Failed to create/find client for guest: {e}")
+        # Continue without client_id
+    
+    # Generate confirmation code for guest
+    confirmation_code = secrets.token_urlsafe(8).upper()
+    
+    # Create appointment with UTC time
+    appointment = models.Appointment(
+        user_id=None,  # No user for guest bookings
+        barber_id=barber_id,
+        client_id=client_id,
+        service_name=service,
+        start_time=start_time_utc.replace(tzinfo=None),  # Store as naive datetime in UTC
+        duration_minutes=SERVICES[service]["duration"],
+        price=SERVICES[service]["price"],
+        status="scheduled",
+        notes=f"Guest booking - {guest_info['first_name']} {guest_info['last_name']} ({guest_info['email']}, {guest_info['phone']})" + (f" - {notes}" if notes else "")
+    )
+    
+    logger.info(f"Created guest appointment at {start_time_utc} UTC for {guest_info['first_name']} {guest_info['last_name']}")
+    
+    db.add(appointment)
+    db.commit()
+    db.refresh(appointment)
+    
+    # Return guest booking response
+    return {
+        "id": appointment.id,
+        "service": service,
+        "date": booking_date.isoformat(),
+        "time": booking_time,
+        "guest_name": f"{guest_info['first_name']} {guest_info['last_name']}",
+        "guest_email": guest_info["email"],
+        "guest_phone": guest_info["phone"],
+        "amount": SERVICES[service]["price"],
+        "status": appointment.status,
+        "created_at": appointment.created_at,
+        "confirmation_code": confirmation_code
+    }
 
 
 def find_or_create_client_for_user(db: Session, user_id: int) -> Optional[int]:
@@ -805,11 +991,32 @@ def find_or_create_client_for_user(db: Session, user_id: int) -> Optional[int]:
         logger.error(f"Failed to find/create client for user {user_id}: {e}")
         return None
 
-def get_user_bookings(db: Session, user_id: int) -> List[models.Appointment]:
-    """Get all bookings for a user."""
-    return db.query(models.Appointment).filter(
+def get_user_bookings(db: Session, user_id: int, skip: int = 0, limit: int = 100, status: Optional[str] = None) -> List[models.Appointment]:
+    """Get all bookings for a user with related client and barber information."""
+    from sqlalchemy.orm import joinedload
+    
+    query = db.query(models.Appointment).filter(
         models.Appointment.user_id == user_id
-    ).order_by(models.Appointment.start_time.desc()).all()
+    ).options(
+        joinedload(models.Appointment.client),
+        joinedload(models.Appointment.barber)
+    )
+    
+    if status:
+        query = query.filter(models.Appointment.status == status)
+    
+    return query.order_by(models.Appointment.start_time.desc()).offset(skip).limit(limit).all()
+
+def count_user_bookings(db: Session, user_id: int, status: Optional[str] = None) -> int:
+    """Count total bookings for a user."""
+    query = db.query(models.Appointment).filter(
+        models.Appointment.user_id == user_id
+    )
+    
+    if status:
+        query = query.filter(models.Appointment.status == status)
+    
+    return query.count()
 
 def get_booking_by_id(db: Session, booking_id: int, user_id: int) -> Optional[models.Appointment]:
     """Get a specific booking by ID for a user."""

@@ -21,8 +21,8 @@ class PaymentSecurity:
         if not isinstance(amount, (int, float)):
             return False
         
-        # Check minimum amount (e.g., $1.00)
-        if amount < 1.0:
+        # Check minimum amount (e.g., $0.01)
+        if amount < 0.01:
             return False
         
         # Check maximum amount (e.g., $10,000)
@@ -30,7 +30,8 @@ class PaymentSecurity:
             return False
         
         # Check for reasonable decimal places (max 2)
-        if round(amount, 2) != amount:
+        # Use string formatting to avoid floating point precision issues
+        if len(str(amount).split('.')[-1]) > 2 and '.' in str(amount):
             return False
         
         return True
@@ -48,12 +49,21 @@ class PaymentSecurity:
             result["reason"] = "Payment not found"
             return result
         
-        if payment.status not in ["completed"]:
-            result["reason"] = f"Payment status '{payment.status}' is not eligible for refund"
+        if payment.status not in ["completed", "partially_refunded"]:
+            if payment.status == "refunded":
+                result["reason"] = "Already fully refunded"
+            else:
+                result["reason"] = f"Payment status '{payment.status}' is not eligible for refund"
             return result
         
         # Check if payment is too old (e.g., 90 days)
-        if payment.created_at < datetime.utcnow() - timedelta(days=90):
+        # Handle both timezone-aware and naive datetimes
+        payment_created_at = payment.created_at
+        if payment_created_at.tzinfo is not None:
+            # Convert timezone-aware to naive for comparison
+            payment_created_at = payment_created_at.replace(tzinfo=None)
+        
+        if payment_created_at < datetime.utcnow() - timedelta(days=90):
             result["reason"] = "Payment is too old for refund (>90 days)"
             return result
         
@@ -217,7 +227,8 @@ class PaymentSecurity:
             
             # Check timestamp (webhook should be recent)
             webhook_time = datetime.fromtimestamp(int(timestamp))
-            if datetime.utcnow() - webhook_time > timedelta(minutes=5):
+            current_time = datetime.utcnow()
+            if current_time - webhook_time > timedelta(minutes=5):
                 return False
             
             # Verify signature
@@ -254,12 +265,19 @@ class PaymentSecurity:
             return result
         
         # Check if appointment is in the future
-        if appointment.start_time <= datetime.utcnow():
+        # Handle both timezone-aware and naive datetimes
+        appointment_start = appointment.start_time
+        if appointment_start.tzinfo is not None:
+            # Convert timezone-aware to naive for comparison
+            appointment_start = appointment_start.replace(tzinfo=None)
+        
+        current_time = datetime.utcnow()
+        if appointment_start <= current_time:
             result["reason"] = "Cannot pay for past appointments"
             return result
         
         # Check if appointment is too far in the future (e.g., 1 year)
-        if appointment.start_time > datetime.utcnow() + timedelta(days=365):
+        if appointment_start > current_time + timedelta(days=365):
             result["reason"] = "Appointment is too far in the future"
             return result
         
