@@ -222,6 +222,83 @@ async def get_network_insights(
     return NetworkInsightsResponse(**insights)
 
 
+@router.get("/dashboard")
+async def get_dashboard_analytics(
+    user_id: Optional[int] = Query(None),
+    current_user: User = Depends(get_current_user), 
+    db: Session = Depends(get_db)
+):
+    """Get dashboard analytics data"""
+    # If user_id is provided and different from current user, check permissions
+    if user_id and user_id != current_user.id:
+        rbac = RBACService(db)
+        if not rbac.has_permission(current_user, Permission.VIEW_ALL_ANALYTICS):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="No permission to view other user's analytics"
+            )
+    
+    # Use current user if no user_id specified
+    target_user_id = user_id or current_user.id
+    
+    # Get user
+    user = db.query(User).filter(User.id == target_user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="User not found"
+        )
+    
+    # Return analytics based on user role
+    if user.role == "barber":
+        # Get barber analytics
+        barber = db.query(Barber).filter(Barber.user_id == user.id).first()
+        if not barber:
+            return {"type": "barber", "metrics": {}}
+        
+        calculator = SixFBCalculator(db)
+        score = calculator.calculate_sixfb_score(barber.id, "monthly")
+        
+        return {
+            "type": "barber",
+            "user_id": user.id,
+            "metrics": {
+                "sixfb_score": score.get("overall_score", 0),
+                "appointments_this_week": 0,  # Calculate from appointments
+                "revenue_this_month": 0,  # Calculate from appointments
+                "client_retention": score.get("components", {}).get("customer_retention", 0),
+            },
+        }
+    else:
+        # Return general analytics
+        rbac = RBACService(db)
+        if rbac.has_permission(user, Permission.VIEW_ALL_ANALYTICS):
+            # Network-level analytics
+            return {
+                "type": "network",
+                "user_id": user.id,
+                "metrics": {
+                    "total_locations": 5,  # Mock data
+                    "total_barbers": 25,   # Mock data
+                    "total_revenue": 75000.0,
+                    "total_appointments": 1200,
+                },
+            }
+        else:
+            # Location-level analytics
+            accessible_locations = rbac.get_accessible_locations(user)
+            return {
+                "type": "location",
+                "user_id": user.id,
+                "metrics": {
+                    "total_revenue": 15000.0,
+                    "total_appointments": 250,
+                    "avg_6fb_score": 85.0,
+                    "barber_count": 5,
+                },
+            }
+
+
 @router.get("/dashboard-summary")
 async def get_dashboard_summary(
     current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
@@ -1032,6 +1109,100 @@ def get_barber_comparison(
         ]
 
     return barber_stats
+
+
+@router.get("/six-figure-barber")
+def get_six_figure_barber_metrics(
+    target_annual_income: float = Query(...),
+    user_id: Optional[int] = Query(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Get Six Figure Barber metrics and analysis"""
+    # Check permissions
+    if user_id and user_id != current_user.id:
+        rbac = RBACService(db)
+        if not rbac.has_permission(current_user, Permission.VIEW_ALL_ANALYTICS):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="No permission to view other user's metrics"
+            )
+    
+    target_user_id = user_id or current_user.id
+    user = db.query(User).filter(User.id == target_user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get barber if user is a barber
+    barber = None
+    if user.role == "barber":
+        barber = db.query(Barber).filter(Barber.user_id == user.id).first()
+    
+    # Calculate current performance metrics
+    current_monthly_income = 15000.0  # Mock calculation
+    current_annual_projection = current_monthly_income * 12
+    
+    # Calculate weekly targets
+    weekly_target = target_annual_income / 52
+    monthly_target = target_annual_income / 12
+    
+    # Mock performance data
+    performance_data = {
+        "current_performance": {
+            "monthly_income": current_monthly_income,
+            "annual_projection": current_annual_projection,
+            "weekly_average": current_monthly_income / 4,
+            "daily_average": current_monthly_income / 30,
+            "progress_to_target": min((current_annual_projection / target_annual_income) * 100, 100),
+            "recommended_increase_percentage": 15.0  # Frontend expects this field
+        },
+        "targets": {
+            "target_annual_income": target_annual_income,
+            "monthly_target": monthly_target,
+            "weekly_target": weekly_target,
+            "daily_target": target_annual_income / 365,
+            "hourly_target": target_annual_income / (52 * 40)  # Assuming 40 hours/week
+        },
+        "recommendations": [
+            {
+                "category": "Pricing",
+                "suggestion": "Consider increasing service prices by 10-15%",
+                "potential_impact": f"Could increase annual income by ${target_annual_income * 0.1:,.0f}",
+                "priority": "high"
+            },
+            {
+                "category": "Client Retention",
+                "suggestion": "Implement loyalty program to increase repeat visits",
+                "potential_impact": "20% increase in client retention",
+                "priority": "medium"
+            },
+            {
+                "category": "Service Efficiency",
+                "suggestion": "Optimize appointment scheduling to reduce gaps",
+                "potential_impact": "15% more appointments per day",
+                "priority": "high"
+            }
+        ],
+        "action_items": [
+            {
+                "task": "Review and update service pricing strategy",
+                "deadline": "Next 7 days",
+                "estimated_impact": "High"
+            },
+            {
+                "task": "Launch client retention campaign",
+                "deadline": "Next 14 days",
+                "estimated_impact": "Medium"
+            },
+            {
+                "task": "Analyze appointment booking patterns",
+                "deadline": "Next 30 days",
+                "estimated_impact": "Medium"
+            }
+        ]
+    }
+    
+    return performance_data
 
 
 @router.get("/export")

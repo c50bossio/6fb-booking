@@ -205,5 +205,18 @@ git stash pop                    # Restore changes
 pytest --lf                      # Run last failed tests only
 ```
 
+## 🔧 Common Fixes Applied
+
+### Login API Field Mismatch (Fixed 2025-07-01)
+The V2 backend now uses `email` field instead of `username` for login:
+- **Schema**: `UserLogin` expects `{ email: string, password: string }`
+- **Frontend**: Sends `{ email, password }` in login requests
+- **Backend**: `authenticate_user` function uses email parameter
+
+If you encounter login issues:
+1. Ensure frontend sends `email` field (not `username`)
+2. Clear browser cache and Next.js cache: `rm -rf .next`
+3. Hard refresh browser: `Cmd+Shift+R` or `Ctrl+Shift+R`
+
 ---
-Last updated: 2025-06-28
+Last updated: 2025-07-01

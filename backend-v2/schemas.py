@@ -8,7 +8,7 @@ import pytz
 
 # Auth schemas
 class UserLogin(BaseModel):
-    username: EmailStr  # Using email as username
+    email: EmailStr  # Modern API - use 'email' directly
     password: str
 
 class Token(BaseModel):

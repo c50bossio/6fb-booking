@@ -149,19 +149,35 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
       // Check if we're on the landing page - don't apply theme text colors there
       const isLandingPage = window.location.pathname === '/' || window.location.pathname === ''
+      
+      // Debug logging
+      console.log('[ThemeContext] Current path:', window.location.pathname, 'Is landing page:', isLandingPage)
 
       // Update document class for global theme
       // Remove all theme classes first
       document.documentElement.classList.remove('dark', 'light', 'soft-light', 'charcoal')
-      document.body.classList.remove('dark', 'light', 'soft-light', 'charcoal', 'bg-slate-900', 'bg-gray-50', 'bg-gray-100', 'bg-white')
+      document.body.classList.remove('dark', 'light', 'soft-light', 'charcoal', 'bg-slate-900', 'bg-gray-50', 'bg-gray-100', 'bg-white', 'bg-blue-500', 'bg-blue-600', 'bg-blue-700', 'bg-blue-800', 'bg-blue-900', 'text-white', 'text-gray-900')
+      
+      // Clear background style on landing page
+      if (isLandingPage) {
+        document.body.style.backgroundColor = ''
+        // Ensure landing page doesn't have dark theme applied
+        document.documentElement.classList.remove('dark')
+        document.body.classList.remove('dark', 'text-white')
+        return // Don't apply any theme on landing page
+      }
 
       // Add transition for smooth theme switching
       document.body.style.transition = 'background-color 0.3s ease, color 0.3s ease'
 
       if (theme === 'dark') {
         document.documentElement.classList.add('dark')
-        document.body.classList.add('dark', 'bg-slate-900')
-        document.body.style.backgroundColor = '#111827'
+        
+        // Don't apply dark background on landing page
+        if (!isLandingPage) {
+          document.body.classList.add('dark', 'bg-slate-900')
+          document.body.style.backgroundColor = '#111827'
+        }
 
         // Only add text color classes if high contrast mode is not enabled AND not on landing page
         if (!highContrastMode && !isLandingPage) {
@@ -170,8 +186,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         }
       } else if (theme === 'light') {
         document.documentElement.classList.add('light')
-        document.body.classList.add('light', 'bg-white')
-        document.body.style.backgroundColor = '#ffffff'
+        
+        // Don't apply theme background on landing page
+        if (!isLandingPage) {
+          document.body.classList.add('light', 'bg-white')
+          document.body.style.backgroundColor = '#ffffff'
+        }
 
         // Only add text color classes if high contrast mode is not enabled AND not on landing page
         if (!highContrastMode && !isLandingPage) {
@@ -180,8 +200,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         }
       } else if (theme === 'soft-light') {
         document.documentElement.classList.add('soft-light')
-        document.body.classList.add('soft-light')
-        document.body.style.backgroundColor = '#f5f5f0'
+        
+        // Don't apply theme background on landing page
+        if (!isLandingPage) {
+          document.body.classList.add('soft-light')
+          document.body.style.backgroundColor = '#f5f5f0'
+        }
 
         // Only add text color classes if high contrast mode is not enabled AND not on landing page
         if (!highContrastMode && !isLandingPage) {
@@ -190,8 +214,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         }
       } else { // charcoal
         document.documentElement.classList.add('charcoal')
-        document.body.classList.add('charcoal')
-        document.body.style.backgroundColor = '#1a1a1a'
+        
+        // Don't apply theme background on landing page
+        if (!isLandingPage) {
+          document.body.classList.add('charcoal')
+          document.body.style.backgroundColor = '#1a1a1a'
+        }
 
         // Only add text color classes if high contrast mode is not enabled AND not on landing page
         if (!highContrastMode && !isLandingPage) {

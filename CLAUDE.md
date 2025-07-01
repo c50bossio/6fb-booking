@@ -29,11 +29,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 5. **One task at a time** - never have multiple in_progress
 
 ### Code Modification Boundaries:
-1. **Frontend changes**: Only modify files in `/frontend` directory
-2. **Backend changes**: Only modify files in `/backend` directory
+1. **Frontend changes**: Only modify files in `/backend-v2/frontend-v2/` directory (V2 ONLY)
+2. **Backend changes**: Only modify files in `/backend-v2/` directory (V2 ONLY)
 3. **Database changes**: ALWAYS create a migration, never modify schema directly
 4. **Config changes**: Test in development first, document in this file
 5. **Dependencies**: Run tests after any package additions
+6. **NEVER modify V1 files**: `/frontend/` and `/backend/` are legacy - DO NOT TOUCH
 
 ### Testing Requirements:
 - Backend: Run `pytest` before marking any backend task complete
@@ -44,12 +45,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Company Name
 **BookedBarber** - OWN THE CHAIR. OWN THE BRAND.
 
+## 🚨 IMPORTANT: V2 ONLY - NO V1 CODE
+**This project uses ONLY the V2 implementation. Do NOT include or reference anything from V1.**
+- **V2 Backend**: `/backend-v2/` (FastAPI, Python)
+- **V2 Frontend**: `/backend-v2/frontend-v2/` (Next.js, TypeScript)
+- **Legacy V1**: Do NOT use `/frontend/` or `/backend/` directories - these are deprecated
+
 ## Project Overview
 
-6FB Booking Platform (BookedBarber) is a comprehensive booking and business management system for barber shops, built on the Six Figure Barber methodology. It features:
+BookedBarber is a comprehensive booking and business management system for barber shops, built on the Six Figure Barber methodology. The V2 platform features:
 
 - **Backend**: FastAPI (Python) with SQLAlchemy ORM, PostgreSQL/SQLite database
-- **Frontend**: Next.js 14 with TypeScript, Tailwind CSS, and Radix UI
+- **Frontend**: Next.js 14 with TypeScript, Tailwind CSS, and shadcn/ui components
 - **Integrations**: Stripe Connect, Google Calendar, SendGrid, Twilio
 - **Deployment**: Render (current production), supports Docker, Railway, Vercel
 
@@ -77,23 +84,23 @@ The following logo variants are available for use in the application:
 - ⚠️ Background "BOOKEDBARBER" watermark text needs replacement with proper logo image
 
 ### Implementation Notes
-- Copy logo files to `frontend/public/logos/` directory for use in components
+- Copy logo files to `backend-v2/frontend-v2/public/logos/` directory for use in V2 components
 - Use Next.js Image component for optimized loading
 - Maintain aspect ratios and provide alt text for accessibility
 
 ## Common Development Commands
 
-### Backend Development
+### Backend Development (V2 ONLY)
 
 ```bash
-# Setup backend
-cd backend
+# Setup V2 backend
+cd backend-v2
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
-cp ../.env.template .env  # Edit with your values
+cp .env.template .env  # Edit with your values
 
-# Run backend server
+# Run V2 backend server
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 # Database operations
@@ -113,14 +120,14 @@ python scripts/api_performance_test.py        # API performance
 python scripts/comprehensive_performance_test.py  # Full suite
 ```
 
-### Frontend Development
+### Frontend Development (V2 ONLY)
 
 ```bash
-# Setup frontend
-cd frontend
+# Setup V2 frontend
+cd backend-v2/frontend-v2
 npm install
 
-# Run frontend server
+# Run V2 frontend server
 npm run dev          # Development server on http://localhost:3000
 npm run build        # Production build
 npm run start        # Production server
@@ -153,10 +160,10 @@ python -c "from models.user import User; from passlib.context import CryptContex
 
 ## High-Level Architecture
 
-### Backend Architecture (FastAPI + SQLAlchemy)
+### V2 Backend Architecture (FastAPI + SQLAlchemy)
 
 ```
-backend/
+backend-v2/
 ├── main.py                 # FastAPI app entry point, middleware, routers
 ├── config/
 │   ├── database.py        # Database connection, session management
@@ -187,24 +194,24 @@ backend/
     └── encryption.py     # Data encryption for PII
 ```
 
-### Frontend Architecture (Next.js 14 + TypeScript)
+### V2 Frontend Architecture (Next.js 14 + TypeScript)
 
 ```
-frontend/
-├── src/
-│   ├── app/              # Next.js 14 app directory
-│   │   ├── (auth)/      # Auth-required pages
-│   │   ├── (public)/    # Public pages
-│   │   ├── api/         # API route handlers
-│   │   └── layout.tsx   # Root layout with providers
-│   ├── components/       # Reusable React components
-│   │   ├── modals/      # Modal components (booking, appointments)
-│   │   ├── analytics/   # Analytics dashboard components
-│   │   └── booking/     # Booking flow components
-│   ├── lib/             # Utilities and API clients
-│   │   ├── api/         # API client functions
-│   │   └── utils/       # Helper functions
-│   └── hooks/           # Custom React hooks
+backend-v2/frontend-v2/
+├── app/                  # Next.js 14 app directory
+│   ├── (auth)/          # Auth-required pages
+│   ├── (public)/        # Public pages
+│   ├── api/             # API route handlers
+│   └── layout.tsx       # Root layout with providers
+├── components/           # Reusable React components
+│   ├── ui/              # shadcn/ui components
+│   ├── modals/          # Modal components (booking, appointments)
+│   ├── analytics/       # Analytics dashboard components
+│   └── booking/         # Booking flow components
+├── lib/                 # Utilities and API clients
+│   ├── api/             # API client functions
+│   └── utils/           # Helper functions
+├── hooks/               # Custom React hooks
 └── public/              # Static assets
 ```
 
@@ -402,36 +409,36 @@ cd frontend && npm run validate-build
    - Code refactoring
    - Test coverage improvements
 
-## 🧭 Function Reference Map
+## 🧭 Function Reference Map (V2 ONLY)
 
 ### Authentication & Authorization
-- **Backend**: `backend/api/v1/auth.py`, `backend/utils/security.py`
-- **Frontend**: `frontend/src/lib/auth.ts`, `frontend/src/hooks/useAuth.ts`
-- **Middleware**: `backend/middleware/security.py`
+- **Backend**: `backend-v2/api/v1/auth.py`, `backend-v2/utils/security.py`
+- **Frontend**: `backend-v2/frontend-v2/lib/auth.ts`, `backend-v2/frontend-v2/hooks/useAuth.ts`
+- **Middleware**: `backend-v2/middleware/security.py`
 
 ### Payment Processing
-- **Backend**: `backend/services/payment_service.py`, `backend/api/v1/endpoints/payments.py`
-- **Frontend**: `frontend/src/lib/stripe.ts`, `frontend/src/components/payment/`
-- **Webhooks**: `backend/api/v1/endpoints/webhooks.py`
+- **Backend**: `backend-v2/services/payment_service.py`, `backend-v2/api/v1/endpoints/payments.py`
+- **Frontend**: `backend-v2/frontend-v2/lib/stripe.ts`, `backend-v2/frontend-v2/components/payment/`
+- **Webhooks**: `backend-v2/api/v1/endpoints/webhooks.py`
 
 ### Booking System
-- **Backend**: `backend/api/v1/bookings.py`, `backend/services/booking_service.py`
-- **Frontend**: `frontend/src/components/booking/`, `frontend/src/app/(public)/book/`
-- **Models**: `backend/models/booking.py`, `backend/models/appointment.py`
+- **Backend**: `backend-v2/api/v1/bookings.py`, `backend-v2/services/booking_service.py`
+- **Frontend**: `backend-v2/frontend-v2/components/booking/`, `backend-v2/frontend-v2/app/(public)/book/`
+- **Models**: `backend-v2/models/booking.py`, `backend-v2/models/appointment.py`
 
 ### Analytics & Reporting
-- **Backend**: `backend/services/analytics_service.py`, `backend/api/v1/analytics.py`
-- **Frontend**: `frontend/src/components/analytics/`, `frontend/src/app/(auth)/analytics/`
+- **Backend**: `backend-v2/services/analytics_service.py`, `backend-v2/api/v1/analytics.py`
+- **Frontend**: `backend-v2/frontend-v2/components/analytics/`, `backend-v2/frontend-v2/app/(auth)/analytics/`
 
 ### Notifications
-- **Backend**: `backend/services/notification_service.py`
-- **Email**: `backend/services/email_service.py` (SendGrid)
-- **SMS**: `backend/services/sms_service.py` (Twilio)
+- **Backend**: `backend-v2/services/notification_service.py`
+- **Email**: `backend-v2/services/email_service.py` (SendGrid)
+- **SMS**: `backend-v2/services/sms_service.py` (Twilio)
 
 ### Calendar Integration
-- **Backend**: `backend/services/google_calendar_service.py`
-- **Frontend**: `frontend/src/components/calendar/`
-- **Sync**: `backend/api/v1/endpoints/calendar.py`
+- **Backend**: `backend-v2/services/google_calendar_service.py`
+- **Frontend**: `backend-v2/frontend-v2/components/calendar/`
+- **Sync**: `backend-v2/api/v1/endpoints/calendar.py`
 
 ## 🛡️ Verification Protocol
 
@@ -439,41 +446,41 @@ cd frontend && npm run validate-build
 
 1. **Search for existing implementations**:
    ```bash
-   # Search for similar features
-   grep -r "feature_name" backend/ frontend/
+   # Search for similar features (V2 ONLY)
+   grep -r "feature_name" backend-v2/ backend-v2/frontend-v2/
    
    # Find related components
-   find . -name "*feature*" -type f
+   find backend-v2 -name "*feature*" -type f
    
    # Check for existing patterns
-   rg "pattern" --type py --type ts
+   rg "pattern" backend-v2 --type py --type ts
    ```
 
 2. **Verify dependencies**:
    ```bash
-   # Backend dependencies
-   cat backend/requirements.txt | grep package_name
+   # V2 Backend dependencies
+   cat backend-v2/requirements.txt | grep package_name
    
-   # Frontend dependencies
-   cat frontend/package.json | grep package_name
+   # V2 Frontend dependencies
+   cat backend-v2/frontend-v2/package.json | grep package_name
    ```
 
 3. **Check file existence before reading**:
    ```bash
    # Verify file exists
-   ls -la path/to/file
+   ls -la backend-v2/path/to/file
    
-   # Check directory structure
-   tree -L 2 backend/services/
+   # Check V2 directory structure
+   tree -L 2 backend-v2/services/
    ```
 
 4. **Read actual function signatures**:
    ```bash
-   # Don't guess - read the actual code
-   head -50 backend/services/payment_service.py
+   # Don't guess - read the actual V2 code
+   head -50 backend-v2/services/payment_service.py
    
    # Check imports to understand dependencies
-   grep "^import\|^from" backend/services/payment_service.py
+   grep "^import\|^from" backend-v2/services/payment_service.py
    ```
 
 ## 🚫 Do NOT Assume
@@ -494,8 +501,8 @@ cd frontend && npm run validate-build
    - Look for docstrings and type hints
 
 4. **API Endpoints**:
-   - Check `backend/main.py` for router includes
-   - Verify exact endpoint paths in router files
+   - Check `backend-v2/main.py` for router includes
+   - Verify exact endpoint paths in V2 router files
    - Don't assume REST conventions without checking
 
 ## 🔍 Common Patterns & Conventions
@@ -549,7 +556,7 @@ from services.user_service import UserService
 
 1. **Use specific file references**:
    ```
-   "Looking at backend/services/payment_service.py:45-67, 
+   "Looking at backend-v2/services/payment_service.py:45-67, 
    I see the refund method signature..."
    ```
 

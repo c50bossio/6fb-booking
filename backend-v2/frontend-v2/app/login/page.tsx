@@ -3,7 +3,8 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { login } from '@/lib/api'
+import { login, getProfile } from '@/lib/api'
+import { getDefaultDashboard } from '@/lib/routeGuards'
 import { useAsyncOperation } from '@/lib/useAsyncOperation'
 import { LoadingButton, ErrorDisplay, SuccessMessage } from '@/components/LoadingStates'
 import { Input } from '@/components/ui/Input'
@@ -16,6 +17,7 @@ function LoginContent() {
   const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [rememberMe, setRememberMe] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   
   const [loginState, loginActions] = useAsyncOperation()
@@ -35,7 +37,16 @@ function LoginContent() {
       const response = await loginActions.execute(() => login(email, password))
       if (response.access_token) {
         // Token is already stored in the login function
-        router.push('/dashboard')
+        // Fetch user profile to determine role
+        try {
+          const userProfile = await getProfile()
+          const dashboardUrl = getDefaultDashboard(userProfile)
+          router.push(dashboardUrl)
+        } catch (profileError) {
+          // If profile fetch fails, fallback to default dashboard
+          console.error('Failed to fetch user profile:', profileError)
+          router.push('/dashboard')
+        }
       }
     } catch (err) {
       // Error is already handled by useAsyncOperation
@@ -90,7 +101,16 @@ function LoginContent() {
             />
           </div>
 
-          <div className="text-right">
+          <div className="flex items-center justify-between">
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 focus:ring-2"
+              />
+              <span className="text-sm text-gray-700 dark:text-gray-300">Remember me</span>
+            </label>
             <Link href="/forgot-password" className="text-sm text-primary-600 hover:text-primary-700">
               Forgot password?
             </Link>

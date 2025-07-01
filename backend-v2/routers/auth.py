@@ -28,7 +28,7 @@ router = APIRouter(prefix="/auth", tags=["authentication"])
 @login_rate_limit
 async def login(request: Request, user_credentials: schemas.UserLogin, db: Session = Depends(get_db)):
     """Login endpoint that returns a JWT access token."""
-    user = authenticate_user(db, user_credentials.username, user_credentials.password)
+    user = authenticate_user(db, user_credentials.email, user_credentials.password)
     
     if not user:
         raise HTTPException(

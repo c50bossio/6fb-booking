@@ -4,7 +4,8 @@
  */
 
 import { requestDeduplicationManager, type RequestConfig } from './request-deduplication'
-import type { Appointment, BookingResponse } from '@/types/calendar'
+import type { Appointment } from '@/types/calendar'
+import type { BookingResponse } from '@/lib/api'
 
 export interface CalendarOperation {
   type: 'create' | 'update' | 'delete' | 'reschedule' | 'cancel'
@@ -92,12 +93,14 @@ export class CalendarOptimisticManager {
     apiCall: () => Promise<BookingResponse>
   ): Promise<BookingResponse> {
     const tempId = Date.now() // Temporary ID for optimistic update
-    const optimisticAppointment: BookingResponse = {
+    const optimisticAppointment = {
       id: tempId,
+      user_id: 0, // Will be set by server
       start_time: appointmentData.start_time || new Date().toISOString(),
       end_time: appointmentData.end_time || new Date().toISOString(),
       status: 'pending',
       price: appointmentData.price || 0,
+      duration_minutes: appointmentData.duration_minutes || 60,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       service_name: appointmentData.service_name || 'New Service',
@@ -277,8 +280,8 @@ export class CalendarOptimisticManager {
   async rescheduleAppointment(
     appointmentId: number,
     newStartTime: string,
-    newEndTime?: string,
-    apiCall: () => Promise<BookingResponse>
+    apiCall: () => Promise<BookingResponse>,
+    newEndTime?: string
   ): Promise<BookingResponse> {
     // Find original appointment
     const originalAppointment = this.currentState.appointments.find(apt => apt.id === appointmentId)
@@ -525,11 +528,18 @@ export class CalendarOptimisticManager {
    */
   private calculateEndTime(startTime: string, originalAppointment: BookingResponse): string {
     const start = new Date(startTime)
-    const originalStart = new Date(originalAppointment.start_time)
-    const originalEnd = new Date(originalAppointment.end_time)
-    const duration = originalEnd.getTime() - originalStart.getTime()
     
-    return new Date(start.getTime() + duration).toISOString()
+    // If original appointment has end_time, calculate based on duration
+    if (originalAppointment.end_time) {
+      const originalStart = new Date(originalAppointment.start_time)
+      const originalEnd = new Date(originalAppointment.end_time)
+      const duration = originalEnd.getTime() - originalStart.getTime()
+      return new Date(start.getTime() + duration).toISOString()
+    }
+    
+    // Otherwise use duration_minutes if available, default to 60 minutes
+    const durationMinutes = originalAppointment.duration_minutes || 60
+    return new Date(start.getTime() + durationMinutes * 60000).toISOString()
   }
 }
 

@@ -24,6 +24,11 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    // Enhanced debug logging
+    console.error('[ErrorBoundary] Component catch triggered')
+    console.error('[ErrorBoundary] Error:', error)
+    console.error('[ErrorBoundary] Error Info:', errorInfo)
+    
     // Filter out extension-related errors in development
     if (process.env.NODE_ENV === 'development' && isExtensionError(error)) {
       console.debug('[Extension Error Caught]:', error.message)
@@ -32,7 +37,8 @@ export class ErrorBoundary extends Component<Props, State> {
       return
     }
 
-    console.error('Uncaught error:', error, errorInfo)
+    console.error('[ErrorBoundary] Uncaught error:', error, errorInfo)
+    console.error('[ErrorBoundary] Error stack:', error.stack)
 
     // Log to error reporting service
     if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {

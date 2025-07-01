@@ -13,7 +13,6 @@ import LayoutWrapper from "@/components/LayoutWrapper";
 import ExtensionDetector from "@/components/ExtensionDetector";
 import ExtensionErrorHandler from "@/components/ExtensionErrorHandler";
 import HighContrastEnforcer from "@/components/HighContrastEnforcer";
-import RemoveDarkSlateBar from "@/components/RemoveDarkSlateBar";
 import Script from "next/script";
 
 const inter = Inter({
@@ -94,7 +93,6 @@ export default function RootLayout({
               </AuthProvider>
               <ExtensionDetector />
               <ExtensionErrorHandler />
-              <RemoveDarkSlateBar />
               {/* <HighContrastEnforcer /> Disabled - conflicts with landing page */}
             </NotificationProvider>
           </ThemeProvider>

@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getProfile, logout, getMyBookings, getClientDashboardMetrics, getDashboardAnalytics, type User, type DashboardAnalytics } from '@/lib/api'
+import { getDefaultDashboard } from '@/lib/routeGuards'
 import TimezoneSetupModal from '@/components/TimezoneSetupModal'
 import { BarberDashboardLayout } from '@/components/BarberDashboardLayout'
 import { useAsyncOperation } from '@/lib/useAsyncOperation'
@@ -10,6 +11,7 @@ import { PageLoading, ErrorDisplay, SuccessMessage } from '@/components/LoadingS
 import { Button } from '@/components/ui/Button'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/Card'
 import { QuickActions } from '@/components/QuickActions'
+import CalendarDayMini from '@/components/calendar/CalendarDayMini'
 
 // Simple Icon Components
 const BookIcon = () => (
@@ -94,6 +96,13 @@ function DashboardContent() {
           return
         }
         setUser(userData)
+        
+        // Check if user should be redirected to role-specific dashboard
+        const defaultDashboard = getDefaultDashboard(userData)
+        if (defaultDashboard !== '/dashboard' && window.location.pathname === '/dashboard') {
+          router.push(defaultDashboard)
+          return
+        }
         
         if (!userData.timezone) {
           setShowTimezoneWarning(true)
@@ -434,44 +443,15 @@ function DashboardContent() {
             
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 
-                <Card variant="default">
-                  <CardContent>
-                    <h3 className="font-semibold text-accent-900 mb-3">Your Bookings</h3>
-                    {bookings.length > 0 ? (
-                      <div className="space-y-2">
-                        <p className="text-sm text-gray-600">
-                          {bookings.length} appointment{bookings.length !== 1 ? 's' : ''}
-                        </p>
-                        {bookings.slice(0, 2).map((booking) => (
-                          <div key={booking.id} className="text-xs bg-gray-50 p-2 rounded border">
-                            <div className="font-medium">{booking.service_name}</div>
-                            <div className="text-gray-500">
-                              {new Date(booking.start_time).toLocaleDateString()} at{' '}
-                              {new Date(booking.start_time).toLocaleTimeString([], {
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </div>
-                            <div className={`text-xs mt-1 ${
-                              booking.status === 'confirmed' ? 'text-primary-600' : 
-                              booking.status === 'pending' ? 'text-yellow-600' : 
-                              'text-gray-600'
-                            }`}>
-                              {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                            </div>
-                          </div>
-                        ))}
-                        {bookings.length > 2 && (
-                          <p className="text-xs text-gray-500">
-                            +{bookings.length - 2} more appointments
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="text-gray-600 text-sm">No appointments scheduled</p>
-                    )}
-                  </CardContent>
-                </Card>
+                {/* Today's Appointments Mini Calendar */}
+                <div className="md:col-span-1">
+                  <CalendarDayMini
+                    appointments={bookings}
+                    selectedDate={new Date()}
+                    maxItems={3}
+                    onViewAll={() => router.push('/calendar')}
+                  />
+                </div>
                 
                 <Card variant="default">
                   <CardContent>

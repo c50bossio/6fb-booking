@@ -859,6 +859,53 @@ async def get_client_statistics(
     )
 
 
+@router.get("/dashboard/metrics")
+async def get_dashboard_metrics(
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Get client metrics for dashboard"""
+    
+    # Base query
+    query = db.query(Client)
+    
+    # Filter by barber if not admin
+    if current_user.get("role") == "barber":
+        barber = (
+            db.query(Barber.id).filter(Barber.user_id == current_user["id"]).first()
+        )
+        if barber:
+            query = query.filter(Client.barber_id == barber.id)
+    
+    clients = query.all()
+    
+    # Calculate metrics
+    total_clients = len(clients)
+    new_clients_count = len([c for c in clients if c.customer_type == "new"])
+    vip_clients_count = len([c for c in clients if c.customer_type == "vip"])
+    
+    # Calculate retention rate (clients with more than 1 visit)
+    retained_clients = len([c for c in clients if c.total_visits > 1])
+    retention_rate = (retained_clients / total_clients * 100) if total_clients > 0 else 0
+    
+    # Total revenue
+    total_revenue = sum(c.total_spent for c in clients)
+    
+    # Average ticket
+    total_visits = sum(c.total_visits for c in clients)
+    average_ticket = total_revenue / total_visits if total_visits > 0 else 0
+    
+    return {
+        "total_clients": total_clients,
+        "new_clients": new_clients_count,
+        "vip_clients": vip_clients_count,
+        "retention_rate": round(retention_rate, 1),
+        "total_revenue": round(total_revenue, 2),
+        "average_ticket": round(average_ticket, 2),
+        "total_visits": total_visits,
+    }
+
+
 @router.delete("/{client_id}")
 async def delete_client(
     client_id: int,

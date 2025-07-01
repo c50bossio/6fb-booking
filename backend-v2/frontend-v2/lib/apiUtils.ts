@@ -6,7 +6,7 @@ import { toastError, toastInfo } from '@/hooks/use-toast'
 const API_SCHEMAS: Record<string, any> = {
   '/api/v1/auth/login': {
     request: {
-      username: 'string',
+      email: 'string',
       password: 'string'
     },
     response: {

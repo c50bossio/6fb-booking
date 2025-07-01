@@ -11,6 +11,8 @@ import { touchDragManager, TouchDragManager } from '@/lib/touch-utils'
 import { conflictManager, ConflictAnalysis, ConflictResolution } from '@/lib/appointment-conflicts'
 import ConflictResolutionModal from './modals/ConflictResolutionModal'
 import { useCalendarPerformance } from '@/hooks/useCalendarPerformance'
+import { useResponsive } from '@/hooks/useResponsive'
+import CalendarDayViewMobile from './calendar/CalendarDayViewMobile'
 
 interface Appointment {
   id: number
@@ -84,6 +86,9 @@ const CalendarDayView = React.memo(function CalendarDayView({
   const [showConflictModal, setShowConflictModal] = useState(false)
   const scheduleColumnRef = useRef<HTMLDivElement>(null)
   const isTouchDevice = TouchDragManager.isTouchDevice()
+  
+  // Responsive hook
+  const { isMobile } = useResponsive()
   
   // Performance monitoring and optimization
   const { measureRender, optimizedAppointmentFilter, memoizedDateCalculations } = useCalendarPerformance()
@@ -444,6 +449,31 @@ const CalendarDayView = React.memo(function CalendarDayView({
   }, [selectedAppointments])
   
 
+  // Render mobile view on small screens
+  if (isMobile) {
+    return (
+      <CalendarDayViewMobile
+        selectedDate={currentDay}
+        appointments={appointments}
+        onAppointmentClick={onAppointmentClick}
+        onTimeSlotClick={(date, hour, minute) => {
+          const slotDate = new Date(date)
+          slotDate.setHours(hour, minute, 0, 0)
+          onTimeSlotClick?.(slotDate)
+        }}
+        onCreateAppointment={() => onTimeSlotClick?.(currentDay)}
+        onDateChange={(date) => {
+          setCurrentDay(date)
+          onDateChange?.(date)
+        }}
+        selectedBarberId={selectedBarberId}
+        startHour={startHour}
+        endHour={endHour}
+      />
+    )
+  }
+
+  // Desktop view
   return (
     <div className="w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm h-full flex flex-col">
       {/* Selection toolbar */}

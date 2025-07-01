@@ -123,9 +123,9 @@ async def get_current_user_optional(
     except (JWTError, HTTPException):
         return None
 
-def authenticate_user(db: Session, username: str, password: str):
-    """Authenticate a user by username and password."""
-    user = db.query(User).filter(User.email == username).first()
+def authenticate_user(db: Session, email: str, password: str):
+    """Authenticate a user by email and password."""
+    user = db.query(User).filter(User.email == email).first()
     if not user:
         return False
     if not verify_password(password, user.hashed_password):

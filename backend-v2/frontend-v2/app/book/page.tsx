@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Calendar from '@/components/Calendar'
+import CalendarDayView from '@/components/CalendarDayView'
 import TimeSlots from '@/components/TimeSlots'
 import PaymentForm from '@/components/PaymentForm'
 import TimezoneTooltip from '@/components/TimezoneTooltip'
@@ -47,6 +48,7 @@ export default function BookPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const [guestInfo, setGuestInfo] = useState<GuestInformation>({ first_name: '', last_name: '', email: '', phone: '' })
   const [guestBookingResponse, setGuestBookingResponse] = useState<GuestBookingResponse | null>(null)
+  const [useCalendarView, setUseCalendarView] = useState(false)
 
   // State for timezone display
   const [userTimezone, setUserTimezone] = useState<string>('')
@@ -359,6 +361,67 @@ export default function BookPage() {
     return formatTimeWithTimezone(time, false)
   }
 
+  // Convert time slots to appointment format for CalendarDayView
+  const convertTimeSlotsToAppointments = () => {
+    if (!selectedDate || !selectedService) return []
+    
+    // Create available slot indicators for CalendarDayView
+    const availableSlots = timeSlots
+      .filter(slot => slot.available)
+      .map((slot, index) => {
+        const [hours, minutes] = slot.time.split(':').map(Number)
+        const startTime = new Date(selectedDate)
+        startTime.setHours(hours, minutes, 0, 0)
+        
+        const endTime = new Date(startTime)
+        endTime.setMinutes(endTime.getMinutes() + 30) // Default 30 min slots
+        
+        return {
+          id: -1000 - index, // Negative IDs to distinguish from real appointments
+          start_time: startTime.toISOString(),
+          end_time: endTime.toISOString(),
+          service_name: 'Available Slot',
+          client_name: `Click to book ${selectedService}`,
+          status: 'available',
+          duration_minutes: 30,
+          price: SERVICES.find(s => s.id === selectedService)?.amount || 0,
+          // Custom properties
+          isAvailableSlot: true,
+          originalTime: slot.time,
+          // Style as available
+          barber_id: 1, // Dummy barber ID
+          barber_name: 'Available'
+        }
+      })
+    
+    // Create booked slot indicators
+    const bookedSlots = timeSlots
+      .filter(slot => !slot.available)
+      .map((slot, index) => {
+        const [hours, minutes] = slot.time.split(':').map(Number)
+        const startTime = new Date(selectedDate)
+        startTime.setHours(hours, minutes, 0, 0)
+        
+        const endTime = new Date(startTime)
+        endTime.setMinutes(endTime.getMinutes() + 30)
+        
+        return {
+          id: -2000 - index,
+          start_time: startTime.toISOString(),
+          end_time: endTime.toISOString(),
+          service_name: 'Booked',
+          client_name: 'Not Available',
+          status: 'confirmed',
+          duration_minutes: 30,
+          barber_id: 1,
+          barber_name: 'Booked',
+          isAvailableSlot: false
+        }
+      })
+    
+    return [...availableSlots, ...bookedSlots]
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
@@ -520,37 +583,142 @@ export default function BookPage() {
               <div className="w-16" /> {/* Spacer for centering */}
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8">
-              <div>
-                <h2 className="text-lg font-semibold mb-4">Choose a Date</h2>
-                <Calendar
-                  selectedDate={selectedDate}
-                  onDateSelect={handleDateSelect}
-                  bookingDates={bookingDates}
-                />
-              </div>
-
-              <div>
-                <h2 className="text-lg font-semibold mb-4">
-                  {selectedDate ? formatDate(selectedDate) : 'Select a date first'}
-                </h2>
-                {selectedDate && (
-                  <>
-                    {loadingSlots ? (
-                      <TimeSlotsLoadingSkeleton />
-                    ) : (
-                      <TimeSlots
-                        slots={timeSlots}
-                        selectedTime={selectedTime}
-                        onTimeSelect={handleTimeSelect}
-                        loading={false}
-                        showNextAvailableBadge={true}
-                      />
-                    )}
-                  </>
-                )}
+            {/* View toggle */}
+            <div className="flex justify-center mb-6">
+              <div className="inline-flex rounded-lg border border-gray-200 dark:border-gray-700 p-1">
+                <button
+                  onClick={() => setUseCalendarView(false)}
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                    !useCalendarView
+                      ? 'bg-primary-600 text-white'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                >
+                  Classic View
+                </button>
+                <button
+                  onClick={() => setUseCalendarView(true)}
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                    useCalendarView
+                      ? 'bg-primary-600 text-white'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                >
+                  Calendar View
+                </button>
               </div>
             </div>
+
+            {!useCalendarView ? (
+              // Classic view with separate calendar and time slots
+              <div className="grid md:grid-cols-2 gap-8">
+                <div>
+                  <h2 className="text-lg font-semibold mb-4">Choose a Date</h2>
+                  <Calendar
+                    selectedDate={selectedDate}
+                    onDateSelect={handleDateSelect}
+                    bookingDates={bookingDates}
+                  />
+                </div>
+
+                <div>
+                  <h2 className="text-lg font-semibold mb-4">
+                    {selectedDate ? formatDate(selectedDate) : 'Select a date first'}
+                  </h2>
+                  {selectedDate && (
+                    <>
+                      {loadingSlots ? (
+                        <TimeSlotsLoadingSkeleton />
+                      ) : (
+                        <TimeSlots
+                          slots={timeSlots}
+                          selectedTime={selectedTime}
+                          onTimeSelect={handleTimeSelect}
+                          loading={false}
+                          showNextAvailableBadge={true}
+                        />
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            ) : (
+              // New calendar day view
+              <div>
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-lg font-semibold">
+                    {selectedDate ? formatDate(selectedDate) : 'Today'}
+                  </h2>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => setSelectedDate(new Date())}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Today
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        const tomorrow = new Date()
+                        tomorrow.setDate(tomorrow.getDate() + 1)
+                        setSelectedDate(tomorrow)
+                      }}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Tomorrow
+                    </Button>
+                  </div>
+                </div>
+                
+                {loadingSlots ? (
+                  <div className="h-[600px] flex items-center justify-center bg-white rounded-lg border border-gray-200">
+                    <TimeSlotsLoadingSkeleton />
+                  </div>
+                ) : (
+                  <div className="h-[600px] bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <CalendarDayView
+                      appointments={convertTimeSlotsToAppointments()}
+                      currentDate={selectedDate || new Date()}
+                      onDateChange={(date) => {
+                        setSelectedDate(date)
+                        handleDateSelect(date)
+                      }}
+                      onAppointmentClick={(appointment: any) => {
+                        // Only handle clicks on available slots
+                        if (appointment.isAvailableSlot) {
+                          handleTimeSelect(appointment.originalTime)
+                        }
+                      }}
+                      onTimeSlotClick={(date) => {
+                        // Extract time from the date
+                        const hours = date.getHours().toString().padStart(2, '0')
+                        const minutes = date.getMinutes().toString().padStart(2, '0')
+                        const timeString = `${hours}:${minutes}`
+                        
+                        // Check if this time slot is available
+                        const slot = timeSlots.find(s => s.time === timeString)
+                        if (slot && slot.available) {
+                          handleTimeSelect(timeString)
+                        }
+                      }}
+                      selectedBarberId="all"
+                      startHour={8}
+                      endHour={20}
+                      slotDuration={30}
+                    />
+                  </div>
+                )}
+                
+                {selectedTime && (
+                  <div className="mt-4 p-4 bg-primary-50 border border-primary-200 rounded-lg">
+                    <p className="text-sm text-primary-700">
+                      Selected time: <span className="font-semibold">{formatTime(selectedTime)}</span>
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
 
             {error && (
               <div className={`mt-4 ${

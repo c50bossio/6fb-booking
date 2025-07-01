@@ -346,7 +346,7 @@ export class RequestDeduplicationManager {
   private invalidateRelatedCache(endpoint: string): void {
     const keysToDelete: string[] = []
     
-    for (const [key] of this.requestCache) {
+    for (const [key] of Array.from(this.requestCache.entries())) {
       if (key.includes(endpoint) || this.isRelatedEndpoint(endpoint, key)) {
         keysToDelete.push(key)
       }
@@ -379,7 +379,7 @@ export class RequestDeduplicationManager {
   public abortPendingRequests(pattern?: string): void {
     let abortedCount = 0
     
-    for (const [key, request] of this.pendingRequests) {
+    for (const [key, request] of Array.from(this.pendingRequests.entries())) {
       if (!pattern || key.includes(pattern)) {
         request.abortController.abort()
         this.pendingRequests.delete(key)
@@ -396,7 +396,7 @@ export class RequestDeduplicationManager {
   public clearCache(pattern?: string): void {
     if (pattern) {
       let clearedCount = 0
-      for (const [key] of this.requestCache) {
+      for (const [key] of Array.from(this.requestCache.entries())) {
         if (key.includes(pattern)) {
           this.requestCache.delete(key)
           clearedCount++
@@ -430,7 +430,7 @@ export class RequestDeduplicationManager {
     const now = Date.now()
     
     // Clean up expired pending requests
-    for (const [key, request] of this.pendingRequests) {
+    for (const [key, request] of Array.from(this.pendingRequests.entries())) {
       if (now - request.timestamp > this.REQUEST_TIMEOUT) {
         request.abortController.abort()
         this.pendingRequests.delete(key)
@@ -438,7 +438,7 @@ export class RequestDeduplicationManager {
     }
     
     // Clean up old optimistic updates
-    for (const [id, update] of this.optimisticUpdates) {
+    for (const [id, update] of Array.from(this.optimisticUpdates.entries())) {
       if (now - update.timestamp > 30000) { // 30 seconds
         if (update.applied) {
           update.rollback()
@@ -448,7 +448,7 @@ export class RequestDeduplicationManager {
     }
     
     // Clean up expired cache entries
-    for (const [key, cached] of this.requestCache) {
+    for (const [key, cached] of Array.from(this.requestCache.entries())) {
       if (now - cached.timestamp > cached.ttl) {
         this.requestCache.delete(key)
       }

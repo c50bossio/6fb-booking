@@ -132,8 +132,12 @@ export function useCalendarInteractionManager(
     targetType: 'date' | 'appointment' | 'time-slot',
     event: React.MouseEvent
   ) => {
+    if (finalConfig.singleClickAction === 'none') {
+      return
+    }
+
     const interaction: CalendarInteraction = {
-      type: finalConfig.singleClickAction,
+      type: finalConfig.singleClickAction as 'select' | 'create',
       target: targetType,
       data: target,
       event
@@ -210,8 +214,12 @@ export function useCalendarInteractionManager(
       clearTimeout(clickTimerRef.current)
     }
     
+    if (finalConfig.doubleClickAction === 'none') {
+      return
+    }
+
     const interaction: CalendarInteraction = {
-      type: finalConfig.doubleClickAction,
+      type: finalConfig.doubleClickAction as 'create' | 'edit',
       target: targetType,
       data: target,
       event
@@ -464,7 +472,10 @@ export function useCalendarInteractionManager(
     onAppointmentClick: (appointment, event) => handleClick(appointment, 'appointment', event),
     onAppointmentDoubleClick: (appointment, event) => handleDoubleClick(appointment, 'appointment', event),
     onKeyDown: handleKeyDown,
-    onMouseEnter: handleMouseEnter,
+    onMouseEnter: (target: Date | Appointment, event: React.MouseEvent) => {
+      const targetType = target instanceof Date ? 'date' : 'appointment'
+      handleMouseEnter(target, targetType, event)
+    },
     onMouseLeave: handleMouseLeave,
     onTouchStart: handleTouchStart,
     onTouchMove: () => {}, // Implement if needed

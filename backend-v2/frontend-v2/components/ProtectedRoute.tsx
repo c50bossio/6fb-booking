@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { User } from '@/lib/api'
-import { hasRoutePermission } from '@/lib/routeGuards'
+import { hasRoutePermission, getDefaultDashboard } from '@/lib/routeGuards'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -82,7 +82,7 @@ export function ProtectedRoute({ children, user, loading }: ProtectedRouteProps)
             {permission.reason || 'You do not have permission to access this page.'}
           </p>
           <button
-            onClick={() => router.push(permission.redirectTo || '/dashboard')}
+            onClick={() => router.push(permission.redirectTo || getDefaultDashboard(user))}
             className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
           >
             Go to Dashboard

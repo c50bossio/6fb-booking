@@ -14,7 +14,8 @@ export function useCalendarErrorReporting() {
     const calendarError: CalendarError = {
       name: error.name || 'CalendarError',
       message: error.message || 'Unknown calendar error',
-      code: error.code || 'UNKNOWN_ERROR',
+      code: error.code || error.errorCode || 'UNKNOWN_ERROR',
+      errorCode: error.errorCode || 'UNKNOWN_ERROR',
       recoverable: error.recoverable !== false,
       timestamp: new Date(),
       context: {
@@ -33,7 +34,7 @@ export function useCalendarErrorReporting() {
         (window as any).Sentry.captureException(error, {
           tags: {
             section: 'calendar',
-            errorCode: calendarError.code,
+            errorCode: calendarError.errorCode,
             recoverable: calendarError.recoverable
           },
           contexts: {
@@ -48,7 +49,7 @@ export function useCalendarErrorReporting() {
           description: calendarError.message,
           fatal: false,
           custom_map: {
-            error_code: calendarError.code,
+            error_code: calendarError.errorCode,
             calendar_context: JSON.stringify(calendarError.context)
           }
         })
@@ -117,11 +118,14 @@ export class CalendarErrorBoundary extends Component<Props, State> {
     
     // Transform generic error to CalendarError
     const calendarError: CalendarError = {
-      ...error,
+      name: error.name || 'CalendarError',
+      message: error.message || 'An error occurred in the calendar',
       code: error.name || 'CALENDAR_ERROR',
+      errorCode: error.name || 'CALENDAR_ERROR',
       timestamp: new Date(),
       context: { timestamp: new Date().toISOString() },
-      recoverable: true
+      recoverable: true,
+      stack: error.stack
     }
 
     return {
@@ -191,7 +195,8 @@ export class CalendarErrorBoundary extends Component<Props, State> {
           error: prevState.error ? {
             ...prevState.error,
             message: 'No internet connection. Please check your network and try again.',
-            code: 'NETWORK_ERROR'
+            code: 'NETWORK_ERROR',
+            errorCode: 'NETWORK_ERROR'
           } : null
         }))
         return
@@ -249,7 +254,7 @@ export class CalendarErrorBoundary extends Component<Props, State> {
     }
 
     // Provide user-friendly error messages
-    switch (error.code) {
+    switch (error.code || error.errorCode) {
       case 'NETWORK_ERROR':
         return 'Unable to connect to the server. Please check your internet connection.'
       case 'TIMEOUT_ERROR':
@@ -417,8 +422,9 @@ export function CalendarErrorFallback({
   }
 
   const getErrorMessage = () => {
-    if ('code' in error) {
-      switch (error.code) {
+    if ('code' in error || 'errorCode' in error) {
+      const errorCode = (error as any).code || (error as any).errorCode
+      switch (errorCode) {
         case 'NETWORK_ERROR':
           return 'Network connection issue'
         case 'TIMEOUT_ERROR':

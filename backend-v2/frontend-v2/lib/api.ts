@@ -1,6 +1,5 @@
 import { validateAPIRequest, validateAPIResponse, APIPerformanceMonitor, retryOperation, defaultRetryConfigs } from './apiUtils'
 import { toastError, toastSuccess, toastInfo } from '@/hooks/use-toast'
-import type { APIError, ValidationError } from '@/types/api'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -226,10 +225,14 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
 
 // Auth functions with retry logic for critical operations
 export async function login(email: string, password: string) {
+  const requestBody = { email, password };
+  console.log('🚀 Login request body:', requestBody);
+  console.log('🚀 Login request body JSON:', JSON.stringify(requestBody));
+  
   const response = await retryOperation(
     () => fetchAPI('/api/v1/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ username: email, password }),
+      body: JSON.stringify(requestBody),
     }),
     defaultRetryConfigs.critical,
     (error) => {
@@ -3317,7 +3320,11 @@ export const analyticsAPI = {
     startDate?: string
     endDate?: string
   }): Promise<PerformanceAnalytics> => {
-    return getPerformanceAnalytics(params?.userId, params?.startDate, params?.endDate)
+    return getPerformanceAnalytics({
+      barber_id: params?.userId,
+      start_date: params?.startDate,
+      end_date: params?.endDate
+    })
   },
 
   /**
@@ -3358,7 +3365,7 @@ export const analyticsAPI = {
         results[`${request.type}_${index}`] = result
       } catch (error) {
         console.error(`Error fetching ${request.type} analytics:`, error)
-        results[`${request.type}_${index}`] = { error: error.message }
+        results[`${request.type}_${index}`] = { error: error instanceof Error ? error.message : 'Unknown error' }
       }
     })
     
@@ -3386,7 +3393,7 @@ export async function getSixFigureCoachingData(userId: number): Promise<Coaching
       getDashboardAnalytics(userId),
       getSixFigureBarberMetrics(100000, userId),
       getBusinessInsights(userId),
-      getPerformanceAnalytics(userId)
+      getPerformanceAnalytics({ barber_id: userId })
     ])
 
     // Calculate business health score from the aggregated data
@@ -3462,7 +3469,7 @@ export async function getBusinessHealthScore(userId: number): Promise<HealthScor
   try {
     const [dashboardData, performanceData, sixFigureMetrics] = await Promise.all([
       getDashboardAnalytics(userId),
-      getPerformanceAnalytics(userId),
+      getPerformanceAnalytics({ barber_id: userId }),
       getSixFigureBarberMetrics(100000, userId)
     ])
 

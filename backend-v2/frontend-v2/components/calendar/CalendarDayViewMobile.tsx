@@ -1,10 +1,11 @@
 'use client'
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
-import { format, addMinutes, isSameDay } from 'date-fns'
+import { format, addMinutes, isSameDay, addDays, subDays } from 'date-fns'
 import { ClockIcon, UserIcon, ScissorsIcon, PlusIcon } from '@heroicons/react/24/outline'
 import { parseAPIDate } from '@/lib/timezone'
 import { touchTargets } from '@/hooks/useResponsiveCalendar'
+import { useSwipeGesture } from '@/hooks/useSwipeGesture'
 
 interface Appointment {
   id: number
@@ -27,6 +28,7 @@ interface CalendarDayViewMobileProps {
   onAppointmentClick?: (appointment: Appointment) => void
   onTimeSlotClick?: (date: Date, hour: number, minute: number) => void
   onCreateAppointment?: () => void
+  onDateChange?: (date: Date) => void
   selectedBarberId?: number | 'all'
   startHour?: number
   endHour?: number
@@ -39,6 +41,7 @@ export default function CalendarDayViewMobile({
   onAppointmentClick,
   onTimeSlotClick,
   onCreateAppointment,
+  onDateChange,
   selectedBarberId = 'all',
   startHour = 8,
   endHour = 20,
@@ -47,6 +50,33 @@ export default function CalendarDayViewMobile({
   const [currentTime, setCurrentTime] = useState(new Date())
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const currentTimeRef = useRef<HTMLDivElement>(null)
+
+  // Swipe gesture handling
+  const handleSwipeLeft = useCallback(() => {
+    onDateChange?.(addDays(selectedDate, 1))
+  }, [selectedDate, onDateChange])
+
+  const handleSwipeRight = useCallback(() => {
+    onDateChange?.(subDays(selectedDate, 1))
+  }, [selectedDate, onDateChange])
+
+  const { attachToElement } = useSwipeGesture(
+    {
+      onSwipeLeft: handleSwipeLeft,
+      onSwipeRight: handleSwipeRight
+    },
+    {
+      threshold: 50,
+      allowMouseEvents: false,
+      preventDefaultTouchMove: false // Allow vertical scrolling
+    }
+  )
+
+  // Attach swipe gesture to scroll container
+  useEffect(() => {
+    const cleanup = attachToElement(scrollContainerRef.current)
+    return cleanup
+  }, [attachToElement])
 
   // Update current time every minute
   useEffect(() => {

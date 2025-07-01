@@ -198,10 +198,17 @@ export interface SlotsResponse {
 }
 
 // Calendar component error types
-export interface CalendarError extends Error {
-  code?: string
+export interface CalendarError {
+  name: string
+  message: string
+  code: string  // Required for compatibility
+  errorCode?: string  // Our custom error code
   context?: Record<string, any>
   recoverable?: boolean
+  timestamp?: Date
+  stack?: string
+  userMessage?: string
+  componentStack?: string
 }
 
 // Touch interaction types
@@ -337,15 +344,6 @@ export interface CalendarPerformanceMetrics {
   }
 }
 
-// Enhanced error interface
-export interface CalendarError extends Error {
-  code: string
-  context?: Record<string, any>
-  recoverable: boolean
-  userMessage?: string
-  timestamp: Date
-  componentStack?: string
-}
 
 // Action types for state management
 export type CalendarAction = 

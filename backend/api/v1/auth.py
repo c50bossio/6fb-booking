@@ -79,6 +79,10 @@ class MagicLinkRequest(BaseModel):
     email: EmailStr
 
 
+class TimezoneUpdateRequest(BaseModel):
+    timezone: str
+
+
 class Token(BaseModel):
     access_token: str
     refresh_token: str
@@ -120,12 +124,14 @@ class MFALoginForm(BaseModel):
 class UserResponse(BaseModel):
     id: int
     email: str
+    name: str  # Computed field for frontend compatibility
     first_name: str
     last_name: str
     role: str
     is_active: bool
     primary_location_id: Optional[int]
     permissions: Optional[list]
+    timezone: Optional[str] = None
     created_at: datetime
     subscription_status: Optional[str] = None
     trial_start_date: Optional[datetime] = None
@@ -628,12 +634,14 @@ async def get_current_user_info(current_user: User = Depends(get_current_user)):
     return UserResponse(
         id=current_user.id,
         email=current_user.email,
+        name=f"{current_user.first_name} {current_user.last_name}",  # Computed field
         first_name=current_user.first_name,
         last_name=current_user.last_name,
         role=current_user.role,
         is_active=current_user.is_active,
         primary_location_id=current_user.primary_location_id,
         permissions=None,  # Will be populated by RBAC if needed
+        timezone=current_user.timezone,
         created_at=current_user.created_at,
         subscription_status=(
             current_user.subscription_status.value
@@ -664,6 +672,19 @@ async def login_endpoint(
         client_secret=None,
     )
     return await login(request, response, form_data, db)
+
+
+@router.post("/login-form", response_model=Token)
+async def login_form_endpoint(
+    request: Request,
+    response: Response,
+    credentials: UserLoginForm,
+    db: Session = Depends(get_db),
+):
+    """Login endpoint that accepts username field (frontend compatibility)"""
+    # Convert username to email format and call the login endpoint
+    user_login = UserLogin(email=credentials.username, password=credentials.password)
+    return await login_endpoint(request, response, user_login, db)
 
 
 @router.post("/login-mfa")
@@ -1365,4 +1386,38 @@ async def auth_health_check(db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=f"Authentication service unhealthy: {str(e)}",
+        )
+
+
+@router.put("/timezone")
+async def update_user_timezone(
+    timezone_data: TimezoneUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update user's timezone setting"""
+    try:
+        # Validate timezone (basic validation - you might want to use pytz for full validation)
+        if not timezone_data.timezone or len(timezone_data.timezone.strip()) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Timezone cannot be empty"
+            )
+        
+        # Update user's timezone
+        current_user.timezone = timezone_data.timezone.strip()
+        db.commit()
+        
+        logger.info(f"Updated timezone for user {current_user.id} to {timezone_data.timezone}")
+        
+        return {
+            "message": "Timezone updated successfully",
+            "timezone": current_user.timezone
+        }
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error updating timezone for user {current_user.id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update timezone"
         )

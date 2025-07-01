@@ -120,16 +120,46 @@ export default function LandingPage() {
 
   return (
     <main className="bg-white dark:bg-gray-900">
+      {/* Header Navigation */}
+      <header className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center">
+              <LogoFull variant="auto" size="md" href="/" />
+            </div>
+            <div className="flex items-center space-x-4">
+              <Link 
+                href="/login" 
+                className="inline-block bg-white dark:bg-gray-800 border-2 border-gray-800 dark:border-gray-200 text-gray-900 dark:text-gray-100 font-semibold px-6 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                Login
+              </Link>
+              <Link 
+                href="/register" 
+                className="inline-block bg-primary-600 hover:bg-primary-700 text-white font-semibold px-6 py-2 rounded-lg transition-colors"
+              >
+                Start Free Trial
+              </Link>
+            </div>
+          </div>
+        </div>
+      </header>
+
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 to-white dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
           <div className="text-center space-y-8">
-            <LogoFull variant="color" size="xl" className="mx-auto" href="#" />
+            <div className="mx-auto">
+              <h1 className="text-6xl md:text-8xl font-black text-gray-900 dark:text-white mb-4 tracking-tight">
+                BOOKEDBARBER
+              </h1>
+              <div className="w-32 h-1 bg-primary-600 mx-auto mb-8"></div>
+            </div>
             
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white">
               The #1 Booking Platform for
               <span className="text-primary-600 dark:text-primary-400"> Six Figure Barbers</span>
-            </h1>
+            </h2>
             
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
               Turn your chair into a thriving business with our all-in-one booking and management platform. 
@@ -363,7 +393,7 @@ export default function LandingPage() {
             <div>
               <LogoFull variant="color" size="md" className="mb-4" href="#" />
               <p className="text-sm">
-                The booking platform built for Six Figure Barbers.
+                The command center for barbers who want to own their chair, own their brand.
               </p>
             </div>
             <div>

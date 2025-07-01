@@ -46,7 +46,7 @@ export class CalendarApiEnhanced {
         endpoint: '/my-bookings',
         method: 'GET'
       },
-      (signal) => getMyBookings(signal)
+      () => getMyBookings()
     )
   }
 
@@ -115,8 +115,8 @@ export class CalendarApiEnhanced {
     return calendarOptimisticManager.rescheduleAppointment(
       appointmentId,
       newStartTime,
-      newEndTime,
-      () => this.callRescheduleAppointmentAPI(appointmentId, newDate, newTime)
+      () => this.callRescheduleAppointmentAPI(appointmentId, newDate, newTime),
+      newEndTime
     )
   }
 

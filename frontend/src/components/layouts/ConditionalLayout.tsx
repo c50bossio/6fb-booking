@@ -82,12 +82,13 @@ export default function ConditionalLayout({
 
   // Debug information (only in development)
   if (process.env.NODE_ENV === 'development') {
-    console.log('ConditionalLayout:', {
+    console.log('[ConditionalLayout] Route analysis:', {
       pathname,
       isDashboard,
       isPublic,
       showSidebar,
-      routeType: isDashboard ? 'dashboard' : isPublic ? 'public' : 'unknown'
+      routeType: isDashboard ? 'dashboard' : isPublic ? 'public' : 'unknown',
+      hasChildren: !!children
     })
   }
 

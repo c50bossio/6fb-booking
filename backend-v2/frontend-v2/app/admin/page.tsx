@@ -17,9 +17,9 @@ export default function AdminPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        // Check if user is authenticated and is admin
+        // Check if user is authenticated and is admin or super_admin
         const userProfile = await getProfile()
-        if (userProfile.role !== 'admin') {
+        if (userProfile.role !== 'admin' && userProfile.role !== 'super_admin') {
           router.push('/dashboard')
           return
         }
