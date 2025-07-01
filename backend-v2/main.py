@@ -6,6 +6,7 @@ from database import engine, Base
 import models
 import location_models
 from routers import auth, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, email_analytics
+from routers.services import public_router as services_public_router
 from utils.rate_limit import limiter, rate_limit_exceeded_handler
 
 # Create database tables
@@ -80,6 +81,9 @@ app.include_router(marketing.router, prefix="/api/v1")
 app.include_router(short_urls.router)  # No prefix for branded short URLs
 app.include_router(notification_preferences.router)  # No prefix, includes its own /api/v1
 app.include_router(email_analytics.router, prefix="/api/v1")
+
+# Include public routes (no authentication required)
+app.include_router(services_public_router, prefix="/api/v1")
 
 @app.get("/")
 def root():

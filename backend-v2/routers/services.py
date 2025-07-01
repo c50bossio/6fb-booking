@@ -16,6 +16,44 @@ router = APIRouter(
     dependencies=[Depends(get_current_active_user)]
 )
 
+# Create a separate router for public endpoints
+public_router = APIRouter(
+    prefix="/public/services",
+    tags=["public-services"]
+)
+
+
+@public_router.get("/", response_model=List[ServiceResponse])
+async def get_public_services(
+    category: Optional[ServiceCategoryEnum] = Query(None),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=100),
+    db: Session = Depends(get_db)
+):
+    """Get all active services available for online booking (public endpoint)"""
+    query = db.query(Service).filter(
+        Service.is_active == True,
+        Service.is_bookable_online == True
+    )
+    
+    if category:
+        query = query.filter(Service.category == category)
+    
+    # Order by category and display order
+    query = query.order_by(Service.category, Service.display_order, Service.name)
+    
+    services = query.offset(skip).limit(limit).all()
+    return services
+
+
+@public_router.get("/categories", response_model=List[dict])
+async def get_public_service_categories():
+    """Get all available service categories (public endpoint)"""
+    return [
+        {"value": category.value, "name": category.name, "label": category.value.replace("_", " ").title()}
+        for category in ServiceCategoryEnum
+    ]
+
 
 @router.get("/categories", response_model=List[dict])
 async def get_service_categories():

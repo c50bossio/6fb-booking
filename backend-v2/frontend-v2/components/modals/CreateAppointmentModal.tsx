@@ -10,6 +10,7 @@ import {
   searchClients,
   createClient,
   getServices,
+  getPublicServices,
   appointmentsAPI,
   getAvailableSlots,
   type Client,
@@ -35,6 +36,7 @@ interface CreateAppointmentModalProps {
   preselectedDate?: Date
   preselectedTime?: string
   onSuccess?: () => void
+  isPublicBooking?: boolean  // Flag to indicate if this is a public/guest booking
 }
 
 export default function CreateAppointmentModal({
@@ -42,7 +44,8 @@ export default function CreateAppointmentModal({
   onClose,
   preselectedDate,
   preselectedTime,
-  onSuccess
+  onSuccess,
+  isPublicBooking = false
 }: CreateAppointmentModalProps) {
   // Check if we're in demo mode
   let isDemoMode = false
@@ -75,6 +78,10 @@ export default function CreateAppointmentModal({
   const [isServiceDropdownOpen, setIsServiceDropdownOpen] = useState(false)
   const [services, setServices] = useState<Service[]>([])
   const [loadingServices, setLoadingServices] = useState(false)
+  
+  // Service cache reference (stored in module scope for persistence)
+  const servicesCacheRef = useRef<{ services: Service[], timestamp: number } | null>(null)
+  const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
   
   // Time slots state
   const [isTimeDropdownOpen, setIsTimeDropdownOpen] = useState(false)
@@ -117,6 +124,11 @@ export default function CreateAppointmentModal({
     setIsServiceDropdownOpen(false)
     setIsTimeDropdownOpen(false)
   }
+  
+  // Clear services cache (useful when services might have changed)
+  const clearServicesCache = () => {
+    servicesCacheRef.current = null
+  }
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -139,9 +151,14 @@ export default function CreateAppointmentModal({
   // Load services on mount
   useEffect(() => {
     if (isOpen) {
+      console.log('📱 CreateAppointmentModal opened', {
+        isPublicBooking,
+        isDemoMode,
+        hasToken: !!localStorage.getItem('token')
+      })
       loadServices()
     }
-  }, [isOpen])
+  }, [isOpen, isPublicBooking, isDemoMode])
 
   // Load time slots when date or service changes
   useEffect(() => {
@@ -169,15 +186,60 @@ export default function CreateAppointmentModal({
   }, [preselectedDate, preselectedTime])
 
   const loadServices = async () => {
+    // Check cache first
+    if (servicesCacheRef.current) {
+      const { services: cachedServices, timestamp } = servicesCacheRef.current
+      const now = Date.now()
+      if (now - timestamp < CACHE_DURATION) {
+        console.log('📦 Using cached services')
+        setServices(cachedServices)
+        return
+      }
+    }
+    
     try {
       setLoadingServices(true)
-      const response = isDemoMode 
-        ? await demoApi.services.list()
-        : await getServices()
-      setServices(response as Service[])
-    } catch (err) {
+      let response
+      
+      if (isDemoMode) {
+        response = await demoApi.services.list()
+      } else if (isPublicBooking) {
+        // For public booking, always use public endpoint
+        response = await getPublicServices()
+      } else {
+        // Try authenticated endpoint first
+        try {
+          response = await getServices()
+        } catch (authError: any) {
+          // If authentication fails, try public endpoint
+          if (authError.status === 401 || authError.message?.includes('401') || authError.message?.includes('Authentication failed')) {
+            console.log('Auth failed, trying public services endpoint...')
+            response = await getPublicServices()
+          } else {
+            throw authError
+          }
+        }
+      }
+      
+      const servicesData = response as Service[]
+      setServices(servicesData)
+      
+      // Cache the services
+      servicesCacheRef.current = {
+        services: servicesData,
+        timestamp: Date.now()
+      }
+    } catch (err: any) {
       console.error('Failed to load services:', err)
-      setError('Failed to load services')
+      
+      // Provide more specific error messages
+      if (err.message?.includes('Network') || err.message?.includes('Failed to connect')) {
+        setError('Unable to connect to server. Please check your connection and try again.')
+      } else if (err.response?.status === 404) {
+        setError('Services endpoint not found. Please contact support.')
+      } else {
+        setError('Failed to load services. Please try again.')
+      }
     } finally {
       setLoadingServices(false)
     }
@@ -369,7 +431,12 @@ export default function CreateAppointmentModal({
           {error && (
             <ErrorDisplay 
               error={error} 
-              onRetry={() => setError(null)} 
+              onRetry={() => {
+                setError(null)
+                if (!services.length && loadingServices === false) {
+                  loadServices()
+                }
+              }} 
             />
           )}
 

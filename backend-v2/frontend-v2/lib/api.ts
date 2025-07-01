@@ -180,7 +180,9 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
     if (response.status === 401) {
       const message = 'Authentication failed. Please log in again.'
       toastError('Authentication Error', message)
-      throw new Error(message)
+      const error = new Error(message)
+      ;(error as any).status = 401
+      throw error
     }
     
     if (response.status === 403) {
@@ -1737,6 +1739,20 @@ export async function getServices(params?: {
   
   const query = queryParams.toString()
   return fetchAPI(`/api/v1/services/${query ? '?' + query : ''}`)
+}
+
+export async function getPublicServices(params?: {
+  category?: string
+  skip?: number
+  limit?: number
+}): Promise<Service[]> {
+  const queryParams = new URLSearchParams()
+  if (params?.category) queryParams.append('category', params.category)
+  if (params?.skip) queryParams.append('skip', params.skip.toString())
+  if (params?.limit) queryParams.append('limit', params.limit.toString())
+  
+  const query = queryParams.toString()
+  return fetchAPI(`/api/v1/public/services/${query ? '?' + query : ''}`)
 }
 
 export async function getService(serviceId: number, barberId?: number): Promise<Service> {
