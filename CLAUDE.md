@@ -15,12 +15,19 @@ BookedBarber is a comprehensive booking and business management platform for bar
 - **Calendar Integration**: Two-way sync with Google Calendar
 - **Client Communications**: Automated SMS/email reminders and marketing campaigns
 - **Multi-location Support**: Manage multiple shops from a single dashboard
+- **Google My Business Integration**: Automated review management and SEO-optimized responses
+- **Advanced Marketing Suite**: Email/SMS campaigns, conversion tracking, ROI analytics
+- **Digital Advertising Hub**: Google Ads and Meta pixel integration with attribution tracking
+- **Integration Management**: Centralized hub for all third-party service connections
 
 ### Technology Stack
 - **Backend**: FastAPI (Python 3.9+) with SQLAlchemy ORM
 - **Frontend**: Next.js 14 with TypeScript, Tailwind CSS, and shadcn/ui
 - **Database**: PostgreSQL (production) / SQLite (development)
 - **Integrations**: Stripe Connect, Google Calendar API, SendGrid, Twilio
+- **Marketing APIs**: Google My Business API, Google Tag Manager, Meta Business SDK
+- **Analytics**: Enhanced conversion tracking, multi-touch attribution
+- **Review Management**: Automated response system with SEO optimization
 - **Deployment**: Render (primary), supports Railway, Vercel, Docker
 - **Monitoring**: Sentry, custom health checks, performance tracking
 
@@ -58,6 +65,26 @@ git checkout -b feature/description-YYYYMMDD
 # Full restore from snapshot
 ./scripts/restore-snapshot.sh [snapshot-name]
 ```
+
+## 🚀 Marketing Enhancement Features (2025-07-02)
+
+### Integration Priority Order
+1. **Google My Business** - Critical for local SEO and review management
+2. **Conversion Tracking** - GTM and Meta Pixel for ROI measurement
+3. **Review Automation** - SEO-optimized responses following Google guidelines
+4. **Integration Settings** - Centralized management hub
+
+### New API Endpoints
+- `/api/v1/integrations/*` - Integration management
+- `/api/v1/reviews/*` - Review fetching and responses
+- `/api/v1/marketing/gmb/*` - Google My Business operations
+- `/api/v1/tracking/*` - Conversion and analytics tracking
+
+### Testing Requirements for Marketing Features
+- OAuth flow testing with mock providers
+- Review response template validation
+- Conversion event tracking accuracy
+- Integration health monitoring
 
 ## 📁 Project Structure
 
@@ -350,7 +377,8 @@ python manage.py dbshell
 ---
 
 ## Version History
+- **v2.1.0** (2025-07-02): Added marketing enhancement features (GMB, conversion tracking, review automation)
 - **v2.0.0** (2025-01-02): Complete platform rewrite with FastAPI/Next.js
 - **v1.0.0** (2024-06-01): Initial release (deprecated)
 
-Last Updated: 2025-01-02
+Last Updated: 2025-07-02

@@ -205,6 +205,112 @@ git stash pop                    # Restore changes
 pytest --lf                      # Run last failed tests only
 ```
 
+## 🚀 Marketing Integration Guidelines (2025-07-02)
+
+### OAuth Implementation Pattern
+```python
+# services/oauth_service.py
+class OAuthService:
+    """Centralized OAuth management for marketing integrations"""
+    
+    async def initiate_oauth(self, provider: str, user_id: int) -> dict:
+        """Returns OAuth authorization URL and state"""
+        pass
+    
+    async def handle_callback(self, provider: str, code: str, state: str) -> dict:
+        """Processes OAuth callback and stores tokens"""
+        pass
+    
+    async def refresh_token(self, provider: str, user_id: int) -> dict:
+        """Refreshes expired OAuth tokens"""
+        pass
+```
+
+### Review Management Pattern
+```python
+# services/review_service.py
+class ReviewService:
+    """Automated review fetching and response generation"""
+    
+    async def fetch_reviews(self, provider: str, location_id: str) -> List[Review]:
+        """Fetches reviews from GMB, Yelp, etc."""
+        pass
+    
+    async def generate_response(self, review: Review) -> str:
+        """Generates SEO-optimized response based on templates"""
+        pass
+    
+    async def post_response(self, review_id: str, response: str) -> bool:
+        """Posts response back to review platform"""
+        pass
+```
+
+### Conversion Tracking Pattern
+```python
+# services/tracking_service.py
+class TrackingService:
+    """Unified conversion tracking across platforms"""
+    
+    async def track_event(self, event_type: str, data: dict) -> None:
+        """Sends conversion events to GTM, Meta Pixel, etc."""
+        pass
+    
+    async def get_conversion_data(self, date_range: DateRange) -> dict:
+        """Retrieves conversion analytics"""
+        pass
+```
+
+### Testing Requirements
+```python
+# tests/integration/test_marketing_integrations.py
+@pytest.mark.asyncio
+async def test_oauth_flow():
+    """Test complete OAuth flow with mock provider"""
+    pass
+
+async def test_review_response_generation():
+    """Test SEO-optimized response templates"""
+    pass
+
+async def test_conversion_tracking():
+    """Test event tracking accuracy"""
+    pass
+```
+
+### Database Schema Updates
+```sql
+-- New tables for marketing features
+CREATE TABLE integrations (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    provider VARCHAR(50),
+    access_token TEXT,
+    refresh_token TEXT,
+    expires_at TIMESTAMP,
+    metadata JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE review_templates (
+    id SERIAL PRIMARY KEY,
+    rating_range VARCHAR(10),
+    template_type VARCHAR(50),
+    template_text TEXT,
+    seo_keywords TEXT[],
+    active BOOLEAN DEFAULT true
+);
+
+CREATE TABLE conversion_events (
+    id SERIAL PRIMARY KEY,
+    event_type VARCHAR(50),
+    user_id INTEGER,
+    appointment_id INTEGER,
+    revenue DECIMAL(10,2),
+    metadata JSONB,
+    tracked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
 ## 🔧 Common Fixes Applied
 
 ### Login API Field Mismatch (Fixed 2025-07-01)
