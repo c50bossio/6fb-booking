@@ -11,9 +11,14 @@ import {
   createClient,
   getServices,
   getPublicServices,
+  getUsers,
+  getAllUsers,
+  getBarbers,
+  getAvailableSlots,
   appointmentsAPI,
   type Client,
   type Service,
+  type User,
   type SlotsResponse,
   type TimeSlot,
   type AppointmentCreate
@@ -59,7 +64,13 @@ export default function CreateAppointmentModal({
   // State
   const [selectedClient, setSelectedClient] = useState<Client | null>(null)
   const [selectedService, setSelectedService] = useState<Service | null>(null)
-  const [selectedDate, setSelectedDate] = useState<Date | null>(preselectedDate || null)
+  const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
+    if (preselectedDate) return preselectedDate
+    // Default to tomorrow since today often has no available slots
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    return tomorrow
+  })
   const [selectedTime, setSelectedTime] = useState<string | null>(preselectedTime || null)
   const [sendNotification, setSendNotification] = useState(true)
   const [notes, setNotes] = useState('')
@@ -77,6 +88,12 @@ export default function CreateAppointmentModal({
   const [isServiceDropdownOpen, setIsServiceDropdownOpen] = useState(false)
   const [services, setServices] = useState<Service[]>([])
   const [loadingServices, setLoadingServices] = useState(false)
+  
+  // Barber state
+  const [selectedBarber, setSelectedBarber] = useState<User | null>(null)
+  const [isBarberDropdownOpen, setIsBarberDropdownOpen] = useState(false)
+  const [barbers, setBarbers] = useState<User[]>([])
+  const [loadingBarbers, setLoadingBarbers] = useState(false)
   
   // Service cache reference (stored in module scope for persistence)
   const servicesCacheRef = useRef<{ services: Service[], timestamp: number } | null>(null)
@@ -103,12 +120,18 @@ export default function CreateAppointmentModal({
   const clientDropdownRef = useRef<HTMLDivElement>(null)
   const serviceDropdownRef = useRef<HTMLDivElement>(null)
   const timeDropdownRef = useRef<HTMLDivElement>(null)
+  const barberDropdownRef = useRef<HTMLDivElement>(null)
 
   // Reset modal state
   const resetModal = () => {
     setSelectedClient(null)
     setSelectedService(null)
-    setSelectedDate(preselectedDate || null)
+    setSelectedBarber(null)
+    setSelectedDate(preselectedDate || (() => {
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      return tomorrow
+    })())
     setSelectedTime(preselectedTime || null)
     setSendNotification(true)
     setNotes('')
@@ -116,11 +139,13 @@ export default function CreateAppointmentModal({
     setRecurringPattern('weekly')
     setClientSearch('')
     setClients([])
+    setBarbers([])
     setShowCreateClient(false)
     setNewClientData({ first_name: '', last_name: '', email: '', phone: '' })
     setError(null)
     setIsClientDropdownOpen(false)
     setIsServiceDropdownOpen(false)
+    setIsBarberDropdownOpen(false)
     setIsTimeDropdownOpen(false)
   }
   
@@ -138,6 +163,9 @@ export default function CreateAppointmentModal({
       if (serviceDropdownRef.current && !serviceDropdownRef.current.contains(event.target as Node)) {
         setIsServiceDropdownOpen(false)
       }
+      if (barberDropdownRef.current && !barberDropdownRef.current.contains(event.target as Node)) {
+        setIsBarberDropdownOpen(false)
+      }
       if (timeDropdownRef.current && !timeDropdownRef.current.contains(event.target as Node)) {
         setIsTimeDropdownOpen(false)
       }
@@ -147,7 +175,7 @@ export default function CreateAppointmentModal({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Load services on mount
+  // Load services and barbers on mount
   useEffect(() => {
     if (isOpen) {
       console.log('📱 CreateAppointmentModal opened', {
@@ -156,14 +184,16 @@ export default function CreateAppointmentModal({
         hasToken: !!localStorage.getItem('token')
       })
       loadServices()
+      loadBarbers()
     }
   }, [isOpen, isPublicBooking, isDemoMode])
 
-  // Load time slots when date or service changes
+  // Load time slots when date, service, or barber changes
   useEffect(() => {
     console.log('🔄 CreateAppointmentModal - Time slots useEffect triggered', {
       selectedDate,
       selectedService,
+      selectedBarber,
       condition: selectedDate && selectedService
     })
     
@@ -176,11 +206,15 @@ export default function CreateAppointmentModal({
         hasService: !!selectedService
       })
     }
-  }, [selectedDate, selectedService])
+  }, [selectedDate, selectedService, selectedBarber])
 
   // Update preselected values when props change
   useEffect(() => {
-    setSelectedDate(preselectedDate || null)
+    setSelectedDate(preselectedDate || (() => {
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      return tomorrow
+    })())
     setSelectedTime(preselectedTime || null)
   }, [preselectedDate, preselectedTime])
 
@@ -244,12 +278,62 @@ export default function CreateAppointmentModal({
     }
   }
 
+  const loadBarbers = async () => {
+    try {
+      setLoadingBarbers(true)
+      console.log('🔍 loadBarbers called - isDemoMode:', isDemoMode, 'isPublicBooking:', isPublicBooking)
+      
+      if (isDemoMode) {
+        // For demo mode, create mock barbers
+        const mockBarbers = [
+          { id: 1, email: 'mike@demo.com', name: 'Mike Johnson', role: 'barber', created_at: '2024-01-01' },
+          { id: 2, email: 'sarah@demo.com', name: 'Sarah Williams', role: 'barber', created_at: '2024-01-01' },
+          { id: 3, email: 'james@demo.com', name: 'James Brown', role: 'barber', created_at: '2024-01-01' }
+        ]
+        console.log('📦 Demo mode: Setting mock barbers:', mockBarbers)
+        setBarbers(mockBarbers)
+      } else {
+        console.log('🌐 Production mode: Fetching barbers from API...')
+        // Try authenticated endpoint first (for calendar consistency)
+        try {
+          const barberUsers = await getAllUsers('barber')
+          console.log('💼 Barber users from authenticated API:', barberUsers)
+          setBarbers(barberUsers)
+        } catch (authError: any) {
+          // If authentication fails, fall back to public barbers endpoint
+          if (authError.status === 401 || authError.status === 403 || authError.message?.includes('401') || authError.message?.includes('403')) {
+            console.log('🔓 Auth failed, using public barbers endpoint...')
+            const publicBarbers = await getBarbers()
+            console.log('💼 Public barbers from API:', publicBarbers)
+            setBarbers(publicBarbers)
+          } else {
+            throw authError
+          }
+        }
+      }
+    } catch (err: any) {
+      console.error('❌ Failed to load barbers:', err)
+      console.error('Error details:', {
+        message: err.message,
+        status: err.status,
+        response: err.response?.data
+      })
+      // Don't show error for barbers loading as it's not critical
+      // The appointment can still be created without barber selection
+    } finally {
+      setLoadingBarbers(false)
+    }
+  }
+
   const loadTimeSlots = async () => {
     console.log('📍 loadTimeSlots called', {
       selectedDate,
       selectedService,
+      selectedBarber,
       serviceName: selectedService?.name,
       serviceId: selectedService?.id,
+      barberId: selectedBarber?.id,
+      barberName: selectedBarber?.name,
       isDemoMode
     })
     
@@ -261,14 +345,23 @@ export default function CreateAppointmentModal({
     try {
       setLoadingSlots(true)
       const apiDate = formatDateForAPI(selectedDate)
-      console.log('🔍 Calling getAvailableSlots API with date:', apiDate, 'Demo mode:', isDemoMode)
+      console.log('🔍 Calling getAvailableSlots API with params:', {
+        date: apiDate,
+        service_id: selectedService.id,
+        barber_id: selectedBarber?.id,
+        isDemoMode
+      })
       
       const response = isDemoMode
         ? await demoApi.appointments.getAvailableSlots({
             date: apiDate,
             service_id: selectedService.id
           })
-        : await appointmentsAPI.getAvailableSlots(apiDate)
+        : await getAvailableSlots({
+            date: apiDate,
+            service_id: selectedService.id,
+            barber_id: selectedBarber?.id
+          })
       
       console.log('📦 API Response:', {
         hasSlots: !!response.slots,
@@ -385,7 +478,8 @@ export default function CreateAppointmentModal({
           date: formatDateForAPI(selectedDate),
           time: selectedTime,
           service: selectedService.name,
-          notes: notes || undefined
+          notes: notes || undefined,
+          barber_id: selectedBarber?.id
         }
 
         console.log('🚀 Creating appointment with data:', appointmentData)
@@ -652,6 +746,95 @@ export default function CreateAppointmentModal({
                     ))
                   ) : (
                     <div className="p-3 text-center text-gray-500">No services available</div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Barber Selection */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-gray-900 dark:text-white">
+              Barber {!isPublicBooking ? '(Optional)' : ''}
+            </label>
+            <div className="relative" ref={barberDropdownRef}>
+              <button
+                type="button"
+                onClick={() => setIsBarberDropdownOpen(!isBarberDropdownOpen)}
+                className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 text-left flex items-center justify-between hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <UserIcon className="w-5 h-5 text-gray-400" />
+                  <span className={selectedBarber ? 'text-gray-900 dark:text-white' : 'text-gray-500'}>
+                    {selectedBarber ? selectedBarber.name : 'Any available barber'}
+                  </span>
+                </div>
+                <ChevronDownIcon className={`w-5 h-5 text-gray-400 transition-transform ${isBarberDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isBarberDropdownOpen && (
+                <div className="absolute top-full left-0 right-0 z-[100] mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                  {loadingBarbers ? (
+                    <div className="p-3 text-center text-gray-500">Loading barbers...</div>
+                  ) : (
+                    <>
+                      {/* Debug logging */}
+                      {console.log('🔧 Rendering barber dropdown:', {
+                        barbersLength: barbers.length,
+                        barbers: barbers,
+                        loadingBarbers,
+                        isBarberDropdownOpen
+                      })}
+                      
+                      {/* Any available barber option */}
+                      <button
+                        onClick={() => {
+                          setSelectedBarber(null)
+                          setIsBarberDropdownOpen(false)
+                        }}
+                        className="w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-600 flex items-center gap-2"
+                      >
+                        <UserIcon className="w-4 h-4 text-gray-400" />
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          Any available barber
+                        </span>
+                      </button>
+                      
+                      {barbers.length > 0 && (
+                        <div className="border-t border-gray-200 dark:border-gray-700">
+                          {barbers.map((barber) => (
+                            <button
+                              key={barber.id}
+                              onClick={() => {
+                                setSelectedBarber(barber)
+                                setIsBarberDropdownOpen(false)
+                              }}
+                              className="w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-600 flex items-center gap-3"
+                            >
+                              <div className="w-8 h-8 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center">
+                                <span className="text-sm font-medium text-primary-600 dark:text-primary-400">
+                                  {barber.name?.charAt(0).toUpperCase() || '?'}
+                                </span>
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="font-medium text-gray-900 dark:text-white">
+                                  {barber.name || 'Unknown Barber'}
+                                </span>
+                                <span className="text-sm text-gray-500 capitalize">
+                                  {barber.role}
+                                </span>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {barbers.length === 0 && (
+                        <div className="p-3 text-center text-gray-500">
+                          No barbers available (Debug: loadingBarbers={loadingBarbers.toString()}, barbersArray={JSON.stringify(barbers)})
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               )}

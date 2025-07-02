@@ -16,6 +16,7 @@ from database import get_db
 from routers.auth import get_current_user
 from utils.auth import require_admin_role, get_current_user_optional
 from services import booking_service
+from services.appointment_enhancement import enhance_appointments_list
 
 # Create router with standardized appointment terminology
 router = APIRouter(
@@ -26,6 +27,7 @@ router = APIRouter(
 @router.get("/slots", response_model=schemas.SlotsResponse)
 def get_available_appointment_slots(
     appointment_date: date = Query(..., description="Date to check availability (YYYY-MM-DD)"),
+    barber_id: Optional[int] = Query(None, description="Specific barber ID to filter availability"),
     timezone: Optional[str] = Query(None, description="User's timezone (e.g., 'America/New_York'). If not provided, uses business timezone."),
     current_user: Optional[schemas.User] = Depends(get_current_user_optional),
     db: Session = Depends(get_db)
@@ -52,12 +54,12 @@ def get_available_appointment_slots(
         )
     
     try:
-        # Use the barber-aware version to get slots for all available barbers
+        # Use the barber-aware version to get slots for specific barber or all available barbers
         # This prevents the issue where ALL slots are marked unavailable
         slots_data = booking_service.get_available_slots_with_barber_availability(
             db, 
             appointment_date, 
-            barber_id=None,  # Get slots for all available barbers
+            barber_id=barber_id,  # Get slots for specific barber if provided, otherwise all available barbers
             user_timezone=user_timezone
         )
         
@@ -128,7 +130,8 @@ def create_appointment(
             booking_time=appointment.time,
             service=appointment.service,
             user_timezone=getattr(current_user, 'timezone', None),
-            notes=getattr(appointment, 'notes', None)
+            notes=getattr(appointment, 'notes', None),
+            barber_id=getattr(appointment, 'barber_id', None)
         )
         return db_appointment
     except Exception as e:
@@ -166,10 +169,13 @@ def get_user_appointments(
         appointments = booking_service.get_user_bookings(db, current_user.id, skip=skip, limit=limit, status=status)
         total = booking_service.count_user_bookings(db, current_user.id, status=status)
         
-        return schemas.AppointmentListResponse(
-            appointments=appointments,
-            total=total
-        )
+        # Enhance appointments with barber and client names
+        enhanced_appointments = enhance_appointments_list(appointments, db)
+        
+        return {
+            "appointments": enhanced_appointments,
+            "total": total
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -220,13 +226,26 @@ def reschedule_appointment(
 ):
     """Reschedule an appointment to a new date and time."""
     try:
-        # Convert AppointmentReschedule to format expected by service layer
-        reschedule_dict = {
-            "date": reschedule_data.date,
-            "time": reschedule_data.time
-        }
+        # Parse date and time for service layer
+        from datetime import datetime
         
-        db_appointment = booking_service.reschedule_booking(db, appointment_id, reschedule_dict, current_user.id)
+        # Handle both string and date objects
+        if isinstance(reschedule_data.date, str):
+            new_date = datetime.strptime(reschedule_data.date, '%Y-%m-%d').date()
+        else:
+            new_date = reschedule_data.date
+            
+        new_time = reschedule_data.time
+        timezone = reschedule_data.timezone if hasattr(reschedule_data, 'timezone') else None
+        
+        db_appointment = booking_service.reschedule_booking(
+            db=db,
+            booking_id=appointment_id,
+            user_id=current_user.id,
+            new_date=new_date,
+            new_time=new_time,
+            user_timezone=timezone
+        )
         if not db_appointment:
             raise HTTPException(status_code=404, detail="Appointment not found")
         return db_appointment
@@ -284,10 +303,13 @@ def get_all_appointments(
             barber_id=barber_id
         )
         
-        return schemas.AppointmentListResponse(
-            appointments=appointments,
-            total=total
-        )
+        # Enhance appointments with barber and client names
+        enhanced_appointments = enhance_appointments_list(appointments, db)
+        
+        return {
+            "appointments": enhanced_appointments,
+            "total": total
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

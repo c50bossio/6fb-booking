@@ -735,18 +735,23 @@ def create_booking(
             # Get barber information
             barber = db.query(models.User).filter(models.User.id == barber_id).first()
             
+            # Get booking settings for business information
+            booking_settings = get_booking_settings(db)
+            
             # Create notification context
             context = {
-                "client_name": client.first_name + " " + client.last_name if client else appointment.user.name,
+                "client_name": f"{client.first_name} {client.last_name}" if client else appointment.user.name,
                 "service_name": service,
                 "appointment_date": start_time_user.strftime("%B %d, %Y"),
                 "appointment_time": start_time_user.strftime("%I:%M %p"),
                 "duration": SERVICES[service]["duration"],
                 "price": SERVICES[service]["price"],
                 "barber_name": barber.name if barber else None,
-                "business_name": settings.business_name or "BookedBarber",
-                "business_phone": settings.business_phone or "(555) 123-4567",
-                "current_year": datetime.now().year
+                "business_name": getattr(settings, 'business_name', getattr(settings, 'app_name', 'BookedBarber')),
+                "business_address": getattr(booking_settings, 'business_address', None),
+                "business_phone": getattr(settings, 'business_phone', '(555) 123-4567'),
+                "current_year": datetime.now().year,
+                "appointment_id": appointment.id
             }
             
             # Queue confirmation notification
@@ -1315,3 +1320,111 @@ def reschedule_booking(
     }
     
     return update_booking(db, booking_id, user_id, update_data)
+
+
+def get_all_bookings(
+    db: Session, 
+    skip: int = 0, 
+    limit: int = 100, 
+    status: Optional[str] = None,
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None,
+    barber_id: Optional[int] = None
+) -> List[models.Appointment]:
+    """Get all bookings for admin/staff view with optional filters.
+    
+    Args:
+        db: Database session
+        skip: Number of records to skip (pagination)
+        limit: Maximum number of records to return
+        status: Filter by appointment status
+        date_from: Start date filter
+        date_to: End date filter
+        barber_id: Filter by barber ID
+    
+    Returns:
+        List of appointment objects
+    """
+    query = db.query(models.Appointment)
+    
+    # Apply filters
+    if status:
+        query = query.filter(models.Appointment.status == status)
+    
+    if date_from:
+        query = query.filter(models.Appointment.start_time >= date_from)
+    
+    if date_to:
+        # Include the entire end date by adding one day
+        end_datetime = datetime.combine(date_to + timedelta(days=1), time.min)
+        query = query.filter(models.Appointment.start_time < end_datetime)
+    
+    if barber_id:
+        query = query.filter(models.Appointment.barber_id == barber_id)
+    
+    # Order by start time (most recent first)
+    query = query.order_by(models.Appointment.start_time.desc())
+    
+    # Apply pagination and eager load relationships
+    from sqlalchemy.orm import joinedload
+    appointments = query.options(
+        joinedload(models.Appointment.barber),
+        joinedload(models.Appointment.client),
+        joinedload(models.Appointment.user)
+    ).offset(skip).limit(limit).all()
+    
+    # Add client information
+    for appointment in appointments:
+        if appointment.user_id:
+            user = db.query(models.User).filter(models.User.id == appointment.user_id).first()
+            if user:
+                appointment.client_name = user.name or user.email
+                appointment.client_email = user.email
+                appointment.client_phone = getattr(user, 'phone', None)
+        
+        # Add barber information
+        if appointment.barber_id:
+            barber = db.query(models.User).filter(models.User.id == appointment.barber_id).first()
+            if barber:
+                appointment.barber_name = barber.name or barber.email
+    
+    return appointments
+
+
+def count_all_bookings(
+    db: Session,
+    status: Optional[str] = None,
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None,
+    barber_id: Optional[int] = None
+) -> int:
+    """Count all bookings with optional filters.
+    
+    Args:
+        db: Database session
+        status: Filter by appointment status
+        date_from: Start date filter
+        date_to: End date filter
+        barber_id: Filter by barber ID
+    
+    Returns:
+        Total count of matching appointments
+    """
+    query = db.query(models.Appointment)
+    
+    # Apply same filters as get_all_bookings
+    if status:
+        query = query.filter(models.Appointment.status == status)
+    
+    if date_from:
+        query = query.filter(models.Appointment.start_time >= date_from)
+    
+    if date_to:
+        # Include the entire end date by adding one day
+        end_datetime = datetime.combine(date_to + timedelta(days=1), time.min)
+        query = query.filter(models.Appointment.start_time < end_datetime)
+    
+    if barber_id:
+        query = query.filter(models.Appointment.barber_id == barber_id)
+    
+    return query.count()

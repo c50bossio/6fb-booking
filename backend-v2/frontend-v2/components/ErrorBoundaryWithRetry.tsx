@@ -134,7 +134,7 @@ export class ErrorBoundaryWithRetry extends Component<Props, State> {
     }
   }
 
-  private static enhanceError(error: Error): EnhancedError {
+  public static enhanceError(error: Error): EnhancedError {
     const enhanced = error as EnhancedError
     
     // Detect error type from message or properties
@@ -588,7 +588,7 @@ function ErrorDisplay({
           {error.type === 'auth' ? (
             <Button 
               onClick={() => router.push('/login')}
-              variant="default"
+              variant="primary"
               size="sm"
             >
               <Shield className="mr-2 h-4 w-4" />
@@ -620,7 +620,7 @@ function ErrorDisplay({
               {error.type === 'chunk_load' ? (
                 <Button
                   onClick={() => window.location.reload()}
-                  variant="default"
+                  variant="primary"
                   size="sm"
                 >
                   <RefreshCw className="mr-2 h-4 w-4" />

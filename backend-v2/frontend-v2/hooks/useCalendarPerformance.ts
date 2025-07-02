@@ -111,7 +111,7 @@ export function useCalendarPerformance(): CalendarPerformanceHook {
         if (filters.startDate || filters.endDate) {
           const appointmentDate = new Date(appointment.start_time)
           if (filters.startDate && appointmentDate < filters.startDate) return false
-          if (filters.endDate && appointmentDate > filters.endDate) return false
+          if (filters.endDate && appointmentDate >= filters.endDate) return false
         }
         
         return true

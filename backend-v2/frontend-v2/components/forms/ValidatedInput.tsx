@@ -4,7 +4,7 @@ import React, { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Check, X, AlertCircle, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
-import { Label } from '@/components/ui/label';
+import { Label } from '@/components/ui/Label';
 
 export interface ValidatedInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;

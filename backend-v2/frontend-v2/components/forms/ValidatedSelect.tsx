@@ -3,7 +3,7 @@
 import React, { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Check, X, AlertCircle, Loader2, ChevronDown } from 'lucide-react';
-import { Label } from '@/components/ui/label';
+import { Label } from '@/components/ui/Label';
 import {
   Select,
   SelectContent,

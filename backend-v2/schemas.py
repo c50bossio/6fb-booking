@@ -1503,6 +1503,7 @@ class AppointmentCreate(BaseModel):
     time: str = Field(..., pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")  # HH:MM format
     service: str
     notes: Optional[str] = None
+    barber_id: Optional[int] = None
     
     @validator('service')
     def validate_service(cls, v):
@@ -1526,7 +1527,7 @@ class QuickAppointmentCreate(BaseModel):
 class AppointmentResponse(BaseModel):
     """Appointment response - matches database Appointment model fields"""
     id: int
-    user_id: int
+    user_id: Optional[int] = None
     barber_id: Optional[int] = None
     client_id: Optional[int] = None
     service_id: Optional[int] = None

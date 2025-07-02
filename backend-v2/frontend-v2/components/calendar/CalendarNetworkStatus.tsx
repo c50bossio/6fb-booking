@@ -57,7 +57,7 @@ export function CalendarNetworkStatus({
     updateStats()
     const interval = setInterval(updateStats, 2000)
     return () => clearInterval(interval)
-  }, [getDebugStats])
+  }, []) // Remove getDebugStats from dependencies to prevent infinite re-renders
 
   const getNetworkStatusIcon = () => {
     if (!isOnline) {
@@ -287,7 +287,7 @@ export function CalendarRequestQueue() {
     updateStats()
     const interval = setInterval(updateStats, 1000)
     return () => clearInterval(interval)
-  }, [getDebugStats])
+  }, []) // Remove getDebugStats from dependencies to prevent infinite re-renders
 
   if (process.env.NODE_ENV !== 'development' || !stats) return null
 

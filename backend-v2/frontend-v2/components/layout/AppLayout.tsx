@@ -72,7 +72,11 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
   }, [mounted, isMobile])
 
-  // Removed complex breadcrumb logic for simplicity
+  // Simple breadcrumb function
+  const getBreadcrumbs = () => {
+    // Return empty array for now - breadcrumbs are optional
+    return []
+  }
 
   if (loading) {
     return (

@@ -518,12 +518,15 @@ export interface ClientListResponse {
 }
 
 // Booking functions (migrated to use standardized /appointments endpoints)
-export async function getAvailableSlots(params: { date: string; service_id?: number }): Promise<SlotsResponse> {
+export async function getAvailableSlots(params: { date: string; service_id?: number; barber_id?: number }): Promise<SlotsResponse> {
   const queryParams = new URLSearchParams()
   // Backend expects 'appointment_date' as the parameter name
   queryParams.append('appointment_date', params.date)
   if (params.service_id) {
     queryParams.append('service_id', params.service_id.toString())
+  }
+  if (params.barber_id) {
+    queryParams.append('barber_id', params.barber_id.toString())
   }
   console.log('🔗 Calling slots API:', `/api/v1/appointments/slots?${queryParams.toString()}`)
   return fetchAPI(`/api/v1/appointments/slots?${queryParams.toString()}`)
@@ -591,7 +594,23 @@ export async function quickBooking(bookingData: QuickBookingData): Promise<Booki
 }
 
 export async function getMyBookings(): Promise<BookingListResponse> {
-  const response = await fetchAPI('/api/v1/appointments')
+  // Check user role to determine which endpoint to use
+  let response
+  try {
+    const userProfile = await getProfile()
+    
+    // For admin/barber users, fetch all appointments for calendar view
+    if (userProfile.role === 'admin' || userProfile.role === 'super_admin' || userProfile.role === 'barber') {
+      response = await fetchAPI('/api/v1/appointments/all/list')
+    } else {
+      // For regular users, fetch only their appointments
+      response = await fetchAPI('/api/v1/appointments')
+    }
+  } catch (error) {
+    // Fallback to user appointments if profile fetch fails
+    console.warn('Failed to get user profile, falling back to user appointments:', error)
+    response = await fetchAPI('/api/v1/appointments')
+  }
   
   // Map AppointmentResponse to BookingResponse format
   const bookings: BookingResponse[] = (response.appointments || []).map(mapAppointmentToBooking)
@@ -876,6 +895,10 @@ export async function updateUserRole(userId: number, role: string): Promise<User
 export async function getAllUsers(role?: string): Promise<User[]> {
   const params = role ? `?role=${encodeURIComponent(role)}` : ''
   return fetchAPI(`/api/v1/users${params}`)
+}
+
+export async function getBarbers(): Promise<User[]> {
+  return fetchAPI('/api/v1/barbers')
 }
 
 export interface Timezone {
@@ -5072,6 +5095,7 @@ export interface AppointmentCreate {
   time: string        // HH:MM format  
   service: string
   notes?: string
+  barber_id?: number
 }
 
 export interface QuickAppointmentCreate {

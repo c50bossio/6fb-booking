@@ -16,7 +16,7 @@ import { format } from 'date-fns'
 import { Card, CardContent, CardHeader } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { LoadingButton, ErrorDisplay } from '@/components/LoadingStates'
-import { getMyBookings, cancelBooking, rescheduleBooking, getProfile, type BookingResponse } from '@/lib/api'
+import { getMyBookings, cancelBooking, rescheduleBooking, getProfile, getAllUsers, type BookingResponse } from '@/lib/api'
 import { useCalendarOptimisticUpdates } from '@/lib/calendar-optimistic-updates'
 import { useCalendarApiEnhanced } from '@/lib/calendar-api-enhanced'
 import { useRequestDeduplication } from '@/lib/request-deduplication'
@@ -58,6 +58,7 @@ export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date())
   const [filteredBookings, setFilteredBookings] = useState<BookingResponse[]>([])
   const [user, setUser] = useState<User | null>(null)
+  const [barbers, setBarbers] = useState<User[]>([])
   const [cancelingId, setCancelingId] = useState<number | null>(null)
   const [viewMode, setViewMode] = useState<CalendarView>('week')
   const [selectedBarberId, setSelectedBarberId] = useState<number | 'all'>('all')
@@ -182,7 +183,7 @@ export default function CalendarPage() {
     }
   }
 
-  // Load user profile and bookings with enhanced API
+  // Load user profile, barbers, and bookings with enhanced API
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -200,6 +201,24 @@ export default function CalendarPage() {
         
         setUser(userProfile)
         
+        // Load barbers for the filter (only for admin users or fetch all users with barber role)
+        try {
+          const allBarbers = await executeRequest(
+            {
+              key: 'get-barbers',
+              endpoint: '/users?role=barber',
+              method: 'GET'
+            },
+            () => getAllUsers('barber')
+          )
+          console.log('📊 Loaded barbers:', allBarbers)
+          setBarbers(allBarbers || [])
+        } catch (barberErr) {
+          console.error('⚠️ Failed to load barbers (non-critical):', barberErr)
+          // Don't fail the whole loading process if barbers can't be loaded
+          setBarbers([])
+        }
+        
         // Load appointments with optimistic updates manager
         const userBookings = await getAppointments()
         setAppointments(userBookings.bookings || [])
@@ -215,7 +234,7 @@ export default function CalendarPage() {
     loadData()
   }, [])
 
-  // Filter bookings by selected date
+  // Filter bookings by selected date and barber
   useEffect(() => {
     if (!selectedDate || !bookings.length) {
       setFilteredBookings([])
@@ -226,7 +245,14 @@ export default function CalendarPage() {
     const dayBookings = bookings.filter(booking => {
       try {
         const bookingDate = new Date(booking.start_time)
-        return formatDateForAPI(bookingDate) === selectedDateStr
+        const dateMatches = formatDateForAPI(bookingDate) === selectedDateStr
+        
+        // Apply barber filter
+        if (selectedBarberId === 'all') {
+          return dateMatches
+        } else {
+          return dateMatches && booking.barber_id === selectedBarberId
+        }
       } catch {
         return false
       }
@@ -240,7 +266,7 @@ export default function CalendarPage() {
     })
 
     setFilteredBookings(dayBookings)
-  }, [selectedDate, bookings])
+  }, [selectedDate, bookings, selectedBarberId])
 
   // Get all booking dates for calendar highlighting
   const bookingDates = (bookings || []).map(booking => {
@@ -498,6 +524,7 @@ export default function CalendarPage() {
           <Card variant="glass" padding="none" className="col-span-full h-[800px]">
             <CalendarDayView
               appointments={bookings}
+              barbers={barbers}
               selectedBarberId={selectedBarberId}
               onBarberSelect={setSelectedBarberId}
               onAppointmentClick={(appointment) => {
@@ -521,6 +548,7 @@ export default function CalendarPage() {
           <Card variant="glass" padding="none" className="col-span-full">
             <CalendarWeekView
               appointments={bookings}
+              barbers={barbers}
               selectedBarberId={selectedBarberId}
               onBarberSelect={setSelectedBarberId}
               onAppointmentClick={(appointment) => {

@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { 
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -22,13 +22,13 @@ interface SidebarProps {
 
 export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname()
-  const router = useRouter()
   const { colors, isDark } = useThemeStyles()
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['dashboard', 'calendar & scheduling']))
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(() => new Set(['dashboard', 'calendar & scheduling']))
   
   // Removed debug logging for cleaner production code
 
   const toggleSection = (sectionName: string) => {
+    console.log('Sidebar: Toggling section', sectionName) // Debug log
     const newExpanded = new Set(expandedSections)
     if (newExpanded.has(sectionName)) {
       newExpanded.delete(sectionName)
@@ -59,7 +59,7 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
 
     const itemClasses = `
       group flex items-center w-full text-left px-3 py-2.5 text-sm font-medium rounded-ios-lg
-      transition-all duration-200 ease-out cursor-pointer relative z-10
+      transition-all duration-200 ease-out cursor-pointer relative
       ${active 
         ? `bg-primary-100 dark:bg-primary-900/20 text-primary-800 dark:text-primary-200 shadow-ios-sm` 
         : `text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white`
@@ -113,12 +113,15 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
         {hasChildren ? (
           <button
             onClick={(e) => {
+              e.preventDefault()
               e.stopPropagation()
               toggleSection(item.name.toLowerCase())
             }}
             className={itemClasses}
             title={collapsed ? item.name : undefined}
             type="button"
+            aria-expanded={isExpanded}
+            aria-label={`Toggle ${item.name} section`}
           >
             {content}
           </button>
@@ -127,11 +130,8 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
             href={item.href}
             className={itemClasses}
             title={collapsed ? item.name : undefined}
-            onClick={(e) => {
-              // Force navigation for reliability
-              e.preventDefault()
-              router.push(item.href)
-            }}
+            aria-label={item.name}
+            role="menuitem"
           >
             {content}
           </Link>
@@ -164,7 +164,12 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
         )}
         
         <button
-          onClick={onToggleCollapse}
+          onClick={() => {
+            console.log('Sidebar: Toggle collapse clicked')
+            onToggleCollapse()
+          }}
+          type="button"
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           className={`
             p-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400
             hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200
@@ -203,7 +208,7 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
       )}
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-4 space-y-1 relative z-20">
+      <nav className="flex-1 px-4 py-4 space-y-1" role="navigation" aria-label="Main navigation">
         {filteredNavigationItems.map((item, index) => renderNavigationItem(item, 0, index))}
       </nav>
 

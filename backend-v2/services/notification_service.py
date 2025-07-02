@@ -459,24 +459,40 @@ class NotificationService:
         else:
             reminder_hours = enhanced_preferences.get_reminder_hours()
         
-        # Create context for templates
+        # Get client and barber information
         client = db.query(Client).filter(Client.id == appointment.client_id).first() if appointment.client_id else None
-        context = {
-            "user_name": appointment.user.name,
-            "client_name": f"{client.first_name} {client.last_name}" if client else "Guest",
-            "service_name": appointment.service_name,
-            "appointment_date": appointment.start_time.strftime("%B %d, %Y"),
-            "appointment_time": appointment.start_time.strftime("%I:%M %p"),
-            "duration": appointment.duration_minutes,
-            "price": appointment.price,
-            "business_name": settings.app_name,
-            "appointment_id": appointment.id
-        }
+        barber = db.query(User).filter(User.id == appointment.barber_id).first() if appointment.barber_id else None
+        
+        # Get booking settings for business information
+        from services.booking_service import get_booking_settings
+        booking_settings = get_booking_settings(db)
         
         # Schedule reminders
         for hours_before in reminder_hours:
             reminder_time = appointment.start_time - timedelta(hours=hours_before)
             if reminder_time > datetime.utcnow():
+                # Calculate hours until appointment for this specific reminder
+                hours_until = hours_before
+                
+                # Create context for templates with all required variables
+                context = {
+                    "user_name": appointment.user.name if appointment.user else "Guest",
+                    "client_name": f"{client.first_name} {client.last_name}" if client else "Guest",
+                    "service_name": appointment.service_name,
+                    "appointment_date": appointment.start_time.strftime("%B %d, %Y"),
+                    "appointment_time": appointment.start_time.strftime("%I:%M %p"),
+                    "duration": appointment.duration_minutes,
+                    "price": appointment.price,
+                    "barber_name": barber.name if barber else None,
+                    "business_name": getattr(settings, 'business_name', getattr(settings, 'app_name', 'BookedBarber')),
+                    "business_address": getattr(booking_settings, 'business_address', None),
+                    "business_phone": getattr(settings, 'business_phone', '(555) 123-4567'),
+                    "cancellation_policy": getattr(booking_settings, 'cancellation_policy', 'Please cancel at least 24 hours in advance.'),
+                    "current_year": datetime.now().year,
+                    "hours_until": hours_until,
+                    "appointment_id": appointment.id
+                }
+                
                 self.queue_notification(
                     db=db,
                     user=appointment.user,
