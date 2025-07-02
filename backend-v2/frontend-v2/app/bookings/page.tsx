@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { getMyBookings, cancelBooking, updateBooking, rescheduleBooking, getAvailableSlots, type BookingResponse, type SlotsResponse, type TimeSlot } from '../../lib/api'
+import { getMyBookings, cancelBooking, updateBooking, rescheduleBooking, appointmentsAPI, type BookingResponse, type SlotsResponse, type TimeSlot } from '../../lib/api'
 import { format } from 'date-fns'
 import { Calendar, Clock, DollarSign, MapPin, User, XCircle, CheckCircle, AlertCircle, Edit2 } from 'lucide-react'
 import VirtualList from '@/components/VirtualList'
@@ -75,7 +75,7 @@ export default function MyBookingsPage() {
     
     setLoadingSlots(true)
     try {
-      const response = await getAvailableSlots({ date })
+      const response = await appointmentsAPI.getAvailableSlots(date)
       setAvailableSlots(response.slots)
     } catch (err: any) {
       console.error('Failed to load available slots:', err)

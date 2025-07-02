@@ -152,19 +152,19 @@ def get_available_slots(db: Session, target_date: date, user_timezone: Optional[
                 is_available = False
                 break
         
-        if is_available:
-            slot_data = {
-                "time": slot["time"],
-                "available": True,
-                "is_next_available": False
-            }
-            
-            # Mark the first available slot as next available if enabled
-            if include_next_available and settings.show_soonest_available and next_available_slot is None:
-                next_available_slot = slot["datetime_user"]  # Use user timezone for display
-                slot_data["is_next_available"] = True
-            
-            available_slots.append(slot_data)
+        # Always create slot data, but mark availability correctly
+        slot_data = {
+            "time": slot["time"],
+            "available": is_available,
+            "is_next_available": False
+        }
+        
+        # Mark the first available slot as next available if enabled
+        if is_available and include_next_available and settings.show_soonest_available and next_available_slot is None:
+            next_available_slot = slot["datetime_user"]  # Use user timezone for display
+            slot_data["is_next_available"] = True
+        
+        available_slots.append(slot_data)
     
     # Find next available slot across multiple days if today is full
     next_available_summary = None

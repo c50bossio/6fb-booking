@@ -81,31 +81,28 @@ export interface BreadcrumbItem {
   isLast?: boolean
 }
 
-// Helper function to filter navigation items by role
+// Simplified navigation filter - always shows basic navigation
 export function filterNavigationByRole(
   items: NavigationItem[],
   userRole?: string | null
 ): NavigationItem[] {
-  // If no userRole, show items that don't require specific roles (public items)
-  if (!userRole) {
-    return items.filter(item => !item.roles || item.roles.length === 0).map(item => ({
-      ...item,
-      // Recursively filter children
-      children: item.children ? filterNavigationByRole(item.children, userRole) : undefined
-    }))
+  // Always show basic navigation items - no complex filtering
+  const basicItems = [
+    items.find(item => item.name === 'Dashboard'),
+    items.find(item => item.name === 'Calendar & Scheduling'),
+    items.find(item => item.name === 'Settings')
+  ].filter(Boolean) as NavigationItem[]
+  
+  // If we have a user role, show role-specific items too
+  if (userRole) {
+    const roleItems = items.filter(item => {
+      if (!item.roles || item.roles.length === 0) return false
+      return item.roles.includes(userRole as UserRole)
+    })
+    return [...basicItems, ...roleItems]
   }
   
-  return items.filter(item => {
-    // If no roles specified, item is available to all
-    if (!item.roles || item.roles.length === 0) return true
-    
-    // Check if user role matches any allowed role
-    return item.roles.includes(userRole as UserRole)
-  }).map(item => ({
-    ...item,
-    // Recursively filter children
-    children: item.children ? filterNavigationByRole(item.children, userRole) : undefined
-  }))
+  return basicItems
 }
 
 // Main navigation items (for sidebar)

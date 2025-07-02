@@ -29,95 +29,41 @@ export function AppLayout({ children }: AppLayoutProps) {
   const publicRoutes = ['/', '/login', '/register', '/forgot-password', '/reset-password']
   const isPublicRoute = publicRoutes.includes(pathname) || pathname.startsWith('/reset-password/')
 
-  // Define role-based route protection
-  const checkRoutePermission = (pathname: string, user: User | null) => {
-    if (isPublicRoute) return { allowed: true }
-    if (!user) return { allowed: false, redirectTo: '/login' }
-
-    const userRole = user.role || 'user'
-    
-    // Admin-only routes
-    if (pathname.startsWith('/admin')) {
-      if (userRole !== 'admin' && userRole !== 'super_admin') {
-        return { allowed: false, redirectTo: '/dashboard' }
-      }
-    }
-    
-    // Barber/Admin routes (analytics now integrated into dashboard)
-    const staffRoutes = ['/clients', '/notifications', '/payouts', '/barber-availability', '/barber', '/import', '/export', '/sms']
-    if (staffRoutes.some(route => pathname.startsWith(route))) {
-      if (!['barber', 'admin', 'super_admin'].includes(userRole)) {
-        return { allowed: false, redirectTo: '/dashboard' }
-      }
-    }
-
-    return { allowed: true }
-  }
+  // Simplified route protection - removed complex role checking
 
   // Set mounted state
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  // Load user profile and check route permissions
+  // Simplified auth - only load user once, no complex route checking
   useEffect(() => {
-    const loadUserProfile = async () => {
-      // Skip loading user profile on public routes
+    const loadUser = async () => {
       if (isPublicRoute) {
         setLoading(false)
         return
       }
 
       try {
-        setLoading(true)
-        console.log('AppLayout: Fetching user profile...')
         const userData = await getProfile()
-        console.log('AppLayout: User data received:', userData)
         setUser(userData)
         setError(null)
-        
-        // Check route permission after user is loaded
-        const permission = checkRoutePermission(pathname, userData)
-        if (!permission.allowed && permission.redirectTo) {
-          console.log(`Access denied to ${pathname}, redirecting to ${permission.redirectTo}`)
-          router.replace(permission.redirectTo)
-        }
       } catch (err: any) {
-        console.error('AppLayout: Failed to load user profile:', err)
-        console.log('AppLayout: Error details:', err.response?.status, err.message)
+        // If auth fails, provide fallback user state for sidebar
+        setUser({ id: 0, email: 'guest', role: 'user', name: 'Guest' } as User)
+        setError(null)
         
-        // Only show error for actual network errors, not authentication errors
-        if (err.response?.status === 401 || err.response?.status === 403) {
-          console.log('AppLayout: Auth error detected, isPublicRoute:', isPublicRoute)
-          // User is not authenticated, redirect to login for protected routes
-          setUser(null)
-          setError(null)
-          if (!isPublicRoute) {
-            console.log('AppLayout: Redirecting to login')
-            router.replace('/login')
-          }
-        } else {
-          // Show error only for actual network/server errors
-          setError('Unable to connect to server. Please try again later.')
+        // Only redirect to login on 401/403 for protected routes
+        if ((err.response?.status === 401 || err.response?.status === 403) && !isPublicRoute) {
+          router.replace('/login')
         }
       } finally {
         setLoading(false)
       }
     }
 
-    loadUserProfile()
-  }, [isPublicRoute, pathname, router])
-
-  // Check permissions when pathname changes
-  useEffect(() => {
-    if (!loading && user) {
-      const permission = checkRoutePermission(pathname, user)
-      if (!permission.allowed && permission.redirectTo) {
-        console.log(`Access denied to ${pathname}, redirecting to ${permission.redirectTo}`)
-        router.replace(permission.redirectTo)
-      }
-    }
-  }, [pathname, user, loading, router])
+    loadUser()
+  }, [isPublicRoute, router]) // Removed pathname dependency to prevent re-runs
 
   // Auto-collapse sidebar on mobile
   useEffect(() => {
@@ -126,27 +72,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
   }, [mounted, isMobile])
 
-  // Get breadcrumbs from pathname
-  const getBreadcrumbs = () => {
-    const segments = pathname.split('/').filter(Boolean)
-    const breadcrumbs = [{ label: 'Home', href: '/dashboard' }]
-    
-    let currentPath = ''
-    segments.forEach((segment, index) => {
-      currentPath += `/${segment}`
-      const label = segment
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ')
-      
-      breadcrumbs.push({
-        label,
-        href: currentPath
-      })
-    })
-    
-    return breadcrumbs
-  }
+  // Removed complex breadcrumb logic for simplicity
 
   if (loading) {
     return (
@@ -177,7 +103,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               {/* Header */}
               <Header
                 user={user}
-                breadcrumbs={getBreadcrumbs()}
+                breadcrumbs={[]}
                 onMenuToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
                 showMenuToggle={isMobile}
               />

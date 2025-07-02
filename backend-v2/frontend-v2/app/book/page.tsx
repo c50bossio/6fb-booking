@@ -10,7 +10,7 @@ import TimezoneTooltip from '@/components/TimezoneTooltip'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
 import { LoadingButton, TimeSlotsLoadingSkeleton, ErrorDisplay } from '@/components/LoadingStates'
-import { getAvailableSlots, createBooking, getMyBookings, getProfile, getNextAvailableSlot, quickBooking as quickBookingAPI, type SlotsResponse, type TimeSlot, type NextAvailableSlot, createGuestBooking, createGuestQuickBooking, type GuestInformation, type GuestBookingCreate, type GuestQuickBookingCreate, type GuestBookingResponse } from '@/lib/api'
+import { appointmentsAPI, getMyBookings, getProfile, getNextAvailableSlot, quickBooking as quickBookingAPI, type SlotsResponse, type TimeSlot, type NextAvailableSlot, createGuestBooking, createGuestQuickBooking, type GuestInformation, type GuestBookingCreate, type GuestQuickBookingCreate, type GuestBookingResponse, type AppointmentCreate } from '@/lib/api'
 import { toastError, toastSuccess } from '@/hooks/use-toast'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { 
@@ -139,7 +139,7 @@ export default function BookPage() {
     
     try {
       const dateStr = formatDateForAPI(date)
-      const response: SlotsResponse = await getAvailableSlots({ date: dateStr })
+      const response: SlotsResponse = await appointmentsAPI.getAvailableSlots(dateStr)
       setTimeSlots(response.slots || [])
       
       // If no slots available for selected date, show helpful message
@@ -282,8 +282,13 @@ export default function BookPage() {
       const dateStr = formatDateForAPI(selectedDate)
       
       if (isAuthenticated) {
-        // Authenticated user booking
-        const booking = await createBooking(dateStr, selectedTime, selectedService)
+        // Authenticated user booking using standardized appointments API
+        const appointmentData: AppointmentCreate = {
+          date: dateStr,
+          time: selectedTime,
+          service: selectedService
+        }
+        const booking = await appointmentsAPI.create(appointmentData)
         setBookingId(booking.id)
         setStep(4)
       } else {

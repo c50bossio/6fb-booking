@@ -12,12 +12,11 @@ import {
   getServices,
   getPublicServices,
   appointmentsAPI,
-  getAvailableSlots,
   type Client,
   type Service,
   type SlotsResponse,
   type TimeSlot,
-  type EnhancedAppointmentCreate
+  type AppointmentCreate
 } from '@/lib/api'
 import { formatDateForAPI } from '@/lib/timezone'
 import { 
@@ -269,10 +268,7 @@ export default function CreateAppointmentModal({
             date: apiDate,
             service_id: selectedService.id
           })
-        : await getAvailableSlots({
-            date: apiDate
-            // Note: service_id is not used by the backend currently
-          })
+        : await appointmentsAPI.getAvailableSlots(apiDate)
       
       console.log('📦 API Response:', {
         hasSlots: !!response.slots,
@@ -355,9 +351,15 @@ export default function CreateAppointmentModal({
   }
 
   const handleSubmit = async () => {
-    if (!selectedClient || !selectedService || !selectedDate || !selectedTime) {
+    if (!selectedService || !selectedDate || !selectedTime) {
       setError('Please fill in all required fields')
       return
+    }
+    
+    // Client selection is only required for admin/barber users creating appointments for clients
+    // Regular users and public bookings book for themselves
+    if (!isPublicBooking && !selectedClient) {
+      console.log('No client selected - user is booking for themselves')
     }
 
     try {
@@ -371,25 +373,23 @@ export default function CreateAppointmentModal({
         startDateTime.setHours(hours, minutes, 0, 0)
         
         await demoApi.appointments.create({
-          client_id: selectedClient.id,
+          client_id: selectedClient?.id,
           service_id: selectedService.id,
           start_time: startDateTime.toISOString(),
           duration_minutes: selectedService.duration_minutes || 60,
           notes: notes || undefined
         })
       } else {
-        // Create enhanced appointment for staff/admin with client assignment
-        const enhancedAppointmentData: EnhancedAppointmentCreate = {
-          client_id: selectedClient.id,
-          service_id: selectedService.id,
-          service_name: selectedService.name,
-          appointment_date: formatDateForAPI(selectedDate),
-          appointment_time: selectedTime,
+        // Use standardized appointment API that matches backend schema
+        const appointmentData: AppointmentCreate = {
+          date: formatDateForAPI(selectedDate),
+          time: selectedTime,
+          service: selectedService.name,
           notes: notes || undefined
         }
 
-        console.log('🚀 Creating appointment with data:', enhancedAppointmentData)
-        const result = await appointmentsAPI.createEnhanced(enhancedAppointmentData)
+        console.log('🚀 Creating appointment with data:', appointmentData)
+        const result = await appointmentsAPI.create(appointmentData)
         console.log('✅ Appointment created successfully:', result)
       }
 
@@ -404,13 +404,13 @@ export default function CreateAppointmentModal({
       resetModal()
     } catch (err: any) {
       console.error('Failed to create appointment:', err)
-      setError(err.response?.data?.detail || 'Failed to create appointment')
+      setError(err.response?.data?.detail || err.message || 'Failed to create appointment')
     } finally {
       setLoading(false)
     }
   }
 
-  const isFormValid = selectedClient && selectedService && selectedDate && selectedTime
+  const isFormValid = selectedService && selectedDate && selectedTime
 
   return (
     <Modal

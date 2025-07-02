@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { 
@@ -26,12 +26,7 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
   const { colors, isDark } = useThemeStyles()
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['dashboard', 'calendar & scheduling']))
   
-  // Debug logging
-  React.useEffect(() => {
-    console.log('Sidebar mounted, pathname:', pathname)
-    console.log('User:', user)
-    console.log('Router ready:', !!router)
-  }, [pathname, user, router])
+  // Removed debug logging for cleaner production code
 
   const toggleSection = (sectionName: string) => {
     const newExpanded = new Set(expandedSections)
@@ -43,8 +38,11 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
     setExpandedSections(newExpanded)
   }
 
-  // Get navigation items filtered by user role
-  const filteredNavigationItems = filterNavigationByRole(navigationItems, user?.role)
+  // Memoize navigation items to prevent re-renders
+  const filteredNavigationItems = useMemo(() => 
+    filterNavigationByRole(navigationItems, user?.role), 
+    [user?.role]
+  )
 
   const isActive = (href: string) => {
     if (href === '/dashboard') {
@@ -116,10 +114,7 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
           <button
             onClick={(e) => {
               e.stopPropagation()
-              console.log('Sidebar: Button clicked for section:', item.name)
-              console.log('Sidebar: Current expanded sections:', Array.from(expandedSections))
               toggleSection(item.name.toLowerCase())
-              console.log('Sidebar: After toggle, expanded sections:', Array.from(expandedSections))
             }}
             className={itemClasses}
             title={collapsed ? item.name : undefined}
@@ -133,15 +128,9 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
             className={itemClasses}
             title={collapsed ? item.name : undefined}
             onClick={(e) => {
-              console.log('Sidebar: Link click detected for:', item.href)
-              console.log('Sidebar: Event details:', { defaultPrevented: e.defaultPrevented, target: e.target })
-              
-              // Force navigation using router if needed
-              if (!e.defaultPrevented) {
-                e.preventDefault()
-                console.log('Sidebar: Forcing navigation with router.push to:', item.href)
-                router.push(item.href)
-              }
+              // Force navigation for reliability
+              e.preventDefault()
+              router.push(item.href)
             }}
           >
             {content}

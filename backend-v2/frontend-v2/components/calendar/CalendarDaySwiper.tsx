@@ -52,117 +52,105 @@ export default function CalendarDaySwiper({
   const handlePrevDay = useCallback(() => {
     if (isTransitioning) return
     setIsTransitioning(true)
-    const newDate = subDays(selectedDate, 1)
-    onDateChange(newDate)
-    setTimeout(() => setIsTransitioning(false), 300)
+    setTimeout(() => {
+      onDateChange(subDays(selectedDate, 1))
+      setIsTransitioning(false)
+    }, 150)
   }, [selectedDate, onDateChange, isTransitioning])
 
   const handleNextDay = useCallback(() => {
     if (isTransitioning) return
     setIsTransitioning(true)
-    const newDate = addDays(selectedDate, 1)
-    onDateChange(newDate)
-    setTimeout(() => setIsTransitioning(false), 300)
+    setTimeout(() => {
+      onDateChange(addDays(selectedDate, 1))
+      setIsTransitioning(false)
+    }, 150)
   }, [selectedDate, onDateChange, isTransitioning])
 
-  // Keyboard navigation
+  // Reset transition state when date changes externally
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') {
-        handlePrevDay()
-      } else if (e.key === 'ArrowRight') {
-        handleNextDay()
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [handlePrevDay, handleNextDay])
+    setIsTransitioning(false)
+  }, [selectedDate])
 
   return (
-    <div className={`bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 ${className}`}>
-      <div className="flex items-center justify-between px-4 py-3">
-        {/* Previous day button */}
+    <div className={`relative w-full ${className}`}>
+      {/* Navigation Header */}
+      <div className="flex items-center justify-between py-4 px-2">
         <button
           onClick={handlePrevDay}
           disabled={isTransitioning}
-          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50"
+          className="p-2 rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           aria-label="Previous day"
         >
-          <ChevronLeftIcon className="w-5 h-5" />
+          <ChevronLeftIcon className="w-5 h-5 text-gray-600" />
         </button>
 
-        {/* Swipeable date display */}
-        <div
-          ref={containerRef}
-          className="flex-1 overflow-hidden relative"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
-          <div 
-            className={`flex transition-transform duration-300 ${
-              isTransitioning ? '' : 'transition-none'
-            }`}
-            style={{
-              transform: `translateX(-33.333%)`
-            }}
-          >
-            {days.map((day, index) => {
-              const isSelected = isSameDay(day, selectedDate)
-              const isTodayDate = isToday(day)
-              
-              return (
-                <div
-                  key={day.toISOString()}
-                  className={`w-full flex-shrink-0 text-center px-4 ${
-                    isSelected ? 'opacity-100' : 'opacity-50'
-                  }`}
-                >
-                  <div className="space-y-1">
-                    <p className={`text-sm font-medium ${
-                      isTodayDate ? 'text-primary-600 dark:text-primary-400' : 'text-gray-600 dark:text-gray-400'
-                    }`}>
-                      {isTodayDate ? 'Today' : format(day, 'EEEE')}
-                    </p>
-                    <p className={`text-2xl font-bold ${
-                      isSelected ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'
-                    }`}>
-                      {format(day, 'd')}
-                    </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {format(day, 'MMMM yyyy')}
-                    </p>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+        <div className="text-center">
+          <h2 className="text-lg font-semibold text-gray-900">
+            {format(selectedDate, 'EEEE, MMMM d')}
+          </h2>
+          <p className="text-sm text-gray-500">
+            {isToday(selectedDate) ? 'Today' : format(selectedDate, 'yyyy')}
+          </p>
         </div>
 
-        {/* Next day button */}
         <button
           onClick={handleNextDay}
           disabled={isTransitioning}
-          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50"
+          className="p-2 rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           aria-label="Next day"
         >
-          <ChevronRightIcon className="w-5 h-5" />
+          <ChevronRightIcon className="w-5 h-5 text-gray-600" />
         </button>
       </div>
 
-      {/* Visual indicator for swipe */}
-      <div className="flex justify-center gap-1 pb-2">
-        {[-1, 0, 1].map((offset) => (
-          <div
-            key={offset}
-            className={`h-1 rounded-full transition-all duration-300 ${
-              offset === 0
-                ? 'w-6 bg-primary-500'
-                : 'w-1 bg-gray-300 dark:bg-gray-600'
-            }`}
-          />
-        ))}
+      {/* Swipeable Day Container */}
+      <div
+        ref={containerRef}
+        className="relative overflow-hidden"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        <div
+          className={`flex transition-transform duration-150 ease-out ${
+            isTransitioning ? 'transform' : ''
+          }`}
+          style={{
+            transform: `translateX(-33.333%)`, // Center the current day
+            width: '300%' // Show 3 days total
+          }}
+        >
+          {days.map((day, index) => (
+            <div
+              key={day.toISOString()}
+              className="w-1/3 flex-shrink-0 px-1"
+            >
+              <div
+                className={`text-center py-3 rounded-lg transition-colors ${
+                  isSameDay(day, selectedDate)
+                    ? 'bg-blue-100 text-blue-900 font-medium'
+                    : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <div className="text-sm font-medium">
+                  {format(day, 'EEE')}
+                </div>
+                <div className="text-lg">
+                  {format(day, 'd')}
+                </div>
+                {isToday(day) && (
+                  <div className="text-xs text-blue-600 font-medium">Today</div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Touch gesture hint */}
+      <div className="text-center text-xs text-gray-400 mt-2">
+        Swipe left or right to change days
       </div>
     </div>
   )
