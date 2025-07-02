@@ -148,6 +148,7 @@ class BookingSettings(Base):
     # Business identification (ready for multi-tenant)
     business_id = Column(Integer, default=1)  # Default single business
     business_name = Column(String, default="Default Business")
+    business_phone = Column(String, nullable=True)  # Business phone for notifications
     business_timezone = Column(String(50), default="America/New_York")  # Business timezone
     
     # Lead time configuration

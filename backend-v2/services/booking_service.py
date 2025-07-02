@@ -650,19 +650,21 @@ def create_booking(
     if not is_valid:
         raise ValueError(f"Booking violates business rules: {'; '.join(rule_violations)}")
     
-    # Check if slot is available
-    end_time_utc = start_time_utc + timedelta(minutes=settings.slot_duration_minutes)
+    # Check if slot is available for the specific barber
+    service_duration = SERVICES[service]["duration"]
+    end_time_utc = start_time_utc + timedelta(minutes=service_duration)
     
-    # Check for conflicts - get all appointments that might overlap (in UTC)
+    # Check for conflicts - get appointments for the assigned barber only
     potential_conflicts = db.query(models.Appointment).filter(
         and_(
-            models.Appointment.status != "cancelled",
-            models.Appointment.start_time >= start_time_utc - timedelta(hours=2),  # Look back 2 hours
-            models.Appointment.start_time <= start_time_utc + timedelta(hours=2)   # Look ahead 2 hours
+            models.Appointment.barber_id == barber_id,  # Only check this barber's appointments
+            models.Appointment.status.in_(["scheduled", "confirmed", "pending"]),  # Active appointments
+            models.Appointment.start_time >= start_time_utc - timedelta(hours=1),  # Reduced search window
+            models.Appointment.start_time <= start_time_utc + timedelta(hours=1)
         )
     ).all()
     
-    # Check for actual conflicts by calculating end times
+    # Check for actual conflicts by calculating end times with buffer consideration
     existing = None
     for appointment in potential_conflicts:
         # Ensure appointment times are timezone-aware
@@ -671,15 +673,26 @@ def create_booking(
         else:
             appointment_start = appointment.start_time
             
+        # Calculate appointment end time with duration
         appointment_end = appointment_start + timedelta(minutes=appointment.duration_minutes)
         
-        # Check if there's any overlap
-        if not (end_time_utc <= appointment_start or start_time_utc >= appointment_end):
+        # Add buffer times for more accurate conflict detection
+        appointment_buffer_before = timedelta(minutes=appointment.buffer_time_before or 0)
+        appointment_buffer_after = timedelta(minutes=appointment.buffer_time_after or 0)
+        
+        appointment_start_with_buffer = appointment_start - appointment_buffer_before
+        appointment_end_with_buffer = appointment_end + appointment_buffer_after
+        
+        # Check if there's any overlap (considering buffers)
+        if not (end_time_utc <= appointment_start_with_buffer or start_time_utc >= appointment_end_with_buffer):
             existing = appointment
             break
     
     if existing:
-        raise ValueError("This time slot is already booked")
+        # Provide more helpful error message with barber context
+        existing_start_user = pytz.UTC.localize(existing.start_time) if existing.start_time.tzinfo is None else existing.start_time
+        existing_start_user = existing_start_user.astimezone(user_tz)
+        raise ValueError(f"This barber already has an appointment at {existing_start_user.strftime('%H:%M')} on {booking_date.strftime('%Y-%m-%d')}")
     
     # Create appointment with UTC time
     appointment = models.Appointment(

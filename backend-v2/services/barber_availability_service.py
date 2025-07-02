@@ -290,19 +290,23 @@ def is_barber_available(
     
     # Check for conflicts with existing appointments
     for appointment in existing_appointments:
-        # Convert appointment start time to time object for comparison
-        appointment_time = appointment.start_time.time()
-        appointment_end_time = (appointment.start_time + timedelta(minutes=appointment.duration_minutes)).time()
+        # Work with datetime objects for proper buffer calculations
+        appointment_start = appointment.start_time
+        appointment_end = appointment.start_time + timedelta(minutes=appointment.duration_minutes)
         
-        # Add buffer times
+        # Add buffer times to appointment times
         buffer_before = timedelta(minutes=appointment.buffer_time_before or 0)
         buffer_after = timedelta(minutes=appointment.buffer_time_after or 0)
         
-        appointment_start_with_buffer = (appointment.start_time - buffer_before).time()
-        appointment_end_with_buffer = (appointment.start_time + timedelta(minutes=appointment.duration_minutes) + buffer_after).time()
+        appointment_start_with_buffer = appointment_start - buffer_before
+        appointment_end_with_buffer = appointment_end + buffer_after
         
-        # Check for overlap
-        if not (end_time <= appointment_start_with_buffer or start_time >= appointment_end_with_buffer):
+        # Convert requested times to datetime objects on the same date for comparison
+        check_start_datetime = datetime.combine(check_date, start_time)
+        check_end_datetime = datetime.combine(check_date, end_time)
+        
+        # Check for overlap using datetime objects
+        if not (check_end_datetime <= appointment_start_with_buffer or check_start_datetime >= appointment_end_with_buffer):
             return False
     
     return True
