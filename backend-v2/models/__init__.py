@@ -73,6 +73,12 @@ EmailEvent = models_file.EmailEvent
 # Import specific models to avoid circular imports
 from .integration import Integration, IntegrationType, IntegrationStatus
 from .review import Review, ReviewResponse, ReviewTemplate, ReviewPlatform, ReviewSentiment, ReviewResponseStatus
+from .product import (
+    Product, ProductVariant, InventoryItem, Order, OrderItem, POSTransaction,
+    ProductStatus, ProductType, OrderStatus, OrderSource
+)
+from .api_key import APIKey, APIKeyStatus
+from .idempotency import IdempotencyKey, IdempotencyOperationType
 
 __all__ = [
     # Main models from parent models.py
@@ -94,5 +100,9 @@ __all__ = [
     'EmailEvent',
     # Models from this package
     'Integration', 'IntegrationType', 'IntegrationStatus',
-    'Review', 'ReviewResponse', 'ReviewTemplate', 'ReviewPlatform', 'ReviewSentiment', 'ReviewResponseStatus'
+    'Review', 'ReviewResponse', 'ReviewTemplate', 'ReviewPlatform', 'ReviewSentiment', 'ReviewResponseStatus',
+    'Product', 'ProductVariant', 'InventoryItem', 'Order', 'OrderItem', 'POSTransaction',
+    'ProductStatus', 'ProductType', 'OrderStatus', 'OrderSource',
+    'APIKey', 'APIKeyStatus',
+    'IdempotencyKey', 'IdempotencyOperationType'
 ]

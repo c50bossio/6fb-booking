@@ -31,6 +31,11 @@ RATE_LIMITS = {
     "payment_intent": "50/minute" if is_development else "10/minute", # More payments in dev
     "payment_confirm": "50/minute" if is_development else "15/minute",# More confirmations in dev
     "refund": "20/hour" if is_development else "5/hour",           # More refunds in dev
+    "payout": "20/hour" if is_development else "10/hour",          # Payout operations
+    "order_create": "100/minute" if is_development else "30/minute", # Order creation
+    "pos_transaction": "150/minute" if is_development else "50/minute", # POS transactions
+    "commission_report": "60/minute" if is_development else "20/minute", # Commission reports
+    "stripe_connect": "30/hour" if is_development else "10/hour",   # Stripe Connect operations
     "default": "200/minute" if is_development else "60/minute"         # Higher default in dev
 }
 
@@ -54,4 +59,9 @@ refresh_rate_limit = limiter.limit(RATE_LIMITS["refresh"])
 payment_intent_rate_limit = limiter.limit(RATE_LIMITS["payment_intent"])
 payment_confirm_rate_limit = limiter.limit(RATE_LIMITS["payment_confirm"])
 refund_rate_limit = limiter.limit(RATE_LIMITS["refund"])
+payout_rate_limit = limiter.limit(RATE_LIMITS["payout"])
+order_create_rate_limit = limiter.limit(RATE_LIMITS["order_create"])
+pos_transaction_rate_limit = limiter.limit(RATE_LIMITS["pos_transaction"])
+commission_report_rate_limit = limiter.limit(RATE_LIMITS["commission_report"])
+stripe_connect_rate_limit = limiter.limit(RATE_LIMITS["stripe_connect"])
 default_rate_limit = limiter.limit(RATE_LIMITS["default"])

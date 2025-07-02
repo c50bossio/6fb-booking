@@ -2,11 +2,12 @@
 Enhanced Logging Configuration for 6FB Booking Platform
 
 Provides comprehensive logging setup with:
-- Structured logging
-- Audit trails
+- Structured logging with data masking
+- Audit trails for financial data
 - Performance logging
 - Security event logging
 - Production-ready configuration
+- Financial data protection compliance
 """
 
 import logging
@@ -15,12 +16,50 @@ import json
 import os
 import sys
 from datetime import datetime
-from typing import Dict, Any
+from typing import Dict, Any, Union
 from pathlib import Path
+
+# Data masking utility functions
+def mask_sensitive_data(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Basic data masking for sensitive information"""
+    masked_data = data.copy()
+    sensitive_fields = ['password', 'ssn', 'credit_card', 'bank_account', 'client_secret']
+    
+    for field in sensitive_fields:
+        if field in masked_data:
+            if isinstance(masked_data[field], str) and len(masked_data[field]) > 4:
+                masked_data[field] = masked_data[field][:4] + "*" * (len(masked_data[field]) - 4)
+            else:
+                masked_data[field] = "***masked***"
+    
+    return masked_data
+
+def create_safe_payment_log(event_type: str, **kwargs) -> Dict[str, Any]:
+    """Create safe payment log data"""
+    return {
+        "event_type": "payment",
+        "payment_event": event_type,
+        **mask_sensitive_data(kwargs)
+    }
+
+def create_safe_commission_log(event_type: str, **kwargs) -> Dict[str, Any]:
+    """Create safe commission log data"""
+    return {
+        "event_type": "commission", 
+        "commission_event": event_type,
+        **mask_sensitive_data(kwargs)
+    }
+
+def create_safe_user_activity_log(event_type: str, **kwargs) -> Dict[str, Any]:
+    """Create safe user activity log data"""
+    return {
+        "event_type": event_type,
+        **mask_sensitive_data(kwargs)
+    }
 
 class StructuredFormatter(logging.Formatter):
     """
-    Custom formatter for structured JSON logging
+    Custom formatter for structured JSON logging with data masking
     """
     
     def format(self, record):
@@ -34,13 +73,22 @@ class StructuredFormatter(logging.Formatter):
             "line": record.lineno
         }
         
-        # Add extra fields if present
+        # Add extra fields with masking
         if hasattr(record, 'user_id'):
             log_entry["user_id"] = record.user_id
         if hasattr(record, 'request_id'):
             log_entry["request_id"] = record.request_id
         if hasattr(record, 'ip_address'):
-            log_entry["ip_address"] = record.ip_address
+            # Mask IP address (keep first 2 octets)
+            ip = record.ip_address
+            if ip and '.' in ip:
+                ip_parts = ip.split('.')
+                if len(ip_parts) == 4:
+                    log_entry["ip_address"] = f"{ip_parts[0]}.{ip_parts[1]}.*.{ip_parts[3]}"
+                else:
+                    log_entry["ip_address"] = "***masked***"
+            else:
+                log_entry["ip_address"] = ip
         if hasattr(record, 'endpoint'):
             log_entry["endpoint"] = record.endpoint
         if hasattr(record, 'response_time'):
@@ -48,11 +96,28 @@ class StructuredFormatter(logging.Formatter):
         if hasattr(record, 'status_code'):
             log_entry["status_code"] = record.status_code
         
+        # Process any additional extra fields with masking
+        for key, value in record.__dict__.items():
+            if key not in ['name', 'msg', 'args', 'levelname', 'levelno', 'pathname',
+                          'filename', 'module', 'exc_info', 'exc_text', 'stack_info',
+                          'lineno', 'funcName', 'created', 'msecs', 'relativeCreated',
+                          'thread', 'threadName', 'processName', 'process', 'getMessage',
+                          'user_id', 'request_id', 'ip_address', 'endpoint', 'response_time', 'status_code']:
+                # Mask any additional sensitive fields
+                if isinstance(value, dict):
+                    log_entry[key] = mask_sensitive_data(value)
+                elif key.lower() in ['amount', 'balance', 'fee', 'payment']:
+                    log_entry[key] = f"${float(value):.2f}" if isinstance(value, (int, float)) else value
+                elif isinstance(value, str):
+                    log_entry[key] = value
+                else:
+                    log_entry[key] = value
+        
         # Add exception info if present
         if record.exc_info:
             log_entry["exception"] = self.formatException(record.exc_info)
         
-        return json.dumps(log_entry)
+        return json.dumps(log_entry, default=str, separators=(',', ':'))
 
 class AuditLogger:
     """
@@ -156,6 +221,101 @@ class AuditLogger:
                 "details": details or {}
             }
         )
+    
+    def log_commission_calculation(self, user_id: str = None, order_id: str = None, 
+                                  commission_amount: float = None, commission_rate: float = None,
+                                  base_amount: float = None, calculation_method: str = None,
+                                  success: bool = True, details: Dict[str, Any] = None):
+        """Log commission calculation events"""
+        self.logger.info(
+            f"COMMISSION: calculation - Amount: ${commission_amount:.2f} from ${base_amount:.2f} at {commission_rate:.2%}",
+            extra={
+                "event_type": "commission",
+                "commission_event": "calculation",
+                "user_id": user_id,
+                "order_id": order_id,
+                "commission_amount": commission_amount,
+                "commission_rate": commission_rate,
+                "base_amount": base_amount,
+                "calculation_method": calculation_method,
+                "success": success,
+                "details": details or {}
+            }
+        )
+        
+    
+    def log_payout_processing(self, user_id: str = None, payout_id: str = None,
+                             amount: float = None, currency: str = "USD",
+                             payment_method: str = None, status: str = None,
+                             processing_fee: float = None, success: bool = True,
+                             details: Dict[str, Any] = None):
+        """Log payout processing events"""
+        log_level = logging.INFO if success else logging.ERROR
+        self.logger.log(
+            log_level,
+            f"PAYOUT: {status} - ${amount:.2f} {currency} to {payment_method}",
+            extra={
+                "event_type": "payout",
+                "payout_event": "processing",
+                "user_id": user_id,
+                "payout_id": payout_id,
+                "amount": amount,
+                "currency": currency,
+                "payment_method": payment_method,
+                "status": status,
+                "processing_fee": processing_fee,
+                "success": success,
+                "details": details or {}
+            }
+        )
+    
+    def log_order_creation(self, user_id: str = None, order_id: str = None,
+                          order_type: str = None, total_amount: float = None,
+                          items_count: int = None, payment_method: str = None,
+                          success: bool = True, details: Dict[str, Any] = None):
+        """Log order creation events"""
+        self.logger.info(
+            f"ORDER: created - {order_type} order ${total_amount:.2f} with {items_count} items",
+            extra={
+                "event_type": "order",
+                "order_event": "creation",
+                "user_id": user_id,
+                "order_id": order_id,
+                "order_type": order_type,
+                "total_amount": total_amount,
+                "items_count": items_count,
+                "payment_method": payment_method,
+                "success": success,
+                "details": details or {}
+            }
+        )
+    
+    def log_financial_adjustment(self, admin_user_id: str = None, target_user_id: str = None,
+                               adjustment_type: str = None, amount: float = None,
+                               reason: str = None, reference_id: str = None,
+                               before_balance: float = None, after_balance: float = None,
+                               success: bool = True, details: Dict[str, Any] = None):
+        """Log financial adjustment events"""
+        log_level = logging.WARNING  # Financial adjustments are always important
+        self.logger.log(
+            log_level,
+            f"FINANCIAL_ADJUSTMENT: {adjustment_type} - ${amount:.2f} for {reason}",
+            extra={
+                "event_type": "financial_adjustment",
+                "adjustment_event": adjustment_type,
+                "admin_user_id": admin_user_id,
+                "target_user_id": target_user_id,
+                "adjustment_type": adjustment_type,
+                "amount": amount,
+                "reason": reason,
+                "reference_id": reference_id,
+                "before_balance": before_balance,
+                "after_balance": after_balance,
+                "balance_change": after_balance - before_balance if before_balance and after_balance else None,
+                "success": success,
+                "details": details or {}
+            }
+        )
 
 class PerformanceLogger:
     """
@@ -241,8 +401,9 @@ def setup_logging(environment: str = "development", log_level: str = "INFO"):
     # Console handler
     console_handler = logging.StreamHandler(sys.stdout)
     if environment == "production":
-        console_handler.setFormatter(StructuredFormatter())
+        console_handler.setFormatter(MaskedStructuredFormatter())
     else:
+        # Use masking even in development for sensitive data protection
         console_formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         )
@@ -260,14 +421,14 @@ def setup_logging(environment: str = "development", log_level: str = "INFO"):
         file_handler.setFormatter(StructuredFormatter())
         root_logger.addHandler(file_handler)
     
-    # Error file handler
+    # Error file handler - always use masking for errors
     error_handler = logging.handlers.RotatingFileHandler(
         "logs/errors.log",
         maxBytes=10*1024*1024,  # 10MB
         backupCount=5
     )
     error_handler.setLevel(logging.ERROR)
-    error_handler.setFormatter(StructuredFormatter())
+    error_handler.setFormatter(MaskedStructuredFormatter())
     root_logger.addHandler(error_handler)
     
     # Configure specific loggers
@@ -361,7 +522,6 @@ class RequestLoggingContext:
                 }
             )
 
-# Initialize logging when module is imported
-environment = os.getenv("ENVIRONMENT", "development")
-log_level = os.getenv("LOG_LEVEL", "INFO")
-setup_logging(environment, log_level)
+# Logging setup can be called manually when needed
+# from utils.logging_config import setup_logging
+# setup_logging(environment="development", log_level="INFO")

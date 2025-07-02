@@ -4,7 +4,8 @@ from typing import Dict, List, Optional
 from datetime import datetime
 from database import get_db
 from services.payment_service import PaymentService
-from utils.rate_limit import payment_intent_rate_limit, payment_confirm_rate_limit, refund_rate_limit
+from utils.rate_limit import payment_intent_rate_limit, payment_confirm_rate_limit, refund_rate_limit, payout_rate_limit
+from utils.idempotency import idempotent_operation, get_current_user_id
 from schemas import (
     PaymentIntentCreate, PaymentIntentResponse, PaymentConfirm, PaymentResponse,
     RefundCreate, RefundResponse, GiftCertificateCreate, GiftCertificateResponse,
@@ -14,14 +15,22 @@ from schemas import (
 )
 from dependencies import get_current_user
 from models import User
+from utils.logging_config import get_audit_logger
 
 router = APIRouter(
     prefix="/payments",
     tags=["payments"]
 )
 
+financial_audit_logger = get_audit_logger()
+
 @router.post("/create-intent", response_model=PaymentIntentResponse)
 @payment_intent_rate_limit
+@idempotent_operation(
+    operation_type="payment_intent",
+    ttl_hours=24,
+    extract_user_id=get_current_user_id
+)
 def create_payment_intent(
     request: Request,
     payment_data: PaymentIntentCreate,
@@ -58,6 +67,25 @@ def create_payment_intent(
             user_id=current_user.id
         )
         
+        # Log payment API operation
+        financial_audit_logger.log_payment_event(
+            event_type="payment_intent_created",
+            user_id=str(current_user.id),
+            amount=float(appointment.price),
+            payment_id=str(result.get("payment_id", "")),
+            success=True,
+            details={
+                "booking_id": payment_data.booking_id,
+                "appointment_id": appointment.id,
+                "barber_id": appointment.barber_id,
+                "gift_certificate_code": payment_data.gift_certificate_code,
+                "client_secret": result.get("client_secret", "")[:20] + "..." if result.get("client_secret") else None,
+                "payment_intent_id": result.get("payment_intent_id", ""),
+                "final_amount": result.get("amount", 0),
+                "gift_certificate_used": result.get("gift_certificate_used", 0)
+            }
+        )
+        
         return result
         
     except ValueError as e:
@@ -73,6 +101,11 @@ def create_payment_intent(
 
 @router.post("/confirm")
 @payment_confirm_rate_limit
+@idempotent_operation(
+    operation_type="payment_confirm",
+    ttl_hours=24,
+    extract_user_id=get_current_user_id
+)
 def confirm_payment(
     request: Request,
     payment_data: PaymentConfirm,
@@ -101,6 +134,22 @@ def confirm_payment(
             db=db
         )
         
+        # Log payment confirmation
+        financial_audit_logger.log_payment_event(
+            event_type="payment_confirmed",
+            user_id=str(current_user.id),
+            amount=float(result["amount_charged"]),
+            payment_id=str(result["payment_id"]),
+            success=True,
+            details={
+                "booking_id": payment_data.booking_id,
+                "appointment_id": result["appointment_id"],
+                "payment_intent_id": payment_data.payment_intent_id,
+                "amount_charged": result["amount_charged"],
+                "gift_certificate_used": result["gift_certificate_used"]
+            }
+        )
+        
         return {
             "message": "Payment confirmed successfully",
             "booking_id": result["appointment_id"],
@@ -122,6 +171,11 @@ def confirm_payment(
 
 @router.post("/refund", response_model=RefundResponse)
 @refund_rate_limit
+@idempotent_operation(
+    operation_type="payment_refund",
+    ttl_hours=48,  # Longer TTL for refunds
+    extract_user_id=get_current_user_id
+)
 def create_refund(
     request: Request,
     refund_data: RefundCreate,
@@ -144,6 +198,22 @@ def create_refund(
             db=db
         )
         
+        # Log refund API operation
+        financial_audit_logger.log_payment_event(
+            event_type="refund_processed",
+            user_id=str(current_user.id),
+            amount=float(refund_data.amount),
+            payment_id=str(refund_data.payment_id),
+            success=True,
+            details={
+                "refund_id": result["refund_id"],
+                "refund_amount": result["amount"],
+                "refund_reason": refund_data.reason,
+                "stripe_refund_id": result.get("stripe_refund_id", ""),
+                "initiated_by_role": current_user.role
+            }
+        )
+        
         return result
         
     except ValueError as e:
@@ -158,7 +228,13 @@ def create_refund(
         )
 
 @router.post("/gift-certificates", response_model=GiftCertificateResponse)
+@idempotent_operation(
+    operation_type="gift_certificate_create",
+    ttl_hours=24,
+    extract_user_id=get_current_user_id
+)
 def create_gift_certificate(
+    request: Request,
     gift_cert_data: GiftCertificateCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -294,12 +370,20 @@ def generate_payment_report(
         )
 
 @router.post("/payouts", response_model=PayoutResponse)
+@payout_rate_limit
+@idempotent_operation(
+    operation_type="barber_payout",
+    ttl_hours=72,  # Longer TTL for payouts
+    extract_user_id=get_current_user_id
+)
 def process_payout(
+    request: Request,
     payout_data: PayoutCreate,
+    include_retail: bool = Query(False, description="Include retail commissions in payout"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Process payout for a barber (admin only)"""
+    """Process payout for a barber with optional retail commissions (admin only)"""
     if current_user.role not in ["admin", "super_admin"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -307,11 +391,33 @@ def process_payout(
         )
     
     try:
+        # Use unified payout method that handles both service and retail payouts
         result = PaymentService.process_barber_payout(
             barber_id=payout_data.barber_id,
             start_date=payout_data.start_date,
             end_date=payout_data.end_date,
-            db=db
+            db=db,
+            include_retail=include_retail
+        )
+        
+        # Log payout API operation
+        financial_audit_logger.log_admin_event(
+            event_type="payout_processed_api",
+            admin_user_id=str(current_user.id),
+            target_user_id=str(payout_data.barber_id),
+            action="process_payout",
+            details={
+                "payout_id": result["payout_id"],
+                "amount": result["amount"],
+                "payment_count": result["payment_count"],
+                "stripe_transfer_id": result.get("stripe_transfer_id", ""),
+                "period_start": payout_data.start_date.isoformat(),
+                "period_end": payout_data.end_date.isoformat(),
+                "include_retail": include_retail,
+                "service_amount": result.get("service_amount", 0),
+                "retail_amount": result.get("retail_amount", 0),
+                "initiated_by_role": current_user.role
+            }
         )
         
         return result
@@ -325,6 +431,50 @@ def process_payout(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Payout processing error: {str(e)}"
+        )
+
+@router.post("/payouts/enhanced")
+@payout_rate_limit
+@idempotent_operation(
+    operation_type="enhanced_payout",
+    ttl_hours=72,  # Longer TTL for payouts
+    extract_user_id=get_current_user_id
+)
+def process_enhanced_payout(
+    request: Request,
+    payout_data: PayoutCreate,
+    include_retail: bool = Query(True, description="Include retail commissions in payout"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Process enhanced payout for a barber including retail commissions (admin only)"""
+    if current_user.role not in ["admin", "super_admin"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to process payouts"
+        )
+    
+    try:
+        # Use unified payout method with retail enabled by default
+        result = PaymentService.process_barber_payout(
+            barber_id=payout_data.barber_id,
+            start_date=payout_data.start_date,
+            end_date=payout_data.end_date,
+            db=db,
+            include_retail=include_retail
+        )
+        
+        return result
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Enhanced payout processing error: {str(e)}"
         )
 
 @router.get("/gift-certificates", response_model=List[GiftCertificateResponse])

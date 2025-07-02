@@ -13,6 +13,7 @@ from config import settings
 from models import Payment, Refund, Payout
 from services.payment_security import PaymentSecurity, audit_logger
 from services.notification_service import notification_service
+from utils.idempotency import webhook_idempotent
 
 router = APIRouter(
     prefix="/webhooks",
@@ -22,6 +23,11 @@ router = APIRouter(
 logger = logging.getLogger(__name__)
 
 @router.post("/stripe")
+@webhook_idempotent(
+    operation_type="stripe",
+    ttl_hours=48,
+    event_id_header="stripe-request-id"
+)
 async def handle_stripe_webhook(
     request: Request,
     db: Session = Depends(get_db)
@@ -243,6 +249,11 @@ async def handle_transfer_failed(transfer: Dict[str, Any], db: Session):
         db.rollback()
 
 @router.post("/sms")
+@webhook_idempotent(
+    operation_type="sms",
+    ttl_hours=24,
+    event_id_header="MessageSid"
+)
 async def handle_sms_webhook(
     From: str = Form(...),
     Body: str = Form(...),

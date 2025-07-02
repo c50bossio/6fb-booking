@@ -8,11 +8,13 @@ from typing import Optional, Dict, List
 import secrets
 import string
 from services.payment_security import PaymentSecurity, audit_logger
+from utils.logging_config import get_audit_logger
 
 # Configure Stripe
 stripe.api_key = settings.stripe_secret_key
 
 logger = logging.getLogger(__name__)
+financial_audit_logger = get_audit_logger()
 
 class PaymentService:
     @staticmethod
@@ -47,9 +49,12 @@ class PaymentService:
                 )
                 raise ValueError("Not authorized to pay for this appointment")
             
-            # Get barber commission rate
+            # Get barber commission rate using unified framework
             barber = None
             commission_rate = 0.20  # Default 20%
+            platform_fee = Decimal('0.00')
+            barber_amount = Decimal('0.00')
+            
             if appointment.barber_id:
                 barber = db.query(User).filter(User.id == appointment.barber_id).first()
                 if barber:
@@ -72,9 +77,29 @@ class PaymentService:
                 gift_cert_amount_used = min(gift_cert.balance, amount)
                 final_amount = max(0, amount - gift_cert_amount_used)
             
-            # Calculate commission splits
-            platform_fee = final_amount * commission_rate
-            barber_amount = final_amount - platform_fee
+            # Calculate commission splits using unified framework if barber is assigned
+            if appointment.barber_id and final_amount > 0:
+                try:
+                    from services.base_commission import UnifiedCommissionService, CommissionType
+                    commission_service = UnifiedCommissionService()
+                    
+                    commission_result = commission_service.calculate_commission(
+                        commission_type=CommissionType.SERVICE,
+                        amount=Decimal(str(final_amount)),
+                        rate=Decimal(str(commission_rate))
+                    )
+                    
+                    platform_fee = commission_result['platform_fee']
+                    barber_amount = commission_result['barber_amount']
+                    
+                except ImportError:
+                    # Fallback to traditional calculation if unified framework is not available
+                    platform_fee = final_amount * commission_rate
+                    barber_amount = final_amount - platform_fee
+            else:
+                # Traditional calculation for cases without barber or zero amount
+                platform_fee = final_amount * commission_rate
+                barber_amount = final_amount - platform_fee
             
             # Only create Stripe payment intent if there's remaining amount to charge
             stripe_intent_id = None
@@ -112,7 +137,30 @@ class PaymentService:
             db.commit()
             db.refresh(payment)
             
-            # Log payment intent creation
+            # Log order creation for payment intent
+            financial_audit_logger.log_order_creation(
+                user_id=str(appointment.user_id),
+                order_id=f"appointment_{booking_id}",
+                order_type="service_booking",
+                total_amount=float(amount),
+                items_count=1,
+                payment_method="stripe" if final_amount > 0 else "gift_certificate",
+                success=True,
+                details={
+                    "appointment_id": appointment.id,
+                    "barber_id": appointment.barber_id,
+                    "service_name": getattr(appointment, 'service_name', 'Barber Service'),
+                    "original_amount": float(amount),
+                    "final_amount": float(final_amount),
+                    "gift_certificate_used": float(gift_cert_amount_used),
+                    "platform_fee": float(platform_fee),
+                    "barber_amount": float(barber_amount),
+                    "commission_rate": float(commission_rate),
+                    "stripe_intent_id": stripe_intent_id
+                }
+            )
+            
+            # Legacy audit logging for compatibility
             audit_logger.log_payment_intent_created(
                 appointment.user_id, amount, appointment.id
             )
@@ -274,7 +322,29 @@ class PaymentService:
             
             db.commit()
             
-            # Log refund processing
+            # Log financial adjustment for refund
+            financial_audit_logger.log_financial_adjustment(
+                admin_user_id=str(initiated_by_id),
+                target_user_id=str(payment.user_id),
+                adjustment_type="refund",
+                amount=float(amount),
+                reason=reason,
+                reference_id=f"payment_{payment_id}",
+                before_balance=None,  # Would need to track user balances
+                after_balance=None,
+                success=True,
+                details={
+                    "refund_id": refund.id,
+                    "payment_id": payment_id,
+                    "stripe_refund_id": stripe_refund_id,
+                    "original_payment_amount": float(payment.amount),
+                    "refund_amount": float(amount),
+                    "appointment_id": payment.appointment_id,
+                    "barber_id": payment.barber_id
+                }
+            )
+            
+            # Legacy audit logging for compatibility
             audit_logger.log_refund_processed(
                 initiated_by_id, payment_id, amount, reason
             )
@@ -498,32 +568,61 @@ class PaymentService:
         barber_id: int,
         start_date: datetime,
         end_date: datetime,
-        db: Session
+        db: Session,
+        include_retail: bool = False
     ):
-        """Process payout for a barber for a specific period"""
+        """Process payout for a barber for a specific period with optional retail commissions"""
         try:
             # Get barber
             barber = db.query(User).filter(User.id == barber_id, User.role == "barber").first()
+            if not barber:
+                raise ValueError(f"Barber {barber_id} not found")
             
-            # Calculate total payout amount first for validation
-            payments = db.query(Payment).filter(
+            # Calculate service payments (existing logic)
+            service_payments = db.query(Payment).filter(
                 Payment.barber_id == barber_id,
                 Payment.status == "completed",
                 Payment.created_at >= start_date,
                 Payment.created_at <= end_date
             ).all()
             
-            if not payments:
-                raise ValueError("No payments found for the specified period")
+            service_amount = sum(p.barber_amount or 0 for p in service_payments)
             
-            total_amount = sum(p.barber_amount for p in payments)
+            # Calculate retail commissions if enabled
+            retail_amount = 0
+            retail_breakdown = None
+            order_item_ids = []
+            pos_transaction_ids = []
+            
+            if include_retail:
+                try:
+                    from services.commission_service import CommissionService
+                    commission_service = CommissionService(db)
+                    retail_breakdown = commission_service.get_barber_retail_commissions(
+                        barber_id, start_date, end_date, unpaid_only=True
+                    )
+                    retail_amount = float(retail_breakdown["total_retail_commission"])
+                    
+                    # Get IDs for marking as paid later
+                    order_item_ids = [item["id"] for item in retail_breakdown["order_items"]]
+                    pos_transaction_ids = [trans["id"] for trans in retail_breakdown["pos_transactions"]]
+                except ImportError:
+                    # Commission service not available, continue with service payments only
+                    logger.warning("CommissionService not available, processing service payments only")
+                    include_retail = False
+            
+            total_amount = service_amount + retail_amount
+            
+            if total_amount <= 0:
+                if include_retail:
+                    raise ValueError("No payments or commissions found for the specified period")
+                else:
+                    raise ValueError("No payments found for the specified period")
             
             # Validate payout eligibility
             eligibility = PaymentSecurity.validate_payout_eligibility(barber, total_amount)
             if not eligibility["eligible"]:
                 raise ValueError(eligibility["reason"])
-            
-            # Amount already calculated and validated above
             
             # Create payout record
             payout = Payout(
@@ -532,22 +631,33 @@ class PaymentService:
                 status="pending",
                 period_start=start_date,
                 period_end=end_date,
-                payment_count=len(payments)
+                payment_count=len(service_payments)
             )
             db.add(payout)
             db.flush()
+            
+            # Create Stripe transfer metadata
+            metadata = {
+                "payout_id": str(payout.id),
+                "barber_id": str(barber_id),
+                "period_start": start_date.isoformat(),
+                "period_end": end_date.isoformat()
+            }
+            
+            # Add retail-specific metadata if applicable
+            if include_retail:
+                metadata.update({
+                    "service_amount": str(service_amount),
+                    "retail_amount": str(retail_amount),
+                    "includes_retail": "true"
+                })
             
             # Create Stripe transfer
             transfer = stripe.Transfer.create(
                 amount=int(total_amount * 100),  # Convert to cents
                 currency="usd",
                 destination=barber.stripe_account_id,
-                metadata={
-                    "payout_id": str(payout.id),
-                    "barber_id": str(barber_id),
-                    "period_start": start_date.isoformat(),
-                    "period_end": end_date.isoformat()
-                }
+                metadata=metadata
             )
             
             # Update payout record
@@ -555,27 +665,121 @@ class PaymentService:
             payout.status = "completed"
             payout.processed_at = datetime.utcnow()
             
+            # Mark retail commissions as paid if applicable
+            if include_retail and (order_item_ids or pos_transaction_ids):
+                try:
+                    from services.commission_service import CommissionService
+                    commission_service = CommissionService(db)
+                    commission_service.mark_retail_commissions_paid(
+                        barber_id, payout.id, order_item_ids, pos_transaction_ids
+                    )
+                except ImportError:
+                    logger.warning("Could not mark retail commissions as paid - CommissionService not available")
+            
             db.commit()
             
-            # Log payout processing
-            audit_logger.log_payout_processed(
-                barber_id, total_amount, len(payments)
+            # Log payout processing with enhanced details
+            financial_audit_logger.log_payout_processing(
+                user_id=str(barber_id),
+                payout_id=str(payout.id),
+                amount=float(total_amount),
+                currency="USD",
+                payment_method="stripe_transfer",
+                status="completed",
+                processing_fee=0.0,  # Stripe Connect handles fees separately
+                success=True,
+                details={
+                    "stripe_transfer_id": transfer.id,
+                    "period_start": start_date.isoformat(),
+                    "period_end": end_date.isoformat(),
+                    "service_payments_count": len(service_payments),
+                    "service_amount": float(service_amount),
+                    "retail_amount": float(retail_amount) if include_retail else 0,
+                    "includes_retail": include_retail,
+                    "barber_name": barber.name,
+                    "barber_email": barber.email
+                }
             )
             
-            return {
+            # Legacy audit logging for compatibility
+            audit_logger.log_payout_processed(
+                barber_id, total_amount, len(service_payments)
+            )
+            
+            # Log enhanced payout details if retail was included
+            if include_retail:
+                logger.info(f"Enhanced payout processed: Barber {barber_id}, Service: ${service_amount}, Retail: ${retail_amount}, Total: ${total_amount}")
+            
+            # Build response
+            response = {
                 "payout_id": payout.id,
                 "amount": total_amount,
-                "payment_count": len(payments),
+                "payment_count": len(service_payments),
                 "stripe_transfer_id": transfer.id,
                 "status": "completed"
             }
             
+            # Add retail-specific response fields if applicable
+            if include_retail:
+                response.update({
+                    "total_amount": total_amount,
+                    "service_amount": service_amount,
+                    "retail_amount": retail_amount,
+                    "service_payment_count": len(service_payments),
+                    "retail_items_count": len(order_item_ids) + len(pos_transaction_ids),
+                    "retail_breakdown": retail_breakdown
+                })
+            
+            return response
+            
         except stripe.error.StripeError as e:
             logger.error(f"Stripe error processing payout: {str(e)}")
+            
+            # Log failed payout attempt
+            financial_audit_logger.log_payout_processing(
+                user_id=str(barber_id),
+                payout_id=f"failed_{barber_id}_{datetime.utcnow().timestamp()}",
+                amount=float(total_amount),
+                currency="USD",
+                payment_method="stripe_transfer",
+                status="failed",
+                processing_fee=0.0,
+                success=False,
+                details={
+                    "error_type": "stripe_error",
+                    "error_message": str(e),
+                    "period_start": start_date.isoformat(),
+                    "period_end": end_date.isoformat(),
+                    "service_payments_count": len(service_payments),
+                    "includes_retail": include_retail
+                }
+            )
+            
             db.rollback()
             raise Exception(f"Payout processing error: {str(e)}")
         except Exception as e:
             logger.error(f"Error processing payout: {str(e)}")
+            
+            # Log general payout failure
+            financial_audit_logger.log_payout_processing(
+                user_id=str(barber_id),
+                payout_id=f"failed_{barber_id}_{datetime.utcnow().timestamp()}",
+                amount=float(total_amount),
+                currency="USD",
+                payment_method="stripe_transfer",
+                status="error",
+                processing_fee=0.0,
+                success=False,
+                details={
+                    "error_type": "general_error",
+                    "error_message": str(e),
+                    "period_start": start_date.isoformat(),
+                    "period_end": end_date.isoformat(),
+                    "service_payments_count": len(service_payments),
+                    "includes_retail": include_retail
+                }
+            )
+            
             db.rollback()
             raise
     
@@ -683,6 +887,7 @@ class PaymentService:
                 "onboarding_url": None,
                 "error": str(e)
             }
+
 
     @staticmethod
     def _generate_gift_certificate_code(length: int = 12) -> str:

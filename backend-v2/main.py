@@ -5,11 +5,12 @@ from slowapi.errors import RateLimitExceeded
 from database import engine, Base
 import models
 import location_models
-from routers import auth, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, email_analytics, test_data
-# Temporarily disabled: reviews, integrations
-# Temporarily disabled: integrations
+from routers import auth, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, email_analytics, test_data, reviews, integrations, api_keys, commissions  # products, shopify_webhooks temporarily disabled due to bleach dependency
 from routers.services import public_router as services_public_router
 from utils.rate_limit import limiter, rate_limit_exceeded_handler
+from services.integration_service import IntegrationServiceFactory
+from models.integration import IntegrationType
+from middleware import SecurityHeadersMiddleware, RequestValidationMiddleware, APIKeyValidationMiddleware
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -19,6 +20,47 @@ app = FastAPI(title="6FB Booking API v2")
 
 # Add rate limiter to app state
 app.state.limiter = limiter
+
+# Register integration services
+@app.on_event("startup")
+async def startup_event():
+    """Register integration services on startup"""
+    try:
+        # Import integration service adapters
+        from services.integration_adapters import (
+            GMBServiceAdapter,
+            GoogleCalendarServiceAdapter,
+            StripeServiceAdapter,
+            SendGridServiceAdapter,
+            TwilioServiceAdapter
+        )
+        
+        logger = logging.getLogger(__name__)
+        logger.info("Registering integration services...")
+        
+        # Register all available integration services
+        IntegrationServiceFactory.register(IntegrationType.GOOGLE_MY_BUSINESS, GMBServiceAdapter)
+        IntegrationServiceFactory.register(IntegrationType.GOOGLE_CALENDAR, GoogleCalendarServiceAdapter)
+        IntegrationServiceFactory.register(IntegrationType.STRIPE, StripeServiceAdapter)
+        IntegrationServiceFactory.register(IntegrationType.SENDGRID, SendGridServiceAdapter)
+        IntegrationServiceFactory.register(IntegrationType.TWILIO, TwilioServiceAdapter)
+        
+        logger.info(f"Successfully registered {len(IntegrationServiceFactory._services)} integration services")
+    except Exception as e:
+        logger = logging.getLogger(__name__)
+        logger.error(f"Failed to register integration services: {e}")
+
+# Add security middleware
+import logging
+
+# Add request validation middleware (order matters - this should be first)
+app.add_middleware(RequestValidationMiddleware)
+
+# Add API key validation for webhook endpoints
+app.add_middleware(APIKeyValidationMiddleware, protected_paths={"/api/v1/webhooks", "/api/v1/internal"})
+
+# Add enhanced security headers middleware
+app.add_middleware(SecurityHeadersMiddleware)
 
 # Add rate limit exceeded handler
 app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
@@ -84,9 +126,13 @@ app.include_router(short_urls.router)  # No prefix for branded short URLs
 app.include_router(notification_preferences.router)  # No prefix, includes its own /api/v1
 app.include_router(email_analytics.router, prefix="/api/v1")
 app.include_router(test_data.router, prefix="/api/v1")
-# app.include_router(reviews.router, prefix="/api/v1")  # Temporarily disabled
+app.include_router(reviews.router, prefix="/api/v1")  # Re-enabled for testing
 # app.include_router(locations.router, prefix="/api/v1")  # Temporarily disabled due to schema error
-# app.include_router(integrations.router)  # Integration management endpoints - temporarily disabled
+app.include_router(integrations.router)  # Integration management endpoints - re-enabled for testing
+app.include_router(api_keys.router, prefix="/api/v1")  # API key management
+app.include_router(commissions.router, prefix="/api/v1")  # Commission management
+# app.include_router(products.router)  # Product management and Shopify integration - disabled due to bleach dependency
+# app.include_router(shopify_webhooks.router)  # Shopify webhook handlers for real-time sync - disabled due to bleach dependency
 
 # Include public routes (no authentication required)
 app.include_router(services_public_router, prefix="/api/v1")
