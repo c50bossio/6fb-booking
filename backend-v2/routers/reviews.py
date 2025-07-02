@@ -3,7 +3,7 @@ Review management router for BookedBarber V2.
 Handles review CRUD, responses, templates, analytics, and GMB integration.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks, Request
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime, timedelta
@@ -12,7 +12,7 @@ from database import get_db
 from models import User
 from models.review import Review, ReviewResponse, ReviewTemplate, ReviewPlatform, ReviewSentiment
 from models.integration import Integration, IntegrationType
-from schemas import (
+from schemas_new.review import (
     ReviewResponse as ReviewResponseSchema,
     ReviewResponseCreate,
     ReviewResponseUpdate,
@@ -49,7 +49,7 @@ gmb_service = GMBService()
 @router.get("", response_model=dict)
 @limiter.limit("30/minute")
 async def get_reviews(
-    request,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
     platform: Optional[ReviewPlatform] = Query(None),
@@ -108,10 +108,129 @@ async def get_reviews(
         )
 
 
+# Analytics endpoints (MUST BE BEFORE /{review_id})
+@router.get("/analytics", response_model=ReviewAnalytics)
+@limiter.limit("20/minute")
+async def get_review_analytics(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    start_date: Optional[datetime] = Query(None),
+    end_date: Optional[datetime] = Query(None),
+    business_id: Optional[str] = Query(None)
+):
+    """Get comprehensive review analytics"""
+    try:
+        analytics = review_service.get_review_analytics(
+            db=db,
+            user_id=current_user.id,
+            start_date=start_date,
+            end_date=end_date,
+            business_id=business_id
+        )
+        
+        return analytics
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get analytics: {str(e)}"
+        )
+
+
+# Template endpoints (MUST BE BEFORE /{review_id})
+@router.get("/templates", response_model=List[ReviewTemplateSchema])
+@limiter.limit("30/minute")
+async def get_review_templates(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    category: Optional[str] = Query(None),
+    platform: Optional[ReviewPlatform] = Query(None),
+    is_active: Optional[bool] = Query(None)
+):
+    """Get review response templates"""
+    query = db.query(ReviewTemplate).filter(ReviewTemplate.user_id == current_user.id)
+    
+    if category:
+        query = query.filter(ReviewTemplate.category == category.lower())
+    if platform:
+        query = query.filter(ReviewTemplate.platform == platform)
+    if is_active is not None:
+        query = query.filter(ReviewTemplate.is_active == is_active)
+    
+    templates = query.order_by(ReviewTemplate.priority.desc(), ReviewTemplate.created_at.desc()).all()
+    
+    return [ReviewTemplateSchema.from_orm(template) for template in templates]
+
+
+# Auto-response endpoints (MUST BE BEFORE /{review_id})
+@router.get("/auto-response/stats", response_model=AutoResponseStats)
+@limiter.limit("20/minute")
+async def get_auto_response_stats(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    days_back: int = Query(30, ge=1, le=365)
+):
+    """Get auto-response system statistics"""
+    try:
+        stats = review_service.get_auto_response_stats(
+            db=db,
+            user_id=current_user.id,
+            days_back=days_back
+        )
+        
+        return stats
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get auto-response stats: {str(e)}"
+        )
+
+
+# GMB endpoints (MUST BE BEFORE /{review_id})
+@router.get("/gmb/locations", response_model=List[dict])
+@limiter.limit("10/minute")
+async def get_gmb_locations(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get Google My Business locations"""
+    try:
+        # Get GMB integration
+        integration = db.query(Integration).filter(
+            Integration.user_id == current_user.id,
+            Integration.integration_type == IntegrationType.GOOGLE_MY_BUSINESS,
+            Integration.is_active == True
+        ).first()
+        
+        if not integration:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Google My Business integration not found"
+            )
+        
+        locations = await gmb_service.get_business_locations(integration)
+        
+        return [location.dict() for location in locations]
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get GMB locations: {str(e)}"
+        )
+
+
+# NOW we can have the generic /{review_id} route
 @router.get("/{review_id}", response_model=ReviewResponseSchema)
 @limiter.limit("60/minute")
 async def get_review(
-    request,
+    request: Request,
     review_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -131,10 +250,11 @@ async def get_review(
     return ReviewResponseSchema.from_orm(review)
 
 
+# Rest of the routes remain the same...
 @router.post("/{review_id}/respond", response_model=ReviewResponseDisplaySchema)
 @limiter.limit("10/minute")
 async def create_review_response(
-    request,
+    request: Request,
     review_id: int,
     response_data: ReviewResponseCreate,
     background_tasks: BackgroundTasks,
@@ -170,7 +290,7 @@ async def create_review_response(
 @router.put("/responses/{response_id}", response_model=ReviewResponseDisplaySchema)
 @limiter.limit("20/minute")
 async def update_review_response(
-    request,
+    request: Request,
     response_id: int,
     response_data: ReviewResponseUpdate,
     db: Session = Depends(get_db),
@@ -211,7 +331,7 @@ async def update_review_response(
 @router.post("/responses/{response_id}/send", response_model=dict)
 @limiter.limit("10/minute")
 async def send_review_response(
-    request,
+    request: Request,
     response_id: int,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
@@ -244,41 +364,11 @@ async def send_review_response(
         )
 
 
-# Analytics endpoints
-@router.get("/analytics", response_model=ReviewAnalytics)
-@limiter.limit("20/minute")
-async def get_review_analytics(
-    request,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-    start_date: Optional[datetime] = Query(None),
-    end_date: Optional[datetime] = Query(None),
-    business_id: Optional[str] = Query(None)
-):
-    """Get comprehensive review analytics"""
-    try:
-        analytics = review_service.get_review_analytics(
-            db=db,
-            user_id=current_user.id,
-            start_date=start_date,
-            end_date=end_date,
-            business_id=business_id
-        )
-        
-        return analytics
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get analytics: {str(e)}"
-        )
-
-
 # Sync endpoints
 @router.post("/sync", response_model=ReviewSyncResponse)
 @limiter.limit("5/minute")
 async def sync_reviews(
-    request,
+    request: Request,
     sync_request: ReviewSyncRequest,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
@@ -362,36 +452,10 @@ async def sync_reviews(
         )
 
 
-# Template endpoints
-@router.get("/templates", response_model=List[ReviewTemplateSchema])
-@limiter.limit("30/minute")
-async def get_review_templates(
-    request,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-    category: Optional[str] = Query(None),
-    platform: Optional[ReviewPlatform] = Query(None),
-    is_active: Optional[bool] = Query(None)
-):
-    """Get review response templates"""
-    query = db.query(ReviewTemplate).filter(ReviewTemplate.user_id == current_user.id)
-    
-    if category:
-        query = query.filter(ReviewTemplate.category == category.lower())
-    if platform:
-        query = query.filter(ReviewTemplate.platform == platform)
-    if is_active is not None:
-        query = query.filter(ReviewTemplate.is_active == is_active)
-    
-    templates = query.order_by(ReviewTemplate.priority.desc(), ReviewTemplate.created_at.desc()).all()
-    
-    return [ReviewTemplateSchema.from_orm(template) for template in templates]
-
-
 @router.post("/templates", response_model=ReviewTemplateSchema)
 @limiter.limit("10/minute")
 async def create_review_template(
-    request,
+    request: Request,
     template_data: ReviewTemplateCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -420,7 +484,7 @@ async def create_review_template(
 @router.put("/templates/{template_id}", response_model=ReviewTemplateSchema)
 @limiter.limit("20/minute")
 async def update_review_template(
-    request,
+    request: Request,
     template_id: int,
     template_data: ReviewTemplateUpdate,
     db: Session = Depends(get_db),
@@ -452,7 +516,7 @@ async def update_review_template(
 @router.delete("/templates/{template_id}", response_model=dict)
 @limiter.limit("20/minute")
 async def delete_review_template(
-    request,
+    request: Request,
     template_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -478,7 +542,7 @@ async def delete_review_template(
 @router.post("/templates/{template_id}/generate", response_model=ReviewTemplateGenerateResponse)
 @limiter.limit("20/minute")
 async def generate_response_from_template(
-    request,
+    request: Request,
     template_id: int,
     review_id: int,
     generate_request: ReviewTemplateGenerateRequest = None,
@@ -545,7 +609,7 @@ async def generate_response_from_template(
 @router.post("/bulk/respond", response_model=BulkResponseResponse)
 @limiter.limit("3/minute")
 async def bulk_generate_responses(
-    request,
+    request: Request,
     bulk_request: BulkResponseRequest,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
@@ -662,37 +726,11 @@ async def bulk_generate_responses(
         )
 
 
-# Auto-response endpoints
-@router.get("/auto-response/stats", response_model=AutoResponseStats)
-@limiter.limit("20/minute")
-async def get_auto_response_stats(
-    request,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-    days_back: int = Query(30, ge=1, le=365)
-):
-    """Get auto-response system statistics"""
-    try:
-        stats = review_service.get_auto_response_stats(
-            db=db,
-            user_id=current_user.id,
-            days_back=days_back
-        )
-        
-        return stats
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get auto-response stats: {str(e)}"
-        )
-
-
 # GMB Integration endpoints
 @router.post("/gmb/auth", response_model=GMBAuthResponse)
 @limiter.limit("5/minute")
 async def initiate_gmb_auth(
-    request,
+    request: Request,
     auth_request: GMBAuthRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -715,39 +753,4 @@ async def initiate_gmb_auth(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to initiate GMB auth: {str(e)}"
-        )
-
-
-@router.get("/gmb/locations", response_model=List[dict])
-@limiter.limit("10/minute")
-async def get_gmb_locations(
-    request,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """Get Google My Business locations"""
-    try:
-        # Get GMB integration
-        integration = db.query(Integration).filter(
-            Integration.user_id == current_user.id,
-            Integration.integration_type == IntegrationType.GOOGLE_MY_BUSINESS,
-            Integration.is_active == True
-        ).first()
-        
-        if not integration:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Google My Business integration not found"
-            )
-        
-        locations = await gmb_service.get_business_locations(integration)
-        
-        return [location.dict() for location in locations]
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get GMB locations: {str(e)}"
         )

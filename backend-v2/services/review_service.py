@@ -15,10 +15,11 @@ from models.review import (
     Review, ReviewResponse, ReviewTemplate, ReviewPlatform, 
     ReviewSentiment, ReviewResponseStatus
 )
-from schemas.review import (
+from schemas_new.review import (
     ReviewFilters, ReviewAnalytics, ReviewTemplateGenerateRequest,
     AutoResponseConfig, AutoResponseStats
 )
+from services.business_context_service import BusinessContextService, BusinessContext
 
 
 # Configure logging
@@ -379,43 +380,128 @@ class ReviewService:
         review: Review,
         business_name: str = None
     ) -> str:
-        """Generate automatic response for a review"""
-        # Determine response category based on rating and sentiment
-        if review.rating >= 4 or review.sentiment == ReviewSentiment.POSITIVE:
-            category = "positive"
-        elif review.rating <= 2 or review.sentiment == ReviewSentiment.NEGATIVE:
-            category = "negative"
-        else:
-            category = "neutral"
-        
-        # Try to find matching template first
-        applicable_templates = self.get_applicable_templates(db, review.user_id, review)
-        
-        if applicable_templates:
-            # Use the highest priority template
-            template = applicable_templates[0]
-            return self.generate_response_from_template(db, template, review, business_name)
-        
-        # Fall back to default templates
-        import random
-        default_responses = self.default_templates.get(category, self.default_templates["neutral"])
-        template_text = random.choice(default_responses)
-        
-        # Replace placeholders
-        placeholders = {
-            "reviewer_name": review.reviewer_name or "valued customer",
-            "business_name": business_name or "our business",
-            "rating": str(int(review.rating)) if review.rating else "5"
-        }
-        
-        response = template_text
-        for key, value in placeholders.items():
-            response = response.replace(f"{{{key}}}", value)
-        
-        # Apply SEO optimization
-        response = self._optimize_response_for_seo(response, self.industry_keywords[:3], business_name)
-        
-        return response
+        """
+        Generate automatic response for a review with contextual intelligence.
+        Enhanced to use BusinessContextService and contextual analysis.
+        """
+        try:
+            # Use the new contextual response generation if available
+            if hasattr(self, 'generate_contextual_response'):
+                try:
+                    return self.generate_contextual_response(review, db)
+                except Exception as e:
+                    logger.warning(f"Contextual response generation failed for review {review.id}, falling back to basic method: {e}")
+            
+            # Original logic as fallback
+            # Determine response category based on rating and sentiment
+            if review.rating >= 4 or review.sentiment == ReviewSentiment.POSITIVE:
+                category = "positive"
+            elif review.rating <= 2 or review.sentiment == ReviewSentiment.NEGATIVE:
+                category = "negative"
+            else:
+                category = "neutral"
+            
+            # Try to get business context for enhanced placeholders
+            business_context = None
+            try:
+                business_context_service = BusinessContextService(db)
+                business_context = business_context_service.get_business_context(review.user_id)
+                if not business_name:
+                    business_name = business_context.business_name
+            except Exception as e:
+                logger.debug(f"Could not get business context for review {review.id}: {e}")
+            
+            # Try to find matching template first
+            applicable_templates = self.get_applicable_templates(db, review.user_id, review)
+            
+            if applicable_templates:
+                # Use the highest priority template
+                template = applicable_templates[0]
+                response = self.generate_response_from_template(db, template, review, business_name)
+                
+                # Enhance with business context if available
+                if business_context and hasattr(self, 'auto_populate_template_variables'):
+                    try:
+                        response = self.auto_populate_template_variables(response, business_context, review)
+                    except Exception as e:
+                        logger.debug(f"Could not enhance template with business context: {e}")
+                
+                return response
+            
+            # Enhanced fallback: Try service-specific templates if available
+            if hasattr(self, 'analyze_review_content') and hasattr(self, 'get_service_specific_template'):
+                try:
+                    review_analysis = self.analyze_review_content(review.review_text or "")
+                    service_template = self.get_service_specific_template(
+                        review_analysis.get("service_type", "general"), 
+                        category
+                    )
+                    
+                    # Use service-specific template with business context
+                    if business_context:
+                        response = self.auto_populate_template_variables(service_template, business_context, review)
+                        return response
+                    else:
+                        # Basic placeholder replacement
+                        template_text = service_template
+                        placeholders = {
+                            "reviewer_name": review.reviewer_name or "valued customer",
+                            "business_name": business_name or "our business",
+                            "rating": str(int(review.rating)) if review.rating else "5"
+                        }
+                        
+                        response = template_text
+                        for key, value in placeholders.items():
+                            response = response.replace(f"{{{key}}}", value)
+                        
+                        return response
+                        
+                except Exception as e:
+                    logger.debug(f"Service-specific template generation failed: {e}")
+            
+            # Original fallback to default templates
+            import random
+            default_responses = self.default_templates.get(category, self.default_templates["neutral"])
+            template_text = random.choice(default_responses)
+            
+            # Enhanced placeholder replacement
+            placeholders = {
+                "reviewer_name": review.reviewer_name or "valued customer",
+                "business_name": business_name or "our business",
+                "rating": str(int(review.rating)) if review.rating else "5"
+            }
+            
+            # Add business context placeholders if available
+            if business_context:
+                placeholders.update({
+                    "location_name": business_context.location_name or business_context.business_name,
+                    "city": business_context.city or "",
+                    "barber_name": business_context.barber_names[0] if business_context.barber_names else "our skilled barber"
+                })
+            
+            response = template_text
+            for key, value in placeholders.items():
+                if value:  # Only replace if we have a value
+                    response = response.replace(f"{{{key}}}", value)
+            
+            # Apply SEO optimization with enhanced keywords
+            seo_keywords = self.industry_keywords[:3]
+            if business_context and hasattr(business_context_service, 'get_service_keywords'):
+                try:
+                    # Get service-specific keywords if available
+                    service_keywords = business_context_service.get_service_keywords([])
+                    seo_keywords = service_keywords[:3] if service_keywords else seo_keywords
+                except:
+                    pass
+            
+            response = self._optimize_response_for_seo(response, seo_keywords, business_name)
+            
+            return response
+            
+        except Exception as e:
+            logger.error(f"Error in enhanced generate_auto_response for review {review.id}: {e}")
+            # Ultimate fallback - basic response
+            return f"Thank you for your review, {review.reviewer_name or 'valued customer'}! We appreciate your feedback and look forward to serving you again at {business_name or 'our business'}."
     
     def _optimize_response_for_seo(
         self,
@@ -596,3 +682,665 @@ class ReviewService:
             most_used_template=most_used_template,
             platform_breakdown=platform_breakdown
         )
+    
+    # ============= CONTEXTUAL AI INTELLIGENCE METHODS =============
+    
+    def generate_contextual_response(self, review: Review, db: Session) -> str:
+        """
+        Generate a contextually intelligent response using BusinessContextService.
+        
+        Args:
+            review: Review object to generate response for
+            db: Database session
+            
+        Returns:
+            Contextually enhanced response string
+            
+        Raises:
+            HTTPException: If review is invalid or response generation fails
+            ValueError: If required context cannot be retrieved
+        """
+        try:
+            # Validate inputs
+            if not review:
+                raise ValueError("Review cannot be None")
+            if not review.user_id:
+                raise ValueError("Review must have a valid user_id")
+            if not db:
+                raise ValueError("Database session cannot be None")
+            
+            # Get business context
+            business_context_service = BusinessContextService(db)
+            business_context = business_context_service.get_business_context(review.user_id)
+            
+            # Analyze review content for contextual insights
+            review_analysis = self.analyze_review_content(review.review_text or "")
+            
+            # Get service-specific template based on analysis
+            template_category = self._determine_response_category(review, review_analysis)
+            service_template = self.get_service_specific_template(
+                review_analysis.get("service_type", "general"), 
+                template_category
+            )
+            
+            # Try to find matching custom template first
+            applicable_templates = self.get_applicable_templates(db, review.user_id, review)
+            
+            if applicable_templates:
+                # Use highest priority template with contextual enhancement
+                template = applicable_templates[0]
+                response = self.generate_response_from_template(
+                    db, template, review, business_context.business_name
+                )
+                # Further enhance with business context
+                response = self.auto_populate_template_variables(
+                    response, business_context, review
+                )
+            else:
+                # Use service-specific template with contextual variables
+                response = self.auto_populate_template_variables(
+                    service_template, business_context, review
+                )
+            
+            # Apply contextual SEO optimization
+            response = self._apply_contextual_seo_optimization(
+                response, business_context, review_analysis
+            )
+            
+            # Log contextual response generation
+            logger.info(f"Generated contextual response for review {review.id} "
+                       f"with service type: {review_analysis.get('service_type', 'general')}")
+            
+            return response
+            
+        except Exception as e:
+            logger.error(f"Error generating contextual response for review {review.id}: {e}")
+            # Fallback to existing auto-response system
+            return self.generate_auto_response(db, review, business_context.business_name if 'business_context' in locals() else None)
+    
+    def analyze_review_content(self, review_text: str) -> Dict[str, Any]:
+        """
+        Analyze review content to extract contextual information.
+        
+        Args:
+            review_text: The text content of the review
+            
+        Returns:
+            Dictionary containing analysis results with keys:
+                - service_type: Detected service type (haircut, shave, beard, etc.)
+                - sentiment_keywords: Key phrases that indicate sentiment
+                - local_references: Any local area/landmark references
+                - barber_mentions: Specific barber name mentions
+                - service_quality_indicators: Words indicating service quality
+                - time_references: References to time/duration
+                - price_mentions: Any price/value references
+        """
+        if not review_text:
+            return {
+                "service_type": "general",
+                "sentiment_keywords": [],
+                "local_references": [],
+                "barber_mentions": [],
+                "service_quality_indicators": [],
+                "time_references": [],
+                "price_mentions": []
+            }
+        
+        # Convert to lowercase for analysis
+        text_lower = review_text.lower()
+        
+        # Service type detection
+        service_keywords = {
+            "haircut": ["haircut", "hair cut", "cut", "trim", "style", "fade", "buzz", "scissor"],
+            "shave": ["shave", "shaving", "razor", "straight razor", "hot shave", "face"],
+            "beard": ["beard", "beard trim", "mustache", "goatee", "facial hair"],
+            "wash": ["wash", "shampoo", "clean", "rinse"],
+            "styling": ["style", "styling", "pomade", "gel", "wax", "product"],
+            "color": ["color", "dye", "highlights", "gray", "grey"],
+            "general": ["service", "experience", "visit", "appointment"]
+        }
+        
+        detected_service = "general"
+        service_score = 0
+        
+        for service_type, keywords in service_keywords.items():
+            current_score = sum(1 for keyword in keywords if keyword in text_lower)
+            if current_score > service_score:
+                service_score = current_score
+                detected_service = service_type
+        
+        # Sentiment keywords extraction
+        positive_indicators = [
+            "great", "excellent", "amazing", "fantastic", "wonderful", "perfect",
+            "professional", "skilled", "friendly", "clean", "quick", "efficient",
+            "recommend", "satisfied", "happy", "pleased", "impressed", "love"
+        ]
+        
+        negative_indicators = [
+            "bad", "terrible", "awful", "disappointing", "unprofessional", "rude",
+            "slow", "dirty", "expensive", "overpriced", "rushed", "careless",
+            "mistake", "wrong", "dissatisfied", "unhappy", "complaint"
+        ]
+        
+        sentiment_keywords = []
+        for word in positive_indicators + negative_indicators:
+            if word in text_lower:
+                sentiment_keywords.append(word)
+        
+        # Local references detection
+        local_indicators = [
+            "neighborhood", "area", "downtown", "uptown", "near", "close to",
+            "location", "convenient", "parking", "drive", "walk"
+        ]
+        
+        local_references = []
+        for indicator in local_indicators:
+            if indicator in text_lower:
+                local_references.append(indicator)
+        
+        # Barber name mentions (look for capitalized names)
+        import re
+        barber_mentions = []
+        # Look for patterns like "John did" or "with Mike" or "barber named David"
+        name_patterns = [
+            r'\b([A-Z][a-z]+)\s+(?:did|was|cut|gave|provided)',
+            r'(?:with|by|barber)\s+([A-Z][a-z]+)',
+            r'(?:named|called)\s+([A-Z][a-z]+)'
+        ]
+        
+        for pattern in name_patterns:
+            matches = re.findall(pattern, review_text)
+            barber_mentions.extend(matches)
+        
+        # Service quality indicators
+        quality_indicators = []
+        quality_words = [
+            "professional", "experienced", "skilled", "talented", "careful",
+            "thorough", "detailed", "precise", "artistic", "creative"
+        ]
+        
+        for word in quality_words:
+            if word in text_lower:
+                quality_indicators.append(word)
+        
+        # Time references
+        time_references = []
+        time_words = [
+            "quick", "fast", "slow", "rushed", "took time", "patient",
+            "efficient", "prompt", "on time", "waiting"
+        ]
+        
+        for word in time_words:
+            if word in text_lower:
+                time_references.append(word)
+        
+        # Price mentions
+        price_mentions = []
+        price_indicators = [
+            "price", "cost", "expensive", "cheap", "affordable", "value",
+            "worth", "money", "charge", "fee", "$", "dollar"
+        ]
+        
+        for indicator in price_indicators:
+            if indicator in text_lower:
+                price_mentions.append(indicator)
+        
+        return {
+            "service_type": detected_service,
+            "sentiment_keywords": sentiment_keywords,
+            "local_references": local_references,
+            "barber_mentions": list(set(barber_mentions)),  # Remove duplicates
+            "service_quality_indicators": quality_indicators,
+            "time_references": time_references,
+            "price_mentions": price_mentions
+        }
+    
+    def get_service_specific_template(self, service_type: str, sentiment: str) -> str:
+        """
+        Get a template tailored to specific service type and sentiment.
+        
+        Args:
+            service_type: Type of service (haircut, shave, beard, etc.)
+            sentiment: Response sentiment (positive, negative, neutral)
+            
+        Returns:
+            Service-specific template string with placeholders
+        """
+        # Service-specific templates
+        service_templates = {
+            "haircut": {
+                "positive": [
+                    "Thank you so much for the {rating}-star review, {reviewer_name}! We're thrilled you loved your haircut at {business_name}. {barber_name} takes great pride in creating the perfect cut for each client. We look forward to keeping your style fresh - see you next time!",
+                    "Thanks for the amazing feedback, {reviewer_name}! It's wonderful to hear your haircut exceeded expectations at {business_name}. Our skilled barbers are passionate about delivering precision cuts that look and feel great. We can't wait to style you again!",
+                    "We're so grateful for your {rating}-star review, {reviewer_name}! At {business_name}, we believe every haircut should be a masterpiece, and we're glad we delivered exactly that. Thank you for trusting us with your style!"
+                ],
+                "negative": [
+                    "We sincerely apologize that your haircut at {business_name} didn't meet your expectations, {reviewer_name}. This is not the level of precision and artistry we strive for. Please contact us directly - we'd love to make this right with a complimentary restyle and restore your confidence in our barbering skills.",
+                    "Thank you for bringing this to our attention, {reviewer_name}. We're genuinely sorry your haircut experience at {business_name} was disappointing. Our barbers are committed to excellence, and we clearly missed the mark. Please reach out so we can correct this and show you the quality craftsmanship we're known for.",
+                    "We're deeply sorry about your haircut experience, {reviewer_name}. At {business_name}, every cut should be perfect, and we failed to deliver that standard. We'd appreciate the opportunity to make this right - please contact us for a complimentary correction."
+                ],
+                "neutral": [
+                    "Thank you for your honest feedback about your haircut at {business_name}, {reviewer_name}. We appreciate all input as it helps us refine our cutting techniques and client experience. We'd love the opportunity to exceed your expectations next time and show you why our clients keep coming back.",
+                    "Thanks for taking the time to review your haircut experience, {reviewer_name}. At {business_name}, we're always working to perfect our craft and client service. We hope to see you again and deliver the exceptional cut you deserve."
+                ]
+            },
+            "shave": {
+                "positive": [
+                    "Thank you for the {rating}-star review, {reviewer_name}! We're delighted you enjoyed your shave at {business_name}. There's nothing quite like a professional hot shave, and we're proud to continue this classic barbering tradition. Looking forward to your next visit!",
+                    "Thanks for the fantastic feedback, {reviewer_name}! It's wonderful to hear you had such a smooth experience with your shave at {business_name}. Our barbers are masters of the straight razor and hot towel technique. See you soon for another classic shave!",
+                    "We're thrilled you loved your shave experience, {reviewer_name}! At {business_name}, we take pride in our traditional shaving services and attention to detail. Thank you for appreciating the art of the perfect shave!"
+                ],
+                "negative": [
+                    "We're truly sorry your shave at {business_name} didn't meet expectations, {reviewer_name}. A professional shave should be relaxing and precise, and we clearly didn't deliver that experience. Please contact us directly - we'd like to provide a complimentary service to restore your confidence in our traditional barbering skills.",
+                    "Thank you for your feedback, {reviewer_name}. We sincerely apologize that your shave at {business_name} was disappointing. Our barbers are trained in classical techniques, and this experience doesn't reflect our standards. We'd appreciate the chance to make this right."
+                ],
+                "neutral": [
+                    "Thank you for your review of your shave experience, {reviewer_name}. We value your feedback as we continue to perfect our traditional barbering services at {business_name}. We'd love to show you the exceptional shave experience that keeps our clients coming back."
+                ]
+            },
+            "beard": {
+                "positive": [
+                    "Thank you for the {rating}-star review, {reviewer_name}! We're so glad you're happy with your beard trim at {business_name}. Proper beard grooming is an art, and we're thrilled we could help you look and feel your best. Keep that beard looking sharp!",
+                    "Thanks for the amazing feedback on your beard service, {reviewer_name}! At {business_name}, we understand that every beard is unique and requires a personalized approach. We're delighted our attention to detail showed. See you for your next trim!",
+                    "We're grateful for your {rating}-star review, {reviewer_name}! Beard trimming and styling is one of our specialties at {business_name}, and we're proud to help you maintain that perfect look. Thanks for trusting us with your grooming!"
+                ],
+                "negative": [
+                    "We sincerely apologize that your beard service at {business_name} didn't meet your expectations, {reviewer_name}. Proper beard grooming requires skill and attention to detail, and we clearly fell short. Please contact us directly - we'd like to correct this with a complimentary trim and restore your confidence in our grooming expertise.",
+                    "Thank you for bringing this to our attention, {reviewer_name}. We're sorry your beard trim experience at {business_name} was disappointing. Our barbers are trained in precision grooming techniques, and this doesn't reflect our standards. We'd appreciate the opportunity to make this right."
+                ],
+                "neutral": [
+                    "Thank you for your feedback on your beard service, {reviewer_name}. We appreciate your input as it helps us improve our grooming techniques at {business_name}. We'd love the chance to show you the exceptional beard care that our regular clients experience."
+                ]
+            },
+            "general": {
+                "positive": [
+                    "Thank you so much for the {rating}-star review, {reviewer_name}! We're thrilled you had such a great experience at {business_name}. Our team takes pride in providing excellent barbering services and creating a welcoming atmosphere. We look forward to seeing you again soon!",
+                    "Thanks for the wonderful feedback, {reviewer_name}! It's fantastic to hear you enjoyed your visit to {business_name}. We strive to provide top-notch barbering services and exceptional customer care. Your satisfaction means everything to us!",
+                    "We're so grateful for your {rating}-star review, {reviewer_name}! At {business_name}, we're committed to delivering outstanding barbering services and making every client feel valued. Thank you for choosing us and sharing your positive experience!"
+                ],
+                "negative": [
+                    "Thank you for bringing this to our attention, {reviewer_name}. We sincerely apologize that your experience at {business_name} didn't meet your expectations. We take all feedback seriously and are committed to improving our services. Please contact us directly so we can make this right and restore your confidence in our team.",
+                    "We're sorry to hear about your disappointing experience, {reviewer_name}. This is not the level of service we strive for at {business_name}. Your concerns are important to us, and we'd appreciate the opportunity to discuss this with you personally and find a way to exceed your expectations.",
+                    "Thank you for your honest feedback, {reviewer_name}. We're genuinely sorry your visit to {business_name} didn't go as expected. We're taking immediate steps to address your concerns and would love the chance to make things right - please contact us directly."
+                ],
+                "neutral": [
+                    "Thank you for your review, {reviewer_name}. We appreciate your feedback about your experience at {business_name}. We're always working to improve our barbering services and client experience. We'd love the opportunity to exceed your expectations next time you visit.",
+                    "Thanks for taking the time to review {business_name}, {reviewer_name}. We value all feedback as it helps us enhance our services and atmosphere. We hope to see you again and provide you with the exceptional barbering experience we're known for."
+                ]
+            }
+        }
+        
+        # Get templates for service type, fallback to general if not found
+        service_templates_dict = service_templates.get(service_type, service_templates["general"])
+        sentiment_templates = service_templates_dict.get(sentiment, service_templates_dict.get("neutral", service_templates["general"]["neutral"]))
+        
+        # Return a random template from the appropriate category
+        import random
+        return random.choice(sentiment_templates)
+    
+    def auto_populate_template_variables(self, template: str, context: BusinessContext, review: Review) -> str:
+        """
+        Auto-populate template variables using business context and review data.
+        
+        Args:
+            template: Template string with placeholders
+            context: BusinessContext object with business information
+            review: Review object with review details
+            
+        Returns:
+            Template with all placeholders replaced with actual values
+        """
+        try:
+            # Sanitize inputs
+            if not template:
+                return ""
+            if not context:
+                raise ValueError("BusinessContext cannot be None")
+            if not review:
+                raise ValueError("Review cannot be None")
+            
+            # Create comprehensive placeholder mapping
+            placeholders = {
+                # Basic review data
+                "reviewer_name": self._sanitize_placeholder_value(review.reviewer_name or "valued customer"),
+                "rating": str(int(review.rating)) if review.rating else "5",
+                "review_date": review.review_date.strftime("%B %Y") if review.review_date else "",
+                
+                # Business context data
+                "business_name": self._sanitize_placeholder_value(context.business_name),
+                "location_name": self._sanitize_placeholder_value(context.location_name or context.business_name),
+                "city": self._sanitize_placeholder_value(context.city or ""),
+                "state": self._sanitize_placeholder_value(context.state or ""),
+                
+                # Service-specific data
+                "service_type": self._infer_service_from_template(template),
+                
+                # Dynamic barber name selection
+                "barber_name": self._select_contextual_barber_name(context, review),
+                
+                # Location-specific enhancements
+                "location_reference": self._generate_location_reference(context),
+                "local_seo_phrase": self._generate_local_seo_phrase(context)
+            }
+            
+            # Replace all placeholders
+            populated_template = template
+            for placeholder, value in placeholders.items():
+                if value:  # Only replace if we have a value
+                    populated_template = populated_template.replace(f"{{{placeholder}}}", value)
+            
+            # Clean up any remaining unreplaced placeholders
+            populated_template = self._clean_unreplaced_placeholders(populated_template)
+            
+            return populated_template
+            
+        except Exception as e:
+            logger.error(f"Error auto-populating template variables: {e}")
+            # Return original template as fallback
+            return template
+    
+    def _determine_response_category(self, review: Review, analysis: Dict[str, Any]) -> str:
+        """Determine response category based on review and analysis"""
+        if review.rating >= 4 or review.sentiment == ReviewSentiment.POSITIVE:
+            return "positive"
+        elif review.rating <= 2 or review.sentiment == ReviewSentiment.NEGATIVE:
+            return "negative"
+        else:
+            return "neutral"
+    
+    def _apply_contextual_seo_optimization(self, response: str, context: BusinessContext, analysis: Dict[str, Any]) -> str:
+        """Apply contextual SEO optimization to response"""
+        # Add location-based SEO if not present
+        if context.city and context.city.lower() not in response.lower():
+            if "thank you" in response.lower():
+                response = response.replace(
+                    "Thank you", 
+                    f"Thank you for choosing {context.business_name} in {context.city}"
+                )
+        
+        # Add service-specific keywords naturally
+        service_type = analysis.get("service_type", "general")
+        if service_type != "general" and service_type not in response.lower():
+            # Add service keyword naturally
+            response = response.replace(
+                "service", 
+                f"{service_type} service", 
+                1  # Only replace first occurrence
+            )
+        
+        return response
+    
+    def _sanitize_placeholder_value(self, value: str) -> str:
+        """Sanitize placeholder values to prevent injection attacks"""
+        if not value:
+            return ""
+        
+        # Remove potentially malicious characters
+        import re
+        sanitized = re.sub(r'[<>"\';\\]', '', str(value))
+        return sanitized.strip()
+    
+    def _infer_service_from_template(self, template: str) -> str:
+        """Infer service type from template content"""
+        template_lower = template.lower()
+        
+        if "haircut" in template_lower or "cut" in template_lower:
+            return "haircut"
+        elif "shave" in template_lower:
+            return "shave"
+        elif "beard" in template_lower:
+            return "beard trim"
+        elif "styling" in template_lower:
+            return "hair styling"
+        else:
+            return "barbering"
+    
+    def _select_contextual_barber_name(self, context: BusinessContext, review: Review) -> str:
+        """Select appropriate barber name based on context"""
+        # If review mentions a specific barber name, use that
+        review_analysis = self.analyze_review_content(review.review_text or "")
+        if review_analysis.get("barber_mentions"):
+            return review_analysis["barber_mentions"][0]
+        
+        # Otherwise, use first available barber name or generic reference
+        if context.barber_names:
+            return context.barber_names[0]
+        
+        return "our skilled barber"
+    
+    def _generate_location_reference(self, context: BusinessContext) -> str:
+        """Generate location reference for templates"""
+        if context.city and context.state:
+            return f"in {context.city}, {context.state}"
+        elif context.city:
+            return f"in {context.city}"
+        elif context.location_name:
+            return f"at {context.location_name}"
+        else:
+            return ""
+    
+    def _generate_local_seo_phrase(self, context: BusinessContext) -> str:
+        """Generate local SEO phrase"""
+        if context.city:
+            return f"the best barbershop in {context.city}"
+        else:
+            return "your neighborhood barbershop"
+    
+    def _clean_unreplaced_placeholders(self, text: str) -> str:
+        """Clean up any placeholders that weren't replaced"""
+        import re
+        # Remove any remaining {placeholder} patterns
+        cleaned = re.sub(r'\{[^}]+\}', '', text)
+        # Clean up extra spaces
+        cleaned = re.sub(r'\s+', ' ', cleaned)
+        return cleaned.strip()
+    
+    # ============= ENHANCED VALIDATION AND ERROR HANDLING =============
+    
+    def _validate_review_input(self, review: Review) -> None:
+        """
+        Comprehensive validation for review input.
+        
+        Args:
+            review: Review object to validate
+            
+        Raises:
+            ValueError: If review is invalid
+            HTTPException: If review fails business rules validation
+        """
+        if not review:
+            raise ValueError("Review cannot be None or empty")
+        
+        if not hasattr(review, 'id') or review.id is None:
+            raise ValueError("Review must have a valid ID")
+        
+        if not hasattr(review, 'user_id') or review.user_id is None:
+            raise ValueError("Review must have a valid user_id")
+        
+        if not hasattr(review, 'rating') or review.rating is None:
+            raise ValueError("Review must have a rating")
+        
+        # Validate rating range
+        if not (0 <= review.rating <= 5):
+            raise ValueError(f"Review rating must be between 0 and 5, got: {review.rating}")
+        
+        # Validate review text length if present
+        if hasattr(review, 'review_text') and review.review_text:
+            if len(review.review_text) > 10000:  # Reasonable limit
+                raise ValueError("Review text is too long (maximum 10,000 characters)")
+        
+        # Validate reviewer name if present
+        if hasattr(review, 'reviewer_name') and review.reviewer_name:
+            if len(review.reviewer_name) > 255:
+                raise ValueError("Reviewer name is too long (maximum 255 characters)")
+            
+            # Check for potentially malicious content
+            import re
+            if re.search(r'[<>"\';\\]', review.reviewer_name):
+                raise ValueError("Reviewer name contains invalid characters")
+    
+    def _validate_db_session(self, db: Session) -> None:
+        """
+        Validate database session.
+        
+        Args:
+            db: Database session to validate
+            
+        Raises:
+            ValueError: If session is invalid
+        """
+        if not db:
+            raise ValueError("Database session cannot be None")
+        
+        try:
+            # Test the connection
+            db.execute("SELECT 1")
+        except Exception as e:
+            raise ValueError(f"Database session is not valid: {e}")
+    
+    def _validate_business_context(self, context: BusinessContext) -> None:
+        """
+        Validate business context object.
+        
+        Args:
+            context: BusinessContext to validate
+            
+        Raises:
+            ValueError: If context is invalid
+        """
+        if not context:
+            raise ValueError("BusinessContext cannot be None")
+        
+        if not hasattr(context, 'business_name') or not context.business_name:
+            raise ValueError("BusinessContext must have a valid business_name")
+        
+        # Validate business name length and content
+        if len(context.business_name) > 255:
+            raise ValueError("Business name is too long (maximum 255 characters)")
+        
+        # Sanitize business name
+        import re
+        if re.search(r'[<>"\';\\]', context.business_name):
+            raise ValueError("Business name contains invalid characters")
+    
+    def _safe_get_business_context(self, db: Session, user_id: int) -> Optional[BusinessContext]:
+        """
+        Safely retrieve business context with comprehensive error handling.
+        
+        Args:
+            db: Database session
+            user_id: User ID to get context for
+            
+        Returns:
+            BusinessContext object or None if retrieval fails
+        """
+        try:
+            self._validate_db_session(db)
+            
+            if not user_id or user_id <= 0:
+                logger.warning(f"Invalid user_id provided: {user_id}")
+                return None
+            
+            business_context_service = BusinessContextService(db)
+            context = business_context_service.get_business_context(user_id)
+            
+            self._validate_business_context(context)
+            
+            return context
+            
+        except ValueError as e:
+            logger.warning(f"Validation error getting business context for user {user_id}: {e}")
+            return None
+        except Exception as e:
+            logger.error(f"Unexpected error getting business context for user {user_id}: {e}")
+            return None
+    
+    def _safe_analyze_review_content(self, review_text: str) -> Dict[str, Any]:
+        """
+        Safely analyze review content with error handling.
+        
+        Args:
+            review_text: Review text to analyze
+            
+        Returns:
+            Analysis results dictionary with safe defaults
+        """
+        try:
+            if not review_text or not isinstance(review_text, str):
+                return self._get_default_analysis_result()
+            
+            # Limit text length for analysis
+            if len(review_text) > 10000:
+                review_text = review_text[:10000]
+                logger.warning("Review text truncated for analysis due to length")
+            
+            return self.analyze_review_content(review_text)
+            
+        except Exception as e:
+            logger.error(f"Error analyzing review content: {e}")
+            return self._get_default_analysis_result()
+    
+    def _get_default_analysis_result(self) -> Dict[str, Any]:
+        """Get default analysis result for error cases"""
+        return {
+            "service_type": "general",
+            "sentiment_keywords": [],
+            "local_references": [],
+            "barber_mentions": [],
+            "service_quality_indicators": [],
+            "time_references": [],
+            "price_mentions": []
+        }
+    
+    def _safe_template_population(self, template: str, context: BusinessContext, review: Review) -> str:
+        """
+        Safely populate template with comprehensive error handling.
+        
+        Args:
+            template: Template string to populate
+            context: Business context
+            review: Review object
+            
+        Returns:
+            Populated template or safe fallback
+        """
+        try:
+            if not template:
+                return self._get_emergency_fallback_response(review, context)
+            
+            self._validate_business_context(context)
+            self._validate_review_input(review)
+            
+            return self.auto_populate_template_variables(template, context, review)
+            
+        except Exception as e:
+            logger.error(f"Error populating template: {e}")
+            return self._get_emergency_fallback_response(review, context)
+    
+    def _get_emergency_fallback_response(self, review: Review, context: BusinessContext = None) -> str:
+        """
+        Generate emergency fallback response when all else fails.
+        
+        Args:
+            review: Review object
+            context: Optional business context
+            
+        Returns:
+            Safe fallback response string
+        """
+        try:
+            reviewer_name = "valued customer"
+            business_name = "our business"
+            
+            if review and hasattr(review, 'reviewer_name') and review.reviewer_name:
+                reviewer_name = self._sanitize_placeholder_value(review.reviewer_name)
+            
+            if context and hasattr(context, 'business_name') and context.business_name:
+                business_name = self._sanitize_placeholder_value(context.business_name)
+            
+            return (f"Thank you for your review, {reviewer_name}! "
+                   f"We appreciate your feedback and look forward to serving you again at {business_name}.")
+                   
+        except Exception as e:
+            logger.critical(f"Emergency fallback response generation failed: {e}")
+            return "Thank you for your review! We appreciate your feedback and look forward to serving you again."

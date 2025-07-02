@@ -51,6 +51,27 @@ class ReviewResponseStatus(enum.Enum):
     DRAFT = "draft"
 
 
+class ReviewStatus(enum.Enum):
+    """Overall status of review (for integration compatibility)"""
+    NEW = "new"
+    PENDING_RESPONSE = "pending_response"
+    RESPONDED = "responded"
+    IGNORED = "ignored"
+
+
+class ReviewSource(enum.Enum):
+    """Source of the review (alias for ReviewPlatform for integration compatibility)"""
+    GOOGLE_MY_BUSINESS = "google_my_business"
+    YELP = "yelp"
+    FACEBOOK = "facebook"
+    INSTAGRAM = "instagram"
+    BOOKSY = "booksy"
+    FRESHA = "fresha"
+    STYLESEAT = "styleseat"
+    MANUAL = "manual"
+    OTHER = "other"
+
+
 class Review(Base):
     """
     Stores customer reviews from various platforms with sentiment analysis
@@ -64,8 +85,8 @@ class Review(Base):
     business_id = Column(String(255), nullable=True, index=True)  # External business ID (GMB location ID, etc.)
     
     # Review metadata
-    platform = Column(SQLEnum(ReviewPlatform), nullable=False, index=True)
-    external_review_id = Column(String(255), nullable=False, index=True)  # Platform-specific review ID
+    platform = Column(SQLEnum(ReviewPlatform), nullable=True, index=True)
+    external_review_id = Column(String(255), nullable=True, index=True)  # Platform-specific review ID
     review_url = Column(String(1000), nullable=True)  # Direct link to review
     
     # Review content
@@ -73,7 +94,14 @@ class Review(Base):
     reviewer_photo_url = Column(String(1000), nullable=True)
     rating = Column(Float, nullable=False)  # 1-5 star rating (normalized)
     review_text = Column(Text, nullable=True)
-    review_date = Column(DateTime, nullable=False, index=True)
+    comment = Column(Text, nullable=True)  # Alias for review_text for compatibility
+    review_date = Column(DateTime, nullable=False, index=True, default=utcnow)
+    external_id = Column(String(255), nullable=True, index=True)  # Alias for external_review_id
+    source = Column(SQLEnum(ReviewSource), nullable=True, index=True)  # Alias for platform
+    status = Column(SQLEnum(ReviewStatus), default=ReviewStatus.NEW, index=True)  # Review status for integration compatibility
+    integration_id = Column(Integer, ForeignKey("integrations.id"), nullable=True)  # Link to integration
+    sentiment_label = Column(String(50), nullable=True)  # Sentiment label (positive/negative/neutral)
+    auto_response_sent = Column(Boolean, default=False)  # Whether auto-response was sent
     
     # Sentiment analysis
     sentiment = Column(SQLEnum(ReviewSentiment), default=ReviewSentiment.UNKNOWN, index=True)
@@ -116,6 +144,7 @@ class Review(Base):
     # Relationships
     user = relationship("User", backref="reviews")
     review_responses = relationship("ReviewResponse", back_populates="review", cascade="all, delete-orphan")
+    integration = relationship("Integration", backref="reviews")
     
     def __repr__(self):
         return f"<Review(id={self.id}, platform={self.platform.value}, rating={self.rating}, reviewer={self.reviewer_name})>"

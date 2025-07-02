@@ -3,7 +3,7 @@ Pydantic schemas for review management and Google My Business integration.
 Handles validation for reviews, responses, templates, and analytics.
 """
 
-from pydantic import BaseModel, Field, validator, HttpUrl
+from pydantic import BaseModel, Field, field_validator, HttpUrl
 from typing import Optional, List, Dict, Any, Union
 from datetime import datetime
 from enum import Enum
@@ -57,7 +57,8 @@ class ReviewCreate(ReviewBase):
     platform_data: Optional[Dict[str, Any]] = Field(default_factory=dict)
     is_verified: Optional[bool] = False
     
-    @validator('external_review_id')
+    @field_validator('external_review_id')
+    @classmethod
     def validate_external_id(cls, v):
         if not v.strip():
             raise ValueError('External review ID cannot be empty')
@@ -144,7 +145,8 @@ class ReviewResponseCreate(ReviewResponseBase):
     variant_id: Optional[str] = Field(None, description="A/B test variant")
     test_group: Optional[str] = Field(None, description="Test group")
     
-    @validator('response_text')
+    @field_validator('response_text')
+    @classmethod
     def validate_response_text(cls, v):
         v = v.strip()
         if not v:
@@ -227,17 +229,19 @@ class ReviewTemplateCreate(ReviewTemplateBase):
     is_default: Optional[bool] = False
     priority: Optional[int] = 0
     
-    @validator('category')
+    @field_validator('category')
+    @classmethod
     def validate_category(cls, v):
         valid_categories = ['positive', 'negative', 'neutral']
         if v.lower() not in valid_categories:
             raise ValueError(f'Category must be one of: {", ".join(valid_categories)}')
         return v.lower()
     
-    @validator('max_rating')
-    def validate_rating_range(cls, v, values):
-        if v is not None and 'min_rating' in values and values['min_rating'] is not None:
-            if v < values['min_rating']:
+    @field_validator('max_rating')
+    @classmethod
+    def validate_rating_range(cls, v, info):
+        if v is not None and info.data and 'min_rating' in info.data and info.data['min_rating'] is not None:
+            if v < info.data['min_rating']:
                 raise ValueError('max_rating must be greater than or equal to min_rating')
         return v
 

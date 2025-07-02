@@ -160,3 +160,98 @@ def sanitize_integer(value: any, default: int = 0) -> int:
         return result
     except (ValueError, TypeError):
         return default
+
+
+def sanitize_input(value: any) -> str:
+    """
+    General input sanitization for strings, removing potentially dangerous characters.
+    Used for general text inputs like keywords, names, etc.
+    """
+    if value is None:
+        return ""
+    
+    # Convert to string
+    text = str(value)
+    
+    # Remove potentially dangerous characters that could be used for injection
+    # Keep alphanumeric, spaces, hyphens, apostrophes, and basic punctuation
+    sanitized = re.sub(r'[<>"\';\\&]', '', text)
+    
+    # Remove SQL injection patterns
+    sql_patterns = [
+        r'drop\s+table',
+        r'delete\s+from',
+        r'insert\s+into',
+        r'update\s+\w+\s+set',
+        r'union\s+select',
+        r'exec\s*\(',
+        r'--',
+        r'/\*.*?\*/',
+    ]
+    
+    for pattern in sql_patterns:
+        sanitized = re.sub(pattern, '', sanitized, flags=re.IGNORECASE)
+    
+    # Remove excessive whitespace
+    sanitized = re.sub(r'\s+', ' ', sanitized)
+    
+    # Strip leading/trailing whitespace
+    sanitized = sanitized.strip()
+    
+    # Limit length to prevent resource exhaustion
+    max_length = 1000
+    if len(sanitized) > max_length:
+        sanitized = sanitized[:max_length]
+    
+    return sanitized
+
+
+def validate_text_content(content: str) -> bool:
+    """
+    Validate text content for potential security threats.
+    Returns False if content contains suspicious patterns.
+    """
+    if not content:
+        return True
+    
+    # Check for script injection patterns
+    script_patterns = [
+        r'<script[^>]*>',
+        r'javascript:',
+        r'vbscript:',
+        r'data:',
+        r'on\w+\s*=',  # Event handlers like onclick=
+        r'eval\s*\(',
+        r'expression\s*\(',
+        r'url\s*\(',
+        r'import\s*\(',
+    ]
+    
+    content_lower = content.lower()
+    
+    for pattern in script_patterns:
+        if re.search(pattern, content_lower, re.IGNORECASE):
+            return False
+    
+    # Check for SQL injection patterns
+    sql_patterns = [
+        r'union\s+select',
+        r'drop\s+table',
+        r'delete\s+from',
+        r'insert\s+into',
+        r'update\s+\w+\s+set',
+        r'exec\s*\(',
+        r'sp_\w+',
+        r'xp_\w+',
+    ]
+    
+    for pattern in sql_patterns:
+        if re.search(pattern, content_lower, re.IGNORECASE):
+            return False
+    
+    # Check for excessive special characters (potential obfuscation)
+    special_char_ratio = len(re.findall(r'[^\w\s]', content)) / len(content) if content else 0
+    if special_char_ratio > 0.3:  # More than 30% special characters
+        return False
+    
+    return True
