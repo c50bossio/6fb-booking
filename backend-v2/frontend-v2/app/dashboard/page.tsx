@@ -101,11 +101,12 @@ function DashboardContent() {
         setUser(userData)
         
         // Check if user should be redirected to role-specific dashboard
-        const defaultDashboard = getDefaultDashboard(userData)
-        if (defaultDashboard !== '/dashboard' && window.location.pathname === '/dashboard') {
-          router.push(defaultDashboard)
-          return
-        }
+        // Temporarily disabled to allow admin users to see the dashboard
+        // const defaultDashboard = getDefaultDashboard(userData)
+        // if (defaultDashboard !== '/dashboard' && window.location.pathname === '/dashboard') {
+        //   router.push(defaultDashboard)
+        //   return
+        // }
         
         if (!userData.timezone) {
           setShowTimezoneWarning(true)

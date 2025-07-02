@@ -123,12 +123,15 @@ const CalendarDayView = React.memo(function CalendarDayView({
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [pullToRefreshDistance, setPullToRefreshDistance] = useState(0)
   const [isPulling, setIsPulling] = useState(false)
+  const [undoData, setUndoData] = useState<{ appointmentId: number; previousStartTime: string } | null>(null)
+  const [showUndoToast, setShowUndoToast] = useState(false)
   const scheduleColumnRef = useRef<HTMLDivElement>(null)
   const scheduleContainerRef = useRef<HTMLDivElement>(null)
   const isTouchDevice = TouchDragManager.isTouchDevice()
   const navigationDebounceRef = useRef<NodeJS.Timeout | null>(null)
   const preloadedDatesRef = useRef<Set<string>>(new Set())
   const touchStartY = useRef<number | null>(null)
+  const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   
   // Responsive hook
   const { isMobile } = useResponsive()
@@ -367,6 +370,9 @@ const CalendarDayView = React.memo(function CalendarDayView({
     const appointment = appointments.find(apt => apt.id === appointmentId)
     if (!appointment) return
 
+    // Store undo data
+    setUndoData({ appointmentId, previousStartTime: appointment.start_time })
+
     // Create updated appointment for conflict checking
     const updatedAppointment = {
       ...appointment,
@@ -394,7 +400,7 @@ const CalendarDayView = React.memo(function CalendarDayView({
     } else {
       // No significant conflicts, proceed with update
       onAppointmentUpdate?.(appointmentId, newStartTime)
-      showSuccess()
+      showSuccessWithUndo()
     }
   }
 
@@ -413,7 +419,7 @@ const CalendarDayView = React.memo(function CalendarDayView({
     // For now, we'll just update the time. In a full implementation, 
     // you'd also handle barber changes and duration adjustments
     onAppointmentUpdate?.(finalAppointmentId, finalStartTime)
-    showSuccess()
+    showSuccessWithUndo()
     
     setShowConflictModal(false)
     setConflictAnalysis(null)
@@ -425,7 +431,7 @@ const CalendarDayView = React.memo(function CalendarDayView({
     if (!pendingUpdate) return
     
     onAppointmentUpdate?.(pendingUpdate.appointmentId, pendingUpdate.newStartTime)
-    showSuccess()
+    showSuccessWithUndo()
     
     setShowConflictModal(false)
     setConflictAnalysis(null)
@@ -593,6 +599,9 @@ const CalendarDayView = React.memo(function CalendarDayView({
       if (navigationDebounceRef.current) {
         clearTimeout(navigationDebounceRef.current)
       }
+      if (undoTimeoutRef.current) {
+        clearTimeout(undoTimeoutRef.current)
+      }
     }
   }, [])
 
@@ -672,6 +681,42 @@ const CalendarDayView = React.memo(function CalendarDayView({
     }, 2000)
   }, [])
 
+  // Show success with undo toast
+  const showSuccessWithUndo = useCallback(() => {
+    setShowSuccessAnimation(true)
+    setShowUndoToast(true)
+    
+    // Clear any existing timeout
+    if (undoTimeoutRef.current) {
+      clearTimeout(undoTimeoutRef.current)
+    }
+    
+    // Hide success animation after 2 seconds
+    setTimeout(() => {
+      setShowSuccessAnimation(false)
+    }, 2000)
+    
+    // Hide undo toast after 5 seconds
+    undoTimeoutRef.current = setTimeout(() => {
+      setShowUndoToast(false)
+      setUndoData(null)
+    }, 5000)
+  }, [])
+
+  // Handle undo
+  const handleUndo = useCallback(() => {
+    if (undoData && onAppointmentUpdate) {
+      onAppointmentUpdate(undoData.appointmentId, undoData.previousStartTime)
+      setShowUndoToast(false)
+      setUndoData(null)
+      
+      // Clear timeout
+      if (undoTimeoutRef.current) {
+        clearTimeout(undoTimeoutRef.current)
+      }
+    }
+  }, [undoData, onAppointmentUpdate])
+
   // Render mobile view on small screens
   if (isMobile) {
     return (
@@ -715,6 +760,21 @@ const CalendarDayView = React.memo(function CalendarDayView({
           <div className="bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-bounce-in">
             <CheckCircleIcon className="w-6 h-6" />
             <span className="font-medium">Appointment updated successfully!</span>
+          </div>
+        </div>
+      )}
+
+      {/* Undo toast */}
+      {showUndoToast && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-50 animate-slide-up">
+          <div className="bg-gray-800 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-4">
+            <span className="text-sm">Appointment moved</span>
+            <button
+              onClick={handleUndo}
+              className="px-3 py-1 bg-white text-gray-800 rounded text-sm font-medium hover:bg-gray-100 transition-colors"
+            >
+              Undo
+            </button>
           </div>
         </div>
       )}
@@ -984,6 +1044,13 @@ const CalendarDayView = React.memo(function CalendarDayView({
                     {format(new Date().setHours(slot.hour, slot.minute, 0, 0), 'h:mm')}
                   </div>
                 ) : null}
+                
+                {/* Time preview when dragging */}
+                {isDragging && dragOverSlot?.hour === slot.hour && dragOverSlot?.minute === slot.minute && (
+                  <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-primary-600 text-white px-3 py-1 rounded-md text-sm font-medium shadow-lg z-20">
+                    {format(new Date().setHours(slot.hour, slot.minute, 0, 0), 'h:mm a')}
+                  </div>
+                )}
                 
                 {/* Add appointment button on hover */}
                 <div className="absolute right-2 top-1 opacity-0 group-hover:opacity-100 transition-opacity">

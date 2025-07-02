@@ -890,6 +890,65 @@
   cursor: grabbing !important;
 }
 
+/* Time preview while dragging */
+.drag-time-preview {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0;
+  transition: opacity 150ms ease-out;
+}
+
+.calendar-time-slot.drop-target .drag-time-preview {
+  opacity: 1;
+}
+
+/* Undo toast notification */
+.undo-toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  transition: transform 300ms var(--animation-bounce);
+}
+
+.undo-toast.visible {
+  transform: translateX(-50%) translateY(0);
+}
+
+.undo-toast button {
+  background: none;
+  border: none;
+  color: rgb(99, 102, 241);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 150ms ease-out;
+}
+
+.undo-toast button:hover {
+  background: rgba(99, 102, 241, 0.1);
+}
+
 /* Preserved time slot animations */
 .calendar-time-slot {
   transition: all 0.15s ease-out;
@@ -1093,4 +1152,20 @@
 
 .animate-bounce-in {
   animation: bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Slide up animation for undo toast */
+@keyframes slide-up {
+  0% {
+    transform: translateX(-50%) translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
