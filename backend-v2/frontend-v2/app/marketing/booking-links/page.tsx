@@ -1,14 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/Button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { apiClient } from '@/lib/api'
 import { toast } from '@/hooks/use-toast'
 import { 
   LinkIcon, 
   QrCodeIcon,
-  ClipboardCopyIcon,
+  ClipboardDocumentIcon,
   PlusIcon,
   ChartBarIcon,
   CalendarIcon,
@@ -322,7 +322,7 @@ export default function BookingLinksPage() {
                     onClick={() => copyToClipboard(getFullUrl(url.short_code))}
                     className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
                   >
-                    <ClipboardCopyIcon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                    <ClipboardDocumentIcon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                   </button>
                 </div>
               </div>

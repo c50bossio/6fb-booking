@@ -1,0 +1,80 @@
+{
+  "backend": {
+    "test_integration_api.py": {
+      "success": false,
+      "duration": 0.26207709312438965,
+      "stdout": "",
+      "stderr": "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/config/__init__.py:331: PluggyTeardownRaisedWarning: A plugin raised an exception during an old-style hookwrapper teardown.\nPlugin: helpconfig, Hook: pytest_cmdline_parse\nUsageError: usage: __main__.py [options] [file_or_dir] [file_or_dir] [...]\n__main__.py: error: unrecognized arguments: --json-report --json-report-file=.test_results/test_integration_api.py.json\n  inifile: None\n  rootdir: /Users/bossio/6fb-booking/backend-v2\nFor more information see https://pluggy.readthedocs.io/en/stable/api_reference.html#pluggy.PluggyTeardownRaisedWarning\n  config = pluginmanager.hook.pytest_cmdline_parse(\nERROR: usage: __main__.py [options] [file_or_dir] [file_or_dir] [...]\n__main__.py: error: unrecognized arguments: --json-report --json-report-file=.test_results/test_integration_api.py.json\n  inifile: None\n  rootdir: /Users/bossio/6fb-booking/backend-v2\n\n",
+      "return_code": 4
+    },
+    "test_gmb_service.py": {
+      "success": false,
+      "duration": 0.18911504745483398,
+      "stdout": "",
+      "stderr": "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/config/__init__.py:331: PluggyTeardownRaisedWarning: A plugin raised an exception during an old-style hookwrapper teardown.\nPlugin: helpconfig, Hook: pytest_cmdline_parse\nUsageError: usage: __main__.py [options] [file_or_dir] [file_or_dir] [...]\n__main__.py: error: unrecognized arguments: --json-report --json-report-file=.test_results/test_gmb_service.py.json\n  inifile: None\n  rootdir: /Users/bossio/6fb-booking/backend-v2\nFor more information see https://pluggy.readthedocs.io/en/stable/api_reference.html#pluggy.PluggyTeardownRaisedWarning\n  config = pluginmanager.hook.pytest_cmdline_parse(\nERROR: usage: __main__.py [options] [file_or_dir] [file_or_dir] [...]\n__main__.py: error: unrecognized arguments: --json-report --json-report-file=.test_results/test_gmb_service.py.json\n  inifile: None\n  rootdir: /Users/bossio/6fb-booking/backend-v2\n\n",
+      "return_code": 4
+    },
+    "test_oauth_flows.py": {
+      "success": false,
+      "duration": 0.18803787231445312,
+      "stdout": "",
+      "stderr": "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/config/__init__.py:331: PluggyTeardownRaisedWarning: A plugin raised an exception during an old-style hookwrapper teardown.\nPlugin: helpconfig, Hook: pytest_cmdline_parse\nUsageError: usage: __main__.py [options] [file_or_dir] [file_or_dir] [...]\n__main__.py: error: unrecognized arguments: --json-report --json-report-file=.test_results/test_oauth_flows.py.json\n  inifile: None\n  rootdir: /Users/bossio/6fb-booking/backend-v2\nFor more information see https://pluggy.readthedocs.io/en/stable/api_reference.html#pluggy.PluggyTeardownRaisedWarning\n  config = pluginmanager.hook.pytest_cmdline_parse(\nERROR: usage: __main__.py [options] [file_or_dir] [file_or_dir] [...]\n__main__.py: error: unrecognized arguments: --json-report --json-report-file=.test_results/test_oauth_flows.py.json\n  inifile: None\n  rootdir: /Users/bossio/6fb-booking/backend-v2\n\n",
+      "return_code": 4
+    },
+    "test_integration_models.py": {
+      "success": false,
+      "duration": 0.1912548542022705,
+      "stdout": "",
+      "stderr": "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/config/__init__.py:331: PluggyTeardownRaisedWarning: A plugin raised an exception during an old-style hookwrapper teardown.\nPlugin: helpconfig, Hook: pytest_cmdline_parse\nUsageError: usage: __main__.py [options] [file_or_dir] [file_or_dir] [...]\n__main__.py: error: unrecognized arguments: --json-report --json-report-file=.test_results/test_integration_models.py.json\n  inifile: None\n  rootdir: /Users/bossio/6fb-booking/backend-v2\nFor more information see https://pluggy.readthedocs.io/en/stable/api_reference.html#pluggy.PluggyTeardownRaisedWarning\n  config = pluginmanager.hook.pytest_cmdline_parse(\nERROR: usage: __main__.py [options] [file_or_dir] [file_or_dir] [...]\n__main__.py: error: unrecognized arguments: --json-report --json-report-file=.test_results/test_integration_models.py.json\n  inifile: None\n  rootdir: /Users/bossio/6fb-booking/backend-v2\n\n",
+      "return_code": 4
+    },
+    "test_reviews_setup.py": {
+      "success": false,
+      "duration": 0.1882178783416748,
+      "stdout": "",
+      "stderr": "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/site-packages/_pytest/config/__init__.py:331: PluggyTeardownRaisedWarning: A plugin raised an exception during an old-style hookwrapper teardown.\nPlugin: helpconfig, Hook: pytest_cmdline_parse\nUsageError: usage: __main__.py [options] [file_or_dir] [file_or_dir] [...]\n__main__.py: error: unrecognized arguments: --json-report --json-report-file=.test_results/test_reviews_setup.py.json\n  inifile: None\n  rootdir: /Users/bossio/6fb-booking/backend-v2\nFor more information see https://pluggy.readthedocs.io/en/stable/api_reference.html#pluggy.PluggyTeardownRaisedWarning\n  config = pluginmanager.hook.pytest_cmdline_parse(\nERROR: usage: __main__.py [options] [file_or_dir] [file_or_dir] [...]\n__main__.py: error: unrecognized arguments: --json-report --json-report-file=.test_results/test_reviews_setup.py.json\n  inifile: None\n  rootdir: /Users/bossio/6fb-booking/backend-v2\n\n",
+      "return_code": 4
+    }
+  },
+  "frontend": {
+    "components/integrations/IntegrationCard.test.tsx": {
+      "success": false,
+      "duration": 0.8166639804840088,
+      "stdout": "\n> frontend-v2@0.1.0 test\n> jest components/integrations/IntegrationCard.test.tsx\n\n",
+      "stderr": "FAIL components/integrations/IntegrationCard.test.tsx\n  \u25cf Test suite failed to run\n\n    Cannot find module 'vitest' from 'components/integrations/IntegrationCard.test.tsx'\n\n       9 | import { toast } from '@/hooks/use-toast'\n      10 | import { integrationsAPI } from '@/lib/api/integrations'\n    > 11 | import IntegrationCard from './IntegrationCard'\n         |                 ^\n      12 | import { IntegrationType, IntegrationStatus } from '@/types/integration'\n      13 | import type { IntegrationResponse, IntegrationMetadata } from '@/types/integration'\n      14 |\n\n      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/resolver.js:427:11)\n      at Object.<anonymous> (components/integrations/IntegrationCard.test.tsx:11:17)\n\nTest Suites: 1 failed, 1 total\nTests:       0 total\nSnapshots:   0 total\nTime:        0.317 s\nRan all test suites matching /components\\/integrations\\/IntegrationCard.test.tsx/i.\n",
+      "return_code": 1
+    },
+    "lib/api/integrations.test.ts": {
+      "success": false,
+      "duration": 0.6744837760925293,
+      "stdout": "\n> frontend-v2@0.1.0 test\n> jest lib/api/integrations.test.ts\n\n",
+      "stderr": "FAIL lib/api/integrations.test.ts\n  \u25cf Test suite failed to run\n\n    Cannot find module 'vitest' from 'lib/api/integrations.test.ts'\n\n       6 | import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'\n       7 | import { integrationsAPI } from './integrations'\n    >  8 | import { fetchAPI } from '../api'\n         |                 ^\n       9 | import { IntegrationType, IntegrationStatus } from '@/types/integration'\n      10 | import type {\n      11 |   IntegrationResponse,\n\n      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/resolver.js:427:11)\n      at Object.<anonymous> (lib/api/integrations.test.ts:8:17)\n\nTest Suites: 1 failed, 1 total\nTests:       0 total\nSnapshots:   0 total\nTime:        0.283 s\nRan all test suites matching /lib\\/api\\/integrations.test.ts/i.\n",
+      "return_code": 1
+    }
+  },
+  "summary": {
+    "total_tests": 0,
+    "passed": 0,
+    "failed": 0,
+    "skipped": 0,
+    "duration": 2.5105929374694824
+  },
+  "health_check": {
+    "Database Models": {
+      "healthy": true,
+      "message": "All models importable"
+    },
+    "API Endpoints": {
+      "healthy": false,
+      "issue": "Router import failed: cannot import name 'encrypt_value' from 'utils.encryption' (/Users/bossio/6fb-booking/backend-v2/utils/encryption.py)"
+    },
+    "Service Classes": {
+      "healthy": false,
+      "issue": "Service import failed: cannot import name 'encrypt_value' from 'utils.encryption' (/Users/bossio/6fb-booking/backend-v2/utils/encryption.py)"
+    },
+    "Frontend Components": {
+      "healthy": true,
+      "message": "All frontend components exist"
+    }
+  }
+}

@@ -8,7 +8,6 @@ from fastapi import Header
 from sqlalchemy.orm import Session
 from database import get_db
 from config import settings
-import models
 from models import User
 
 # Security settings

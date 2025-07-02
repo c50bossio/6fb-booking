@@ -27,21 +27,7 @@ const nextConfig = {
     swcMinify: true,
     // Tree shaking optimizations
     esmExternals: true,
-    // Modular imports for better tree shaking
-    modularizeImports: {
-      '@heroicons/react/24/outline': {
-        transform: '@heroicons/react/24/outline/{{member}}',
-      },
-      '@heroicons/react/24/solid': {
-        transform: '@heroicons/react/24/solid/{{member}}',
-      },
-      'lucide-react': {
-        transform: 'lucide-react/dist/esm/icons/{{kebabCase member}}',
-      },
-      'date-fns': {
-        transform: 'date-fns/{{member}}',
-      },
-    },
+    // Modular imports removed - not supported in Next.js 14.2.5
   },
   
   // Image optimization

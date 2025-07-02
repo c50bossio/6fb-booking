@@ -358,7 +358,7 @@ function DashboardContent() {
                 </div>
                 <Button
                   onClick={() => router.push('/settings')}
-                  variant="warning"
+                  variant="outline"
                   size="sm"
                   leftIcon={<SettingsIcon />}
                 >

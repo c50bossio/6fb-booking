@@ -31,8 +31,7 @@ import {
   PlusIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
-import { useDemoMode } from '@/components/demo/DemoModeProvider'
-import { demoApi } from '@/lib/demo/demoApi'
+// Demo mode imports removed - not needed for production
 
 interface CreateAppointmentModalProps {
   isOpen: boolean
@@ -51,15 +50,7 @@ export default function CreateAppointmentModal({
   onSuccess,
   isPublicBooking = false
 }: CreateAppointmentModalProps) {
-  // Check if we're in demo mode
-  let isDemoMode = false
-  try {
-    const demoContext = useDemoMode()
-    isDemoMode = demoContext.isDemo
-  } catch (error) {
-    // Not in demo mode context, use regular API
-    isDemoMode = false
-  }
+  // Production mode - no demo mode support
   
   // State
   const [selectedClient, setSelectedClient] = useState<Client | null>(null)
@@ -180,13 +171,12 @@ export default function CreateAppointmentModal({
     if (isOpen) {
       console.log('📱 CreateAppointmentModal opened', {
         isPublicBooking,
-        isDemoMode,
         hasToken: !!localStorage.getItem('token')
       })
       loadServices()
       loadBarbers()
     }
-  }, [isOpen, isPublicBooking, isDemoMode])
+  }, [isOpen, isPublicBooking])
 
   // Load time slots when date, service, or barber changes
   useEffect(() => {
@@ -234,9 +224,7 @@ export default function CreateAppointmentModal({
       setLoadingServices(true)
       let response
       
-      if (isDemoMode) {
-        response = await demoApi.services.list()
-      } else if (isPublicBooking) {
+      if (isPublicBooking) {
         // For public booking, always use public endpoint
         response = await getPublicServices()
       } else {
@@ -281,18 +269,9 @@ export default function CreateAppointmentModal({
   const loadBarbers = async () => {
     try {
       setLoadingBarbers(true)
-      console.log('🔍 loadBarbers called - isDemoMode:', isDemoMode, 'isPublicBooking:', isPublicBooking)
+      console.log('🔍 loadBarbers called - isPublicBooking:', isPublicBooking)
       
-      if (isDemoMode) {
-        // For demo mode, create mock barbers
-        const mockBarbers = [
-          { id: 1, email: 'mike@demo.com', name: 'Mike Johnson', role: 'barber', created_at: '2024-01-01' },
-          { id: 2, email: 'sarah@demo.com', name: 'Sarah Williams', role: 'barber', created_at: '2024-01-01' },
-          { id: 3, email: 'james@demo.com', name: 'James Brown', role: 'barber', created_at: '2024-01-01' }
-        ]
-        console.log('📦 Demo mode: Setting mock barbers:', mockBarbers)
-        setBarbers(mockBarbers)
-      } else {
+      {
         console.log('🌐 Production mode: Fetching barbers from API...')
         // Try authenticated endpoint first (for calendar consistency)
         try {
@@ -333,8 +312,7 @@ export default function CreateAppointmentModal({
       serviceName: selectedService?.name,
       serviceId: selectedService?.id,
       barberId: selectedBarber?.id,
-      barberName: selectedBarber?.name,
-      isDemoMode
+      barberName: selectedBarber?.name
     })
     
     if (!selectedDate || !selectedService) {
@@ -349,19 +327,14 @@ export default function CreateAppointmentModal({
         date: apiDate,
         service_id: selectedService.id,
         barber_id: selectedBarber?.id,
-        isDemoMode
+        // Production mode
       })
       
-      const response = isDemoMode
-        ? await demoApi.appointments.getAvailableSlots({
-            date: apiDate,
-            service_id: selectedService.id
-          })
-        : await getAvailableSlots({
-            date: apiDate,
-            service_id: selectedService.id,
-            barber_id: selectedBarber?.id
-          })
+      const response = await getAvailableSlots({
+        date: apiDate,
+        service_id: selectedService.id,
+        barber_id: selectedBarber?.id
+      })
       
       console.log('📦 API Response:', {
         hasSlots: !!response.slots,
@@ -403,9 +376,7 @@ export default function CreateAppointmentModal({
 
     try {
       setLoadingClients(true)
-      const response = isDemoMode
-        ? await demoApi.clients.search(searchTerm)
-        : await searchClients(searchTerm)
+      const response = await searchClients(searchTerm)
       setClients(response.clients || [])
     } catch (err) {
       console.error('Failed to search clients:', err)
@@ -428,9 +399,7 @@ export default function CreateAppointmentModal({
   const handleCreateClient = async () => {
     try {
       setLoading(true)
-      const response = isDemoMode
-        ? await demoApi.clients.create(newClientData)
-        : await createClient(newClientData)
+      const response = await createClient(newClientData)
       setSelectedClient(response as Client)
       setShowCreateClient(false)
       setIsClientDropdownOpen(false)
@@ -459,20 +428,7 @@ export default function CreateAppointmentModal({
       setLoading(true)
       setError(null)
 
-      if (isDemoMode) {
-        // Use demo API for appointment creation
-        const startDateTime = new Date(selectedDate)
-        const [hours, minutes] = selectedTime.split(':').map(Number)
-        startDateTime.setHours(hours, minutes, 0, 0)
-        
-        await demoApi.appointments.create({
-          client_id: selectedClient?.id,
-          service_id: selectedService.id,
-          start_time: startDateTime.toISOString(),
-          duration_minutes: selectedService.duration_minutes || 60,
-          notes: notes || undefined
-        })
-      } else {
+      {
         // Use standardized appointment API that matches backend schema
         const appointmentData: AppointmentCreate = {
           date: formatDateForAPI(selectedDate),

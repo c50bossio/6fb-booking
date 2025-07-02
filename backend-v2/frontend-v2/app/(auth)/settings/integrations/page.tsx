@@ -224,7 +224,7 @@ export default function IntegrationsPage() {
       </div>
 
       {/* Integrations Tabs */}
-      <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
+      <Tabs value={selectedTab} onValueChange={setSelectedTab} defaultValue="all" className="space-y-6">
         <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
           <TabsTrigger value="all">All Integrations</TabsTrigger>
           <TabsTrigger value="calendar">Calendar</TabsTrigger>

@@ -534,7 +534,7 @@ export default function BookPage() {
                       onClick={handleQuickBooking}
                       loading={quickBooking}
                       loadingText="Booking..."
-                      variant="success"
+                      variant="primary"
                       size="md"
                     >
                       Book Next Available

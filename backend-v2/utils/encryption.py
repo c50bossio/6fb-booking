@@ -116,3 +116,8 @@ def decrypt_data(encrypted_data: str) -> str:
     if encrypted_data is not None:
         return cipher.decrypt(encrypted_data.encode()).decode()
     return encrypted_data
+
+
+# Aliases for backward compatibility
+encrypt_text = encrypt_data
+decrypt_text = decrypt_data

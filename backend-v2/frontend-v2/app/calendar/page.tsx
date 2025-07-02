@@ -30,6 +30,7 @@ import { CalendarVisualFeedback, useCalendarVisualFeedback } from '@/components/
 import { CalendarMobileMenu } from '@/components/calendar/CalendarMobileMenu'
 import { CalendarNetworkStatus, CalendarRequestQueue } from '@/components/calendar/CalendarNetworkStatus'
 import { LocationSelector } from '@/components/navigation/LocationSelector'
+import { LocationSelectorLoadingState, LocationSelectorErrorState } from '@/components/navigation/LocationSelectorSkeleton'
 import type { Appointment, CalendarView, User, CalendarInteraction } from '@/types/calendar'
 import { 
   formatDateForAPI, 
@@ -67,6 +68,8 @@ export default function CalendarPage() {
   const [locations, setLocations] = useState<Location[]>([])
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null)
   const [filteredBarbers, setFilteredBarbers] = useState<User[]>([])
+  const [locationLoadingError, setLocationLoadingError] = useState<string | null>(null)
+  const [isLoadingLocations, setIsLoadingLocations] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showTimePickerModal, setShowTimePickerModal] = useState(false)
   const [preselectedTime, setPreselectedTime] = useState<string | undefined>(undefined)
@@ -84,6 +87,37 @@ export default function CalendarPage() {
     setAppointments,
     refreshAppointments: refreshOptimistic
   } = useCalendarOptimisticUpdates()
+  
+  // Load locations with error handling and retry
+  const loadLocations = async () => {
+    try {
+      setIsLoadingLocations(true)
+      setLocationLoadingError(null)
+      
+      const userLocations = await executeRequest(
+        {
+          key: 'get-locations',
+          endpoint: '/locations',
+          method: 'GET'
+        },
+        () => getLocations()
+      )
+      
+      console.log('📍 Loaded locations:', userLocations)
+      setLocations(userLocations || [])
+      
+      // Set default location if we have locations
+      if (userLocations && userLocations.length > 0) {
+        setSelectedLocationId(userLocations[0].id)
+      }
+    } catch (locationErr) {
+      console.error('⚠️ Failed to load locations:', locationErr)
+      setLocationLoadingError('Failed to load locations. Please try again.')
+      setLocations([])
+    } finally {
+      setIsLoadingLocations(false)
+    }
+  }
   
   const {
     getAppointments,
@@ -207,27 +241,8 @@ export default function CalendarPage() {
         setUser(userProfile)
         
         // Load locations for multi-location accounts
-        try {
-          if (userProfile.role === 'admin' || userProfile.role === 'enterprise_admin') {
-            const userLocations = await executeRequest(
-              {
-                key: 'get-locations',
-                endpoint: '/locations',
-                method: 'GET'
-              },
-              () => getLocations()
-            )
-            console.log('📍 Loaded locations:', userLocations)
-            setLocations(userLocations || [])
-            
-            // Set default location if we have locations
-            if (userLocations && userLocations.length > 0) {
-              setSelectedLocationId(userLocations[0].id)
-            }
-          }
-        } catch (locationErr) {
-          console.error('⚠️ Failed to load locations (non-critical):', locationErr)
-          setLocations([])
+        if (userProfile.role === 'admin' || userProfile.role === 'enterprise_admin') {
+          await loadLocations()
         }
         
         // Load barbers for the filter (only for admin users or fetch all users with barber role)
@@ -251,8 +266,8 @@ export default function CalendarPage() {
         // Load appointments with optimistic updates manager
         const userBookings = await getAppointments()
         console.log('📋 Appointments response:', userBookings)
-        // The API returns { appointments: [...], total: N } not { bookings: [...] }
-        setAppointments(userBookings.appointments || [])
+        // The API returns { bookings: [...] } format
+        setAppointments(userBookings.bookings || [])
         
         console.log('✅ Calendar data loaded successfully')
       } catch (err) {
@@ -498,37 +513,32 @@ export default function CalendarPage() {
           </p>
           
           {/* Location Selector - Only show for multi-location accounts */}
-          {locations.length > 1 && (
+          {(user?.role === 'admin' || user?.role === 'enterprise_admin') && (
             <div className="mt-3 max-w-sm">
-              <LocationSelector
-                locations={locations}
-                currentLocationId={selectedLocationId || undefined}
-                onLocationChange={handleLocationChange}
-                compact={true}
-                showStats={false}
-                placeholder={locations.length === 0 ? "Loading locations..." : "Select location"}
-                className="w-full"
-              />
-            </div>
-          )}
-          
-          {/* Show loading state for locations */}
-          {(user?.role === 'admin' || user?.role === 'enterprise_admin') && locations.length === 0 && (
-            <div className="mt-3 max-w-sm">
-              <div className="px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+              {isLoadingLocations ? (
+                <LocationSelectorLoadingState compact={true} />
+              ) : locationLoadingError ? (
+                <LocationSelectorErrorState 
+                  compact={true}
+                  error={locationLoadingError}
+                  onRetry={loadLocations}
+                />
+              ) : locations.length > 1 ? (
+                <LocationSelector
+                  locations={locations}
+                  currentLocationId={selectedLocationId || undefined}
+                  onLocationChange={handleLocationChange}
+                  compact={true}
+                  showStats={false}
+                  placeholder="Select location"
+                  className="w-full"
+                />
+              ) : locations.length === 1 ? (
                 <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                  <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-                  <span>Loading locations...</span>
+                  <BuildingOfficeIcon className="w-4 h-4" />
+                  <span>{locations[0].name}</span>
                 </div>
-              </div>
-            </div>
-          )}
-          
-          {/* Current Location Indicator - Show even for single location */}
-          {locations.length === 1 && selectedLocationId && (
-            <div className="mt-2 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-              <BuildingOfficeIcon className="w-4 h-4" />
-              <span>{locations.find(loc => loc.id === selectedLocationId)?.name}</span>
+              ) : null}
             </div>
           )}
         </div>

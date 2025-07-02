@@ -1,0 +1,10 @@
+68cffed feat: consolidate documentation and clean up test files
+3795af7 fix: enhance appointment API responses with barber and client names for calendar sync
+6b4837f fix: resolve critical calendar booking system issues
+b6cd0af docs: add calendar infrastructure consolidation summary
+1d2d85e feat: consolidate calendar infrastructure and fix appointment creation
+43d6f63 feat: comprehensive UX and performance enhancements
+3d9f714 feat: add minimal drag & drop polish
+c4deaca feat: polish calendar with animations and performance optimizations
+c53277d fix: implement public services endpoint for unauthenticated booking
+b28e443 feat: integrate CalendarDayView into booking flow and dashboard

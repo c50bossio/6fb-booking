@@ -16,12 +16,6 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
-  const [user, setUser] = useState<User | null>(null)
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [mounted, setMounted] = useState(false)
-  
   const router = useRouter()
   const pathname = usePathname()
   const { isMobile } = useResponsive()
@@ -29,6 +23,12 @@ export function AppLayout({ children }: AppLayoutProps) {
   // Define public routes that don't require authentication
   const publicRoutes = ['/', '/login', '/register', '/forgot-password', '/reset-password']
   const isPublicRoute = publicRoutes.includes(pathname) || pathname.startsWith('/reset-password/')
+
+  const [user, setUser] = useState<User | null>(null)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [loading, setLoading] = useState(!isPublicRoute) // Don't load for public routes
+  const [error, setError] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
 
   // Simplified route protection - removed complex role checking
 
@@ -63,8 +63,11 @@ export function AppLayout({ children }: AppLayoutProps) {
       }
     }
 
-    loadUser()
-  }, [isPublicRoute, router]) // Removed pathname dependency to prevent re-runs
+    // Only run if mounted to prevent hydration issues
+    if (mounted) {
+      loadUser()
+    }
+  }, [isPublicRoute, router, mounted])
 
   // Auto-collapse sidebar on mobile
   useEffect(() => {
