@@ -1,5 +1,4 @@
 import { validateAPIRequest, validateAPIResponse, APIPerformanceMonitor, retryOperation, defaultRetryConfigs } from './apiUtils'
-import { toastError, toastSuccess, toastInfo } from '@/hooks/use-toast'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -116,7 +115,7 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
     console.error('Full URL:', `${API_URL}${endpoint}`)
     console.error('Token present:', !!token)
     const errorMessage = 'Failed to connect to server. Please check your connection and try again.'
-    toastError('Connection Error', errorMessage)
+    // Note: Toast should be called from components, not here in the API layer
     throw new Error(`${errorMessage} (${error})`)
   }
   
@@ -164,7 +163,6 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
     if (response.status === 429) {
       const retryAfter = errorData.retry_after || 60
       const message = `Rate limit exceeded. Please try again in ${retryAfter} seconds.`
-      toastError('Too Many Requests', message)
       throw new Error(message)
     }
     
@@ -172,14 +170,12 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
       // Validation errors - extract more specific message
       if (Array.isArray(errorData.detail)) {
         const messages = errorData.detail.map((err: ValidationError) => err.msg).join(', ')
-        toastError('Validation Error', messages)
         throw new Error(messages)
       }
     }
     
     if (response.status === 401) {
       const message = 'Authentication failed. Please log in again.'
-      toastError('Authentication Error', message)
       const error = new Error(message)
       ;(error as any).status = 401
       throw error
@@ -187,13 +183,11 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
     
     if (response.status === 403) {
       const message = 'Access denied. You do not have permission to perform this action.'
-      toastError('Permission Denied', message)
       throw new Error(message)
     }
     
     if (response.status >= 500) {
       const message = 'Server error. Please try again later or contact support.'
-      toastError('Server Error', message)
       throw new Error(message)
     }
     
@@ -5403,6 +5397,99 @@ export async function getPerformanceAnalytics(params?: {
   
   const query = searchParams.toString()
   return fetchAPI(`/api/v1/analytics/performance${query ? '?' + query : ''}`)
+}
+
+// Location Management API
+export async function getLocations(): Promise<Location[]> {
+  try {
+    return await fetchAPI('/api/v1/locations')
+  } catch (error) {
+    // If API is not yet implemented, return mock data for development
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('Locations API not available, using mock data')
+      return [
+        {
+          id: '1',
+          name: 'Downtown Location',
+          address: '123 Main St',
+          city: 'Seattle',
+          state: 'WA',
+          zipCode: '98101',
+          phoneNumber: '(206) 555-0123',
+          email: 'downtown@bookedbarber.com',
+          isActive: true,
+          stats: {
+            activeBarbers: 5,
+            todayBookings: 23,
+            weekRevenue: 8500,
+            occupancyRate: 85
+          },
+          enterpriseId: 'ent_1',
+          enterpriseName: 'BookedBarber Enterprise'
+        },
+        {
+          id: '2',
+          name: 'Uptown Location',
+          address: '456 Pine Ave',
+          city: 'Seattle',
+          state: 'WA',
+          zipCode: '98109',
+          phoneNumber: '(206) 555-0456',
+          email: 'uptown@bookedbarber.com',
+          isActive: true,
+          stats: {
+            activeBarbers: 3,
+            todayBookings: 18,
+            weekRevenue: 5200,
+            occupancyRate: 72
+          },
+          enterpriseId: 'ent_1',
+          enterpriseName: 'BookedBarber Enterprise'
+        },
+        {
+          id: '3',
+          name: 'Westside Location',
+          address: '789 Oak Blvd',
+          city: 'Seattle',
+          state: 'WA',
+          zipCode: '98115',
+          phoneNumber: '(206) 555-0789',
+          email: 'westside@bookedbarber.com',
+          isActive: true,
+          stats: {
+            activeBarbers: 4,
+            todayBookings: 15,
+            weekRevenue: 4100,
+            occupancyRate: 68
+          },
+          enterpriseId: 'ent_1',
+          enterpriseName: 'BookedBarber Enterprise'
+        }
+      ]
+    }
+    throw error
+  }
+}
+
+// Import the Location type at the top of the file
+export interface Location {
+  id: string
+  name: string
+  address?: string
+  city?: string
+  state?: string
+  zipCode?: string
+  phoneNumber?: string
+  email?: string
+  isActive: boolean
+  stats?: {
+    activeBarbers?: number
+    todayBookings?: number
+    weekRevenue?: number
+    occupancyRate?: number
+  }
+  enterpriseId?: string
+  enterpriseName?: string
 }
 
 

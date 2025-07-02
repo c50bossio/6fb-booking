@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Toaster } from '@/components/ui/toaster'
+import { QueryProvider } from '@/components/providers/QueryProvider'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -149,12 +150,14 @@ export default function RootLayout({
         `}
         suppressHydrationWarning
       >
-        <ErrorBoundary>
-          <AppLayout>
-            {children}
-          </AppLayout>
-          <Toaster />
-        </ErrorBoundary>
+        <QueryProvider>
+          <ErrorBoundary>
+            <AppLayout>
+              {children}
+            </AppLayout>
+            <Toaster />
+          </ErrorBoundary>
+        </QueryProvider>
         
         {/* Performance monitoring script */}
         <script

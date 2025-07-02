@@ -16,7 +16,7 @@ import { format } from 'date-fns'
 import { Card, CardContent, CardHeader } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { LoadingButton, ErrorDisplay } from '@/components/LoadingStates'
-import { getMyBookings, cancelBooking, rescheduleBooking, getProfile, getAllUsers, type BookingResponse } from '@/lib/api'
+import { getMyBookings, cancelBooking, rescheduleBooking, getProfile, getAllUsers, getLocations, type BookingResponse, type Location } from '@/lib/api'
 import { useCalendarOptimisticUpdates } from '@/lib/calendar-optimistic-updates'
 import { useCalendarApiEnhanced } from '@/lib/calendar-api-enhanced'
 import { useRequestDeduplication } from '@/lib/request-deduplication'
@@ -29,6 +29,7 @@ import { useCalendarInteractionManager } from '@/lib/calendar-interaction-manage
 import { CalendarVisualFeedback, useCalendarVisualFeedback } from '@/components/calendar/CalendarVisualFeedback'
 import { CalendarMobileMenu } from '@/components/calendar/CalendarMobileMenu'
 import { CalendarNetworkStatus, CalendarRequestQueue } from '@/components/calendar/CalendarNetworkStatus'
+import { LocationSelector } from '@/components/navigation/LocationSelector'
 import type { Appointment, CalendarView, User, CalendarInteraction } from '@/types/calendar'
 import { 
   formatDateForAPI, 
@@ -47,7 +48,8 @@ import {
   TrashIcon,
   PlusIcon,
   ArrowsRightLeftIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  BuildingOfficeIcon
 } from '@heroicons/react/24/outline'
 
 // Use CalendarUser type from our standardized types
@@ -62,6 +64,9 @@ export default function CalendarPage() {
   const [cancelingId, setCancelingId] = useState<number | null>(null)
   const [viewMode, setViewMode] = useState<CalendarView>('week')
   const [selectedBarberId, setSelectedBarberId] = useState<number | 'all'>('all')
+  const [locations, setLocations] = useState<Location[]>([])
+  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null)
+  const [filteredBarbers, setFilteredBarbers] = useState<User[]>([])
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showTimePickerModal, setShowTimePickerModal] = useState(false)
   const [preselectedTime, setPreselectedTime] = useState<string | undefined>(undefined)
@@ -201,6 +206,30 @@ export default function CalendarPage() {
         
         setUser(userProfile)
         
+        // Load locations for multi-location accounts
+        try {
+          if (userProfile.role === 'admin' || userProfile.role === 'enterprise_admin') {
+            const userLocations = await executeRequest(
+              {
+                key: 'get-locations',
+                endpoint: '/locations',
+                method: 'GET'
+              },
+              () => getLocations()
+            )
+            console.log('📍 Loaded locations:', userLocations)
+            setLocations(userLocations || [])
+            
+            // Set default location if we have locations
+            if (userLocations && userLocations.length > 0) {
+              setSelectedLocationId(userLocations[0].id)
+            }
+          }
+        } catch (locationErr) {
+          console.error('⚠️ Failed to load locations (non-critical):', locationErr)
+          setLocations([])
+        }
+        
         // Load barbers for the filter (only for admin users or fetch all users with barber role)
         try {
           const allBarbers = await executeRequest(
@@ -236,7 +265,7 @@ export default function CalendarPage() {
     loadData()
   }, [])
 
-  // Filter bookings by selected date and barber
+  // Filter bookings by selected date, location, and barber
   useEffect(() => {
     if (!selectedDate || !bookings.length) {
       setFilteredBookings([])
@@ -248,6 +277,16 @@ export default function CalendarPage() {
       try {
         const bookingDate = new Date(booking.start_time)
         const dateMatches = formatDateForAPI(bookingDate) === selectedDateStr
+        
+        // Apply location filter first - only show appointments from barbers in the selected location
+        if (selectedLocationId && filteredBarbers.length > 0) {
+          const locationBarberIds = filteredBarbers.map(barber => barber.id)
+          // If booking has no barber_id, show it (could be a general appointment)
+          // Otherwise, only show if barber is in the selected location
+          if (booking.barber_id && !locationBarberIds.includes(booking.barber_id)) {
+            return false
+          }
+        }
         
         // Apply barber filter
         if (selectedBarberId === 'all') {
@@ -268,7 +307,34 @@ export default function CalendarPage() {
     })
 
     setFilteredBookings(dayBookings)
-  }, [selectedDate, bookings, selectedBarberId])
+  }, [selectedDate, bookings, selectedBarberId, selectedLocationId, filteredBarbers])
+
+  // Filter barbers by selected location
+  useEffect(() => {
+    if (!selectedLocationId || !barbers.length) {
+      setFilteredBarbers(barbers)
+      return
+    }
+
+    // For now, we'll simulate location-aware barber filtering
+    // In a real implementation, barbers would have location_id properties
+    // For mock data, we'll filter based on barber IDs in ranges for different locations
+    const locationBarbers = barbers.filter(barber => {
+      // Mock location assignment based on barber ID
+      const barberId = barber.id
+      if (selectedLocationId === '1') return barberId <= 5        // Downtown: barbers 1-5
+      if (selectedLocationId === '2') return barberId > 5 && barberId <= 8  // Uptown: barbers 6-8
+      if (selectedLocationId === '3') return barberId > 8        // Westside: barbers 9+
+      return true
+    })
+
+    setFilteredBarbers(locationBarbers)
+    
+    // Reset barber selection if current selection is not available in this location
+    if (selectedBarberId !== 'all' && !locationBarbers.some(b => b.id === selectedBarberId)) {
+      setSelectedBarberId('all')
+    }
+  }, [selectedLocationId, barbers, selectedBarberId])
 
   // Get all booking dates for calendar highlighting
   const bookingDates = (bookings || []).map(booking => {
@@ -279,7 +345,7 @@ export default function CalendarPage() {
     }
   }).filter(Boolean) as Date[]
 
-  // Calculate today's revenue and appointment count
+  // Calculate today's revenue and appointment count (location-aware)
   useEffect(() => {
     const today = new Date()
     const todayStr = formatDateForAPI(today)
@@ -287,7 +353,19 @@ export default function CalendarPage() {
     const todayBookings = bookings.filter(booking => {
       try {
         const bookingDate = new Date(booking.start_time)
-        return formatDateForAPI(bookingDate) === todayStr
+        const dateMatches = formatDateForAPI(bookingDate) === todayStr
+        
+        // Apply location filter if a location is selected
+        if (selectedLocationId && filteredBarbers.length > 0) {
+          const locationBarberIds = filteredBarbers.map(barber => barber.id)
+          // If booking has no barber_id, include it (could be a general appointment)
+          // Otherwise, only include if barber is in the selected location
+          if (booking.barber_id && !locationBarberIds.includes(booking.barber_id)) {
+            return false
+          }
+        }
+        
+        return dateMatches
       } catch {
         return false
       }
@@ -302,7 +380,7 @@ export default function CalendarPage() {
       .reduce((sum, booking) => sum + (booking.price || 0), 0)
 
     setTodayRevenue(revenue)
-  }, [bookings])
+  }, [bookings, selectedLocationId, filteredBarbers])
 
   const handleCancelBooking = async (bookingId: number) => {
     if (!confirm('Are you sure you want to cancel this appointment?')) return
@@ -353,6 +431,26 @@ export default function CalendarPage() {
     }
   }
 
+  const handleLocationChange = (location: Location) => {
+    console.log('📍 Location changed to:', location.name)
+    setSelectedLocationId(location.id)
+    
+    // Reset barber selection when location changes to show all barbers in new location
+    setSelectedBarberId('all')
+    
+    // Show info toast about location change with additional context
+    const locationBarberCount = barbers.filter(barber => {
+      // Apply same mock location assignment logic as in useEffect
+      const barberId = barber.id
+      if (location.id === '1') return barberId <= 5        // Downtown: barbers 1-5
+      if (location.id === '2') return barberId > 5 && barberId <= 8  // Uptown: barbers 6-8
+      if (location.id === '3') return barberId > 8        // Westside: barbers 9+
+      return true
+    }).length
+    
+    toastInfo('Location Changed', `Switched to ${location.name} (${locationBarberCount} barbers)`)
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'confirmed':
@@ -398,6 +496,41 @@ export default function CalendarPage() {
           <p className="text-gray-600 dark:text-gray-400 text-sm lg:text-base">
             Manage your appointments and schedule
           </p>
+          
+          {/* Location Selector - Only show for multi-location accounts */}
+          {locations.length > 1 && (
+            <div className="mt-3 max-w-sm">
+              <LocationSelector
+                locations={locations}
+                currentLocationId={selectedLocationId || undefined}
+                onLocationChange={handleLocationChange}
+                compact={true}
+                showStats={false}
+                placeholder={locations.length === 0 ? "Loading locations..." : "Select location"}
+                className="w-full"
+              />
+            </div>
+          )}
+          
+          {/* Show loading state for locations */}
+          {(user?.role === 'admin' || user?.role === 'enterprise_admin') && locations.length === 0 && (
+            <div className="mt-3 max-w-sm">
+              <div className="px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                  <span>Loading locations...</span>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Current Location Indicator - Show even for single location */}
+          {locations.length === 1 && selectedLocationId && (
+            <div className="mt-2 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+              <BuildingOfficeIcon className="w-4 h-4" />
+              <span>{locations.find(loc => loc.id === selectedLocationId)?.name}</span>
+            </div>
+          )}
         </div>
         
         {/* Today's Stats - Responsive */}
@@ -526,7 +659,7 @@ export default function CalendarPage() {
           <Card variant="glass" padding="none" className="col-span-full h-[800px]">
             <CalendarDayView
               appointments={bookings}
-              barbers={barbers}
+              barbers={filteredBarbers}
               selectedBarberId={selectedBarberId}
               onBarberSelect={setSelectedBarberId}
               onAppointmentClick={(appointment) => {
@@ -550,7 +683,7 @@ export default function CalendarPage() {
           <Card variant="glass" padding="none" className="col-span-full">
             <CalendarWeekView
               appointments={bookings}
-              barbers={barbers}
+              barbers={filteredBarbers}
               selectedBarberId={selectedBarberId}
               onBarberSelect={setSelectedBarberId}
               onAppointmentClick={(appointment) => {

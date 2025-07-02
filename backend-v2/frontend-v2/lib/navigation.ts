@@ -344,6 +344,12 @@ export const navigationItems: NavigationItem[] = [
         name: 'Notifications',
         href: '/settings/notifications',
         icon: BellIcon
+      },
+      {
+        name: 'Integrations',
+        href: '/settings/integrations',
+        icon: CloudIcon,
+        description: 'Connect third-party services'
       }
     ]
   },
