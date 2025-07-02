@@ -9,21 +9,23 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Existing teal/turquoise brand colors (preserved)
+        // Primary Brand Colors - Teal/Turquoise (BookedBarber brand)
         primary: {
           50: '#f0fdfa',
           100: '#ccfbf1',
           200: '#99f6e4',
           300: '#5eead4',
           400: '#2dd4bf',
-          500: '#14b8a6',
+          500: '#14b8a6', // Main brand color
           600: '#0d9488',
           700: '#0f766e',
           800: '#115e59',
           900: '#134e4a',
           950: '#042f2e',
         },
-        accent: {
+        
+        // Secondary/Neutral Colors
+        secondary: {
           50: '#f8fafc',
           100: '#f1f5f9',
           200: '#e2e8f0',
@@ -34,63 +36,22 @@ module.exports = {
           700: '#334155',
           800: '#1e293b',
           900: '#0f172a',
+          950: '#020617',
         },
         
-        // iOS System Colors
+        // Semantic Colors
         success: {
           50: '#f0fdf4',
           100: '#dcfce7',
           200: '#bbf7d0',
           300: '#86efac',
           400: '#4ade80',
-          500: '#32d74b', // iOS Green
+          500: '#22c55e',
           600: '#16a34a',
           700: '#15803d',
           800: '#166534',
           900: '#14532d',
           950: '#052e16',
-        },
-        
-        // Dark mode specific colors
-        'dark-surface': {
-          50: '#18181b',
-          100: '#27272a',
-          200: '#3f3f46',
-          300: '#52525b',
-          400: '#71717a',
-          500: '#a1a1aa',
-          600: '#d4d4d8',
-          700: '#e4e4e7',
-          800: '#f4f4f5',
-          900: '#fafafa',
-        },
-        
-        'dark-elevated': {
-          50: '#09090b',
-          100: '#18181b',
-          200: '#27272a',
-          300: '#3f3f46',
-          400: '#52525b',
-          500: '#71717a',
-          600: '#a1a1aa',
-          700: '#d4d4d8',
-          800: '#e4e4e7',
-          900: '#f4f4f5',
-        },
-        
-        // iOS Gray colors with dark variants
-        'ios-gray': {
-          50: '#f9fafb',
-          100: '#f3f4f6',
-          200: '#e5e7eb',
-          300: '#d1d5db',
-          400: '#9ca3af',
-          500: '#6b7280',
-          600: '#4b5563',
-          700: '#374151',
-          800: '#1f2937',
-          900: '#111827',
-          950: '#030712',
         },
         warning: {
           50: '#fffbeb',
@@ -98,11 +59,12 @@ module.exports = {
           200: '#fde68a',
           300: '#fcd34d',
           400: '#fbbf24',
-          500: '#ff9f0a', // iOS Orange
+          500: '#f59e0b',
           600: '#d97706',
           700: '#b45309',
           800: '#92400e',
           900: '#78350f',
+          950: '#451a03',
         },
         error: {
           50: '#fef2f2',
@@ -110,11 +72,12 @@ module.exports = {
           200: '#fecaca',
           300: '#fca5a5',
           400: '#f87171',
-          500: '#ff453a', // iOS Red
+          500: '#ef4444',
           600: '#dc2626',
           700: '#b91c1c',
           800: '#991b1b',
           900: '#7f1d1d',
+          950: '#450a0a',
         },
         info: {
           50: '#eff6ff',
@@ -122,65 +85,12 @@ module.exports = {
           200: '#bfdbfe',
           300: '#93c5fd',
           400: '#60a5fa',
-          500: '#007aff', // iOS Blue
+          500: '#3b82f6',
           600: '#2563eb',
           700: '#1d4ed8',
           800: '#1e40af',
           900: '#1e3a8a',
-        },
-        
-        // Premium Accent Colors
-        gold: {
-          50: '#fffbeb',
-          100: '#fef3c7',
-          200: '#fde68a',
-          300: '#fcd34d',
-          400: '#fbbf24',
-          500: '#ffd60a', // iOS Gold
-          600: '#d97706',
-          700: '#b45309',
-          800: '#92400e',
-          900: '#78350f',
-        },
-        purple: {
-          50: '#faf5ff',
-          100: '#f3e8ff',
-          200: '#e9d5ff',
-          300: '#d8b4fe',
-          400: '#c084fc',
-          500: '#bf5af2', // iOS Purple
-          600: '#9333ea',
-          700: '#7c3aed',
-          800: '#6b21a8',
-          900: '#581c87',
-        },
-        
-        // Dark Mode Specific Colors
-        'dark-surface': {
-          50: '#2c2c2e',
-          100: '#1c1c1e', // iOS Dark Surface
-          200: '#141414',
-          300: '#0d0d0d',
-        },
-        'dark-elevated': {
-          50: '#3a3a3c',
-          100: '#2c2c2e', // iOS Dark Elevated
-          200: '#1c1c1e',
-          300: '#141414',
-        },
-        
-        // iOS System Grays
-        'ios-gray': {
-          50: '#f9f9f9',
-          100: '#f2f2f7', // iOS System Gray 6
-          200: '#e5e5ea', // iOS System Gray 5
-          300: '#d1d1d6', // iOS System Gray 4
-          400: '#c7c7cc', // iOS System Gray 3
-          500: '#aeaeb2', // iOS System Gray 2
-          600: '#8e8e93', // iOS System Gray
-          700: '#636366', // iOS System Gray (Dark)
-          800: '#48484a', // iOS System Gray 2 (Dark)
-          900: '#3a3a3c', // iOS System Gray 3 (Dark)
+          950: '#172554',
         },
       },
       

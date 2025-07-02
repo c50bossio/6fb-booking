@@ -187,7 +187,8 @@ export function ErrorDisplay({
         <Button
           onClick={onRetry}
           variant="outline"
-          className="flex items-center gap-2"
+          size="md"
+          className="flex items-center gap-2 touch-target"
         >
           <RefreshCw className="h-4 w-4" />
           Try Again
