@@ -261,11 +261,11 @@
 /* High Contrast Support */
 @media (prefers-contrast: high) {
   .card {
-    @apply border-2 border-secondary-400 dark:border-secondary-300;
+    @apply border-2 border-gray-400 dark:border-gray-300;
   }
   
   .form-input {
-    @apply border-2 border-secondary-400 dark:border-secondary-300;
+    @apply border-2 border-gray-400 dark:border-gray-300;
   }
 }
 

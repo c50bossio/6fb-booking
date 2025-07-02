@@ -67,7 +67,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     if (mounted) {
       loadUser()
     }
-  }, [isPublicRoute, router, mounted])
+  }, [pathname, mounted]) // Use pathname directly instead of isPublicRoute
 
   // Auto-collapse sidebar on mobile
   useEffect(() => {
@@ -82,17 +82,28 @@ export function AppLayout({ children }: AppLayoutProps) {
     return []
   }
 
+  // Prevent hydration issues by not rendering anything until mounted
+  if (!mounted) {
+    return (
+      <ThemeProvider defaultTheme="system" storageKey="6fb-theme">
+        <div className="min-h-screen bg-gray-50 dark:bg-dark-surface-100">
+          {/* Render children for public routes even when not mounted */}
+          {isPublicRoute && children}
+        </div>
+      </ThemeProvider>
+    )
+  }
+
   if (loading) {
     return (
-      <div 
-        className="min-h-screen bg-gray-50 dark:bg-dark-surface-100 flex items-center justify-center"
-        suppressHydrationWarning
-      >
-        <div className="flex flex-col items-center space-y-4">
-          <div className="w-8 h-8 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin" />
-          <p className="text-gray-800 dark:text-gray-200 text-sm">Loading...</p>
+      <ThemeProvider defaultTheme="system" storageKey="6fb-theme">
+        <div className="min-h-screen bg-gray-50 dark:bg-dark-surface-100 flex items-center justify-center">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="w-8 h-8 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin" />
+            <p className="text-gray-800 dark:text-gray-200 text-sm">Loading...</p>
+          </div>
         </div>
-      </div>
+      </ThemeProvider>
     )
   }
 
