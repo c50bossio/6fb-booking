@@ -1,4 +1,5 @@
 import { validateAPIRequest, validateAPIResponse, APIPerformanceMonitor, retryOperation, defaultRetryConfigs } from './apiUtils'
+import { toast } from '@/hooks/use-toast'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -197,7 +198,11 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
       : errorData.message || `API Error: ${response.status}`
     
     // Show toast notification
-    toastError('Request Failed', message)
+    toast({
+      title: 'Request Failed',
+      description: message,
+      variant: 'destructive',
+    })
     
     // Record error for monitoring
     APIPerformanceMonitor.recordError(endpoint)
