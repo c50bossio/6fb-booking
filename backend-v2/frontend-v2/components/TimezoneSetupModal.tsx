@@ -59,7 +59,15 @@ export default function TimezoneSetupModal({ isOpen, onClose, onComplete }: Time
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+    <div 
+      className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50"
+      onClick={(e) => {
+        // Close modal if clicking on the backdrop
+        if (e.target === e.currentTarget) {
+          onClose()
+        }
+      }}
+    >
       <div className="bg-white rounded-lg max-w-lg w-full mx-4 p-6 shadow-xl">
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">

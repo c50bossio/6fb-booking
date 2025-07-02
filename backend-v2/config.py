@@ -44,6 +44,12 @@ class Settings(BaseSettings):
     booking_max_advance_days: int = 30       # Maximum days in advance bookings allowed
     booking_same_day_cutoff: str = "17:00"   # No same-day bookings after this time
     
+    # Business Information
+    business_name: str = "BookedBarber"
+    business_phone: str = "(555) 123-4567"
+    business_email: str = "info@bookedbarber.com"
+    business_address: str = "123 Main St, City, State 12345"
+    
     # Optional settings
     environment: str = "development"
     log_level: str = "INFO"

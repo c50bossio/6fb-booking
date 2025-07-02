@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { getMyBookings, cancelBooking, updateBooking, rescheduleBooking, getAvailableSlots, type BookingResponse, type SlotsResponse, type TimeSlot } from '../../lib/api'
 import { format } from 'date-fns'
 import { Calendar, Clock, DollarSign, MapPin, User, XCircle, CheckCircle, AlertCircle, Edit2 } from 'lucide-react'
+import VirtualList from '@/components/VirtualList'
 
 export default function MyBookingsPage() {
   const router = useRouter()
@@ -173,6 +174,138 @@ export default function MyBookingsPage() {
 
   const upcomingBookings = bookings.filter(b => isUpcoming(b.start_time) && b.status !== 'cancelled')
   const pastBookings = bookings.filter(b => !isUpcoming(b.start_time) || b.status === 'cancelled')
+  
+  // Virtual scrolling thresholds
+  const VIRTUAL_SCROLLING_THRESHOLD = 20
+  const shouldUseVirtualScrollingUpcoming = upcomingBookings.length > VIRTUAL_SCROLLING_THRESHOLD
+  const shouldUseVirtualScrollingPast = pastBookings.length > VIRTUAL_SCROLLING_THRESHOLD
+
+  // Prepare bookings with heights for virtual scrolling
+  const upcomingBookingsWithHeights = upcomingBookings.map(booking => ({
+    ...booking,
+    height: 180 // Standard booking card height
+  }))
+  
+  const pastBookingsWithHeights = pastBookings.map(booking => ({
+    ...booking,
+    height: 120 // Smaller height for past bookings
+  }))
+
+  // Virtual upcoming booking item renderer
+  const renderUpcomingBooking = (booking: BookingResponse & { height?: number }, index: number, style: React.CSSProperties) => {
+    return (
+      <div style={style} className="p-2">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-3">
+                <h3 className="text-lg font-medium text-gray-900">{booking.service_name}</h3>
+                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(booking.status)}`}>
+                  {getStatusIcon(booking.status)}
+                  {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  <span>{format(new Date(booking.start_time), 'EEEE, MMMM d, yyyy')}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  <span>
+                    {format(new Date(booking.start_time), 'h:mm a')} 
+                    ({booking.duration_minutes} mins)
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <DollarSign className="w-4 h-4" />
+                  <span>${booking.price.toFixed(2)}</span>
+                </div>
+                {(booking as any).barber_name && (
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    <span>{(booking as any).barber_name}</span>
+                  </div>
+                )}
+              </div>
+
+              {(booking as any).notes && (
+                <p className="mt-3 text-sm text-gray-600 italic">
+                  Note: {(booking as any).notes}
+                </p>
+              )}
+            </div>
+
+            {booking.status === 'confirmed' && isUpcoming(booking.start_time) && (
+              <div className="ml-4 flex gap-2">
+                <button
+                  onClick={() => handleRescheduleClick(booking)}
+                  disabled={reschedulingId === booking.id}
+                  className="flex items-center gap-1 px-4 py-2 text-sm text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  <Edit2 className="w-4 h-4" />
+                  {reschedulingId === booking.id ? 'Rescheduling...' : 'Reschedule'}
+                </button>
+                <button
+                  onClick={() => handleCancelBooking(booking.id)}
+                  disabled={cancellingId === booking.id}
+                  className="px-4 py-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {cancellingId === booking.id ? 'Cancelling...' : 'Cancel'}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Virtual past booking item renderer
+  const renderPastBooking = (booking: BookingResponse & { height?: number }, index: number, style: React.CSSProperties) => {
+    return (
+      <div style={style} className="p-2">
+        <div className="bg-gray-50 rounded-lg border border-gray-200 p-6">
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">{booking.service_name}</h3>
+                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(booking.status)}`}>
+                  {getStatusIcon(booking.status)}
+                  {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                </span>
+              </div>
+              
+              <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  <span>{format(new Date(booking.start_time), 'MMM d, yyyy')}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  <span>{format(new Date(booking.start_time), 'h:mm a')}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <DollarSign className="w-4 h-4" />
+                  <span>${booking.price.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+
+            {booking.status === 'confirmed' && (
+              <button
+                onClick={() => router.push('/book')}
+                className="px-4 py-2 text-sm text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-colors"
+              >
+                Book Again
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -202,128 +335,164 @@ export default function MyBookingsPage() {
           {/* Upcoming Bookings */}
           {upcomingBookings.length > 0 && (
             <div className="mb-8">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Upcoming Appointments</h2>
-              <div className="grid gap-4">
-                {upcomingBookings.map((booking) => (
-                  <div
-                    key={booking.id}
-                    className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-3">
-                          <h3 className="text-lg font-medium text-gray-900">{booking.service_name}</h3>
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(booking.status)}`}>
-                            {getStatusIcon(booking.status)}
-                            {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                          </span>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            <span>{format(new Date(booking.start_time), 'EEEE, MMMM d, yyyy')}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4" />
-                            <span>
-                              {format(new Date(booking.start_time), 'h:mm a')} 
-                              ({booking.duration_minutes} mins)
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                Upcoming Appointments
+                {shouldUseVirtualScrollingUpcoming && (
+                  <span className="ml-3 text-sm text-blue-600 font-normal">
+                    📊 Virtual scrolling active
+                  </span>
+                )}
+              </h2>
+              {shouldUseVirtualScrollingUpcoming ? (
+                <VirtualList
+                  items={upcomingBookingsWithHeights}
+                  containerHeight={600}
+                  itemHeight={180}
+                  renderItem={renderUpcomingBooking}
+                  className="border border-gray-200 rounded-lg"
+                  overscan={3}
+                />
+              ) : (
+                <div className="grid gap-4">
+                  {upcomingBookings.map((booking) => (
+                    <div
+                      key={booking.id}
+                      className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-3">
+                            <h3 className="text-lg font-medium text-gray-900">{booking.service_name}</h3>
+                            <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(booking.status)}`}>
+                              {getStatusIcon(booking.status)}
+                              {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <DollarSign className="w-4 h-4" />
-                            <span>${booking.price.toFixed(2)}</span>
-                          </div>
-                          {(booking as any).barber_name && (
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600">
                             <div className="flex items-center gap-2">
-                              <User className="w-4 h-4" />
-                              <span>{(booking as any).barber_name}</span>
+                              <Calendar className="w-4 h-4" />
+                              <span>{format(new Date(booking.start_time), 'EEEE, MMMM d, yyyy')}</span>
                             </div>
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4" />
+                              <span>
+                                {format(new Date(booking.start_time), 'h:mm a')} 
+                                ({booking.duration_minutes} mins)
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <DollarSign className="w-4 h-4" />
+                              <span>${booking.price.toFixed(2)}</span>
+                            </div>
+                            {(booking as any).barber_name && (
+                              <div className="flex items-center gap-2">
+                                <User className="w-4 h-4" />
+                                <span>{(booking as any).barber_name}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {(booking as any).notes && (
+                            <p className="mt-3 text-sm text-gray-600 italic">
+                              Note: {(booking as any).notes}
+                            </p>
                           )}
                         </div>
 
-                        {(booking as any).notes && (
-                          <p className="mt-3 text-sm text-gray-600 italic">
-                            Note: {(booking as any).notes}
-                          </p>
+                        {booking.status === 'confirmed' && isUpcoming(booking.start_time) && (
+                          <div className="ml-4 flex gap-2">
+                            <button
+                              onClick={() => handleRescheduleClick(booking)}
+                              disabled={reschedulingId === booking.id}
+                              className="flex items-center gap-1 px-4 py-2 text-sm text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-colors disabled:opacity-50"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                              {reschedulingId === booking.id ? 'Rescheduling...' : 'Reschedule'}
+                            </button>
+                            <button
+                              onClick={() => handleCancelBooking(booking.id)}
+                              disabled={cancellingId === booking.id}
+                              className="px-4 py-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                            >
+                              {cancellingId === booking.id ? 'Cancelling...' : 'Cancel'}
+                            </button>
+                          </div>
                         )}
                       </div>
-
-                      {booking.status === 'confirmed' && isUpcoming(booking.start_time) && (
-                        <div className="ml-4 flex gap-2">
-                          <button
-                            onClick={() => handleRescheduleClick(booking)}
-                            disabled={reschedulingId === booking.id}
-                            className="flex items-center gap-1 px-4 py-2 text-sm text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-colors disabled:opacity-50"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                            {reschedulingId === booking.id ? 'Rescheduling...' : 'Reschedule'}
-                          </button>
-                          <button
-                            onClick={() => handleCancelBooking(booking.id)}
-                            disabled={cancellingId === booking.id}
-                            className="px-4 py-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                          >
-                            {cancellingId === booking.id ? 'Cancelling...' : 'Cancel'}
-                          </button>
-                        </div>
-                      )}
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
           {/* Past Bookings */}
           {pastBookings.length > 0 && (
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Past Appointments</h2>
-              <div className="grid gap-4">
-                {pastBookings.map((booking) => (
-                  <div
-                    key={booking.id}
-                    className="bg-gray-50 rounded-lg border border-gray-200 p-6"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">{booking.service_name}</h3>
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(booking.status)}`}>
-                            {getStatusIcon(booking.status)}
-                            {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                          </span>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                Past Appointments
+                {shouldUseVirtualScrollingPast && (
+                  <span className="ml-3 text-sm text-blue-600 font-normal">
+                    📊 Virtual scrolling active
+                  </span>
+                )}
+              </h2>
+              {shouldUseVirtualScrollingPast ? (
+                <VirtualList
+                  items={pastBookingsWithHeights}
+                  containerHeight={400}
+                  itemHeight={120}
+                  renderItem={renderPastBooking}
+                  className="border border-gray-200 rounded-lg"
+                  overscan={3}
+                />
+              ) : (
+                <div className="grid gap-4">
+                  {pastBookings.map((booking) => (
+                    <div
+                      key={booking.id}
+                      className="bg-gray-50 rounded-lg border border-gray-200 p-6"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">{booking.service_name}</h3>
+                            <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(booking.status)}`}>
+                              {getStatusIcon(booking.status)}
+                              {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                            </span>
+                          </div>
+                          
+                          <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                            <div className="flex items-center gap-2">
+                              <Calendar className="w-4 h-4" />
+                              <span>{format(new Date(booking.start_time), 'MMM d, yyyy')}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4" />
+                              <span>{format(new Date(booking.start_time), 'h:mm a')}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <DollarSign className="w-4 h-4" />
+                              <span>${booking.price.toFixed(2)}</span>
+                            </div>
+                          </div>
                         </div>
-                        
-                        <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            <span>{format(new Date(booking.start_time), 'MMM d, yyyy')}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4" />
-                            <span>{format(new Date(booking.start_time), 'h:mm a')}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <DollarSign className="w-4 h-4" />
-                            <span>${booking.price.toFixed(2)}</span>
-                          </div>
-                        </div>
-                      </div>
 
-                      {booking.status === 'confirmed' && (
-                        <button
-                          onClick={() => router.push('/book')}
-                          className="px-4 py-2 text-sm text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-colors"
-                        >
-                          Book Again
-                        </button>
-                      )}
+                        {booking.status === 'confirmed' && (
+                          <button
+                            onClick={() => router.push('/book')}
+                            className="px-4 py-2 text-sm text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-colors"
+                          >
+                            Book Again
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </>

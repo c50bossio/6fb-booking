@@ -5,6 +5,14 @@
 /* Import calendar animations */
 @import '../styles/calendar-animations.css';
 
+/* Temporary fix for sidebar navigation */
+aside nav a,
+aside nav button {
+  position: relative;
+  z-index: 50 !important;
+  pointer-events: auto !important;
+}
+
 /* CSS Variables for Dynamic Theming */
 :root {
   /* Light Theme Colors */

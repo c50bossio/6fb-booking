@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getProfile, logout, getMyBookings, getClientDashboardMetrics, getDashboardAnalytics, type User, type DashboardAnalytics } from '@/lib/api'
+import { batchDashboardData } from '@/lib/requestBatcher'
 import { getDefaultDashboard } from '@/lib/routeGuards'
 import TimezoneSetupModal from '@/components/TimezoneSetupModal'
 import { BarberDashboardLayout } from '@/components/BarberDashboardLayout'
@@ -12,6 +13,7 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/Card'
 import { QuickActions } from '@/components/QuickActions'
 import CalendarDayMini from '@/components/calendar/CalendarDayMini'
+import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton'
 
 // Simple Icon Components
 const BookIcon = () => (
@@ -116,34 +118,94 @@ function DashboardContent() {
           }
         }
 
-        try {
-          const bookingsData = await getMyBookings()
-          setBookings(bookingsData.bookings || [])
-        } catch (bookingError) {
-          console.warn('Failed to load bookings:', bookingError)
-          setBookings([])
+        // Prepare batched requests based on user role
+        const dashboardRequests = [
+          {
+            endpoint: '/api/v1/bookings/my',
+            priority: 8,
+            cacheKey: `user_bookings_${userData.id}`,
+            cacheTtl: 30000 // 30 seconds
+          }
+        ]
+
+        // Add role-specific requests
+        if (userData.role === 'admin' || userData.role === 'barber') {
+          dashboardRequests.push(
+            {
+              endpoint: '/api/v1/dashboard/client-metrics',
+              priority: 6,
+              cacheKey: `client_metrics_${userData.id}`,
+              cacheTtl: 60000 // 1 minute
+            },
+            {
+              endpoint: `/api/v1/analytics/dashboard/${userData.id}`,
+              priority: 5,
+              cacheKey: `dashboard_analytics_${userData.id}`,
+              cacheTtl: 120000 // 2 minutes
+            }
+          )
         }
 
-        // Load role-specific data
-        if (userData.role === 'admin' || userData.role === 'barber') {
-          // Load client metrics and analytics in parallel
-          const [metricsResult, analyticsResult] = await Promise.allSettled([
-            getClientDashboardMetrics(),
-            getDashboardAnalytics(userData.id)
-          ])
+        try {
+          console.log(`Dashboard: Batching ${dashboardRequests.length} requests...`)
+          const results = await batchDashboardData(dashboardRequests)
           
-          if (metricsResult.status === 'fulfilled') {
-            setClientMetrics(metricsResult.value)
+          // Process bookings data
+          if (results[0]) {
+            setBookings(results[0].bookings || [])
           } else {
-            console.warn('Failed to load client metrics:', metricsResult.reason)
-            setClientMetrics(null)
+            console.warn('Failed to load bookings from batch')
+            setBookings([])
           }
-          
-          if (analyticsResult.status === 'fulfilled') {
-            setAnalytics(analyticsResult.value)
-          } else {
-            console.warn('Failed to load analytics:', analyticsResult.reason)
-            setAnalytics(null)
+
+          // Process role-specific data
+          if (userData.role === 'admin' || userData.role === 'barber') {
+            // Client metrics
+            if (results[1]) {
+              setClientMetrics(results[1])
+            } else {
+              console.warn('Failed to load client metrics from batch')
+              setClientMetrics(null)
+            }
+
+            // Analytics data
+            if (results[2]) {
+              setAnalytics(results[2])
+            } else {
+              console.warn('Failed to load analytics from batch')
+              setAnalytics(null)
+            }
+          }
+        } catch (batchError) {
+          console.error('Dashboard: Batch request failed:', batchError)
+          // Fallback to individual requests
+          try {
+            const bookingsData = await getMyBookings()
+            setBookings(bookingsData.bookings || [])
+          } catch (bookingError) {
+            console.warn('Failed to load bookings:', bookingError)
+            setBookings([])
+          }
+
+          if (userData.role === 'admin' || userData.role === 'barber') {
+            const [metricsResult, analyticsResult] = await Promise.allSettled([
+              getClientDashboardMetrics(),
+              getDashboardAnalytics(userData.id)
+            ])
+            
+            if (metricsResult.status === 'fulfilled') {
+              setClientMetrics(metricsResult.value)
+            } else {
+              console.warn('Failed to load client metrics:', metricsResult.reason)
+              setClientMetrics(null)
+            }
+            
+            if (analyticsResult.status === 'fulfilled') {
+              setAnalytics(analyticsResult.value)
+            } else {
+              console.warn('Failed to load analytics:', analyticsResult.reason)
+              setAnalytics(null)
+            }
           }
         }
       } catch (error) {
@@ -208,14 +270,11 @@ function DashboardContent() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-ios-gray-50 to-white">
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 mx-auto">
-            <div className="w-full h-full rounded-full border-4 border-primary-200 border-t-primary-500 animate-spin"></div>
-          </div>
-          <p className="text-ios-body text-ios-gray-600">Loading your dashboard...</p>
+      <main className="min-h-screen bg-gradient-to-br from-ios-gray-50 to-white dark:from-zinc-900 dark:to-zinc-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <DashboardSkeleton />
         </div>
-      </div>
+      </main>
     )
   }
 
@@ -559,7 +618,13 @@ function DashboardContent() {
 
 export default function DashboardPage() {
   return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><p className="text-gray-600">Loading...</p></div>}>
+    <Suspense fallback={
+      <main className="min-h-screen bg-gradient-to-br from-ios-gray-50 to-white dark:from-zinc-900 dark:to-zinc-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <DashboardSkeleton />
+        </div>
+      </main>
+    }>
       <DashboardContent />
     </Suspense>
   )

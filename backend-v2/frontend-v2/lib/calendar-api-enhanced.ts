@@ -5,6 +5,7 @@
 
 import { requestDeduplicationManager } from './request-deduplication'
 import { calendarOptimisticManager } from './calendar-optimistic-updates'
+import { batchCalendarData, requestBatcher } from './requestBatcher'
 import { 
   getMyBookings, 
   cancelBooking, 
@@ -131,6 +132,43 @@ export class CalendarApiEnhanced {
   }
 
   /**
+   * Batch fetch appointments for multiple dates/criteria
+   */
+  async batchFetchAppointments(requests: Array<{
+    dateRange?: { start: string; end: string }
+    barberId?: number
+    status?: string
+    priority?: number
+  }>): Promise<any[]> {
+    const calendarRequests = requests.map((req, index) => {
+      let endpoint = '/api/v1/appointments'
+      const params = new URLSearchParams()
+      
+      if (req.dateRange) {
+        params.append('start_date', req.dateRange.start)
+        params.append('end_date', req.dateRange.end)
+      }
+      if (req.barberId) {
+        params.append('barber_id', req.barberId.toString())
+      }
+      if (req.status) {
+        params.append('status', req.status)
+      }
+      
+      if (params.toString()) {
+        endpoint += `?${params.toString()}`
+      }
+
+      return {
+        endpoint,
+        priority: req.priority || 5
+      }
+    })
+
+    return batchCalendarData(calendarRequests)
+  }
+
+  /**
    * Batch operations for multiple appointments
    */
   async batchUpdateAppointments(operations: Array<{
@@ -247,6 +285,175 @@ export class CalendarApiEnhanced {
       },
       () => this.callGetAvailableSlotsAPI(barberId, date, duration)
     )
+  }
+
+  /**
+   * Preload calendar data for adjacent dates (smart preloading)
+   */
+  async preloadAdjacentDates(
+    currentDate: string,
+    barberId?: number,
+    daysAhead: number = 3,
+    daysBehind: number = 1
+  ): Promise<void> {
+    const requests = []
+    const baseDate = new Date(currentDate)
+
+    // Generate date ranges for preloading
+    for (let i = -daysBehind; i <= daysAhead; i++) {
+      if (i === 0) continue // Skip current date as it's likely already loaded
+      
+      const targetDate = new Date(baseDate)
+      targetDate.setDate(baseDate.getDate() + i)
+      const dateStr = targetDate.toISOString().split('T')[0]
+
+      requests.push({
+        dateRange: { start: dateStr, end: dateStr },
+        barberId,
+        priority: Math.abs(i) === 1 ? 7 : 4 // Higher priority for adjacent days
+      })
+    }
+
+    // Execute batch preload in background
+    try {
+      await this.batchFetchAppointments(requests)
+    } catch (error) {
+      console.warn('Preloading failed:', error)
+      // Preloading failures should not impact the main calendar functionality
+    }
+  }
+
+  /**
+   * Smart refresh that only fetches what's actually needed
+   */
+  async smartRefresh(options: {
+    currentDate?: string
+    barberId?: number
+    priority?: number
+    includeAdjacentDays?: boolean
+  } = {}): Promise<void> {
+    const { currentDate, barberId, priority = 8, includeAdjacentDays = true } = options
+
+    const requests = []
+
+    // Current date/view
+    if (currentDate) {
+      requests.push({
+        dateRange: { start: currentDate, end: currentDate },
+        barberId,
+        priority
+      })
+
+      // Include adjacent days for smoother navigation
+      if (includeAdjacentDays) {
+        const baseDate = new Date(currentDate)
+        
+        // Previous day
+        const prevDate = new Date(baseDate)
+        prevDate.setDate(baseDate.getDate() - 1)
+        requests.push({
+          dateRange: { 
+            start: prevDate.toISOString().split('T')[0], 
+            end: prevDate.toISOString().split('T')[0] 
+          },
+          barberId,
+          priority: priority - 2
+        })
+
+        // Next day
+        const nextDate = new Date(baseDate)
+        nextDate.setDate(baseDate.getDate() + 1)
+        requests.push({
+          dateRange: { 
+            start: nextDate.toISOString().split('T')[0], 
+            end: nextDate.toISOString().split('T')[0] 
+          },
+          barberId,
+          priority: priority - 2
+        })
+      }
+    } else {
+      // Default to current bookings
+      requests.push({
+        priority
+      })
+    }
+
+    await this.batchFetchAppointments(requests)
+  }
+
+  /**
+   * Batch calendar refresh optimized for calendar view changes
+   */
+  async batchCalendarRefresh(config: {
+    viewType: 'day' | 'week' | 'month'
+    currentDate: string
+    barberId?: number
+    includeMetrics?: boolean
+  }): Promise<{
+    appointments: any[]
+    metrics?: any
+    availability?: any
+  }> {
+    const requests = []
+    let dateRange: { start: string; end: string }
+
+    const baseDate = new Date(config.currentDate)
+
+    switch (config.viewType) {
+      case 'day':
+        dateRange = {
+          start: config.currentDate,
+          end: config.currentDate
+        }
+        break
+      case 'week':
+        const startOfWeek = new Date(baseDate)
+        startOfWeek.setDate(baseDate.getDate() - baseDate.getDay())
+        const endOfWeek = new Date(startOfWeek)
+        endOfWeek.setDate(startOfWeek.getDate() + 6)
+        dateRange = {
+          start: startOfWeek.toISOString().split('T')[0],
+          end: endOfWeek.toISOString().split('T')[0]
+        }
+        break
+      case 'month':
+        const startOfMonth = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1)
+        const endOfMonth = new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 0)
+        dateRange = {
+          start: startOfMonth.toISOString().split('T')[0],
+          end: endOfMonth.toISOString().split('T')[0]
+        }
+        break
+    }
+
+    // Primary appointments request
+    requests.push({
+      endpoint: `/api/v1/appointments?start_date=${dateRange.start}&end_date=${dateRange.end}${config.barberId ? `&barber_id=${config.barberId}` : ''}`,
+      priority: 9
+    })
+
+    // Include metrics if requested
+    if (config.includeMetrics) {
+      requests.push({
+        endpoint: `/api/v1/analytics/calendar-metrics?start_date=${dateRange.start}&end_date=${dateRange.end}`,
+        priority: 6
+      })
+    }
+
+    // Include availability data for the period
+    requests.push({
+      endpoint: `/api/v1/barbers/availability?start_date=${dateRange.start}&end_date=${dateRange.end}${config.barberId ? `&barber_id=${config.barberId}` : ''}`,
+      priority: 7
+    })
+
+    const results = await batchCalendarData(requests)
+
+    return {
+      appointments: results[0]?.appointments || results[0] || [],
+      metrics: config.includeMetrics ? results[1] : undefined,
+      availability: results[config.includeMetrics ? 2 : 1]
+    }
   }
 
   /**

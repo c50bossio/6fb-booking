@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { 
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -22,8 +22,16 @@ interface SidebarProps {
 
 export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const { colors, isDark } = useThemeStyles()
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['dashboard', 'calendar & scheduling']))
+  
+  // Debug logging
+  React.useEffect(() => {
+    console.log('Sidebar mounted, pathname:', pathname)
+    console.log('User:', user)
+    console.log('Router ready:', !!router)
+  }, [pathname, user, router])
 
   const toggleSection = (sectionName: string) => {
     const newExpanded = new Set(expandedSections)
@@ -53,10 +61,10 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
 
     const itemClasses = `
       group flex items-center w-full text-left px-3 py-2.5 text-sm font-medium rounded-ios-lg
-      transition-all duration-200 ease-out
+      transition-all duration-200 ease-out cursor-pointer relative z-10
       ${active 
-        ? `${colors.background.accent} ${colors.text.accent} shadow-ios-sm` 
-        : `${colors.text.secondary} hover:${colors.background.hover} hover:${colors.text.primary}`
+        ? `bg-primary-100 dark:bg-primary-900/20 text-primary-800 dark:text-primary-200 shadow-ios-sm` 
+        : `text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white`
       }
       ${level > 0 ? 'ml-6' : ''}
     `
@@ -67,7 +75,7 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
           <IconComponent 
             className={`
               flex-shrink-0 w-5 h-5 mr-3 transition-colors duration-200
-              ${active ? colors.text.accent : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300'}
+              ${active ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300'}
               ${collapsed ? 'mr-0' : 'mr-3'}
             `} 
           />
@@ -106,9 +114,16 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
       <div key={uniqueKey}>
         {hasChildren ? (
           <button
-            onClick={() => toggleSection(item.name.toLowerCase())}
+            onClick={(e) => {
+              e.stopPropagation()
+              console.log('Sidebar: Button clicked for section:', item.name)
+              console.log('Sidebar: Current expanded sections:', Array.from(expandedSections))
+              toggleSection(item.name.toLowerCase())
+              console.log('Sidebar: After toggle, expanded sections:', Array.from(expandedSections))
+            }}
             className={itemClasses}
             title={collapsed ? item.name : undefined}
+            type="button"
           >
             {content}
           </button>
@@ -117,6 +132,17 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
             href={item.href}
             className={itemClasses}
             title={collapsed ? item.name : undefined}
+            onClick={(e) => {
+              console.log('Sidebar: Link click detected for:', item.href)
+              console.log('Sidebar: Event details:', { defaultPrevented: e.defaultPrevented, target: e.target })
+              
+              // Force navigation using router if needed
+              if (!e.defaultPrevented) {
+                e.preventDefault()
+                console.log('Sidebar: Forcing navigation with router.push to:', item.href)
+                router.push(item.href)
+              }
+            }}
           >
             {content}
           </Link>
@@ -133,10 +159,10 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
 
   return (
     <aside className={`
-      relative flex flex-col ${colors.background.card} border-r ${colors.border.default}
+      relative flex flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700
       transition-all duration-300 ease-out
       ${collapsed ? 'w-16' : 'w-64'}
-      h-full overflow-hidden
+      h-full overflow-hidden z-10
     `}>
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
@@ -151,8 +177,8 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
         <button
           onClick={onToggleCollapse}
           className={`
-            p-1.5 rounded-lg ${colors.background.hover} ${colors.text.secondary}
-            hover:${colors.background.secondary} hover:${colors.text.primary}
+            p-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400
+            hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200
             transition-colors duration-200
             ${collapsed ? 'absolute top-4 right-2' : 'ml-auto'}
           `}
@@ -188,7 +214,7 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
       )}
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-4 space-y-1">
+      <nav className="flex-1 px-4 py-4 space-y-1 relative z-20">
         {filteredNavigationItems.map((item, index) => renderNavigationItem(item, 0, index))}
       </nav>
 

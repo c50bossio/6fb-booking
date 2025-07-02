@@ -6,6 +6,7 @@ import models
 import pytz
 import logging
 from services import barber_availability_service
+from config import settings
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -711,7 +712,6 @@ def create_booking(
     
     # Send appointment confirmation notifications
     try:
-        # TODO: Re-enable notification service when available
         notification_service = get_notification_service()
         if notification_service:
             # Get client information for notifications
@@ -731,8 +731,8 @@ def create_booking(
                 "duration": SERVICES[service]["duration"],
                 "price": SERVICES[service]["price"],
                 "barber_name": barber.name if barber else None,
-                "business_name": "6FB Booking",
-                "business_phone": "(555) 123-4567",  # TODO: Make configurable
+                "business_name": settings.business_name or "BookedBarber",
+                "business_phone": settings.business_phone or "(555) 123-4567",
                 "current_year": datetime.now().year
             }
             

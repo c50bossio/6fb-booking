@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
+import VirtualList from '@/components/VirtualList'
 
 export default function ClientsPage() {
   const router = useRouter()
@@ -19,6 +20,10 @@ export default function ClientsPage() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [showAddModal, setShowAddModal] = useState(false)
+  
+  // Virtual scrolling threshold
+  const VIRTUAL_SCROLLING_THRESHOLD = 100
+  const shouldUseVirtualScrolling = clients.length > VIRTUAL_SCROLLING_THRESHOLD
 
   useEffect(() => {
     loadClients()
@@ -83,6 +88,66 @@ export default function ClientsPage() {
       case 'returning': return 'text-green-600 bg-green-50'
       default: return 'text-gray-600 bg-gray-50'
     }
+  }
+
+  // Prepare clients with heights for virtual scrolling
+  const clientsWithHeights = clients.map(client => ({
+    ...client,
+    height: 80 // Standard row height
+  }))
+
+  // Virtual client item renderer
+  const renderVirtualClient = (client: Client & { height?: number }, index: number, style: React.CSSProperties) => {
+    return (
+      <div className="border-b border-gray-200 hover:bg-gray-50 transition-colors" style={style}>
+        <div className="px-6 py-4 flex items-center">
+          <div className="flex-1 min-w-0">
+            <Link
+              href={`/clients/${client.id}`}
+              className="text-blue-600 hover:text-blue-500 font-medium"
+            >
+              {client.first_name} {client.last_name}
+            </Link>
+          </div>
+          <div className="flex-1 min-w-0 text-sm text-gray-500">
+            <div>{client.email}</div>
+            {client.phone && <div>{client.phone}</div>}
+          </div>
+          <div className="flex-1 min-w-0">
+            <select
+              value={client.customer_type}
+              onChange={(e) => handleCustomerTypeChange(client.id, e.target.value)}
+              className={`text-sm font-medium px-2 py-1 rounded-full border-0 ${getCustomerTypeColor(client.customer_type)}`}
+            >
+              <option value="new">New</option>
+              <option value="returning">Returning</option>
+              <option value="vip">VIP</option>
+              <option value="at_risk">At Risk</option>
+            </select>
+          </div>
+          <div className="flex-1 min-w-0 text-sm text-gray-900">
+            {client.total_visits}
+          </div>
+          <div className="flex-1 min-w-0 text-sm text-gray-900">
+            ${client.total_spent.toFixed(2)}
+          </div>
+          <div className="flex-1 min-w-0 text-sm font-medium">
+            <Link
+              href={`/clients/${client.id}`}
+              className="text-blue-600 hover:text-blue-900 mr-4"
+            >
+              View
+            </Link>
+            <button
+              onClick={() => handleDeleteClient(client.id)}
+              className="text-red-600 hover:text-red-900"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -163,80 +228,99 @@ export default function ClientsPage() {
         ) : (
           <>
             <div className="bg-white rounded-lg shadow overflow-hidden">
-              <table className="min-w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Client
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Contact
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Type
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Visits
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Revenue
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+              {/* Table Header */}
+              <div className="bg-gray-50 px-6 py-3">
+                <div className="flex items-center">
+                  <div className="flex-1 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Client
+                  </div>
+                  <div className="flex-1 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Contact
+                  </div>
+                  <div className="flex-1 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Type
+                  </div>
+                  <div className="flex-1 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Visits
+                  </div>
+                  <div className="flex-1 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Revenue
+                  </div>
+                  <div className="flex-1 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </div>
+                </div>
+              </div>
+
+              {/* Virtual or Standard Table Body */}
+              {shouldUseVirtualScrolling ? (
+                <div className="relative">
+                  <div className="mb-2 px-6 py-2 bg-blue-50 text-blue-700 text-sm">
+                    📊 Virtual scrolling active - {clients.length} clients loaded
+                  </div>
+                  <VirtualList
+                    items={clientsWithHeights}
+                    containerHeight={600} // Fixed height for virtual scrolling
+                    itemHeight={80}
+                    renderItem={renderVirtualClient}
+                    className="border-t border-gray-200"
+                    overscan={5}
+                  />
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-200">
                   {clients.map((client) => (
-                    <tr key={client.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <Link
-                          href={`/clients/${client.id}`}
-                          className="text-blue-600 hover:text-blue-500"
-                        >
-                          {client.first_name} {client.last_name}
-                        </Link>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <div>{client.email}</div>
-                        {client.phone && <div>{client.phone}</div>}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <select
-                          value={client.customer_type}
-                          onChange={(e) => handleCustomerTypeChange(client.id, e.target.value)}
-                          className={`text-sm font-medium px-2 py-1 rounded-full ${getCustomerTypeColor(client.customer_type)}`}
-                        >
-                          <option value="new">New</option>
-                          <option value="returning">Returning</option>
-                          <option value="vip">VIP</option>
-                          <option value="at_risk">At Risk</option>
-                        </select>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {client.total_visits}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        ${client.total_spent.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <Link
-                          href={`/clients/${client.id}`}
-                          className="text-blue-600 hover:text-blue-900 mr-4"
-                        >
-                          View
-                        </Link>
-                        <button
-                          onClick={() => handleDeleteClient(client.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
+                    <div key={client.id} className="px-6 py-4 hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center">
+                        <div className="flex-1 min-w-0">
+                          <Link
+                            href={`/clients/${client.id}`}
+                            className="text-blue-600 hover:text-blue-500 font-medium"
+                          >
+                            {client.first_name} {client.last_name}
+                          </Link>
+                        </div>
+                        <div className="flex-1 min-w-0 text-sm text-gray-500">
+                          <div>{client.email}</div>
+                          {client.phone && <div>{client.phone}</div>}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <select
+                            value={client.customer_type}
+                            onChange={(e) => handleCustomerTypeChange(client.id, e.target.value)}
+                            className={`text-sm font-medium px-2 py-1 rounded-full border-0 ${getCustomerTypeColor(client.customer_type)}`}
+                          >
+                            <option value="new">New</option>
+                            <option value="returning">Returning</option>
+                            <option value="vip">VIP</option>
+                            <option value="at_risk">At Risk</option>
+                          </select>
+                        </div>
+                        <div className="flex-1 min-w-0 text-sm text-gray-900">
+                          {client.total_visits}
+                        </div>
+                        <div className="flex-1 min-w-0 text-sm text-gray-900">
+                          ${client.total_spent.toFixed(2)}
+                        </div>
+                        <div className="flex-1 min-w-0 text-sm font-medium">
+                          <Link
+                            href={`/clients/${client.id}`}
+                            className="text-blue-600 hover:text-blue-900 mr-4"
+                          >
+                            View
+                          </Link>
+                          <button
+                            onClick={() => handleDeleteClient(client.id)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                </div>
+              )}
             </div>
 
             {/* Pagination */}

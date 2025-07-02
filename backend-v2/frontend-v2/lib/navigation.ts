@@ -86,7 +86,14 @@ export function filterNavigationByRole(
   items: NavigationItem[],
   userRole?: string | null
 ): NavigationItem[] {
-  if (!userRole) return []
+  // If no userRole, show items that don't require specific roles (public items)
+  if (!userRole) {
+    return items.filter(item => !item.roles || item.roles.length === 0).map(item => ({
+      ...item,
+      // Recursively filter children
+      children: item.children ? filterNavigationByRole(item.children, userRole) : undefined
+    }))
+  }
   
   return items.filter(item => {
     // If no roles specified, item is available to all

@@ -13,6 +13,7 @@ import ConflictResolutionModal from './modals/ConflictResolutionModal'
 import { useCalendarPerformance } from '@/hooks/useCalendarPerformance'
 import { useResponsive } from '@/hooks/useResponsive'
 import CalendarDayViewMobile from './calendar/CalendarDayViewMobile'
+import VirtualList from './VirtualList'
 import '@/styles/calendar-animations.css'
 
 interface Appointment {
@@ -27,6 +28,7 @@ interface Appointment {
   barber_name?: string
   status: string
   duration_minutes?: number
+  height?: number
 }
 
 interface Barber {
@@ -84,6 +86,106 @@ const CurrentTimeIndicator = React.memo(({ startHour, slotDuration }: { startHou
 })
 
 CurrentTimeIndicator.displayName = 'CurrentTimeIndicator'
+
+// Virtualized appointment item component
+const VirtualizedAppointmentItem = React.memo(function VirtualizedAppointmentItem({
+  appointment,
+  index,
+  style,
+  getStatusColor,
+  getServiceBadgeClass,
+  selectedAppointments,
+  isSelectionMode,
+  isDragging,
+  onAppointmentClick,
+  onClientClick,
+  toggleAppointmentSelection,
+  clients,
+  setSelectedClient,
+  setShowClientModal
+}: {
+  appointment: Appointment
+  index: number
+  style: React.CSSProperties
+  getStatusColor: (status: string) => string
+  getServiceBadgeClass: (serviceName: string) => string
+  selectedAppointments: Set<number>
+  isSelectionMode: boolean
+  isDragging: boolean
+  onAppointmentClick?: (appointment: Appointment) => void
+  onClientClick?: (client: any) => void
+  toggleAppointmentSelection: (appointmentId: number, event?: React.MouseEvent) => void
+  clients: any[]
+  setSelectedClient: (client: any) => void
+  setShowClientModal: (show: boolean) => void
+}) {
+  return (
+    <div
+      className={`calendar-appointment absolute left-2 right-2 rounded-lg transition-all text-white p-3 border-l-4 shadow-sm hover:shadow-md ${getStatusColor(appointment.status)} ${
+        selectedAppointments.has(appointment.id) ? 'ring-2 ring-white ring-opacity-80 shadow-lg scale-[1.02]' : ''
+      } ${
+        appointment.status !== 'completed' && appointment.status !== 'cancelled' 
+          ? 'cursor-move hover:shadow-lg hover:scale-[1.02] hover:z-10 touch-target' 
+          : 'cursor-pointer'
+      }`}
+      style={{
+        ...style,
+        animationDelay: `${index * 30}ms` // Stagger appointments
+      }}
+      onClick={(e) => {
+        e.stopPropagation()
+        if (!isDragging) {
+          if (e.ctrlKey || e.metaKey || e.shiftKey || isSelectionMode) {
+            toggleAppointmentSelection(appointment.id, e)
+          } else {
+            onAppointmentClick?.(appointment)
+          }
+        }
+      }}
+    >
+      {/* Selection indicator */}
+      {selectedAppointments.has(appointment.id) && (
+        <div className="absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-md">
+          <div className="w-3 h-3 bg-primary-500 rounded-full flex items-center justify-center">
+            <span className="text-white text-xs">✓</span>
+          </div>
+        </div>
+      )}
+      
+      <div 
+        className="font-semibold text-sm truncate hover:underline cursor-pointer"
+        onClick={(e) => {
+          e.stopPropagation()
+          // Find client by name and open detail modal
+          const client = clients.find(c => 
+            `${c.first_name} ${c.last_name}` === appointment.client_name ||
+            c.email === appointment.client_email
+          )
+          if (client) {
+            setSelectedClient(client)
+            setShowClientModal(true)
+          }
+        }}
+      >
+        {appointment.client_name || 'Client'}
+      </div>
+      <div className="text-xs opacity-90 truncate">
+        <span className={`service-badge ${getServiceBadgeClass(appointment.service_name)}`}>
+          {appointment.service_name}
+        </span>
+      </div>
+      <div className="text-xs opacity-75 mt-1">
+        {format(parseAPIDate(appointment.start_time), 'h:mm a')}
+        {appointment.duration_minutes && ` (${appointment.duration_minutes}m)`}
+      </div>
+      {appointment.barber_name && (
+        <div className="text-xs opacity-75 truncate">{appointment.barber_name}</div>
+      )}
+    </div>
+  )
+})
+
+VirtualizedAppointmentItem.displayName = 'VirtualizedAppointmentItem'
 
 const CalendarDayView = React.memo(function CalendarDayView({
   appointments,
@@ -210,6 +312,10 @@ const CalendarDayView = React.memo(function CalendarDayView({
     })
   }, [appointments, selectedBarberId, currentDay, optimizedAppointmentFilter])
 
+  // Virtual scrolling threshold - use virtual scrolling when there are more than 50 appointments
+  const VIRTUAL_SCROLLING_THRESHOLD = 50
+  const shouldUseVirtualScrolling = filteredAppointments.length > VIRTUAL_SCROLLING_THRESHOLD
+
   // Debounced navigation function
   const navigateToDate = useCallback((direction: 'prev' | 'next' | 'today') => {
     if (navigationDebounceRef.current) {
@@ -308,6 +414,19 @@ const CalendarDayView = React.memo(function CalendarDayView({
         return 'bg-purple-500 hover:bg-purple-600 border-purple-600'
     }
   }, [])
+
+  // Prepare appointments with calculated heights for virtual scrolling
+  const appointmentsWithHeights = useMemo(() => {
+    return filteredAppointments.map((appointment, index) => {
+      const style = getAppointmentStyle(appointment)
+      const height = parseInt(style.height) || 60 // Minimum height of 60px
+      
+      return {
+        ...appointment,
+        height: Math.max(height, 60) // Ensure minimum height for readability
+      }
+    })
+  }, [filteredAppointments, getAppointmentStyle])
 
   // Format barber name
   const getBarberName = (barber: Barber) => {
@@ -717,6 +836,40 @@ const CalendarDayView = React.memo(function CalendarDayView({
     }
   }, [undoData, onAppointmentUpdate])
 
+  // Virtual appointment renderer
+  const renderVirtualAppointment = useCallback((appointment: Appointment, index: number, style: React.CSSProperties) => {
+    return (
+      <VirtualizedAppointmentItem
+        appointment={appointment}
+        index={index}
+        style={style}
+        getStatusColor={getStatusColor}
+        getServiceBadgeClass={getServiceBadgeClass}
+        selectedAppointments={selectedAppointments}
+        isSelectionMode={isSelectionMode}
+        isDragging={isDragging}
+        onAppointmentClick={onAppointmentClick}
+        onClientClick={onClientClick}
+        toggleAppointmentSelection={toggleAppointmentSelection}
+        clients={clients}
+        setSelectedClient={setSelectedClient}
+        setShowClientModal={setShowClientModal}
+      />
+    )
+  }, [
+    getStatusColor,
+    getServiceBadgeClass,
+    selectedAppointments,
+    isSelectionMode,
+    isDragging,
+    onAppointmentClick,
+    onClientClick,
+    toggleAppointmentSelection,
+    clients,
+    setSelectedClient,
+    setShowClientModal
+  ])
+
   // Render mobile view on small screens
   if (isMobile) {
     return (
@@ -1081,90 +1234,106 @@ const CalendarDayView = React.memo(function CalendarDayView({
               />
             )}
             
-            {/* Appointments */}
-            {filteredAppointments.map((appointment, index) => (
-              <div
-                key={appointment.id}
-                data-appointment-id={appointment.id}
-                draggable={appointment.status !== 'completed' && appointment.status !== 'cancelled'}
-                className={`calendar-appointment absolute left-2 right-2 rounded-lg transition-all text-white p-3 border-l-4 shadow-sm hover:shadow-md ${getStatusColor(appointment.status)} ${
-                  draggedAppointment?.id === appointment.id ? 'dragging opacity-60' : ''
-                } ${
-                  selectedAppointments.has(appointment.id) ? 'ring-2 ring-white ring-opacity-80 shadow-lg scale-[1.02]' : ''
-                } ${
-                  appointment.status !== 'completed' && appointment.status !== 'cancelled' 
-                    ? 'cursor-move hover:shadow-lg hover:scale-[1.02] hover:z-10 touch-target' 
-                    : 'cursor-pointer'
-                }`}
-                style={{
-                  ...getAppointmentStyle(appointment),
-                  animationDelay: `${index * 30}ms` // Stagger appointments
-                }}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  if (!isDragging) {
-                    if (e.ctrlKey || e.metaKey || e.shiftKey || isSelectionMode) {
-                      toggleAppointmentSelection(appointment.id, e)
-                    } else {
-                      onAppointmentClick?.(appointment)
-                    }
-                  }
-                }}
-                onDragStart={(e) => {
-                  if (appointment.status !== 'completed' && appointment.status !== 'cancelled') {
-                    e.dataTransfer.effectAllowed = 'move'
-                    setDraggedAppointment(appointment)
-                    setIsDragging(true)
-                  } else {
-                    e.preventDefault()
-                  }
-                }}
-                onDragEnd={() => {
-                  setDraggedAppointment(null)
-                  setDragOverSlot(null)
-                  setIsDragging(false)
-                }}
-              >
-                {/* Selection indicator */}
-                {selectedAppointments.has(appointment.id) && (
-                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-md">
-                    <div className="w-3 h-3 bg-primary-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-xs">✓</span>
-                    </div>
-                  </div>
-                )}
-                
-                <div 
-                  className="font-semibold text-sm truncate hover:underline cursor-pointer"
+            {/* Appointments - Use virtual scrolling for large lists */}
+            {shouldUseVirtualScrolling ? (
+              <VirtualList
+                items={appointmentsWithHeights}
+                containerHeight={Math.min(600, (endHour - startHour) * 80)} // Limit max height
+                itemHeight={80} // Average appointment height
+                estimatedItemHeight={80}
+                renderItem={renderVirtualAppointment}
+                getItemHeight={(appointment) => appointment.height || 80}
+                className="absolute inset-0"
+                style={{ zIndex: 5 }}
+                maintainScrollPosition={true}
+                overscan={10} // Render extra items for smooth scrolling
+              />
+            ) : (
+              // Standard rendering for smaller lists
+              filteredAppointments.map((appointment, index) => (
+                <div
+                  key={appointment.id}
+                  data-appointment-id={appointment.id}
+                  draggable={appointment.status !== 'completed' && appointment.status !== 'cancelled'}
+                  className={`calendar-appointment absolute left-2 right-2 rounded-lg transition-all text-white p-3 border-l-4 shadow-sm hover:shadow-md ${getStatusColor(appointment.status)} ${
+                    draggedAppointment?.id === appointment.id ? 'dragging opacity-60' : ''
+                  } ${
+                    selectedAppointments.has(appointment.id) ? 'ring-2 ring-white ring-opacity-80 shadow-lg scale-[1.02]' : ''
+                  } ${
+                    appointment.status !== 'completed' && appointment.status !== 'cancelled' 
+                      ? 'cursor-move hover:shadow-lg hover:scale-[1.02] hover:z-10 touch-target' 
+                      : 'cursor-pointer'
+                  }`}
+                  style={{
+                    ...getAppointmentStyle(appointment),
+                    animationDelay: `${index * 30}ms` // Stagger appointments
+                  }}
                   onClick={(e) => {
                     e.stopPropagation()
-                    // Find client by name and open detail modal
-                    const client = clients.find(c => 
-                      `${c.first_name} ${c.last_name}` === appointment.client_name ||
-                      c.email === appointment.client_email
-                    )
-                    if (client) {
-                      setSelectedClient(client)
-                      setShowClientModal(true)
+                    if (!isDragging) {
+                      if (e.ctrlKey || e.metaKey || e.shiftKey || isSelectionMode) {
+                        toggleAppointmentSelection(appointment.id, e)
+                      } else {
+                        onAppointmentClick?.(appointment)
+                      }
                     }
                   }}
+                  onDragStart={(e) => {
+                    if (appointment.status !== 'completed' && appointment.status !== 'cancelled') {
+                      e.dataTransfer.effectAllowed = 'move'
+                      setDraggedAppointment(appointment)
+                      setIsDragging(true)
+                    } else {
+                      e.preventDefault()
+                    }
+                  }}
+                  onDragEnd={() => {
+                    setDraggedAppointment(null)
+                    setDragOverSlot(null)
+                    setIsDragging(false)
+                  }}
                 >
-                  {appointment.client_name || 'Client'}
+                  {/* Selection indicator */}
+                  {selectedAppointments.has(appointment.id) && (
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-md">
+                      <div className="w-3 h-3 bg-primary-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs">✓</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div 
+                    className="font-semibold text-sm truncate hover:underline cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      // Find client by name and open detail modal
+                      const client = clients.find(c => 
+                        `${c.first_name} ${c.last_name}` === appointment.client_name ||
+                        c.email === appointment.client_email
+                      )
+                      if (client) {
+                        setSelectedClient(client)
+                        setShowClientModal(true)
+                      }
+                    }}
+                  >
+                    {appointment.client_name || 'Client'}
+                  </div>
+                  <div className="text-xs opacity-90 truncate">
+                    <span className={`service-badge ${getServiceBadgeClass(appointment.service_name)}`}>
+                      {appointment.service_name}
+                    </span>
+                  </div>
+                  <div className="text-xs opacity-75 mt-1">
+                    {format(parseAPIDate(appointment.start_time), 'h:mm a')}
+                    {appointment.duration_minutes && ` (${appointment.duration_minutes}m)`}
+                  </div>
+                  {appointment.barber_name && (
+                    <div className="text-xs opacity-75 truncate">{appointment.barber_name}</div>
+                  )}
                 </div>
-                <div className="text-xs opacity-90 truncate">
-                  <span className={`service-badge ${getServiceBadgeClass(appointment.service_name)}`}>
-                    {appointment.service_name}
-                  </span>
-                </div>
-                <div className="text-xs opacity-75 mt-1">
-                  {format(parseAPIDate(appointment.start_time), 'h:mm a')}
-                  {appointment.duration_minutes && ` (${appointment.duration_minutes}m)`}
-                </div>
-                {appointment.barber_name && (
-                  <div className="text-xs opacity-75 truncate">{appointment.barber_name}</div>
-                )}
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -1173,6 +1342,11 @@ const CalendarDayView = React.memo(function CalendarDayView({
       <div className="border-t border-gray-200 dark:border-gray-700 p-3 flex items-center justify-between bg-gray-50 dark:bg-gray-800/50">
         <div className="text-sm text-gray-600 dark:text-gray-400">
           {filteredAppointments.length} appointment{filteredAppointments.length !== 1 ? 's' : ''} scheduled
+          {shouldUseVirtualScrolling && (
+            <span className="ml-3 text-blue-600 dark:text-blue-400 font-medium">
+              📊 Virtual scrolling active
+            </span>
+          )}
           {isDragging && (
             <span className="ml-3 text-primary-600 dark:text-primary-400 font-medium animate-pulse">
               📍 Drop to reschedule

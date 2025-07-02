@@ -196,21 +196,7 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
           {/* Theme Toggle */}
           <SimpleThemeToggle className="hidden sm:block" />
 
-          {/* Quick Logout Button */}
-          {user && (
-            <button
-              onClick={handleLogout}
-              className={`
-                p-2 rounded-ios-lg ${colors.background.hover} ${colors.text.secondary}
-                hover:${colors.background.secondary} hover:text-red-600 dark:hover:text-red-400
-                transition-colors duration-200 hidden sm:block
-              `}
-              title="Sign Out"
-              aria-label="Sign out"
-            >
-              <ArrowRightOnRectangleIcon className="w-5 h-5" />
-            </button>
-          )}
+          {/* Quick Logout Button - Removed as it's redundant with the profile dropdown */}
 
           {/* Notifications */}
           <div className="relative" ref={notificationsRef}>
