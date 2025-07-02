@@ -4,14 +4,24 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:turbo": "next dev --turbo",
     "build": "next build",
     "build:analyze": "ANALYZE=true next build",
+    "build:profile": "next build --profile",
+    "build:debug": "next build --debug",
+    "build:production": "NODE_ENV=production next build",
     "start": "next start -p $PORT",
     "start:railway": "node .next/standalone/server.js",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "optimize": "npm run lint:fix && npm run build:analyze",
+    "size": "npx size-limit",
+    "lighthouse": "npx lighthouse http://localhost:3000 --output-path=./lighthouse-report.html",
+    "bundle:stats": "npx webpack-bundle-analyzer .next/analyze/client.json",
+    "precommit": "npm run lint && npm run test"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

@@ -5,7 +5,8 @@ from slowapi.errors import RateLimitExceeded
 from database import engine, Base
 import models
 import location_models
-from routers import auth, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, email_analytics, test_data, reviews
+from routers import auth, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, email_analytics, test_data
+# Temporarily disabled: reviews, integrations
 # Temporarily disabled: integrations
 from routers.services import public_router as services_public_router
 from utils.rate_limit import limiter, rate_limit_exceeded_handler
@@ -83,7 +84,7 @@ app.include_router(short_urls.router)  # No prefix for branded short URLs
 app.include_router(notification_preferences.router)  # No prefix, includes its own /api/v1
 app.include_router(email_analytics.router, prefix="/api/v1")
 app.include_router(test_data.router, prefix="/api/v1")
-app.include_router(reviews.router, prefix="/api/v1")
+# app.include_router(reviews.router, prefix="/api/v1")  # Temporarily disabled
 # app.include_router(locations.router, prefix="/api/v1")  # Temporarily disabled due to schema error
 # app.include_router(integrations.router)  # Integration management endpoints - temporarily disabled
 

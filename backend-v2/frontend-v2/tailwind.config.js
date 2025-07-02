@@ -388,6 +388,18 @@ module.exports = {
         'skeleton': 'skeleton 1.2s ease-in-out infinite',
         'dots': 'dots 1.5s linear infinite',
         'spinner': 'spin 1s linear infinite',
+        
+        // New enhanced animations
+        'scale-in': 'scaleIn 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        'scale-out': 'scaleOut 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        'rubber-band': 'rubberBand 1s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        'jello': 'jello 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        'wobble': 'wobble 1s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        'tada': 'tada 1s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        'morphing-gradient': 'morphingGradient 8s ease-in-out infinite',
+        'typewriter': 'typewriter 3s steps(30, end)',
+        'blink': 'blink 1s step-end infinite',
+        'bounce-soft': 'bounceSoft 2s ease-in-out infinite',
       },
       
       keyframes: {
@@ -506,6 +518,68 @@ module.exports = {
           '0%, 20%': { opacity: '0.4' },
           '50%': { opacity: '1' },
           '100%': { opacity: '0.4' },
+        },
+        
+        // New enhanced keyframes
+        scaleIn: {
+          '0%': { transform: 'scale(0.95) translate3d(0, 0, 0)', opacity: '0' },
+          '100%': { transform: 'scale(1) translate3d(0, 0, 0)', opacity: '1' },
+        },
+        scaleOut: {
+          '0%': { transform: 'scale(1) translate3d(0, 0, 0)', opacity: '1' },
+          '100%': { transform: 'scale(0.95) translate3d(0, 0, 0)', opacity: '0' },
+        },
+        rubberBand: {
+          '0%': { transform: 'scale3d(1, 1, 1)' },
+          '30%': { transform: 'scale3d(1.25, 0.75, 1)' },
+          '40%': { transform: 'scale3d(0.75, 1.25, 1)' },
+          '50%': { transform: 'scale3d(1.15, 0.85, 1)' },
+          '65%': { transform: 'scale3d(0.95, 1.05, 1)' },
+          '75%': { transform: 'scale3d(1.05, 0.95, 1)' },
+          '100%': { transform: 'scale3d(1, 1, 1)' },
+        },
+        jello: {
+          '0%, 11.1%, 100%': { transform: 'translate3d(0, 0, 0)' },
+          '22.2%': { transform: 'skewX(-12.5deg) skewY(-12.5deg)' },
+          '33.3%': { transform: 'skewX(6.25deg) skewY(6.25deg)' },
+          '44.4%': { transform: 'skewX(-3.125deg) skewY(-3.125deg)' },
+          '55.5%': { transform: 'skewX(1.5625deg) skewY(1.5625deg)' },
+          '66.6%': { transform: 'skewX(-0.78125deg) skewY(-0.78125deg)' },
+          '77.7%': { transform: 'skewX(0.390625deg) skewY(0.390625deg)' },
+          '88.8%': { transform: 'skewX(-0.1953125deg) skewY(-0.1953125deg)' },
+        },
+        wobble: {
+          '0%': { transform: 'translate3d(0, 0, 0)' },
+          '15%': { transform: 'translate3d(-25%, 0, 0) rotate3d(0, 0, 1, -5deg)' },
+          '30%': { transform: 'translate3d(20%, 0, 0) rotate3d(0, 0, 1, 3deg)' },
+          '45%': { transform: 'translate3d(-15%, 0, 0) rotate3d(0, 0, 1, -3deg)' },
+          '60%': { transform: 'translate3d(10%, 0, 0) rotate3d(0, 0, 1, 2deg)' },
+          '75%': { transform: 'translate3d(-5%, 0, 0) rotate3d(0, 0, 1, -1deg)' },
+          '100%': { transform: 'translate3d(0, 0, 0)' },
+        },
+        tada: {
+          '0%': { transform: 'scale3d(1, 1, 1)' },
+          '10%, 20%': { transform: 'scale3d(0.9, 0.9, 0.9) rotate3d(0, 0, 1, -3deg)' },
+          '30%, 50%, 70%, 90%': { transform: 'scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, 3deg)' },
+          '40%, 60%, 80%': { transform: 'scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, -3deg)' },
+          '100%': { transform: 'scale3d(1, 1, 1)' },
+        },
+        morphingGradient: {
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' },
+        },
+        typewriter: {
+          '0%': { width: '0' },
+          '100%': { width: '100%' },
+        },
+        blink: {
+          '0%, 50%': { opacity: '1' },
+          '51%, 100%': { opacity: '0' },
+        },
+        bounceSoft: {
+          '0%, 100%': { transform: 'translateY(0) translate3d(0, 0, 0)' },
+          '50%': { transform: 'translateY(-5px) translate3d(0, 0, 0)' },
         },
       },
       

@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Main Bundle",
+    "path": ".next/static/chunks/pages/_app.js",
+    "limit": "100 KB",
+    "webpack": false
+  },
+  {
+    "name": "Dashboard Page",
+    "path": ".next/static/chunks/pages/dashboard.js",
+    "limit": "50 KB",
+    "webpack": false
+  },
+  {
+    "name": "Calendar Page",
+    "path": ".next/static/chunks/pages/calendar.js",
+    "limit": "75 KB",
+    "webpack": false
+  },
+  {
+    "name": "Total Initial JS",
+    "path": ".next/static/chunks/*.js",
+    "limit": "250 KB",
+    "webpack": false
+  },
+  {
+    "name": "CSS Bundle",
+    "path": ".next/static/css/*.css",
+    "limit": "50 KB",
+    "webpack": false
+  }
+]

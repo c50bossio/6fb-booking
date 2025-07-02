@@ -12,7 +12,7 @@ from database import get_db
 from models import User
 from models.review import Review, ReviewResponse, ReviewTemplate, ReviewPlatform, ReviewSentiment
 from models.integration import Integration, IntegrationType
-from schemas.review import (
+from schemas import (
     ReviewResponse as ReviewResponseSchema,
     ReviewResponseCreate,
     ReviewResponseUpdate,

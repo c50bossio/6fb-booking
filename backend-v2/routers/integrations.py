@@ -12,7 +12,7 @@ from database import get_db
 from dependencies import get_current_user
 from models import User
 from models.integration import IntegrationType as IntegrationTypeModel, IntegrationStatus
-from schemas.integration import (
+from schemas import (
     IntegrationCreate,
     IntegrationUpdate,
     IntegrationResponse,
