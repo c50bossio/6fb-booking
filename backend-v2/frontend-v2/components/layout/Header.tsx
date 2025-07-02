@@ -10,7 +10,10 @@ import {
   BellIcon,
   MagnifyingGlassIcon,
   CalendarIcon,
-  ArrowRightOnRectangleIcon
+  ArrowRightOnRectangleIcon,
+  LinkIcon,
+  QrCodeIcon,
+  ClipboardDocumentIcon
 } from '@heroicons/react/24/outline'
 import { type User, logout } from '@/lib/api'
 import { useThemeStyles } from '@/hooks/useTheme'
@@ -33,10 +36,14 @@ interface HeaderProps {
 export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false }: HeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
+  const [showShareMenu, setShowShareMenu] = useState(false)
   const [notificationDropdownPosition, setNotificationDropdownPosition] = useState({ top: 0, left: 0 })
+  const [shareDropdownPosition, setShareDropdownPosition] = useState({ top: 0, left: 0 })
   const userMenuRef = useRef<HTMLDivElement>(null)
   const notificationsRef = useRef<HTMLDivElement>(null)
+  const shareMenuRef = useRef<HTMLDivElement>(null)
   const notificationButtonRef = useRef<HTMLButtonElement>(null)
+  const shareButtonRef = useRef<HTMLButtonElement>(null)
   const router = useRouter()
   const { colors, isDark } = useThemeStyles()
 
@@ -53,6 +60,12 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
       }
       if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
         setShowNotifications(false)
+      }
+      if (shareMenuRef.current && !shareMenuRef.current.contains(event.target as Node)) {
+        const portalShare = document.querySelector('[data-share-menu-portal]')
+        if (!portalShare || !portalShare.contains(event.target as Node)) {
+          setShowShareMenu(false)
+        }
       }
     }
 
@@ -117,6 +130,34 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
       setNotificationDropdownPosition({ top, left })
     }
     setShowNotifications(!showNotifications)
+  }
+
+  const handleShareClick = () => {
+    if (!showShareMenu && shareButtonRef.current) {
+      const buttonRect = shareButtonRef.current.getBoundingClientRect()
+      const dropdownWidth = 320
+      const gap = 8
+      
+      let top = buttonRect.bottom + gap
+      let left = buttonRect.right - dropdownWidth
+      
+      if (left < 8) {
+        left = 8
+      }
+      
+      const estimatedHeight = 300
+      if (top + estimatedHeight > window.innerHeight - 8) {
+        top = buttonRect.top - estimatedHeight - gap
+      }
+      
+      setShareDropdownPosition({ top, left })
+    }
+    setShowShareMenu(!showShareMenu)
+  }
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text)
+    // You could show a toast notification here
   }
 
 
@@ -196,7 +237,110 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
           {/* Theme Toggle */}
           <SimpleThemeToggle className="hidden sm:block" />
 
-          {/* Quick Logout Button - Removed as it's redundant with the profile dropdown */}
+          {/* Share/Booking Links Button - Only show for barbers and admins */}
+          {user && (user.role === 'barber' || user.role === 'admin') && (
+            <div className="relative" ref={shareMenuRef}>
+              <button
+                ref={shareButtonRef}
+                onClick={handleShareClick}
+                className={`
+                  relative p-2 rounded-ios-lg ${colors.background.hover} ${colors.text.secondary}
+                  hover:${colors.background.secondary} hover:${colors.text.primary}
+                  transition-colors duration-200
+                  ${showShareMenu ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : ''}
+                `}
+                title="Booking Links"
+              >
+                <LinkIcon className="w-5 h-5" />
+              </button>
+
+              {/* Share Menu Dropdown */}
+              {showShareMenu && (
+                <Portal>
+                  <div 
+                    data-share-menu-portal
+                    className="fixed bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700"
+                    style={{ 
+                      zIndex: 2147483647,
+                      top: `${shareDropdownPosition.top}px`,
+                      left: `${shareDropdownPosition.left}px`,
+                      width: '320px',
+                      maxWidth: 'calc(100vw - 40px)'
+                    }}
+                  >
+                    <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        Quick Share Links
+                      </h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        Share your booking page
+                      </p>
+                    </div>
+                    <div className="p-2">
+                      {/* Main Booking Link */}
+                      <div className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">
+                              Your Booking Page
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              {window.location.origin}/book
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => copyToClipboard(`${window.location.origin}/book`)}
+                            className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
+                            title="Copy link"
+                          >
+                            <ClipboardDocumentIcon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Popular Short Links */}
+                      <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                        <p className="px-3 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                          Popular Links
+                        </p>
+                        <div className="mt-1">
+                          <button
+                            onClick={() => window.open(`${window.location.origin}/book/summer2025`, '_blank')}
+                            className="w-full p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors text-left"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                  Summer Special
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  /book/summer2025 • 234 clicks
+                                </p>
+                              </div>
+                              <QrCodeIcon className="w-4 h-4 text-gray-400" />
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Create New Link */}
+                      <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                        <Link
+                          href="/marketing/booking-links"
+                          onClick={() => setShowShareMenu(false)}
+                          className="block w-full p-3 bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/30 rounded-lg transition-colors text-center"
+                        >
+                          <span className="text-sm font-medium text-primary-600 dark:text-primary-400">
+                            Create Custom Link
+                          </span>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </Portal>
+              )}
+            </div>
+          )}
 
           {/* Notifications */}
           <div className="relative" ref={notificationsRef}>

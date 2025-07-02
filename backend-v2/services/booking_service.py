@@ -268,6 +268,7 @@ def get_available_slots_with_barber_availability(
     db: Session, 
     target_date: date, 
     barber_id: Optional[int] = None, 
+    service_id: Optional[int] = None,
     user_timezone: Optional[str] = None, 
     include_next_available: bool = True
 ) -> Dict[str, Any]:

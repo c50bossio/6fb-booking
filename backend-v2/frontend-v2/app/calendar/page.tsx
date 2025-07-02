@@ -221,7 +221,9 @@ export default function CalendarPage() {
         
         // Load appointments with optimistic updates manager
         const userBookings = await getAppointments()
-        setAppointments(userBookings.bookings || [])
+        console.log('📋 Appointments response:', userBookings)
+        // The API returns { appointments: [...], total: N } not { bookings: [...] }
+        setAppointments(userBookings.appointments || [])
         
         console.log('✅ Calendar data loaded successfully')
       } catch (err) {

@@ -14,7 +14,9 @@ import {
   ClockIcon,
   PaperAirplaneIcon,
   CheckCircleIcon,
-  ExclamationCircleIcon
+  ExclamationCircleIcon,
+  LinkIcon,
+  QrCodeIcon
 } from '@heroicons/react/24/outline'
 
 interface MarketingStat {
@@ -264,7 +266,40 @@ export default function MarketingDashboard() {
       </Card>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Link href="/marketing/booking-links">
+          <Card variant="default" className="h-full hover:shadow-lg transition-all duration-200 cursor-pointer group">
+            <CardHeader>
+              <div className="flex items-center space-x-3">
+                <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-lg group-hover:bg-teal-200 dark:group-hover:bg-teal-800/40 transition-colors">
+                  <LinkIcon className="w-6 h-6 text-teal-600 dark:text-teal-400" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Booking Links & QR Codes</CardTitle>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    Create trackable booking URLs
+                  </p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                <li className="flex items-center space-x-2">
+                  <div className="w-1.5 h-1.5 bg-teal-500 rounded-full"></div>
+                  <span>Custom short URLs</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <div className="w-1.5 h-1.5 bg-teal-500 rounded-full"></div>
+                  <span>QR code generation</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <div className="w-1.5 h-1.5 bg-teal-500 rounded-full"></div>
+                  <span>Click & conversion tracking</span>
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+        </Link>
         <Link href="/marketing/contacts">
           <Card variant="default" className="h-full hover:shadow-lg transition-all duration-200 cursor-pointer group">
             <CardHeader>

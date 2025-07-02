@@ -1,636 +1,356 @@
-# CLAUDE.md
+# CLAUDE.md - BookedBarber V2 Project Guide
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides comprehensive guidance to Claude Code (claude.ai/code) when working with the BookedBarber V2 codebase.
 
-## 🛡️ SAFETY FIRST - Critical Guidelines
+## 🎯 Project Overview
 
-### Before Starting ANY Work:
-1. **Create a git branch**: `git checkout -b feature/description-YYYYMMDD`
-2. **Run pre-work checklist**: `./scripts/pre-work-checklist.sh`
-3. **Check current state**: `git status` and ensure working directory is clean
-4. **Create a safety snapshot**: `./scripts/create-snapshot.sh`
+**BookedBarber V2** - OWN THE CHAIR. OWN THE BRAND.
 
-### During Development:
-1. **Commit frequently**: After each logical change (every 15-30 minutes)
-2. **Test incrementally**: Run relevant tests after each change
-3. **Stay focused**: Complete one task at a time from the todo list
-4. **Validate changes**: Use `git diff` to review before committing
+BookedBarber is a comprehensive booking and business management platform for barber shops, built on the Six Figure Barber methodology. This platform empowers barbers to manage their business, maximize revenue, and build their brand.
 
-### If Something Goes Wrong:
-1. **Quick revert**: `./scripts/quick-revert.sh` (reverts uncommitted changes)
-2. **Branch recovery**: `./scripts/recover-branch.sh` (goes back to main)
-3. **Full restore**: `./scripts/restore-snapshot.sh [snapshot-name]`
+### Key Features
+- **Smart Booking System**: Real-time availability, automated scheduling, and client management
+- **Payment Processing**: Integrated Stripe Connect for seamless payments and automated payouts
+- **Business Analytics**: Track revenue, client retention, and growth metrics based on 6FB methodology
+- **Calendar Integration**: Two-way sync with Google Calendar
+- **Client Communications**: Automated SMS/email reminders and marketing campaigns
+- **Multi-location Support**: Manage multiple shops from a single dashboard
 
-### Task Management Rules:
-1. **ALWAYS use TodoWrite/TodoRead** for task tracking
-2. **Break complex tasks** into items of 30 minutes or less
-3. **Mark tasks in_progress** before starting
-4. **Mark tasks completed** immediately when done
-5. **One task at a time** - never have multiple in_progress
+### Technology Stack
+- **Backend**: FastAPI (Python 3.9+) with SQLAlchemy ORM
+- **Frontend**: Next.js 14 with TypeScript, Tailwind CSS, and shadcn/ui
+- **Database**: PostgreSQL (production) / SQLite (development)
+- **Integrations**: Stripe Connect, Google Calendar API, SendGrid, Twilio
+- **Deployment**: Render (primary), supports Railway, Vercel, Docker
+- **Monitoring**: Sentry, custom health checks, performance tracking
 
-### Code Modification Boundaries:
-1. **Frontend changes**: Only modify files in `/backend-v2/frontend-v2/` directory (V2 ONLY)
-2. **Backend changes**: Only modify files in `/backend-v2/` directory (V2 ONLY)
-3. **Database changes**: ALWAYS create a migration, never modify schema directly
-4. **Config changes**: Test in development first, document in this file
-5. **Dependencies**: Run tests after any package additions
-6. **NEVER modify V1 files**: `/frontend/` and `/backend/` are legacy - DO NOT TOUCH
+## 🛡️ CRITICAL SAFETY PROTOCOLS
 
-### Testing Requirements:
-- Backend: Run `pytest` before marking any backend task complete
-- Frontend: Run `npm test` before marking any frontend task complete
-- Full stack: Run `./scripts/test-integration.sh` for cross-system changes
-- **Note**: Demo mode has been removed. Authentication is required to access the platform.
-
-## Company Name
-**BookedBarber** - OWN THE CHAIR. OWN THE BRAND.
-
-## 🚨 IMPORTANT: V2 ONLY - NO V1 CODE
-**This project uses ONLY the V2 implementation. Do NOT include or reference anything from V1.**
-- **V2 Backend**: `/backend-v2/` (FastAPI, Python)
-- **V2 Frontend**: `/backend-v2/frontend-v2/` (Next.js, TypeScript)
-- **Legacy V1**: Do NOT use `/frontend/` or `/backend/` directories - these are deprecated
-
-## Project Overview
-
-BookedBarber is a comprehensive booking and business management system for barber shops, built on the Six Figure Barber methodology. The V2 platform features:
-
-- **Backend**: FastAPI (Python) with SQLAlchemy ORM, PostgreSQL/SQLite database
-- **Frontend**: Next.js 14 with TypeScript, Tailwind CSS, and shadcn/ui components
-- **Integrations**: Stripe Connect, Google Calendar, SendGrid, Twilio
-- **Deployment**: Render (current production), supports Docker, Railway, Vercel
-
-## 🎨 Brand Assets & Logos
-
-### BookedBarber Logo Files
-The following logo variants are available for use in the application:
-
-**Location**: `/Users/bossio/Downloads/224381543/Logo Files/png/`
-
-- **Black logo - no background.png** - Use for light backgrounds, headers, and general branding
-- **White logo - no background.png** - Use for dark backgrounds, overlays, and dark themes
-- **Color logo - no background.png** - Primary brand logo with colors, transparent background
-- **Color logo with background.png** - Full logo with brand background, use sparingly
-
-### Logo Usage Guidelines
-- **Homepage header**: Use black logo for maximum visibility against light backgrounds
-- **Dark sections**: Use white logo for contrast
-- **Hero sections**: Consider color logo for brand impact
-- **Background watermarks**: Use white logo with reduced opacity for subtle branding
-
-### Current Logo Issues Fixed
-- ✅ Enhanced header logo visibility with text shadow and pure black color
-- ✅ Added prominent Login button to homepage header
-- ⚠️ Background "BOOKEDBARBER" watermark text needs replacement with proper logo image
-
-### Implementation Notes
-- Copy logo files to `backend-v2/frontend-v2/public/logos/` directory for use in V2 components
-- Use Next.js Image component for optimized loading
-- Maintain aspect ratios and provide alt text for accessibility
-
-## Common Development Commands
-
-### Backend Development (V2 ONLY)
-
+### Before Starting ANY Work
 ```bash
-# Setup V2 backend
+# 1. Ensure clean working directory
+git status
+
+# 2. Create feature branch
+git checkout -b feature/description-YYYYMMDD
+
+# 3. Run pre-work checklist
+./scripts/pre-work-checklist.sh
+
+# 4. Create safety snapshot
+./scripts/create-snapshot.sh
+```
+
+### During Development
+1. **Commit Frequency**: Every 15-30 minutes or after each logical change
+2. **Test Continuously**: Run tests after every significant change
+3. **Focus**: Complete one task at a time from TodoList
+4. **Review**: Always `git diff` before committing
+
+### Emergency Recovery
+```bash
+# Quick revert uncommitted changes
+./scripts/quick-revert.sh
+
+# Return to main branch
+./scripts/recover-branch.sh
+
+# Full restore from snapshot
+./scripts/restore-snapshot.sh [snapshot-name]
+```
+
+## 📁 Project Structure
+
+```
+BookedBarber-V2/
+├── backend-v2/              # V2 Backend (FastAPI) - ACTIVE
+│   ├── main.py             # Application entry point
+│   ├── api/v1/             # API endpoints
+│   ├── models/             # SQLAlchemy models
+│   ├── services/           # Business logic
+│   ├── config/             # Configuration
+│   └── frontend-v2/        # V2 Frontend (Next.js) - ACTIVE
+│       ├── app/            # Next.js 14 app directory
+│       ├── components/     # React components
+│       ├── lib/            # Utilities and API clients
+│       └── public/         # Static assets
+├── backend/                # V1 Backend - DEPRECATED (DO NOT MODIFY)
+├── frontend/               # V1 Frontend - DEPRECATED (DO NOT MODIFY)
+├── docs/                   # Documentation
+├── scripts/                # Automation scripts
+└── monitoring/             # Monitoring configuration
+```
+
+### ⚠️ IMPORTANT: V2 ONLY
+- **ONLY** modify files in `/backend-v2/` and `/backend-v2/frontend-v2/`
+- **NEVER** touch V1 directories (`/backend/` and `/frontend/`)
+- All new features must be implemented in V2
+
+## 🚀 Quick Start
+
+### Backend Setup
+```bash
 cd backend-v2
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.template .env  # Edit with your values
-
-# Run V2 backend server
+cp .env.template .env     # Configure your environment
+alembic upgrade head      # Run database migrations
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
-
-# Database operations
-alembic upgrade head              # Apply all migrations
-alembic revision -m "description" # Create new migration
-alembic downgrade -1              # Rollback last migration
-
-# Run tests
-pytest                           # Run all tests
-pytest tests/unit/              # Run unit tests only
-pytest -k "test_auth"           # Run specific test pattern
-pytest -v --tb=short            # Verbose with short traceback
-
-# Performance testing
-python scripts/basic_performance_test.py      # Database performance
-python scripts/api_performance_test.py        # API performance
-python scripts/comprehensive_performance_test.py  # Full suite
 ```
 
-### Frontend Development (V2 ONLY)
-
+### Frontend Setup
 ```bash
-# Setup V2 frontend
 cd backend-v2/frontend-v2
 npm install
-
-# Run V2 frontend server
-npm run dev          # Development server on http://localhost:3000
-npm run build        # Production build
-npm run start        # Production server
-npm run lint         # ESLint check
-
-# Run tests
-npm test             # Run test suite
-npm run test:watch   # Watch mode
-npm run test:coverage # Coverage report
-
-# Extension testing
-npm run test:extensions    # Test browser extension compatibility
-npm run debug:extensions   # Debug extension issues
+cp .env.local.example .env.local  # Configure environment
+npm run dev
 ```
 
-### Production Deployment
-
+### Full Stack Development
 ```bash
-# Current production URLs
-Backend: https://sixfb-backend.onrender.com
-Docs: https://sixfb-backend.onrender.com/docs
-Health: https://sixfb-backend.onrender.com/health
+# Use the convenience script
+./scripts/start-dev-session.sh
 
-# Deploy to Render (auto-deploys on git push)
-git push origin main
-
-# Create admin user in production (via Render Shell)
-python -c "from models.user import User; from passlib.context import CryptContext; from config.database import SessionLocal; db = SessionLocal(); pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto'); user = User(email='admin@6fb.com', first_name='Admin', last_name='User', hashed_password=pwd_context.hash('admin123'), role='super_admin', is_active=True); db.add(user); db.commit(); print('Admin user created!')"
+# Or run both servers in parallel
+./scripts/start-servers.sh
 ```
 
-## High-Level Architecture
+## 🏗️ Architecture Overview
 
-### V2 Backend Architecture (FastAPI + SQLAlchemy)
-
+### Backend Architecture (FastAPI + SQLAlchemy)
 ```
 backend-v2/
-├── main.py                 # FastAPI app entry point, middleware, routers
-├── config/
-│   ├── database.py        # Database connection, session management
-│   ├── settings.py        # Pydantic settings from environment variables
-│   └── environment.py     # Environment-specific configurations
-├── models/                 # SQLAlchemy ORM models
-│   ├── user.py           # User model with roles and permissions
-│   ├── appointment.py    # Appointment scheduling
-│   ├── barber.py         # Barber profiles and settings
-│   ├── client.py         # Client management
-│   ├── payment.py        # Payment processing records
-│   └── booking.py        # Public booking functionality
-├── api/v1/                # API route handlers
-│   ├── auth.py           # JWT authentication endpoints
-│   ├── appointments.py   # Appointment CRUD and scheduling
-│   ├── analytics.py      # Business analytics and 6FB metrics
-│   └── endpoints/        # Additional endpoint modules
+├── main.py                 # FastAPI app, middleware, routers
+├── api/v1/                 # RESTful API endpoints
+│   ├── auth.py            # Authentication (JWT)
+│   ├── appointments.py    # Booking management
+│   ├── payments.py        # Stripe integration
+│   └── analytics.py       # Business metrics
+├── models/                 # Database models
+│   ├── user.py           # User/roles/permissions
+│   ├── appointment.py    # Booking data
+│   └── payment.py        # Transaction records
 ├── services/              # Business logic layer
-│   ├── analytics_service.py     # 6FB methodology calculations
-│   ├── notification_service.py  # Email/SMS notifications
-│   ├── payment_service.py       # Stripe/payment processing
-│   └── google_calendar_service.py # Calendar sync
-├── middleware/            # Request/response processing
-│   ├── security.py       # Security headers, rate limiting
-│   └── error_handling.py # Global exception handling
-└── utils/                 # Shared utilities
-    ├── security.py       # Password hashing, token validation
-    └── encryption.py     # Data encryption for PII
+│   ├── booking_service.py
+│   ├── payment_service.py
+│   └── notification_service.py
+└── middleware/            # Security, logging, error handling
 ```
 
-### V2 Frontend Architecture (Next.js 14 + TypeScript)
-
+### Frontend Architecture (Next.js 14 + TypeScript)
 ```
-backend-v2/frontend-v2/
-├── app/                  # Next.js 14 app directory
-│   ├── (auth)/          # Auth-required pages
-│   ├── (public)/        # Public pages
-│   ├── api/             # API route handlers
-│   └── layout.tsx       # Root layout with providers
-├── components/           # Reusable React components
-│   ├── ui/              # shadcn/ui components
-│   ├── modals/          # Modal components (booking, appointments)
-│   ├── analytics/       # Analytics dashboard components
-│   └── booking/         # Booking flow components
-├── lib/                 # Utilities and API clients
-│   ├── api/             # API client functions
-│   └── utils/           # Helper functions
-├── hooks/               # Custom React hooks
-└── public/              # Static assets
+frontend-v2/
+├── app/                   # Next.js App Router
+│   ├── (auth)/           # Protected routes
+│   ├── (public)/         # Public routes
+│   └── api/              # API route handlers
+├── components/            # Reusable components
+│   ├── ui/               # shadcn/ui components
+│   └── booking/          # Booking-specific
+├── lib/                   # Utilities
+│   ├── api/              # API client
+│   └── utils/            # Helpers
+└── hooks/                 # Custom React hooks
 ```
 
-### Key Design Patterns
+## 📋 Development Guidelines
 
-1. **Authentication Flow**:
-   - JWT tokens with refresh capability
-   - Role-based access control (RBAC) with permissions
-   - Secure password hashing with bcrypt
-   - Rate limiting on auth endpoints
+### Task Management
+1. **ALWAYS** use TodoWrite/TodoRead for tracking
+2. Break tasks into 30-minute chunks
+3. Mark as `in_progress` when starting
+4. Mark as `completed` immediately when done
+5. Only ONE task `in_progress` at a time
 
-2. **Database Strategy**:
-   - Repository pattern with services layer
-   - Optimized queries with eager loading
-   - Database-agnostic with SQLAlchemy ORM
-   - Performance indexes on key fields
+### Code Standards
+- **Python**: Follow PEP 8, use type hints
+- **TypeScript**: Strict mode, explicit types
+- **Testing**: Minimum 80% coverage
+- **Commits**: Conventional commits format
+- **Documentation**: Update docs with code
 
-3. **API Design**:
-   - RESTful endpoints with consistent naming
-   - Pydantic models for validation
-   - Comprehensive error handling
-   - OpenAPI/Swagger documentation
-
-4. **Frontend State Management**:
-   - React Query for server state
-   - Context API for auth state
-   - Local storage for preferences
-   - Optimistic updates for better UX
-
-5. **Security Implementation**:
-   - Environment-based configuration
-   - CORS with strict origins in production
-   - Security headers (CSP, HSTS, etc.)
-   - Input validation and sanitization
-   - SQL injection prevention via ORM
-
-### Integration Points
-
-1. **Stripe Connect**:
-   - OAuth flow for barber onboarding
-   - Payment intent creation for bookings
-   - Webhook handling for payment events
-   - Transfer and payout management
-
-2. **Google Calendar**:
-   - OAuth2 authentication flow
-   - Two-way sync for appointments
-   - Availability checking
-   - Event creation and updates
-
-3. **Notification System**:
-   - SendGrid for transactional emails
-   - Twilio for SMS notifications
-   - Template-based messaging
-   - Queued delivery with retry logic
-
-### Performance Optimizations
-
-1. **Database**: 65% performance improvement via:
-   - Strategic indexes on foreign keys and date fields
-   - Query optimization with proper joins
-   - Connection pooling configuration
-   - Batch operations where applicable
-
-2. **API Response Times**:
-   - Sub-200ms average response time
-   - Caching strategy with Redis (optional)
-   - Pagination on list endpoints
-   - Efficient serialization
-
-3. **Frontend Performance**:
-   - Static generation where possible
-   - Image optimization with Next.js
-   - Code splitting by route
-   - Progressive enhancement
-
-### Production Configuration
-
-- **Environment Variables**: See `.env.template` for complete list
-- **Database**: PostgreSQL recommended for production
-- **Hosting**: Currently on Railway for production, also supports Render and Docker
-- **Monitoring**: Sentry integration for error tracking
-- **Security Keys**: Generate with `python -c 'import secrets; print(secrets.token_urlsafe(64))'`
-
-## 🚨 Common Pitfalls to Avoid
-
-1. **Database Migrations**:
-   - NEVER modify existing migrations
-   - ALWAYS create new migrations for schema changes
-   - Test migrations on a copy of production data
-
-2. **API Changes**:
-   - Maintain backwards compatibility
-   - Version new endpoints (/api/v2/) rather than breaking v1
-   - Update OpenAPI schema after changes
-
-3. **Environment Variables**:
-   - NEVER commit .env files
-   - ALWAYS use .env.template as reference
-   - Document new variables in this file
-
-4. **Payment Integration**:
-   - Test with Stripe test keys only
-   - NEVER log payment details
-   - Always use idempotency keys
-
-5. **Authentication**:
-   - Don't modify JWT token structure without migration plan
-   - Keep token expiry times consistent
-   - Test role-based access thoroughly
-
-## 📋 Pre-Work Checklist
-
-Before starting any work, ensure:
-- [ ] Git working directory is clean (`git status`)
-- [ ] On latest main branch (`git pull origin main`)
-- [ ] Created feature branch (`git checkout -b feature/...`)
-- [ ] Environment variables loaded (`.env` file exists)
-- [ ] Dependencies installed (backend: `pip install -r requirements.txt`, frontend: `npm install`)
-- [ ] Tests passing (backend: `pytest`, frontend: `npm test`)
-- [ ] Development servers can start successfully
-
-## 🔄 Recovery Procedures
-
-### Quick Fixes:
+### Testing Requirements
 ```bash
-# Undo last commit (keep changes)
-git reset --soft HEAD~1
+# Backend tests (required before task completion)
+cd backend-v2 && pytest
 
-# Discard all uncommitted changes
-git checkout -- .
+# Frontend tests (required before task completion)
+cd backend-v2/frontend-v2 && npm test
 
-# Remove untracked files
-git clean -fd
-
-# Reset to main branch state
-git fetch origin
-git reset --hard origin/main
+# Integration tests (for cross-system changes)
+./scripts/test-integration.sh
 ```
 
-### Emergency Procedures:
+## 🔐 Security Protocols
+
+### Environment Variables
+- **NEVER** commit `.env` files
+- Use `.env.template` as reference
+- Generate secure keys: `python -c 'import secrets; print(secrets.token_urlsafe(64))'`
+- Rotate keys quarterly
+
+### Authentication
+- JWT tokens with refresh capability
+- Role-based access control (RBAC)
+- Rate limiting on auth endpoints
+- Secure password requirements
+
+### Payment Security
+- PCI compliance via Stripe
+- No direct card handling
+- Webhook signature verification
+- Idempotency keys for all transactions
+
+## 🌐 API Reference
+
+### Base URL
+- Development: `http://localhost:8000`
+- Production: `https://api.bookedbarber.com`
+
+### Authentication
+```http
+POST /api/v1/auth/login
+POST /api/v1/auth/register
+POST /api/v1/auth/refresh
+POST /api/v1/auth/logout
+```
+
+### Appointments
+```http
+GET    /api/v1/appointments
+POST   /api/v1/appointments
+GET    /api/v1/appointments/{id}
+PUT    /api/v1/appointments/{id}
+DELETE /api/v1/appointments/{id}
+```
+
+### Payments
+```http
+POST   /api/v1/payments/create-intent
+POST   /api/v1/payments/confirm
+GET    /api/v1/payments/history
+POST   /api/v1/webhooks/stripe
+```
+
+## 📊 Database Schema
+
+### Core Tables
+- **users**: Authentication and roles
+- **barbers**: Barber profiles and settings
+- **clients**: Client information
+- **appointments**: Booking records
+- **payments**: Transaction history
+- **services**: Service catalog
+- **locations**: Multi-location support
+
+### Migrations
 ```bash
-# Full nuclear option - reset everything
-git reset --hard HEAD
-git clean -xfd
+# Create new migration
+alembic revision -m "description"
 
-# Restore from snapshot
-./scripts/restore-snapshot.sh
+# Apply migrations
+alembic upgrade head
 
-# Rollback deployment
-./scripts/rollback-deployment.sh
+# Rollback
+alembic downgrade -1
 ```
 
-## 📊 Project State Tracking
+## 🚀 Deployment
 
-### Check Project Health:
+### Production Checklist
+- [ ] Environment variables configured
+- [ ] Database migrations applied
+- [ ] Static files built
+- [ ] SSL certificates active
+- [ ] Monitoring enabled
+- [ ] Backup strategy in place
+
+### Render Deployment
 ```bash
-# Backend health
-cd backend && python scripts/health-check.py
+# Backend
+git push origin main  # Auto-deploys via webhook
 
-# Frontend health
-cd frontend && npm run validate-build
-
-# Full system check
-./scripts/full-system-check.sh
+# Frontend
+cd backend-v2/frontend-v2
+npm run build
+# Deploy via Render dashboard
 ```
 
-### Current Known Issues:
-- None at this time (update this section when issues are discovered)
-
-### Recent Major Changes:
-- [Date] - Description of change
-- Keep last 5 major changes listed here
-
-## 🎯 Task Prioritization Guide
-
-1. **Critical (Fix immediately)**:
-   - Production down
-   - Security vulnerabilities
-   - Data loss risks
-   - Payment failures
-
-2. **High (Fix within 24h)**:
-   - Major feature broken
-   - Performance degradation
-   - Integration failures
-
-3. **Medium (Fix within week)**:
-   - Minor bugs
-   - UI/UX improvements
-   - Documentation updates
-
-4. **Low (Backlog)**:
-   - Nice-to-have features
-   - Code refactoring
-   - Test coverage improvements
-
-## 🧭 Function Reference Map (V2 ONLY)
-
-### Authentication & Authorization
-- **Backend**: `backend-v2/api/v1/auth.py`, `backend-v2/utils/security.py`
-- **Frontend**: `backend-v2/frontend-v2/lib/auth.ts`, `backend-v2/frontend-v2/hooks/useAuth.ts`
-- **Middleware**: `backend-v2/middleware/security.py`
-
-### Payment Processing
-- **Backend**: `backend-v2/services/payment_service.py`, `backend-v2/api/v1/endpoints/payments.py`
-- **Frontend**: `backend-v2/frontend-v2/lib/stripe.ts`, `backend-v2/frontend-v2/components/payment/`
-- **Webhooks**: `backend-v2/api/v1/endpoints/webhooks.py`
-
-### Booking System
-- **Backend**: `backend-v2/api/v1/bookings.py`, `backend-v2/services/booking_service.py`
-- **Frontend**: `backend-v2/frontend-v2/components/booking/`, `backend-v2/frontend-v2/app/(public)/book/`
-- **Models**: `backend-v2/models/booking.py`, `backend-v2/models/appointment.py`
-
-### Analytics & Reporting
-- **Backend**: `backend-v2/services/analytics_service.py`, `backend-v2/api/v1/analytics.py`
-- **Frontend**: `backend-v2/frontend-v2/components/analytics/`, `backend-v2/frontend-v2/app/(auth)/analytics/`
-
-### Notifications
-- **Backend**: `backend-v2/services/notification_service.py`
-- **Email**: `backend-v2/services/email_service.py` (SendGrid)
-- **SMS**: `backend-v2/services/sms_service.py` (Twilio)
-
-### Calendar Integration
-- **Backend**: `backend-v2/services/google_calendar_service.py`
-- **Frontend**: `backend-v2/frontend-v2/components/calendar/`
-- **Sync**: `backend-v2/api/v1/endpoints/calendar.py`
-
-## 🛡️ Verification Protocol
-
-### Before Implementing ANY Feature:
-
-1. **Search for existing implementations**:
-   ```bash
-   # Search for similar features (V2 ONLY)
-   grep -r "feature_name" backend-v2/ backend-v2/frontend-v2/
-   
-   # Find related components
-   find backend-v2 -name "*feature*" -type f
-   
-   # Check for existing patterns
-   rg "pattern" backend-v2 --type py --type ts
-   ```
-
-2. **Verify dependencies**:
-   ```bash
-   # V2 Backend dependencies
-   cat backend-v2/requirements.txt | grep package_name
-   
-   # V2 Frontend dependencies
-   cat backend-v2/frontend-v2/package.json | grep package_name
-   ```
-
-3. **Check file existence before reading**:
-   ```bash
-   # Verify file exists
-   ls -la backend-v2/path/to/file
-   
-   # Check V2 directory structure
-   tree -L 2 backend-v2/services/
-   ```
-
-4. **Read actual function signatures**:
-   ```bash
-   # Don't guess - read the actual V2 code
-   head -50 backend-v2/services/payment_service.py
-   
-   # Check imports to understand dependencies
-   grep "^import\|^from" backend-v2/services/payment_service.py
-   ```
-
-## 🚫 Do NOT Assume
-
-1. **Package Availability**:
-   - ALWAYS check `requirements.txt` or `package.json`
-   - NEVER assume a library is installed
-   - Verify exact version if version-specific features needed
-
-2. **File Locations**:
-   - Use search tools (`grep`, `find`, `rg`) first
-   - Don't guess directory structure
-   - Verify with `ls` before reading
-
-3. **Function Signatures**:
-   - Read the actual function definition
-   - Check parameter types and return values
-   - Look for docstrings and type hints
-
-4. **API Endpoints**:
-   - Check `backend-v2/main.py` for router includes
-   - Verify exact endpoint paths in V2 router files
-   - Don't assume REST conventions without checking
-
-## 🔍 Common Patterns & Conventions
-
-### API Calls (Frontend)
-```typescript
-// ALWAYS use the api client functions
-import { apiClient } from '@/lib/api';
-
-// DON'T use fetch directly
-// ❌ fetch('/api/endpoint')
-// ✅ apiClient.get('/endpoint')
-```
-
-### State Management
-```typescript
-// Server state: React Query
-import { useQuery } from '@tanstack/react-query';
-
-// Auth state: Context API
-import { useAuth } from '@/hooks/useAuth';
-
-// Local state: useState for UI-only state
-```
-
-### Error Handling
-```python
-# Backend: Use FastAPI's HTTPException
-from fastapi import HTTPException
-raise HTTPException(status_code=400, detail="Error message")
-
-# Frontend: Use error boundaries and try-catch
-try {
-  await apiClient.post('/endpoint', data);
-} catch (error) {
-  handleApiError(error);
-}
-```
-
-### Database Operations
-```python
-# Always use the service layer
-from services.user_service import UserService
-
-# Don't access models directly in API endpoints
-# ❌ db.query(User).filter(...)
-# ✅ UserService.get_user_by_email(email)
-```
-
-## 📝 Context Maintenance Tips
-
-1. **Use specific file references**:
-   ```
-   "Looking at backend-v2/services/payment_service.py:45-67, 
-   I see the refund method signature..."
-   ```
-
-2. **Reference previous decisions**:
-   ```
-   "As established earlier when we reviewed the auth flow,
-   we're using JWT tokens with..."
-   ```
-
-3. **Maintain task continuity**:
-   ```
-   "Continuing with task #3 from our todo list: 
-   implementing the email notification template..."
-   ```
-
-4. **Checkpoint after complex operations**:
-   ```
-   "Summary of changes so far:
-   1. Added refund method to payment service
-   2. Created new API endpoint
-   3. Next: Update frontend to call new endpoint"
-   ```
-
-## 🤖 Hallucination Prevention Guidelines
-
-### 1. **Always Verify Before Acting**
-- Check if a file/function exists before referencing it
-- Read actual code instead of assuming implementations
-- Use search tools to find correct locations
-- Verify package installation before importing
-
-### 2. **Maintain Explicit Context**
-- Reference specific file paths and line numbers
-- Quote actual code when discussing implementations
-- Keep a running summary of changes made
-- Use TodoWrite to track multi-step processes
-
-### 3. **Ask When Uncertain**
-Instead of guessing:
-- "I need to check the exact location of the payment service"
-- "Let me verify the function signature before proceeding"
-- "I'll search for existing implementations first"
-
-### 4. **Use Verification Commands**
+### Docker Deployment
 ```bash
-# Before reading a file
-ls -la path/to/file
-
-# Before using a function
-grep -n "function_name" file.py
-
-# Before importing a package
-cat requirements.txt | grep package
-
-# To understand structure
-find . -name "*.py" | grep service
+docker-compose up -d
 ```
 
-### 5. **Common Hallucination Triggers to Avoid**
-- ❌ "This should be in the utils folder" (verify first)
-- ❌ "The function probably takes these parameters" (read the actual code)
-- ❌ "Next.js typically uses..." (check this specific project)
-- ✅ "Let me check where this is implemented"
-- ✅ "I'll verify the exact function signature"
+## 🎨 Brand Guidelines
 
-### 6. **Recovery from Confusion**
-If context is lost:
-1. Use `TodoRead` to check current task
-2. Review recent file changes with `git diff`
-3. Re-read the main files being modified
-4. Ask user for clarification rather than guessing
+### Logo Usage
+- **Location**: `/Users/bossio/Downloads/224381543/Logo Files/png/`
+- **Variants**: Black, White, Color (with/without background)
+- **Implementation**: Copy to `frontend-v2/public/logos/`
 
-# important-instruction-reminders
-Do what has been asked; nothing more, nothing less.
-NEVER create files unless they're absolutely necessary for achieving your goal.
-ALWAYS prefer editing an existing file to creating a new one.
-NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+### Design System
+- **Primary Color**: #000000 (Black)
+- **Secondary Color**: #FFD700 (Gold)
+- **Font**: Inter (headings), system-ui (body)
+- **Spacing**: 8px grid system
+
+## 🛠️ Troubleshooting
+
+### Common Issues
+1. **Database Connection**: Check `.env` DATABASE_URL
+2. **CORS Errors**: Verify allowed origins in settings
+3. **Auth Failures**: Check JWT secret configuration
+4. **Payment Issues**: Verify Stripe webhook endpoint
+
+### Debug Commands
+```bash
+# Check system health
+./scripts/health-check.sh
+
+# View logs
+docker-compose logs -f
+
+# Database console
+python manage.py dbshell
+```
+
+## 📚 Additional Resources
+
+### Documentation
+- [Getting Started Guide](./docs/GETTING_STARTED.md)
+- [API Documentation](./docs/API_DOCUMENTATION.md)
+- [Deployment Guide](./docs/DEPLOYMENT.md)
+- [Six Figure Barber Methodology](./docs/BUSINESS/SIX_FIGURE_BARBER.md)
+
+### Support
+- GitHub Issues: [Report bugs and request features]
+- Documentation: [Comprehensive guides and tutorials]
+- Community: [Join our Discord server]
+
+## 🤖 AI Assistant Guidelines
+
+### Verification Protocol
+1. **Always verify** file existence before reading
+2. **Check dependencies** in requirements.txt/package.json
+3. **Read actual code** instead of assuming
+4. **Use search tools** to find implementations
+
+### Context Maintenance
+- Reference files with line numbers
+- Quote actual code when discussing
+- Maintain task continuity with todos
+- Summarize changes after complex operations
+
+### Hallucination Prevention
+- ❌ "This should be in utils" → ✅ "Let me check where this is"
+- ❌ "The function probably..." → ✅ "Reading the function signature"
+- ❌ "Next.js typically..." → ✅ "Checking this project's implementation"
+
+---
+
+## Version History
+- **v2.0.0** (2025-01-02): Complete platform rewrite with FastAPI/Next.js
+- **v1.0.0** (2024-06-01): Initial release (deprecated)
+
+Last Updated: 2025-01-02

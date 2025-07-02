@@ -28,6 +28,7 @@ router = APIRouter(
 def get_available_appointment_slots(
     appointment_date: date = Query(..., description="Date to check availability (YYYY-MM-DD)"),
     barber_id: Optional[int] = Query(None, description="Specific barber ID to filter availability"),
+    service_id: Optional[int] = Query(None, description="Service ID to check duration-specific availability"),
     timezone: Optional[str] = Query(None, description="User's timezone (e.g., 'America/New_York'). If not provided, uses business timezone."),
     current_user: Optional[schemas.User] = Depends(get_current_user_optional),
     db: Session = Depends(get_db)
@@ -60,6 +61,7 @@ def get_available_appointment_slots(
             db, 
             appointment_date, 
             barber_id=barber_id,  # Get slots for specific barber if provided, otherwise all available barbers
+            service_id=service_id,  # Pass service_id if provided
             user_timezone=user_timezone
         )
         

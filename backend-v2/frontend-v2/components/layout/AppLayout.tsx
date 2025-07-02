@@ -9,6 +9,7 @@ import { MobileNavigation } from './MobileNavigation'
 import { Header } from './Header'
 import { useResponsive } from '@/hooks/useResponsive'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { TestDataIndicator } from '@/components/TestDataIndicator'
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -251,6 +252,9 @@ export function AppLayout({ children }: AppLayoutProps) {
             </ErrorBoundary>
           </div>
         )}
+        
+        {/* Test Data Indicator - Shows when test data is active */}
+        {!isPublicRoute && user && <TestDataIndicator />}
       </div>
     </ThemeProvider>
   )

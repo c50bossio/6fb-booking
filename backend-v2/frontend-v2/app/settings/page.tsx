@@ -46,6 +46,12 @@ const settingsCards: SettingCard[] = [
     description: 'View billing information and manage payment methods',
     href: '/settings/billing',
     icon: '💳'
+  },
+  {
+    title: 'Test Data',
+    description: 'Manage test data for exploring platform features',
+    href: '/settings/test-data',
+    icon: '🧪'
   }
 ]
 

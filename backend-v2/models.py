@@ -35,6 +35,9 @@ class User(Base):
     google_calendar_credentials = Column(Text, nullable=True)  # JSON encoded OAuth credentials
     google_calendar_id = Column(String, nullable=True)  # Selected calendar ID for sync
     
+    # Test data flag
+    is_test_data = Column(Boolean, default=False)
+    
     # Relationships
     appointments = relationship("Appointment", back_populates="user", foreign_keys="Appointment.user_id")
     payments = relationship("Payment", back_populates="user", foreign_keys="Payment.user_id")
@@ -71,6 +74,9 @@ class Appointment(Base):
     
     # Recurring appointment tracking
     recurring_pattern_id = Column(Integer, ForeignKey("recurring_appointment_patterns.id"), nullable=True)
+    
+    # Test data flag
+    is_test_data = Column(Boolean, default=False)
     
     # Relationships
     user = relationship("User", back_populates="appointments", foreign_keys=[user_id])
@@ -278,6 +284,7 @@ class Client(Base):
     sms_opt_in = Column(Boolean, default=False)  # For marketing SMS
     
     # Metadata
+    is_test_data = Column(Boolean, default=False)  # Flag for test data
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     created_by_id = Column(Integer, ForeignKey("users.id"))
@@ -758,6 +765,9 @@ class BarberAvailability(Base):
     # Whether this schedule is active
     is_active = Column(Boolean, default=True)
     
+    # Test data flag
+    is_test_data = Column(Boolean, default=False)
+    
     # Metadata
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
@@ -788,6 +798,9 @@ class BarberTimeOff(Base):
     # Status
     status = Column(String, default="approved")  # requested, approved, cancelled
     approved_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    
+    # Test data flag
+    is_test_data = Column(Boolean, default=False)
     
     # Metadata
     created_at = Column(DateTime, default=utcnow)
