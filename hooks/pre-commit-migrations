@@ -1,0 +1,420 @@
+#!/bin/bash
+
+# BookedBarber V2 - Database Migration Hook
+# Ensures database model changes have corresponding Alembic migrations
+# 
+# Usage: This hook runs automatically on git commit
+# Can be bypassed with: git commit --no-verify
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Configuration
+BACKEND_DIR="backend-v2"
+MODELS_DIR="$BACKEND_DIR/models"
+ALEMBIC_DIR="$BACKEND_DIR/alembic"
+ALEMBIC_VERSIONS_DIR="$ALEMBIC_DIR/versions"
+MAX_RETRIES=3
+TIMEOUT=60
+
+# Patterns for destructive operations
+DESTRUCTIVE_PATTERNS=(
+    "drop_table"
+    "drop_column"
+    "alter_column.*drop"
+    "drop_constraint"
+    "drop_index"
+    "Column.*nullable=False"
+    "sa\.Text.*length"
+)
+
+# Log function
+log() {
+    echo -e "${BLUE}[MIGRATIONS]${NC} $1"
+}
+
+error() {
+    echo -e "${RED}[MIGRATIONS ERROR]${NC} $1"
+}
+
+success() {
+    echo -e "${GREEN}[MIGRATIONS SUCCESS]${NC} $1"
+}
+
+warning() {
+    echo -e "${YELLOW}[MIGRATIONS WARNING]${NC} $1"
+}
+
+# Check if command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Run command with timeout and retries
+run_with_timeout() {
+    local cmd="$1"
+    local desc="$2"
+    local retries=0
+    
+    while [[ $retries -lt $MAX_RETRIES ]]; do
+        log "Running $desc (attempt $((retries + 1))/$MAX_RETRIES)..."
+        
+        if timeout $TIMEOUT bash -c "$cmd" 2>/dev/null; then
+            return 0
+        fi
+        
+        retries=$((retries + 1))
+        if [[ $retries -lt $MAX_RETRIES ]]; then
+            warning "$desc failed, retrying in 2 seconds..."
+            sleep 2
+        fi
+    done
+    
+    return 1
+}
+
+# Extract table and column names from SQLAlchemy model
+extract_model_elements() {
+    local file="$1"
+    
+    if [[ ! -f "$file" ]]; then
+        return 1
+    fi
+    
+    python3 -c "
+import re
+import sys
+
+def extract_model_info(filename):
+    try:
+        with open(filename, 'r') as f:
+            content = f.read()
+        
+        # Find table names from __tablename__
+        table_matches = re.findall(r'__tablename__\s*=\s*[\"\'](.*?)[\"\']', content)
+        
+        # Find column definitions
+        column_matches = re.findall(r'(\w+)\s*=\s*Column\s*\(', content)
+        
+        # Find relationship definitions
+        relationship_matches = re.findall(r'(\w+)\s*=\s*relationship\s*\(', content)
+        
+        return {
+            'tables': table_matches,
+            'columns': column_matches,
+            'relationships': relationship_matches
+        }
+    except Exception as e:
+        return {'tables': [], 'columns': [], 'relationships': []}
+
+result = extract_model_info('$file')
+for table in result['tables']:
+    print(f'TABLE:{table}')
+for column in result['columns']:
+    print(f'COLUMN:{column}')
+for rel in result['relationships']:
+    print(f'RELATIONSHIP:{rel}')
+" 2>/dev/null || echo "EXTRACTION_FAILED"
+}
+
+# Check if migration file contains destructive operations
+check_destructive_operations() {
+    local migration_file="$1"
+    local destructive_ops=()
+    
+    if [[ ! -f "$migration_file" ]]; then
+        return 1
+    fi
+    
+    for pattern in "${DESTRUCTIVE_PATTERNS[@]}"; do
+        if grep -q -E "$pattern" "$migration_file"; then
+            destructive_ops+=("$pattern")
+        fi
+    done
+    
+    if [[ ${#destructive_ops[@]} -gt 0 ]]; then
+        echo "DESTRUCTIVE_OPS_FOUND"
+        for op in "${destructive_ops[@]}"; do
+            echo "DESTRUCTIVE:$op"
+        done
+        return 0
+    fi
+    
+    echo "NO_DESTRUCTIVE_OPS"
+    return 0
+}
+
+# Validate migration file structure
+validate_migration_structure() {
+    local migration_file="$1"
+    
+    if [[ ! -f "$migration_file" ]]; then
+        return 1
+    fi
+    
+    python3 -c "
+import ast
+import sys
+
+def validate_migration(filename):
+    try:
+        with open(filename, 'r') as f:
+            content = f.read()
+        
+        # Check for required Alembic elements
+        required_elements = [
+            'revision =',
+            'down_revision =',
+            'def upgrade():',
+            'def downgrade():'
+        ]
+        
+        missing_elements = []
+        for element in required_elements:
+            if element not in content:
+                missing_elements.append(element)
+        
+        # Check if it's a valid Python file
+        try:
+            ast.parse(content)
+        except SyntaxError as e:
+            missing_elements.append(f'SyntaxError: {e}')
+        
+        return missing_elements
+    except Exception as e:
+        return [f'FileError: {e}']
+
+missing = validate_migration('$migration_file')
+if missing:
+    print('VALIDATION_FAILED')
+    for item in missing:
+        print(f'MISSING:{item}')
+else:
+    print('VALIDATION_SUCCESS')
+" 2>/dev/null || echo "VALIDATION_ERROR"
+}
+
+# Get list of staged files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR)
+
+if [[ -z "$STAGED_FILES" ]]; then
+    log "No staged files to check"
+    exit 0
+fi
+
+log "Starting database migration validation..."
+
+MIGRATION_ISSUES=0
+MODIFIED_MODELS=()
+MODIFIED_MIGRATIONS=()
+NEW_MIGRATIONS=()
+DESTRUCTIVE_MIGRATIONS=()
+INVALID_MIGRATIONS=()
+
+# Check for modified model files
+while IFS= read -r file; do
+    if [[ -z "$file" ]]; then
+        continue
+    fi
+    
+    # Check if file is a model in backend-v2
+    if [[ "$file" =~ ^$MODELS_DIR/.*\.py$ ]] && [[ "$file" != *"__init__.py" ]]; then
+        MODIFIED_MODELS+=("$file")
+        log "Detected modified model: $file"
+    fi
+    
+    # Check if file is an Alembic migration
+    if [[ "$file" =~ ^$ALEMBIC_VERSIONS_DIR/.*\.py$ ]]; then
+        MODIFIED_MIGRATIONS+=("$file")
+        log "Detected modified migration: $file"
+        
+        # Check if this is a new migration (added in this commit)
+        if git diff --cached --diff-filter=A --name-only | grep -q "^$file$"; then
+            NEW_MIGRATIONS+=("$file")
+            log "Detected new migration: $file"
+        fi
+    fi
+done <<< "$STAGED_FILES"
+
+# If no models or migrations were modified, skip checks
+if [[ ${#MODIFIED_MODELS[@]} -eq 0 ]] && [[ ${#MODIFIED_MIGRATIONS[@]} -eq 0 ]]; then
+    success "No database models or migrations modified, skipping migration check"
+    exit 0
+fi
+
+# Check if model changes have corresponding migrations
+if [[ ${#MODIFIED_MODELS[@]} -gt 0 ]] && [[ ${#NEW_MIGRATIONS[@]} -eq 0 ]]; then
+    warning "Model files were modified but no new migrations were created"
+    
+    # Try to detect what kind of changes were made
+    SIGNIFICANT_CHANGES=false
+    for model_file in "${MODIFIED_MODELS[@]}"; do
+        # Check if the model file has significant changes (new columns, tables, etc.)
+        MODEL_DIFF=$(git diff --cached "$model_file" 2>/dev/null || echo "")
+        
+        if echo "$MODEL_DIFF" | grep -q -E "(Column|Table|__tablename__|relationship|ForeignKey)"; then
+            SIGNIFICANT_CHANGES=true
+            break
+        fi
+    done
+    
+    if [[ "$SIGNIFICANT_CHANGES" == true ]]; then
+        error "Significant model changes detected but no migration created"
+        MIGRATION_ISSUES=$((MIGRATION_ISSUES + 1))
+    else
+        log "Model changes appear to be minor (no schema changes detected)"
+    fi
+fi
+
+# Validate each new migration
+for migration_file in "${NEW_MIGRATIONS[@]}"; do
+    log "Validating new migration: $migration_file"
+    
+    # Check migration file structure
+    VALIDATION_RESULT=$(validate_migration_structure "$migration_file")
+    if [[ "$VALIDATION_RESULT" =~ VALIDATION_FAILED ]]; then
+        INVALID_MIGRATIONS+=("$migration_file")
+        MIGRATION_ISSUES=$((MIGRATION_ISSUES + 1))
+        
+        error "Migration validation failed for: $migration_file"
+        echo "$VALIDATION_RESULT" | grep "MISSING:" | sed 's/MISSING:/  ❌ Missing: /'
+    fi
+    
+    # Check for destructive operations
+    DESTRUCTIVE_CHECK=$(check_destructive_operations "$migration_file")
+    if [[ "$DESTRUCTIVE_CHECK" =~ DESTRUCTIVE_OPS_FOUND ]]; then
+        DESTRUCTIVE_MIGRATIONS+=("$migration_file")
+        warning "Potentially destructive operations found in: $migration_file"
+        
+        echo "$DESTRUCTIVE_CHECK" | grep "DESTRUCTIVE:" | sed 's/DESTRUCTIVE:/  ⚠️  /'
+    fi
+done
+
+# Check migration naming convention
+for migration_file in "${NEW_MIGRATIONS[@]}"; do
+    FILENAME=$(basename "$migration_file")
+    
+    # Alembic migration naming: {revision}_{description}.py
+    if [[ ! "$FILENAME" =~ ^[a-f0-9]+_.*\.py$ ]]; then
+        warning "Migration file doesn't follow naming convention: $FILENAME"
+        warning "Expected format: {revision}_{description}.py"
+    fi
+done
+
+# Try to run migration check if Alembic is available
+if command_exists alembic && [[ -f "$ALEMBIC_DIR/alembic.ini" ]]; then
+    log "Running Alembic migration check..."
+    
+    ALEMBIC_CHECK_CMD="cd $BACKEND_DIR && alembic check"
+    if run_with_timeout "$ALEMBIC_CHECK_CMD" "Alembic migration check"; then
+        success "Alembic migration check passed"
+    else
+        warning "Alembic migration check failed or unavailable"
+        warning "This might indicate migration issues"
+    fi
+fi
+
+# Generate migration if models changed but no migration exists and auto-generation is possible
+if [[ ${#MODIFIED_MODELS[@]} -gt 0 ]] && [[ ${#NEW_MIGRATIONS[@]} -eq 0 ]] && command_exists alembic; then
+    log "Attempting to auto-generate migration for model changes..."
+    
+    AUTO_MIGRATION_CMD="cd $BACKEND_DIR && alembic revision --autogenerate -m 'Auto-generated migration from pre-commit hook'"
+    if run_with_timeout "$AUTO_MIGRATION_CMD" "Auto-generate migration"; then
+        success "Migration auto-generated successfully"
+        warning "Please review the generated migration file before committing"
+        warning "Run: git add $ALEMBIC_VERSIONS_DIR/*.py"
+    else
+        warning "Could not auto-generate migration"
+        warning "Please create a migration manually with: alembic revision -m 'description'"
+    fi
+fi
+
+# Report results
+if [[ $MIGRATION_ISSUES -gt 0 ]]; then
+    error "Database migration issues detected!"
+    echo
+    
+    if [[ ${#INVALID_MIGRATIONS[@]} -gt 0 ]]; then
+        echo -e "${RED}Invalid migration files:${NC}"
+        for migration in "${INVALID_MIGRATIONS[@]}"; do
+            echo "  ❌ $migration"
+        done
+        echo
+    fi
+    
+    echo -e "${YELLOW}How to fix migration issues:${NC}"
+    echo
+    echo -e "${YELLOW}1. Creating a new migration:${NC}"
+    echo "   cd $BACKEND_DIR"
+    echo "   alembic revision --autogenerate -m \"Description of changes\""
+    echo "   # Review the generated migration file"
+    echo "   # Make sure upgrade() and downgrade() functions are correct"
+    echo
+    echo -e "${YELLOW}2. Manual migration creation:${NC}"
+    echo "   cd $BACKEND_DIR"
+    echo "   alembic revision -m \"Description of changes\""
+    echo "   # Edit the generated file to add your schema changes"
+    echo
+    echo -e "${YELLOW}3. Migration file requirements:${NC}"
+    echo "   • Must have revision = and down_revision = at the top"
+    echo "   • Must have upgrade() function with forward changes"
+    echo "   • Must have downgrade() function with reverse changes"
+    echo "   • Use descriptive migration message"
+    echo "   • Test both upgrade and downgrade paths"
+    echo
+    
+    if [[ ${#DESTRUCTIVE_MIGRATIONS[@]} -gt 0 ]]; then
+        echo -e "${YELLOW}⚠️  Destructive operations detected in:${NC}"
+        for migration in "${DESTRUCTIVE_MIGRATIONS[@]}"; do
+            echo "   $migration"
+        done
+        echo
+        echo -e "${YELLOW}Destructive operation safety checklist:${NC}"
+        echo "   • Backup production database before applying"
+        echo "   • Test migration on staging environment first"
+        echo "   • Consider data migration for dropped columns"
+        echo "   • Verify downgrade path works correctly"
+        echo "   • Plan for rollback strategy"
+        echo "   • Consider adding data preservation steps"
+        echo
+    fi
+    
+    echo -e "${YELLOW}Migration best practices:${NC}"
+    echo "   • Always review auto-generated migrations"
+    echo "   • Test migrations on copy of production data"
+    echo "   • Use descriptive names for migrations"
+    echo "   • Keep migrations small and focused"
+    echo "   • Don't edit existing migrations after deployment"
+    echo
+    echo -e "${RED}To bypass this check (not recommended):${NC}"
+    echo "   git commit --no-verify"
+    echo
+    
+    exit 1
+fi
+
+# Report warnings for destructive operations but don't block
+if [[ ${#DESTRUCTIVE_MIGRATIONS[@]} -gt 0 ]]; then
+    warning "Potentially destructive database operations detected!"
+    warning "Please review these migrations carefully before deployment:"
+    for migration in "${DESTRUCTIVE_MIGRATIONS[@]}"; do
+        echo "  ⚠️  $migration"
+    done
+    echo
+    warning "Consider testing on staging environment first"
+fi
+
+success "All database migration checks passed!"
+if [[ ${#NEW_MIGRATIONS[@]} -gt 0 ]]; then
+    log "New migrations detected and validated:"
+    for migration in "${NEW_MIGRATIONS[@]}"; do
+        echo "  ✅ $migration"
+    done
+fi
+exit 0

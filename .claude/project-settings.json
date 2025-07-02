@@ -1,0 +1,17 @@
+{
+  "description": "BookedBarber V2 Project Settings for Claude Code",
+  "project_root": "/Users/bossio/6fb-booking",
+  "hooks_config": ".claude/hooks.json",
+  "git_hooks_integration": true,
+  "development_workflow": {
+    "v2_only_enforcement": true,
+    "security_scanning": true,
+    "performance_monitoring": true,
+    "compliance_validation": true
+  },
+  "test_automation": {
+    "smart_test_runner": true,
+    "parallel_execution": true,
+    "coverage_tracking": true
+  }
+}

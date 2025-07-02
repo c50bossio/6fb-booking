@@ -1,0 +1,192 @@
+{
+  "description": "BookedBarber V2 Claude Code Hooks Configuration",
+  "version": "1.0.0",
+  "hooks": [
+    {
+      "name": "prevent_v1_modifications",
+      "description": "Prevent modifications to deprecated V1 directories",
+      "event": "PreToolUse",
+      "matchers": [
+        "Edit(file_path:*/backend/*)",
+        "Write(file_path:*/backend/*)",
+        "MultiEdit(file_path:*/backend/*)",
+        "Edit(file_path:*/frontend/*)",
+        "Write(file_path:*/frontend/*)",
+        "MultiEdit(file_path:*/frontend/*)"
+      ],
+      "command": "/Users/bossio/6fb-booking/hooks/pre-commit-v2-only",
+      "blocking": true,
+      "message": "🚫 V1 directories are deprecated. Use backend-v2/ and backend-v2/frontend-v2/ instead."
+    },
+    {
+      "name": "security_scan_before_edit",
+      "description": "Run security scan before code modifications",
+      "event": "PreToolUse", 
+      "matchers": [
+        "Edit(file_path:*.py)",
+        "Edit(file_path:*.ts)",
+        "Edit(file_path:*.tsx)",
+        "Edit(file_path:*.js)",
+        "Edit(file_path:*.jsx)",
+        "Write(file_path:*.py)",
+        "Write(file_path:*.ts)",
+        "Write(file_path:*.tsx)",
+        "Write(file_path:*.js)",
+        "Write(file_path:*.jsx)",
+        "MultiEdit(file_path:*.py)",
+        "MultiEdit(file_path:*.ts)",
+        "MultiEdit(file_path:*.tsx)",
+        "MultiEdit(file_path:*.js)",
+        "MultiEdit(file_path:*.jsx)"
+      ],
+      "command": "/Users/bossio/6fb-booking/hooks/pre-commit-secrets",
+      "blocking": false,
+      "message": "🔍 Running security scan on code changes..."
+    },
+    {
+      "name": "api_docs_validation",
+      "description": "Validate API documentation when backend files change",
+      "event": "PostToolUse",
+      "matchers": [
+        "Edit(file_path:*/backend-v2/routers/*)",
+        "Edit(file_path:*/backend-v2/api/*)",
+        "Write(file_path:*/backend-v2/routers/*)",
+        "Write(file_path:*/backend-v2/api/*)",
+        "MultiEdit(file_path:*/backend-v2/routers/*)",
+        "MultiEdit(file_path:*/backend-v2/api/*)"
+      ],
+      "command": "/Users/bossio/6fb-booking/hooks/pre-commit-api-docs",
+      "blocking": false,
+      "message": "📚 Validating API documentation consistency..."
+    },
+    {
+      "name": "database_migration_check",
+      "description": "Check for required migrations when models change",
+      "event": "PostToolUse",
+      "matchers": [
+        "Edit(file_path:*/backend-v2/models/*)",
+        "Write(file_path:*/backend-v2/models/*)",
+        "MultiEdit(file_path:*/backend-v2/models/*)"
+      ],
+      "command": "/Users/bossio/6fb-booking/hooks/pre-commit-migrations",
+      "blocking": false,
+      "message": "🗄️ Checking database migration requirements..."
+    },
+    {
+      "name": "performance_check",
+      "description": "Monitor performance impact of frontend changes",
+      "event": "PostToolUse",
+      "matchers": [
+        "Edit(file_path:*/frontend-v2/*)",
+        "Write(file_path:*/frontend-v2/*)",
+        "MultiEdit(file_path:*/frontend-v2/*)"
+      ],
+      "command": "/Users/bossio/6fb-booking/hooks/pre-commit-performance",
+      "blocking": false,
+      "message": "⚡ Checking performance impact of changes..."
+    },
+    {
+      "name": "integration_health_check",
+      "description": "Validate integration health when service files change",
+      "event": "PostToolUse",
+      "matchers": [
+        "Edit(file_path:*/backend-v2/services/*)",
+        "Edit(file_path:*/backend-v2/routers/integrations*)",
+        "Write(file_path:*/backend-v2/services/*)",
+        "Write(file_path:*/backend-v2/routers/integrations*)",
+        "MultiEdit(file_path:*/backend-v2/services/*)",
+        "MultiEdit(file_path:*/backend-v2/routers/integrations*)"
+      ],
+      "command": "/Users/bossio/6fb-booking/hooks/pre-commit-integration",
+      "blocking": false,
+      "message": "🔗 Validating integration health..."
+    },
+    {
+      "name": "compliance_check",
+      "description": "GDPR/PCI compliance validation for sensitive changes",
+      "event": "PostToolUse",
+      "matchers": [
+        "Edit(file_path:*/models/user*)",
+        "Edit(file_path:*/models/client*)", 
+        "Edit(file_path:*/models/payment*)",
+        "Edit(file_path:*/models/appointment*)",
+        "Edit(file_path:*/routers/payments*)",
+        "Edit(file_path:*/routers/auth*)",
+        "Write(file_path:*/models/user*)",
+        "Write(file_path:*/models/client*)",
+        "Write(file_path:*/models/payment*)",
+        "Write(file_path:*/models/appointment*)",
+        "Write(file_path:*/routers/payments*)",
+        "Write(file_path:*/routers/auth*)",
+        "MultiEdit(file_path:*/models/user*)",
+        "MultiEdit(file_path:*/models/client*)",
+        "MultiEdit(file_path:*/models/payment*)",
+        "MultiEdit(file_path:*/models/appointment*)",
+        "MultiEdit(file_path:*/routers/payments*)",
+        "MultiEdit(file_path:*/routers/auth*)"
+      ],
+      "command": "/Users/bossio/6fb-booking/hooks/pre-commit-compliance",
+      "blocking": false,
+      "message": "🛡️ Running GDPR/PCI compliance validation..."
+    },
+    {
+      "name": "dependency_security_check",
+      "description": "Security scan when dependencies change",
+      "event": "PostToolUse",
+      "matchers": [
+        "Edit(file_path:*/requirements.txt)",
+        "Edit(file_path:*/package.json)",
+        "Edit(file_path:*/package-lock.json)",
+        "Write(file_path:*/requirements.txt)",
+        "Write(file_path:*/package.json)",
+        "Write(file_path:*/package-lock.json)"
+      ],
+      "command": "/Users/bossio/6fb-booking/hooks/pre-commit-security",
+      "blocking": true,
+      "message": "🔒 Scanning dependencies for security vulnerabilities..."
+    },
+    {
+      "name": "test_runner",
+      "description": "Run relevant tests after significant changes",
+      "event": "PostToolUse",
+      "matchers": [
+        "Edit(file_path:*/backend-v2/*.py)",
+        "Edit(file_path:*/frontend-v2/*.ts)",
+        "Edit(file_path:*/frontend-v2/*.tsx)",
+        "Write(file_path:*/backend-v2/*.py)",
+        "Write(file_path:*/frontend-v2/*.ts)",
+        "Write(file_path:*/frontend-v2/*.tsx)",
+        "MultiEdit(file_path:*/backend-v2/*.py)",
+        "MultiEdit(file_path:*/frontend-v2/*.ts)",
+        "MultiEdit(file_path:*/frontend-v2/*.tsx)"
+      ],
+      "command": "/Users/bossio/6fb-booking/.claude/hooks/smart-test-runner.sh",
+      "blocking": false,
+      "message": "🧪 Running relevant tests for changes..."
+    },
+    {
+      "name": "notification_summary",
+      "description": "Provide development summary and next steps",
+      "event": "Stop",
+      "matchers": ["*"],
+      "command": "/Users/bossio/6fb-booking/.claude/hooks/dev-summary.sh",
+      "blocking": false,
+      "message": "📋 Generating development summary..."
+    }
+  ],
+  "global_settings": {
+    "timeout": 30,
+    "log_level": "INFO",
+    "log_file": "/Users/bossio/6fb-booking/.claude/hooks.log",
+    "emergency_bypass": {
+      "enabled": true,
+      "env_var": "CLAUDE_BYPASS_HOOKS",
+      "warning": true
+    }
+  },
+  "environment": {
+    "BOOKEDBARBER_PROJECT_ROOT": "/Users/bossio/6fb-booking",
+    "CLAUDE_HOOKS_ENABLED": "true",
+    "HOOK_LOG_LEVEL": "INFO"
+  }
+}

@@ -1,0 +1,672 @@
+#!/bin/bash
+
+# BookedBarber V2 - Deployment Verification Hook
+# Comprehensive post-deployment validation for production systems
+# Validates health endpoints, user flows, performance metrics, and integration connectivity
+# 
+# Usage: Run after deploying to production or staging
+# Example: ./hooks/post-deploy https://api.bookedbarber.com
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+NC='\033[0m' # No Color
+
+# Configuration
+DEPLOYMENT_URL="$1"
+BACKEND_URL="${DEPLOYMENT_URL:-http://localhost:8000}"
+FRONTEND_URL="${2:-http://localhost:3000}"
+DEPLOY_LOG="logs/deployment_verification.log"
+TIMEOUT=30
+MAX_RETRIES=5
+HEALTH_CHECK_INTERVAL=10
+
+# Performance thresholds
+MAX_RESPONSE_TIME=2000  # 2 seconds
+MAX_LOAD_TIME=5000      # 5 seconds
+MIN_UPTIME_PERCENTAGE=99.5
+
+# Log function
+log() {
+    echo -e "${BLUE}[DEPLOY]${NC} $1"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') [DEPLOY] $1" >> "$DEPLOY_LOG" 2>/dev/null || true
+}
+
+error() {
+    echo -e "${RED}[DEPLOY ERROR]${NC} $1"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') [DEPLOY ERROR] $1" >> "$DEPLOY_LOG" 2>/dev/null || true
+}
+
+success() {
+    echo -e "${GREEN}[DEPLOY SUCCESS]${NC} $1"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') [DEPLOY SUCCESS] $1" >> "$DEPLOY_LOG" 2>/dev/null || true
+}
+
+warning() {
+    echo -e "${YELLOW}[DEPLOY WARNING]${NC} $1"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') [DEPLOY WARNING] $1" >> "$DEPLOY_LOG" 2>/dev/null || true
+}
+
+critical() {
+    echo -e "${PURPLE}[DEPLOY CRITICAL]${NC} $1"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') [DEPLOY CRITICAL] $1" >> "$DEPLOY_LOG" 2>/dev/null || true
+}
+
+performance() {
+    echo -e "${CYAN}[PERFORMANCE]${NC} $1"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') [PERFORMANCE] $1" >> "$DEPLOY_LOG" 2>/dev/null || true
+}
+
+# Create logs directory if it doesn't exist
+mkdir -p logs
+
+# Check if command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Make HTTP request with retry logic
+make_request() {
+    local url="$1"
+    local method="${2:-GET}"
+    local expected_status="${3:-200}"
+    local retry_count=0
+    
+    while [[ $retry_count -lt $MAX_RETRIES ]]; do
+        local start_time=$(date +%s%N)
+        local response_code
+        
+        if command_exists curl; then
+            response_code=$(curl -s -o /dev/null -w "%{http_code}" -X "$method" "$url" --max-time "$TIMEOUT" 2>/dev/null || echo "000")
+        else
+            # Fallback to wget
+            if wget --quiet --spider --timeout="$TIMEOUT" "$url" 2>/dev/null; then
+                response_code="200"
+            else
+                response_code="000"
+            fi
+        fi
+        
+        local end_time=$(date +%s%N)
+        local response_time=$(( (end_time - start_time) / 1000000 ))  # Convert to milliseconds
+        
+        if [[ "$response_code" == "$expected_status" ]]; then
+            echo "$response_time"
+            return 0
+        fi
+        
+        retry_count=$((retry_count + 1))
+        if [[ $retry_count -lt $MAX_RETRIES ]]; then
+            log "Request failed (attempt $retry_count/$MAX_RETRIES), retrying in ${HEALTH_CHECK_INTERVAL}s..."
+            sleep $HEALTH_CHECK_INTERVAL
+        fi
+    done
+    
+    echo "0"
+    return 1
+}
+
+# Check basic health endpoints
+check_health_endpoints() {
+    log "Checking health endpoints..."
+    
+    local health_issues=0
+    local health_endpoints=(
+        "$BACKEND_URL/health"
+        "$BACKEND_URL/api/health"
+        "$BACKEND_URL/api/v1/health"
+        "$BACKEND_URL/"
+    )
+    
+    for endpoint in "${health_endpoints[@]}"; do
+        log "Testing endpoint: $endpoint"
+        
+        local response_time
+        response_time=$(make_request "$endpoint" "GET" "200")
+        
+        if [[ $? -eq 0 ]]; then
+            success "Health endpoint accessible: $endpoint (${response_time}ms)"
+            
+            # Check response time
+            if [[ $response_time -gt $MAX_RESPONSE_TIME ]]; then
+                warning "Slow response time: ${response_time}ms (threshold: ${MAX_RESPONSE_TIME}ms)"
+            fi
+            
+            return 0  # At least one health endpoint is working
+        else
+            warning "Health endpoint failed: $endpoint"
+            health_issues=$((health_issues + 1))
+        fi
+    done
+    
+    if [[ $health_issues -eq ${#health_endpoints[@]} ]]; then
+        error "All health endpoints failed"
+        return 1
+    fi
+    
+    return 0
+}
+
+# Check API endpoints functionality
+check_api_endpoints() {
+    log "Checking critical API endpoints..."
+    
+    local api_issues=0
+    local critical_endpoints=(
+        "$BACKEND_URL/api/v1/auth/health:GET:200"
+        "$BACKEND_URL/api/v1/appointments:GET:401"  # Should require auth
+        "$BACKEND_URL/api/v1/services:GET:200"      # Public endpoint
+        "$BACKEND_URL/docs:GET:200"                  # API documentation
+    )
+    
+    for endpoint_config in "${critical_endpoints[@]}"; do
+        IFS=':' read -r endpoint method expected_status <<< "$endpoint_config"
+        
+        log "Testing API endpoint: $endpoint"
+        
+        local response_time
+        response_time=$(make_request "$endpoint" "$method" "$expected_status")
+        
+        if [[ $? -eq 0 ]]; then
+            success "API endpoint accessible: $endpoint (${response_time}ms)"
+            
+            if [[ $response_time -gt $MAX_RESPONSE_TIME ]]; then
+                warning "Slow API response: ${response_time}ms"
+            fi
+        else
+            error "API endpoint failed: $endpoint"
+            api_issues=$((api_issues + 1))
+        fi
+    done
+    
+    if [[ $api_issues -gt 0 ]]; then
+        error "API endpoint issues found: $api_issues"
+        return 1
+    fi
+    
+    success "All critical API endpoints are functional"
+    return 0
+}
+
+# Check database connectivity
+check_database_connection() {
+    log "Checking database connectivity..."
+    
+    # Try to access an endpoint that requires database
+    local db_endpoint="$BACKEND_URL/api/v1/services"
+    
+    local response_time
+    response_time=$(make_request "$db_endpoint" "GET" "200")
+    
+    if [[ $? -eq 0 ]]; then
+        success "Database connectivity verified (${response_time}ms)"
+        return 0
+    else
+        error "Database connectivity check failed"
+        return 1
+    fi
+}
+
+# Check external integrations
+check_integrations() {
+    log "Checking external integration connectivity..."
+    
+    local integration_issues=0
+    
+    # Check Stripe integration (if configured)
+    local stripe_endpoint="$BACKEND_URL/api/v1/payments/health"
+    if make_request "$stripe_endpoint" "GET" "200" >/dev/null 2>&1; then
+        success "Stripe integration connectivity verified"
+    else
+        warning "Stripe integration check failed or not configured"
+        integration_issues=$((integration_issues + 1))
+    fi
+    
+    # Check email service (SendGrid)
+    local email_endpoint="$BACKEND_URL/api/v1/notifications/email/health"
+    if make_request "$email_endpoint" "GET" "200" >/dev/null 2>&1; then
+        success "Email service connectivity verified"
+    else
+        warning "Email service check failed or not configured"
+        integration_issues=$((integration_issues + 1))
+    fi
+    
+    # Check SMS service (Twilio)
+    local sms_endpoint="$BACKEND_URL/api/v1/notifications/sms/health"
+    if make_request "$sms_endpoint" "GET" "200" >/dev/null 2>&1; then
+        success "SMS service connectivity verified"
+    else
+        warning "SMS service check failed or not configured"
+        integration_issues=$((integration_issues + 1))
+    fi
+    
+    # Check Google Calendar integration
+    local calendar_endpoint="$BACKEND_URL/api/v1/calendar/health"
+    if make_request "$calendar_endpoint" "GET" "200" >/dev/null 2>&1; then
+        success "Google Calendar integration verified"
+    else
+        warning "Google Calendar integration check failed or not configured"
+        integration_issues=$((integration_issues + 1))
+    fi
+    
+    if [[ $integration_issues -gt 2 ]]; then
+        warning "Multiple integration issues detected: $integration_issues"
+        warning "Some integrations may not be configured for this environment"
+    fi
+    
+    return 0
+}
+
+# Validate critical user flows
+check_user_flows() {
+    log "Validating critical user flows..."
+    
+    local flow_issues=0
+    
+    # Test registration flow (should return proper validation)
+    log "Testing registration flow..."
+    local reg_endpoint="$BACKEND_URL/api/v1/auth/register"
+    
+    if command_exists curl; then
+        local reg_response
+        reg_response=$(curl -s -X POST "$reg_endpoint" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            -w "%{http_code}" \
+            --max-time "$TIMEOUT" 2>/dev/null || echo "000")
+        
+        # Should return 422 (validation error) for empty data
+        if [[ "$reg_response" == *"422" ]] || [[ "$reg_response" == *"400" ]]; then
+            success "Registration validation working correctly"
+        else
+            warning "Registration flow may have issues"
+            flow_issues=$((flow_issues + 1))
+        fi
+    fi
+    
+    # Test login flow (should return proper error for invalid credentials)
+    log "Testing login flow..."
+    local login_endpoint="$BACKEND_URL/api/v1/auth/login"
+    
+    if command_exists curl; then
+        local login_response
+        login_response=$(curl -s -X POST "$login_endpoint" \
+            -H "Content-Type: application/json" \
+            -d '{"email":"invalid@test.com","password":"invalid"}' \
+            -w "%{http_code}" \
+            --max-time "$TIMEOUT" 2>/dev/null || echo "000")
+        
+        # Should return 401 or 422 for invalid credentials
+        if [[ "$login_response" == *"401" ]] || [[ "$login_response" == *"422" ]]; then
+            success "Login validation working correctly"
+        else
+            warning "Login flow may have issues"
+            flow_issues=$((flow_issues + 1))
+        fi
+    fi
+    
+    # Test services listing (public endpoint)
+    log "Testing services listing..."
+    local services_endpoint="$BACKEND_URL/api/v1/services"
+    
+    local response_time
+    response_time=$(make_request "$services_endpoint" "GET" "200")
+    
+    if [[ $? -eq 0 ]]; then
+        success "Services listing functional (${response_time}ms)"
+    else
+        error "Services listing failed"
+        flow_issues=$((flow_issues + 1))
+    fi
+    
+    if [[ $flow_issues -gt 0 ]]; then
+        error "User flow issues detected: $flow_issues"
+        return 1
+    fi
+    
+    success "All critical user flows validated"
+    return 0
+}
+
+# Check frontend accessibility
+check_frontend() {
+    log "Checking frontend accessibility..."
+    
+    if [[ -z "$FRONTEND_URL" ]]; then
+        warning "Frontend URL not provided, skipping frontend checks"
+        return 0
+    fi
+    
+    local frontend_issues=0
+    
+    # Check main pages
+    local frontend_pages=(
+        "$FRONTEND_URL/"
+        "$FRONTEND_URL/login"
+        "$FRONTEND_URL/register"
+        "$FRONTEND_URL/book"
+    )
+    
+    for page in "${frontend_pages[@]}"; do
+        log "Testing frontend page: $page"
+        
+        local response_time
+        response_time=$(make_request "$page" "GET" "200")
+        
+        if [[ $? -eq 0 ]]; then
+            success "Frontend page accessible: $page (${response_time}ms)"
+            
+            if [[ $response_time -gt $MAX_LOAD_TIME ]]; then
+                warning "Slow page load: ${response_time}ms (threshold: ${MAX_LOAD_TIME}ms)"
+            fi
+        else
+            warning "Frontend page failed: $page"
+            frontend_issues=$((frontend_issues + 1))
+        fi
+    done
+    
+    if [[ $frontend_issues -gt 0 ]]; then
+        warning "Frontend issues detected: $frontend_issues"
+        return 1
+    fi
+    
+    success "Frontend accessibility verified"
+    return 0
+}
+
+# Performance metrics validation
+check_performance_metrics() {
+    log "Validating performance metrics..."
+    
+    local perf_issues=0
+    local total_requests=10
+    local successful_requests=0
+    local total_response_time=0
+    
+    # Run multiple requests to get average performance
+    log "Running performance test with $total_requests requests..."
+    
+    for ((i=1; i<=total_requests; i++)); do
+        local response_time
+        response_time=$(make_request "$BACKEND_URL/api/v1/services" "GET" "200")
+        
+        if [[ $? -eq 0 && $response_time -gt 0 ]]; then
+            successful_requests=$((successful_requests + 1))
+            total_response_time=$((total_response_time + response_time))
+        fi
+        
+        # Small delay between requests
+        sleep 0.5
+    done
+    
+    if [[ $successful_requests -eq 0 ]]; then
+        error "No successful requests in performance test"
+        return 1
+    fi
+    
+    # Calculate metrics
+    local success_rate=$(( successful_requests * 100 / total_requests ))
+    local avg_response_time=$(( total_response_time / successful_requests ))
+    
+    performance "Performance Test Results:"
+    performance "  Successful Requests: $successful_requests/$total_requests"
+    performance "  Success Rate: $success_rate%"
+    performance "  Average Response Time: ${avg_response_time}ms"
+    
+    # Validate thresholds
+    if [[ $success_rate -lt ${MIN_UPTIME_PERCENTAGE%.*} ]]; then
+        error "Success rate below threshold: $success_rate% < ${MIN_UPTIME_PERCENTAGE%.*}%"
+        perf_issues=$((perf_issues + 1))
+    fi
+    
+    if [[ $avg_response_time -gt $MAX_RESPONSE_TIME ]]; then
+        error "Average response time above threshold: ${avg_response_time}ms > ${MAX_RESPONSE_TIME}ms"
+        perf_issues=$((perf_issues + 1))
+    fi
+    
+    if [[ $perf_issues -gt 0 ]]; then
+        error "Performance issues detected: $perf_issues"
+        return 1
+    fi
+    
+    success "Performance metrics within acceptable thresholds"
+    return 0
+}
+
+# Check security headers and HTTPS
+check_security() {
+    log "Checking security configuration..."
+    
+    local security_issues=0
+    
+    # Check if HTTPS is being used in production
+    if [[ "$BACKEND_URL" == https://* ]]; then
+        success "HTTPS is properly configured"
+    elif [[ "$BACKEND_URL" == http://localhost* ]]; then
+        log "Local development environment detected"
+    else
+        warning "Production deployment should use HTTPS"
+        security_issues=$((security_issues + 1))
+    fi
+    
+    # Check security headers (if curl is available)
+    if command_exists curl; then
+        log "Checking security headers..."
+        
+        local headers_response
+        headers_response=$(curl -s -I "$BACKEND_URL/" --max-time "$TIMEOUT" 2>/dev/null || echo "")
+        
+        # Check for important security headers
+        local security_headers=(
+            "X-Content-Type-Options"
+            "X-Frame-Options"
+            "X-XSS-Protection"
+            "Strict-Transport-Security"
+        )
+        
+        for header in "${security_headers[@]}"; do
+            if echo "$headers_response" | grep -qi "$header"; then
+                success "Security header present: $header"
+            else
+                warning "Missing security header: $header"
+                security_issues=$((security_issues + 1))
+            fi
+        done
+    fi
+    
+    if [[ $security_issues -gt 2 ]]; then
+        warning "Multiple security issues detected: $security_issues"
+        warning "Consider reviewing security configuration"
+    fi
+    
+    return 0
+}
+
+# Check logs and monitoring
+check_monitoring() {
+    log "Checking monitoring and logging..."
+    
+    # Check if logs directory exists and has recent entries
+    if [[ -d "logs" ]]; then
+        local recent_logs
+        recent_logs=$(find logs -name "*.log" -mmin -60 2>/dev/null | wc -l)
+        
+        if [[ $recent_logs -gt 0 ]]; then
+            success "Recent log activity detected: $recent_logs files"
+        else
+            warning "No recent log activity"
+        fi
+    else
+        warning "Logs directory not found"
+    fi
+    
+    # Check for monitoring endpoints
+    local monitoring_endpoints=(
+        "$BACKEND_URL/metrics"
+        "$BACKEND_URL/api/v1/monitoring/health"
+        "$BACKEND_URL/api/v1/monitoring/metrics"
+    )
+    
+    local monitoring_available=false
+    for endpoint in "${monitoring_endpoints[@]}"; do
+        if make_request "$endpoint" "GET" "200" >/dev/null 2>&1; then
+            success "Monitoring endpoint available: $endpoint"
+            monitoring_available=true
+            break
+        fi
+    done
+    
+    if [[ "$monitoring_available" = false ]]; then
+        warning "No monitoring endpoints detected"
+        warning "Consider implementing health monitoring"
+    fi
+    
+    return 0
+}
+
+# Generate deployment report
+generate_report() {
+    local passed_checks="$1"
+    local total_checks="$2"
+    local failed_checks=$((total_checks - passed_checks))
+    
+    echo
+    echo -e "${BOLD}${BLUE}════════════════════════════════════════════════════════════════════════════════${NC}"
+    echo -e "${BOLD}${BLUE}                          Deployment Verification Report                          ${NC}"
+    echo -e "${BOLD}${BLUE}════════════════════════════════════════════════════════════════════════════════${NC}"
+    echo
+    echo -e "${YELLOW}Deployment URL: ${BOLD}$BACKEND_URL${NC}"
+    echo -e "${YELLOW}Frontend URL: ${BOLD}${FRONTEND_URL:-N/A}${NC}"
+    echo -e "${YELLOW}Verification Time: ${BOLD}$(date)${NC}"
+    echo -e "${YELLOW}Total Checks: ${BOLD}$total_checks${NC}"
+    echo -e "${GREEN}Passed: ${BOLD}$passed_checks${NC}"
+    echo -e "${RED}Failed: ${BOLD}$failed_checks${NC}"
+    echo -e "${YELLOW}Success Rate: ${BOLD}$(( passed_checks * 100 / total_checks ))%${NC}"
+    echo
+    
+    # Performance summary
+    echo -e "${CYAN}Performance Summary:${NC}"
+    echo -e "  Max Response Time Threshold: ${MAX_RESPONSE_TIME}ms"
+    echo -e "  Max Load Time Threshold: ${MAX_LOAD_TIME}ms"
+    echo -e "  Min Uptime Requirement: ${MIN_UPTIME_PERCENTAGE}%"
+    echo
+    
+    if [[ $failed_checks -eq 0 ]]; then
+        echo -e "${GREEN}${BOLD}🚀 DEPLOYMENT VERIFIED! 🚀${NC}"
+        echo -e "${GREEN}All checks passed. The deployment is healthy and ready for use.${NC}"
+        echo
+        echo -e "${YELLOW}Recommended monitoring:${NC}"
+        echo "  • Set up continuous health monitoring"
+        echo "  • Monitor response times and error rates"
+        echo "  • Review logs regularly for issues"
+        echo "  • Test critical user flows periodically"
+        
+    elif [[ $failed_checks -le 2 ]]; then
+        echo -e "${YELLOW}${BOLD}⚠️  DEPLOYMENT PARTIALLY VERIFIED ⚠️${NC}"
+        echo -e "${YELLOW}Minor issues detected but deployment is functional.${NC}"
+        echo
+        echo -e "${YELLOW}Recommended actions:${NC}"
+        echo "  • Review and fix minor issues"
+        echo "  • Increase monitoring frequency"
+        echo "  • Plan follow-up fixes"
+        
+    else
+        echo -e "${RED}${BOLD}❌ DEPLOYMENT VERIFICATION FAILED ❌${NC}"
+        echo -e "${RED}Critical issues detected. Immediate attention required.${NC}"
+        echo
+        echo -e "${RED}Immediate actions required:${NC}"
+        echo "  • Review failed checks above"
+        echo "  • Check application logs"
+        echo "  • Verify configuration and environment"
+        echo "  • Consider rollback if issues are severe"
+    fi
+    
+    echo
+    echo -e "${YELLOW}Support Resources:${NC}"
+    echo "  • Deployment logs: $DEPLOY_LOG"
+    echo "  • Health endpoints: $BACKEND_URL/health"
+    echo "  • API documentation: $BACKEND_URL/docs"
+    echo "  • Monitoring dashboard: (if configured)"
+    echo
+}
+
+# Main deployment verification function
+main() {
+    if [[ -z "$DEPLOYMENT_URL" ]]; then
+        echo "Usage: ./hooks/post-deploy <backend_url> [frontend_url]"
+        echo "Example: ./hooks/post-deploy https://api.bookedbarber.com https://bookedbarber.com"
+        echo "Example: ./hooks/post-deploy http://localhost:8000 http://localhost:3000"
+        exit 1
+    fi
+    
+    echo
+    echo -e "${BOLD}${BLUE}════════════════════════════════════════════════════════════════════════════════${NC}"
+    echo -e "${BOLD}${BLUE}                      BookedBarber V2 Deployment Verification                     ${NC}"
+    echo -e "${BOLD}${BLUE}════════════════════════════════════════════════════════════════════════════════${NC}"
+    echo
+    
+    log "Starting deployment verification for $BACKEND_URL"
+    log "Frontend URL: ${FRONTEND_URL:-Not provided}"
+    log "Timestamp: $(date)"
+    
+    local total_checks=0
+    local passed_checks=0
+    
+    # Array of check functions and descriptions
+    local checks=(
+        "check_health_endpoints:Health Endpoints"
+        "check_api_endpoints:API Endpoints"
+        "check_database_connection:Database Connectivity"
+        "check_integrations:External Integrations"
+        "check_user_flows:Critical User Flows"
+        "check_frontend:Frontend Accessibility"
+        "check_performance_metrics:Performance Metrics"
+        "check_security:Security Configuration"
+        "check_monitoring:Monitoring & Logging"
+    )
+    
+    # Run all checks
+    for check in "${checks[@]}"; do
+        IFS=':' read -r func_name desc <<< "$check"
+        total_checks=$((total_checks + 1))
+        
+        echo
+        echo -e "${CYAN}────────────────────────────────────────────────────────────────────────────────${NC}"
+        echo -e "${CYAN}Checking: $desc${NC}"
+        echo -e "${CYAN}────────────────────────────────────────────────────────────────────────────────${NC}"
+        
+        if $func_name; then
+            passed_checks=$((passed_checks + 1))
+            echo -e "${GREEN}✓ $desc - PASSED${NC}"
+        else
+            echo -e "${RED}✗ $desc - FAILED${NC}"
+        fi
+    done
+    
+    # Generate final report
+    generate_report "$passed_checks" "$total_checks"
+    
+    # Exit with appropriate code
+    local failed_checks=$((total_checks - passed_checks))
+    
+    if [[ $failed_checks -eq 0 ]]; then
+        success "Deployment verification completed successfully"
+        exit 0
+    elif [[ $failed_checks -le 2 ]]; then
+        warning "Deployment verification completed with minor issues"
+        exit 0
+    else
+        error "Deployment verification failed with critical issues"
+        exit 1
+    fi
+}
+
+# Run main function
+main "$@"

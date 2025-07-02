@@ -1,0 +1,136 @@
+#!/bin/bash
+
+# BookedBarber V2 - Branch Protection Hook
+# Prevents force pushes to protected branches and validates branch naming
+# 
+# Usage: This hook runs automatically on git push
+# Can be bypassed with: git push --no-verify
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Configuration
+PROTECTED_BRANCHES="^(main|master|develop|production)$"
+VALID_BRANCH_PREFIXES="^(feature|bugfix|hotfix|release)/"
+REMOTE="$1"
+URL="$2"
+
+# Log function
+log() {
+    echo -e "${BLUE}[PRE-PUSH]${NC} $1"
+}
+
+error() {
+    echo -e "${RED}[PRE-PUSH ERROR]${NC} $1"
+}
+
+success() {
+    echo -e "${GREEN}[PRE-PUSH SUCCESS]${NC} $1"
+}
+
+warning() {
+    echo -e "${YELLOW}[PRE-PUSH WARNING]${NC} $1"
+}
+
+# Get current branch
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+log "Current branch: $CURRENT_BRANCH"
+log "Remote: $REMOTE"
+
+# Read from stdin to get the list of refs being pushed
+while read local_ref local_sha remote_ref remote_sha; do
+    # Extract branch name from remote ref
+    BRANCH_NAME=$(echo "$remote_ref" | sed 's/refs\/heads\///')
+    
+    log "Processing push to branch: $BRANCH_NAME"
+    
+    # Check if pushing to protected branch
+    if [[ "$BRANCH_NAME" =~ $PROTECTED_BRANCHES ]]; then
+        error "Direct push to protected branch '$BRANCH_NAME' is not allowed!"
+        echo
+        echo -e "${YELLOW}Protected branches:${NC}"
+        echo "  - main/master  (production code)"
+        echo "  - develop      (integration branch)"
+        echo "  - production   (deployment branch)"
+        echo
+        echo -e "${YELLOW}Recommended workflow:${NC}"
+        echo "  1. Create a feature branch: git checkout -b feature/your-feature"
+        echo "  2. Make your changes and commit"
+        echo "  3. Push your feature branch: git push origin feature/your-feature"
+        echo "  4. Create a Pull Request to merge into $BRANCH_NAME"
+        echo
+        echo -e "${RED}To bypass this check (not recommended):${NC}"
+        echo "  git push --no-verify"
+        echo
+        exit 1
+    fi
+    
+    # Check for force push (non-zero remote_sha means branch exists)
+    if [[ "$remote_sha" != "0000000000000000000000000000000000000000" ]]; then
+        # Check if this is a force push by seeing if local_sha is not a descendant of remote_sha
+        if ! git merge-base --is-ancestor "$remote_sha" "$local_sha" 2>/dev/null; then
+            if [[ "$BRANCH_NAME" =~ $PROTECTED_BRANCHES ]]; then
+                error "Force push to protected branch '$BRANCH_NAME' is not allowed!"
+                echo
+                echo -e "${YELLOW}If you need to update the branch:${NC}"
+                echo "  1. Pull the latest changes: git pull origin $BRANCH_NAME"
+                echo "  2. Resolve any conflicts"
+                echo "  3. Push normally: git push origin $BRANCH_NAME"
+                echo
+                exit 1
+            else
+                warning "Force push detected to branch '$BRANCH_NAME'"
+                echo "  This will overwrite remote history - make sure this is intentional"
+            fi
+        fi
+    fi
+    
+    # Validate branch naming for non-protected branches
+    if [[ ! "$BRANCH_NAME" =~ $PROTECTED_BRANCHES ]] && [[ ! "$BRANCH_NAME" =~ $VALID_BRANCH_PREFIXES ]]; then
+        error "Invalid branch name format: '$BRANCH_NAME'"
+        echo
+        echo -e "${YELLOW}Valid branch naming patterns:${NC}"
+        echo "  feature/description    - New features"
+        echo "  bugfix/description     - Bug fixes"
+        echo "  hotfix/description     - Critical fixes"
+        echo "  release/version        - Release branches"
+        echo
+        echo -e "${YELLOW}Examples:${NC}"
+        echo "  ✅ feature/booking-v2-integration"
+        echo "  ✅ bugfix/payment-webhook-validation"
+        echo "  ✅ hotfix/security-patch-auth"
+        echo "  ✅ release/v2.1.0"
+        echo
+        echo -e "${YELLOW}To rename your branch:${NC}"
+        echo "  git branch -m $BRANCH_NAME feature/your-description"
+        echo
+        exit 1
+    fi
+    
+    # Check if branch is up-to-date with remote (for feature branches)
+    if [[ "$BRANCH_NAME" =~ $VALID_BRANCH_PREFIXES ]] && [[ "$remote_sha" != "0000000000000000000000000000000000000000" ]]; then
+        # Fetch latest to ensure we have up-to-date refs
+        log "Checking if branch is up-to-date with remote..."
+        git fetch "$REMOTE" "$BRANCH_NAME" 2>/dev/null || true
+        
+        REMOTE_SHA=$(git rev-parse "$REMOTE/$BRANCH_NAME" 2>/dev/null || echo "")
+        if [[ -n "$REMOTE_SHA" ]] && [[ "$REMOTE_SHA" != "$local_sha" ]]; then
+            if ! git merge-base --is-ancestor "$REMOTE_SHA" "$local_sha" 2>/dev/null; then
+                warning "Your branch '$BRANCH_NAME' is not up-to-date with remote"
+                echo "  Consider pulling the latest changes before pushing:"
+                echo "  git pull origin $BRANCH_NAME"
+            fi
+        fi
+    fi
+    
+    success "Branch '$BRANCH_NAME' passed all pre-push checks"
+done
+
+log "All pre-push validations completed successfully!"
+exit 0

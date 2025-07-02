@@ -1,0 +1,371 @@
+#!/bin/bash
+
+# BookedBarber V2 - API Documentation Hook
+# Ensures API endpoints are properly documented when modified
+# 
+# Usage: This hook runs automatically on git commit
+# Can be bypassed with: git commit --no-verify
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Configuration
+BACKEND_DIR="backend-v2"
+DOCS_DIR="docs"
+ROUTERS_DIR="$BACKEND_DIR/routers"
+OPENAPI_SCHEMA_FILE="openapi_schema.json"
+MAX_RETRIES=3
+TIMEOUT=30
+
+# Log function
+log() {
+    echo -e "${BLUE}[API-DOCS]${NC} $1"
+}
+
+error() {
+    echo -e "${RED}[API-DOCS ERROR]${NC} $1"
+}
+
+success() {
+    echo -e "${GREEN}[API-DOCS SUCCESS]${NC} $1"
+}
+
+warning() {
+    echo -e "${YELLOW}[API-DOCS WARNING]${NC} $1"
+}
+
+# Check if command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Run command with timeout and retries
+run_with_timeout() {
+    local cmd="$1"
+    local desc="$2"
+    local retries=0
+    
+    while [[ $retries -lt $MAX_RETRIES ]]; do
+        log "Running $desc (attempt $((retries + 1))/$MAX_RETRIES)..."
+        
+        if timeout $TIMEOUT bash -c "$cmd" 2>/dev/null; then
+            return 0
+        fi
+        
+        retries=$((retries + 1))
+        if [[ $retries -lt $MAX_RETRIES ]]; then
+            warning "$desc failed, retrying in 2 seconds..."
+            sleep 2
+        fi
+    done
+    
+    return 1
+}
+
+# Extract docstring from Python function
+extract_docstring() {
+    local file="$1"
+    local function_name="$2"
+    
+    if [[ ! -f "$file" ]]; then
+        return 1
+    fi
+    
+    python3 -c "
+import ast
+import sys
+
+def extract_docstring(filename, func_name):
+    try:
+        with open(filename, 'r') as f:
+            tree = ast.parse(f.read())
+        
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef) and node.name == func_name:
+                if node.body and isinstance(node.body[0], ast.Expr) and isinstance(node.body[0].value, ast.Constant):
+                    return node.body[0].value.value
+        return None
+    except:
+        return None
+
+docstring = extract_docstring('$file', '$function_name')
+print(docstring if docstring else 'NO_DOCSTRING')
+" 2>/dev/null || echo "NO_DOCSTRING"
+}
+
+# Check if function has proper FastAPI decorators
+check_fastapi_decorators() {
+    local file="$1"
+    local function_name="$2"
+    
+    if [[ ! -f "$file" ]]; then
+        return 1
+    fi
+    
+    # Look for common FastAPI decorators before the function
+    local line_num=$(grep -n "def $function_name" "$file" | cut -d: -f1)
+    if [[ -z "$line_num" ]]; then
+        return 1
+    fi
+    
+    # Check the 10 lines before the function definition for decorators
+    local start_line=$(( line_num - 10 ))
+    if [[ $start_line -lt 1 ]]; then
+        start_line=1
+    fi
+    
+    local has_decorator=false
+    while [[ $start_line -lt $line_num ]]; do
+        local line=$(sed -n "${start_line}p" "$file")
+        if [[ "$line" =~ @router\.(get|post|put|delete|patch) ]] || [[ "$line" =~ @app\.(get|post|put|delete|patch) ]]; then
+            has_decorator=true
+            break
+        fi
+        start_line=$(( start_line + 1 ))
+    done
+    
+    [[ "$has_decorator" == true ]]
+}
+
+# Get list of staged files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR)
+
+if [[ -z "$STAGED_FILES" ]]; then
+    log "No staged files to check"
+    exit 0
+fi
+
+log "Starting API documentation validation..."
+
+API_ISSUES=0
+MODIFIED_ROUTERS=()
+MISSING_DOCSTRINGS=()
+MISSING_DECORATORS=()
+SCHEMA_OUTDATED=false
+
+# Check for modified router files in backend-v2
+while IFS= read -r file; do
+    if [[ -z "$file" ]]; then
+        continue
+    fi
+    
+    # Check if file is a router in backend-v2
+    if [[ "$file" =~ ^$ROUTERS_DIR/.*\.py$ ]] && [[ "$file" != *"__init__.py" ]] && [[ "$file" != *"test_"* ]]; then
+        MODIFIED_ROUTERS+=("$file")
+        log "Detected modified router: $file"
+    fi
+done <<< "$STAGED_FILES"
+
+# If no routers were modified, skip API documentation checks
+if [[ ${#MODIFIED_ROUTERS[@]} -eq 0 ]]; then
+    success "No API router files modified, skipping API documentation check"
+    exit 0
+fi
+
+# Check each modified router file
+for router_file in "${MODIFIED_ROUTERS[@]}"; do
+    log "Analyzing router file: $router_file"
+    
+    if [[ ! -f "$router_file" ]]; then
+        warning "Router file not found: $router_file"
+        continue
+    fi
+    
+    # Extract function names that look like API endpoints
+    ENDPOINT_FUNCTIONS=$(grep -n "^def " "$router_file" | grep -v "__" | cut -d: -f2 | sed 's/def \([^(]*\).*/\1/' | tr -d ' ')
+    
+    if [[ -z "$ENDPOINT_FUNCTIONS" ]]; then
+        log "No API endpoint functions found in $router_file"
+        continue
+    fi
+    
+    while IFS= read -r func_name; do
+        if [[ -z "$func_name" ]]; then
+            continue
+        fi
+        
+        log "Checking function: $func_name in $router_file"
+        
+        # Check if function has FastAPI decorators
+        if ! check_fastapi_decorators "$router_file" "$func_name"; then
+            warning "Function $func_name in $router_file may not be an API endpoint (no FastAPI decorator found)"
+            continue
+        fi
+        
+        # Check for docstring
+        DOCSTRING=$(extract_docstring "$router_file" "$func_name")
+        if [[ "$DOCSTRING" == "NO_DOCSTRING" ]] || [[ -z "$DOCSTRING" ]]; then
+            MISSING_DOCSTRINGS+=("$router_file:$func_name")
+            API_ISSUES=$((API_ISSUES + 1))
+        else
+            # Check if docstring is meaningful (more than just a single word)
+            WORD_COUNT=$(echo "$DOCSTRING" | wc -w)
+            if [[ $WORD_COUNT -lt 3 ]]; then
+                MISSING_DOCSTRINGS+=("$router_file:$func_name (insufficient documentation)")
+                API_ISSUES=$((API_ISSUES + 1))
+            fi
+        fi
+    done <<< "$ENDPOINT_FUNCTIONS"
+done
+
+# Check if OpenAPI schema should be updated
+if [[ -f "$OPENAPI_SCHEMA_FILE" ]]; then
+    SCHEMA_AGE=$(stat -c %Y "$OPENAPI_SCHEMA_FILE" 2>/dev/null || stat -f %m "$OPENAPI_SCHEMA_FILE" 2>/dev/null || echo 0)
+    CURRENT_TIME=$(date +%s)
+    AGE_DIFF=$(( CURRENT_TIME - SCHEMA_AGE ))
+    
+    # If schema is older than 1 hour and we have router changes, suggest update
+    if [[ $AGE_DIFF -gt 3600 ]] && [[ ${#MODIFIED_ROUTERS[@]} -gt 0 ]]; then
+        warning "OpenAPI schema file is older than 1 hour and API routers were modified"
+        SCHEMA_OUTDATED=true
+    fi
+else
+    warning "OpenAPI schema file not found: $OPENAPI_SCHEMA_FILE"
+    SCHEMA_OUTDATED=true
+fi
+
+# Try to generate/update OpenAPI schema if possible
+if [[ "$SCHEMA_OUTDATED" == true ]] && command_exists python3; then
+    log "Attempting to generate OpenAPI schema..."
+    
+    if [[ -f "$BACKEND_DIR/main.py" ]]; then
+        # Try to generate OpenAPI schema
+        GENERATE_CMD="cd $BACKEND_DIR && python3 -c \"
+from main import app
+import json
+try:
+    schema = app.openapi()
+    with open('../$OPENAPI_SCHEMA_FILE', 'w') as f:
+        json.dump(schema, f, indent=2)
+    print('OpenAPI schema generated successfully')
+except Exception as e:
+    print(f'Failed to generate schema: {e}')
+    exit(1)
+\""
+        
+        if run_with_timeout "$GENERATE_CMD" "OpenAPI schema generation"; then
+            success "OpenAPI schema updated successfully"
+            SCHEMA_OUTDATED=false
+        else
+            warning "Could not auto-generate OpenAPI schema"
+        fi
+    fi
+fi
+
+# Check for API documentation in docs directory
+DOCS_OUTDATED=false
+if [[ -d "$DOCS_DIR" ]]; then
+    API_DOC_FILES=$(find "$DOCS_DIR" -name "*api*" -o -name "*endpoint*" -o -name "*swagger*" -o -name "*openapi*" 2>/dev/null || true)
+    
+    if [[ -n "$API_DOC_FILES" ]]; then
+        # Check if any API doc files are older than the modified routers
+        while IFS= read -r doc_file; do
+            if [[ -z "$doc_file" ]]; then
+                continue
+            fi
+            
+            DOC_AGE=$(stat -c %Y "$doc_file" 2>/dev/null || stat -f %m "$doc_file" 2>/dev/null || echo 0)
+            
+            for router_file in "${MODIFIED_ROUTERS[@]}"; do
+                if [[ -f "$router_file" ]]; then
+                    ROUTER_AGE=$(stat -c %Y "$router_file" 2>/dev/null || stat -f %m "$router_file" 2>/dev/null || echo 0)
+                    if [[ $ROUTER_AGE -gt $DOC_AGE ]]; then
+                        DOCS_OUTDATED=true
+                        break 2
+                    fi
+                fi
+            done
+        done <<< "$API_DOC_FILES"
+    else
+        warning "No API documentation files found in $DOCS_DIR"
+    fi
+else
+    warning "Documentation directory not found: $DOCS_DIR"
+fi
+
+# Report results
+if [[ $API_ISSUES -gt 0 ]] || [[ "$SCHEMA_OUTDATED" == true ]] || [[ "$DOCS_OUTDATED" == true ]]; then
+    error "API documentation issues detected!"
+    echo
+    
+    if [[ ${#MISSING_DOCSTRINGS[@]} -gt 0 ]]; then
+        echo -e "${RED}Functions missing proper docstrings:${NC}"
+        for missing in "${MISSING_DOCSTRINGS[@]}"; do
+            echo "  ❌ $missing"
+        done
+        echo
+        
+        echo -e "${YELLOW}How to fix docstring issues:${NC}"
+        echo "  1. Add comprehensive docstrings to all API endpoint functions"
+        echo "  2. Include description of what the endpoint does"
+        echo "  3. Document parameters, return values, and exceptions"
+        echo "  4. Example format:"
+        echo '     """'
+        echo '     Create a new appointment for a client.'
+        echo '     '
+        echo '     Args:'
+        echo '         appointment_data: Appointment details including date, time, service'
+        echo '     '
+        echo '     Returns:'
+        echo '         dict: Created appointment with ID and confirmation details'
+        echo '     '
+        echo '     Raises:'
+        echo '         HTTPException: If appointment slot is unavailable'
+        echo '     """'
+        echo
+    fi
+    
+    if [[ "$SCHEMA_OUTDATED" == true ]]; then
+        echo -e "${YELLOW}OpenAPI Schema needs updating:${NC}"
+        echo "  1. Run the following command to update the schema:"
+        echo "     cd $BACKEND_DIR && python3 -c \"
+from main import app
+import json
+schema = app.openapi()
+with open('../$OPENAPI_SCHEMA_FILE', 'w') as f:
+    json.dump(schema, f, indent=2)
+print('Schema updated')
+\""
+        echo "  2. Or start the FastAPI server and visit /docs or /redoc"
+        echo "  3. Commit the updated schema file"
+        echo
+    fi
+    
+    if [[ "$DOCS_OUTDATED" == true ]]; then
+        echo -e "${YELLOW}API Documentation may be outdated:${NC}"
+        echo "  1. Review and update API documentation in $DOCS_DIR"
+        echo "  2. Ensure endpoint changes are reflected in user documentation"
+        echo "  3. Update any integration guides or examples"
+        echo
+    fi
+    
+    echo -e "${YELLOW}Best Practices for API Documentation:${NC}"
+    echo "  • Every public API endpoint should have a comprehensive docstring"
+    echo "  • Use FastAPI's automatic OpenAPI generation by starting with uvicorn"
+    echo "  • Keep documentation in sync with code changes"
+    echo "  • Include examples for complex endpoints"
+    echo "  • Document error responses and status codes"
+    echo
+    echo -e "${RED}To bypass this check (not recommended):${NC}"
+    echo "  git commit --no-verify"
+    echo
+    
+    # Don't block commit for documentation warnings, just warn
+    if [[ $API_ISSUES -gt 0 ]]; then
+        exit 1
+    else
+        warning "API documentation warnings detected but not blocking commit"
+        warning "Please address the documentation issues when possible"
+        exit 0
+    fi
+fi
+
+success "All API documentation checks passed!"
+log "API endpoints are properly documented"
+exit 0

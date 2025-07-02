@@ -1,256 +1,373 @@
-# Pre-commit Hooks Documentation
+# BookedBarber V2 - Development Workflow Hooks
 
-## Overview
+This directory contains Git hooks that enforce development workflow standards for the BookedBarber V2 project.
 
-This directory contains custom pre-commit hooks designed to maintain code quality and prevent common issues in the 6fb-booking project. These hooks run automatically before each commit to catch problems early.
+## 🎯 Overview
 
-## Installation
+These hooks implement Phase 1 Core Development Workflow with 4 critical validations:
 
-```bash
-# From the project root directory
-./install-pre-commit-hooks.sh
-```
+1. **Commit Message Validation** - Enforces conventional commits format
+2. **Branch Protection** - Prevents direct pushes to protected branches
+3. **V2-Only Architecture** - Blocks modifications to deprecated V1 directories
+4. **Dependency Security** - Scans for known vulnerabilities
 
-This will:
-1. Install the pre-commit framework
-2. Set up all hooks defined in `.pre-commit-config.yaml`
-3. Create a secrets baseline file
-4. Run an initial check on all files
-
-## Hooks Description
-
-### 1. Check Test Files in Root (`check-test-files.py`)
-
-**Purpose**: Prevents test files from being placed in the root directory.
-
-**What it checks**:
-- Files with "test" or "spec" in the name
-- Python, JavaScript, and TypeScript test files in the root
-
-**Why it matters**:
-- Keeps the project structure organized
-- Makes it easier to run test suites
-- Prevents clutter in the root directory
-
-**How to fix**:
-- Move Python tests to `backend/tests/`
-- Move JavaScript/TypeScript tests to `frontend/src/__tests__/` or `frontend/tests/`
-
-### 2. Check File Prefixes (`check-file-prefixes.py`)
-
-**Purpose**: Blocks files with temporary or experimental prefixes.
-
-**Blocked prefixes**:
-- `test-`, `demo-`, `enhanced-`, `simple-`, `temporary-`
-- `temp-`, `tmp-`, `experiment-`, `exp-`
-- `backup-`, `old-`, `new-`, `fixed-`
-- `broken-`, `wip-`, `draft-`
-
-**Why it matters**:
-- Prevents work-in-progress files from entering production
-- Maintains clean and professional codebase
-- Reduces confusion about which files are "real"
-
-**How to fix**:
-- Rename files with proper, descriptive names
-- Remove temporary files before committing
-
-### 3. Check Duplicate Components (`check-duplicate-components.py`)
-
-**Purpose**: Detects multiple implementations of the same React component.
-
-**Components checked**:
-- Calendar, Auth, Dashboard, Booking
-- Payment, Analytics, Settings
-
-**Why it matters**:
-- Prevents import confusion
-- Maintains single source of truth
-- Reduces maintenance burden
-
-**How to fix**:
-- Choose the best implementation and remove others
-- Use props for variations instead of duplicate components
-- Consolidate features from multiple versions
-
-### 4. Check Duplicate Auth (`check-duplicate-auth.py`)
-
-**Purpose**: Ensures only one authentication system is in use.
-
-**What it checks**:
-- Multiple auth endpoints
-- Mixed authentication methods (JWT vs Session)
-- Duplicate auth components and contexts
-
-**Why it matters**:
-- Security consistency
-- Prevents authentication conflicts
-- Simplifies maintenance
-
-**How to fix**:
-- Stick to JWT authentication (project standard)
-- Remove alternative auth implementations
-- Consolidate auth logic in one place
-
-### 5. Check File Count (`check-file-count.py`)
-
-**Purpose**: Prevents commits with too many files (max: 20).
-
-**Why it matters**:
-- Large commits are hard to review
-- Increases chance of bugs
-- Makes rollbacks difficult
-
-**How to fix**:
-- Split changes into logical commits
-- Use `git reset HEAD <file>` to unstage files
-- Group related changes together
-
-### 6. Check Database Files (`check-database-files.py`)
-
-**Purpose**: Prevents database files from being committed.
-
-**Blocked patterns**:
-- `.db`, `.sqlite`, `.sqlite3`, `.db3`
-- SQLite WAL and SHM files
-- Common database filenames
-
-**Why it matters**:
-- Databases contain sensitive data
-- Cause merge conflicts
-- Bloat repository size
-
-**How to fix**:
-- Remove from staging: `git reset HEAD <file>`
-- Add to `.gitignore`
-- Use migrations for schema changes
-
-### 7. Check Duplicate Endpoints (`check-duplicate-endpoints.py`)
-
-**Purpose**: Detects duplicate API endpoint definitions.
-
-**What it checks**:
-- FastAPI route decorators
-- Same paths with same HTTP methods
-- Similar endpoint patterns
-
-**Why it matters**:
-- Prevents routing conflicts
-- Avoids unpredictable behavior
-- Maintains clear API structure
-
-**How to fix**:
-- Remove duplicate endpoint definitions
-- Use different paths for different purposes
-- Consolidate similar functionality
-
-### 8. No Commit to Branch (`no-commit-to-branch.py`)
-
-**Purpose**: Prevents direct commits to main/master branches.
-
-**Protected branches**:
-- `main`
-- `master`
-
-**Why it matters**:
-- Enforces code review process
-- Ensures CI/CD checks pass
-- Maintains clean commit history
-
-**How to fix**:
-1. Create a feature branch: `git checkout -b feature/your-feature`
-2. Commit to the feature branch
-3. Create a pull request
-
-## Standard Hooks
-
-In addition to custom hooks, we use several standard pre-commit hooks:
-
-- **Trailing whitespace**: Removes unnecessary whitespace
-- **End of file fixer**: Ensures files end with a newline
-- **YAML/JSON checkers**: Validates syntax
-- **Large file check**: Prevents files over 1MB
-- **Black**: Python code formatter
-- **Flake8**: Python linter
-- **isort**: Python import sorter
-- **ESLint**: JavaScript/TypeScript linter
-- **detect-secrets**: Prevents secrets in code
-
-## Usage
-
-### Running Hooks Manually
+## 🚀 Quick Start
 
 ```bash
-# Run on all files
-pre-commit run --all-files
+# Install all hooks
+./hooks/install-hooks.sh
 
-# Run on specific files
-pre-commit run --files file1.py file2.js
-
-# Run specific hook
-pre-commit run check-duplicate-components
+# Or manually copy hooks
+cp hooks/* .git/hooks/
+chmod +x .git/hooks/*
 ```
 
-### Bypassing Hooks (Use Sparingly!)
+## 📋 Hook Details
+
+### 1. Commit Message Validation (`commit-msg`)
+
+**Purpose**: Enforces conventional commits format for consistent commit history.
+
+**Format**: `type(scope): description`
+
+**Valid Types**:
+- `feat` - New feature
+- `fix` - Bug fix  
+- `docs` - Documentation changes
+- `style` - Code style changes (formatting, etc.)
+- `refactor` - Code refactoring
+- `test` - Adding or updating tests
+- `chore` - Maintenance tasks
+
+**Valid Scopes** (optional):
+- `auth` - Authentication & authorization
+- `booking` - Appointment booking system
+- `payment` - Payment processing & Stripe
+- `calendar` - Calendar integration
+- `analytics` - Business analytics & metrics
+- `integration` - Third-party integrations
+- `review` - Review management system
+- `marketing` - Marketing features & campaigns
+- `ui` - User interface components
+- `api` - API endpoints & routes
+- `db` - Database & migrations
+- `config` - Configuration changes
+- `ci` - CI/CD pipeline
+- `security` - Security improvements
+
+**Examples**:
+```bash
+✅ feat(booking): add real-time availability check
+✅ fix(payment): resolve Stripe webhook validation
+✅ docs: update API documentation
+✅ chore(ci): update GitHub Actions workflow
+❌ Add new feature
+❌ Fixed bug
+❌ WIP: working on stuff
+```
+
+**Bypass**: `git commit --no-verify` (not recommended)
+
+### 2. Branch Protection (`pre-push`)
+
+**Purpose**: Protects main branches and enforces branch naming conventions.
+
+**Protected Branches**:
+- `main`/`master` - Production code
+- `develop` - Integration branch
+- `production` - Deployment branch
+
+**Valid Branch Naming**:
+- `feature/description` - New features
+- `bugfix/description` - Bug fixes
+- `hotfix/description` - Critical fixes
+- `release/version` - Release branches
+
+**Validations**:
+- ❌ Direct pushes to protected branches
+- ❌ Force pushes to protected branches
+- ❌ Invalid branch naming
+- ⚠️ Force pushes to feature branches (warning)
+- ℹ️ Out-of-date branch detection
+
+**Examples**:
+```bash
+✅ feature/booking-v2-integration
+✅ bugfix/payment-webhook-validation  
+✅ hotfix/security-patch-auth
+✅ release/v2.1.0
+❌ my-feature
+❌ fix_bug
+❌ direct push to main
+```
+
+**Bypass**: `git push --no-verify` (not recommended)
+
+### 3. V2-Only Architecture (`pre-commit-v2-only`)
+
+**Purpose**: Prevents accidental modifications to deprecated V1 directories.
+
+**Architecture Policy**:
+- ✅ **ALLOWED**: `backend-v2/` (V2 Backend - FastAPI)
+- ✅ **ALLOWED**: `backend-v2/frontend-v2/` (V2 Frontend - Next.js)
+- ✅ **ALLOWED**: `scripts/` (Automation scripts)
+- ✅ **ALLOWED**: `docs/` (Documentation)
+- ✅ **ALLOWED**: `monitoring/` (Monitoring config)
+- ✅ **ALLOWED**: `hooks/` (Git hooks)
+- ❌ **BLOCKED**: `backend/` (V1 Backend - DEPRECATED)
+- ❌ **BLOCKED**: `frontend/` (V1 Frontend - DEPRECATED)
+
+**Why This Matters**:
+- V1 codebase is deprecated and unmaintained
+- All new features must use V2 architecture
+- Prevents developer confusion and technical debt
+- Ensures consistent development practices
+
+**Migration Guide**:
+```
+V1 backend/   → V2 backend-v2/
+V1 frontend/  → V2 backend-v2/frontend-v2/
+```
+
+**Bypass**: `git commit --no-verify` (discuss with team first)
+
+### 4. Dependency Security (`pre-commit-security`)
+
+**Purpose**: Scans dependencies for known security vulnerabilities.
+
+**What It Checks**:
+- **Python**: Uses `safety` or `pip-audit` to scan `requirements.txt`
+- **Node.js**: Uses `npm audit` to scan `package.json`
+- **Severity**: Blocks only HIGH and CRITICAL vulnerabilities
+- **Smart Triggers**: Only runs when dependency files are modified
+
+**Blocking Conditions**:
+- High severity vulnerabilities
+- Critical severity vulnerabilities  
+- Known security exploits
+
+**Non-Blocking (Warnings Only)**:
+- Low severity vulnerabilities
+- Moderate severity vulnerabilities
+- Dependency update recommendations
+
+**Required Tools**:
+```bash
+# Python security scanning
+pip install safety pip-audit
+
+# Node.js security scanning (included with npm)
+npm install -g npm@latest
+```
+
+**Fix Workflow**:
+```bash
+# Review Python vulnerabilities
+cd backend-v2 && safety check
+
+# Review Node.js vulnerabilities  
+cd backend-v2/frontend-v2 && npm audit
+
+# Auto-fix npm issues
+npm audit fix
+
+# Manual fixes
+pip install --upgrade <vulnerable-package>
+npm install <package>@latest
+```
+
+**Bypass**: `git commit --no-verify` (fix vulnerabilities instead)
+
+## 🔧 Installation & Usage
+
+### Automatic Installation
 
 ```bash
-# Skip all hooks for one commit
-git commit --no-verify -m "Emergency fix"
-
-# Note: This should only be used in emergencies!
+# From project root
+./hooks/install-hooks.sh
 ```
+
+This script:
+- Copies all hooks to `.git/hooks/`
+- Makes them executable
+- Creates a combined `pre-commit` hook
+- Backs up existing hooks
+- Provides installation summary
+
+### Manual Installation
+
+```bash
+# Copy individual hooks
+cp hooks/commit-msg .git/hooks/
+cp hooks/pre-push .git/hooks/
+cp hooks/pre-commit-v2-only .git/hooks/
+cp hooks/pre-commit-security .git/hooks/
+
+# Make executable
+chmod +x .git/hooks/*
+```
+
+### Testing Hooks
+
+```bash
+# Test commit message validation
+git commit --allow-empty -m "invalid format"  # Should fail
+git commit --allow-empty -m "test: valid format"  # Should pass
+
+# Test V2-only architecture
+touch backend/test.py
+git add backend/test.py
+git commit -m "test: should fail"  # Should fail
+
+# Test branch protection  
+git push origin main  # Should fail (if not on main)
+
+# Test security scanning
+# Modify requirements.txt or package.json with vulnerable package
+```
+
+### Bypassing Hooks
+
+```bash
+# Bypass specific operations (not recommended)
+git commit --no-verify
+git push --no-verify
+
+# Temporarily disable a hook
+mv .git/hooks/commit-msg .git/hooks/commit-msg.disabled
+
+# Re-enable
+mv .git/hooks/commit-msg.disabled .git/hooks/commit-msg
+```
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**Hook not running**:
+```bash
+# Check if hook exists and is executable
+ls -la .git/hooks/
+chmod +x .git/hooks/*
+```
+
+**Security tools missing**:
+```bash
+# Install Python security tools
+pip install safety pip-audit
+
+# Update npm (includes audit)
+npm install -g npm@latest
+```
+
+**Permission errors**:
+```bash
+# Fix hook permissions
+chmod +x hooks/*
+chmod +x .git/hooks/*
+```
+
+**False positives**:
+```bash
+# Review the specific failure
+git commit -v  # Shows detailed output
+
+# Check hook logs
+# Most hooks provide detailed error messages
+```
+
+### Hook Debugging
+
+Each hook includes verbose logging. Set `DEBUG=1` for extra output:
+
+```bash
+DEBUG=1 git commit -m "test: debug mode"
+```
+
+### Getting Help
+
+```bash
+# View hook source for specific behavior
+cat .git/hooks/commit-msg
+
+# Check git hook documentation  
+git help hooks
+
+# View project-specific documentation
+cat hooks/README.md
+```
+
+## 🔄 Maintenance
 
 ### Updating Hooks
 
 ```bash
-# Update hook definitions
-pre-commit autoupdate
+# Pull latest hooks from repository
+git pull origin main
 
-# Clean and reinstall
-pre-commit clean
-pre-commit install
+# Reinstall hooks
+./hooks/install-hooks.sh
 ```
 
-## Troubleshooting
+### Customizing Hooks
 
-### Hook Fails but Code is Fine
+1. **Modify source hooks** in `hooks/` directory
+2. **Test changes** thoroughly
+3. **Reinstall** with `./hooks/install-hooks.sh`
+4. **Document changes** in this README
+5. **Commit changes** to repository
 
-1. Check the specific error message
-2. Ensure you're not hitting a false positive
-3. If it's a bug in the hook, report it
+### Team Deployment
 
-### Performance Issues
+```bash
+# Add to team onboarding checklist
+echo "./hooks/install-hooks.sh" >> scripts/setup-dev-environment.sh
 
-1. Use `--show-diff-on-failure` to see what changed
-2. Run hooks on specific files instead of all files
-3. Consider excluding large generated files
+# Include in documentation
+# Update CONTRIBUTING.md with hook requirements
+```
 
-### Installation Problems
+## 📊 Hook Statistics
 
-1. Ensure Python 3 is installed
-2. Try installing with pip: `pip install pre-commit`
-3. Check file permissions on hook scripts
+Track hook effectiveness:
 
-## Contributing
+```bash
+# Count hook interventions
+grep -c "ERROR" .git/hooks/*.log 2>/dev/null || echo "No logs found"
 
-To add a new hook:
+# Most common violations
+# Check git commit messages for patterns
+git log --oneline --grep="bypass\|no-verify" --since="1 month ago"
+```
 
-1. Create the hook script in `hooks/`
-2. Add it to `.pre-commit-config.yaml`
-3. Update this documentation
-4. Test thoroughly before committing
+## 🤝 Contributing
 
-## Best Practices
+When modifying hooks:
 
-1. **Fix issues, don't bypass**: Address the root cause
-2. **Small commits**: Easier to pass hooks and review
-3. **Run early**: Use `pre-commit run` before staging
-4. **Keep hooks fast**: They run on every commit
-5. **Document exceptions**: If you must bypass, document why
+1. **Test thoroughly** in isolated environment
+2. **Follow shell scripting best practices**
+3. **Maintain backward compatibility**
+4. **Update documentation**
+5. **Consider edge cases**
 
-## Contact
+### Hook Development Guidelines
 
-For questions or issues with these hooks, please:
-1. Check this documentation first
-2. Look for similar issues in the project
-3. Ask the team for clarification
+- Use `set -e` for fail-fast behavior
+- Provide colored, helpful error messages
+- Include bypass instructions (when appropriate)
+- Handle timeouts and retries for network operations
+- Log actions for debugging
+- Exit with appropriate codes (0=success, 1=failure)
+
+## 📚 Additional Resources
+
+- [Conventional Commits](https://www.conventionalcommits.org/)
+- [Git Hooks Documentation](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks)
+- [BookedBarber V2 Architecture Guide](../docs/ARCHITECTURE.md)
+- [Security Best Practices](../docs/SECURITY.md)
+
+---
+
+**Last Updated**: 2025-07-02  
+**Version**: 1.0.0  
+**Maintainer**: BookedBarber V2 Development Team

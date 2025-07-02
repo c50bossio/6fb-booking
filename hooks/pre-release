@@ -1,0 +1,557 @@
+#!/bin/bash
+
+# BookedBarber V2 - Release Preparation Hook
+# Comprehensive pre-release validation for production deployment
+# Validates tests, changelog, environment configs, database migrations, and release readiness
+# 
+# Usage: Run before creating a release tag or deploying to production
+# Example: ./hooks/pre-release v2.1.0
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+NC='\033[0m' # No Color
+
+# Configuration
+BACKEND_DIR="backend-v2"
+FRONTEND_DIR="backend-v2/frontend-v2"
+RELEASE_LOG="logs/release_preparation.log"
+REQUIRED_COVERAGE=80
+TIMEOUT=300  # 5 minutes timeout for tests
+RELEASE_VERSION="$1"
+
+# Log function
+log() {
+    echo -e "${BLUE}[RELEASE]${NC} $1"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') [RELEASE] $1" >> "$RELEASE_LOG" 2>/dev/null || true
+}
+
+error() {
+    echo -e "${RED}[RELEASE ERROR]${NC} $1"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') [RELEASE ERROR] $1" >> "$RELEASE_LOG" 2>/dev/null || true
+}
+
+success() {
+    echo -e "${GREEN}[RELEASE SUCCESS]${NC} $1"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') [RELEASE SUCCESS] $1" >> "$RELEASE_LOG" 2>/dev/null || true
+}
+
+warning() {
+    echo -e "${YELLOW}[RELEASE WARNING]${NC} $1"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') [RELEASE WARNING] $1" >> "$RELEASE_LOG" 2>/dev/null || true
+}
+
+critical() {
+    echo -e "${PURPLE}[RELEASE CRITICAL]${NC} $1"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') [RELEASE CRITICAL] $1" >> "$RELEASE_LOG" 2>/dev/null || true
+}
+
+# Create logs directory if it doesn't exist
+mkdir -p logs
+
+# Check if command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Run command with timeout
+run_with_timeout() {
+    local cmd="$1"
+    local desc="$2"
+    local timeout_duration="${3:-$TIMEOUT}"
+    
+    log "Running $desc..."
+    
+    if timeout "$timeout_duration" bash -c "$cmd" 2>&1; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Check if we're on the correct branch for release
+check_release_branch() {
+    log "Checking release branch..."
+    
+    local current_branch
+    current_branch=$(git branch --show-current)
+    
+    if [[ "$current_branch" != "main" && "$current_branch" != "master" ]]; then
+        if [[ "$current_branch" != feature/* ]]; then
+            error "Release should be from main/master branch or feature branch"
+            error "Current branch: $current_branch"
+            return 1
+        else
+            warning "Releasing from feature branch: $current_branch"
+        fi
+    fi
+    
+    # Check if working directory is clean
+    if [[ -n $(git status --porcelain) ]]; then
+        error "Working directory is not clean. Commit or stash changes first."
+        git status --short
+        return 1
+    fi
+    
+    success "Release branch validation passed"
+    return 0
+}
+
+# Validate version format
+validate_version() {
+    if [[ -z "$RELEASE_VERSION" ]]; then
+        error "Release version not provided"
+        error "Usage: ./hooks/pre-release v2.1.0"
+        return 1
+    fi
+    
+    # Check semantic versioning format
+    if [[ ! "$RELEASE_VERSION" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$ ]]; then
+        error "Invalid version format: $RELEASE_VERSION"
+        error "Expected format: v2.1.0 or 2.1.0 (with optional -alpha, -beta, -rc1)"
+        return 1
+    fi
+    
+    # Check if tag already exists
+    if git tag -l | grep -q "^$RELEASE_VERSION$"; then
+        error "Tag $RELEASE_VERSION already exists"
+        return 1
+    fi
+    
+    success "Version validation passed: $RELEASE_VERSION"
+    return 0
+}
+
+# Run backend tests
+run_backend_tests() {
+    log "Running backend tests..."
+    
+    if [[ ! -f "$BACKEND_DIR/requirements.txt" ]]; then
+        error "Backend requirements.txt not found"
+        return 1
+    fi
+    
+    # Check if virtual environment exists
+    if [[ ! -d "$BACKEND_DIR/venv" ]]; then
+        warning "Virtual environment not found, creating one..."
+        if ! run_with_timeout "cd $BACKEND_DIR && python -m venv venv" "Python venv creation" 30; then
+            error "Failed to create virtual environment"
+            return 1
+        fi
+    fi
+    
+    # Activate virtual environment and run tests
+    local test_cmd="cd $BACKEND_DIR && source venv/bin/activate && pip install -r requirements.txt -q && python -m pytest tests/ -v --tb=short --cov=. --cov-report=term-missing --cov-fail-under=$REQUIRED_COVERAGE"
+    
+    if run_with_timeout "$test_cmd" "Backend test suite" 600; then
+        success "Backend tests passed with coverage >= $REQUIRED_COVERAGE%"
+        return 0
+    else
+        error "Backend tests failed or coverage below $REQUIRED_COVERAGE%"
+        return 1
+    fi
+}
+
+# Run frontend tests
+run_frontend_tests() {
+    log "Running frontend tests..."
+    
+    if [[ ! -f "$FRONTEND_DIR/package.json" ]]; then
+        error "Frontend package.json not found"
+        return 1
+    fi
+    
+    # Check if node_modules exists
+    if [[ ! -d "$FRONTEND_DIR/node_modules" ]]; then
+        warning "Node modules not found, installing..."
+        if ! run_with_timeout "cd $FRONTEND_DIR && npm install" "npm install" 300; then
+            error "Failed to install npm dependencies"
+            return 1
+        fi
+    fi
+    
+    # Run tests
+    local test_cmd="cd $FRONTEND_DIR && npm test -- --coverage --watchAll=false --passWithNoTests"
+    
+    if run_with_timeout "$test_cmd" "Frontend test suite" 300; then
+        success "Frontend tests passed"
+        return 0
+    else
+        error "Frontend tests failed"
+        return 1
+    fi
+}
+
+# Check database migrations
+check_database_migrations() {
+    log "Checking database migrations..."
+    
+    if [[ ! -d "$BACKEND_DIR/alembic" ]]; then
+        error "Alembic directory not found"
+        return 1
+    fi
+    
+    # Check if migrations are up to date
+    local migration_cmd="cd $BACKEND_DIR && source venv/bin/activate && python -c 'from alembic.config import Config; from alembic import command; config = Config(\"alembic.ini\"); command.check(config)'"
+    
+    if run_with_timeout "$migration_cmd" "Database migration check" 30; then
+        success "Database migrations are up to date"
+    else
+        warning "Database migrations may have issues, proceeding with caution"
+    fi
+    
+    # Check for migration files
+    local migration_count
+    migration_count=$(find "$BACKEND_DIR/alembic/versions" -name "*.py" -type f | wc -l)
+    
+    if [[ $migration_count -eq 0 ]]; then
+        warning "No migration files found"
+    else
+        log "Found $migration_count migration files"
+    fi
+    
+    return 0
+}
+
+# Check changelog
+check_changelog() {
+    log "Checking changelog..."
+    
+    local changelog_files=("CHANGELOG.md" "CHANGELOG.txt" "HISTORY.md" "RELEASES.md")
+    local changelog_found=false
+    
+    for changelog in "${changelog_files[@]}"; do
+        if [[ -f "$changelog" ]]; then
+            changelog_found=true
+            log "Found changelog: $changelog"
+            
+            # Check if version is mentioned in changelog
+            if grep -q "$RELEASE_VERSION" "$changelog" 2>/dev/null; then
+                success "Version $RELEASE_VERSION found in changelog"
+                return 0
+            else
+                warning "Version $RELEASE_VERSION not found in $changelog"
+            fi
+        fi
+    done
+    
+    if [[ "$changelog_found" = false ]]; then
+        warning "No changelog file found (CHANGELOG.md, HISTORY.md, etc.)"
+        warning "Consider creating a changelog for better release tracking"
+    fi
+    
+    return 0
+}
+
+# Check environment configurations
+check_environment_configs() {
+    log "Checking environment configurations..."
+    
+    local config_issues=0
+    
+    # Check backend environment template
+    if [[ -f "$BACKEND_DIR/.env.template" ]]; then
+        log "Backend environment template found"
+        
+        # Check for placeholder values
+        if grep -q "your_key_here\|replace_me\|example" "$BACKEND_DIR/.env.template" 2>/dev/null; then
+            warning "Placeholder values found in backend .env.template"
+        fi
+    else
+        warning "Backend .env.template not found"
+        config_issues=$((config_issues + 1))
+    fi
+    
+    # Check frontend environment example
+    if [[ -f "$FRONTEND_DIR/.env.local.example" ]]; then
+        log "Frontend environment example found"
+        
+        # Check for placeholder values
+        if grep -q "your_key_here\|replace_me\|example" "$FRONTEND_DIR/.env.local.example" 2>/dev/null; then
+            warning "Placeholder values found in frontend .env.local.example"
+        fi
+    else
+        warning "Frontend .env.local.example not found"
+        config_issues=$((config_issues + 1))
+    fi
+    
+    # Check for production configurations
+    local prod_configs=("render.yaml" "railway.json" "docker-compose.yml" "Dockerfile")
+    local prod_config_found=false
+    
+    for config in "${prod_configs[@]}"; do
+        if [[ -f "$config" || -f "$BACKEND_DIR/$config" ]]; then
+            prod_config_found=true
+            log "Production config found: $config"
+            
+            # Check for development values in production configs
+            if grep -qi "localhost\|127.0.0.1\|debug.*true" "$config" "$BACKEND_DIR/$config" 2>/dev/null; then
+                error "Development values found in production config: $config"
+                config_issues=$((config_issues + 1))
+            fi
+        fi
+    done
+    
+    if [[ "$prod_config_found" = false ]]; then
+        warning "No production deployment configuration found"
+    fi
+    
+    if [[ $config_issues -gt 0 ]]; then
+        error "Environment configuration issues found: $config_issues"
+        return 1
+    fi
+    
+    success "Environment configuration check passed"
+    return 0
+}
+
+# Check for debug code and TODO items
+check_debug_code() {
+    log "Checking for debug code and TODO items..."
+    
+    local debug_patterns=("console.log" "debugger;" "pdb.set_trace" "import pdb" "TODO:" "FIXME:" "XXX:" "HACK:")
+    local debug_issues=0
+    
+    # Check staged files and recent commits
+    local files_to_check
+    files_to_check=$(git diff --name-only HEAD~5..HEAD 2>/dev/null || git ls-files)
+    
+    while IFS= read -r file; do
+        if [[ -z "$file" || ! -f "$file" ]]; then
+            continue
+        fi
+        
+        # Skip certain file types
+        case "$file" in
+            *.log|*.db|*.sqlite|*.jpg|*.jpeg|*.png|*.gif|*.ico|*.svg|*.pdf)
+                continue
+                ;;
+            */node_modules/*|*/venv/*|*/.git/*|*/dist/*|*/build/*)
+                continue
+                ;;
+        esac
+        
+        for pattern in "${debug_patterns[@]}"; do
+            if grep -q "$pattern" "$file" 2>/dev/null; then
+                warning "Debug code '$pattern' found in $file"
+                debug_issues=$((debug_issues + 1))
+            fi
+        done
+    done <<< "$files_to_check"
+    
+    if [[ $debug_issues -gt 0 ]]; then
+        warning "Found $debug_issues debug code instances"
+        warning "Consider removing debug code before release"
+    else
+        success "No debug code found"
+    fi
+    
+    return 0
+}
+
+# Check performance and bundle size
+check_performance() {
+    log "Checking performance and bundle size..."
+    
+    # Check frontend bundle size
+    if [[ -f "$FRONTEND_DIR/package.json" ]]; then
+        if run_with_timeout "cd $FRONTEND_DIR && npm run build" "Frontend build" 300; then
+            # Check if build directory exists and get size
+            if [[ -d "$FRONTEND_DIR/.next" ]]; then
+                local build_size
+                build_size=$(du -sh "$FRONTEND_DIR/.next" | cut -f1)
+                log "Frontend build size: $build_size"
+                
+                # Check if build is too large (>100MB warning)
+                local size_bytes
+                size_bytes=$(du -s "$FRONTEND_DIR/.next" | cut -f1)
+                if [[ $size_bytes -gt 102400 ]]; then  # 100MB in KB
+                    warning "Frontend build size is large: $build_size"
+                fi
+            fi
+            success "Frontend build successful"
+        else
+            error "Frontend build failed"
+            return 1
+        fi
+    fi
+    
+    return 0
+}
+
+# Check documentation
+check_documentation() {
+    log "Checking documentation..."
+    
+    local docs_found=0
+    
+    # Check for README files
+    if [[ -f "README.md" ]]; then
+        docs_found=$((docs_found + 1))
+        log "Main README.md found"
+        
+        # Check if README mentions the version or has recent updates
+        if grep -q "v[0-9]\+\.[0-9]\+\.[0-9]\+" "README.md" 2>/dev/null; then
+            log "Version information found in README"
+        fi
+    fi
+    
+    # Check for API documentation
+    if [[ -d "docs" ]]; then
+        docs_found=$((docs_found + 1))
+        log "Documentation directory found"
+    fi
+    
+    # Check for inline documentation
+    local doc_files
+    doc_files=$(find . -name "*.md" -type f | wc -l)
+    log "Found $doc_files documentation files"
+    
+    if [[ $docs_found -eq 0 ]]; then
+        warning "Limited documentation found"
+        warning "Consider adding README.md or documentation"
+    else
+        success "Documentation check passed"
+    fi
+    
+    return 0
+}
+
+# Check security and compliance
+check_security() {
+    log "Running security checks..."
+    
+    # Run secrets detection if available
+    if [[ -f "hooks/pre-commit-secrets" ]]; then
+        log "Running secrets detection..."
+        if bash hooks/pre-commit-secrets; then
+            success "Secrets detection passed"
+        else
+            error "Secrets detection failed"
+            return 1
+        fi
+    fi
+    
+    # Run compliance check if available
+    if [[ -f "hooks/pre-commit-compliance" ]]; then
+        log "Running compliance check..."
+        if bash hooks/pre-commit-compliance; then
+            success "Compliance check passed"
+        else
+            error "Compliance check failed"
+            return 1
+        fi
+    fi
+    
+    return 0
+}
+
+# Main release preparation function
+main() {
+    echo
+    echo -e "${BOLD}${BLUE}════════════════════════════════════════════════════════════════════════════════${NC}"
+    echo -e "${BOLD}${BLUE}                        BookedBarber V2 Release Preparation                        ${NC}"
+    echo -e "${BOLD}${BLUE}════════════════════════════════════════════════════════════════════════════════${NC}"
+    echo
+    
+    if [[ -z "$RELEASE_VERSION" ]]; then
+        error "Release version not provided"
+        echo "Usage: ./hooks/pre-release v2.1.0"
+        exit 1
+    fi
+    
+    log "Starting release preparation for $RELEASE_VERSION"
+    log "Timestamp: $(date)"
+    
+    local total_checks=0
+    local passed_checks=0
+    local failed_checks=0
+    
+    # Array of check functions and descriptions
+    local checks=(
+        "check_release_branch:Branch and Git Status"
+        "validate_version:Version Format"
+        "run_backend_tests:Backend Tests"
+        "run_frontend_tests:Frontend Tests"
+        "check_database_migrations:Database Migrations"
+        "check_changelog:Changelog"
+        "check_environment_configs:Environment Configs"
+        "check_debug_code:Debug Code"
+        "check_performance:Performance & Build"
+        "check_documentation:Documentation"
+        "check_security:Security & Compliance"
+    )
+    
+    # Run all checks
+    for check in "${checks[@]}"; do
+        IFS=':' read -r func_name desc <<< "$check"
+        total_checks=$((total_checks + 1))
+        
+        echo
+        echo -e "${CYAN}────────────────────────────────────────────────────────────────────────────────${NC}"
+        echo -e "${CYAN}Running: $desc${NC}"
+        echo -e "${CYAN}────────────────────────────────────────────────────────────────────────────────${NC}"
+        
+        if $func_name; then
+            passed_checks=$((passed_checks + 1))
+            echo -e "${GREEN}✓ $desc - PASSED${NC}"
+        else
+            failed_checks=$((failed_checks + 1))
+            echo -e "${RED}✗ $desc - FAILED${NC}"
+        fi
+    done
+    
+    # Final report
+    echo
+    echo -e "${BOLD}${BLUE}════════════════════════════════════════════════════════════════════════════════${NC}"
+    echo -e "${BOLD}${BLUE}                              Release Report                                      ${NC}"
+    echo -e "${BOLD}${BLUE}════════════════════════════════════════════════════════════════════════════════${NC}"
+    echo
+    echo -e "${YELLOW}Release Version: ${BOLD}$RELEASE_VERSION${NC}"
+    echo -e "${YELLOW}Total Checks: ${BOLD}$total_checks${NC}"
+    echo -e "${GREEN}Passed: ${BOLD}$passed_checks${NC}"
+    echo -e "${RED}Failed: ${BOLD}$failed_checks${NC}"
+    echo -e "${YELLOW}Success Rate: ${BOLD}$(( passed_checks * 100 / total_checks ))%${NC}"
+    echo
+    
+    if [[ $failed_checks -eq 0 ]]; then
+        echo -e "${GREEN}${BOLD}🎉 RELEASE READY! 🎉${NC}"
+        echo -e "${GREEN}All checks passed. The release is ready for deployment.${NC}"
+        echo
+        echo -e "${YELLOW}Next steps:${NC}"
+        echo "  1. Create release tag: git tag -a $RELEASE_VERSION -m 'Release $RELEASE_VERSION'"
+        echo "  2. Push tag: git push --tags"
+        echo "  3. Deploy to production"
+        echo "  4. Monitor deployment with: hooks/post-deploy"
+        echo
+        success "Release preparation completed successfully"
+        exit 0
+    else
+        echo -e "${RED}${BOLD}❌ RELEASE NOT READY ❌${NC}"
+        echo -e "${RED}$failed_checks check(s) failed. Please fix issues before release.${NC}"
+        echo
+        echo -e "${YELLOW}Recommended actions:${NC}"
+        echo "  1. Review failed checks above"
+        echo "  2. Fix identified issues"
+        echo "  3. Run release preparation again"
+        echo "  4. Consider partial release if only minor issues"
+        echo
+        echo -e "${YELLOW}Emergency release (if critical):${NC}"
+        echo "  1. Document known issues"
+        echo "  2. Plan immediate follow-up fixes"
+        echo "  3. Increase monitoring after deployment"
+        echo
+        error "Release preparation failed with $failed_checks issues"
+        exit 1
+    fi
+}
+
+# Run main function
+main "$@"
