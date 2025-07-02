@@ -1,6 +1,9 @@
-// Accessibility utilities and hooks
+/**
+ * WCAG 2.1 AA Accessibility Utilities and Hooks
+ * Comprehensive accessibility helpers for building inclusive applications
+ */
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState, useCallback } from 'react'
 
 // Focus management
 export function useFocusTrap(isActive: boolean) {

@@ -2,32 +2,95 @@
 
 import React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
+import { cn } from '@/lib/utils'
+import { ButtonLoading } from './LoadingStates'
 
 const buttonVariants = cva(
-  // Base styles with clean, modern design
-  'inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 rounded-lg',
+  // Enhanced base styles with performance optimizations
+  'inline-flex items-center justify-center font-medium transition-all duration-200 ease-ios focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation relative overflow-hidden',
   {
     variants: {
       variant: {
-        primary: 'bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-500 shadow-sm hover:shadow-md active:bg-primary-700',
-        secondary: 'bg-white dark:bg-secondary-800 text-secondary-900 dark:text-secondary-100 border border-secondary-300 dark:border-secondary-600 hover:bg-secondary-50 dark:hover:bg-secondary-700 focus:ring-primary-500 shadow-sm',
-        outline: 'bg-transparent border border-primary-500 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950/50 focus:ring-primary-500',
-        ghost: 'text-secondary-700 dark:text-secondary-300 hover:bg-secondary-100 dark:hover:bg-secondary-800 hover:text-primary-600 dark:hover:text-primary-400 focus:ring-secondary-300',
-        destructive: 'bg-error-500 text-white hover:bg-error-600 focus:ring-error-500 shadow-sm hover:shadow-md active:bg-error-700',
+        primary: [
+          'bg-primary-500 text-white shadow-button hover:shadow-button-hover',
+          'hover:bg-primary-600 active:bg-primary-700 focus:ring-primary-500',
+          'dark:bg-primary-600 dark:hover:bg-primary-700 dark:active:bg-primary-800',
+          'active:scale-95 transform-gpu will-change-transform',
+        ],
+        secondary: [
+          'bg-white dark:bg-dark-surface-200 text-ios-gray-900 dark:text-ios-gray-100',
+          'border border-ios-gray-300 dark:border-ios-gray-600 shadow-button',
+          'hover:bg-ios-gray-50 dark:hover:bg-dark-surface-300 hover:shadow-button-hover',
+          'focus:ring-primary-500 active:scale-95 transform-gpu',
+        ],
+        outline: [
+          'bg-transparent border-2 border-primary-500 text-primary-600 dark:text-primary-400',
+          'hover:bg-primary-50 dark:hover:bg-primary-950/20 hover:border-primary-600',
+          'focus:ring-primary-500 active:scale-95 transform-gpu',
+          'shadow-sm hover:shadow-md',
+        ],
+        ghost: [
+          'text-ios-gray-700 dark:text-ios-gray-300 bg-transparent',
+          'hover:bg-ios-gray-100 dark:hover:bg-ios-gray-800',
+          'hover:text-primary-600 dark:hover:text-primary-400',
+          'focus:ring-ios-gray-300 active:scale-95 transform-gpu',
+        ],
+        destructive: [
+          'bg-error-500 text-white shadow-button hover:shadow-button-hover',
+          'hover:bg-error-600 active:bg-error-700 focus:ring-error-500',
+          'active:scale-95 transform-gpu will-change-transform',
+        ],
+        success: [
+          'bg-success-500 text-white shadow-button hover:shadow-button-hover',
+          'hover:bg-success-600 active:bg-success-700 focus:ring-success-500',
+          'active:scale-95 transform-gpu will-change-transform',
+        ],
+        warning: [
+          'bg-warning-500 text-white shadow-button hover:shadow-button-hover',
+          'hover:bg-warning-600 active:bg-warning-700 focus:ring-warning-500',
+          'active:scale-95 transform-gpu will-change-transform',
+        ],
+        glass: [
+          'bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10',
+          'text-ios-gray-900 dark:text-white shadow-glass',
+          'hover:bg-white/20 dark:hover:bg-white/10 hover:backdrop-blur-lg',
+          'focus:ring-white/30 active:scale-95 transform-gpu',
+        ],
+        gradient: [
+          'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-premium',
+          'hover:from-primary-600 hover:to-secondary-600 hover:shadow-premium-colored',
+          'focus:ring-primary-500 active:scale-95 transform-gpu will-change-transform',
+        ],
       },
       size: {
-        xs: 'text-xs px-3 py-2 min-h-[36px]',
-        sm: 'text-sm px-4 py-2.5 min-h-[44px]',
-        md: 'text-sm px-6 py-3 min-h-[44px]',
-        lg: 'text-base px-8 py-4 min-h-[48px]',
-        xl: 'text-lg px-10 py-5 min-h-[52px]',
+        xs: 'text-xs px-3 py-1.5 min-h-[32px] rounded-md gap-1.5',
+        sm: 'text-sm px-4 py-2 min-h-[36px] rounded-lg gap-2',
+        md: 'text-sm px-6 py-2.5 min-h-[44px] rounded-lg gap-2',
+        lg: 'text-base px-8 py-3 min-h-[48px] rounded-xl gap-2.5',
+        xl: 'text-lg px-10 py-4 min-h-[52px] rounded-xl gap-3',
+        icon: 'p-2.5 min-h-[44px] min-w-[44px] rounded-lg',
+        'icon-sm': 'p-2 min-h-[36px] min-w-[36px] rounded-md',
+        'icon-lg': 'p-3 min-h-[48px] min-w-[48px] rounded-xl',
       },
       fullWidth: {
         true: 'w-full',
         false: 'w-auto',
       },
       loading: {
-        true: 'relative text-transparent cursor-wait',
+        true: 'cursor-wait',
+        false: '',
+      },
+      elevated: {
+        true: 'shadow-lg hover:shadow-xl',
+        false: '',
+      },
+      rounded: {
+        none: 'rounded-none',
+        sm: 'rounded-sm',
+        md: 'rounded-md',
+        lg: 'rounded-lg',
+        xl: 'rounded-xl',
+        full: 'rounded-full',
       },
     },
     defaultVariants: {
@@ -35,6 +98,8 @@ const buttonVariants = cva(
       size: 'md',
       fullWidth: false,
       loading: false,
+      elevated: false,
+      rounded: 'lg',
     },
   }
 )
@@ -46,6 +111,11 @@ export interface ButtonProps
   loadingText?: string
   leftIcon?: React.ReactNode
   rightIcon?: React.ReactNode
+  iconOnly?: boolean
+  tooltip?: string
+  href?: string
+  target?: string
+  asChild?: boolean
   'aria-label'?: string
   'aria-describedby'?: string
 }
@@ -62,86 +132,207 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     children,
     leftIcon,
     rightIcon,
+    iconOnly = false,
+    tooltip,
+    href,
+    target,
+    elevated,
+    rounded,
     onClick,
+    type = 'button',
     'aria-label': ariaLabel,
     'aria-describedby': ariaDescribedBy,
     ...props 
   }, ref) => {
     const isDisabled = disabled || loading
+    const isIconButton = iconOnly || (!children && (leftIcon || rightIcon))
+    const effectiveSize = isIconButton ? (size === 'md' ? 'icon' : size === 'sm' ? 'icon-sm' : size === 'lg' ? 'icon-lg' : size) : size
 
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
       if (onClick && !isDisabled) {
+        // Add haptic feedback for mobile devices
+        if (navigator.vibrate && 'ontouchstart' in window) {
+          navigator.vibrate(1)
+        }
         onClick(e)
       }
     }
 
-    const spinnerSize = React.useMemo(() => {
-      switch (size) {
-        case 'xs': return 'h-3 w-3'
-        case 'sm': return 'h-4 w-4'
-        case 'md': return 'h-4 w-4'
-        case 'lg': return 'h-5 w-5'
-        case 'xl': return 'h-6 w-6'
-        default: return 'h-4 w-4'
+    const getLoadingSize = () => {
+      switch (effectiveSize) {
+        case 'xs': return 'xs'
+        case 'sm': case 'icon-sm': return 'xs'
+        case 'md': case 'icon': return 'sm'
+        case 'lg': case 'icon-lg': return 'sm'
+        case 'xl': return 'md'
+        default: return 'sm'
       }
-    }, [size])
+    }
 
-    return (
-      <button
-        className={buttonVariants({ variant, size, fullWidth, loading, className })}
-        ref={ref}
-        disabled={isDisabled}
-        onClick={handleClick}
-        aria-label={loading ? loadingText : ariaLabel}
-        aria-describedby={ariaDescribedBy}
-        aria-disabled={isDisabled}
-        {...props}
-      >
-        {/* Loading spinner overlay */}
+    const buttonContent = (
+      <>
+        {/* Ripple effect overlay */}
+        <span className="absolute inset-0 overflow-hidden rounded-inherit">
+          <span className="absolute inset-0 bg-white/20 scale-0 rounded-full transition-transform duration-500 group-active:scale-100" />
+        </span>
+        
+        {/* Loading state */}
         {loading && (
           <span className="absolute inset-0 flex items-center justify-center">
-            <svg 
-              className={`animate-spin ${spinnerSize} text-current`}
-              xmlns="http://www.w3.org/2000/svg" 
-              fill="none" 
-              viewBox="0 0 24 24"
-            >
-              <circle 
-                className="opacity-25" 
-                cx="12" 
-                cy="12" 
-                r="10" 
-                stroke="currentColor" 
-                strokeWidth="4"
-              />
-              <path 
-                className="opacity-75" 
-                fill="currentColor" 
-                d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
-            </svg>
+            <ButtonLoading size={getLoadingSize()} />
           </span>
         )}
         
         {/* Button content */}
-        <span className={`${loading ? 'invisible' : 'flex items-center justify-center'} ${leftIcon || rightIcon ? 'gap-2' : ''}`}>
+        <span className={cn(
+          'relative z-10 flex items-center justify-center',
+          loading && 'invisible',
+          (leftIcon || rightIcon) && !isIconButton && 'gap-2'
+        )}>
           {leftIcon && (
-            <span className="flex-shrink-0">
+            <span className={cn(
+              'flex-shrink-0',
+              size === 'xs' && '[&>svg]:w-3 [&>svg]:h-3',
+              size === 'sm' && '[&>svg]:w-4 [&>svg]:h-4',
+              size === 'md' && '[&>svg]:w-4 [&>svg]:h-4',
+              size === 'lg' && '[&>svg]:w-5 [&>svg]:h-5',
+              size === 'xl' && '[&>svg]:w-6 [&>svg]:h-6'
+            )}>
               {leftIcon}
             </span>
           )}
-          <span>{children}</span>
-          {rightIcon && (
-            <span className="flex-shrink-0">
+          {!isIconButton && children && (
+            <span className="truncate">{children}</span>
+          )}
+          {isIconButton && !leftIcon && rightIcon && (
+            <span className={cn(
+              'flex-shrink-0',
+              size === 'xs' && '[&>svg]:w-3 [&>svg]:h-3',
+              size === 'sm' && '[&>svg]:w-4 [&>svg]:h-4',
+              size === 'md' && '[&>svg]:w-5 [&>svg]:h-5',
+              size === 'lg' && '[&>svg]:w-6 [&>svg]:h-6',
+              size === 'xl' && '[&>svg]:w-7 [&>svg]:h-7'
+            )}>
+              {rightIcon}
+            </span>
+          )}
+          {rightIcon && !isIconButton && (
+            <span className={cn(
+              'flex-shrink-0',
+              size === 'xs' && '[&>svg]:w-3 [&>svg]:h-3',
+              size === 'sm' && '[&>svg]:w-4 [&>svg]:h-4',
+              size === 'md' && '[&>svg]:w-4 [&>svg]:h-4',
+              size === 'lg' && '[&>svg]:w-5 [&>svg]:h-5',
+              size === 'xl' && '[&>svg]:w-6 [&>svg]:h-6'
+            )}>
               {rightIcon}
             </span>
           )}
         </span>
+      </>
+    )
+
+    // If href is provided, render as link
+    if (href && !isDisabled) {
+      return (
+        <a
+          href={href}
+          target={target}
+          ref={ref as any}
+          className={cn(
+            buttonVariants({ variant, size: effectiveSize, fullWidth, loading, elevated, rounded }),
+            'group no-underline',
+            className
+          )}
+          aria-label={loading ? loadingText : ariaLabel || tooltip}
+          aria-describedby={ariaDescribedBy}
+          title={tooltip}
+          {...(props as any)}
+        >
+          {buttonContent}
+        </a>
+      )
+    }
+
+    return (
+      <button
+        ref={ref}
+        type={type}
+        disabled={isDisabled}
+        onClick={handleClick}
+        className={cn(
+          buttonVariants({ variant, size: effectiveSize, fullWidth, loading, elevated, rounded }),
+          'group',
+          className
+        )}
+        aria-label={loading ? loadingText : ariaLabel || tooltip}
+        aria-describedby={ariaDescribedBy}
+        aria-disabled={isDisabled}
+        title={tooltip}
+        {...props}
+      >
+        {buttonContent}
       </button>
     )
   }
 )
 
 Button.displayName = 'Button'
+
+// Button group component
+export const ButtonGroup = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & {
+    orientation?: 'horizontal' | 'vertical'
+    size?: ButtonProps['size']
+    variant?: ButtonProps['variant']
+    attached?: boolean
+  }
+>(({ className, orientation = 'horizontal', attached = false, children, ...props }, ref) => {
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        'flex',
+        orientation === 'horizontal' ? 'flex-row' : 'flex-col',
+        attached && orientation === 'horizontal' && '[&>button]:rounded-none [&>button:first-child]:rounded-l-lg [&>button:last-child]:rounded-r-lg [&>button:not(:last-child)]:border-r-0',
+        attached && orientation === 'vertical' && '[&>button]:rounded-none [&>button:first-child]:rounded-t-lg [&>button:last-child]:rounded-b-lg [&>button:not(:last-child)]:border-b-0',
+        !attached && (orientation === 'horizontal' ? 'gap-2' : 'gap-2'),
+        className
+      )}
+      role="group"
+      {...props}
+    >
+      {children}
+    </div>
+  )
+})
+
+ButtonGroup.displayName = 'ButtonGroup'
+
+// Floating Action Button component
+export const FloatingActionButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, size = 'lg', variant = 'primary', rounded = 'full', elevated = true, ...props }, ref) => {
+    return (
+      <Button
+        ref={ref}
+        className={cn(
+          'fixed bottom-6 right-6 z-50 shadow-2xl hover:shadow-3xl',
+          'backdrop-blur-sm bg-primary-500/90 hover:bg-primary-600/90',
+          'border border-white/20',
+          className
+        )}
+        size={size}
+        variant={variant}
+        rounded={rounded}
+        elevated={elevated}
+        iconOnly
+        {...props}
+      />
+    )
+  }
+)
+
+FloatingActionButton.displayName = 'FloatingActionButton'
 
 export { Button, buttonVariants }
