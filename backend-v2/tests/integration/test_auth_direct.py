@@ -8,8 +8,9 @@ import bcrypt
 from datetime import datetime, timedelta
 from jose import jwt
 
-# Settings
-SECRET_KEY = "development-secret-key-for-local-testing-only-not-secure"
+# Settings - Using environment variable for security
+import os
+SECRET_KEY = os.getenv("TEST_SECRET_KEY", "INSECURE_TEST_KEY_DO_NOT_USE_IN_PRODUCTION")
 ALGORITHM = "HS256"
 
 def test_auth_direct():

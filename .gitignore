@@ -15,11 +15,24 @@ venv.bak/
 dist/
 build/
 
-# FastAPI
+# FastAPI & Environment Variables - CRITICAL SECURITY
 .env
 .env.*
 !.env.template
 !.env.example
+!.env.template.secure
+
+# EXPLICIT PRODUCTION FILE EXCLUSIONS (CRITICAL SECURITY)
+.env.production
+.env.staging
+backend/.env.production
+backend/.env.staging
+frontend/.env.production
+frontend/.env.staging
+backend-v2/.env.production
+backend-v2/.env.staging
+backend-v2/frontend-v2/.env.production
+frontend-v2/.env.production
 
 # Database - NEVER COMMIT
 *.db
@@ -49,6 +62,9 @@ build/
 /*_results.json
 /backend/*.log
 /frontend/*.log
+*_report_*.json
+*_report_*.md
+trace_*.json
 
 # Node.js
 node_modules/
@@ -89,6 +105,10 @@ htmlcov/
 # Testing
 .pytest_cache/
 test-pre-commit-temp/
+test-results/
+test-reports/
+backend-v2/frontend-v2/test-results/
+backend-v2/frontend-v2/test-reports/
 
 # Temporary files
 *.tmp

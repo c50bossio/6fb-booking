@@ -11,8 +11,9 @@ import bcrypt
 from jose import jwt
 from pydantic import BaseModel
 
-# Settings
-SECRET_KEY = "development-secret-key-for-local-testing-only-not-secure"
+# Settings - Using environment variable for security
+import os
+SECRET_KEY = os.getenv("TEST_SECRET_KEY", "INSECURE_TEST_KEY_DO_NOT_USE_IN_PRODUCTION")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
