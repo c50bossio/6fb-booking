@@ -29,6 +29,9 @@ class MultiTenancyMiddleware:
     Ensures users can only access data from their assigned location(s)
     """
     
+    def __init__(self, app):
+        self.app = app
+    
     # Endpoints that don't require location validation
     EXEMPT_PATHS = {
         "/docs",
@@ -51,7 +54,13 @@ class MultiTenancyMiddleware:
         "/api/v1/locations/delete",
     }
     
-    async def __call__(self, request: Request, call_next):
+    async def __call__(self, scope, receive, send):
+        """ASGI interface for middleware"""
+        from starlette.middleware.base import BaseHTTPMiddleware
+        middleware = BaseHTTPMiddleware(self.app, self.dispatch)
+        return await middleware(scope, receive, send)
+    
+    async def dispatch(self, request: Request, call_next):
         """Process request and enforce location-based access"""
         
         # Skip validation for exempt paths
