@@ -95,8 +95,8 @@ class ConversionEvent(Base):
     status = Column(Enum(ConversionStatus), default=ConversionStatus.PENDING)
     error_message = Column(Text, nullable=True)
     
-    # Attribution relationship
-    attribution_path_id = Column(Integer, ForeignKey("attribution_paths.id"), nullable=True)
+    # Attribution relationship (removed circular reference)
+    # attribution_path_id = Column(Integer, ForeignKey("attribution_paths.id"), nullable=True)
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -104,7 +104,7 @@ class ConversionEvent(Base):
     
     # Relationships
     user = relationship("User", back_populates="conversion_events")
-    attribution_path = relationship("AttributionPath", back_populates="conversion_event", uselist=False, foreign_keys="AttributionPath.conversion_event_id")
+    attribution_path = relationship("AttributionPath", back_populates="conversion_event", uselist=False)
     
     # Indexes for performance
     __table_args__ = (
@@ -144,7 +144,7 @@ class AttributionPath(Base):
     
     # Relationships
     user = relationship("User")
-    conversion_event = relationship("ConversionEvent", back_populates="attribution_path", uselist=False, foreign_keys=[conversion_event_id])
+    conversion_event = relationship("ConversionEvent", back_populates="attribution_path", uselist=False)
     
     def __repr__(self):
         return f"<AttributionPath for Event {self.conversion_event_id}>"
