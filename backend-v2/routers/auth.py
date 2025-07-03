@@ -24,8 +24,13 @@ import models
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
+@router.get("/test")
+async def test_auth_route():
+    """Simple test endpoint to verify auth router is working"""
+    return {"status": "ok", "message": "Auth router is responding"}
+
 @router.post("/login", response_model=schemas.Token)
-@login_rate_limit
+# @login_rate_limit  # Temporarily disabled for debugging
 async def login(request: Request, user_credentials: schemas.UserLogin, db: Session = Depends(get_db)):
     """Login endpoint that returns a JWT access token."""
     user = authenticate_user(db, user_credentials.email, user_credentials.password)

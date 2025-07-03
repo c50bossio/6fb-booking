@@ -5,7 +5,7 @@ from slowapi.errors import RateLimitExceeded
 from database import engine, Base
 import models
 import location_models
-from routers import auth, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, email_analytics, test_data, reviews, integrations, api_keys, commissions, privacy, cache, ai_analytics  # products, shopify_webhooks temporarily disabled due to bleach dependency
+from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, email_analytics, test_data, reviews, integrations, api_keys, commissions, privacy, cache, ai_analytics  # products, shopify_webhooks temporarily disabled due to bleach dependency
 from routers.services import public_router as services_public_router
 from utils.rate_limit import limiter, rate_limit_exceeded_handler
 from services.integration_service import IntegrationServiceFactory
@@ -138,6 +138,7 @@ app.add_middleware(
 
 # Include routers with API versioning
 app.include_router(auth.router, prefix="/api/v1")
+app.include_router(auth_simple.router, prefix="/api/v1")  # Simplified auth for schema compatibility
 app.include_router(bookings.router, prefix="/api/v1")
 app.include_router(appointments.router, prefix="/api/v1")  # Standardized appointment endpoints
 app.include_router(payments.router, prefix="/api/v1")

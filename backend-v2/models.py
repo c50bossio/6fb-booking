@@ -1115,7 +1115,7 @@ class BlackoutDate(Base):
     is_active = Column(Boolean, default=True)
     
     # Relationships
-    location = relationship("BarbershopLocation", backref="blackout_dates")
+    # location = relationship("BarbershopLocation", backref="blackout_dates")  # Temporarily disabled - circular import
     barber = relationship("User", foreign_keys=[barber_id], backref="barber_blackouts")
     created_by = relationship("User", foreign_keys=[created_by_id])
     
@@ -1162,7 +1162,7 @@ class RecurringAppointmentSeries(Base):
     # Relationships
     pattern = relationship("RecurringAppointmentPattern", backref="series")
     user = relationship("User", backref="appointment_series")
-    appointments = relationship("Appointment", backref="recurring_series")  # Will need to add to Appointment model
+    appointments = relationship("Appointment", back_populates="recurring_series")
 
 
 # Update Appointment model to link to recurring pattern
