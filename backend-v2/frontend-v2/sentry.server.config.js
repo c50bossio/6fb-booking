@@ -3,19 +3,21 @@
 
 import * as Sentry from '@sentry/nextjs'
 
-Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  
-  // Set tracesSampleRate to capture performance data
-  // Lower rate in production to manage volume and costs
-  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.05 : 1.0,
+// Only initialize Sentry if DSN is provided
+if (process.env.NEXT_PUBLIC_SENTRY_DSN && process.env.NEXT_PUBLIC_SENTRY_DSN !== 'REPLACE_WITH_PRODUCTION_SENTRY_DSN') {
+  Sentry.init({
+    dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+    
+    // Set tracesSampleRate to capture performance data
+    // Lower rate in production to manage volume and costs
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.05 : 1.0,
 
-  // Set profilesSampleRate to profile server-side performance
-  profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.02 : 1.0,
+    // Set profilesSampleRate to profile server-side performance
+    profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.02 : 1.0,
 
-  // Set environment and release information
-  environment: process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT || process.env.NODE_ENV || 'development',
-  release: process.env.BUILD_VERSION || '1.0.0',
+    // Set environment and release information
+    environment: process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT || process.env.NODE_ENV || 'development',
+    release: process.env.BUILD_VERSION || '1.0.0',
 
   // Server-specific error filtering
   beforeSend(event) {
@@ -173,4 +175,7 @@ Sentry.init({
 
   // Spotlight integration for local development debugging
   spotlight: process.env.NODE_ENV === 'development',
-})
+  })
+} else {
+  console.log('Sentry not initialized - DSN not provided or is placeholder')
+}

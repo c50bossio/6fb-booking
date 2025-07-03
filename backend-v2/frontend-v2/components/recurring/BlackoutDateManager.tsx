@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/RadioGroup';
 import { Badge } from '@/components/ui/Badge';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { format, parseISO, isAfter, isBefore } from 'date-fns';
 import { 
   CalendarX, 

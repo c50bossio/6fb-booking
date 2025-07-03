@@ -324,5 +324,265 @@ If you encounter login issues:
 2. Clear browser cache and Next.js cache: `rm -rf .next`
 3. Hard refresh browser: `Cmd+Shift+R` or `Ctrl+Shift+R`
 
+## 🌍 Environment Management Guide (2025-07-03)
+
+### Environment Overview
+BookedBarber V2 supports multiple environments for safe development and testing:
+
+| Environment | Frontend | Backend | Purpose | Database |
+|-------------|----------|---------|---------|----------|
+| **Development** | `localhost:3000` | `localhost:8000` | Daily development work | `6fb_booking.db` |
+| **Staging (Local)** | `localhost:3001` | `localhost:8001` | Testing & validation | `staging_6fb_booking.db` |
+| **Staging (Cloud)** | `staging.bookedbarber.com` | `api-staging.bookedbarber.com` | Team demos & collaboration | PostgreSQL staging |
+| **Production** | `bookedbarber.com` | `api.bookedbarber.com` | Live customer environment | PostgreSQL production |
+
+### Environment Access for Claude Code
+
+#### Development Environment (Default)
+```bash
+# Frontend
+http://localhost:3000
+
+# Backend API
+http://localhost:8000
+http://localhost:8000/docs  # API documentation
+
+# Configuration
+Environment: .env.development
+Database: SQLite (6fb_booking.db)
+Redis: Database 0
+```
+
+#### Staging Environment (Local Testing)
+```bash
+# Frontend
+http://localhost:3001
+
+# Backend API  
+http://localhost:8001
+http://localhost:8001/docs  # API documentation
+
+# Configuration
+Environment: .env.staging
+Database: SQLite (staging_6fb_booking.db)
+Redis: Database 1
+```
+
+#### Staging Environment (Cloud)
+```bash
+# Frontend
+https://staging.bookedbarber.com
+
+# Backend API
+https://api-staging.bookedbarber.com
+https://api-staging.bookedbarber.com/docs
+
+# Configuration
+Environment: Cloud environment variables
+Database: PostgreSQL staging cluster
+Redis: ElastiCache staging
+```
+
+### Environment Switching Commands
+
+#### Start Development (Default)
+```bash
+cd backend-v2
+
+# Backend
+uvicorn main:app --reload --port 8000
+
+# Frontend (separate terminal)
+cd frontend-v2
+npm run dev  # Runs on port 3000
+```
+
+#### Start Staging (Local)
+```bash
+cd backend-v2
+
+# Backend
+uvicorn main:app --reload --port 8001 --env-file .env.staging
+
+# Frontend (separate terminal)
+cd frontend-v2
+npm run staging  # Runs on port 3001
+```
+
+#### Start Both Environments (Parallel)
+```bash
+# Method 1: Docker Compose
+docker-compose -f docker-compose.staging.yml up -d
+
+# Method 2: Manual parallel startup
+cd backend-v2
+uvicorn main:app --reload --port 8000 &  # Development
+uvicorn main:app --reload --port 8001 --env-file .env.staging &  # Staging
+cd frontend-v2
+npm run dev &  # Development frontend (port 3000)
+npm run staging &  # Staging frontend (port 3001)
+```
+
+### Environment Management Scripts
+
+#### Quick Environment Status
+```bash
+# Check which environments are running
+npm run env
+
+# Show port status
+lsof -i :3000  # Development frontend
+lsof -i :3001  # Staging frontend
+lsof -i :8000  # Development backend
+lsof -i :8001  # Staging backend
+```
+
+#### Environment Control Scripts
+```bash
+# Start staging environment
+./scripts/start-staging.sh
+
+# Stop staging environment
+./scripts/stop-staging.sh
+
+# Reset staging data
+./scripts/reset-staging.sh
+
+# Switch to staging mode
+./scripts/switch-to-staging.sh
+
+# Switch back to development
+./scripts/switch-to-dev.sh
+```
+
+### Environment Context Clues for Claude
+
+#### When to Use Each Environment
+1. **Use Development** when:
+   - Working on new features
+   - Debugging existing functionality
+   - Daily development tasks
+   - Running tests
+
+2. **Use Staging (Local)** when:
+   - Testing new features before demos
+   - Validating database migrations
+   - Testing integrations safely
+   - Comparing old vs new functionality
+
+3. **Use Staging (Cloud)** when:
+   - Demonstrating features to stakeholders
+   - Team collaboration and review
+   - Client previews
+   - Performance testing under real conditions
+
+#### URL Reference for Claude
+When Claude mentions URLs, always use the correct environment:
+
+```bash
+# ✅ Correct environment-specific URLs
+Development: "localhost:3000" or "localhost:8000"
+Staging:     "localhost:3001" or "localhost:8001"
+Cloud:       "staging.bookedbarber.com" or "api-staging.bookedbarber.com"
+
+# ❌ Avoid generic references
+"localhost" (which port?)
+"the app" (which environment?)
+"the API" (which instance?)
+```
+
+### Environment Configuration Files
+
+#### Environment Files Location
+```bash
+backend-v2/
+├── .env.development     # Development settings
+├── .env.staging        # Local staging settings
+├── .env.staging.template  # Staging template
+├── .env.production.template  # Production template
+└── config.py           # Configuration loader
+```
+
+#### Key Configuration Differences
+```bash
+# Development
+PORT=8000
+DATABASE_URL=sqlite:///./6fb_booking.db
+REDIS_URL=redis://localhost:6379/0
+DEBUG=true
+
+# Staging
+PORT=8001
+DATABASE_URL=sqlite:///./staging_6fb_booking.db
+REDIS_URL=redis://localhost:6379/1
+DEBUG=false
+```
+
+### Database Management
+
+#### Database Separation
+- **Development**: `6fb_booking.db` (SQLite)
+- **Staging**: `staging_6fb_booking.db` (SQLite)
+- **Cloud Staging**: PostgreSQL staging cluster
+- **Production**: PostgreSQL production cluster
+
+#### Migration Commands
+```bash
+# Development migrations
+alembic upgrade head
+
+# Staging migrations
+ENV_FILE=.env.staging alembic upgrade head
+
+# Reset staging database
+rm staging_6fb_booking.db
+ENV_FILE=.env.staging alembic upgrade head
+python scripts/populate_staging_data.py
+```
+
+### Troubleshooting Environment Issues
+
+#### Port Conflicts
+```bash
+# Kill processes using staging ports
+lsof -ti:3001 | xargs kill -9
+lsof -ti:8001 | xargs kill -9
+
+# Check what's using development ports
+lsof -i :3000
+lsof -i :8000
+```
+
+#### Environment Variable Issues
+```bash
+# Verify environment loading
+cd backend-v2
+python -c "from config import settings; print(f'Environment: {settings.environment}, Port: {settings.port}')"
+
+# Check staging environment
+ENV_FILE=.env.staging python -c "from config import settings; print(f'Environment: {settings.environment}, Port: {settings.port}')"
+```
+
+#### Docker Environment Issues
+```bash
+# Check staging containers
+docker-compose -f docker-compose.staging.yml ps
+
+# View staging logs
+docker-compose -f docker-compose.staging.yml logs
+
+# Restart staging environment
+docker-compose -f docker-compose.staging.yml restart
+```
+
+### Best Practices for Environment Management
+
+1. **Always specify environment** when giving instructions
+2. **Use different ports** to avoid conflicts (3000/8000 vs 3001/8001)
+3. **Keep environments isolated** (separate databases, Redis DBs)
+4. **Test in staging first** before production deployment
+5. **Document environment-specific configurations**
+6. **Use environment-specific credentials** (test vs production keys)
+
 ---
-Last updated: 2025-07-01
+Last updated: 2025-07-03

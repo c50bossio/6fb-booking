@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "dev:turbo": "next dev --turbo",
+    "staging": "next dev -p 3001",
+    "staging:turbo": "next dev --turbo -p 3001",
     "build": "next build",
     "build:analyze": "ANALYZE=true next build",
     "build:profile": "next build --profile",
@@ -26,7 +28,11 @@
     "size": "npx size-limit",
     "lighthouse": "npx lighthouse http://localhost:3000 --output-path=./lighthouse-report.html",
     "bundle:stats": "npx webpack-bundle-analyzer .next/analyze/client.json",
-    "precommit": "npm run lint && npm run test"
+    "precommit": "npm run lint && npm run test",
+    "env": "node scripts/show-environment.js",
+    "env:check": "node scripts/check-ports.js",
+    "ports": "lsof -i :3000 && lsof -i :3001 && lsof -i :8000 && lsof -i :8001 || echo 'Checking ports...'",
+    "kill:staging": "lsof -ti:3001 | xargs kill -9 && lsof -ti:8001 | xargs kill -9 || echo 'No staging processes to kill'"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -61,7 +67,7 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^30.0.0",
-    "@types/node": "^20.14.10",
+    "@types/node": "^20.19.4",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.19",
@@ -74,6 +80,7 @@
     "next-router-mock": "^0.9.13",
     "node-fetch": "^2.7.0",
     "postcss": "^8.4.39",
+    "puppeteer": "^24.11.2",
     "tailwindcss": "^3.4.4",
     "typescript": "^5.5.3",
     "whatwg-fetch": "^3.6.20"

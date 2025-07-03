@@ -36,7 +36,7 @@ def upgrade():
         sa.Column('percentile_90', sa.Float(), nullable=True),
         sa.Column('mean_value', sa.Float(), nullable=True),
         sa.Column('std_deviation', sa.Float(), nullable=True),
-        sa.Column('metadata', sa.JSON(), nullable=True),
+        sa.Column('additional_data', sa.JSON(), nullable=True),
         sa.Column('anonymized_at', sa.DateTime(), nullable=False),
         sa.Column('aggregation_period', sa.String(length=20), nullable=False),
         sa.Column('data_source_hash', sa.String(length=64), nullable=True),

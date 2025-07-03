@@ -82,7 +82,7 @@ class PerformanceBenchmark(Base):
     std_deviation = Column(Float, nullable=True)
     
     # Additional context data
-    metadata = Column(JSON, nullable=True)  # Additional benchmark context
+    additional_data = Column(JSON, nullable=True)  # Additional benchmark context
     
     # Privacy and data integrity
     anonymized_at = Column(DateTime, default=utcnow, nullable=False)

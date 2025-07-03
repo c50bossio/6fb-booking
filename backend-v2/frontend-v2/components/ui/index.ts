@@ -3,7 +3,7 @@ export { Button } from './Button';
 export { Card, CardContent, CardHeader, CardTitle, CardDescription } from './Card';
 export { Input } from './Input';
 export { Select } from './Select';
-export { Tabs, TabsList, TabsTrigger, TabsContent } from './Tabs';
+export { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs';
 export { Switch } from './Switch';
 export { Label } from './Label';
 export { Calendar } from './Calendar';

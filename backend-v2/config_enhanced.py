@@ -44,9 +44,11 @@ class Settings(BaseSettings):
     # =============================================================================
     # STRIPE PAYMENT CONFIGURATION
     # =============================================================================
-    stripe_secret_key: str = "sk_test_4eC39HqLyjWDarjtT1zdp7dc"
-    stripe_publishable_key: str = "pk_test_default"
-    stripe_webhook_secret: str = "whsec_default"
+    # CRITICAL: All Stripe credentials must be set via environment variables
+    # Never use hardcoded test keys in production or committed code
+    stripe_secret_key: str = ""  # REQUIRED: Set STRIPE_SECRET_KEY environment variable
+    stripe_publishable_key: str = ""  # REQUIRED: Set STRIPE_PUBLISHABLE_KEY environment variable  
+    stripe_webhook_secret: str = ""  # REQUIRED: Set STRIPE_WEBHOOK_SECRET environment variable
     stripe_connect_client_id: Optional[str] = None
     
     # =============================================================================
@@ -285,23 +287,68 @@ class Settings(BaseSettings):
         """Check if Stripe is properly configured"""
         return bool(
             self.stripe_secret_key and 
-            self.stripe_secret_key != "sk_test_4eC39HqLyjWDarjtT1zdp7dc"
+            self.stripe_secret_key.startswith(('sk_test_', 'sk_live_')) and
+            self.stripe_publishable_key and
+            self.stripe_webhook_secret
         )
         
     def get_cors_origins(self) -> List[str]:
         """Get processed CORS origins as list"""
         return getattr(self, 'allowed_origins_list', [self.allowed_origins])
+    
+    def validate_production_security(self) -> List[str]:
+        """Validate production security settings. Returns list of issues."""
+        issues = []
+        
+        if self.secret_key == "your-secret-key-here-generate-with-openssl-rand-hex-32":
+            issues.append("SECRET_KEY must be set to a secure value")
+        
+        if not self.stripe_configured:
+            issues.append("Stripe credentials not properly configured")
+            
+        if not self.email_configured and self.enable_email_notifications:
+            issues.append("Email notifications enabled but not configured")
+            
+        if not self.sms_configured and self.enable_sms_notifications:
+            issues.append("SMS notifications enabled but not configured")
+            
+        if self.debug:
+            issues.append("DEBUG mode should be disabled in production")
+            
+        if "localhost" in self.allowed_origins:
+            issues.append("Localhost should not be in allowed origins for production")
+            
+        return issues
 
 # Create settings instance
 settings = Settings()
 
-# Validate critical settings
-if settings.is_production:
-    if settings.secret_key == "your-secret-key-here-generate-with-openssl-rand-hex-32":
-        raise ValueError("SECRET_KEY must be set to a secure value in production")
+# Enhanced validation for critical settings
+def validate_enhanced_security():
+    """Enhanced security validation at startup"""
+    if settings.is_production:
+        issues = settings.validate_production_security()
+        
+        if issues:
+            error_msg = f"PRODUCTION SECURITY ISSUES: {'; '.join(issues)}"
+            raise ValueError(error_msg)
+        
+        print("✓ Production security validation passed")
     
-    if settings.database_is_sqlite:
-        print("WARNING: Using SQLite in production. Consider PostgreSQL for better performance.")
+    elif settings.is_staging:
+        print("⚠ Running in staging mode - ensure production settings are ready")
     
-    if not settings.stripe_configured:
-        print("WARNING: Stripe not properly configured for production")
+    else:
+        missing_configs = []
+        if not settings.stripe_configured:
+            missing_configs.append("Stripe")
+        if not settings.email_configured:
+            missing_configs.append("Email")
+        if not settings.sms_configured:
+            missing_configs.append("SMS")
+            
+        if missing_configs:
+            print(f"ℹ Development mode: {', '.join(missing_configs)} not configured")
+
+# Run enhanced validation
+validate_enhanced_security()

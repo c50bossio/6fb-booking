@@ -8,7 +8,21 @@ import { Badge } from '@/components/ui/Badge'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Switch } from '@/components/ui/Switch'
-import { Modal } from '@/components/ui/Modal'
+// Temporary Modal replacement for build testing  
+const TemplateModal = ({ isOpen, onClose, title, children }: any) => {
+  if (!isOpen) return null
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">{title}</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">×</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  )
+}
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/hooks/use-toast'
@@ -163,8 +177,15 @@ function TemplateForm({ template, isOpen, onClose, onSave, isLoading }: Template
     )
   }
 
+  if (!isOpen) return null
+  
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={template ? 'Edit Template' : 'Create Template'}>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">{template ? 'Edit Template' : 'Create Template'}</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">×</button>
+        </div>
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Information */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -274,7 +295,7 @@ function TemplateForm({ template, isOpen, onClose, onSave, isLoading }: Template
             required
           />
           <p className="text-sm text-gray-500 mt-1">
-            Use placeholders like {{'{'}reviewer_name{'}'}} or {{'{'}business_name{'}'}} for dynamic content.
+            Use placeholders like {`{{reviewer_name}}`} or {`{{business_name}}`} for dynamic content.
           </p>
         </div>
 
@@ -398,7 +419,8 @@ function TemplateForm({ template, isOpen, onClose, onSave, isLoading }: Template
           </Button>
         </div>
       </form>
-    </Modal>
+      </div>
+    </div>
   )
 }
 

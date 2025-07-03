@@ -1,0 +1,71 @@
+{
+  "timestamp": "2025-07-03T04:00:01.605Z",
+  "baseUrl": "http://localhost:3000",
+  "results": {
+    "passed": 1,
+    "failed": 8,
+    "tests": [
+      {
+        "name": "Homepage Load",
+        "status": "FAILED",
+        "error": "Unknown value for options.waitUntil: networkidle"
+      },
+      {
+        "name": "Unified Analytics Dashboard",
+        "status": "FAILED",
+        "error": "Unknown value for options.waitUntil: networkidle"
+      },
+      {
+        "name": "Unified Financial Center",
+        "status": "FAILED",
+        "error": "Unknown value for options.waitUntil: networkidle"
+      },
+      {
+        "name": "Unified Customer Management",
+        "status": "FAILED",
+        "error": "Unknown value for options.waitUntil: networkidle"
+      },
+      {
+        "name": "Cross-User AI Analytics",
+        "status": "FAILED",
+        "error": "Unknown value for options.waitUntil: networkidle"
+      },
+      {
+        "name": "Reviews Management",
+        "status": "FAILED",
+        "error": "Unknown value for options.waitUntil: networkidle"
+      },
+      {
+        "name": "Responsive Design",
+        "status": "FAILED",
+        "error": "Unknown value for options.waitUntil: networkidle"
+      },
+      {
+        "name": "Error Handling",
+        "status": "PASSED",
+        "error": null
+      },
+      {
+        "name": "Performance Check",
+        "status": "FAILED",
+        "error": "Unknown value for options.waitUntil: networkidle"
+      }
+    ]
+  },
+  "screenshots": [
+    "test-failure-1751515201267.png",
+    "test-failure-1751515201316.png",
+    "test-failure-1751515201355.png",
+    "test-failure-1751515201397.png",
+    "test-failure-1751515201439.png",
+    "test-failure-1751515201482.png",
+    "test-failure-1751515201525.png",
+    "test-failure-1751515201564.png"
+  ],
+  "summary": {
+    "totalTests": 9,
+    "passed": 1,
+    "failed": 8,
+    "successRate": "11%"
+  }
+}

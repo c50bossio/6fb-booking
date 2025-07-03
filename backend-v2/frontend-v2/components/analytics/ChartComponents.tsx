@@ -189,6 +189,52 @@ export function DoughnutChart({ data, options = {}, className = '', height = 300
   )
 }
 
+export function PieChart({ data, options = {}, className = '', height = 300 }: BaseChartProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const chartRef = useRef<Chart | null>(null)
+
+  useEffect(() => {
+    if (!canvasRef.current) return
+
+    if (chartRef.current) {
+      chartRef.current.destroy()
+    }
+
+    const ctx = canvasRef.current.getContext('2d')
+    if (!ctx) return
+
+    const config: ChartConfiguration = {
+      type: 'pie',
+      data,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+          },
+        },
+        ...options,
+      },
+    }
+
+    chartRef.current = new Chart(ctx, config)
+
+    return () => {
+      if (chartRef.current) {
+        chartRef.current.destroy()
+        chartRef.current = null
+      }
+    }
+  }, [data, options])
+
+  return (
+    <div className={`relative ${className}`} style={{ height }}>
+      <canvas ref={canvasRef} />
+    </div>
+  )
+}
+
 export function GaugeChart({ 
   value, 
   max = 100, 

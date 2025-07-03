@@ -1,0 +1,164 @@
+version: '3.8'
+
+services:
+  # Backend API
+  backend:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: bookedbarber-backend-staging
+    ports:
+      - "8001:8000"  # Different port for staging
+    environment:
+      - ENVIRONMENT=staging
+      - DATABASE_URL=postgresql://staging_user:${STAGING_DB_PASSWORD}@db:5432/bookedbarber_staging
+      - REDIS_URL=redis://redis:6379/1  # Use DB 1 for staging
+      - SECRET_KEY=${STAGING_SECRET_KEY}
+      - JWT_SECRET_KEY=${STAGING_JWT_SECRET_KEY}
+      - STRIPE_SECRET_KEY=${STAGING_STRIPE_SECRET_KEY}
+      - STRIPE_PUBLISHABLE_KEY=${STAGING_STRIPE_PUBLISHABLE_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STAGING_STRIPE_WEBHOOK_SECRET}
+      - SENDGRID_API_KEY=${STAGING_SENDGRID_API_KEY}
+      - TWILIO_ACCOUNT_SID=${STAGING_TWILIO_ACCOUNT_SID}
+      - TWILIO_AUTH_TOKEN=${STAGING_TWILIO_AUTH_TOKEN}
+      - TWILIO_PHONE_NUMBER=${STAGING_TWILIO_PHONE_NUMBER}
+      - SENTRY_DSN=${STAGING_SENTRY_DSN}
+      - SENTRY_ENVIRONMENT=staging
+      - ALLOWED_ORIGINS=https://staging.bookedbarber.com
+      - DEBUG=false
+      - LOG_LEVEL=INFO
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+    networks:
+      - bookedbarber-staging
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend-v2
+      dockerfile: Dockerfile
+      target: production
+    container_name: bookedbarber-frontend-staging
+    ports:
+      - "3001:3000"  # Different port for staging
+    environment:
+      - NODE_ENV=staging
+      - NEXT_PUBLIC_API_URL=https://api-staging.bookedbarber.com
+      - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${STAGING_STRIPE_PUBLISHABLE_KEY}
+      - NEXT_PUBLIC_ENVIRONMENT=staging
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - bookedbarber-staging
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: bookedbarber-db-staging
+    environment:
+      - POSTGRES_DB=bookedbarber_staging
+      - POSTGRES_USER=staging_user
+      - POSTGRES_PASSWORD=${STAGING_DB_PASSWORD}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - postgres_staging_data:/var/lib/postgresql/data
+      - ./database/init-staging.sql:/docker-entrypoint-initdb.d/init-staging.sql:ro
+    ports:
+      - "5433:5432"  # Different port for staging
+    restart: unless-stopped
+    networks:
+      - bookedbarber-staging
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U staging_user -d bookedbarber_staging"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: bookedbarber-redis-staging
+    ports:
+      - "6380:6379"  # Different port for staging
+    volumes:
+      - redis_staging_data:/data
+      - ./redis/redis-staging.conf:/usr/local/etc/redis/redis.conf:ro
+    command: redis-server /usr/local/etc/redis/redis.conf
+    restart: unless-stopped
+    networks:
+      - bookedbarber-staging
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # pgBouncer for connection pooling
+  pgbouncer:
+    image: pgbouncer/pgbouncer:1.20.1
+    container_name: bookedbarber-pgbouncer-staging
+    environment:
+      - DATABASES_HOST=db
+      - DATABASES_PORT=5432
+      - DATABASES_USER=staging_user
+      - DATABASES_PASSWORD=${STAGING_DB_PASSWORD}
+      - DATABASES_DBNAME=bookedbarber_staging
+      - POOL_MODE=session
+      - MAX_CLIENT_CONN=100
+      - DEFAULT_POOL_SIZE=10
+      - MIN_POOL_SIZE=5
+      - RESERVE_POOL_SIZE=5
+      - SERVER_RESET_QUERY=DISCARD ALL
+    ports:
+      - "6433:5432"  # Different port for staging
+    depends_on:
+      - db
+    restart: unless-stopped
+    networks:
+      - bookedbarber-staging
+    healthcheck:
+      test: ["CMD-SHELL", "psql -h localhost -U staging_user -d bookedbarber_staging -c 'SELECT 1'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: bookedbarber-nginx-staging
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/staging.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl/staging:/etc/ssl/certs:ro
+    depends_on:
+      - backend
+      - frontend
+    restart: unless-stopped
+    networks:
+      - bookedbarber-staging
+
+volumes:
+  postgres_staging_data:
+    driver: local
+  redis_staging_data:
+    driver: local
+
+networks:
+  bookedbarber-staging:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# Health check configuration
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 40s

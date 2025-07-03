@@ -441,3 +441,9 @@ export const debugUtils = {
     return result
   }
 }
+
+// Export individual utilities for backward compatibility
+export const formatCurrency = formatUtils.formatCurrency
+export const formatPhoneNumber = formatUtils.formatPhoneNumber
+export const formatRelativeTime = formatUtils.formatRelativeTime
+export const truncateText = formatUtils.truncateText

@@ -20,15 +20,15 @@ env:
   SKIP_HOOKS: ${{ github.event.inputs.skip_hooks || 'false' }}
 
 jobs:
-  # Phase 1: Hook Validation (Core Development Workflow)
-  validate-hooks:
-    name: Validate Development Hooks
+  # Phase 1: Integration Validation (Consolidated Changes)
+  validate-integration:
+    name: Validate System Integration
     runs-on: ubuntu-latest
     if: ${{ env.SKIP_HOOKS != 'true' }}
     
     outputs:
-      hook-status: ${{ steps.hook-validation.outputs.status }}
-      violations: ${{ steps.hook-validation.outputs.violations }}
+      integration-status: ${{ steps.integration-validation.outputs.status }}
+      validation-summary: ${{ steps.integration-validation.outputs.summary }}
     
     steps:
     - uses: actions/checkout@v4
@@ -47,14 +47,67 @@ jobs:
         cache: 'npm'
         cache-dependency-path: backend-v2/frontend-v2/package-lock.json
         
-    - name: Install hook dependencies
+    - name: Install validation dependencies
       run: |
-        # Python security tools
-        pip install safety pip-audit
+        # Python dependencies for validation
+        pip install safety pip-audit coverage pytest
         
-        # Node.js dependencies for frontend security scan
+        # Node.js dependencies for frontend validation
         cd backend-v2/frontend-v2
         npm ci
+        
+    - name: Validate credentials security
+      working-directory: ./backend-v2
+      run: |
+        echo "🔐 Scanning for exposed credentials..."
+        python scripts/validate_no_credentials.py --output json --save credentials_report.json
+        
+        # Fail if high severity issues found
+        if grep -q '"status": "FAIL"' credentials_report.json; then
+          echo "❌ CRITICAL: Exposed credentials detected!"
+          python scripts/validate_no_credentials.py
+          exit 1
+        fi
+        
+        echo "✅ Credential security validation passed"
+        
+    - name: Validate code consolidation
+      working-directory: ./backend-v2
+      run: |
+        echo "🔄 Checking for code duplication..."
+        python scripts/validate_consolidation.py --output json --save consolidation_report.json
+        
+        # Report findings but don't fail CI
+        python scripts/validate_consolidation.py
+        
+    - name: Validate test coverage
+      working-directory: ./backend-v2
+      run: |
+        echo "🧪 Validating test coverage..."
+        python scripts/validate_test_coverage.py --min-coverage 75 --output json --save coverage_report.json
+        
+        # Check if coverage requirements are met
+        if grep -q '"status": "FAIL"' coverage_report.json; then
+          echo "⚠️ Coverage requirements not met, but continuing..."
+          python scripts/validate_test_coverage.py --min-coverage 75
+        else
+          echo "✅ Test coverage validation passed"
+        fi
+        
+    - name: Validate imports
+      working-directory: ./backend-v2
+      run: |
+        echo "📦 Validating import statements..."
+        python scripts/validate_imports.py --output json --save imports_report.json
+        
+        # Fail if import errors found
+        if grep -q '"status": "FAIL"' imports_report.json; then
+          echo "❌ CRITICAL: Import errors detected!"
+          python scripts/validate_imports.py
+          exit 1
+        fi
+        
+        echo "✅ Import validation passed"
         
     - name: Validate commit messages (Phase 1)
       id: commit-msg-validation

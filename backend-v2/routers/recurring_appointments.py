@@ -7,12 +7,13 @@ import models
 from database import get_db
 from routers.auth import get_current_user
 from services import recurring_appointments_service
-from services.enhanced_recurring_service import (
-    EnhancedRecurringService, 
-    RecurringSeriesService, 
-    ConflictDetectionService,
-    AppointmentGenerationResult
-)
+# Temporarily disabled due to model import issues
+# from services.enhanced_recurring_service import (
+#     EnhancedRecurringService, 
+#     RecurringSeriesService, 
+#     ConflictDetectionService,
+#     AppointmentGenerationResult
+# )
 from services.blackout_service import BlackoutDateService
 
 router = APIRouter(

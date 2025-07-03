@@ -3,20 +3,22 @@
 
 import * as Sentry from '@sentry/nextjs'
 
-Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  
-  // Set tracesSampleRate to 1.0 to capture 100% of the transactions for performance monitoring
-  // Adjust this value in production to balance performance vs cost
-  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+// Only initialize Sentry if DSN is provided and not a placeholder
+if (process.env.NEXT_PUBLIC_SENTRY_DSN && process.env.NEXT_PUBLIC_SENTRY_DSN !== 'REPLACE_WITH_PRODUCTION_SENTRY_DSN') {
+  Sentry.init({
+    dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+    
+    // Set tracesSampleRate to 1.0 to capture 100% of the transactions for performance monitoring
+    // Adjust this value in production to balance performance vs cost
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
 
-  // Set profilesSampleRate to 1.0 to profile 100% of the transactions
-  // This requires tracesSampleRate to be set above 0
-  profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.05 : 1.0,
+    // Set profilesSampleRate to 1.0 to profile 100% of the transactions
+    // This requires tracesSampleRate to be set above 0
+    profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.05 : 1.0,
 
-  // Set environment and release information
-  environment: process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT || process.env.NODE_ENV || 'development',
-  release: process.env.BUILD_VERSION || '1.0.0',
+    // Set environment and release information
+    environment: process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT || process.env.NODE_ENV || 'development',
+    release: process.env.BUILD_VERSION || '1.0.0',
 
   // Error filtering and sampling
   beforeSend(event) {
@@ -159,4 +161,7 @@ Sentry.init({
     
     return breadcrumb
   },
-})
+  })
+} else {
+  console.log('Sentry client not initialized - DSN not provided or is placeholder')
+}
