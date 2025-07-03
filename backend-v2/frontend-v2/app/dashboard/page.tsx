@@ -122,9 +122,9 @@ function DashboardContent() {
         // Prepare batched requests based on user role
         const dashboardRequests = [
           {
-            endpoint: '/api/v1/bookings/my',
+            endpoint: '/api/v1/appointments',
             priority: 8,
-            cacheKey: `user_bookings_${userData.id}`,
+            cacheKey: `user_appointments_${userData.id}`,
             cacheTtl: 30000 // 30 seconds
           }
         ]

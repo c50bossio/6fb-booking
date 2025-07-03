@@ -142,6 +142,29 @@ def get_user_bookings(
         "total": len(bookings)
     }
 
+@router.get("/my")
+def redirect_my_bookings(
+    current_user: schemas.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Redirect for common mistake - /bookings/my doesn't exist.
+    This prevents 422 errors from /{booking_id} catching 'my' as an ID.
+    """
+    import warnings
+    warnings.warn(
+        "The endpoint /bookings/my is incorrect. Use /bookings/ instead. "
+        "This endpoint will be removed in a future version.",
+        DeprecationWarning,
+        stacklevel=2
+    )
+    # Return a helpful error with the correct endpoint
+    raise HTTPException(
+        status_code=301,
+        detail="This endpoint has moved. Please use GET /api/v1/bookings/ instead.",
+        headers={"Location": "/api/v1/bookings/"}
+    )
+
 @router.get("/{booking_id}", response_model=schemas.BookingResponse)
 def get_booking_details(
     booking_id: int,

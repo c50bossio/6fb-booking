@@ -15,6 +15,7 @@ import {
   StarIcon
 } from '@heroicons/react/24/outline'
 import { useState } from 'react'
+import { HeaderCTAs, HeroCTAs, FooterCTAs, CTADebugPanel } from '@/components/ui/CTASystem'
 
 export default function LandingPage() {
   const [selectedPlan, setSelectedPlan] = useState<'starter' | 'professional' | 'enterprise'>('professional')
@@ -127,22 +128,7 @@ export default function LandingPage() {
             <div className="flex items-center">
               <LogoFull variant="auto" size="md" href="/" />
             </div>
-            <nav role="navigation" aria-label="Main navigation" className="flex items-center space-x-4">
-              <Link 
-                href="/login" 
-                className="inline-block bg-white dark:bg-gray-800 border-2 border-gray-800 dark:border-gray-200 text-gray-900 dark:text-gray-100 font-semibold px-6 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors touch-target"
-                aria-label="Sign in to your account"
-              >
-                Login
-              </Link>
-              <Link 
-                href="/register" 
-                className="inline-block bg-primary-600 hover:bg-primary-700 text-white font-semibold px-6 py-2 rounded-lg transition-colors touch-target"
-                aria-label="Start your free trial"
-              >
-                Start Free Trial
-              </Link>
-            </nav>
+            <HeaderCTAs />
           </div>
         </div>
       </header>
@@ -168,18 +154,8 @@ export default function LandingPage() {
               Built on proven Six Figure Barber methodology.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
-              <Link href="/auth/signup">
-                <Button size="lg" variant="primary" className="group">
-                  <StarIcon className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
-                  Start Free Trial
-                </Button>
-              </Link>
-              <Link href="/register">
-                <Button size="lg" variant="outline">
-                  Start 14-Day Free Trial
-                </Button>
-              </Link>
+            <div className="pt-8">
+              <HeroCTAs />
             </div>
 
             <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -372,19 +348,7 @@ export default function LandingPage() {
           <p className="text-xl text-primary-100 mb-8">
             Join thousands of successful barbers using Booked Barber to build their six-figure business.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/auth/signup">
-              <Button size="lg" variant="secondary">
-                <StarIcon className="w-5 h-5 mr-2" />
-                Start Free Trial
-              </Button>
-            </Link>
-            <Link href="/register">
-              <Button size="lg" variant="outline" className="!text-white !border-white hover:!bg-white hover:!text-primary-600">
-                Start Free Trial
-              </Button>
-            </Link>
-          </div>
+          <HeroCTAs />
         </div>
       </section>
 
@@ -401,7 +365,7 @@ export default function LandingPage() {
             <div>
               <h4 className="font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-sm">
-                <li><Link href="/auth/signup" className="hover:text-white">Free Trial</Link></li>
+                <li><Link href="/register" className="hover:text-white">Free Trial</Link></li>
                 <li><Link href="#features" className="hover:text-white">Features</Link></li>
                 <li><Link href="#pricing" className="hover:text-white">Pricing</Link></li>
                 <li><Link href="/login" className="hover:text-white">Login</Link></li>
@@ -430,6 +394,9 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+      
+      {/* Development Debug Panel */}
+      <CTADebugPanel />
     </main>
   )
 }

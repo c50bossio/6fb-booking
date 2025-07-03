@@ -12,14 +12,15 @@ router = APIRouter(prefix="/auth-test", tags=["auth-test"])
 async def test_login_bypass():
     """Temporary bypass login for testing frontend"""
     
-    # Create tokens for a test user
+    # Create tokens for a test user that actually exists in the database
+    # Using customer@bookedbarber.com (ID: 3, role: user)
     access_token_expires = timedelta(minutes=30)
     access_token = create_access_token(
-        data={"sub": "test@example.com", "role": "user"},
+        data={"sub": "customer@bookedbarber.com", "role": "user"},
         expires_delta=access_token_expires
     )
     refresh_token = create_refresh_token(
-        data={"sub": "test@example.com"}
+        data={"sub": "customer@bookedbarber.com"}
     )
     
     return {
