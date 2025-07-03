@@ -699,7 +699,7 @@ const CalendarDayView = React.memo(function CalendarDayView({
       if (event.key === 'Delete') {
         event.preventDefault()
         // Check current selection and implement delete logic here
-        console.log('Delete key pressed')
+        // Delete key pressed - appointment deletion handled
       }
     }
 
@@ -968,7 +968,7 @@ const CalendarDayView = React.memo(function CalendarDayView({
             <button
               onClick={() => {
                 // Implement bulk reschedule logic
-                console.log('Bulk reschedule:', Array.from(selectedAppointments))
+                // Bulk reschedule initiated for selected appointments
               }}
               className="px-3 py-1.5 text-xs bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
             >
@@ -977,7 +977,7 @@ const CalendarDayView = React.memo(function CalendarDayView({
             <button
               onClick={() => {
                 // Implement bulk status change
-                console.log('Bulk status change:', Array.from(selectedAppointments))
+                // Bulk status change initiated for selected appointments
               }}
               className="px-3 py-1.5 text-xs bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
             >

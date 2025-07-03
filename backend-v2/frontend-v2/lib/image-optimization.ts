@@ -296,7 +296,7 @@ export class ImagePerformanceMonitor {
             console.log('🖼️ LCP Image:', {
               src: element.src,
               loadTime: lastEntry.startTime,
-              size: lastEntry.size,
+              size: (lastEntry as any).size,
             })
             callback?.(lastEntry)
           }
@@ -319,7 +319,7 @@ export class ImagePerformanceMonitor {
     try {
       const observer = new PerformanceObserver((list) => {
         list.getEntries().forEach((entry) => {
-          if (entry.initiatorType === 'img') {
+          if ((entry as any).initiatorType === 'img') {
             console.log('🖼️ Image loaded:', {
               src: entry.name,
               duration: entry.duration,

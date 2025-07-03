@@ -72,6 +72,9 @@ export default function IntegrationsPage() {
         case IntegrationType.TWILIO:
           groups['Communications'].push(metadata)
           break
+        case IntegrationType.SHOPIFY:
+          groups['Payments'].push(metadata) // Group Shopify with payments/commerce
+          break
         case IntegrationType.CUSTOM:
           groups['Other'].push(metadata)
           break

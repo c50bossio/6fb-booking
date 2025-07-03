@@ -1,0 +1,193 @@
+{
+  "summary": {
+    "total_tests": 18,
+    "passed": 18,
+    "failed": 0,
+    "warnings": 0,
+    "success_rate": 100.0,
+    "timestamp": "2025-07-02T13:01:30.205116"
+  },
+  "categories": {
+    "Authentication": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "warnings": 0
+    },
+    "API Endpoints": {
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "warnings": 0
+    },
+    "Data Structure": {
+      "total": 2,
+      "passed": 2,
+      "failed": 0,
+      "warnings": 0
+    },
+    "Security": {
+      "total": 2,
+      "passed": 2,
+      "failed": 0,
+      "warnings": 0
+    },
+    "Error Handling": {
+      "total": 2,
+      "passed": 2,
+      "failed": 0,
+      "warnings": 0
+    },
+    "Frontend": {
+      "total": 3,
+      "passed": 3,
+      "failed": 0,
+      "warnings": 0
+    },
+    "Documentation": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "warnings": 0
+    },
+    "Integration Readiness": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "warnings": 0
+    }
+  },
+  "detailed_results": [
+    {
+      "category": "Authentication",
+      "test": "User Login",
+      "status": "PASS",
+      "details": "Token length: 195",
+      "timestamp": "2025-07-02T13:01:28.695192"
+    },
+    {
+      "category": "API Endpoints",
+      "test": "Get Reviews",
+      "status": "PASS",
+      "details": "Status: 200",
+      "timestamp": "2025-07-02T13:01:28.699096"
+    },
+    {
+      "category": "API Endpoints",
+      "test": "Auto-Response Stats",
+      "status": "PASS",
+      "details": "Status: 200",
+      "timestamp": "2025-07-02T13:01:28.701583"
+    },
+    {
+      "category": "API Endpoints",
+      "test": "Review Templates",
+      "status": "PASS",
+      "details": "Status: 422",
+      "timestamp": "2025-07-02T13:01:28.703536"
+    },
+    {
+      "category": "API Endpoints",
+      "test": "GMB Locations",
+      "status": "PASS",
+      "details": "Status: 404",
+      "timestamp": "2025-07-02T13:01:28.705904"
+    },
+    {
+      "category": "API Endpoints",
+      "test": "GMB Auth",
+      "status": "PASS",
+      "details": "Status: 500",
+      "timestamp": "2025-07-02T13:01:28.708045"
+    },
+    {
+      "category": "API Endpoints",
+      "test": "Review Sync",
+      "status": "PASS",
+      "details": "Status: 400",
+      "timestamp": "2025-07-02T13:01:28.709904"
+    },
+    {
+      "category": "Data Structure",
+      "test": "Reviews Response Format",
+      "status": "PASS",
+      "details": "Has fields: ['reviews', 'total', 'skip', 'limit', 'has_more']",
+      "timestamp": "2025-07-02T13:01:28.712079"
+    },
+    {
+      "category": "Data Structure",
+      "test": "Stats Response Format",
+      "status": "PASS",
+      "details": "Has expected fields",
+      "timestamp": "2025-07-02T13:01:28.713948"
+    },
+    {
+      "category": "Security",
+      "test": "Unauthenticated Access Blocked",
+      "status": "PASS",
+      "details": "Status: 403",
+      "timestamp": "2025-07-02T13:01:28.715563"
+    },
+    {
+      "category": "Security",
+      "test": "Invalid Token Rejected",
+      "status": "PASS",
+      "details": "Status: 401",
+      "timestamp": "2025-07-02T13:01:28.717085"
+    },
+    {
+      "category": "Error Handling",
+      "test": "Invalid Review ID",
+      "status": "PASS",
+      "details": "Returns 404",
+      "timestamp": "2025-07-02T13:01:28.719134"
+    },
+    {
+      "category": "Error Handling",
+      "test": "Malformed Request",
+      "status": "PASS",
+      "details": "Status: 422",
+      "timestamp": "2025-07-02T13:01:28.720459"
+    },
+    {
+      "category": "Frontend",
+      "test": "Service Running",
+      "status": "PASS",
+      "details": "Status: 200",
+      "timestamp": "2025-07-02T13:01:28.749134"
+    },
+    {
+      "category": "Frontend",
+      "test": "Page /settings/integrations",
+      "status": "PASS",
+      "details": "Status: 200",
+      "timestamp": "2025-07-02T13:01:30.006275"
+    },
+    {
+      "category": "Frontend",
+      "test": "Page /marketing/booking-links",
+      "status": "PASS",
+      "details": "Status: 200",
+      "timestamp": "2025-07-02T13:01:30.195133"
+    },
+    {
+      "category": "Documentation",
+      "test": "API Docs Accessible",
+      "status": "PASS",
+      "details": "Swagger UI available",
+      "timestamp": "2025-07-02T13:01:30.197701"
+    },
+    {
+      "category": "Integration Readiness",
+      "test": "GMB OAuth Framework",
+      "status": "PASS",
+      "details": "Endpoint exists (needs credentials)",
+      "timestamp": "2025-07-02T13:01:30.205038"
+    }
+  ],
+  "environment": {
+    "backend_url": "http://localhost:8000",
+    "frontend_url": "http://localhost:3000",
+    "test_user": "validation_test@example.com"
+  }
+}

@@ -13,8 +13,27 @@ import hashlib
 
 def get_encryption_key():
     """Get or generate encryption key from environment"""
-    # Get key from environment or use a default for development
-    key_string = os.getenv("ENCRYPTION_KEY", "dev-encryption-key-change-in-production")
+    # Get key from environment
+    key_string = os.getenv("ENCRYPTION_KEY")
+    
+    if not key_string:
+        # Only allow default key in development/testing environments
+        # Check for common development indicators
+        is_dev = (
+            os.getenv("ENVIRONMENT", "").lower() in ["development", "dev", "test", "testing"] or
+            os.getenv("DEBUG", "").lower() in ["true", "1", "yes"] or
+            os.path.exists(".env") or  # Presence of .env file often indicates local dev
+            "localhost" in os.getenv("DATABASE_URL", "") or
+            "sqlite" in os.getenv("DATABASE_URL", "")
+        )
+        
+        if is_dev:
+            key_string = "dev-encryption-key-change-in-production"
+        else:
+            raise ValueError(
+                "ENCRYPTION_KEY environment variable is required in production. "
+                "Please set a secure encryption key."
+            )
     
     # Derive a proper key from the string
     kdf = PBKDF2HMAC(

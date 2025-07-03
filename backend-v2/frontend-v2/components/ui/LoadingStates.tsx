@@ -243,11 +243,14 @@ export const Loading = React.forwardRef<HTMLDivElement, LoadingProps>(
     ...props 
   }, ref) => {
     const renderLoader = () => {
+      // Map size to compatible values for different components
+      const mappedSize = size === 'xs' ? 'sm' : size === 'xl' ? 'lg' : size
+      
       switch (variant) {
         case 'dots':
           return <LoadingDots size={size} />
         case 'pulse':
-          return <LoadingPulse size={size} />
+          return <LoadingPulse size={mappedSize as 'sm' | 'md' | 'lg'} />
         case 'bar':
           return <LoadingBar progress={progress} indeterminate={indeterminate} />
         case 'spinner':

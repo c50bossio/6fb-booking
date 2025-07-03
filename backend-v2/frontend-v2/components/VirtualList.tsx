@@ -263,9 +263,9 @@ export default function VirtualList<T extends VirtualListItem>({
   // Expose methods via ref
   useEffect(() => {
     if (containerRef.current) {
-      (containerRef.current as any).scrollToIndex = scrollToIndex
-      (containerRef.current as any).scrollToTop = scrollToTop
-      (containerRef.current as any).scrollToBottom = scrollToBottom
+      (containerRef.current as any).scrollToIndex = scrollToIndex;
+      (containerRef.current as any).scrollToTop = scrollToTop;
+      (containerRef.current as any).scrollToBottom = scrollToBottom;
     }
   }, [scrollToIndex, scrollToTop, scrollToBottom])
 

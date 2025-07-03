@@ -25,7 +25,7 @@ class TestAuthentication:
     def test_login_invalid_credentials(self, client, disable_rate_limiting):
         """Test login with invalid credentials."""
         login_data = {
-            "username": "nonexistent@example.com",
+            "email": "nonexistent@example.com",
             "password": "wrongpassword"
         }
         

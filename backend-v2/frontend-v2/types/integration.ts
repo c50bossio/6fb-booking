@@ -11,6 +11,7 @@ export enum IntegrationType {
   SQUARE = 'square',
   ACUITY = 'acuity',
   BOOKSY = 'booksy',
+  SHOPIFY = 'shopify',
   CUSTOM = 'custom'
 }
 
@@ -259,6 +260,23 @@ export const INTEGRATION_METADATA: Record<IntegrationType, IntegrationMetadata> 
       'Reviews sync'
     ],
     helpUrl: 'https://support.bookedbarber.com/integrations/booksy'
+  },
+  [IntegrationType.SHOPIFY]: {
+    type: IntegrationType.SHOPIFY,
+    name: 'shopify',
+    displayName: 'Shopify',
+    description: 'Sync products and track retail sales commissions',
+    icon: 'ShoppingBagIcon',
+    color: '#7AB55C',
+    requiresOAuth: true,
+    features: [
+      'Product catalog sync',
+      'Inventory tracking',
+      'Order management',
+      'Commission calculation',
+      'Real-time webhooks'
+    ],
+    helpUrl: 'https://support.bookedbarber.com/integrations/shopify'
   },
   [IntegrationType.CUSTOM]: {
     type: IntegrationType.CUSTOM,

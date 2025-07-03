@@ -13,7 +13,7 @@ def test_schema_validation():
     print("Testing review schema validation...")
     
     try:
-        from schemas.review import ReviewCreate, ReviewTemplateCreate
+        from schemas_new.review import ReviewCreate, ReviewTemplateCreate
         from models.review import ReviewPlatform
         from datetime import datetime
         

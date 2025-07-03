@@ -87,7 +87,7 @@ class TestAuthentication:
         response = client.post(
             "/api/v1/auth/login",
             json={  # Login uses JSON data
-                "username": test_user.email,
+                "email": test_user.email,
                 "password": "testpass123"
             }
         )
@@ -111,7 +111,7 @@ class TestAuthentication:
         response = client.post(
             "/api/v1/auth/login",
             json={
-                "username": test_user.email,
+                "email": test_user.email,
                 "password": "wrongpassword"
             }
         )
@@ -123,7 +123,7 @@ class TestAuthentication:
         response = client.post(
             "/api/v1/auth/login",
             json={
-                "username": "nonexistent@example.com",
+                "email": "nonexistent@example.com",
                 "password": "somepassword"
             }
         )
@@ -162,7 +162,7 @@ class TestAuthentication:
         login_response = client.post(
             "/api/v1/auth/login",
             json={
-                "username": test_user.email,
+                "email": test_user.email,
                 "password": "testpass123"
             }
         )
@@ -255,7 +255,7 @@ class TestAuthentication:
         login_response = client.post(
             "/api/v1/auth/login",
             json={
-                "username": test_user.email,
+                "email": test_user.email,
                 "password": new_password
             }
         )
@@ -337,7 +337,7 @@ class TestAuthentication:
             login_response = client.post(
                 "/api/v1/auth/login",
                 json={
-                    "username": test_user.email,
+                    "email": test_user.email,
                     "password": new_password
                 }
             )
@@ -383,7 +383,7 @@ class TestRateLimiting:
             response = client.post(
                 "/api/v1/auth/login",
                 json={
-                    "username": f"test{i}@example.com",
+                    "email": f"test{i}@example.com",
                     "password": "password"
                 }
             )

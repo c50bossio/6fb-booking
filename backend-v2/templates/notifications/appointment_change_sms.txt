@@ -1,0 +1,16 @@
+APPOINTMENT UPDATED
+
+{{ client_name }}, your appointment has been changed:
+
+NEW DETAILS:
+{{ appointment_date }} at {{ appointment_time }}
+Service: {{ service_name }} (${{ "%.2f"|format(price) }})
+{% if barber_name %}With: {{ barber_name }}{% endif %}
+
+{% if change_reason %}Reason: {{ change_reason }}{% endif %}
+
+{{ short_url | default('View details: ' + business_url) }}
+
+Questions? Call {{ business_phone }}
+
+{{ business_name }}

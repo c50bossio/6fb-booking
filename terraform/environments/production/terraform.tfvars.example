@@ -1,0 +1,92 @@
+# Production Environment Configuration for BookedBarber V2
+# Copy this file to terraform.tfvars and fill in the actual values
+
+# Basic Configuration
+project_name = "bookedbarber-v2"
+environment  = "production"
+aws_region   = "us-east-1"
+app_version  = "v1.0.0"
+
+# Domain and DNS Configuration
+route53_zone_id      = "Z1D633PJN98FT9"  # Replace with your actual hosted zone ID
+ssl_certificate_arn  = ""                # Leave empty to create new certificate
+
+# External Service Configuration
+stripe_publishable_key = "pk_live_your_stripe_publishable_key_here"
+twilio_phone_number   = "+1234567890"
+google_client_id      = "your-google-oauth-client-id.apps.googleusercontent.com"
+google_analytics_id   = "G-XXXXXXXXXX"
+
+# Monitoring and Alerting
+alert_email_addresses = [
+  "devops@bookedbarber.com",
+  "alerts@bookedbarber.com",
+  "cto@bookedbarber.com"
+]
+pagerduty_integration_key = "your-pagerduty-integration-key"
+
+# Feature Flags
+enable_blue_green_deployment = true
+enable_read_replica         = true
+enable_multi_region         = false
+enable_waf_advanced_rules   = true
+
+# Backup and Disaster Recovery
+backup_retention_days       = 30
+cross_region_backup_enabled = true
+disaster_recovery_region    = "us-west-2"
+
+# Performance Configuration
+database_performance_insights_retention = 7
+enable_database_proxy                   = true
+cloudfront_price_class                  = "PriceClass_All"
+
+# Security Configuration
+enable_guardduty    = true
+enable_security_hub = true
+enable_config       = true
+enable_cloudtrail   = true
+vpc_flow_logs_retention = 30
+
+# Cost Management
+enable_cost_anomaly_detection = true
+monthly_budget_limit         = 5000
+budget_alert_threshold       = 80
+
+# Auto Scaling Configuration
+auto_scaling_target_cpu    = 60
+auto_scaling_target_memory = 70
+
+# Container Configuration
+backend_cpu     = 2048  # 2 vCPU
+backend_memory  = 4096  # 4 GB
+frontend_cpu    = 1024  # 1 vCPU
+frontend_memory = 2048  # 2 GB
+
+# Redis Configuration
+redis_num_cache_clusters = 3
+redis_automatic_failover = true
+
+# Database Configuration
+database_instance_class       = "db.r6g.xlarge"
+database_allocated_storage    = 500
+database_max_allocated_storage = 10000
+database_iops                = 3000
+
+# Logging Configuration
+application_log_retention_days = 90
+access_log_retention_days     = 30
+
+# Maintenance Configuration
+database_maintenance_window = "sun:04:00-sun:05:00"
+database_backup_window     = "03:00-04:00"
+
+# Additional Tags
+additional_tags = {
+  Owner         = "DevOps Team"
+  CostCenter    = "Engineering"
+  BusinessUnit  = "Product"
+  Compliance    = "SOC2"
+  Backup        = "Required"
+  DataClass     = "Confidential"
+}

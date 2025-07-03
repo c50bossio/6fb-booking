@@ -19,6 +19,14 @@ from database import SessionLocal
 from services.notification_service import notification_service
 from config import settings
 
+# Import Sentry monitoring if available
+try:
+    from services.sentry_monitoring import celery_monitor
+    SENTRY_MONITORING_AVAILABLE = True
+except ImportError:
+    SENTRY_MONITORING_AVAILABLE = False
+    logger.info("Sentry monitoring not available for Celery tasks")
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -32,6 +40,14 @@ celery_app = Celery(
     broker=settings.redis_url,
     backend=settings.redis_url
 )
+
+# Set up Sentry monitoring for Celery if available
+if SENTRY_MONITORING_AVAILABLE:
+    try:
+        celery_monitor.setup_celery_monitoring(celery_app)
+        logger.info("Sentry Celery monitoring enabled")
+    except Exception as e:
+        logger.warning(f"Failed to set up Sentry Celery monitoring: {e}")
 
 # Celery configuration
 celery_app.conf.update(
@@ -87,6 +103,7 @@ def get_db_session():
         db.close()
 
 @celery_app.task(bind=True, max_retries=3)
+@celery_monitor.monitor_task_execution("process_notification_queue") if SENTRY_MONITORING_AVAILABLE else lambda func: func
 def process_notification_queue(self, batch_size=50):
     """
     Process pending notifications in the queue
@@ -114,6 +131,7 @@ def process_notification_queue(self, batch_size=50):
             raise
 
 @celery_app.task(bind=True, max_retries=3)
+@celery_monitor.monitor_task_execution("send_immediate_notification") if SENTRY_MONITORING_AVAILABLE else lambda func: func
 def send_immediate_notification(self, user_id, template_name, context, notification_type=None):
     """
     Send an immediate notification (high priority)

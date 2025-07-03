@@ -1,0 +1,201 @@
+# Application Alerting Rules for BookedBarber V2
+
+groups:
+  - name: bookedbarber.application
+    rules:
+      # Application Health
+      - alert: ApplicationDown
+        expr: up{job=~"bookedbarber-.*"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: application
+        annotations:
+          summary: "BookedBarber application is down"
+          description: "{{ $labels.instance }} has been down for more than 1 minute"
+
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="bookedbarber-api"}[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+          component: performance
+        annotations:
+          summary: "High API response time"
+          description: "95th percentile response time is {{ $value }}s"
+
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{job="bookedbarber-api",status=~"5.."}[5m]) > 0.05
+        for: 3m
+        labels:
+          severity: critical
+          component: application
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes"
+
+      # Database Performance
+      - alert: DatabaseConnectionsHigh
+        expr: pg_stat_database_numbackends / pg_settings_max_connections * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "High database connection usage"
+          description: "Database connection usage is {{ $value }}%"
+
+      - alert: DatabaseSlowQueries
+        expr: rate(pg_stat_database_tup_fetched[5m]) / rate(pg_stat_database_tup_returned[5m]) < 0.1
+        for: 10m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "Database slow queries detected"
+          description: "Query efficiency has dropped to {{ $value | humanizePercentage }}"
+
+      - alert: DatabaseReplicationLag
+        expr: pg_replication_lag > 60
+        for: 2m
+        labels:
+          severity: critical
+          component: database
+        annotations:
+          summary: "Database replication lag is high"
+          description: "Replication lag is {{ $value }} seconds"
+
+      # Redis Performance
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: cache
+        annotations:
+          summary: "Redis is down"
+          description: "Redis cache server is not responding"
+
+      - alert: RedisMemoryHigh
+        expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+          component: cache
+        annotations:
+          summary: "Redis memory usage is high"
+          description: "Redis memory usage is {{ $value }}%"
+
+      - alert: RedisSlowQueries
+        expr: redis_slowlog_length > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: cache
+        annotations:
+          summary: "Redis slow queries detected"
+          description: "{{ $value }} slow queries detected in Redis"
+
+      # Business Metrics
+      - alert: BookingFailureRateHigh
+        expr: rate(booking_attempts_total{status="failed"}[5m]) / rate(booking_attempts_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+          component: business
+        annotations:
+          summary: "High booking failure rate"
+          description: "Booking failure rate is {{ $value | humanizePercentage }}"
+
+      - alert: PaymentFailureRateHigh
+        expr: rate(payment_attempts_total{status="failed"}[5m]) / rate(payment_attempts_total[5m]) > 0.05
+        for: 3m
+        labels:
+          severity: critical
+          component: business
+        annotations:
+          summary: "High payment failure rate"
+          description: "Payment failure rate is {{ $value | humanizePercentage }}"
+
+      - alert: RevenueDrop
+        expr: rate(revenue_total[1h]) < 0.5 * rate(revenue_total[1h] offset 24h)
+        for: 30m
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "Significant revenue drop detected"
+          description: "Revenue is 50% lower than same time yesterday"
+
+      # Resource Usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+          component: infrastructure
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value }}% on {{ $labels.instance }}"
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value }}% on {{ $labels.instance }}"
+
+      - alert: DiskSpaceRunningOut
+        expr: (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: critical
+          component: infrastructure
+        annotations:
+          summary: "Disk space running out"
+          description: "Disk usage is {{ $value }}% on {{ $labels.instance }}"
+
+      # SSL Certificates
+      - alert: SSLCertificateExpiringWarn
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 30
+        for: 1h
+        labels:
+          severity: warning
+          component: security
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "SSL certificate for {{ $labels.instance }} expires in {{ $value | humanizeDuration }}"
+
+      - alert: SSLCertificateExpiringCritical
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 7
+        for: 1h
+        labels:
+          severity: critical
+          component: security
+        annotations:
+          summary: "SSL certificate expiring very soon"
+          description: "SSL certificate for {{ $labels.instance }} expires in {{ $value | humanizeDuration }}"
+
+      # Backup Monitoring
+      - alert: BackupFailed
+        expr: time() - backup_last_success_timestamp > 86400 * 2
+        for: 1h
+        labels:
+          severity: critical
+          component: backup
+        annotations:
+          summary: "Database backup has failed"
+          description: "Last successful backup was {{ $value | humanizeDuration }} ago"
+
+      - alert: BackupSize
+        expr: backup_size_bytes < 1024 * 1024 * 10  # Less than 10MB
+        for: 1h
+        labels:
+          severity: warning
+          component: backup
+        annotations:
+          summary: "Backup file is suspiciously small"
+          description: "Latest backup is only {{ $value | humanizeBytes }}"

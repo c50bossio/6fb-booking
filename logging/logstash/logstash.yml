@@ -1,0 +1,42 @@
+# Logstash Configuration for BookedBarber V2
+
+# Node settings
+node.name: bookedbarber-logstash
+
+# Pipeline settings
+pipeline.workers: 4
+pipeline.batch.size: 1000
+pipeline.batch.delay: 50
+
+# Path settings
+path.data: /usr/share/logstash/data
+path.config: /usr/share/logstash/pipeline
+path.logs: /usr/share/logstash/logs
+
+# Log settings
+log.level: info
+path.log: /usr/share/logstash/logs
+
+# Monitoring
+monitoring.enabled: true
+monitoring.elasticsearch.hosts: ["http://elasticsearch:9200"]
+
+# Configuration auto-reload
+config.reload.automatic: true
+config.reload.interval: 3s
+
+# Queue settings
+queue.type: persisted
+queue.max_bytes: 1gb
+queue.drain: true
+
+# Dead letter queue
+dead_letter_queue.enable: true
+dead_letter_queue.max_bytes: 1gb
+
+# HTTP API
+http.host: "0.0.0.0"
+http.port: 9600
+
+# Performance tuning
+config.support_escapes: true

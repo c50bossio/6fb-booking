@@ -1,0 +1,226 @@
+# Production environment values for BookedBarber V2
+
+app:
+  environment: production
+
+# Production-specific image settings
+image:
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+# Backend configuration for production
+backend:
+  replicaCount: 5
+  image:
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+  
+  autoscaling:
+    enabled: true
+    minReplicas: 5
+    maxReplicas: 20
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  
+  env:
+    ENVIRONMENT: production
+    PYTHONUNBUFFERED: "1"
+
+# Frontend configuration for production
+frontend:
+  replicaCount: 5
+  image:
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+  
+  autoscaling:
+    enabled: true
+    minReplicas: 5
+    maxReplicas: 15
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+# Worker configuration for production
+worker:
+  replicaCount: 3
+  image:
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+  
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+
+# PostgreSQL for production - consider external managed service
+postgresql:
+  enabled: false  # Use external managed PostgreSQL for production
+  
+# Redis for production - consider external managed service
+redis:
+  enabled: false  # Use external managed Redis for production
+
+# Ingress for production
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    nginx.ingress.kubernetes.io/rate-limit-connections: "20"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # Enhanced security headers
+    nginx.ingress.kubernetes.io/server-snippet: |
+      add_header X-Frame-Options SAMEORIGIN always;
+      add_header X-Content-Type-Options nosniff always;
+      add_header X-XSS-Protection "1; mode=block" always;
+      add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+      add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    # GZIP compression
+    nginx.ingress.kubernetes.io/gzip-types: "text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript"
+    # Client body size for uploads
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+  
+  hosts:
+    - host: bookedbarber.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service:
+            name: frontend
+            port: 3000
+        - path: /api
+          pathType: Prefix
+          service:
+            name: backend
+            port: 8000
+        - path: /webhooks
+          pathType: Prefix
+          service:
+            name: backend
+            port: 8000
+    - host: www.bookedbarber.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service:
+            name: frontend
+            port: 3000
+    - host: api.bookedbarber.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service:
+            name: backend
+            port: 8000
+  
+  tls:
+    - secretName: bookedbarber-tls
+      hosts:
+        - bookedbarber.com
+        - www.bookedbarber.com
+        - api.bookedbarber.com
+
+# Monitoring for production
+monitoring:
+  enabled: true
+  prometheus:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      interval: 15s
+  
+  grafana:
+    enabled: true
+
+# Security for production
+security:
+  networkPolicies:
+    enabled: true
+  
+  podSecurityPolicy:
+    enabled: true
+
+# Resource quotas for production
+resourceQuota:
+  enabled: true
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi
+    pods: "20"
+    persistentvolumeclaims: "10"
+
+# Pod disruption budget for high availability
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+# Production secrets configuration
+# ALL secrets must be provided via external secret management
+secrets:
+  create: false  # Use external secret management for production
+
+# External database configuration
+externalDatabase:
+  host: "your-production-db-host"
+  port: 5432
+  username: "bookedbarber_prod"
+  database: "bookedbarber_prod"
+  # Password should come from external secret management
+
+# External Redis configuration
+externalRedis:
+  host: "your-production-redis-host"
+  port: 6379
+  # Password should come from external secret management
+
+# Node affinity for production workloads
+affinity:
+  nodeAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      preference:
+        matchExpressions:
+        - key: node-type
+          operator: In
+          values:
+          - application
+
+# Tolerations for dedicated nodes
+tolerations:
+- key: "dedicated"
+  operator: "Equal"
+  value: "application"
+  effect: "NoSchedule"
+
+# Node selector for production nodes
+nodeSelector:
+  environment: production

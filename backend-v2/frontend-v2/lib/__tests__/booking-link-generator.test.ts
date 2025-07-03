@@ -227,13 +227,22 @@ describe('BookingLinkGenerator', () => {
 
   describe('validateParams', () => {
     it('should validate valid parameters', () => {
+      const futureDate = new Date()
+      futureDate.setDate(futureDate.getDate() + 30) // 30 days from now
+      
       const params: BookingLinkParams = {
         service: 'haircut',
         barber: 'john-doe',
-        date: '2025-07-01',
+        date: futureDate.toISOString().split('T')[0], // YYYY-MM-DD format
         time: '10:00',
       }
       const result = generator.validateParams(params)
+      
+      // Debug: log errors if validation fails
+      if (!result.isValid) {
+        console.log('Validation errors:', result.errors)
+      }
+      
       expect(result.isValid).toBe(true)
       expect(result.errors).toHaveLength(0)
     })
@@ -266,12 +275,15 @@ describe('BookingLinkGenerator', () => {
     })
 
     it('should validate future dates', () => {
+      const pastDate = new Date()
+      pastDate.setDate(pastDate.getDate() - 30) // 30 days ago
+      
       const params: BookingLinkParams = {
-        date: '2020-01-01', // Past date
+        date: pastDate.toISOString().split('T')[0], // YYYY-MM-DD format
       }
       const result = generator.validateParams(params)
       expect(result.isValid).toBe(false)
-      expect(result.errors).toContain('Date must be in the future: 2020-01-01')
+      expect(result.errors).toContain(`Date must be in the future: ${pastDate.toISOString().split('T')[0]}`)
     })
 
     it('should validate time format', () => {
@@ -302,12 +314,19 @@ describe('BookingLinkGenerator', () => {
     })
 
     it('should validate date range', () => {
+      const endDate = new Date()
+      endDate.setDate(endDate.getDate() + 30) // 30 days from now
+      const startDate = new Date()
+      startDate.setDate(startDate.getDate() + 35) // 35 days from now (after end date)
+      
+      const dateRange = `${startDate.toISOString().split('T')[0]},${endDate.toISOString().split('T')[0]}`
+      
       const params: BookingLinkParams = {
-        dateRange: '2025-07-07,2025-07-01', // End before start
+        dateRange, // End before start
       }
       const result = generator.validateParams(params)
       expect(result.isValid).toBe(false)
-      expect(result.errors).toContain('Start date must be before end date: 2025-07-07,2025-07-01')
+      expect(result.errors).toContain(`Start date must be before end date: ${dateRange}`)
     })
 
     it('should validate duration limits', () => {
@@ -358,7 +377,7 @@ describe('BookingLinkGenerator', () => {
       expect(links.basic).toBe('https://app.bookedbarber.com/book')
       expect(links.quickBook).toContain('quickBook=true')
       expect(links.service_haircut).toContain('service=haircut')
-      expect(links.barber_john_doe).toContain('barber=john-doe')
+      expect(links['barber_john-doe']).toContain('barber=john-doe')
       expect(links.thisWeek).toContain('dateRange=')
       expect(links.nextWeek).toContain('dateRange=')
     })
@@ -436,8 +455,11 @@ describe('Utility Functions', () => {
 
   describe('validateBookingParams', () => {
     it('should validate parameters without service/barber data', () => {
+      const futureDate = new Date()
+      futureDate.setDate(futureDate.getDate() + 30) // 30 days from now
+      
       const params: BookingLinkParams = {
-        date: '2025-07-01',
+        date: futureDate.toISOString().split('T')[0],
         time: '10:00',
         email: 'test@example.com',
       }
@@ -575,10 +597,13 @@ describe('Integration Tests', () => {
     generator.setServices(mockServices)
     generator.setBarbers(mockBarbers)
 
+    const futureDate = new Date()
+    futureDate.setDate(futureDate.getDate() + 30) // 30 days from now
+
     const params: BookingLinkParams = {
       service: 'haircut',
       barber: 'john-doe',
-      date: '2025-07-01',
+      date: futureDate.toISOString().split('T')[0],
       time: '10:00',
       duration: 30,
       name: 'John Customer',
@@ -610,9 +635,15 @@ describe('Integration Tests', () => {
   it('should handle URL round-trip with complex parameters', () => {
     const generator = new BookingLinkGenerator()
     
+    const startDate = new Date()
+    startDate.setDate(startDate.getDate() + 30) // 30 days from now
+    const endDate = new Date()
+    endDate.setDate(endDate.getDate() + 36) // 36 days from now
+    const dateRange = `${startDate.toISOString().split('T')[0]},${endDate.toISOString().split('T')[0]}`
+    
     const originalParams: BookingLinkParams = {
       service: ['haircut', 'shave'],
-      dateRange: '2025-07-01,2025-07-07',
+      dateRange,
       timeRange: '09:00,17:00',
       leadTime: 24,
       maxAdvance: 30,
@@ -629,7 +660,7 @@ describe('Integration Tests', () => {
 
     // Check that key parameters survived the round trip
     expect(parsed.params.service).toEqual(['haircut', 'shave'])
-    expect(parsed.params.dateRange).toBe('2025-07-01,2025-07-07')
+    expect(parsed.params.dateRange).toBe(dateRange)
     expect(parsed.params.recurring).toBe(true)
     expect(parsed.params.leadTime).toBe(24)
   })

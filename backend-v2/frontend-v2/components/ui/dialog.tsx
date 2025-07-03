@@ -322,5 +322,4 @@ export {
   DialogFooter,
   DialogTitle,
   DialogDescription,
-  AlertDialog,
 }

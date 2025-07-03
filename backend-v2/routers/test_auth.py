@@ -15,7 +15,7 @@ async def test_login(user_credentials: schemas.UserLogin):
         # Find user by email
         result = conn.execute(
             text("SELECT id, email, hashed_password, role FROM users WHERE email = :email AND is_active = true"),
-            {"email": user_credentials.username}
+            {"email": user_credentials.email}
         )
         user_row = result.fetchone()
         
@@ -50,7 +50,7 @@ async def test_health():
 async def test_login_simple(user_credentials: schemas.UserLogin):
     """Ultra simple login test - no password verification."""
     
-    if user_credentials.username == "test-barber@6fb.com" and user_credentials.password == "testpass123":
+    if user_credentials.email == "test-barber@6fb.com" and user_credentials.password == "testpass123":
         # Create tokens without password verification
         access_token = create_access_token(
             data={"sub": "test-barber@6fb.com", "role": "barber"},

@@ -2,6 +2,8 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 })
 
+const { withSentryConfig } = require('@sentry/nextjs')
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -160,4 +162,50 @@ const nextConfig = {
   // Removed rewrites to use direct API calls
 }
 
-module.exports = withBundleAnalyzer(nextConfig)
+// Sentry configuration options
+const sentryOptions = {
+  // For all available options, see:
+  // https://github.com/getsentry/sentry-webpack-plugin#options
+
+  // Suppress source map uploading logs during build
+  silent: true,
+  
+  // Organization and project for Sentry
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  
+  // Authentication token for uploads
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  
+  // Only upload source maps in production
+  dryRun: process.env.NODE_ENV !== 'production',
+  
+  // Upload source maps for better error tracking
+  widenClientFileUpload: true,
+  
+  // Automatically configure release
+  automaticVerifyWrite: false,
+  
+  // Hide sensitive information from source maps
+  hideSourceMaps: true,
+  
+  // Disable Sentry CLI telemetry
+  telemetry: false,
+  
+  // Transpile the SDK
+  transpileClientSDK: true,
+  
+  // Enable automatic bundle size optimization
+  bundleSizeOptimizations: {
+    excludeDebugStatements: true,
+    excludeReplayIframe: process.env.NEXT_PUBLIC_SENTRY_ENABLE_REPLAY !== 'true',
+    excludeReplayShadowDom: true,
+    excludeReplayWorker: true,
+  },
+}
+
+// Apply configurations in the correct order
+const configWithBundleAnalyzer = withBundleAnalyzer(nextConfig)
+const configWithSentry = withSentryConfig(configWithBundleAnalyzer, sentryOptions)
+
+module.exports = configWithSentry

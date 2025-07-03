@@ -1,0 +1,197 @@
+# Development environment values for BookedBarber V2
+
+# Override global settings for development
+global:
+  imageRegistry: "localhost:5000"  # Local registry for development
+
+app:
+  environment: development
+
+# Development-specific image settings
+image:
+  tag: "dev"
+  pullPolicy: Always
+
+# Backend configuration for development
+backend:
+  replicaCount: 1
+  image:
+    tag: "dev"
+    pullPolicy: Always
+  
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  
+  autoscaling:
+    enabled: false
+  
+  env:
+    ENVIRONMENT: development
+    PYTHONUNBUFFERED: "1"
+    DEBUG: "true"
+
+# Frontend configuration for development
+frontend:
+  replicaCount: 1
+  image:
+    tag: "dev"
+    pullPolicy: Always
+  
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+  
+  autoscaling:
+    enabled: false
+  
+  env:
+    NODE_ENV: development
+    NEXT_TELEMETRY_DISABLED: "1"
+    PORT: "3000"
+
+# Worker configuration for development
+worker:
+  replicaCount: 1
+  image:
+    tag: "dev"
+    pullPolicy: Always
+  
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+  
+  autoscaling:
+    enabled: false
+
+# Celery Beat for development
+celeryBeat:
+  enabled: true
+  replicaCount: 1
+
+# PostgreSQL for development
+postgresql:
+  enabled: true
+  auth:
+    username: bookedbarber_dev
+    password: dev_password_change_me
+    database: bookedbarber_dev
+  
+  primary:
+    persistence:
+      enabled: false  # Use emptyDir for development
+    
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 50m
+        memory: 128Mi
+
+# Redis for development
+redis:
+  enabled: true
+  
+  master:
+    persistence:
+      enabled: false  # Use emptyDir for development
+    
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 25m
+        memory: 64Mi
+
+# Ingress for development
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"  # Allow HTTP for dev
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+  
+  hosts:
+    - host: bookedbarber.local
+      paths:
+        - path: /
+          pathType: Prefix
+          service:
+            name: frontend
+            port: 3000
+        - path: /api
+          pathType: Prefix
+          service:
+            name: backend
+            port: 8000
+  
+  tls: []  # No TLS for development
+
+# Monitoring for development
+monitoring:
+  enabled: false  # Disable monitoring in development
+  prometheus:
+    enabled: false
+  grafana:
+    enabled: false
+
+# Security - relaxed for development
+security:
+  networkPolicies:
+    enabled: false  # Disable network policies for development
+
+# Resource quotas - smaller for development
+resourceQuota:
+  enabled: true
+  hard:
+    requests.cpu: "1"
+    requests.memory: 2Gi
+    limits.cpu: "2"
+    limits.memory: 4Gi
+    pods: "10"
+
+# Development secrets (these should still be overridden with real values)
+secrets:
+  create: true
+  database:
+    username: bookedbarber_dev
+    password: dev_password_change_me
+    name: bookedbarber_dev
+  
+  jwt:
+    secretKey: "dev_jwt_secret_change_me_in_production"
+  
+  stripe:
+    secretKey: "sk_test_dev_key"
+    publishableKey: "pk_test_dev_key"
+    webhookSecret: "whsec_dev_secret"
+  
+  # Other secrets should still be provided securely
+  sendgrid:
+    apiKey: ""
+  
+  twilio:
+    accountSid: ""
+    authToken: ""
+  
+  google:
+    clientId: ""
+    clientSecret: ""
+  
+  sentry:
+    dsn: ""
+    publicDsn: ""

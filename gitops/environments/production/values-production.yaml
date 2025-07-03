@@ -1,0 +1,341 @@
+# Production Environment Configuration
+
+global:
+  environment: production
+  domain: bookedbarber.com
+  imageTag: stable
+
+# Backend Configuration
+backend:
+  replicaCount: 3
+  image:
+    repository: ghcr.io/bookedbarber/backend
+    tag: stable
+    pullPolicy: IfNotPresent
+  
+  service:
+    type: LoadBalancer
+    port: 80
+    targetPort: 8000
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-type: nlb
+      service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:us-east-1:ACCOUNT:certificate/CERT_ID
+  
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+  
+  env:
+    ENVIRONMENT: production
+    LOG_LEVEL: INFO
+    DEBUG: "false"
+    CORS_ORIGINS: "https://bookedbarber.com"
+    ALLOWED_HOSTS: "api.bookedbarber.com,bookedbarber.com"
+    
+  # Database Configuration
+  database:
+    host: bookedbarber-prod-cluster.cluster-xyz.us-east-1.rds.amazonaws.com
+    port: 5432
+    name: bookedbarber_prod
+    ssl: require
+    pool_size: 20
+    max_overflow: 30
+    pool_timeout: 30
+    pool_recycle: 3600
+  
+  # Redis Configuration
+  redis:
+    host: bookedbarber-prod.cache.amazonaws.com
+    port: 6379
+    db: 0
+    ssl: true
+    pool_size: 10
+    
+  # Security
+  security:
+    jwt_expires_in: 86400  # 24 hours
+    refresh_token_expires_in: 2592000  # 30 days
+    password_reset_expires_in: 3600  # 1 hour
+    
+  # Rate Limiting
+  rate_limiting:
+    enabled: true
+    requests_per_minute: 100
+    burst_size: 150
+    
+  # Monitoring
+  monitoring:
+    sentry:
+      enabled: true
+      environment: production
+      traces_sample_rate: 0.1
+    metrics:
+      enabled: true
+      port: 9090
+      path: /metrics
+
+# Frontend Configuration
+frontend:
+  replicaCount: 2
+  image:
+    repository: ghcr.io/bookedbarber/frontend
+    tag: stable
+    pullPolicy: IfNotPresent
+    
+  service:
+    type: LoadBalancer
+    port: 80
+    targetPort: 3000
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-type: nlb
+      service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:us-east-1:ACCOUNT:certificate/CERT_ID
+  
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "250m"
+      
+  env:
+    NEXT_PUBLIC_API_URL: "https://api.bookedbarber.com"
+    NEXT_PUBLIC_ENVIRONMENT: "production"
+    NEXT_PUBLIC_SENTRY_DSN: "https://xxx@xxx.ingest.sentry.io/xxx"
+    NEXT_PUBLIC_GTM_ID: "GTM-XXXXXXX"
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "pk_live_xxx"
+
+# Ingress Configuration
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+  
+  hosts:
+    - host: bookedbarber.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service: frontend
+    - host: api.bookedbarber.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service: backend
+  
+  tls:
+    - secretName: bookedbarber-tls
+      hosts:
+        - bookedbarber.com
+        - api.bookedbarber.com
+
+# Auto-scaling Configuration
+autoscaling:
+  backend:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+    
+  frontend:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 6
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  backend:
+    enabled: true
+    minAvailable: 2
+  frontend:
+    enabled: true
+    minAvailable: 1
+
+# Network Policies
+networkPolicy:
+  enabled: true
+  ingress:
+    enabled: true
+    allowedNamespaces:
+      - kube-system
+      - nginx-ingress
+      - monitoring
+  egress:
+    enabled: true
+    allowedDestinations:
+      - internet: true
+      - dns: true
+      - database: true
+      - redis: true
+
+# Security Context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+
+# Probes Configuration
+probes:
+  backend:
+    livenessProbe:
+      httpGet:
+        path: /health
+        port: 8000
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      httpGet:
+        path: /health
+        port: 8000
+      initialDelaySeconds: 5
+      periodSeconds: 5
+      timeoutSeconds: 3
+      successThreshold: 1
+      failureThreshold: 2
+      
+  frontend:
+    livenessProbe:
+      httpGet:
+        path: /
+        port: 3000
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      httpGet:
+        path: /
+        port: 3000
+      initialDelaySeconds: 5
+      periodSeconds: 5
+      timeoutSeconds: 3
+      successThreshold: 1
+      failureThreshold: 2
+
+# Secrets Management
+secrets:
+  backend:
+    DATABASE_URL: vault:secret/production/database#url
+    REDIS_URL: vault:secret/production/redis#url
+    JWT_SECRET_KEY: vault:secret/production/jwt#secret
+    STRIPE_SECRET_KEY: vault:secret/production/stripe#secret
+    SENDGRID_API_KEY: vault:secret/production/sendgrid#api_key
+    TWILIO_AUTH_TOKEN: vault:secret/production/twilio#auth_token
+    GOOGLE_CALENDAR_CREDENTIALS: vault:secret/production/google#calendar_credentials
+    SENTRY_DSN: vault:secret/production/sentry#backend_dsn
+
+# ConfigMaps
+configMaps:
+  backend:
+    app-config.yaml: |
+      cors:
+        origins:
+          - https://bookedbarber.com
+        credentials: true
+      rate_limiting:
+        default: 100
+        auth: 50
+        payments: 20
+      logging:
+        level: INFO
+        format: json
+        handlers:
+          - console
+          - file
+          - sentry
+
+# Storage Configuration
+persistence:
+  logs:
+    enabled: true
+    storageClass: gp3
+    size: 10Gi
+    accessMode: ReadWriteOnce
+  uploads:
+    enabled: true
+    storageClass: gp3
+    size: 50Gi
+    accessMode: ReadWriteOnce
+
+# Backup Configuration
+backup:
+  enabled: true
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  retention: 30  # days
+  storage:
+    type: s3
+    bucket: bookedbarber-prod-backups
+    region: us-east-1
+
+# Monitoring and Alerting
+monitoring:
+  prometheus:
+    enabled: true
+    scrapeInterval: 30s
+    scrapeTimeout: 10s
+  grafana:
+    enabled: true
+    dashboards:
+      - application-metrics
+      - infrastructure-metrics
+      - business-metrics
+  alertmanager:
+    enabled: true
+    routes:
+      - receiver: slack-critical
+        match:
+          severity: critical
+      - receiver: slack-warning
+        match:
+          severity: warning
+
+# Blue-Green Deployment
+blueGreen:
+  enabled: true
+  productionSlot: blue
+  previewSlot: green
+  scaleDownDelay: 30s
+  prePromotionAnalysis:
+    templates:
+      - templateName: success-rate
+      - templateName: latency
+    args:
+      - name: service-name
+        value: backend-preview-service
+  postPromotionAnalysis:
+    templates:
+      - templateName: success-rate
+    args:
+      - name: service-name
+        value: backend-active-service
+
+# Maintenance Mode
+maintenance:
+  enabled: false
+  message: "We are currently performing scheduled maintenance. Please try again in a few minutes."
+  allowedIPs:
+    - 10.0.0.0/8
+    - 192.168.0.0/16

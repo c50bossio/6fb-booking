@@ -9,7 +9,7 @@ from datetime import datetime, time
 
 # Login
 auth = requests.post("http://localhost:8000/api/v1/auth/login", 
-                    json={"username": "test@example.com", "password": "Test123!"})
+                    json={"email": "test@example.com", "password": "Test123!"})
 token = auth.json()["access_token"]
 headers = {"Authorization": f"Bearer {token}"}
 

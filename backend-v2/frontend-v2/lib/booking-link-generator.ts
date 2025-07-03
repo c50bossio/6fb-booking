@@ -176,8 +176,8 @@ export class BookingLinkGenerator {
 
     // Apply default constraints
     const finalConstraints: ValidationConstraints = {
-      serviceExists: true,
-      barberExists: true,
+      serviceExists: this.services.length > 0,
+      barberExists: this.barbers.length > 0,
       dateInFuture: true,
       validTimeSlots: true,
       businessHours: true,

@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 
 export interface ValidationRule {
-  validate: (value: any) => boolean;
+  validate: (value: any, formState?: any) => boolean;
   message: string;
 }
 

@@ -5,6 +5,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Toaster } from '@/components/ui/toaster'
 import { QueryProvider } from '@/components/providers/QueryProvider'
+import CookieConsent from '@/components/CookieConsent'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -115,6 +116,35 @@ export default function RootLayout({
             `,
           }}
         />
+
+        {/* Google Consent Mode initialization - must be loaded before GA */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              
+              // Set default consent state - all denied until user consents
+              gtag('consent', 'default', {
+                'analytics_storage': 'denied',
+                'ad_storage': 'denied',
+                'ad_user_data': 'denied',
+                'ad_personalization': 'denied',
+                'functionality_storage': 'denied',
+                'personalization_storage': 'denied',
+                'security_storage': 'granted'
+              });
+            `,
+          }}
+        />
+
+        {/* Load Google Tag Manager if analytics consent given */}
+        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+          <script
+            async
+            src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
+          />
+        )}
         
         {/* iOS Web App Capabilities */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -156,6 +186,7 @@ export default function RootLayout({
               {children}
             </AppLayout>
             <Toaster />
+            <CookieConsent />
           </ErrorBoundary>
         </QueryProvider>
         

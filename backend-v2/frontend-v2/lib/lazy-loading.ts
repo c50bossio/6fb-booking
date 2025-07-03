@@ -1,8 +1,9 @@
 'use client'
 
-import { lazy, ComponentType, Suspense, memo } from 'react'
+import React, { lazy, ComponentType, Suspense, memo, useState, useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { Loading, LoadingSpinner, CardLoading } from '@/components/ui/LoadingStates'
+import { cn } from '@/lib/utils'
 
 /**
  * Enhanced Lazy Loading Utilities
@@ -28,16 +29,12 @@ export const createLazyComponent = <T extends ComponentType<any>>(
   const {
     fallback: FallbackComponent = LoadingSpinner,
     ssr = false,
-    loading = () => <FallbackComponent size="md" />
+    loading = () => React.createElement(FallbackComponent, {})
   } = options
 
   return dynamic(importFn, {
     ssr,
-    loading: loading,
-    // Enhance error handling
-    onError: (error, errorInfo) => {
-      console.error('Lazy component loading error:', error, errorInfo)
-    }
+    loading: () => loading() as JSX.Element
   })
 }
 
@@ -45,96 +42,96 @@ export const createLazyComponent = <T extends ComponentType<any>>(
 export const LazyComponents = {
   // Calendar components (heavy date manipulation)
   Calendar: createLazyComponent(
-    () => import('@/components/calendar/Calendar'),
+    () => import('@/components/Calendar'),
     { 
-      loading: () => <CardLoading className="h-96" />,
+      loading: () => React.createElement(CardLoading, { className: "h-96" }),
       ssr: false 
     }
   ),
   
   // Chart components (large chart.js bundle)
-  Analytics: createLazyComponent(
-    () => import('@/components/analytics/Analytics'),
-    { 
-      loading: () => <Loading variant="spinner" text="Loading analytics..." />,
-      ssr: false 
-    }
-  ),
+  // Analytics: createLazyComponent(
+  //   () => import('@/components/analytics/Analytics'),
+  //   { 
+  //     loading: () => React.createElement(Loading, { variant: "spinner", text: "Loading analytics..." }),
+  //     ssr: false 
+  //   }
+  // ),
   
   // Payment components (Stripe bundle)
   PaymentForm: createLazyComponent(
-    () => import('@/components/payment/PaymentForm'),
+    () => import('@/components/PaymentForm'),
     { 
-      loading: () => <Loading variant="skeleton" text="Loading payment form..." />,
+      loading: () => React.createElement(Loading, { variant: "skeleton", text: "Loading payment form..." }),
       ssr: false 
     }
   ),
   
   // Integration components (heavy with external APIs)
-  IntegrationsPanel: createLazyComponent(
-    () => import('@/components/integrations/IntegrationsPanel'),
-    { 
-      loading: () => <CardLoading className="h-64" />,
-      ssr: false 
-    }
-  ),
+  // IntegrationsPanel: createLazyComponent(
+  //   () => import('@/components/integrations/IntegrationsPanel'),
+  //   { 
+  //     loading: () => React.createElement(CardLoading, { className: "h-64" }),
+  //     ssr: false 
+  //   }
+  // ),
   
   // Settings components
-  SettingsPanel: createLazyComponent(
-    () => import('@/components/settings/SettingsPanel'),
-    { 
-      loading: () => <Loading variant="dots" text="Loading settings..." />,
-      ssr: false 
-    }
-  ),
+  // SettingsPanel: createLazyComponent(
+  //   () => import('@/components/settings/SettingsPanel'),
+  //   { 
+  //     loading: () => React.createElement(Loading, { variant: "dots", text: "Loading settings..." }),
+  //     ssr: false 
+  //   }
+  // ),
   
   // Admin components (heavy forms and data tables)
-  AdminDashboard: createLazyComponent(
-    () => import('@/components/admin/AdminDashboard'),
-    { 
-      loading: () => <Loading variant="pulse" text="Loading admin dashboard..." />,
-      ssr: false 
-    }
-  ),
+  // AdminDashboard: createLazyComponent(
+  //   () => import('@/components/admin/AdminDashboard'),
+  //   { 
+  //     loading: () => React.createElement(Loading, { variant: "pulse", text: "Loading admin dashboard..." }),
+  //     ssr: false 
+  //   }
+  // ),
 }
 
 // Route-based lazy loading
 export const LazyPages = {
   // Dashboard route
-  Dashboard: createLazyComponent(
-    () => import('@/app/(auth)/dashboard/page'),
-    { 
-      loading: () => <Loading variant="spinner" text="Loading dashboard..." overlay />,
-      ssr: true 
-    }
-  ),
+  // Dashboard: createLazyComponent(
+  //   () => import('@/app/(auth)/dashboard/page'),
+  //   { 
+  //     loading: () => React.createElement(Loading, { variant: "spinner", text: "Loading dashboard...", overlay: true }),
+  //     ssr: true 
+  //   }
+  // ),
   
   // Calendar route
-  CalendarPage: createLazyComponent(
-    () => import('@/app/(auth)/calendar/page'),
-    { 
-      loading: () => <Loading variant="skeleton" text="Loading calendar..." overlay />,
-      ssr: false 
-    }
-  ),
+  // CalendarPage: createLazyComponent(
+  //   () => import('@/app/(auth)/calendar/page'),
+  //   { 
+  //     loading: () => React.createElement(Loading, { variant: "skeleton", text: "Loading calendar...", overlay: true }),
+  //     ssr: false 
+  //   }
+  // ),
   
   // Analytics route
-  AnalyticsPage: createLazyComponent(
-    () => import('@/app/(auth)/analytics/page'),
-    { 
-      loading: () => <Loading variant="bar" text="Loading analytics..." overlay />,
-      ssr: false 
-    }
-  ),
+  // AnalyticsPage: createLazyComponent(
+  //   () => import('@/app/(auth)/analytics/page'),
+  //   { 
+  //     loading: () => React.createElement(Loading, { variant: "bar", text: "Loading analytics...", overlay: true }),
+  //     ssr: false 
+  //   }
+  // ),
   
   // Settings route
-  SettingsPage: createLazyComponent(
-    () => import('@/app/(auth)/settings/page'),
-    { 
-      loading: () => <Loading variant="dots" text="Loading settings..." overlay />,
-      ssr: true 
-    }
-  ),
+  // SettingsPage: createLazyComponent(
+  //   () => import('@/app/(auth)/settings/page'),
+  //   { 
+  //     loading: () => React.createElement(Loading, { variant: "dots", text: "Loading settings...", overlay: true }),
+  //     ssr: true 
+  //   }
+  // ),
 }
 
 // Intersection Observer based lazy loading for images and content
@@ -257,23 +254,21 @@ export const LazyImage = memo(({
     }
   }, [isLoaded])
 
-  return (
-    <img
-      ref={elementRef}
-      src={imageLoaded ? src : placeholder}
-      data-src={src}
-      data-lazy-id={`img-${src}`}
-      alt={alt}
-      className={cn(
-        'transition-opacity duration-300',
-        imageLoaded ? 'opacity-100' : 'opacity-50',
-        'loading' in props ? '' : 'loading',
-        className
-      )}
-      onLoad={() => setImageLoaded(true)}
-      {...props}
-    />
-  )
+  return React.createElement('img', {
+    ref: elementRef,
+    src: imageLoaded ? src : placeholder,
+    'data-src': src,
+    'data-lazy-id': `img-${src}`,
+    alt: alt,
+    className: cn(
+      'transition-opacity duration-300',
+      imageLoaded ? 'opacity-100' : 'opacity-50',
+      'loading' in props ? '' : 'loading',
+      className
+    ),
+    onLoad: () => setImageLoaded(true),
+    ...props
+  })
 })
 
 LazyImage.displayName = 'LazyImage'
@@ -357,9 +352,9 @@ export const TreeShaking = {
    * Import specific Lucide icons
    */
   importLucide: {
-    Calendar: () => import('lucide-react/dist/esm/icons/calendar'),
-    User: () => import('lucide-react/dist/esm/icons/user'),
-    Settings: () => import('lucide-react/dist/esm/icons/settings'),
+    Calendar: () => import('lucide-react').then(mod => ({ default: mod.Calendar })),
+    User: () => import('lucide-react').then(mod => ({ default: mod.User })),
+    Settings: () => import('lucide-react').then(mod => ({ default: mod.Settings })),
   }
 }
 
@@ -475,9 +470,6 @@ if (typeof window !== 'undefined') {
   }
 }
 
-// Add missing imports
-import React, { useState, useEffect, useRef } from 'react'
-import { cn } from '@/lib/utils'
 
 export default {
   LazyComponents,

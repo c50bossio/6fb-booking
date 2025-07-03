@@ -38,10 +38,12 @@ export const FadeIn = forwardRef<
   return (
     <div
       ref={(node) => {
-        elementRef.current = node
+        if (elementRef && typeof elementRef === 'object' && 'current' in elementRef) {
+          (elementRef as any).current = node
+        }
         if (ref) {
           if (typeof ref === 'function') ref(node)
-          else ref.current = node
+          else if (ref && 'current' in ref) ref.current = node
         }
       }}
       className={cn('opacity-0', className)}
@@ -49,7 +51,7 @@ export const FadeIn = forwardRef<
         animationDelay: `${delay}ms`,
         animationDuration: duration,
         animationTimingFunction: easing,
-        ...animationProps.style,
+        ...((animationProps as any).style || {}),
       }}
       {...props}
     >
@@ -104,7 +106,7 @@ export const SlideIn = forwardRef<
   return (
     <div
       ref={(node) => {
-        elementRef.current = node
+        (elementRef as any).current = node
         if (ref) {
           if (typeof ref === 'function') ref(node)
           else ref.current = node
@@ -153,7 +155,7 @@ export const ScaleIn = forwardRef<
   return (
     <div
       ref={(node) => {
-        elementRef.current = node
+        (elementRef as any).current = node
         if (ref) {
           if (typeof ref === 'function') ref(node)
           else ref.current = node
@@ -204,7 +206,7 @@ export const StaggeredChildren = forwardRef<
   return (
     <div
       ref={(node) => {
-        elementRef.current = node
+        (elementRef as any).current = node
         if (ref) {
           if (typeof ref === 'function') ref(node)
           else ref.current = node
@@ -618,16 +620,4 @@ export const MorphingBackground = ({
   )
 }
 
-export {
-  FadeIn,
-  SlideIn,
-  ScaleIn,
-  StaggeredChildren,
-  AnimatedCounter,
-  AnimatedProgress,
-  BouncyButton,
-  ParallaxScroll,
-  FloatingElement,
-  TypewriterEffect,
-  MorphingBackground,
-}
+// All components are exported individually above

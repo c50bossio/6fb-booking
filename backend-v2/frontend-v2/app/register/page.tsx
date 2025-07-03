@@ -13,6 +13,11 @@ export default function RegisterPage() {
     password: '',
     confirmPassword: ''
   })
+  const [consent, setConsent] = useState({
+    terms: false,
+    privacy: false,
+    marketing: false
+  })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [passwordStrength, setPasswordStrength] = useState({
@@ -41,6 +46,10 @@ export default function RegisterPage() {
     }
   }
 
+  const handleConsentChange = (type: keyof typeof consent) => {
+    setConsent(prev => ({ ...prev, [type]: !prev[type] }))
+  }
+
   const isPasswordValid = () => {
     return passwordStrength.hasMinLength &&
            passwordStrength.hasUpperCase &&
@@ -61,6 +70,12 @@ export default function RegisterPage() {
     // Validate password strength
     if (!isPasswordValid()) {
       setError('Password does not meet requirements')
+      return
+    }
+
+    // Validate required consent
+    if (!consent.terms || !consent.privacy) {
+      setError('You must agree to the Terms of Service and Privacy Policy to create an account')
       return
     }
 
@@ -186,10 +201,89 @@ export default function RegisterPage() {
             </div>
           </div>
 
+          {/* Consent Checkboxes */}
+          <div className="space-y-4 border-t pt-4">
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Privacy & Consent</h3>
+            
+            {/* Required Consents */}
+            <div className="space-y-3">
+              <div className="flex items-start">
+                <input
+                  id="terms-consent"
+                  type="checkbox"
+                  checked={consent.terms}
+                  onChange={() => handleConsentChange('terms')}
+                  className="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  required
+                />
+                <label htmlFor="terms-consent" className="ml-3 text-sm text-gray-700 dark:text-gray-300">
+                  I agree to the{' '}
+                  <a 
+                    href="/terms" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-500 underline"
+                  >
+                    Terms of Service
+                  </a>
+                  <span className="text-red-500 ml-1">*</span>
+                </label>
+              </div>
+
+              <div className="flex items-start">
+                <input
+                  id="privacy-consent"
+                  type="checkbox"
+                  checked={consent.privacy}
+                  onChange={() => handleConsentChange('privacy')}
+                  className="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  required
+                />
+                <label htmlFor="privacy-consent" className="ml-3 text-sm text-gray-700 dark:text-gray-300">
+                  I agree to the{' '}
+                  <a 
+                    href="/privacy" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-500 underline"
+                  >
+                    Privacy Policy
+                  </a>
+                  <span className="text-red-500 ml-1">*</span>
+                </label>
+              </div>
+
+              {/* Optional Marketing Consent */}
+              <div className="flex items-start">
+                <input
+                  id="marketing-consent"
+                  type="checkbox"
+                  checked={consent.marketing}
+                  onChange={() => handleConsentChange('marketing')}
+                  className="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="marketing-consent" className="ml-3 text-sm text-gray-700 dark:text-gray-300">
+                  I would like to receive promotional emails and updates about new features (optional)
+                </label>
+              </div>
+            </div>
+
+            <div className="text-xs text-gray-500">
+              <span className="text-red-500">*</span> Required fields. You can review our{' '}
+              <a href="/cookies" className="text-blue-600 hover:text-blue-500 underline">
+                Cookie Policy
+              </a>{' '}
+              and change your cookie preferences after registration in your{' '}
+              <a href="/settings/privacy" className="text-blue-600 hover:text-blue-500 underline">
+                privacy settings
+              </a>.
+            </div>
+          </div>
+
           <div>
             <button
               type="submit"
-              disabled={loading || !isPasswordValid() || formData.password !== formData.confirmPassword}
+              disabled={loading || !isPasswordValid() || formData.password !== formData.confirmPassword || !consent.terms || !consent.privacy}
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Creating account...' : 'Create account'}

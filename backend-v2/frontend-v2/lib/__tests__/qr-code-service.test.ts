@@ -47,7 +47,7 @@ describe('QR Code Service', () => {
       const formats: QRCodeFormat[] = ['png', 'svg'];
       formats.forEach(format => {
         const filename = generateQRCodeFilename('test', 'medium', format);
-        expect(filename).toEndWith(`.${format}`);
+        expect(filename).toMatch(new RegExp(`\\.${format}$`));
       });
     });
 

@@ -6,7 +6,7 @@ const crypto = require('crypto');
 
 // Configuration
 const CONFIG = {
-  frontendUrl: 'http://localhost:3000',
+  frontendUrl: 'http://localhost:3001',
   backendUrl: 'http://localhost:8000',
   maxConcurrency: 5,
   crawlTimeout: 60000,

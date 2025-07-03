@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { 
   getBarberSchedule, 
   getBarberAvailability,
@@ -43,7 +43,7 @@ interface DaySchedule {
   hasSpecialAvailability: boolean
 }
 
-export default function ScheduleGrid({
+const ScheduleGrid = React.memo(function ScheduleGrid({
   barberId,
   currentDate,
   viewMode,
@@ -63,13 +63,14 @@ export default function ScheduleGrid({
   const [showEditModal, setShowEditModal] = useState(false)
   const [editingAvailability, setEditingAvailability] = useState<BarberAvailability | null>(null)
 
-  const timeSlots = [
+  // Memoize static data to prevent re-creation on every render
+  const timeSlots = useMemo(() => [
     '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
     '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
     '15:00', '15:30', '16:00', '16:30', '17:00', '17:30'
-  ]
+  ], [])
 
-  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  const dayNames = useMemo(() => ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], [])
 
   const getDateRange = useCallback(() => {
     if (viewMode === 'week') {
@@ -158,15 +159,15 @@ export default function ScheduleGrid({
     loadScheduleData()
   }, [loadScheduleData])
 
-  const handleSlotClick = (date: string, time: string, status: string) => {
+  const handleSlotClick = useCallback((date: string, time: string, status: string) => {
     setSelectedSlot({ date, time, status })
     
     if (status === 'unavailable') {
       setShowAddModal(true)
     }
-  }
+  }, [])
 
-  const handleAddAvailability = async (dayOfWeek: number, startTime: string, endTime: string) => {
+  const handleAddAvailability = useCallback(async (dayOfWeek: number, startTime: string, endTime: string) => {
     try {
       // Validate input
       if (startTime >= endTime) {
@@ -190,7 +191,7 @@ export default function ScheduleGrid({
       const errorMessage = error?.message || 'Failed to add availability'
       onError(errorMessage)
     }
-  }
+  }, [barberId, onSuccess, onError, loadScheduleData])
 
   const handleEditAvailability = async (id: number, startTime: string, endTime: string) => {
     try {
@@ -436,7 +437,12 @@ export default function ScheduleGrid({
       )}
     </div>
   )
-}
+})
+
+// Add display name for debugging
+ScheduleGrid.displayName = 'ScheduleGrid'
+
+export default ScheduleGrid
 
 // Add Availability Modal Component
 function AddAvailabilityModal({

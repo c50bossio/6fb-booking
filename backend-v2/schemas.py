@@ -134,6 +134,41 @@ class TimezoneListResponse(BaseModel):
     timezones: List[TimezoneInfo]
     total: int
 
+class TimezoneUpdateRequest(BaseModel):
+    timezone: str = Field(..., description="Valid timezone identifier")
+    auto_detected: bool = Field(False, description="Whether this timezone was auto-detected")
+    
+    @validator('timezone')
+    def validate_timezone(cls, v):
+        if v not in pytz.all_timezones:
+            raise ValueError(f"Invalid timezone: {v}. Must be a valid timezone identifier.")
+        return v
+
+class TimezoneDetectionRequest(BaseModel):
+    detected_timezone: str = Field(..., description="Browser-detected timezone")
+    confidence: Optional[float] = Field(None, ge=0.0, le=1.0, description="Detection confidence score")
+    browser_info: Optional[Dict[str, Any]] = Field(None, description="Additional browser information")
+    
+    @validator('detected_timezone')
+    def validate_timezone(cls, v):
+        if v not in pytz.all_timezones:
+            raise ValueError(f"Invalid timezone: {v}. Must be a valid timezone identifier.")
+        return v
+
+class BusinessHoursResponse(BaseModel):
+    date: str = Field(..., description="Date in YYYY-MM-DD format")
+    business_hours: Dict[str, str] = Field(..., description="Business hours with start/end times")
+    timezone: str = Field(..., description="Timezone for the displayed times")
+    timezone_info: TimezoneInfo = Field(..., description="Detailed timezone information")
+
+class TimezoneConversionResponse(BaseModel):
+    source_timezone: str
+    target_timezone: str
+    source_datetime: str
+    target_datetime: str
+    conversion_type: str
+    created_at: str
+
 class UserResponse(User):
     """Enhanced user response with additional fields"""
     pass
@@ -756,6 +791,143 @@ class RecurringPatternResponse(RecurringPatternBase):
     
     class Config:
         from_attributes = True
+
+
+# Blackout Date Schemas
+class BlackoutDateBase(BaseModel):
+    blackout_date: Date = Field(..., description="Date to block out")
+    end_date: Optional[Date] = Field(None, description="End date for multi-day blackouts")
+    start_time: Optional[Time] = Field(None, description="Start time for partial day blackouts")
+    end_time: Optional[Time] = Field(None, description="End time for partial day blackouts")
+    reason: str = Field(..., description="Reason for blackout")
+    blackout_type: str = Field("full_day", description="Type of blackout")
+    is_recurring: bool = Field(False, description="Whether this is a recurring blackout")
+    recurrence_pattern: Optional[str] = Field(None, description="Recurrence pattern")
+    recurrence_end_date: Optional[Date] = Field(None, description="End date for recurring blackouts")
+    allow_emergency_bookings: bool = Field(False, description="Allow emergency bookings")
+    affects_existing_appointments: bool = Field(True, description="Affects existing appointments")
+    auto_reschedule: bool = Field(False, description="Auto-reschedule affected appointments")
+    description: Optional[str] = None
+    location_id: Optional[int] = None
+    barber_id: Optional[int] = None
+
+    @validator('blackout_type')
+    def validate_blackout_type(cls, v):
+        valid_types = ['full_day', 'partial_day', 'recurring']
+        if v not in valid_types:
+            raise ValueError(f'Blackout type must be one of {valid_types}')
+        return v
+
+
+class BlackoutDateCreate(BlackoutDateBase):
+    pass
+
+
+class BlackoutDateUpdate(BaseModel):
+    blackout_date: Optional[Date] = None
+    end_date: Optional[Date] = None
+    start_time: Optional[Time] = None
+    end_time: Optional[Time] = None
+    reason: Optional[str] = None
+    blackout_type: Optional[str] = None
+    is_recurring: Optional[bool] = None
+    recurrence_pattern: Optional[str] = None
+    recurrence_end_date: Optional[Date] = None
+    allow_emergency_bookings: Optional[bool] = None
+    affects_existing_appointments: Optional[bool] = None
+    auto_reschedule: Optional[bool] = None
+    description: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
+class BlackoutDateResponse(BlackoutDateBase):
+    id: int
+    created_by_id: int
+    is_active: bool
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+
+# Recurring Series Schemas
+class RecurringSeriesBase(BaseModel):
+    series_name: Optional[str] = None
+    series_description: Optional[str] = None
+    payment_type: str = Field("per_appointment", description="Payment type for series")
+    total_series_price: Optional[float] = None
+
+    @validator('payment_type')
+    def validate_payment_type(cls, v):
+        valid_types = ['per_appointment', 'series_upfront', 'subscription']
+        if v not in valid_types:
+            raise ValueError(f'Payment type must be one of {valid_types}')
+        return v
+
+
+class RecurringSeriesCreate(RecurringSeriesBase):
+    pattern_id: int
+
+
+class RecurringSeriesUpdate(BaseModel):
+    series_name: Optional[str] = None
+    series_description: Optional[str] = None
+    payment_type: Optional[str] = None
+    total_series_price: Optional[float] = None
+    series_status: Optional[str] = None
+
+
+class RecurringSeriesResponse(RecurringSeriesBase):
+    id: int
+    pattern_id: int
+    user_id: int
+    paid_amount: float
+    payment_status: str
+    total_planned: int
+    total_completed: int
+    total_cancelled: int
+    total_rescheduled: int
+    series_status: str
+    completion_percentage: float
+    created_at: datetime
+    updated_at: datetime
+    completed_at: Optional[datetime]
+    
+    class Config:
+        from_attributes = True
+
+
+# Enhanced Appointment Schema for recurring appointments
+class RecurringAppointmentInstance(BaseModel):
+    appointment_id: Optional[int] = None
+    recurring_pattern_id: int
+    recurring_series_id: Optional[int] = None
+    scheduled_date: Date
+    scheduled_time: Time
+    duration_minutes: int
+    barber_id: Optional[int] = None
+    service_id: Optional[int] = None
+    status: str = "pending"
+    is_recurring_instance: bool = True
+    recurrence_sequence: Optional[int] = None
+    original_scheduled_date: Optional[Date] = None
+    
+    
+class AppointmentSeriesManagement(BaseModel):
+    action: str = Field(..., description="Action to perform")
+    appointment_id: Optional[int] = None
+    apply_to_series: bool = Field(False, description="Apply to entire series")
+    new_date: Optional[Date] = None
+    new_time: Optional[Time] = None
+    new_barber_id: Optional[int] = None
+    reason: Optional[str] = None
+    
+    @validator('action')
+    def validate_action(cls, v):
+        valid_actions = ['reschedule', 'cancel', 'modify', 'complete']
+        if v not in valid_actions:
+            raise ValueError(f'Action must be one of {valid_actions}')
+        return v
 
 
 # Enhanced Booking Schemas
@@ -1624,7 +1796,8 @@ EnhancedBookingCreate = EnhancedAppointmentCreate  # Alias for backward compatib
 # Guest booking schemas for public booking API
 class GuestInfo(BaseModel):
     """Guest contact information for bookings"""
-    name: str = Field(..., min_length=1, max_length=100)
+    first_name: str = Field(..., min_length=1, max_length=50)
+    last_name: str = Field(..., min_length=1, max_length=50)
     email: EmailStr
     phone: Optional[str] = Field(None, pattern=r'^\+?[\d\s\-\(\)]+$')
 
@@ -1636,6 +1809,7 @@ class GuestBookingCreate(BaseModel):
     guest_info: GuestInfo = Field(..., description="Guest contact information")
     notes: Optional[str] = Field(None, max_length=500, description="Additional notes")
     timezone: Optional[str] = Field(None, description="Guest timezone")
+    captcha_token: Optional[str] = Field(None, description="reCAPTCHA token for verification")
 
 class GuestQuickBookingCreate(BaseModel):
     """Create quick booking for guest user (next available slot)"""
@@ -1643,6 +1817,7 @@ class GuestQuickBookingCreate(BaseModel):
     guest_info: GuestInfo = Field(..., description="Guest contact information")
     notes: Optional[str] = Field(None, max_length=500, description="Additional notes")
     timezone: Optional[str] = Field(None, description="Guest timezone")
+    captcha_token: Optional[str] = Field(None, description="reCAPTCHA token for verification")
 
 class GuestBookingResponse(BaseModel):
     """Response for guest booking creation"""

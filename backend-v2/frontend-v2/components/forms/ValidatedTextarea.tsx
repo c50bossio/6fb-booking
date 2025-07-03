@@ -3,7 +3,7 @@
 import React, { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Check, X, AlertCircle, Loader2 } from 'lucide-react';
-import { Textarea } from '@/components/ui/textarea';
+// Using native textarea element
 import { Label } from '@/components/ui/Label';
 
 export interface ValidatedTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
@@ -72,19 +72,20 @@ export const ValidatedTextarea = forwardRef<HTMLTextAreaElement, ValidatedTextar
         )}
         
         <div className="relative">
-          <Textarea
+          <textarea
             ref={ref}
             value={value}
             disabled={disabled}
             maxLength={maxLength}
             className={cn(
+              'flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
               'resize-none transition-all duration-200',
               showError && 'border-red-500 focus:ring-red-500',
               showSuccessState && 'border-green-500 focus:ring-green-500',
               disabled && 'cursor-not-allowed opacity-50',
               textareaClassName
             )}
-            aria-invalid={showError}
+            aria-invalid={!!showError}
             aria-describedby={
               showError ? `${props.id}-error` : helperText ? `${props.id}-helper` : undefined
             }

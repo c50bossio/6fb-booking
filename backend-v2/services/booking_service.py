@@ -1045,8 +1045,14 @@ def get_booking_by_id(db: Session, booking_id: int, user_id: int) -> Optional[mo
         )
     ).first()
 
-def cancel_booking(db: Session, booking_id: int, user_id: int) -> Optional[models.Appointment]:
-    """Cancel a booking."""
+def cancel_booking(
+    db: Session, 
+    booking_id: int, 
+    user_id: int,
+    reason: Optional[str] = None,
+    is_emergency: bool = False
+) -> Optional[models.Appointment]:
+    """Cancel a booking with comprehensive cancellation policy handling."""
     booking = get_booking_by_id(db, booking_id, user_id)
     
     if not booking:
@@ -1065,57 +1071,95 @@ def cancel_booking(db: Session, booking_id: int, user_id: int) -> Optional[model
     if booking_start_utc <= now_utc:
         raise ValueError("Cannot cancel a booking that has already started")
     
-    booking.status = "cancelled"
-    db.commit()
-    db.refresh(booking)
-    
-    # Send cancellation notification and cancel any pending notifications
+    # Use new cancellation service for policy-based cancellation
     try:
-        # TODO: Re-enable notification service when available
-        logger.info(f"Skipping cancellation notifications for appointment {booking.id} - notification service disabled")
-        pass
+        from services.cancellation_service import CancellationPolicyService
+        from models.cancellation import CancellationReason
         
-        # notification_service = get_notification_service()
-        # if notification_service:
-        #     # Cancel any pending notifications for this appointment
-        #     notification_service.cancel_appointment_notifications(db, booking.id)
-        #     
-        #     # Get client and barber information for cancellation notification
-        #     client = None
-        #     if booking.client_id:
-        #         client = db.query(models.Client).filter(models.Client.id == booking.client_id).first()
-        #     
-        #     barber = db.query(models.User).filter(models.User.id == booking.barber_id).first()
-        #     
-        #     # Create cancellation notification context
-        #     context = {
-        #         "client_name": client.first_name + " " + client.last_name if client else booking.user.name,
-        #         "service_name": booking.service_name,
-        #         "appointment_date": booking_start_utc.strftime("%B %d, %Y"),
-        #         "appointment_time": booking_start_utc.strftime("%I:%M %p"),
-        #         "barber_name": barber.name if barber else None,
-        #         "business_name": "6FB Booking",
-        #         "business_phone": "(555) 123-4567",
-        #         "cancelled_by": "client",
-        #         "cancellation_date": datetime.now().strftime("%B %d, %Y"),
-        #         "current_year": datetime.now().year
-        #     }
-        #     
-        #     # Queue cancellation notification
-        #     notification_service.queue_notification(
-        #         db=db,
-        #         user=booking.user,
-        #         template_name="appointment_cancellation",
-        #         context=context,
-        #         appointment_id=booking.id
-        #         
-        #     logger.info(f"Queued cancellation notification and cancelled pending notifications for appointment {booking.id}")
-            
-    except Exception as e:
-        logger.error(f"Failed to handle cancellation notifications: {e}")
-        # Don't fail the cancellation if notification fails
-    
-    return booking
+        # Map reason string to enum
+        cancellation_reason = CancellationReason.CLIENT_REQUEST
+        if reason:
+            reason_lower = reason.lower()
+            if "emergency" in reason_lower:
+                cancellation_reason = CancellationReason.EMERGENCY
+                is_emergency = True
+            elif "illness" in reason_lower or "sick" in reason_lower:
+                cancellation_reason = CancellationReason.ILLNESS
+            elif "weather" in reason_lower:
+                cancellation_reason = CancellationReason.WEATHER
+            elif "schedule" in reason_lower or "conflict" in reason_lower:
+                cancellation_reason = CancellationReason.SCHEDULING_CONFLICT
+        
+        # Process cancellation through policy service
+        cancellation = CancellationPolicyService.cancel_appointment(
+            db=db,
+            appointment_id=booking_id,
+            cancelled_by_id=user_id,
+            reason=cancellation_reason,
+            reason_details=reason,
+            is_emergency=is_emergency
+        )
+        
+        logger.info(f"Booking {booking_id} cancelled with policy-based refund: ${cancellation.net_refund_amount}")
+        
+        # Return the updated booking
+        db.refresh(booking)
+        return booking
+        
+    except ImportError:
+        # Fallback to legacy cancellation if new service not available
+        logger.warning("Cancellation policy service not available, using legacy cancellation")
+        
+        booking.status = "cancelled"
+        db.commit()
+        db.refresh(booking)
+        
+        # Send cancellation notification and cancel any pending notifications
+        try:
+            notification_service = get_notification_service()
+            if notification_service:
+                # Cancel any pending notifications for this appointment
+                notification_service.cancel_appointment_notifications(db, booking.id)
+                
+                # Get client and barber information for cancellation notification
+                client = None
+                if booking.client_id:
+                    client = db.query(models.Client).filter(models.Client.id == booking.client_id).first()
+                
+                barber = db.query(models.User).filter(models.User.id == booking.barber_id).first()
+                
+                # Create cancellation notification context
+                context = {
+                    "client_name": client.first_name + " " + client.last_name if client else booking.user.name,
+                    "service_name": booking.service_name,
+                    "appointment_date": booking_start_utc.strftime("%B %d, %Y"),
+                    "appointment_time": booking_start_utc.strftime("%I:%M %p"),
+                    "barber_name": barber.name if barber else None,
+                    "business_name": getattr(settings, 'business_name', getattr(settings, 'app_name', 'BookedBarber')),
+                    "business_phone": getattr(settings, 'business_phone', '(555) 123-4567'),
+                    "cancelled_by": "client",
+                    "cancellation_date": datetime.now().strftime("%B %d, %Y"),
+                    "current_year": datetime.now().year
+                }
+                
+                # Queue cancellation notification
+                notification_service.queue_notification(
+                    db=db,
+                    user=booking.user,
+                    template_name="appointment_cancellation",
+                    context=context,
+                    appointment_id=booking.id
+                )
+                
+                logger.info(f"Queued cancellation notification and cancelled pending notifications for appointment {booking.id}")
+            else:
+                logger.warning(f"Notification service not available for appointment {booking.id}")
+                
+        except Exception as e:
+            logger.error(f"Failed to handle cancellation notifications: {e}")
+            # Don't fail the cancellation if notification fails
+        
+        return booking
 
 
 def update_booking(

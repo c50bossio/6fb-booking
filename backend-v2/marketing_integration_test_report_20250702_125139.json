@@ -1,0 +1,125 @@
+{
+  "summary": {
+    "total_tests": 16,
+    "passed": 16,
+    "failed": 0,
+    "warnings": 0,
+    "success_rate": 100.0,
+    "average_response_time_ms": 18.37494671344757
+  },
+  "test_results": [
+    {
+      "test_name": "Authentication",
+      "status": "PASS",
+      "details": "Token obtained: eyJhbGciOiJIUzI1NiIs...",
+      "response_time_ms": 231.40287399291992,
+      "timestamp": "2025-07-02T12:51:39.817219"
+    },
+    {
+      "test_name": "Get Integration Status",
+      "status": "PASS",
+      "details": "Found 0 integrations",
+      "response_time_ms": 8.21685791015625,
+      "timestamp": "2025-07-02T12:51:39.825514"
+    },
+    {
+      "test_name": "Get Available Integrations",
+      "status": "PASS",
+      "details": "Available types: ['google_calendar', 'google_my_business', 'stripe', 'sendgrid', 'twilio', 'square', 'acuity', 'booksy', 'email_marketing', 'sms_marketing', 'custom']",
+      "response_time_ms": 5.002737045288086,
+      "timestamp": "2025-07-02T12:51:39.830568"
+    },
+    {
+      "test_name": "Health Check All",
+      "status": "PASS",
+      "details": "Health status: 0 total",
+      "response_time_ms": 5.404949188232422,
+      "timestamp": "2025-07-02T12:51:39.836039"
+    },
+    {
+      "test_name": "OAuth Connect Initiate",
+      "status": "PASS",
+      "details": "Auth URL generated: True",
+      "response_time_ms": 7.533073425292969,
+      "timestamp": "2025-07-02T12:51:39.843873"
+    },
+    {
+      "test_name": "OAuth Callback",
+      "status": "PASS",
+      "details": "Callback handled (Status: 400)",
+      "response_time_ms": 5.529880523681641,
+      "timestamp": "2025-07-02T12:51:39.849422"
+    },
+    {
+      "test_name": "Token Refresh",
+      "status": "PASS",
+      "details": "Refresh handled (Status: 404)",
+      "response_time_ms": 4.863977432250977,
+      "timestamp": "2025-07-02T12:51:39.854315"
+    },
+    {
+      "test_name": "Get Reviews",
+      "status": "PASS",
+      "details": "Found N/A reviews",
+      "response_time_ms": 4.235029220581055,
+      "timestamp": "2025-07-02T12:51:39.858596"
+    },
+    {
+      "test_name": "Review Analytics",
+      "status": "PASS",
+      "details": "Analytics endpoint handled (Status: 422)",
+      "response_time_ms": 3.0829906463623047,
+      "timestamp": "2025-07-02T12:51:39.861697"
+    },
+    {
+      "test_name": "Review Sync",
+      "status": "PASS",
+      "details": "Sync handled (Status: 400)",
+      "response_time_ms": 3.3690929412841797,
+      "timestamp": "2025-07-02T12:51:39.865083"
+    },
+    {
+      "test_name": "GMB Locations",
+      "status": "PASS",
+      "details": "GMB locations handled (Status: 404)",
+      "response_time_ms": 2.936124801635742,
+      "timestamp": "2025-07-02T12:51:39.868102"
+    },
+    {
+      "test_name": "GMB Reviews",
+      "status": "PASS",
+      "details": "GMB reviews handled (Status: 404)",
+      "response_time_ms": 3.298044204711914,
+      "timestamp": "2025-07-02T12:51:39.871424"
+    },
+    {
+      "test_name": "Unauthorized Access",
+      "status": "PASS",
+      "details": "Properly blocked unauthorized access",
+      "response_time_ms": 1.8680095672607422,
+      "timestamp": "2025-07-02T12:51:39.873328"
+    },
+    {
+      "test_name": "Invalid JSON",
+      "status": "PASS",
+      "details": "Properly rejected invalid JSON",
+      "response_time_ms": 2.0220279693603516,
+      "timestamp": "2025-07-02T12:51:39.875363"
+    },
+    {
+      "test_name": "Invalid Integration ID",
+      "status": "PASS",
+      "details": "Properly returned 404 for invalid ID",
+      "response_time_ms": 2.55584716796875,
+      "timestamp": "2025-07-02T12:51:39.877932"
+    },
+    {
+      "test_name": "Performance Test",
+      "status": "PASS",
+      "details": "Average response time: 3ms",
+      "response_time_ms": 2.677631378173828,
+      "timestamp": "2025-07-02T12:51:39.891362"
+    }
+  ],
+  "generated_at": "2025-07-02T12:51:39.891540"
+}

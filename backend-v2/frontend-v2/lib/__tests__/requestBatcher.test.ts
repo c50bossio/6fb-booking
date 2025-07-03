@@ -345,6 +345,8 @@ describe('RequestBatcher', () => {
 
 describe('Performance Impact', () => {
   test('should reduce total request time for multiple API calls', async () => {
+    jest.useFakeTimers()
+    
     const requestTimes: number[] = []
     
     ;(fetch as jest.Mock).mockImplementation(() => {
@@ -377,5 +379,7 @@ describe('Performance Impact', () => {
     // Batched requests should be faster than sequential requests
     // (3 requests * 50ms each = 150ms sequential vs ~50ms batched)
     expect(totalTime).toBeLessThan(150)
+    
+    jest.useRealTimers()
   })
 })

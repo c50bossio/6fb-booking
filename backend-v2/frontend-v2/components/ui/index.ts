@@ -17,12 +17,14 @@ export { Portal } from './Portal';
 // Loading States
 export { 
   LoadingSpinner, 
-  LoadingSkeleton, 
-  LoadingOverlay, 
-  LoadingCard, 
-  LoadingList, 
-  LoadingTable,
-  withLoading 
+  LoadingDots, 
+  LoadingPulse, 
+  LoadingBar, 
+  Loading,
+  ButtonLoading,
+  CardLoading,
+  InlineLoading,
+  PageLoading 
 } from './LoadingStates';
 
 // Error States

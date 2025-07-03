@@ -18,8 +18,8 @@ import {
 } from 'chart.js'
 import { Line, Bar, Doughnut } from 'react-chartjs-2'
 import { 
-  TrendingUpIcon, 
-  TrendingDownIcon,
+  ArrowTrendingUpIcon, 
+  ArrowTrendingDownIcon,
   ArrowRightIcon,
   ChartBarIcon,
   CurrencyDollarIcon,
@@ -31,6 +31,10 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
+
+// Import AI Components
+import AIInsightsPanel from '@/components/ai/AIInsightsPanel'
+import BenchmarkWidget from '@/components/ai/BenchmarkWidget'
 
 // Register Chart.js components
 ChartJS.register(
@@ -169,7 +173,7 @@ export default function EnhancedAnalyticsDashboard({ userId, timeRange }: Enhanc
   const getInsightIcon = (iconType: string) => {
     switch (iconType) {
       case 'trending-up':
-        return <TrendingUpIcon className="w-5 h-5 text-green-500" />
+        return <ArrowTrendingUpIcon className="w-5 h-5 text-green-500" />
       case 'lightbulb':
         return <LightBulbIcon className="w-5 h-5 text-blue-500" />
       case 'exclamation':
@@ -343,7 +347,7 @@ export default function EnhancedAnalyticsDashboard({ userId, timeRange }: Enhanc
           {['overview', 'revenue', 'performance', 'clients'].map((tab) => (
             <Button
               key={tab}
-              variant={activeTab === tab ? 'default' : 'outline'}
+              variant={activeTab === tab ? 'primary' : 'outline'}
               size="sm"
               onClick={() => setActiveTab(tab)}
               className="capitalize"
@@ -354,9 +358,54 @@ export default function EnhancedAnalyticsDashboard({ userId, timeRange }: Enhanc
         </div>
       </div>
 
-      {/* Real-time Metrics Cards */}
+      {/* AI Insights Panel - Revolutionary Feature */}
+      <div className="mb-8">
+        <AIInsightsPanel 
+          userId={userId} 
+          className="w-full"
+          onInsightClick={(insight) => {
+            console.log('Insight clicked:', insight)
+            // You can add custom insight handling here
+          }}
+        />
+      </div>
+
+      {/* AI-Enhanced Metrics Cards with Industry Benchmarks */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="border-l-4 border-blue-500">
+        {/* Revenue Benchmark Widget */}
+        <BenchmarkWidget
+          metric="revenue"
+          label="Monthly Revenue"
+          value={realTimeMetrics?.month.revenue || 0}
+          unit=""
+          icon={<CurrencyDollarIcon className="w-5 h-5 text-blue-600" />}
+          showDetails={true}
+          className="border-l-4 border-blue-500"
+        />
+
+        {/* Appointment Volume Benchmark Widget */}
+        <BenchmarkWidget
+          metric="appointments"
+          label="Monthly Appointments"
+          value={realTimeMetrics?.month.appointments || 0}
+          icon={<ClockIcon className="w-5 h-5 text-green-600" />}
+          showDetails={true}
+          className="border-l-4 border-green-500"
+        />
+
+        {/* Efficiency Benchmark Widget */}
+        <BenchmarkWidget
+          metric="efficiency"
+          label="Revenue per Appointment"
+          value={realTimeMetrics?.week.avg_per_appointment || 0}
+          unit=""
+          icon={<BoltIcon className="w-5 h-5 text-purple-600" />}
+          showDetails={true}
+          className="border-l-4 border-purple-500"
+        />
+
+        {/* Traditional Today's Revenue Card */}
+        <Card className="border-l-4 border-orange-500">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -368,27 +417,8 @@ export default function EnhancedAnalyticsDashboard({ userId, timeRange }: Enhanc
                   {realTimeMetrics?.today.target_progress}% of daily target
                 </p>
               </div>
-              <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-                <CurrencyDollarIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-green-500">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Today's Appointments</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {realTimeMetrics?.today.appointments}
-                </p>
-                <p className="text-sm text-blue-600 dark:text-blue-400">
-                  ${realTimeMetrics?.week.avg_per_day}/day avg
-                </p>
-              </div>
-              <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-full">
-                <ClockIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-full">
+                <StarIcon className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
             </div>
           </CardContent>
@@ -426,7 +456,7 @@ export default function EnhancedAnalyticsDashboard({ userId, timeRange }: Enhanc
                 </p>
               </div>
               <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-full">
-                <TrendingUpIcon className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                <ArrowTrendingUpIcon className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
             </div>
           </CardContent>

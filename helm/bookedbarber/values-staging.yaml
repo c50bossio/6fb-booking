@@ -1,0 +1,202 @@
+# Staging environment values for BookedBarber V2
+
+app:
+  environment: staging
+
+# Staging-specific image settings
+image:
+  tag: "staging"
+  pullPolicy: Always
+
+# Backend configuration for staging
+backend:
+  replicaCount: 2
+  image:
+    tag: "staging"
+    pullPolicy: Always
+  
+  resources:
+    limits:
+      cpu: 750m
+      memory: 768Mi
+    requests:
+      cpu: 200m
+      memory: 384Mi
+  
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  
+  env:
+    ENVIRONMENT: staging
+    PYTHONUNBUFFERED: "1"
+
+# Frontend configuration for staging
+frontend:
+  replicaCount: 2
+  image:
+    tag: "staging"
+    pullPolicy: Always
+  
+  resources:
+    limits:
+      cpu: 400m
+      memory: 384Mi
+    requests:
+      cpu: 150m
+      memory: 192Mi
+  
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 6
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+# Worker configuration for staging
+worker:
+  replicaCount: 1
+  image:
+    tag: "staging"
+    pullPolicy: Always
+  
+  resources:
+    limits:
+      cpu: 400m
+      memory: 384Mi
+    requests:
+      cpu: 150m
+      memory: 192Mi
+  
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 4
+
+# PostgreSQL for staging
+postgresql:
+  enabled: true
+  auth:
+    username: bookedbarber_staging
+    password: ""  # Should be set via secrets
+    database: bookedbarber_staging
+  
+  primary:
+    persistence:
+      enabled: true
+      size: 10Gi
+    
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 200m
+        memory: 384Mi
+
+# Redis for staging
+redis:
+  enabled: true
+  
+  master:
+    persistence:
+      enabled: true
+      size: 2Gi
+    
+    resources:
+      limits:
+        cpu: 300m
+        memory: 256Mi
+      requests:
+        cpu: 75m
+        memory: 128Mi
+
+# Ingress for staging
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "50"
+    cert-manager.io/cluster-issuer: "letsencrypt-staging"
+  
+  hosts:
+    - host: staging.bookedbarber.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service:
+            name: frontend
+            port: 3000
+        - path: /api
+          pathType: Prefix
+          service:
+            name: backend
+            port: 8000
+  
+  tls:
+    - secretName: staging-bookedbarber-tls
+      hosts:
+        - staging.bookedbarber.com
+
+# Monitoring for staging
+monitoring:
+  enabled: true
+  prometheus:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+  
+  grafana:
+    enabled: true
+
+# Security for staging
+security:
+  networkPolicies:
+    enabled: true
+
+# Resource quotas for staging
+resourceQuota:
+  enabled: true
+  hard:
+    requests.cpu: "2"
+    requests.memory: 4Gi
+    limits.cpu: "4"
+    limits.memory: 8Gi
+    pods: "15"
+
+# Staging secrets configuration
+secrets:
+  create: true
+  database:
+    username: bookedbarber_staging
+    password: ""  # Must be provided via --set-string or external secrets
+    name: bookedbarber_staging
+  
+  # All other secrets must be provided for staging
+  jwt:
+    secretKey: ""
+  
+  stripe:
+    secretKey: ""  # Use test keys for staging
+    publishableKey: ""
+    webhookSecret: ""
+  
+  sendgrid:
+    apiKey: ""
+  
+  twilio:
+    accountSid: ""
+    authToken: ""
+  
+  google:
+    clientId: ""
+    clientSecret: ""
+  
+  sentry:
+    dsn: ""
+    publicDsn: ""

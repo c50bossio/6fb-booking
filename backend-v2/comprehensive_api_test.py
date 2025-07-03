@@ -249,7 +249,7 @@ class APITester:
         print("Testing rate limiting...")
         for i in range(10):
             login_data = {
-                "username": "test@example.com",
+                "email": "test@example.com",
                 "password": "wrongpassword"
             }
             response = self.make_request("POST", "/auth/login", login_data, expected_status=401)

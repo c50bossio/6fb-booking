@@ -143,7 +143,7 @@ export const OptimizedImage = React.forwardRef<HTMLImageElement, OptimizedImageP
 
   return (
     <div
-      ref={lazyLoading ? elementRef : undefined}
+      ref={lazyLoading ? (elementRef as any) : undefined}
       className={cn('relative overflow-hidden', className)}
       data-lazy-id={`optimized-image-${src}`}
     >

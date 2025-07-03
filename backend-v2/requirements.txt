@@ -13,6 +13,7 @@ httpx==0.26.0
 stripe==7.12.0
 slowapi==0.1.9
 pytz==2024.1
+bleach==6.1.0
 
 # Google Calendar Integration
 google-api-python-client==2.114.0
@@ -35,6 +36,9 @@ reportlab==4.0.9
 # Analytics and A/B testing
 scipy==1.12.0
 numpy==1.26.4
+
+# Error tracking and monitoring
+sentry-sdk[fastapi]==1.40.6
 
 # Development only
 pytest>=7.0.0,<8.0.0

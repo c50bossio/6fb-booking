@@ -36,6 +36,12 @@ RATE_LIMITS = {
     "pos_transaction": "150/minute" if is_development else "50/minute", # POS transactions
     "commission_report": "60/minute" if is_development else "20/minute", # Commission reports
     "stripe_connect": "30/hour" if is_development else "10/hour",   # Stripe Connect operations
+    # Booking/Appointment rate limits
+    "booking_create": "50/hour" if is_development else "30/hour",   # Authenticated booking creation
+    "guest_booking": "10/hour" if is_development else "3/hour",     # Stricter limit for guest bookings
+    "booking_slots": "100/minute" if is_development else "60/minute", # Checking availability
+    "booking_reschedule": "30/hour" if is_development else "20/hour", # Rescheduling appointments
+    "booking_cancel": "30/hour" if is_development else "20/hour",   # Cancelling appointments
     "default": "200/minute" if is_development else "60/minute"         # Higher default in dev
 }
 
@@ -64,4 +70,10 @@ order_create_rate_limit = limiter.limit(RATE_LIMITS["order_create"])
 pos_transaction_rate_limit = limiter.limit(RATE_LIMITS["pos_transaction"])
 commission_report_rate_limit = limiter.limit(RATE_LIMITS["commission_report"])
 stripe_connect_rate_limit = limiter.limit(RATE_LIMITS["stripe_connect"])
+# Booking/Appointment rate limits
+booking_create_rate_limit = limiter.limit(RATE_LIMITS["booking_create"])
+guest_booking_rate_limit = limiter.limit(RATE_LIMITS["guest_booking"])
+booking_slots_rate_limit = limiter.limit(RATE_LIMITS["booking_slots"])
+booking_reschedule_rate_limit = limiter.limit(RATE_LIMITS["booking_reschedule"])
+booking_cancel_rate_limit = limiter.limit(RATE_LIMITS["booking_cancel"])
 default_rate_limit = limiter.limit(RATE_LIMITS["default"])

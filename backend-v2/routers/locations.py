@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from database import get_db
 from utils.auth import get_current_user
+from utils.authorization import verify_location_access, get_user_locations
 from models import User
 from location_models import BarbershopLocation, LocationStatus
 from location_schemas import LocationResponse, LocationCreate, LocationUpdate
@@ -32,16 +33,18 @@ async def get_locations(
     try:
         logger.info(f"Getting locations for user {current_user.id} (role: {current_user.role})")
         
-        # Admin users can see all locations
-        if current_user.role in ['admin', 'enterprise_admin']:
-            locations = db.query(BarbershopLocation).filter(
-                BarbershopLocation.status == LocationStatus.ACTIVE
-            ).all()
-        else:
-            # For now, regular users see all locations (implement proper filtering later)
-            locations = db.query(BarbershopLocation).filter(
-                BarbershopLocation.status == LocationStatus.ACTIVE
-            ).all()
+        # Get user's accessible location IDs
+        user_location_ids = get_user_locations(current_user, db)
+        
+        if not user_location_ids:
+            # User has no accessible locations
+            return []
+        
+        # Filter locations by user's access
+        locations = db.query(BarbershopLocation).filter(
+            BarbershopLocation.status == LocationStatus.ACTIVE,
+            BarbershopLocation.id.in_(user_location_ids)
+        ).all()
         
         # Convert to response format and add calculated fields
         location_responses = []
@@ -89,6 +92,7 @@ async def get_locations(
 
 
 @router.get("/{location_id}", response_model=LocationResponse)
+@verify_location_access()
 async def get_location(
     location_id: int,
     current_user: User = Depends(get_current_user),
@@ -225,17 +229,19 @@ async def create_location(
 
 
 @router.put("/{location_id}", response_model=LocationResponse)
+@verify_location_access(allow_owner=True, allow_manager=True)
 async def update_location(
     location_id: int,
     location_data: LocationUpdate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Update a location (admin only)"""
-    if current_user.role not in ['admin', 'enterprise_admin']:
+    """Update a location (admin, owner, or manager only)"""
+    # Additional role check for non-location-specific access
+    if current_user.role not in ['admin', 'enterprise_admin', 'barber', 'user']:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only admin users can update locations"
+            detail="Insufficient permissions"
         )
     
     try:
@@ -302,16 +308,18 @@ async def update_location(
 
 
 @router.delete("/{location_id}")
+@verify_location_access(allow_owner=True, allow_manager=False)
 async def delete_location(
     location_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Soft delete a location (admin only)"""
-    if current_user.role not in ['admin', 'enterprise_admin']:
+    """Soft delete a location (admin or owner only)"""
+    # Additional role check for non-location-specific access
+    if current_user.role not in ['admin', 'enterprise_admin', 'user']:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only admin users can delete locations"
+            detail="Only admin users or location owners can delete locations"
         )
     
     try:

@@ -130,11 +130,11 @@ export const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
               disabled && 'cursor-not-allowed opacity-50',
               inputClassName
             )}
-            aria-invalid={showError}
+            aria-invalid={!!showError}
             aria-describedby={
               showError ? `${props.id}-error` : helperText ? `${props.id}-helper` : undefined
             }
-            {...props}
+            {...(({ size, ...rest }) => rest)(props)}
           />
           
           {(renderRightIcon() || showValidating || showError || showSuccessState) && (

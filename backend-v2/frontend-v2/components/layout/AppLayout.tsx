@@ -7,6 +7,7 @@ import { ThemeProvider } from '@/lib/theme-provider'
 import { Sidebar } from './Sidebar'
 import { MobileNavigation } from './MobileNavigation'
 import { Header } from './Header'
+import Footer from './Footer'
 import { useResponsive } from '@/hooks/useResponsive'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { TestDataIndicator } from '@/components/TestDataIndicator'
@@ -21,7 +22,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { isMobile } = useResponsive()
 
   // Define public routes that don't require authentication
-  const publicRoutes = ['/', '/login', '/register', '/forgot-password', '/reset-password']
+  const publicRoutes = ['/', '/login', '/register', '/forgot-password', '/reset-password', '/terms', '/privacy', '/cookies']
   const isPublicRoute = publicRoutes.includes(pathname) || pathname.startsWith('/reset-password/')
 
   const [user, setUser] = useState<User | null>(null)
@@ -263,10 +264,16 @@ export function AppLayout({ children }: AppLayoutProps) {
 
         {/* Public Route Layout - Simple layout for login, register, etc. */}
         {isPublicRoute && (
-          <div className="min-h-screen">
-            <ErrorBoundary>
-              {children}
-            </ErrorBoundary>
+          <div className="min-h-screen flex flex-col">
+            <div className="flex-1">
+              <ErrorBoundary>
+                {children}
+              </ErrorBoundary>
+            </div>
+            {/* Show footer on legal pages */}
+            {(pathname === '/terms' || pathname === '/privacy' || pathname === '/cookies') && (
+              <Footer variant="minimal" />
+            )}
           </div>
         )}
         

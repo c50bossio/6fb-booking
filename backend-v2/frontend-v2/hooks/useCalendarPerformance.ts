@@ -67,11 +67,11 @@ export function useCalendarPerformance(): CalendarPerformanceHook {
       }
       
       // Only log slow renders occasionally to reduce performance impact
-      if (process.env.NODE_ENV === 'development' && renderTime > 50) {
-        // Throttle console warnings to max once per 5 seconds
+      if (process.env.NODE_ENV === 'development' && renderTime > 100) {
+        // Throttle console warnings to max once per 10 seconds for critical performance issues
         const lastWarn = renderTimersRef.current.get(`${componentName}_lastWarn`) || 0
-        if (now - lastWarn > 5000) {
-          console.warn(`Slow render detected: ${componentName} took ${renderTime.toFixed(2)}ms (Cache hit rate: ${cacheHitRate.toFixed(1)}%)`)
+        if (now - lastWarn > 10000) {
+          console.warn(`Critical render performance: ${componentName} took ${renderTime.toFixed(2)}ms (Cache hit rate: ${cacheHitRate.toFixed(1)}%)`)
           renderTimersRef.current.set(`${componentName}_lastWarn`, now)
         }
       }
@@ -242,12 +242,17 @@ export function useCalendarPerformance(): CalendarPerformanceHook {
             cacheHitRate: metricsRef.current?.cacheHitRate || 0
           }
           
-          // Warn if memory usage is high
-          if (memInfo.usedJSHeapSize > 75 * 1024 * 1024) { // Reduced threshold to 75MB
-            console.warn('High memory usage detected:', Math.round(memInfo.usedJSHeapSize / 1024 / 1024), 'MB')
+          // Warn if memory usage is critical
+          if (memInfo.usedJSHeapSize > 100 * 1024 * 1024) { // 100MB threshold
+            // Only warn once per minute to reduce noise
+            const lastMemWarn = renderTimersRef.current.get('memory_warn') || 0
+            if (now - lastMemWarn > 60000) {
+              console.warn('High memory usage detected:', Math.round(memInfo.usedJSHeapSize / 1024 / 1024), 'MB')
+              renderTimersRef.current.set('memory_warn', now)
+            }
             
             // Trigger emergency cleanup if memory usage is critical
-            if (memInfo.usedJSHeapSize > 150 * 1024 * 1024) { // 150MB critical threshold
+            if (memInfo.usedJSHeapSize > 200 * 1024 * 1024) { // 200MB critical threshold
               console.warn('Critical memory usage - triggering emergency cleanup')
               clearCache()
             }
@@ -350,7 +355,7 @@ export function useCalendarPerformance(): CalendarPerformanceHook {
       
       // Emergency cache clearing if size grows too large
       if (cacheRef.current.size > 100) {
-        console.warn('Calendar cache size exceeded safe limits, performing emergency clear')
+        // Emergency cache clear due to size limits
         clearCache()
       }
     }, 60000) // Check every minute
@@ -386,7 +391,7 @@ export function useCalendarPerformance(): CalendarPerformanceHook {
       metricsRef.current = null
       
       if (process.env.NODE_ENV === 'development') {
-        console.log('Calendar performance hook cleaned up successfully')
+        // Calendar performance hook cleaned up successfully
       }
     }
   }, [])
@@ -395,7 +400,7 @@ export function useCalendarPerformance(): CalendarPerformanceHook {
   useEffect(() => {
     if (typeof window !== 'undefined' && 'memory' in performance) {
       const handleMemoryPressure = () => {
-        console.warn('Memory pressure detected, clearing calendar cache')
+        // Memory pressure detected, clearing calendar cache
         clearCache()
       }
       

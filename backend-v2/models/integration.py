@@ -30,8 +30,11 @@ class IntegrationType(enum.Enum):
     SENDGRID = "sendgrid"
     TWILIO = "twilio"
     SQUARE = "square"
+    SHOPIFY = "shopify"
     ACUITY = "acuity"
     BOOKSY = "booksy"
+    EMAIL_MARKETING = "email_marketing"
+    SMS_MARKETING = "sms_marketing"
     CUSTOM = "custom"
 
 
@@ -42,6 +45,7 @@ class IntegrationStatus(enum.Enum):
     ERROR = "error"
     PENDING = "pending"
     EXPIRED = "expired"
+    SUSPENDED = "suspended"
 
 
 class Integration(Base):
@@ -78,6 +82,7 @@ class Integration(Base):
     last_error = Column(Text, nullable=True)
     error_count = Column(Integer, default=0)
     health_check_data = Column(JSON, default=dict)  # Latest health check results
+    last_health_check = Column(DateTime, nullable=True)  # When health check was last performed
     
     # Metadata
     is_active = Column(Boolean, default=True)
@@ -113,6 +118,7 @@ class Integration(Base):
     def update_health_check(self, health_data: dict):
         """Update health check data"""
         self.health_check_data = health_data
+        self.last_health_check = utcnow()
         self.updated_at = utcnow()
         
         # Update status based on health check

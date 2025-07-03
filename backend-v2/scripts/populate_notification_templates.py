@@ -10,8 +10,8 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
 from sqlalchemy.orm import Session
-from database import SessionLocal, engine
-from models import NotificationTemplate, Base
+from database import SessionLocal, engine, Base
+from models import NotificationTemplate
 import logging
 
 logging.basicConfig(level=logging.INFO)

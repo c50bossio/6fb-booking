@@ -14,9 +14,7 @@ def create_barber_availability():
             from utils.auth import get_password_hash
             barber = User(
                 email="barber@6fb.com",
-                username="barber@6fb.com", 
-                first_name="Test",
-                last_name="Barber",
+                name="Test Barber",
                 role="barber",
                 is_active=True,
                 hashed_password=get_password_hash("Barber123!")

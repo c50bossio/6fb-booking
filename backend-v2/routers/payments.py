@@ -5,6 +5,11 @@ from datetime import datetime
 from database import get_db
 from services.payment_service import PaymentService
 from utils.rate_limit import payment_intent_rate_limit, payment_confirm_rate_limit, refund_rate_limit, payout_rate_limit
+from utils.financial_rate_limit import (
+    gift_certificate_create_limit, gift_certificate_validate_limit,
+    stripe_connect_limit, payment_history_limit, payment_report_limit,
+    financial_rate_limit, financial_endpoint_security
+)
 from utils.idempotency import idempotent_operation, get_current_user_id
 from schemas import (
     PaymentIntentCreate, PaymentIntentResponse, PaymentConfirm, PaymentResponse,
@@ -228,6 +233,7 @@ def create_refund(
         )
 
 @router.post("/gift-certificates", response_model=GiftCertificateResponse)
+@gift_certificate_create_limit
 @idempotent_operation(
     operation_type="gift_certificate_create",
     ttl_hours=24,
@@ -262,7 +268,9 @@ def create_gift_certificate(
         )
 
 @router.post("/gift-certificates/validate")
+@gift_certificate_validate_limit
 def validate_gift_certificate(
+    request: Request,
     validation_data: GiftCertificateValidate,
     db: Session = Depends(get_db)
 ):
@@ -292,7 +300,9 @@ def validate_gift_certificate(
         )
 
 @router.get("/history", response_model=PaymentHistoryResponse)
+@payment_history_limit
 def get_payment_history(
+    request: Request,
     user_id: Optional[int] = Query(None, description="Filter by user ID"),
     barber_id: Optional[int] = Query(None, description="Filter by barber ID"),
     start_date: Optional[datetime] = Query(None, description="Start date filter"),
@@ -337,7 +347,9 @@ def get_payment_history(
         )
 
 @router.post("/reports", response_model=PaymentReportResponse)
+@payment_report_limit
 def generate_payment_report(
+    request: Request,
     report_request: PaymentReportRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -478,7 +490,9 @@ def process_enhanced_payout(
         )
 
 @router.get("/gift-certificates", response_model=List[GiftCertificateResponse])
+@financial_rate_limit("payment_history")
 def list_gift_certificates(
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -501,7 +515,9 @@ def list_gift_certificates(
         )
 
 @router.post("/stripe-connect/onboard", response_model=StripeConnectOnboardingResponse)
+@stripe_connect_limit
 def create_stripe_connect_account(
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -528,7 +544,9 @@ def create_stripe_connect_account(
         )
 
 @router.get("/stripe-connect/status", response_model=StripeConnectStatusResponse)
+@financial_rate_limit("payment_history", error_message="Too many status checks. Please wait before checking again.")
 def get_stripe_connect_status(
+    request: Request,
     current_user: User = Depends(get_current_user)
 ):
     """Get Stripe Connect account status for current user"""

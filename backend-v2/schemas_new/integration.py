@@ -3,7 +3,7 @@ Pydantic schemas for integration management.
 Handles validation for OAuth flows, health checks, and integration CRUD operations.
 """
 
-from pydantic import BaseModel, Field, validator, HttpUrl
+from pydantic import BaseModel, Field, field_validator, HttpUrl
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
@@ -19,6 +19,8 @@ class IntegrationType(str, Enum):
     SQUARE = "square"
     ACUITY = "acuity"
     BOOKSY = "booksy"
+    EMAIL_MARKETING = "email_marketing"
+    SMS_MARKETING = "sms_marketing"
     CUSTOM = "custom"
 
 
@@ -29,6 +31,7 @@ class IntegrationStatus(str, Enum):
     ERROR = "error"
     PENDING = "pending"
     EXPIRED = "expired"
+    SUSPENDED = "suspended"
 
 
 class IntegrationBase(BaseModel):
@@ -45,7 +48,8 @@ class IntegrationCreate(IntegrationBase):
     api_secret: Optional[str] = Field(None, description="API secret for non-OAuth integrations")
     webhook_url: Optional[HttpUrl] = Field(None, description="Webhook URL for receiving events")
     
-    @validator('name')
+    @field_validator('name')
+    @classmethod
     def validate_name(cls, v):
         if not v.strip():
             raise ValueError('Integration name cannot be empty')
@@ -59,7 +63,8 @@ class IntegrationUpdate(BaseModel):
     is_active: Optional[bool] = None
     webhook_url: Optional[HttpUrl] = None
     
-    @validator('name')
+    @field_validator('name')
+    @classmethod
     def validate_name(cls, v):
         if v is not None and not v.strip():
             raise ValueError('Integration name cannot be empty')
@@ -83,11 +88,14 @@ class IntegrationResponse(IntegrationBase):
     class Config:
         from_attributes = True
         
-    @validator('is_connected', pre=False, always=True)
-    def compute_is_connected(cls, v, values):
+    @field_validator('is_connected')
+    @classmethod
+    def compute_is_connected(cls, v, info):
         """Determine if integration is properly connected"""
-        status = values.get('status')
-        return status in [IntegrationStatus.ACTIVE, IntegrationStatus.PENDING]
+        if info.data:
+            status = info.data.get('status')
+            return status in [IntegrationStatus.ACTIVE, IntegrationStatus.PENDING]
+        return v
 
 
 class OAuthInitiateRequest(BaseModel):

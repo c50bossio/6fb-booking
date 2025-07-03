@@ -1,0 +1,40 @@
+apiVersion: v2
+name: bookedbarber
+description: A Helm chart for BookedBarber V2 - Comprehensive booking platform for barber shops
+type: application
+version: 2.0.0
+appVersion: "2.0.0"
+
+keywords:
+  - booking
+  - barbershop
+  - fastapi
+  - nextjs
+  - postgresql
+  - redis
+  - celery
+
+home: https://bookedbarber.com
+sources:
+  - https://github.com/yourusername/bookedbarber-v2
+
+maintainers:
+  - name: BookedBarber Team
+    email: admin@bookedbarber.com
+
+dependencies:
+  - name: postgresql
+    version: "12.x.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+  - name: redis
+    version: "17.x.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+  - name: nginx-ingress
+    version: "4.x.x"
+    repository: https://kubernetes.github.io/ingress-nginx
+    condition: ingress.enabled
+
+annotations:
+  category: Application

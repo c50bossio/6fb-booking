@@ -51,7 +51,7 @@ def test_login_user(client, db: Session, disable_rate_limiting):
     response = client.post(
         "/api/v1/auth/login",
         json={
-            "username": "logintest@example.com",
+            "email": "logintest@example.com",
             "password": "testpass123"
         }
     )
@@ -82,7 +82,7 @@ def test_get_current_user(client, db: Session, disable_rate_limiting):
     login_response = client.post(
         "/api/v1/auth/login",
         json={
-            "username": "currentuser@example.com",
+            "email": "currentuser@example.com",
             "password": "testpass123"
         }
     )
@@ -110,7 +110,7 @@ def test_invalid_login(client, disable_rate_limiting):
     response = client.post(
         "/api/v1/auth/login",
         json={
-            "username": "wrong@example.com",
+            "email": "wrong@example.com",
             "password": "wrongpass"
         }
     )

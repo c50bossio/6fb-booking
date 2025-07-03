@@ -22,9 +22,14 @@ class User(Base):
     phone = Column(String, nullable=True)  # For SMS notifications
     hashed_password = Column(String)
     role = Column(String, default="user")  # user, barber, admin
-    timezone = Column(String(50), default='UTC')
+    timezone = Column(String(50), default='UTC')  # Legacy field, kept for backward compatibility
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=utcnow)
+    
+    # Enhanced timezone support
+    timezone_preference = Column(String(50), nullable=True, index=True)  # User's preferred timezone
+    auto_detect_timezone = Column(Boolean, default=True)  # Whether to auto-detect timezone
+    timezone_last_updated = Column(DateTime, nullable=True)  # When timezone was last updated
     
     # Stripe Connect fields for barbers
     stripe_account_id = Column(String, nullable=True)  # Stripe Connect account ID
@@ -38,12 +43,19 @@ class User(Base):
     # Test data flag
     is_test_data = Column(Boolean, default=False)
     
+    # Location for multi-tenancy
+    location_id = Column(Integer, ForeignKey("barbershop_locations.id"), nullable=True)
+    
     # Relationships
     appointments = relationship("Appointment", back_populates="user", foreign_keys="Appointment.user_id")
     payments = relationship("Payment", back_populates="user", foreign_keys="Payment.user_id")
     password_reset_tokens = relationship("PasswordResetToken", back_populates="user")
     payouts = relationship("Payout", back_populates="barber")
     gift_certificates_created = relationship("GiftCertificate", back_populates="created_by")
+    api_keys = relationship("APIKey", back_populates="user", foreign_keys="APIKey.user_id", cascade="all, delete-orphan")
+    # AI Analytics relationships
+    ai_insights = relationship("AIInsightCache", back_populates="user", cascade="all, delete-orphan")
+    bi_reports = relationship("BusinessIntelligenceReport", back_populates="user", cascade="all, delete-orphan")
     # Location relationships
     # Note: need to use string reference since BarbershopLocation is defined in location_models.py
     # locations = relationship("BarbershopLocation", secondary="barber_locations", back_populates="barbers")
@@ -56,7 +68,7 @@ class Appointment(Base):
     barber_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # The assigned barber
     client_id = Column(Integer, ForeignKey("clients.id"), nullable=True)
     service_id = Column(Integer, ForeignKey("services.id"), nullable=True)  # Link to new Service model
-    # location_id = Column(Integer, ForeignKey("barbershop_locations.id"), nullable=True)  # Location where service performed (added via migration)
+    location_id = Column(Integer, ForeignKey("barbershop_locations.id"), nullable=True)  # Location where service performed
     service_name = Column(String)  # Keep for backwards compatibility
     start_time = Column(DateTime)
     duration_minutes = Column(Integer)
@@ -72,11 +84,23 @@ class Appointment(Base):
     # Google Calendar integration
     google_event_id = Column(String, nullable=True)  # Google Calendar event ID for sync
     
+    # Timezone tracking for appointments
+    created_timezone = Column(String(50), nullable=True, index=True)  # Timezone when appointment was created
+    user_timezone = Column(String(50), nullable=True, index=True)  # User's timezone at booking time
+    display_timezone = Column(String(50), nullable=True, index=True)  # Preferred timezone for display
+    
     # Recurring appointment tracking
     recurring_pattern_id = Column(Integer, ForeignKey("recurring_appointment_patterns.id"), nullable=True)
+    recurring_series_id = Column(Integer, ForeignKey("recurring_appointment_series.id"), nullable=True)
+    is_recurring_instance = Column(Boolean, default=False)
+    original_scheduled_date = Column(Date, nullable=True)  # Track original date if rescheduled
+    recurrence_sequence = Column(Integer, nullable=True)  # Position in recurring series (1st, 2nd, etc.)
     
     # Test data flag
     is_test_data = Column(Boolean, default=False)
+    
+    # Optimistic concurrency control
+    version = Column(Integer, default=1, nullable=False)
     
     # Relationships
     user = relationship("User", back_populates="appointments", foreign_keys=[user_id])
@@ -85,6 +109,7 @@ class Appointment(Base):
     service = relationship("Service", backref="appointments")
     payment = relationship("Payment", back_populates="appointment", uselist=False)
     recurring_pattern = relationship("RecurringAppointmentPattern", backref="appointments")
+    recurring_series = relationship("RecurringAppointmentSeries", back_populates="appointments")
 
 class Payment(Base):
     __tablename__ = "payments"
@@ -93,7 +118,7 @@ class Payment(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     appointment_id = Column(Integer, ForeignKey("appointments.id"))
     barber_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    # location_id = Column(Integer, ForeignKey("barbershop_locations.id"), nullable=True)  # Location where payment made (added via migration)
+    location_id = Column(Integer, ForeignKey("barbershop_locations.id"), nullable=True)  # Location where payment made
     amount = Column(Float)
     status = Column(String, default="pending")  # pending, completed, failed, refunded, partially_refunded
     stripe_payment_id = Column(String, nullable=True)
@@ -156,6 +181,11 @@ class BookingSettings(Base):
     business_name = Column(String, default="Default Business")
     business_phone = Column(String, nullable=True)  # Business phone for notifications
     business_timezone = Column(String(50), default="America/New_York")  # Business timezone
+    
+    # Enhanced timezone settings
+    default_user_timezone = Column(String(50), nullable=True, default="UTC")  # Default timezone for new users
+    allowed_timezones = Column(JSON, nullable=True)  # List of allowed timezones for this business
+    timezone_auto_detect = Column(Boolean, default=True)  # Whether to enable timezone auto-detection
     
     # Lead time configuration
     min_lead_time_minutes = Column(Integer, default=15)  # Minimum booking advance time
@@ -272,6 +302,9 @@ class Client(Base):
     
     # Barber relationship (for backwards compatibility with V1)
     barber_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # The barber who manages this client
+    
+    # Location for multi-tenancy
+    location_id = Column(Integer, ForeignKey("barbershop_locations.id"), nullable=True)
     
     # Communication Preferences
     communication_preferences = Column(JSON, default=dict)  # {sms: true, email: true, marketing: false}
@@ -449,6 +482,12 @@ class Service(Base):
     # Display
     display_order = Column(Integer, default=0)
     image_url = Column(String, nullable=True)
+    
+    # Location for multi-tenancy
+    location_id = Column(Integer, ForeignKey("barbershop_locations.id"), nullable=True)
+    
+    # Legacy field for backward compatibility - specific barber's service
+    barber_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     
     # Metadata
     created_at = Column(DateTime, default=utcnow)
@@ -841,7 +880,7 @@ class BarberSpecialAvailability(Base):
 
 # Recurring Appointment Models
 class RecurringAppointmentPattern(Base):
-    """Patterns for recurring appointments"""
+    """Enhanced patterns for recurring appointments with advanced features"""
     __tablename__ = "recurring_appointment_patterns"
     
     id = Column(Integer, primary_key=True, index=True)
@@ -849,28 +888,51 @@ class RecurringAppointmentPattern(Base):
     barber_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     client_id = Column(Integer, ForeignKey("clients.id"), nullable=True)
     service_id = Column(Integer, ForeignKey("services.id"), nullable=True)
+    location_id = Column(Integer, ForeignKey("barbershop_locations.id"), nullable=True)
     
-    # Pattern details
-    pattern_type = Column(String, nullable=False)  # daily, weekly, biweekly, monthly
+    # Enhanced pattern details
+    pattern_type = Column(String, nullable=False)  # daily, weekly, biweekly, monthly, custom
     
-    # For weekly/biweekly: days of week (stored as comma-separated or JSON)
+    # Custom intervals for advanced patterns
+    interval_value = Column(Integer, default=1)  # Every N days/weeks/months
+    interval_unit = Column(String, nullable=True)  # days, weeks, months
+    
+    # For weekly/biweekly: days of week (stored as JSON)
     days_of_week = Column(JSON, nullable=True)  # [1, 3, 5] for Mon, Wed, Fri
     
     # For monthly: day of month or week position
     day_of_month = Column(Integer, nullable=True)  # 15 for 15th of each month
     week_of_month = Column(Integer, nullable=True)  # 1-4 for 1st-4th week
+    weekday_of_month = Column(Integer, nullable=True)  # 0-6 for specific weekday in week_of_month
     
     # Time and duration
     preferred_time = Column(Time, nullable=False)
     duration_minutes = Column(Integer, nullable=False)
+    buffer_time_before = Column(Integer, default=0)  # Buffer before appointment
+    buffer_time_after = Column(Integer, default=0)   # Buffer after appointment
     
     # Recurrence range
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=True)  # NULL means no end
     occurrences = Column(Integer, nullable=True)  # Alternative to end_date
     
+    # Exception handling
+    exclude_holidays = Column(Boolean, default=False)  # Skip national holidays
+    exclude_weekends = Column(Boolean, default=False)  # Skip Saturday/Sunday
+    reschedule_on_conflict = Column(Boolean, default=True)  # Auto-reschedule conflicts
+    max_advance_days = Column(Integer, default=90)  # Don't create appointments more than N days ahead
+    
+    # Pricing override for series
+    series_discount_percent = Column(Float, nullable=True)  # Discount for recurring series
+    series_price_override = Column(Float, nullable=True)  # Fixed price for series
+    
     # Status and metadata
     is_active = Column(Boolean, default=True)
+    last_generated_date = Column(Date, nullable=True)  # Last date appointments were generated
+    total_generated = Column(Integer, default=0)  # Total appointments generated
+    total_completed = Column(Integer, default=0)  # Total appointments completed
+    generation_notes = Column(Text, nullable=True)  # Notes about generation issues
+    
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     
@@ -879,12 +941,236 @@ class RecurringAppointmentPattern(Base):
     barber = relationship("User", foreign_keys=[barber_id])
     client = relationship("Client", backref="recurring_patterns")
     service = relationship("Service", backref="recurring_patterns")
+    exceptions = relationship("RecurringAppointmentException", back_populates="pattern", cascade="all, delete-orphan")
     # appointments = relationship("Appointment", backref="recurring_pattern")  # Disabled for current schema
+    
+    def get_effective_price(self, base_price: float) -> float:
+        """Calculate effective price considering series discounts"""
+        if self.series_price_override:
+            return self.series_price_override
+        if self.series_discount_percent:
+            return base_price * (1 - self.series_discount_percent / 100)
+        return base_price
+    
+    def is_weekend_day(self, check_date: date) -> bool:
+        """Check if given date is a weekend day"""
+        return check_date.weekday() in [5, 6]  # Saturday=5, Sunday=6
+    
+    def should_exclude_date(self, check_date: date) -> bool:
+        """Check if date should be excluded based on pattern rules"""
+        if self.exclude_weekends and self.is_weekend_day(check_date):
+            return True
+        
+        # Check for holidays (would need holiday service)
+        if self.exclude_holidays:
+            # This would integrate with a holiday service
+            pass
+            
+        return False
+
+
+class RecurringAppointmentException(Base):
+    """Exceptions and modifications to recurring appointment patterns"""
+    __tablename__ = "recurring_appointment_exceptions"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    pattern_id = Column(Integer, ForeignKey("recurring_appointment_patterns.id"), nullable=False)
+    
+    # Exception details
+    exception_date = Column(Date, nullable=False, index=True)
+    exception_type = Column(String, nullable=False)  # skip, reschedule, modify, cancel
+    
+    # For reschedule/modify exceptions
+    new_date = Column(Date, nullable=True)
+    new_time = Column(Time, nullable=True)
+    new_duration = Column(Integer, nullable=True)
+    new_barber_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    new_service_id = Column(Integer, ForeignKey("services.id"), nullable=True)
+    
+    # Reason and notes
+    reason = Column(String, nullable=True)  # holiday, vacation, conflict, etc.
+    notes = Column(Text, nullable=True)
+    
+    # Metadata
+    created_at = Column(DateTime, default=utcnow)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    
+    # Relationships
+    pattern = relationship("RecurringAppointmentPattern", back_populates="exceptions")
+    new_barber = relationship("User", foreign_keys=[new_barber_id])
+    new_service = relationship("Service", foreign_keys=[new_service_id])
+    created_by = relationship("User", foreign_keys=[created_by_id])
+    
+    # Unique constraint to prevent duplicate exceptions for same date
+    __table_args__ = (
+        Index('idx_pattern_exception_date', 'pattern_id', 'exception_date', unique=True),
+    )
+
+
+class RecurringAppointmentConflict(Base):
+    """Track conflicts in recurring appointment generation"""
+    __tablename__ = "recurring_appointment_conflicts"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    pattern_id = Column(Integer, ForeignKey("recurring_appointment_patterns.id"), nullable=False)
+    
+    # Conflict details
+    conflict_date = Column(Date, nullable=False, index=True)
+    conflict_time = Column(Time, nullable=False)
+    conflict_type = Column(String, nullable=False)  # barber_unavailable, double_booking, holiday, etc.
+    
+    # Conflict resolution
+    resolution_status = Column(String, default="pending")  # pending, resolved, ignored
+    resolution_type = Column(String, nullable=True)  # reschedule, skip, manual
+    resolved_date = Column(Date, nullable=True)
+    resolved_time = Column(Time, nullable=True)
+    
+    # Details
+    conflict_details = Column(JSON, nullable=True)  # Additional conflict information
+    resolution_notes = Column(Text, nullable=True)
+    
+    # Metadata
+    detected_at = Column(DateTime, default=utcnow)
+    resolved_at = Column(DateTime, nullable=True)
+    resolved_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    
+    # Relationships
+    pattern = relationship("RecurringAppointmentPattern", backref="conflicts")
+    resolved_by = relationship("User", foreign_keys=[resolved_by_id])
+
+
+class HolidayCalendar(Base):
+    """Holiday calendar for excluding dates from recurring patterns"""
+    __tablename__ = "holiday_calendar"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Holiday details
+    name = Column(String, nullable=False)
+    holiday_date = Column(Date, nullable=False, index=True)
+    holiday_type = Column(String, nullable=False)  # national, regional, business, custom
+    
+    # Geographic scope
+    country_code = Column(String(2), nullable=True)  # ISO country code
+    region_code = Column(String(10), nullable=True)  # State/province code
+    location_id = Column(Integer, ForeignKey("barbershop_locations.id"), nullable=True)  # Business-specific
+    
+    # Recurrence (for annual holidays)
+    is_recurring = Column(Boolean, default=False)
+    recurrence_rule = Column(String, nullable=True)  # RRULE format for complex recurrence
+    
+    # Business impact
+    affects_appointments = Column(Boolean, default=True)
+    affects_availability = Column(Boolean, default=True)
+    business_closure = Column(Boolean, default=False)
+    
+    # Metadata
+    description = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=utcnow)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    
+    # Relationships
+    created_by = relationship("User", foreign_keys=[created_by_id])
+    
+    # Unique constraint for date/location combination
+    __table_args__ = (
+        Index('idx_holiday_date_location', 'holiday_date', 'location_id'),
+    )
+
+
+class BlackoutDate(Base):
+    """Blackout dates for preventing bookings on specific dates"""
+    __tablename__ = "blackout_dates"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    location_id = Column(Integer, ForeignKey("barbershop_locations.id"), nullable=True)
+    barber_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # Barber-specific blackout
+    
+    # Date range
+    blackout_date = Column(Date, nullable=False, index=True)
+    end_date = Column(Date, nullable=True)  # For multi-day blackouts
+    
+    # Time range (optional - for partial day blackouts)
+    start_time = Column(Time, nullable=True)
+    end_time = Column(Time, nullable=True)
+    
+    # Blackout details
+    reason = Column(String, nullable=False)  # vacation, training, maintenance, etc.
+    blackout_type = Column(String, default="full_day")  # full_day, partial_day, recurring
+    
+    # Recurring blackout settings
+    is_recurring = Column(Boolean, default=False)
+    recurrence_pattern = Column(String, nullable=True)  # weekly, monthly, annually
+    recurrence_end_date = Column(Date, nullable=True)
+    
+    # Business rules
+    allow_emergency_bookings = Column(Boolean, default=False)
+    affects_existing_appointments = Column(Boolean, default=True)
+    auto_reschedule = Column(Boolean, default=False)
+    
+    # Metadata
+    description = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=utcnow)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    is_active = Column(Boolean, default=True)
+    
+    # Relationships
+    location = relationship("BarbershopLocation", backref="blackout_dates")
+    barber = relationship("User", foreign_keys=[barber_id], backref="barber_blackouts")
+    created_by = relationship("User", foreign_keys=[created_by_id])
+    
+    # Indexes for efficient queries
+    __table_args__ = (
+        Index('idx_blackout_date_location', 'blackout_date', 'location_id'),
+        Index('idx_blackout_date_barber', 'blackout_date', 'barber_id'),
+    )
+
+
+class RecurringAppointmentSeries(Base):
+    """Track recurring appointment series for better management"""
+    __tablename__ = "recurring_appointment_series"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    pattern_id = Column(Integer, ForeignKey("recurring_appointment_patterns.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    
+    # Series details
+    series_name = Column(String, nullable=True)
+    series_description = Column(Text, nullable=True)
+    
+    # Payment handling for series
+    payment_type = Column(String, default="per_appointment")  # per_appointment, series_upfront, subscription
+    total_series_price = Column(Float, nullable=True)
+    paid_amount = Column(Float, default=0.0)
+    payment_status = Column(String, default="pending")  # pending, partial, paid, refunded
+    
+    # Series progress
+    total_planned = Column(Integer, default=0)
+    total_completed = Column(Integer, default=0)
+    total_cancelled = Column(Integer, default=0)
+    total_rescheduled = Column(Integer, default=0)
+    
+    # Status tracking
+    series_status = Column(String, default="active")  # active, paused, completed, cancelled
+    completion_percentage = Column(Float, default=0.0)
+    
+    # Metadata
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+    completed_at = Column(DateTime, nullable=True)
+    
+    # Relationships
+    pattern = relationship("RecurringAppointmentPattern", backref="series")
+    user = relationship("User", backref="appointment_series")
+    appointments = relationship("Appointment", backref="recurring_series")  # Will need to add to Appointment model
 
 
 # Update Appointment model to link to recurring pattern
 # Add to the Appointment model after line 50 (after created_at)
 # recurring_pattern_id = Column(Integer, ForeignKey("recurring_appointment_patterns.id"), nullable=True)
+# recurring_series_id = Column(Integer, ForeignKey("recurring_appointment_series.id"), nullable=True)
+# is_recurring_instance = Column(Boolean, default=False)
+# original_scheduled_date = Column(Date, nullable=True)  # Track original date if rescheduled
 
 
 # Enhanced Booking Rules
@@ -1877,3 +2163,44 @@ class EmailPreview(Base):
     # Metadata
     created_at = Column(DateTime, default=utcnow)
     expires_at = Column(DateTime, nullable=True)  # When preview expires
+
+
+# ================================================================================
+# TIMEZONE MANAGEMENT MODELS
+# ================================================================================
+
+class TimezoneCache(Base):
+    """Cache timezone information for performance"""
+    __tablename__ = "timezone_cache"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    timezone_name = Column(String(50), nullable=False, unique=True, index=True)
+    display_name = Column(String(100), nullable=False)
+    utc_offset = Column(String(10), nullable=False)
+    dst_offset = Column(String(10), nullable=True)
+    is_dst_active = Column(Boolean, nullable=False, default=False)
+    is_common = Column(Boolean, nullable=False, default=False)
+    region = Column(String(50), nullable=True)
+    country = Column(String(3), nullable=True)
+    last_updated = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=utcnow)
+
+
+class TimezoneConversionLog(Base):
+    """Log timezone conversions for debugging and audit"""
+    __tablename__ = "timezone_conversion_log"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    appointment_id = Column(Integer, ForeignKey("appointments.id"), nullable=True, index=True)
+    source_timezone = Column(String(50), nullable=False)
+    target_timezone = Column(String(50), nullable=False)
+    source_datetime = Column(DateTime, nullable=False)
+    target_datetime = Column(DateTime, nullable=False)
+    conversion_type = Column(String(50), nullable=False)  # 'booking', 'display', 'reminder', etc.
+    context = Column(JSON, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=utcnow)
+    
+    # Relationships
+    user = relationship("User", backref="timezone_conversions")
+    appointment = relationship("Appointment", backref="timezone_conversions")

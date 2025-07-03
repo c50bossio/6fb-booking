@@ -1,0 +1,536 @@
+name: Security Scanning
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      scan_type:
+        description: 'Type of security scan'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - dependencies-only
+          - code-only
+          - containers-only
+
+env:
+  PYTHON_VERSION: '3.9'
+  NODE_VERSION: '18'
+
+jobs:
+  dependency-scan:
+    name: Dependency Security Scan
+    runs-on: ubuntu-latest
+    if: contains(fromJSON('["full", "dependencies-only"]'), github.event.inputs.scan_type) || github.event.inputs.scan_type == ''
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Python dependency audit with Safety
+        run: |
+          cd backend-v2
+          pip install safety
+          safety check --json --output safety-report.json || true
+          safety check --short-report
+
+      - name: Python dependency audit with pip-audit
+        run: |
+          cd backend-v2
+          pip install pip-audit
+          pip-audit --format=json --output=pip-audit-report.json || true
+          pip-audit --format=cyclonedx --output=sbom.json || true
+
+      - name: Node.js dependency audit
+        run: |
+          cd backend-v2/frontend-v2
+          npm audit --audit-level=low --json > npm-audit-report.json || true
+          npm audit
+
+      - name: Check for known vulnerabilities with Snyk
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=medium --json-file-output=snyk-report.json
+        continue-on-error: true
+
+      - name: Upload dependency scan results
+        uses: actions/upload-artifact@v3
+        with:
+          name: dependency-scan-results
+          path: |
+            backend-v2/safety-report.json
+            backend-v2/pip-audit-report.json
+            backend-v2/sbom.json
+            backend-v2/frontend-v2/npm-audit-report.json
+            snyk-report.json
+
+  code-security-scan:
+    name: Code Security Analysis
+    runs-on: ubuntu-latest
+    if: contains(fromJSON('["full", "code-only"]'), github.event.inputs.scan_type) || github.event.inputs.scan_type == ''
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install security scanning tools
+        run: |
+          pip install bandit semgrep
+          npm install -g eslint-plugin-security
+
+      - name: Run Bandit security scan (Python)
+        run: |
+          cd backend-v2
+          bandit -r . -f json -o bandit-report.json || true
+          bandit -r . -f txt
+
+      - name: Run Semgrep security scan
+        run: |
+          semgrep --config=auto --json --output semgrep-report.json . || true
+          semgrep --config=auto .
+
+      - name: ESLint security scan (JavaScript/TypeScript)
+        run: |
+          cd backend-v2/frontend-v2
+          npm install
+          npx eslint . --ext .js,.jsx,.ts,.tsx --format json --output-file eslint-security-report.json || true
+          npx eslint . --ext .js,.jsx,.ts,.tsx
+
+      - name: CodeQL Analysis
+        uses: github/codeql-action/init@v2
+        with:
+          languages: javascript, python
+          queries: security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+
+      - name: Upload code scan results
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-scan-results
+          path: |
+            backend-v2/bandit-report.json
+            semgrep-report.json
+            backend-v2/frontend-v2/eslint-security-report.json
+
+  container-security-scan:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+    if: contains(fromJSON('["full", "containers-only"]'), github.event.inputs.scan_type) || github.event.inputs.scan_type == ''
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image for scanning
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend-v2
+          file: ./backend-v2/Dockerfile
+          push: false
+          tags: bookedbarber/backend:scan
+          load: true
+
+      - name: Build frontend image for scanning
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend-v2/frontend-v2
+          file: ./backend-v2/frontend-v2/Dockerfile
+          push: false
+          tags: bookedbarber/frontend:scan
+          load: true
+
+      - name: Run Trivy vulnerability scanner - Backend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'bookedbarber/backend:scan'
+          format: 'json'
+          output: 'backend-trivy-report.json'
+        continue-on-error: true
+
+      - name: Run Trivy vulnerability scanner - Frontend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'bookedbarber/frontend:scan'
+          format: 'json'
+          output: 'frontend-trivy-report.json'
+        continue-on-error: true
+
+      - name: Run Trivy vulnerability scanner - Table format
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'bookedbarber/backend:scan'
+          format: 'table'
+
+      - name: Run Grype vulnerability scanner
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+          grype bookedbarber/backend:scan -o json > backend-grype-report.json || true
+          grype bookedbarber/frontend:scan -o json > frontend-grype-report.json || true
+          grype bookedbarber/backend:scan
+          grype bookedbarber/frontend:scan
+
+      - name: Docker Scout CVE scan
+        if: github.event_name == 'pull_request'
+        uses: docker/scout-action@v1
+        with:
+          command: cves
+          image: bookedbarber/backend:scan
+          format: json
+          output: backend-scout-report.json
+        continue-on-error: true
+
+      - name: Upload container scan results
+        uses: actions/upload-artifact@v3
+        with:
+          name: container-scan-results
+          path: |
+            backend-trivy-report.json
+            frontend-trivy-report.json
+            backend-grype-report.json
+            frontend-grype-report.json
+            backend-scout-report.json
+
+  secrets-scan:
+    name: Secrets Detection
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run TruffleHog secrets scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+          extra_args: --debug --only-verified --json > trufflehog-report.json
+        continue-on-error: true
+
+      - name: Run gitleaks secrets scan
+        run: |
+          docker run --rm -v $(pwd):/src zricethezav/gitleaks:latest \
+            detect --source=/src --report-format=json --report-path=/src/gitleaks-report.json || true
+          
+          if [ -f gitleaks-report.json ]; then
+            cat gitleaks-report.json
+          fi
+
+      - name: Upload secrets scan results
+        uses: actions/upload-artifact@v3
+        with:
+          name: secrets-scan-results
+          path: |
+            trufflehog-report.json
+            gitleaks-report.json
+
+  compliance-scan:
+    name: Compliance and Best Practices
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Docker configuration security scan
+        run: |
+          # Check Dockerfile best practices
+          docker run --rm -i hadolint/hadolint < backend-v2/Dockerfile > backend-dockerfile-scan.txt || true
+          docker run --rm -i hadolint/hadolint < backend-v2/frontend-v2/Dockerfile > frontend-dockerfile-scan.txt || true
+          
+          echo "Backend Dockerfile scan results:"
+          cat backend-dockerfile-scan.txt
+          echo "Frontend Dockerfile scan results:"
+          cat frontend-dockerfile-scan.txt
+
+      - name: Kubernetes security scan
+        run: |
+          # Install kubesec
+          curl -sSX GET "https://api.github.com/repos/controlplaneio/kubesec/releases/latest" \
+            | grep -E 'browser_download_url.*linux' \
+            | cut -d '"' -f 4 \
+            | xargs curl -sSL -o kubesec
+          chmod +x kubesec
+          
+          # Scan Kubernetes manifests
+          find deploy/ -name "*.yaml" -o -name "*.yml" | while read -r file; do
+            echo "Scanning $file"
+            ./kubesec scan "$file" > "${file}-security-scan.json" || true
+          done
+
+      - name: Infrastructure as Code security scan
+        run: |
+          # Install checkov
+          pip install checkov
+          
+          # Scan Terraform/CloudFormation files
+          checkov -d . --framework terraform,cloudformation,kubernetes,dockerfile \
+            --output json --output-file checkov-report.json || true
+          
+          checkov -d . --framework terraform,cloudformation,kubernetes,dockerfile
+
+      - name: Upload compliance scan results
+        uses: actions/upload-artifact@v3
+        with:
+          name: compliance-scan-results
+          path: |
+            backend-dockerfile-scan.txt
+            frontend-dockerfile-scan.txt
+            deploy/*-security-scan.json
+            checkov-report.json
+
+  vulnerability-assessment:
+    name: Vulnerability Assessment
+    runs-on: ubuntu-latest
+    needs: [dependency-scan, code-security-scan, container-security-scan, secrets-scan, compliance-scan]
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all scan results
+        uses: actions/download-artifact@v3
+        with:
+          path: scan-results/
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install analysis tools
+        run: |
+          pip install jq yq-python pandas numpy matplotlib seaborn
+
+      - name: Aggregate and analyze results
+        run: |
+          python scripts/security/aggregate-scan-results.py scan-results/ > security-assessment.json
+
+      - name: Generate security report
+        run: |
+          python scripts/security/generate-security-report.py security-assessment.json > security-report.html
+
+      - name: Check security thresholds
+        id: security-check
+        run: |
+          python scripts/security/check-security-thresholds.py security-assessment.json
+          echo "status=$?" >> $GITHUB_OUTPUT
+
+      - name: Upload security assessment
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-assessment
+          path: |
+            security-assessment.json
+            security-report.html
+
+      - name: Post security summary to PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            
+            try {
+              const assessment = JSON.parse(fs.readFileSync('security-assessment.json', 'utf8'));
+              
+              const body = `## 🔒 Security Scan Results
+              
+              | Category | Critical | High | Medium | Low |
+              |----------|----------|------|--------|-----|
+              | Dependencies | ${assessment.dependencies.critical || 0} | ${assessment.dependencies.high || 0} | ${assessment.dependencies.medium || 0} | ${assessment.dependencies.low || 0} |
+              | Code Analysis | ${assessment.code.critical || 0} | ${assessment.code.high || 0} | ${assessment.code.medium || 0} | ${assessment.code.low || 0} |
+              | Containers | ${assessment.containers.critical || 0} | ${assessment.containers.high || 0} | ${assessment.containers.medium || 0} | ${assessment.containers.low || 0} |
+              | Secrets | ${assessment.secrets.critical || 0} | ${assessment.secrets.high || 0} | ${assessment.secrets.medium || 0} | ${assessment.secrets.low || 0} |
+              | Compliance | ${assessment.compliance.critical || 0} | ${assessment.compliance.high || 0} | ${assessment.compliance.medium || 0} | ${assessment.compliance.low || 0} |
+              
+              **Overall Risk Level**: ${assessment.overall_risk || 'Unknown'}
+              
+              ${assessment.critical_findings && assessment.critical_findings.length > 0 
+                ? '⚠️ **Critical Issues Found:**\n' + assessment.critical_findings.map(f => `- ${f}`).join('\n')
+                : '✅ **No Critical Issues Found**'
+              }
+              
+              📊 [View Full Security Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+              `;
+              
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+              });
+              
+              const botComment = comments.find(comment => 
+                comment.user.type === 'Bot' && comment.body.includes('Security Scan Results')
+              );
+              
+              if (botComment) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: botComment.id,
+                  body
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body
+                });
+              }
+            } catch (error) {
+              console.error('Error posting security summary:', error);
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: '## 🔒 Security Scan Results\n\n❌ Security scan completed but failed to generate summary. Please check the [workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.'
+              });
+            }
+
+  security-notification:
+    name: Security Notifications
+    runs-on: ubuntu-latest
+    needs: vulnerability-assessment
+    if: always() && (failure() || needs.vulnerability-assessment.outputs.status == '1')
+    steps:
+      - name: Send security alert to Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: 'warning'
+          channel: '#security-alerts'
+          webhook_url: ${{ secrets.SLACK_SECURITY_WEBHOOK_URL }}
+          custom_payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "🚨 *Security Vulnerabilities Detected*\n\n*Repository*: ${{ github.repository }}\n*Branch*: ${{ github.ref_name }}\n*Triggered by*: ${{ github.event_name }}\n*Scan Type*: ${{ github.event.inputs.scan_type || 'scheduled' }}"
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Results"
+                      },
+                      "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    },
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "Security Dashboard"
+                      },
+                      "url": "https://security.bookedbarber.com"
+                    }
+                  ]
+                }
+              ]
+            }
+
+      - name: Create security issue
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const title = `Security vulnerabilities detected - ${new Date().toISOString().split('T')[0]}`;
+            const body = `## 🔒 Security Scan Alert
+            
+            Automated security scanning has detected vulnerabilities that require attention.
+            
+            **Scan Details:**
+            - **Date:** ${new Date().toISOString()}
+            - **Trigger:** ${{ github.event_name }}
+            - **Scan Type:** ${{ github.event.inputs.scan_type || 'full' }}
+            - **Workflow:** [View Results](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            
+            **Next Steps:**
+            1. Review the detailed scan results in the workflow artifacts
+            2. Prioritize critical and high severity issues
+            3. Create specific issues for each vulnerability
+            4. Update dependencies and fix code issues
+            5. Re-run security scan to verify fixes
+            
+            **Artifacts:**
+            - Dependency scan results
+            - Code security analysis
+            - Container vulnerability report
+            - Secrets detection report
+            - Compliance assessment
+            
+            Please address these security issues promptly to maintain the security posture of the application.
+            `;
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['security', 'vulnerability', 'priority-high']
+            });
+
+  schedule-cleanup:
+    name: Cleanup Old Scan Results
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Cleanup old scan artifacts
+        run: |
+          # Clean up old scan results from S3 (older than 30 days)
+          aws s3 rm s3://bookedbarber-security-scans/ --recursive \
+            --exclude "*" \
+            --include "*" \
+            --query "Contents[?LastModified<'$(date -d '30 days ago' --iso-8601)']"
+
+      - name: Update security metrics
+        run: |
+          # Update security dashboard with latest scan results
+          curl -X POST "https://api.bookedbarber.com/internal/security/metrics" \
+            -H "Authorization: Bearer ${{ secrets.INTERNAL_API_KEY }}" \
+            -d '{
+              "scan_date": "'$(date --iso-8601)'",
+              "scan_type": "scheduled",
+              "status": "completed"
+            }' || echo "Metrics update failed"

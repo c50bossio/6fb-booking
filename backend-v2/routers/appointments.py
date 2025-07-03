@@ -6,7 +6,7 @@ standardized "appointment" terminology that matches the database model.
 Designed to replace the mixed booking/appointment terminology over time.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date, datetime, time, timedelta
@@ -17,6 +17,14 @@ from routers.auth import get_current_user
 from utils.auth import require_admin_role, get_current_user_optional
 from services import booking_service
 from services.appointment_enhancement import enhance_appointments_list
+from utils.rate_limit import (
+    booking_create_rate_limit,
+    guest_booking_rate_limit,
+    booking_slots_rate_limit,
+    booking_reschedule_rate_limit,
+    booking_cancel_rate_limit
+)
+from services.captcha_service import captcha_service
 
 # Create router with standardized appointment terminology
 router = APIRouter(
@@ -25,7 +33,9 @@ router = APIRouter(
 )
 
 @router.get("/slots", response_model=schemas.SlotsResponse)
+@booking_slots_rate_limit
 def get_available_appointment_slots(
+    request: Request,
     appointment_date: date = Query(..., description="Date to check availability (YYYY-MM-DD)"),
     barber_id: Optional[int] = Query(None, description="Specific barber ID to filter availability"),
     service_id: Optional[int] = Query(None, description="Service ID to check duration-specific availability"),
@@ -110,7 +120,9 @@ def get_available_appointment_slots(
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/", response_model=schemas.AppointmentResponse)
+@booking_create_rate_limit
 def create_appointment(
+    request: Request,
     appointment: schemas.AppointmentCreate,
     current_user: schemas.User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -140,7 +152,9 @@ def create_appointment(
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/quick", response_model=schemas.AppointmentResponse)
+@booking_create_rate_limit
 def create_quick_appointment(
+    request: Request,
     appointment: schemas.QuickAppointmentCreate,
     current_user: schemas.User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -220,7 +234,9 @@ def update_appointment(
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/{appointment_id}/reschedule", response_model=schemas.AppointmentResponse)
+@booking_reschedule_rate_limit
 def reschedule_appointment(
+    request: Request,
     appointment_id: int,
     reschedule_data: schemas.AppointmentReschedule,
     current_user: schemas.User = Depends(get_current_user),
@@ -257,7 +273,9 @@ def reschedule_appointment(
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.delete("/{appointment_id}")
+@booking_cancel_rate_limit
 def cancel_appointment(
+    request: Request,
     appointment_id: int,
     current_user: schemas.User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -426,7 +444,9 @@ def update_appointment_settings(
 
 
 @router.put("/{appointment_id}/cancel", response_model=schemas.AppointmentResponse)
-def cancel_appointment(
+@booking_cancel_rate_limit
+def cancel_appointment_alt(
+    request: Request,
     appointment_id: int,
     current_user: schemas.User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -454,12 +474,47 @@ def cancel_appointment(
 
 
 @router.post("/guest", response_model=schemas.GuestBookingResponse)
-def create_guest_appointment(
+@guest_booking_rate_limit
+async def create_guest_appointment(
+    request: Request,
     booking: schemas.GuestBookingCreate,
     db: Session = Depends(get_db)
 ):
     """Create appointment for guest user (no authentication required)."""
     try:
+        # Get guest identifier for tracking
+        guest_identifier = captcha_service.get_guest_identifier({
+            'remote_ip': request.client.host if request.client else None,
+            'guest_info': booking.guest_info
+        })
+        
+        # Check if CAPTCHA is required
+        if captcha_service.is_captcha_required(guest_identifier):
+            # Verify CAPTCHA token if provided
+            captcha_token = getattr(booking, 'captcha_token', None)
+            if not captcha_token:
+                raise HTTPException(
+                    status_code=400,
+                    detail="CAPTCHA verification required due to multiple failed attempts"
+                )
+            
+            # Verify the CAPTCHA
+            is_valid = await captcha_service.verify_captcha(
+                captcha_token,
+                request.client.host if request.client else None
+            )
+            
+            if not is_valid:
+                # Track another failed attempt
+                captcha_service.track_failed_attempt(guest_identifier)
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid CAPTCHA. Please try again."
+                )
+            
+            # Clear CAPTCHA requirement on successful verification
+            captcha_service.clear_captcha_requirement(guest_identifier)
+        
         # Use the booking service to create the appointment
         from datetime import datetime
         
@@ -491,13 +546,33 @@ def create_guest_appointment(
             user_timezone=getattr(booking, 'timezone', None),
             notes=getattr(booking, 'notes', None)
         )
+        
+        # Clear failed attempts on successful booking
+        captcha_service.clear_failed_attempts(guest_identifier)
+        
         return result
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        # Track failed attempt
+        guest_identifier = captcha_service.get_guest_identifier({
+            'remote_ip': request.client.host if request.client else None,
+            'guest_info': booking.guest_info
+        })
+        attempt_count, captcha_required = captcha_service.track_failed_attempt(guest_identifier)
+        
+        # Include CAPTCHA requirement in error response if needed
+        error_detail = str(e)
+        if captcha_required:
+            error_detail += ". CAPTCHA verification will be required for your next attempt."
+        
+        raise HTTPException(status_code=400, detail=error_detail)
 
 
 @router.post("/guest/quick", response_model=schemas.GuestBookingResponse) 
-def create_guest_quick_appointment(
+@guest_booking_rate_limit
+async def create_guest_quick_appointment(
+    request: Request,
     booking: schemas.GuestQuickBookingCreate,
     db: Session = Depends(get_db)
 ):
@@ -508,6 +583,39 @@ def create_guest_quick_appointment(
         logger.info(f"Guest quick booking request: {booking}")
         logger.info(f"Guest info type: {type(booking.guest_info)}")
         logger.info(f"Guest info value: {booking.guest_info}")
+        
+        # Get guest identifier for tracking
+        guest_identifier = captcha_service.get_guest_identifier({
+            'remote_ip': request.client.host if request.client else None,
+            'guest_info': booking.guest_info
+        })
+        
+        # Check if CAPTCHA is required
+        if captcha_service.is_captcha_required(guest_identifier):
+            # Verify CAPTCHA token if provided
+            captcha_token = getattr(booking, 'captcha_token', None)
+            if not captcha_token:
+                raise HTTPException(
+                    status_code=400,
+                    detail="CAPTCHA verification required due to multiple failed attempts"
+                )
+            
+            # Verify the CAPTCHA
+            is_valid = await captcha_service.verify_captcha(
+                captcha_token,
+                request.client.host if request.client else None
+            )
+            
+            if not is_valid:
+                # Track another failed attempt
+                captcha_service.track_failed_attempt(guest_identifier)
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid CAPTCHA. Please try again."
+                )
+            
+            # Clear CAPTCHA requirement on successful verification
+            captcha_service.clear_captcha_requirement(guest_identifier)
         
         # Find next available slot
         from datetime import date
@@ -549,8 +657,46 @@ def create_guest_quick_appointment(
             user_timezone=getattr(booking, 'timezone', None),
             notes=getattr(booking, 'notes', None)
         )
+        
+        # Clear failed attempts on successful booking
+        captcha_service.clear_failed_attempts(guest_identifier)
+        
         return result
+    except HTTPException:
+        raise
     except Exception as e:
         import logging
         logging.getLogger(__name__).error(f"Guest quick booking error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        
+        # Track failed attempt
+        guest_identifier = captcha_service.get_guest_identifier({
+            'remote_ip': request.client.host if request.client else None,
+            'guest_info': booking.guest_info
+        })
+        attempt_count, captcha_required = captcha_service.track_failed_attempt(guest_identifier)
+        
+        # Include CAPTCHA requirement in error response if needed
+        error_detail = str(e)
+        if captcha_required:
+            error_detail += ". CAPTCHA verification will be required for your next attempt."
+        
+        raise HTTPException(status_code=400, detail=error_detail)
+
+@router.post("/guest/captcha-status")
+async def check_guest_captcha_status(
+    request: Request,
+    guest_info: schemas.GuestInfo,
+    db: Session = Depends(get_db)
+):
+    """Check if CAPTCHA is required for a guest based on their booking attempts."""
+    guest_identifier = captcha_service.get_guest_identifier({
+        'remote_ip': request.client.host if request.client else None,
+        'guest_info': guest_info
+    })
+    
+    captcha_required = captcha_service.is_captcha_required(guest_identifier)
+    
+    return {
+        "captcha_required": captcha_required,
+        "message": "CAPTCHA verification required" if captcha_required else "No CAPTCHA required"
+    }

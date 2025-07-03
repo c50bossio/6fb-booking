@@ -1,161 +1,146 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { LoadingCard, LoadingSkeleton } from './ui/LoadingStates'
+import { CardLoading, LoadingSpinner } from './ui/LoadingStates'
+
+// Simple loading component for lazy imports
+const SimpleLoading = ({ className }: { className?: string }) => (
+  <div className={`flex items-center justify-center ${className}`}>
+    <LoadingSpinner size="md" />
+  </div>
+)
 
 // Calendar Components - Heavy components that benefit from lazy loading
 export const CalendarWeekView = dynamic(() => import('./CalendarWeekView'), {
-  loading: () => <LoadingCard title="Loading calendar..." className="h-[600px]" />,
+  loading: () => <CardLoading className="h-[600px]" />,
   ssr: false,
 })
 
 export const CalendarDayView = dynamic(() => import('./CalendarDayView'), {
-  loading: () => <LoadingCard title="Loading day view..." className="h-[600px]" />,
+  loading: () => <CardLoading className="h-[600px]" />,
   ssr: false,
 })
 
 export const CalendarMonthView = dynamic(() => import('./CalendarMonthView'), {
-  loading: () => <LoadingCard title="Loading month view..." className="h-[600px]" />,
+  loading: () => <CardLoading className="h-[600px]" />,
   ssr: false,
 })
 
 export const CalendarSync = dynamic(() => import('./CalendarSync'), {
-  loading: () => <LoadingCard title="Loading calendar sync..." />,
+  loading: () => <CardLoading />,
   ssr: false,
 })
 
 export const CalendarConflictResolver = dynamic(() => import('./CalendarConflictResolver'), {
-  loading: () => <LoadingCard title="Loading conflict resolver..." />,
+  loading: () => <CardLoading />,
   ssr: false,
 })
 
 // Analytics Components - Chart.js is heavy
 export const RevenueChart = dynamic(() => import('./analytics/RevenueChart'), {
-  loading: () => <LoadingSkeleton type="card" className="h-[400px]" />,
+  loading: () => <SimpleLoading />,
   ssr: false,
 })
 
 export const ClientRetentionChart = dynamic(() => import('./analytics/ClientRetentionChart'), {
-  loading: () => <LoadingSkeleton type="card" className="h-[400px]" />,
+  loading: () => <SimpleLoading />,
   ssr: false,
 })
 
 export const PerformanceMetrics = dynamic(() => import('./analytics/PerformanceMetrics'), {
-  loading: () => <LoadingSkeleton type="card" className="h-[300px]" />,
+  loading: () => <SimpleLoading />,
   ssr: false,
 })
 
 export const SixFigureAnalyticsDashboard = dynamic(() => import('./analytics/SixFigureAnalyticsDashboard'), {
-  loading: () => <LoadingCard title="Loading analytics dashboard..." className="h-[800px]" />,
+  loading: () => <CardLoading className="h-[800px]" />,
   ssr: false,
 })
 
 // Payment Components - Stripe is heavy
 export const PaymentForm = dynamic(() => import('./PaymentForm'), {
-  loading: () => <LoadingCard title="Loading payment form..." />,
+  loading: () => <CardLoading />,
   ssr: false,
 })
 
 export const StripeConnectOnboarding = dynamic(() => import('./StripeConnectOnboarding'), {
-  loading: () => <LoadingCard title="Loading Stripe setup..." />,
+  loading: () => <CardLoading />,
   ssr: false,
 })
 
 export const RefundManager = dynamic(() => import('./RefundManager'), {
-  loading: () => <LoadingCard title="Loading refund manager..." />,
+  loading: () => <CardLoading />,
   ssr: false,
 })
 
 // Marketing Components
 export const CampaignCard = dynamic(() => import('./marketing/CampaignCard'), {
-  loading: () => <LoadingSkeleton type="card" />,
+  loading: () => <SimpleLoading />,
   ssr: false,
 })
 
 export const TemplateEditor = dynamic(() => import('./marketing/TemplateEditor'), {
-  loading: () => <LoadingCard title="Loading template editor..." />,
+  loading: () => <CardLoading />,
   ssr: false,
 })
 
 // Import/Export Components
 export const ImportWizard = dynamic(() => import('./import/ImportWizard'), {
-  loading: () => <LoadingCard title="Loading import wizard..." />,
+  loading: () => <CardLoading />,
   ssr: false,
 })
 
 export const ExportBuilder = dynamic(() => import('./export/ExportBuilder'), {
-  loading: () => <LoadingCard title="Loading export builder..." />,
+  loading: () => <CardLoading />,
   ssr: false,
 })
 
 // Booking Components
-export const EmbedCodeGenerator = dynamic(() => import('./booking/EmbedCodeGenerator'), {
-  loading: () => <LoadingCard title="Loading embed generator..." />,
+export const EmbedCodeGenerator = dynamic(() => import('./booking/EmbedCodeGenerator').then(mod => ({ default: mod.EmbedCodeGenerator })), {
+  loading: () => <CardLoading />,
   ssr: false,
 })
 
 export const QRCodeGenerator = dynamic(() => import('./booking/QRCodeGenerator'), {
-  loading: () => <LoadingSkeleton type="card" />,
+  loading: () => <SimpleLoading />,
   ssr: false,
 })
 
 // Modal Components - Only load when needed
 export const CreateAppointmentModal = dynamic(() => import('./modals/CreateAppointmentModal'), {
-  loading: () => <LoadingCard title="Loading appointment form..." />,
+  loading: () => <CardLoading />,
   ssr: false,
 })
 
 export const ClientDetailModal = dynamic(() => import('./modals/ClientDetailModal'), {
-  loading: () => <LoadingCard title="Loading client details..." />,
+  loading: () => <CardLoading />,
   ssr: false,
 })
 
 export const ConflictResolutionModal = dynamic(() => import('./modals/ConflictResolutionModal'), {
-  loading: () => <LoadingCard title="Loading conflict resolver..." />,
+  loading: () => <CardLoading />,
   ssr: false,
 })
 
 // Heavy utility components
 export const VirtualList = dynamic(() => import('./VirtualList'), {
-  loading: () => <LoadingSkeleton type="card" count={5} />,
+  loading: () => <SimpleLoading />,
   ssr: false,
 })
 
 export const WebhookConfiguration = dynamic(() => import('./WebhookConfiguration'), {
-  loading: () => <LoadingCard title="Loading webhook configuration..." />,
+  loading: () => <CardLoading />,
   ssr: false,
 })
 
 // Charts with better loading states
 export const ServiceRevenueChart = dynamic(() => import('./analytics/ServiceRevenueChart'), {
-  loading: () => (
-    <div className="card">
-      <div className="card-header">
-        <LoadingSkeleton type="text" className="w-1/3" />
-      </div>
-      <div className="card-content">
-        <div className="h-[300px] flex items-center justify-center">
-          <LoadingSkeleton type="card" />
-        </div>
-      </div>
-    </div>
-  ),
+  loading: () => <CardLoading className="h-[300px]" />,
   ssr: false,
 })
 
 export const AppointmentPatterns = dynamic(() => import('./analytics/AppointmentPatterns'), {
-  loading: () => (
-    <div className="card">
-      <div className="card-header">
-        <LoadingSkeleton type="text" className="w-1/2" />
-      </div>
-      <div className="card-content">
-        <div className="h-[250px] flex items-center justify-center">
-          <LoadingSkeleton type="card" />
-        </div>
-      </div>
-    </div>
-  ),
+  loading: () => <CardLoading className="h-[250px]" />,
   ssr: false,
 })
 

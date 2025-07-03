@@ -12,7 +12,7 @@ from database import get_db
 from dependencies import get_current_user
 from models import User
 from models.integration import IntegrationType as IntegrationTypeModel, IntegrationStatus
-from schemas import (
+from schemas_new.integration import (
     IntegrationCreate,
     IntegrationUpdate,
     IntegrationResponse,
@@ -150,6 +150,36 @@ async def handle_oauth_callback(
             success=False,
             message=f"Failed to complete OAuth flow: {str(e)}"
         )
+
+
+@router.get("/available", response_model=List[dict])
+async def get_available_integrations(
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get list of all available integration types that can be connected.
+    Returns basic information about each integration type.
+    """
+    available = []
+    
+    # List all available integration types
+    for integration_type in IntegrationType:
+        available.append({
+            "type": integration_type.value,
+            "name": integration_type.value.replace("_", " ").title(),
+            "description": f"Connect your {integration_type.value.replace('_', ' ').title()} account",
+            "requires_oauth": integration_type in [
+                IntegrationType.GOOGLE_CALENDAR,
+                IntegrationType.GOOGLE_MY_BUSINESS,
+                IntegrationType.STRIPE
+            ],
+            "requires_api_key": integration_type in [
+                IntegrationType.SENDGRID,
+                IntegrationType.TWILIO
+            ]
+        })
+    
+    return available
 
 
 @router.get("/status", response_model=List[IntegrationResponse])

@@ -3,9 +3,15 @@
  * Tests all API methods, error handling, and request formatting.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+// Mock the fetchAPI function BEFORE any imports
+const mockFetchAPI = jest.fn()
+
+jest.mock('../api', () => ({
+  fetchAPI: mockFetchAPI
+}))
+
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals'
 import { integrationsAPI } from './integrations'
-import { fetchAPI } from '../api'
 import { IntegrationType, IntegrationStatus } from '@/types/integration'
 import type {
   IntegrationResponse,
@@ -19,13 +25,6 @@ import type {
   IntegrationTokenRefreshRequest,
   IntegrationTokenRefreshResponse
 } from '@/types/integration'
-
-// Mock the fetchAPI function
-vi.mock('../api', () => ({
-  fetchAPI: vi.fn()
-}))
-
-const mockFetchAPI = fetchAPI as any
 
 // Test data
 const mockIntegration: IntegrationResponse = {
@@ -61,11 +60,11 @@ const mockHealthCheck: IntegrationHealthCheck = {
 
 describe('IntegrationsAPI', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
+    jest.clearAllMocks()
   })
 
   afterEach(() => {
-    vi.restoreAllMocks()
+    jest.restoreAllMocks()
   })
 
   describe('OAuth Flow Methods', () => {

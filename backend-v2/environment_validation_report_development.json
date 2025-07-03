@@ -1,0 +1,122 @@
+{
+  "environment": "development",
+  "env_file": ".env",
+  "summary": {
+    "total_checks": 13,
+    "required_checks": 6,
+    "optional_checks": 7,
+    "required_passed": 6,
+    "required_failed": 0,
+    "overall_status": "READY"
+  },
+  "checks": [
+    {
+      "name": "ENVIRONMENT",
+      "required": true,
+      "description": "Application environment",
+      "status": "PASS",
+      "message": "Configured: development",
+      "has_value": true
+    },
+    {
+      "name": "SECRET_KEY",
+      "required": true,
+      "description": "JWT secret key for authentication",
+      "status": "PASS",
+      "message": "Strong secret key (64 characters)",
+      "has_value": true
+    },
+    {
+      "name": "DATABASE_URL",
+      "required": true,
+      "description": "Database connection string",
+      "status": "PASS",
+      "message": "SQLite database (development)",
+      "has_value": true
+    },
+    {
+      "name": "JWT_ALGORITHM",
+      "required": false,
+      "description": "JWT signing algorithm",
+      "status": "PASS",
+      "message": "Configured: HS256",
+      "has_value": true
+    },
+    {
+      "name": "BCRYPT_ROUNDS",
+      "required": false,
+      "description": "Password hashing rounds",
+      "status": "PASS",
+      "message": "Configured: 12",
+      "has_value": true
+    },
+    {
+      "name": "STRIPE_SECRET_KEY",
+      "required": true,
+      "description": "Stripe secret key for payments",
+      "status": "PASS",
+      "message": "Test secret key (development)",
+      "has_value": true
+    },
+    {
+      "name": "STRIPE_PUBLISHABLE_KEY",
+      "required": true,
+      "description": "Stripe publishable key",
+      "status": "PASS",
+      "message": "Test publishable key (development)",
+      "has_value": true
+    },
+    {
+      "name": "STRIPE_WEBHOOK_SECRET",
+      "required": false,
+      "description": "Stripe webhook signature verification",
+      "status": "PASS",
+      "message": "Configured: whsec_test_webhook_secret",
+      "has_value": true
+    },
+    {
+      "name": "ALLOWED_ORIGINS",
+      "required": true,
+      "description": "CORS allowed origins",
+      "status": "PASS",
+      "message": "Configured: http://localhost:3000,http://localhost:3001...",
+      "has_value": true
+    },
+    {
+      "name": "REDIS_URL",
+      "required": false,
+      "description": "Redis connection for caching",
+      "status": "PASS",
+      "message": "Configured: redis://localhost:6379/0",
+      "has_value": true
+    },
+    {
+      "name": "SENTRY_DSN",
+      "required": false,
+      "description": "Sentry error tracking",
+      "status": "PASS",
+      "message": "Configured: \"\"",
+      "has_value": true
+    },
+    {
+      "name": "SENDGRID_API_KEY",
+      "required": false,
+      "description": "Email service API key",
+      "status": "PASS",
+      "message": "Configured: \"SG.KNoTfMebTWuWaBNCDcck8Q.uFh...",
+      "has_value": true
+    },
+    {
+      "name": "TWILIO_ACCOUNT_SID",
+      "required": false,
+      "description": "SMS service configuration",
+      "status": "PASS",
+      "message": "Configured: \"ACe5b803b2dee8cfeffbfc1933083...",
+      "has_value": true
+    }
+  ],
+  "recommendations": [
+    "\u2705 Development environment detected - this is normal for local development",
+    "\u2705 Using localhost URLs for development - this is correct"
+  ]
+}

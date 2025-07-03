@@ -1,0 +1,279 @@
+# AlertManager Configuration for BookedBarber V2
+
+global:
+  # SMTP configuration for email alerts
+  smtp_smarthost: '{{ .Values.smtp.host }}:{{ .Values.smtp.port | default 587 }}'
+  smtp_from: '{{ .Values.smtp.from | default "alerts@bookedbarber.com" }}'
+  smtp_auth_username: '{{ .Values.smtp.username }}'
+  smtp_auth_password: '{{ .Values.smtp.password }}'
+  smtp_require_tls: true
+
+  # Slack API URL for notifications
+  slack_api_url: '{{ .Values.slack.api_url }}'
+
+  # PagerDuty integration key
+  pagerduty_url: 'https://events.pagerduty.com/v2/enqueue'
+
+  # Global resolve timeout
+  resolve_timeout: 5m
+
+# Templates for alert formatting
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Routing configuration
+route:
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  receiver: 'default'
+  
+  # Routing tree
+  routes:
+    # Critical alerts go to PagerDuty and immediate email
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      group_wait: 0s
+      repeat_interval: 5m
+      continue: true
+
+    # Business-related alerts
+    - match:
+        component: business
+      receiver: 'business-alerts'
+      group_interval: 2m
+      repeat_interval: 30m
+
+    # Infrastructure alerts
+    - match:
+        component: infrastructure
+      receiver: 'infrastructure-alerts'
+      group_interval: 5m
+      repeat_interval: 1h
+
+    # Database alerts
+    - match:
+        component: database
+      receiver: 'database-alerts'
+      group_interval: 2m
+      repeat_interval: 15m
+
+    # Security alerts
+    - match:
+        component: security
+      receiver: 'security-alerts'
+      group_wait: 0s
+      repeat_interval: 30m
+
+    # Backup alerts
+    - match:
+        component: backup
+      receiver: 'backup-alerts'
+      group_interval: 30m
+      repeat_interval: 6h
+
+    # Maintenance window - suppress non-critical alerts
+    - match:
+        alertname: MaintenanceWindow
+      receiver: 'null'
+
+receivers:
+  # Default receiver
+  - name: 'default'
+    email_configs:
+      - to: '{{ .Values.email.default | default "ops@bookedbarber.com" }}'
+        subject: 'BookedBarber Alert: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Severity: {{ .Labels.severity }}
+          Instance: {{ .Labels.instance }}
+          Time: {{ .StartsAt }}
+          {{ end }}
+
+  # Critical alerts - PagerDuty + Email + Slack
+  - name: 'critical-alerts'
+    pagerduty_configs:
+      - service_key: '{{ .Values.pagerduty.service_key }}'
+        description: 'BookedBarber Critical Alert: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        severity: 'critical'
+        details:
+          alertname: '{{ range .Alerts }}{{ .Labels.alertname }}{{ end }}'
+          instance: '{{ range .Alerts }}{{ .Labels.instance }}{{ end }}'
+          description: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+    
+    email_configs:
+      - to: '{{ .Values.email.critical | default "critical@bookedbarber.com" }}'
+        subject: '🚨 CRITICAL: BookedBarber Alert'
+        body: |
+          CRITICAL ALERT - IMMEDIATE ACTION REQUIRED
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Instance: {{ .Labels.instance }}
+          Time: {{ .StartsAt }}
+          Runbook: {{ .Annotations.runbook_url }}
+          {{ end }}
+          
+          Please check the monitoring dashboard immediately.
+    
+    slack_configs:
+      - api_url: '{{ .Values.slack.critical_webhook }}'
+        channel: '#critical-alerts'
+        title: '🚨 BookedBarber Critical Alert'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Instance:* {{ .Labels.instance }}
+          *Time:* {{ .StartsAt }}
+          {{ end }}
+        color: 'danger'
+
+  # Business alerts - Email + Slack
+  - name: 'business-alerts'
+    email_configs:
+      - to: '{{ .Values.email.business | default "business@bookedbarber.com" }}'
+        subject: '💼 BookedBarber Business Alert'
+        body: |
+          Business Impact Alert
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Impact: This may affect revenue or customer experience
+          Time: {{ .StartsAt }}
+          {{ end }}
+    
+    slack_configs:
+      - api_url: '{{ .Values.slack.business_webhook }}'
+        channel: '#business-alerts'
+        title: '💼 Business Impact Alert'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Impact:* Revenue/Customer impact possible
+          {{ end }}
+        color: 'warning'
+
+  # Infrastructure alerts
+  - name: 'infrastructure-alerts'
+    email_configs:
+      - to: '{{ .Values.email.infrastructure | default "infra@bookedbarber.com" }}'
+        subject: '🏗️ BookedBarber Infrastructure Alert'
+        body: |
+          Infrastructure Alert
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Component: {{ .Labels.component }}
+          Instance: {{ .Labels.instance }}
+          Time: {{ .StartsAt }}
+          {{ end }}
+
+  # Database alerts
+  - name: 'database-alerts'
+    email_configs:
+      - to: '{{ .Values.email.database | default "dba@bookedbarber.com" }}'
+        subject: '🗄️ BookedBarber Database Alert'
+        body: |
+          Database Alert - Requires DBA Attention
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Database: {{ .Labels.database | default "bookedbarber" }}
+          Instance: {{ .Labels.instance }}
+          Time: {{ .StartsAt }}
+          {{ end }}
+    
+    slack_configs:
+      - api_url: '{{ .Values.slack.database_webhook }}'
+        channel: '#database-alerts'
+        title: '🗄️ Database Alert'
+        color: 'warning'
+
+  # Security alerts - Immediate notification
+  - name: 'security-alerts'
+    email_configs:
+      - to: '{{ .Values.email.security | default "security@bookedbarber.com" }}'
+        subject: '🔒 SECURITY ALERT: BookedBarber'
+        body: |
+          SECURITY ALERT - IMMEDIATE ATTENTION REQUIRED
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Instance: {{ .Labels.instance }}
+          Time: {{ .StartsAt }}
+          {{ end }}
+          
+          This requires immediate investigation.
+    
+    slack_configs:
+      - api_url: '{{ .Values.slack.security_webhook }}'
+        channel: '#security-alerts'
+        title: '🔒 Security Alert'
+        text: |
+          {{ range .Alerts }}
+          *SECURITY ALERT*
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Instance:* {{ .Labels.instance }}
+          {{ end }}
+        color: 'danger'
+
+  # Backup alerts
+  - name: 'backup-alerts'
+    email_configs:
+      - to: '{{ .Values.email.backup | default "backup@bookedbarber.com" }}'
+        subject: '💾 BookedBarber Backup Alert'
+        body: |
+          Backup System Alert
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Component: {{ .Labels.component }}
+          Time: {{ .StartsAt }}
+          {{ end }}
+          
+          Please verify backup integrity and restore procedures.
+
+  # Null receiver for maintenance windows
+  - name: 'null'
+
+# Inhibition rules - suppress certain alerts when others are firing
+inhibit_rules:
+  # Suppress instance-level alerts when the entire service is down
+  - source_match:
+      alertname: ApplicationDown
+    target_match:
+      job: bookedbarber-api
+    equal: ['instance']
+
+  # Suppress low-level resource alerts during high error rates
+  - source_match:
+      severity: critical
+      component: application
+    target_match:
+      component: infrastructure
+    equal: ['instance']
+
+  # Suppress backup alerts during maintenance
+  - source_match:
+      alertname: MaintenanceWindow
+    target_match:
+      component: backup
+
+# Silencing configuration
+# This allows temporary suppression of alerts during maintenance
+templates:
+  - '/etc/alertmanager/templates/email.tmpl'
+  - '/etc/alertmanager/templates/slack.tmpl'

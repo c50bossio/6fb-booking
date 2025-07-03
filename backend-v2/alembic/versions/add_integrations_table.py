@@ -11,15 +11,18 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = 'add_integrations_table'
-down_revision = 'add_marketing_suite_tables'
+down_revision = '4df17937d4bb'
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
-    # Create enum types
-    op.execute("CREATE TYPE integrationtype AS ENUM ('google_calendar', 'stripe', 'sendgrid', 'twilio', 'square', 'acuity', 'booksy', 'custom')")
-    op.execute("CREATE TYPE integrationstatus AS ENUM ('active', 'inactive', 'error', 'pending', 'expired')")
+    # Check if we're using PostgreSQL to create enum types
+    connection = op.get_bind()
+    if connection.dialect.name == 'postgresql':
+        # Create enum types for PostgreSQL
+        op.execute("CREATE TYPE integrationtype AS ENUM ('google_calendar', 'stripe', 'sendgrid', 'twilio', 'square', 'acuity', 'booksy', 'custom')")
+        op.execute("CREATE TYPE integrationstatus AS ENUM ('active', 'inactive', 'error', 'pending', 'expired')")
     
     # Create integrations table
     op.create_table('integrations',
@@ -41,6 +44,8 @@ def upgrade():
         sa.Column('last_error', sa.Text(), nullable=True),
         sa.Column('error_count', sa.Integer(), nullable=True),
         sa.Column('health_check_data', sa.JSON(), nullable=True),
+        sa.Column('last_health_check', sa.DateTime(), nullable=True),
+        sa.Column('stripe_account_id', sa.String(length=255), nullable=True),
         sa.Column('is_active', sa.Boolean(), nullable=True),
         sa.Column('created_at', sa.DateTime(), nullable=True),
         sa.Column('updated_at', sa.DateTime(), nullable=True),
@@ -63,6 +68,8 @@ def downgrade():
     # Drop table
     op.drop_table('integrations')
     
-    # Drop enum types
-    op.execute("DROP TYPE integrationstatus")
-    op.execute("DROP TYPE integrationtype")
+    # Drop enum types (PostgreSQL only)
+    connection = op.get_bind()
+    if connection.dialect.name == 'postgresql':
+        op.execute("DROP TYPE integrationstatus")
+        op.execute("DROP TYPE integrationtype")

@@ -1,0 +1,402 @@
+name: GDPR Compliance Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'backend-v2/**'
+      - 'frontend-v2/**'
+      - '.github/workflows/gdpr-tests.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'backend-v2/**'
+      - 'frontend-v2/**'
+      - '.github/workflows/gdpr-tests.yml'
+  schedule:
+    # Run weekly on Sundays at 2 AM UTC
+    - cron: '0 2 * * 0'
+
+jobs:
+  backend-gdpr-tests:
+    name: Backend GDPR Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend-v2
+    
+    strategy:
+      matrix:
+        python-version: [3.9, 3.10, 3.11]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Cache Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('backend-v2/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest-cov pytest-asyncio
+    
+    - name: Set up test environment
+      run: |
+        cp .env.template .env
+        echo "TESTING=true" >> .env
+        echo "DATABASE_URL=sqlite:///test.db" >> .env
+    
+    - name: Run database migrations
+      run: |
+        python -c "
+        from database import Base, engine
+        Base.metadata.create_all(bind=engine)
+        print('Database tables created')
+        "
+    
+    - name: Run GDPR unit tests
+      run: |
+        python -m pytest tests/test_privacy_api.py -v --tb=short --cov=models.consent --cov=routers.privacy --cov=schemas_new.privacy --cov-report=xml
+    
+    - name: Run GDPR integration tests
+      run: |
+        python -m pytest test_gdpr_compliance.py -v --tb=short -x
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      if: matrix.python-version == '3.10'
+      with:
+        file: backend-v2/coverage.xml
+        flags: backend-gdpr
+        name: backend-gdpr-coverage
+        fail_ci_if_error: false
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: backend-test-results-${{ matrix.python-version }}
+        path: |
+          backend-v2/htmlcov/
+          backend-v2/coverage.xml
+          backend-v2/.coverage
+
+  frontend-gdpr-tests:
+    name: Frontend GDPR Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend-v2/frontend-v2
+    
+    strategy:
+      matrix:
+        node-version: [18, 20]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: backend-v2/frontend-v2/package-lock.json
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run GDPR unit tests
+      run: npm run test:gdpr -- --coverage --watchAll=false
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      if: matrix.node-version == '20'
+      with:
+        file: backend-v2/frontend-v2/coverage/coverage-final.json
+        flags: frontend-gdpr
+        name: frontend-gdpr-coverage
+        fail_ci_if_error: false
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: frontend-test-results-${{ matrix.node-version }}
+        path: |
+          backend-v2/frontend-v2/coverage/
+          backend-v2/frontend-v2/test-results/
+
+  e2e-gdpr-tests:
+    name: E2E GDPR Tests
+    runs-on: ubuntu-latest
+    needs: [backend-gdpr-tests, frontend-gdpr-tests]
+    defaults:
+      run:
+        working-directory: backend-v2
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Set up Node.js 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: backend-v2/frontend-v2/package-lock.json
+    
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Install Node dependencies
+      run: |
+        cd frontend-v2
+        npm ci
+    
+    - name: Install Playwright browsers
+      run: |
+        cd frontend-v2
+        npx playwright install --with-deps
+    
+    - name: Set up test environment
+      run: |
+        cp .env.template .env
+        echo "TESTING=true" >> .env
+        echo "DATABASE_URL=sqlite:///test.db" >> .env
+    
+    - name: Set up database
+      run: |
+        python -c "
+        from database import Base, engine
+        Base.metadata.create_all(bind=engine)
+        print('Database tables created')
+        "
+    
+    - name: Start backend server
+      run: |
+        uvicorn main:app --host 0.0.0.0 --port 8000 &
+        sleep 5
+        curl -f http://localhost:8000/health || exit 1
+      env:
+        TESTING: true
+    
+    - name: Run E2E GDPR tests
+      run: |
+        cd frontend-v2
+        npm run test:e2e:gdpr
+      env:
+        PLAYWRIGHT_BASE_URL: http://localhost:3000
+    
+    - name: Upload E2E test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: e2e-test-results
+        path: |
+          backend-v2/frontend-v2/test-results/
+          backend-v2/frontend-v2/playwright-report/
+
+  compliance-validation:
+    name: GDPR Compliance Validation
+    runs-on: ubuntu-latest
+    needs: [backend-gdpr-tests, frontend-gdpr-tests]
+    defaults:
+      run:
+        working-directory: backend-v2
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install httpx
+    
+    - name: Set up test environment
+      run: |
+        cp .env.template .env
+        echo "TESTING=true" >> .env
+        echo "DATABASE_URL=sqlite:///test.db" >> .env
+    
+    - name: Set up database with sample data
+      run: |
+        python -c "
+        from database import Base, engine, SessionLocal
+        from models.consent import UserConsent, CookieConsent, ConsentType, ConsentStatus
+        from models import User
+        from utils.auth import get_password_hash
+        
+        Base.metadata.create_all(bind=engine)
+        
+        db = SessionLocal()
+        
+        # Create test user
+        user = User(
+            email='compliance@test.com',
+            name='Compliance Test User',
+            hashed_password=get_password_hash('testpass123'),
+            role='user'
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        
+        # Create sample consents
+        consents = [
+            UserConsent(user_id=user.id, consent_type=ConsentType.TERMS_OF_SERVICE, status=ConsentStatus.GRANTED),
+            UserConsent(user_id=user.id, consent_type=ConsentType.PRIVACY_POLICY, status=ConsentStatus.GRANTED),
+        ]
+        for consent in consents:
+            db.add(consent)
+        
+        # Create sample cookie consent
+        cookie_consent = CookieConsent(
+            user_id=user.id,
+            session_id='compliance-test',
+            functional=True,
+            analytics=True,
+            marketing=False,
+            preferences=True
+        )
+        db.add(cookie_consent)
+        
+        db.commit()
+        db.close()
+        print('Sample data created')
+        "
+    
+    - name: Start backend server for validation
+      run: |
+        uvicorn main:app --host 0.0.0.0 --port 8000 &
+        sleep 5
+        curl -f http://localhost:8000/health || exit 1
+      env:
+        TESTING: true
+    
+    - name: Run GDPR compliance validation
+      run: |
+        python validate_gdpr_compliance.py --verbose --report-file gdpr_compliance_report.json
+    
+    - name: Upload compliance report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: gdpr-compliance-report
+        path: |
+          backend-v2/gdpr_compliance_report.json
+
+  comprehensive-test-suite:
+    name: Comprehensive GDPR Test Suite
+    runs-on: ubuntu-latest
+    needs: [backend-gdpr-tests, frontend-gdpr-tests, e2e-gdpr-tests, compliance-validation]
+    if: always()
+    defaults:
+      run:
+        working-directory: backend-v2
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Set up Node.js 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: backend-v2/frontend-v2/package-lock.json
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        cd frontend-v2
+        npm ci
+    
+    - name: Set up test environment
+      run: |
+        cp .env.template .env
+        echo "TESTING=true" >> .env
+        echo "DATABASE_URL=sqlite:///test.db" >> .env
+    
+    - name: Run comprehensive GDPR test suite
+      run: |
+        python run_gdpr_tests.py --verbose --report gdpr_comprehensive_report.json
+    
+    - name: Upload comprehensive test report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: gdpr-comprehensive-report
+        path: |
+          backend-v2/gdpr_comprehensive_report.json
+          backend-v2/gdpr_compliance_report.json
+          backend-v2/htmlcov/
+          backend-v2/coverage.json
+    
+    - name: Comment PR with test results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const path = 'backend-v2/gdpr_comprehensive_report.json';
+          
+          if (fs.existsSync(path)) {
+            const report = JSON.parse(fs.readFileSync(path, 'utf8'));
+            const summary = report.summary;
+            
+            const comment = `
+          ## 🔒 GDPR Compliance Test Results
+          
+          **Overall Status:** ${summary.overall_status === 'PASS' ? '✅ PASS' : '❌ FAIL'}
+          
+          **Test Summary:**
+          - Total Test Suites: ${summary.total_test_suites}
+          - Passed: ${summary.passed_suites}
+          - Failed: ${summary.failed_suites}
+          
+          ${summary.overall_status === 'FAIL' ? '⚠️ Please review failed tests before merging.' : '🎉 All GDPR compliance tests passed!'}
+          
+          <details>
+          <summary>View detailed results</summary>
+          
+          \`\`\`json
+          ${JSON.stringify(summary, null, 2)}
+          \`\`\`
+          </details>
+          `;
+          
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+          }

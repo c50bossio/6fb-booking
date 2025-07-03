@@ -1,0 +1,68 @@
+🚀 Starting Marketing Integration Endpoint Validation
+============================================================
+
+🔐 Testing Authentication...
+✅ Authentication: PASS (223ms)
+   Token obtained: eyJhbGciOiJIUzI1NiIs...
+
+📊 Testing Integration Endpoints...
+✅ Get Integration Status: PASS (4ms)
+   Found 0 integrations
+✅ Get Available Integrations: PASS (3ms)
+   Available types: ['google_calendar', 'google_my_business', 'stripe', 'sendgrid', 'twilio', 'square', 'acuity', 'booksy', 'email_marketing', 'sms_marketing', 'custom']
+✅ Health Check All: PASS (2ms)
+   Health status: 0 total
+
+🔑 Testing OAuth Endpoints...
+✅ OAuth Connect Initiate: PASS (2ms)
+   Auth URL generated: True
+✅ OAuth Callback: PASS (2ms)
+   Callback handled (Status: 400)
+✅ Token Refresh: PASS (2ms)
+   Refresh handled (Status: 404)
+
+⭐ Testing Review Endpoints...
+✅ Get Reviews: PASS (3ms)
+   Found N/A reviews
+❌ Review Analytics: FAIL (2ms)
+   Status: 422
+❌ Review Sync: FAIL (2ms)
+   Unexpected status: 422
+
+🏢 Testing Google My Business Endpoints...
+✅ GMB Locations: PASS (1ms)
+   GMB locations handled (Status: 404)
+✅ GMB Reviews: PASS (1ms)
+   GMB reviews handled (Status: 404)
+
+🚨 Testing Error Handling...
+✅ Unauthorized Access: PASS (1ms)
+   Properly blocked unauthorized access
+✅ Invalid JSON: PASS (2ms)
+   Properly rejected invalid JSON
+✅ Invalid Integration ID: PASS (3ms)
+   Properly returned 404 for invalid ID
+
+⚡ Testing Performance...
+✅ Performance Test: PASS (2ms)
+   Average response time: 2ms
+
+📋 Test Summary Report
+==================================================
+Total Tests: 16
+Passed: 14 ✅
+Failed: 2 ❌
+Warnings: 0 ⚠️
+Success Rate: 87.5%
+Average Response Time: 16ms
+
+❌ Failed Tests:
+  - Review Analytics: Status: 422
+  - Review Sync: Unexpected status: 422
+
+🎯 Overall Assessment:
+🟡 GOOD: Most integrations working, minor issues to address
+
+💾 Detailed report saved to: marketing_integration_test_report_20250702_124152.json
+
+🎉 Marketing integration endpoints are ready for production!

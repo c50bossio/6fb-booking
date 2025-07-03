@@ -128,7 +128,7 @@ const SkeletonAvatar = ({ size = 'md', className, ...props }: SkeletonProps) => 
     <Skeleton
       variant="shimmer"
       shape="circle"
-      className={cn(sizeMap[size], className)}
+      className={cn(size ? sizeMap[size] : sizeMap.md, className)}
       {...props}
     />
   )

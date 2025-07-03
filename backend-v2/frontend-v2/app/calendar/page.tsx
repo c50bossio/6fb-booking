@@ -3,13 +3,17 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Calendar from '@/components/Calendar'
-import CalendarWeekView from '@/components/CalendarWeekView'
-import CalendarDayView from '@/components/CalendarDayView'
 import { useResponsiveCalendar } from '@/hooks/useResponsiveCalendar'
 import ResponsiveCalendar from '@/components/ResponsiveCalendar'
-import CalendarMonthView from '@/components/CalendarMonthView'
-import CalendarSync from '@/components/CalendarSync'
-import CalendarConflictResolver from '@/components/CalendarConflictResolver'
+
+// Lazy load heavy calendar components
+import { lazy, Suspense } from 'react'
+
+const CalendarWeekView = lazy(() => import('@/components/CalendarWeekView'))
+const CalendarDayView = lazy(() => import('@/components/CalendarDayView'))  
+const CalendarMonthView = lazy(() => import('@/components/CalendarMonthView'))
+const CalendarSync = lazy(() => import('@/components/CalendarSync'))
+const CalendarConflictResolver = lazy(() => import('@/components/CalendarConflictResolver'))
 import CreateAppointmentModal from '@/components/modals/CreateAppointmentModal'
 import TimePickerModal from '@/components/modals/TimePickerModal'
 import { format } from 'date-fns'
@@ -103,7 +107,7 @@ export default function CalendarPage() {
         () => getLocations()
       )
       
-      console.log('📍 Loaded locations:', userLocations)
+      // Locations loaded successfully
       setLocations(userLocations || [])
       
       // Set default location if we have locations
@@ -111,7 +115,7 @@ export default function CalendarPage() {
         setSelectedLocationId(userLocations[0].id)
       }
     } catch (locationErr) {
-      console.error('⚠️ Failed to load locations:', locationErr)
+      // Failed to load locations - error handled
       setLocationLoadingError('Failed to load locations. Please try again.')
       setLocations([])
     } finally {
@@ -194,7 +198,7 @@ export default function CalendarPage() {
         if (interaction.target === 'appointment') {
           const appointment = interaction.data as Appointment
           // Handle appointment editing
-          console.log('Edit appointment:', appointment)
+          // Edit appointment action initiated
         }
         break
         
@@ -226,7 +230,7 @@ export default function CalendarPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        console.log('📅 Loading calendar data with enhanced API...')
+        // Loading calendar data with enhanced API...
         
         // Load user profile with request deduplication
         const userProfile = await executeRequest(
@@ -255,7 +259,7 @@ export default function CalendarPage() {
             },
             () => getAllUsers('barber')
           )
-          console.log('📊 Loaded barbers:', allBarbers)
+          // Barbers loaded successfully
           setBarbers(allBarbers || [])
         } catch (barberErr) {
           console.error('⚠️ Failed to load barbers (non-critical):', barberErr)
@@ -265,11 +269,11 @@ export default function CalendarPage() {
         
         // Load appointments with optimistic updates manager
         const userBookings = await getAppointments()
-        console.log('📋 Appointments response:', userBookings)
+        // Appointments loaded successfully
         // The API returns { bookings: [...] } format
         setAppointments(userBookings.bookings || [])
         
-        console.log('✅ Calendar data loaded successfully')
+        // Calendar data loaded successfully
       } catch (err) {
         console.error('❌ Failed to load calendar data:', err)
         const errorMessage = 'Failed to load calendar data. Please try again.'
@@ -402,13 +406,13 @@ export default function CalendarPage() {
 
     try {
       setCancelingId(bookingId)
-      console.log(`🗑️ Canceling appointment ${bookingId} with optimistic update...`)
+      // Canceling appointment with optimistic update...
       
       // Use optimistic cancel with automatic rollback on failure
       await cancelOptimistic(bookingId)
       
       toastSuccess('Appointment Canceled', 'Your appointment has been successfully canceled.')
-      console.log(`✅ Appointment ${bookingId} canceled successfully`)
+      // Appointment canceled successfully
     } catch (err) {
       console.error('❌ Failed to cancel booking:', err)
       const errorMessage = 'Failed to cancel appointment. Please try again.'
@@ -431,13 +435,13 @@ export default function CalendarPage() {
       
       // Show confirmation dialog
       if (confirm(`Reschedule this appointment to ${format(newDate, 'MMM d, h:mm a')}?`)) {
-        console.log(`📅 Rescheduling appointment ${appointmentId} with optimistic update...`)
+        // Rescheduling appointment with optimistic update...
         
         // Use enhanced API with optimistic updates and automatic rollback
         await rescheduleOptimistic(appointmentId, dateStr, timeStr)
         
         toastSuccess('Appointment Rescheduled', 'Your appointment has been successfully rescheduled.')
-        console.log(`✅ Appointment ${appointmentId} rescheduled successfully`)
+        // Appointment rescheduled successfully
       }
     } catch (err) {
       console.error('❌ Failed to reschedule appointment:', err)
@@ -447,7 +451,7 @@ export default function CalendarPage() {
   }
 
   const handleLocationChange = (location: Location) => {
-    console.log('📍 Location changed to:', location.name)
+    // Location changed successfully
     setSelectedLocationId(location.id)
     
     // Reset barber selection when location changes to show all barbers in new location
@@ -667,7 +671,8 @@ export default function CalendarPage() {
         {viewMode === 'day' ? (
           // Day View
           <Card variant="glass" padding="none" className="col-span-full h-[800px]">
-            <CalendarDayView
+            <Suspense fallback={<CalendarSkeleton view="day" showStats={false} />}>
+              <CalendarDayView
               appointments={bookings}
               barbers={filteredBarbers}
               selectedBarberId={selectedBarberId}
@@ -686,12 +691,14 @@ export default function CalendarPage() {
               onAppointmentUpdate={handleAppointmentUpdate}
               currentDate={selectedDate || new Date()}
               onDateChange={setSelectedDate}
-            />
+              />
+            </Suspense>
           </Card>
         ) : viewMode === 'week' ? (
           // Week View
           <Card variant="glass" padding="none" className="col-span-full">
-            <CalendarWeekView
+            <Suspense fallback={<CalendarSkeleton view="week" showStats={false} />}>
+              <CalendarWeekView
               appointments={bookings}
               barbers={filteredBarbers}
               selectedBarberId={selectedBarberId}
@@ -710,12 +717,14 @@ export default function CalendarPage() {
               onAppointmentUpdate={handleAppointmentUpdate}
               currentDate={selectedDate || new Date()}
               onDateChange={setSelectedDate}
-            />
+              />
+            </Suspense>
           </Card>
         ) : (
           // Enhanced Month View
           <Card variant="glass" padding="none" className="col-span-full">
-            <CalendarMonthView
+            <Suspense fallback={<CalendarSkeleton view="month" showStats={false} />}>
+              <CalendarMonthView
               selectedDate={selectedDate}
               onDateSelect={setSelectedDate}
               appointments={bookings}
@@ -738,7 +747,8 @@ export default function CalendarPage() {
                 setPreselectedTime('09:00') // Default time
                 setShowCreateModal(true)
               }}
-            />
+              />
+            </Suspense>
           </Card>
         )}
       </CalendarErrorBoundary>
@@ -746,14 +756,18 @@ export default function CalendarPage() {
       {/* Google Calendar Sync Panel */}
       {user?.role === 'barber' && showSyncPanel && (
         <div className="mt-6">
-          <CalendarSync />
+          <Suspense fallback={<div className="animate-pulse bg-gray-200 h-40 rounded-lg"></div>}>
+            <CalendarSync />
+          </Suspense>
         </div>
       )}
 
       {/* Conflict Resolver Panel */}
       {user?.role === 'barber' && showConflictResolver && (
         <div className="mt-6">
-          <CalendarConflictResolver />
+          <Suspense fallback={<div className="animate-pulse bg-gray-200 h-40 rounded-lg"></div>}>
+            <CalendarConflictResolver />
+          </Suspense>
         </div>
       )}
 
@@ -790,13 +804,13 @@ export default function CalendarPage() {
         preselectedTime={preselectedTime}
         onSuccess={async () => {
           // Refresh appointments after successful creation using enhanced API
-          console.log('📅 Appointment created, refreshing calendar with enhanced API...')
+          // Appointment created, refreshing calendar with enhanced API...
           try {
             // Use enhanced refresh that automatically handles optimistic updates
             await refreshAppointments()
             setPreselectedTime(undefined)
             
-            console.log('✅ Calendar refreshed successfully with optimistic updates')
+            // Calendar refreshed successfully with optimistic updates
             
             // Show success notification
             toastSuccess('Appointment Created', 'Your appointment has been successfully created and added to the calendar.')

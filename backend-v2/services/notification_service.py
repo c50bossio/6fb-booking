@@ -621,10 +621,11 @@ class NotificationService:
         since_date = datetime.utcnow() - timedelta(days=days)
         
         # Database stats
+        from sqlalchemy import func
         db_stats = db.query(
             NotificationQueue.status,
             NotificationQueue.notification_type,
-            db.func.count(NotificationQueue.id).label('count')
+            func.count(NotificationQueue.id).label('count')
         ).filter(
             NotificationQueue.created_at >= since_date
         ).group_by(

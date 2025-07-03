@@ -213,7 +213,7 @@ export class RequestBatcher {
     // Hybrid: Execute on max size OR high priority requests
     if (config.strategy === 'hybrid') {
       const hasHighPriority = config.priorityThreshold !== undefined && 
-        batch.some(r => r.priority >= config.priorityThreshold)
+        batch.some(r => r.priority >= config.priorityThreshold!)
       
       return batch.length >= config.maxBatchSize || hasHighPriority || false
     }

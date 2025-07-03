@@ -14,7 +14,7 @@ import logging
 
 from models.integration import Integration, IntegrationType, IntegrationStatus
 from models import User
-from schemas.integration import (
+from schemas_new.integration import (
     IntegrationCreate, 
     IntegrationUpdate, 
     IntegrationResponse,

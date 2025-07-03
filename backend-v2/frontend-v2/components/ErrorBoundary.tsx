@@ -1,9 +1,11 @@
 'use client'
 
 import React, { Component, ReactNode, ErrorInfo } from 'react'
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react'
+import { AlertTriangle, RefreshCw, Home, MessageSquare } from 'lucide-react'
 import { Button } from './ui/Button'
 import { Alert, AlertDescription, AlertTitle } from './ui/alert'
+import * as Sentry from '@sentry/nextjs'
+import { reportApiError, captureUserFeedback, addUserActionBreadcrumb } from '../lib/sentry'
 
 interface Props {
   children: ReactNode
@@ -11,6 +13,8 @@ interface Props {
   onError?: (error: Error, errorInfo: React.ErrorInfo) => void
   resetKeys?: Array<string | number>
   resetOnPropsChange?: boolean
+  feature?: string // For Sentry context
+  userId?: string // For user context in errors
 }
 
 interface State {
@@ -18,6 +22,13 @@ interface State {
   error?: Error
   errorInfo?: ErrorInfo
   errorCount: number
+  sentryEventId?: string
+  showFeedbackForm: boolean
+  feedbackData: {
+    name: string
+    email: string
+    comments: string
+  }
 }
 
 export class ErrorBoundary extends Component<Props, State> {
@@ -25,7 +36,13 @@ export class ErrorBoundary extends Component<Props, State> {
     super(props)
     this.state = { 
       hasError: false,
-      errorCount: 0
+      errorCount: 0,
+      showFeedbackForm: false,
+      feedbackData: {
+        name: '',
+        email: '',
+        comments: ''
+      }
     }
   }
 
@@ -38,21 +55,43 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo)
+    
+    // Capture the error with Sentry and get the event ID
+    const sentryEventId = Sentry.withScope((scope) => {
+      // Add context about the error boundary
+      scope.setTag('errorBoundary', true)
+      scope.setTag('errorBoundary.feature', this.props.feature || 'unknown')
+      
+      // Add component stack and additional context
+      scope.setContext('errorBoundary', {
+        componentStack: errorInfo.componentStack,
+        feature: this.props.feature,
+        userId: this.props.userId,
+        errorCount: this.state.errorCount + 1,
+        timestamp: new Date().toISOString(),
+      })
+      
+      // Add breadcrumb for the error
+      addUserActionBreadcrumb(
+        'Error caught by boundary',
+        'interaction',
+        {
+          feature: this.props.feature,
+          errorMessage: error.message,
+          errorStack: error.stack?.substring(0, 1000), // First 1000 chars
+        }
+      )
+      
+      return Sentry.captureException(error)
+    })
+    
     this.setState((prev) => ({ 
       errorInfo,
-      errorCount: prev.errorCount + 1
+      errorCount: prev.errorCount + 1,
+      sentryEventId
     }))
-    this.props.onError?.(error, errorInfo)
     
-    // Log to error tracking service in production
-    if (process.env.NODE_ENV === 'production') {
-      // TODO: Add error tracking service integration (e.g., Sentry)
-      console.error('Production error:', {
-        error: error.toString(),
-        componentStack: errorInfo.componentStack,
-        timestamp: new Date().toISOString()
-      })
-    }
+    this.props.onError?.(error, errorInfo)
   }
 
   componentDidUpdate(prevProps: Props) {
@@ -69,11 +108,58 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   resetErrorBoundary = () => {
+    // Add breadcrumb for error boundary reset
+    addUserActionBreadcrumb(
+      'Error boundary reset',
+      'interaction',
+      {
+        feature: this.props.feature,
+        errorCount: this.state.errorCount,
+        sentryEventId: this.state.sentryEventId,
+      }
+    )
+    
     this.setState({ 
       hasError: false, 
       error: undefined,
-      errorInfo: undefined
+      errorInfo: undefined,
+      sentryEventId: undefined,
+      showFeedbackForm: false,
+      feedbackData: {
+        name: '',
+        email: '',
+        comments: ''
+      }
     })
+  }
+
+  handleFeedbackSubmit = () => {
+    const { feedbackData, sentryEventId } = this.state
+    
+    if (feedbackData.name && feedbackData.email && feedbackData.comments) {
+      captureUserFeedback(feedbackData, sentryEventId)
+      
+      addUserActionBreadcrumb(
+        'User feedback submitted',
+        'interaction',
+        {
+          feature: this.props.feature,
+          sentryEventId,
+          feedbackLength: feedbackData.comments.length,
+        }
+      )
+      
+      this.setState({ showFeedbackForm: false })
+    }
+  }
+
+  updateFeedbackData = (field: keyof State['feedbackData'], value: string) => {
+    this.setState(prev => ({
+      feedbackData: {
+        ...prev.feedbackData,
+        [field]: value
+      }
+    }))
   }
 
   render() {
@@ -124,9 +210,15 @@ export class ErrorBoundary extends Component<Props, State> {
               </AlertDescription>
             </Alert>
             
-            <div className="flex gap-2 justify-center">
+            <div className="flex gap-2 justify-center flex-wrap">
               <Button 
                 onClick={() => {
+                  addUserActionBreadcrumb(
+                    isChunkLoadError ? 'Page reload clicked' : 'Try again clicked',
+                    'interaction',
+                    { feature: this.props.feature }
+                  )
+                  
                   if (isChunkLoadError) {
                     window.location.reload()
                   } else {
@@ -140,13 +232,37 @@ export class ErrorBoundary extends Component<Props, State> {
                 {isChunkLoadError ? 'Reload Page' : 'Try Again'}
               </Button>
               <Button
-                onClick={() => window.location.href = '/'}
+                onClick={() => {
+                  addUserActionBreadcrumb(
+                    'Go home clicked',
+                    'navigation',
+                    { feature: this.props.feature }
+                  )
+                  window.location.href = '/'
+                }}
                 variant="outline"
                 size="sm"
               >
                 <Home className="mr-2 h-4 w-4" />
                 Go Home
               </Button>
+              {this.state.sentryEventId && !this.state.showFeedbackForm && (
+                <Button
+                  onClick={() => {
+                    addUserActionBreadcrumb(
+                      'Feedback form opened',
+                      'interaction',
+                      { feature: this.props.feature, sentryEventId: this.state.sentryEventId }
+                    )
+                    this.setState({ showFeedbackForm: true })
+                  }}
+                  variant="outline"
+                  size="sm"
+                >
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  Report Issue
+                </Button>
+              )}
             </div>
             
             {this.state.errorCount > 2 && (
@@ -154,6 +270,62 @@ export class ErrorBoundary extends Component<Props, State> {
                 This error has occurred {this.state.errorCount} times. 
                 Consider contacting support if the issue persists.
               </p>
+            )}
+
+            {/* User Feedback Form */}
+            {this.state.showFeedbackForm && (
+              <div className="mt-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                <h3 className="text-sm font-medium mb-3">Help us fix this issue</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium mb-1">Your Name</label>
+                    <input
+                      type="text"
+                      className="w-full px-2 py-1 text-sm border rounded"
+                      value={this.state.feedbackData.name}
+                      onChange={(e) => this.updateFeedbackData('name', e.target.value)}
+                      placeholder="Enter your name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-1">Email</label>
+                    <input
+                      type="email"
+                      className="w-full px-2 py-1 text-sm border rounded"
+                      value={this.state.feedbackData.email}
+                      onChange={(e) => this.updateFeedbackData('email', e.target.value)}
+                      placeholder="your.email@example.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-1">
+                      What were you trying to do when this error occurred?
+                    </label>
+                    <textarea
+                      className="w-full px-2 py-1 text-sm border rounded h-20 resize-none"
+                      value={this.state.feedbackData.comments}
+                      onChange={(e) => this.updateFeedbackData('comments', e.target.value)}
+                      placeholder="Describe what happened and what you expected to happen..."
+                    />
+                  </div>
+                  <div className="flex gap-2 justify-end">
+                    <Button
+                      onClick={() => this.setState({ showFeedbackForm: false })}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={this.handleFeedbackSubmit}
+                      size="sm"
+                      disabled={!this.state.feedbackData.name || !this.state.feedbackData.email || !this.state.feedbackData.comments}
+                    >
+                      Send Feedback
+                    </Button>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         </div>

@@ -16,7 +16,7 @@ def analyze_booking_contradiction():
     print()
     
     # Get auth token
-    auth_data = {"username": "test@example.com", "password": "Test123!"}
+    auth_data = {"email": "test@example.com", "password": "Test123!"}
     response = requests.post("http://localhost:8000/api/v1/auth/login", json=auth_data)
     
     if response.status_code != 200:

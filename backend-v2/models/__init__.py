@@ -79,6 +79,18 @@ from .product import (
 )
 from .api_key import APIKey, APIKeyStatus
 from .idempotency import IdempotencyKey, IdempotencyOperationType
+from .consent import (
+    UserConsent, CookieConsent, DataProcessingLog, DataExportRequest, LegalConsentAudit,
+    ConsentType, ConsentStatus, CookieCategory, DataProcessingPurpose, ExportStatus
+)
+from .cancellation import (
+    CancellationPolicy, AppointmentCancellation, WaitlistEntry, CancellationPolicyHistory,
+    CancellationReason, RefundType
+)
+from .ai_analytics import (
+    PerformanceBenchmark, AIInsightCache, CrossUserMetric, PredictiveModel, BusinessIntelligenceReport,
+    BenchmarkCategory, InsightType, BusinessSegment
+)
 
 __all__ = [
     # Main models from parent models.py
@@ -104,5 +116,11 @@ __all__ = [
     'Product', 'ProductVariant', 'InventoryItem', 'Order', 'OrderItem', 'POSTransaction',
     'ProductStatus', 'ProductType', 'OrderStatus', 'OrderSource',
     'APIKey', 'APIKeyStatus',
-    'IdempotencyKey', 'IdempotencyOperationType'
+    'IdempotencyKey', 'IdempotencyOperationType',
+    'UserConsent', 'CookieConsent', 'DataProcessingLog', 'DataExportRequest', 'LegalConsentAudit',
+    'ConsentType', 'ConsentStatus', 'CookieCategory', 'DataProcessingPurpose', 'ExportStatus',
+    'CancellationPolicy', 'AppointmentCancellation', 'WaitlistEntry', 'CancellationPolicyHistory',
+    'CancellationReason', 'RefundType',
+    'PerformanceBenchmark', 'AIInsightCache', 'CrossUserMetric', 'PredictiveModel', 'BusinessIntelligenceReport',
+    'BenchmarkCategory', 'InsightType', 'BusinessSegment'
 ]

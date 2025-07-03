@@ -1,0 +1,30 @@
+{
+  "timestamp": "2025-07-02T14:22:16.924Z",
+  "cleanup": {
+    "filesRemoved": [
+      "verify_site_functionality.js",
+      "test-location-edge-cases.js",
+      "location-filter-test-report.md",
+      "crawl_dark_mode_fixed.js",
+      "investigate_ui_issues.js",
+      "investigate_notification_and_scrollbar.js",
+      "simplified_design_verification.js",
+      "verify_apple_design_system.js",
+      "check_api_issue.js",
+      "crawl_dark_mode_issues.js",
+      ".pytest_cache",
+      "components/integrations/IntegrationCard.test.tsx"
+    ],
+    "dependenciesRemoved": [
+      "puppeteer"
+    ],
+    "sizeSaved": 214821561,
+    "errors": []
+  },
+  "recommendations": [
+    "Run npm install to update dependencies",
+    "Run npm run build to verify build still works",
+    "Run npm audit to check for security issues",
+    "Run npm run size to check bundle size improvements"
+  ]
+}

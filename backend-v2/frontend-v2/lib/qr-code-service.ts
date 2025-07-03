@@ -150,7 +150,7 @@ export function validateBookingUrl(url: string): boolean {
  */
 export function generateQRCodeFilename(
   prefix: string = 'booking-qr-code',
-  size: QRCodeSize,
+  size: QRCodeSize = 'medium',
   format: QRCodeFormat = 'png'
 ): string {
   const timestamp = new Date().toISOString().slice(0, 10);

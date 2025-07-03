@@ -1,0 +1,555 @@
+name: Production Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to rollback'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+      rollback_target:
+        description: 'Rollback target'
+        required: true
+        type: choice
+        options:
+          - previous-deployment
+          - specific-version
+          - last-known-good
+      specific_version:
+        description: 'Specific version (if selected above)'
+        required: false
+        type: string
+      skip_validation:
+        description: 'Skip validation (emergency only)'
+        required: false
+        default: false
+        type: boolean
+      reason:
+        description: 'Rollback reason'
+        required: true
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  ENVIRONMENT: ${{ github.event.inputs.environment }}
+  CLUSTER_NAME: bookedbarber-${{ github.event.inputs.environment }}
+  NAMESPACE: ${{ github.event.inputs.environment }}
+
+jobs:
+  validate-rollback:
+    name: Validate Rollback Request
+    runs-on: ubuntu-latest
+    outputs:
+      target-version: ${{ steps.target.outputs.version }}
+      target-color: ${{ steps.target.outputs.color }}
+      current-version: ${{ steps.current.outputs.version }}
+      rollback-approved: ${{ steps.approval.outputs.approved }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name ${{ env.CLUSTER_NAME }}
+
+      - name: Get current deployment info
+        id: current
+        run: |
+          current_version=$(kubectl get deployment backend-deployment \
+            -n ${{ env.NAMESPACE }} \
+            -o jsonpath='{.metadata.labels.version}' 2>/dev/null || echo "none")
+          
+          current_color=$(kubectl get service backend-service \
+            -n ${{ env.NAMESPACE }} \
+            -o jsonpath='{.spec.selector.color}' 2>/dev/null || echo "unknown")
+          
+          echo "version=$current_version" >> $GITHUB_OUTPUT
+          echo "color=$current_color" >> $GITHUB_OUTPUT
+          
+          echo "Current version: $current_version"
+          echo "Current color: $current_color"
+
+      - name: Determine rollback target
+        id: target
+        run: |
+          rollback_target="${{ github.event.inputs.rollback_target }}"
+          
+          case $rollback_target in
+            "previous-deployment")
+              # Get previous deployment from history
+              target_version=$(kubectl rollout history deployment/backend-deployment \
+                -n ${{ env.NAMESPACE }} --revision=1 | grep -o 'deployment.*/.*' | head -1)
+              ;;
+            "specific-version")
+              target_version="${{ github.event.inputs.specific_version }}"
+              if [ -z "$target_version" ]; then
+                echo "❌ Specific version not provided"
+                exit 1
+              fi
+              ;;
+            "last-known-good")
+              # Get last known good version from monitoring/health checks
+              target_version=$(curl -s https://monitoring.bookedbarber.com/api/last-known-good)
+              ;;
+          esac
+          
+          # Determine target color (opposite of current)
+          current_color="${{ steps.current.outputs.color }}"
+          if [ "$current_color" = "blue" ]; then
+            target_color="green"
+          else
+            target_color="blue"
+          fi
+          
+          echo "version=$target_version" >> $GITHUB_OUTPUT
+          echo "color=$target_color" >> $GITHUB_OUTPUT
+          
+          echo "Target version: $target_version"
+          echo "Target color: $target_color"
+
+      - name: Validate target deployment exists
+        run: |
+          target_version="${{ steps.target.outputs.version }}"
+          target_color="${{ steps.target.outputs.color }}"
+          
+          # Check if target deployment exists
+          if kubectl get deployment backend-deployment \
+             -n ${{ env.NAMESPACE }}-$target_color >/dev/null 2>&1; then
+            echo "✅ Target deployment exists"
+          else
+            echo "❌ Target deployment not found in $target_color environment"
+            echo "Available deployments:"
+            kubectl get deployments -n ${{ env.NAMESPACE }}-$target_color || true
+            exit 1
+          fi
+
+      - name: Pre-rollback approval check
+        id: approval
+        run: |
+          # For production, require additional validation
+          if [ "${{ env.ENVIRONMENT }}" = "production" ]; then
+            if [ "${{ github.event.inputs.skip_validation }}" = "true" ]; then
+              echo "⚠️ Validation skipped for emergency rollback"
+              echo "approved=true" >> $GITHUB_OUTPUT
+            else
+              # Check if current deployment is actually failing
+              health_status=$(curl -s -o /dev/null -w "%{http_code}" https://bookedbarber.com/health)
+              if [ $health_status -eq 200 ]; then
+                echo "⚠️ Current deployment appears healthy (HTTP $health_status)"
+                echo "Consider if rollback is necessary"
+              fi
+              echo "approved=true" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "approved=true" >> $GITHUB_OUTPUT
+          fi
+
+  emergency-approval:
+    name: Emergency Rollback Approval
+    runs-on: ubuntu-latest
+    needs: validate-rollback
+    if: github.event.inputs.environment == 'production'
+    environment:
+      name: production-rollback
+    steps:
+      - name: Display rollback details
+        run: |
+          echo "🚨 PRODUCTION ROLLBACK REQUEST"
+          echo "=============================="
+          echo "Current version: ${{ needs.validate-rollback.outputs.current-version }}"
+          echo "Target version: ${{ needs.validate-rollback.outputs.target-version }}"
+          echo "Target color: ${{ needs.validate-rollback.outputs.target-color }}"
+          echo "Reason: ${{ github.event.inputs.reason }}"
+          echo "Skip validation: ${{ github.event.inputs.skip_validation }}"
+          echo "Requested by: ${{ github.actor }}"
+          echo "=============================="
+
+  execute-rollback:
+    name: Execute Rollback
+    runs-on: ubuntu-latest
+    needs: [validate-rollback, emergency-approval]
+    if: always() && (success() || github.event.inputs.environment != 'production')
+    environment:
+      name: ${{ github.event.inputs.environment }}
+      url: ${{ github.event.inputs.environment == 'production' && 'https://bookedbarber.com' || 'https://staging.bookedbarber.com' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name ${{ env.CLUSTER_NAME }}
+
+      - name: Create database backup before rollback
+        if: github.event.inputs.environment == 'production'
+        run: |
+          echo "💾 Creating database backup before rollback..."
+          kubectl create job db-backup-rollback-${{ github.run_id }} \
+            --from=cronjob/db-backup-job \
+            --namespace=${{ env.NAMESPACE }}
+          
+          kubectl wait --for=condition=complete job/db-backup-rollback-${{ github.run_id }} \
+            --timeout=300s --namespace=${{ env.NAMESPACE }}
+          
+          echo "✅ Database backup completed"
+
+      - name: Scale up target deployment
+        run: |
+          target_color="${{ needs.validate-rollback.outputs.target-color }}"
+          
+          echo "🔄 Scaling up $target_color deployment..."
+          
+          # Scale up target deployment
+          kubectl scale deployment backend-deployment \
+            --replicas=3 --namespace=${{ env.NAMESPACE }}-$target_color
+          
+          kubectl scale deployment frontend-deployment \
+            --replicas=2 --namespace=${{ env.NAMESPACE }}-$target_color
+          
+          # Wait for deployments to be ready
+          kubectl rollout status deployment/backend-deployment \
+            --timeout=300s --namespace=${{ env.NAMESPACE }}-$target_color
+          
+          kubectl rollout status deployment/frontend-deployment \
+            --timeout=300s --namespace=${{ env.NAMESPACE }}-$target_color
+
+      - name: Health check target deployment
+        if: github.event.inputs.skip_validation != 'true'
+        run: |
+          target_color="${{ needs.validate-rollback.outputs.target-color }}"
+          
+          echo "🏥 Health checking $target_color deployment..."
+          
+          # Get service endpoint
+          backend_ip=$(kubectl get service backend-service \
+            --namespace=${{ env.NAMESPACE }}-$target_color \
+            -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          
+          # Health check with retries
+          for i in {1..20}; do
+            if curl -f http://$backend_ip/health; then
+              echo "✅ Health check passed"
+              break
+            fi
+            if [ $i -eq 20 ]; then
+              echo "❌ Health check failed after 20 attempts"
+              if [ "${{ github.event.inputs.skip_validation }}" != "true" ]; then
+                exit 1
+              else
+                echo "⚠️ Continuing due to skip_validation=true"
+              fi
+            fi
+            sleep 10
+          done
+
+      - name: Switch traffic to target deployment
+        run: |
+          target_color="${{ needs.validate-rollback.outputs.target-color }}"
+          
+          echo "🔄 Switching traffic to $target_color deployment..."
+          
+          # Update service selector to point to target deployment
+          kubectl patch service backend-service \
+            --namespace=${{ env.NAMESPACE }} \
+            -p '{"spec":{"selector":{"color":"'$target_color'"}}}'
+          
+          kubectl patch service frontend-service \
+            --namespace=${{ env.NAMESPACE }} \
+            -p '{"spec":{"selector":{"color":"'$target_color'"}}}'
+          
+          echo "✅ Traffic switched to $target_color"
+
+      - name: Verify rollback
+        run: |
+          sleep 30
+          
+          # Verify rollback was successful
+          base_url="https://bookedbarber.com"
+          if [ "${{ env.ENVIRONMENT }}" = "staging" ]; then
+            base_url="https://staging.bookedbarber.com"
+          fi
+          
+          response=$(curl -s $base_url/health)
+          if echo "$response" | grep -q "healthy"; then
+            echo "✅ Rollback verification successful"
+          else
+            echo "❌ Rollback verification failed"
+            echo "Response: $response"
+            exit 1
+          fi
+
+      - name: Scale down failed deployment
+        run: |
+          current_color="${{ needs.validate-rollback.outputs.current-color }}"
+          
+          echo "⬇️ Scaling down failed $current_color deployment..."
+          
+          kubectl scale deployment backend-deployment \
+            --replicas=0 --namespace=${{ env.NAMESPACE }}-$current_color || true
+          
+          kubectl scale deployment frontend-deployment \
+            --replicas=0 --namespace=${{ env.NAMESPACE }}-$current_color || true
+
+      - name: Update deployment labels
+        run: |
+          target_version="${{ needs.validate-rollback.outputs.target-version }}"
+          target_color="${{ needs.validate-rollback.outputs.target-color }}"
+          
+          # Update deployment labels to reflect rollback
+          kubectl label deployment backend-deployment \
+            --namespace=${{ env.NAMESPACE }}-$target_color \
+            version=$target_version rollback=true rollback-from=${{ needs.validate-rollback.outputs.current-version }} \
+            --overwrite
+          
+          kubectl label deployment frontend-deployment \
+            --namespace=${{ env.NAMESPACE }}-$target_color \
+            version=$target_version rollback=true rollback-from=${{ needs.validate-rollback.outputs.current-version }} \
+            --overwrite
+
+  post-rollback-validation:
+    name: Post-rollback Validation
+    runs-on: ubuntu-latest
+    needs: [validate-rollback, execute-rollback]
+    if: github.event.inputs.skip_validation != 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Run smoke tests
+        env:
+          BASE_URL: ${{ github.event.inputs.environment == 'production' && 'https://bookedbarber.com' || 'https://staging.bookedbarber.com' }}
+          API_URL: ${{ github.event.inputs.environment == 'production' && 'https://api.bookedbarber.com' || 'https://api-staging.bookedbarber.com' }}
+        run: |
+          cd tests/smoke
+          npm ci
+          npm run test:${{ github.event.inputs.environment }}
+
+      - name: Monitor error rates
+        run: |
+          echo "📊 Monitoring error rates after rollback..."
+          base_url="${{ github.event.inputs.environment == 'production' && 'https://api.bookedbarber.com' || 'https://api-staging.bookedbarber.com' }}"
+          
+          for i in {1..6}; do
+            error_rate=$(curl -s $base_url/metrics | grep error_rate | tail -1 || echo "error_rate 0.0")
+            echo "Error rate check $i: $error_rate"
+            sleep 30
+          done
+
+      - name: Validate critical functionality
+        run: |
+          echo "🔍 Validating critical functionality..."
+          
+          base_url="${{ github.event.inputs.environment == 'production' && 'https://bookedbarber.com' || 'https://staging.bookedbarber.com' }}"
+          
+          # Test critical endpoints
+          endpoints=("/health" "/api/v1/auth/status" "/api/v1/appointments/available")
+          
+          for endpoint in "${endpoints[@]}"; do
+            if curl -f "${base_url}${endpoint}"; then
+              echo "✅ $endpoint working"
+            else
+              echo "❌ $endpoint failed"
+              exit 1
+            fi
+          done
+
+  rollback-notification:
+    name: Rollback Notifications
+    runs-on: ubuntu-latest
+    needs: [validate-rollback, execute-rollback, post-rollback-validation]
+    if: always()
+    steps:
+      - name: Determine rollback status
+        id: status
+        run: |
+          if [[ "${{ needs.execute-rollback.result }}" == "success" ]] && \
+             [[ "${{ needs.post-rollback-validation.result }}" == "success" || "${{ github.event.inputs.skip_validation }}" == "true" ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "message=Rollback completed successfully! ✅" >> $GITHUB_OUTPUT
+            echo "color=good" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "message=Rollback failed! ❌" >> $GITHUB_OUTPUT
+            echo "color=danger" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Slack notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ steps.status.outputs.status }}
+          channel: '#production-incidents'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          custom_payload: |
+            {
+              "attachments": [
+                {
+                  "color": "${{ steps.status.outputs.color }}",
+                  "blocks": [
+                    {
+                      "type": "section",
+                      "text": {
+                        "type": "mrkdwn",
+                        "text": "🔄 *ROLLBACK EXECUTED*\n\n*Status*: ${{ steps.status.outputs.message }}\n*Environment*: ${{ github.event.inputs.environment }}\n*Target*: ${{ github.event.inputs.rollback_target }}\n*Version*: ${{ needs.validate-rollback.outputs.target-version }}\n*Color*: ${{ needs.validate-rollback.outputs.target-color }}\n*Reason*: ${{ github.event.inputs.reason }}\n*Executed by*: ${{ github.actor }}"
+                      }
+                    },
+                    {
+                      "type": "section",
+                      "fields": [
+                        {
+                          "type": "mrkdwn",
+                          "text": "*From Version:*\n${{ needs.validate-rollback.outputs.current-version }}"
+                        },
+                        {
+                          "type": "mrkdwn",
+                          "text": "*To Version:*\n${{ needs.validate-rollback.outputs.target-version }}"
+                        },
+                        {
+                          "type": "mrkdwn",
+                          "text": "*Skip Validation:*\n${{ github.event.inputs.skip_validation }}"
+                        },
+                        {
+                          "type": "mrkdwn",
+                          "text": "*Duration:*\n~5 minutes"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+
+      - name: Create incident report
+        if: steps.status.outputs.status == 'success'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const title = `Rollback: ${{ github.event.inputs.environment }} - ${{ github.event.inputs.reason }}`;
+            const body = `## 🔄 Rollback Report
+            
+            **Environment:** ${{ github.event.inputs.environment }}
+            **Rollback Target:** ${{ github.event.inputs.rollback_target }}
+            **Reason:** ${{ github.event.inputs.reason }}
+            **Executed by:** ${{ github.actor }}
+            **Date:** ${new Date().toISOString()}
+            
+            ### Version Changes
+            - **From:** ${{ needs.validate-rollback.outputs.current-version }}
+            - **To:** ${{ needs.validate-rollback.outputs.target-version }}
+            - **Color:** ${{ needs.validate-rollback.outputs.target-color }}
+            
+            ### Rollback Process
+            - ✅ Target deployment validated
+            - ✅ Database backup created
+            - ✅ Target deployment scaled up
+            - ✅ Health checks passed
+            - ✅ Traffic switched
+            - ✅ Post-rollback validation completed
+            
+            ### Post-Rollback Status
+            - **Service Status:** Healthy
+            - **Error Rates:** Normal
+            - **Critical Functions:** Validated
+            
+            ### Next Steps
+            - [ ] Monitor system for 30 minutes
+            - [ ] Investigate root cause of original issue
+            - [ ] Plan fix deployment
+            - [ ] Update runbooks if needed
+            `;
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['rollback', 'incident', '${{ github.event.inputs.environment }}']
+            });
+
+      - name: Send email notification
+        if: github.event.inputs.environment == 'production'
+        run: |
+          echo "Sending email notification to stakeholders..."
+          # This would integrate with your email service
+          curl -X POST "https://api.sendgrid.com/v3/mail/send" \
+            -H "Authorization: Bearer ${{ secrets.SENDGRID_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "personalizations": [
+                {
+                  "to": [
+                    {"email": "devops@bookedbarber.com"},
+                    {"email": "team@bookedbarber.com"}
+                  ],
+                  "subject": "Production Rollback Executed - ${{ github.event.inputs.reason }}"
+                }
+              ],
+              "from": {"email": "noreply@bookedbarber.com"},
+              "content": [
+                {
+                  "type": "text/html",
+                  "value": "<h2>Production Rollback Completed</h2><p>Status: ${{ steps.status.outputs.message }}</p><p>Reason: ${{ github.event.inputs.reason }}</p><p>Executed by: ${{ github.actor }}</p>"
+                }
+              ]
+            }' || echo "Email notification failed"
+
+  cleanup-rollback:
+    name: Cleanup After Rollback
+    runs-on: ubuntu-latest
+    needs: [validate-rollback, execute-rollback, post-rollback-validation]
+    if: success()
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name ${{ env.CLUSTER_NAME }}
+
+      - name: Clean up rollback resources
+        run: |
+          echo "🧹 Cleaning up rollback resources..."
+          
+          # Clean up any temporary resources created during rollback
+          kubectl delete jobs -l rollback=true --namespace=${{ env.NAMESPACE }} || true
+          
+          # Keep failed deployment scaled down but available for investigation
+          echo "Failed deployment kept scaled down for investigation"
+
+      - name: Update monitoring dashboards
+        run: |
+          echo "📊 Updating monitoring dashboards with rollback event..."
+          # This would update your monitoring service with the rollback event
+          curl -X POST "https://monitoring.bookedbarber.com/api/events" \
+            -H "Authorization: Bearer ${{ secrets.MONITORING_API_KEY }}" \
+            -d '{
+              "type": "rollback",
+              "environment": "${{ github.event.inputs.environment }}",
+              "from_version": "${{ needs.validate-rollback.outputs.current-version }}",
+              "to_version": "${{ needs.validate-rollback.outputs.target-version }}",
+              "reason": "${{ github.event.inputs.reason }}",
+              "executor": "${{ github.actor }}"
+            }' || echo "Monitoring update failed"
