@@ -1,0 +1,997 @@
+{
+  "info": {
+    "name": "BookedBarber V2 API",
+    "description": "Comprehensive API collection for BookedBarber V2 - Professional Barbershop Management Platform",
+    "version": "2.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url_dev",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "base_url_staging",
+      "value": "http://localhost:8001",
+      "type": "string"
+    },
+    {
+      "key": "base_url_prod",
+      "value": "https://api.bookedbarber.com",
+      "type": "string"
+    },
+    {
+      "key": "base_url",
+      "value": "{{base_url_dev}}",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "appointment_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "client_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"SecurePassword123!\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"phone\": \"+1234567890\",\n  \"role\": \"client\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', response.access_token);",
+                  "    pm.collectionVariables.set('refresh_token', response.refresh_token);",
+                  "    pm.collectionVariables.set('user_id', response.user.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"SecurePassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', response.access_token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "refresh"]
+            }
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/forgot-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "forgot-password"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Multi-Factor Authentication",
+      "item": [
+        {
+          "name": "Setup MFA",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/mfa/setup",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "mfa", "setup"]
+            }
+          }
+        },
+        {
+          "name": "Enable MFA",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"otp_code\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/mfa/enable",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "mfa", "enable"]
+            }
+          }
+        },
+        {
+          "name": "Verify MFA",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"otp_code\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/mfa/verify",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "mfa", "verify"]
+            }
+          }
+        },
+        {
+          "name": "Get MFA Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/mfa/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "mfa", "status"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Appointments",
+      "item": [
+        {
+          "name": "List Appointments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/appointments?start_date=2024-07-01&end_date=2024-07-31&status=confirmed",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "appointments"],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "2024-07-01"
+                },
+                {
+                  "key": "end_date",
+                  "value": "2024-07-31"
+                },
+                {
+                  "key": "status",
+                  "value": "confirmed"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Appointment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('appointment_id', response.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client_id\": \"{{client_id}}\",\n  \"barber_id\": \"{{user_id}}\",\n  \"service_id\": 1,\n  \"start_time\": \"2024-07-10T14:00:00Z\",\n  \"notes\": \"Regular customer\",\n  \"send_confirmation\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/appointments",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "appointments"]
+            }
+          }
+        },
+        {
+          "name": "Get Appointment",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/appointments/{{appointment_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "appointments", "{{appointment_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Appointment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"start_time\": \"2024-07-10T15:00:00Z\",\n  \"notes\": \"Time changed by client request\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/appointments/{{appointment_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "appointments", "{{appointment_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Cancel Appointment",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cancellation_reason\": \"Client requested cancellation\",\n  \"send_notification\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/appointments/{{appointment_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "appointments", "{{appointment_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Clients",
+      "item": [
+        {
+          "name": "List Clients",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/clients?search=john&page=1&per_page=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "clients"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "john"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Client",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('client_id', response.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Jane\",\n  \"last_name\": \"Smith\",\n  \"email\": \"jane@example.com\",\n  \"phone\": \"+1987654321\",\n  \"notes\": \"Prefers afternoon appointments\",\n  \"marketing_consent\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/clients",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "clients"]
+            }
+          }
+        },
+        {
+          "name": "Get Client",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/clients/{{client_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "clients", "{{client_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Client",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+1555123456\",\n  \"notes\": \"Updated contact information\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/clients/{{client_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "clients", "{{client_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "Create Payment Intent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appointment_id\": \"{{appointment_id}}\",\n  \"amount\": 3500,\n  \"currency\": \"USD\",\n  \"payment_method_types\": [\"card\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/payments/create-intent",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "payments", "create-intent"]
+            }
+          }
+        },
+        {
+          "name": "Payment History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/payments/history?start_date=2024-07-01&end_date=2024-07-31",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "payments", "history"],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "2024-07-01"
+                },
+                {
+                  "key": "end_date",
+                  "value": "2024-07-31"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "AI Analytics",
+      "item": [
+        {
+          "name": "Get Performance Benchmarks",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"metric_type\": \"revenue\",\n  \"date_range_start\": \"2024-01-01\",\n  \"date_range_end\": \"2024-06-30\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/ai-analytics/benchmark",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "ai-analytics", "benchmark"]
+            }
+          }
+        },
+        {
+          "name": "Revenue Forecasting",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prediction_type\": \"revenue_forecast\",\n  \"months_ahead\": 6,\n  \"include_seasonal\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/ai-analytics/predict/revenue",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "ai-analytics", "predict", "revenue"]
+            }
+          }
+        },
+        {
+          "name": "Client Churn Prediction",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prediction_type\": \"churn_prediction\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/ai-analytics/predict/churn",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "ai-analytics", "predict", "churn"]
+            }
+          }
+        },
+        {
+          "name": "AI Analytics Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/ai-analytics/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "ai-analytics", "dashboard"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Marketing Integrations",
+      "item": [
+        {
+          "name": "Google My Business - List Reviews",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/reviews?platform=google_my_business&status=new",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "reviews"],
+              "query": [
+                {
+                  "key": "platform",
+                  "value": "google_my_business"
+                },
+                {
+                  "key": "status",
+                  "value": "new"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Generate Review Response",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"template_type\": \"appreciation\",\n  \"personalization_level\": \"high\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/reviews/123/generate-response",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "reviews", "123", "generate-response"]
+            }
+          }
+        },
+        {
+          "name": "Track Conversion Event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_name\": \"appointment_booked\",\n  \"value\": 35.00,\n  \"currency\": \"USD\",\n  \"custom_parameters\": {\n    \"service_type\": \"haircut\",\n    \"utm_source\": \"google\",\n    \"utm_campaign\": \"summer_promotion\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/tracking/event",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "tracking", "event"]
+            }
+          }
+        },
+        {
+          "name": "Integration Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/integrations/health",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "integrations", "health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "GDPR Compliance",
+      "item": [
+        {
+          "name": "Get User Consents",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/privacy/consents",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "privacy", "consents"]
+            }
+          }
+        },
+        {
+          "name": "Update Consent",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"consents\": [\n    {\n      \"consent_type\": \"marketing_emails\",\n      \"status\": \"granted\"\n    },\n    {\n      \"consent_type\": \"aggregate_analytics\",\n      \"status\": \"denied\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/privacy/consents",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "privacy", "consents"]
+            }
+          }
+        },
+        {
+          "name": "Request Data Export",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"export_format\": \"json\",\n  \"data_categories\": [\n    \"profile_data\",\n    \"booking_history\",\n    \"payment_records\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/privacy/data-export",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "privacy", "data-export"]
+            }
+          }
+        },
+        {
+          "name": "Cookie Preferences",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/privacy/cookies",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "privacy", "cookies"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Calendar Integration",
+      "item": [
+        {
+          "name": "Get Calendar Events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/calendar/events?start=2024-07-01&end=2024-07-31",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "calendar", "events"],
+              "query": [
+                {
+                  "key": "start",
+                  "value": "2024-07-01"
+                },
+                {
+                  "key": "end",
+                  "value": "2024-07-31"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Sync with Google Calendar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"calendar_id\": \"primary\",\n  \"sync_direction\": \"bidirectional\",\n  \"sync_past_days\": 30,\n  \"sync_future_days\": 90\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/calendar/sync",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "calendar", "sync"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Services",
+      "item": [
+        {
+          "name": "List Services",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/services",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "services"]
+            }
+          }
+        },
+        {
+          "name": "Create Service",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Haircut & Style\",\n  \"description\": \"Professional haircut with styling\",\n  \"duration\": 60,\n  \"price\": 35.00,\n  \"currency\": \"USD\",\n  \"category\": \"haircut\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/services",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "services"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "item": [
+        {
+          "name": "Revenue Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/analytics/revenue?start_date=2024-07-01&end_date=2024-07-31&group_by=day",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "analytics", "revenue"],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "2024-07-01"
+                },
+                {
+                  "key": "end_date",
+                  "value": "2024-07-31"
+                },
+                {
+                  "key": "group_by",
+                  "value": "day"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Appointment Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/analytics/appointments?start_date=2024-07-01&end_date=2024-07-31",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "analytics", "appointments"],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "2024-07-01"
+                },
+                {
+                  "key": "end_date",
+                  "value": "2024-07-31"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health & System",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "API Documentation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/docs",
+              "host": ["{{base_url}}"],
+              "path": ["docs"]
+            }
+          }
+        },
+        {
+          "name": "OpenAPI Specification",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/openapi.json",
+              "host": ["{{base_url}}"],
+              "path": ["openapi.json"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-refresh token if expired",
+          "const token = pm.collectionVariables.get('access_token');",
+          "if (!token) {",
+          "    console.log('No access token found');",
+          "    return;",
+          "}",
+          "",
+          "// Check if token is expired (basic JWT decode)",
+          "try {",
+          "    const payload = JSON.parse(atob(token.split('.')[1]));",
+          "    const now = Math.floor(Date.now() / 1000);",
+          "    ",
+          "    if (payload.exp && payload.exp < now) {",
+          "        console.log('Token expired, attempting refresh...');",
+          "        const refreshToken = pm.collectionVariables.get('refresh_token');",
+          "        ",
+          "        if (refreshToken) {",
+          "            pm.sendRequest({",
+          "                url: pm.collectionVariables.get('base_url') + '/api/v1/auth/refresh',",
+          "                method: 'POST',",
+          "                header: {",
+          "                    'Content-Type': 'application/json'",
+          "                },",
+          "                body: {",
+          "                    mode: 'raw',",
+          "                    raw: JSON.stringify({ refresh_token: refreshToken })",
+          "                }",
+          "            }, (err, res) => {",
+          "                if (err) {",
+          "                    console.log('Failed to refresh token:', err);",
+          "                } else if (res.code === 200) {",
+          "                    const newToken = res.json().access_token;",
+          "                    pm.collectionVariables.set('access_token', newToken);",
+          "                    console.log('Token refreshed successfully');",
+          "                } else {",
+          "                    console.log('Failed to refresh token, status:', res.code);",
+          "                }",
+          "            });",
+          "        }",
+          "    }",
+          "} catch (e) {",
+          "    console.log('Error parsing token:', e);",
+          "}"
+        ]
+      }
+    }
+  ]
+}

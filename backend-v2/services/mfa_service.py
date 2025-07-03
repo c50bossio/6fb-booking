@@ -19,7 +19,7 @@ import pyotp
 import logging
 
 from models.mfa import UserMFASecret, MFABackupCode, MFADeviceTrust, MFAEvent
-from models.user import User
+from models import User
 from utils.encryption import encrypt_data, decrypt_data
 from utils.logging_config import get_audit_logger
 from config import settings

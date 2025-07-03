@@ -1,16 +1,21 @@
-# 6FB Booking Platform - Deployment Guide
+# BookedBarber V2 - Production Deployment Guide
 
 ## Overview
 
-The 6FB Booking Platform is a comprehensive barbershop booking and business management system built with FastAPI (backend) and Next.js 14 (frontend). This document provides complete deployment instructions for production environments.
+BookedBarber V2 is a comprehensive barbershop booking and business management platform built with FastAPI (backend) and Next.js 14 (frontend). This V2 architecture includes advanced features like AI analytics, marketing integrations, GDPR compliance, and multi-factor authentication. This document provides complete deployment instructions for production environments with staging support.
 
 ## Table of Contents
 - [System Architecture](#system-architecture)
 - [Prerequisites](#prerequisites)
 - [Environment Configuration](#environment-configuration)
+- [Staging Environment Setup](#staging-environment-setup)
 - [Local Development Setup](#local-development-setup)
 - [Production Deployment](#production-deployment)
 - [Database Setup](#database-setup)
+- [AI Analytics Configuration](#ai-analytics-configuration)
+- [Marketing Integrations Setup](#marketing-integrations-setup)
+- [GDPR Compliance Configuration](#gdpr-compliance-configuration)
+- [Security Features Setup](#security-features-setup)
 - [Monitoring & Health Checks](#monitoring--health-checks)
 - [Performance Metrics](#performance-metrics)
 - [Troubleshooting](#troubleshooting)
@@ -18,28 +23,37 @@ The 6FB Booking Platform is a comprehensive barbershop booking and business mana
 
 ## System Architecture
 
-### Backend (FastAPI)
-- **Framework**: FastAPI with Python 3.11
+### Backend (FastAPI V2)
+- **Framework**: FastAPI with Python 3.11+ and async/await support
 - **Database**: PostgreSQL (production) / SQLite (development)
 - **ORM**: SQLAlchemy 2.0 with Alembic migrations
-- **Authentication**: JWT tokens with bcrypt password hashing
-- **API**: RESTful with OpenAPI/Swagger documentation
-- **Rate Limiting**: slowapi integration
-- **Payment Processing**: Stripe Connect integration
+- **Authentication**: JWT tokens with refresh capability + MFA support
+- **API**: RESTful with comprehensive OpenAPI/Swagger documentation
+- **Rate Limiting**: Advanced rate limiting with Redis backend
+- **Payment Processing**: Stripe Connect integration with webhook management
+- **Caching**: Redis for API caching and session management
+- **Background Tasks**: Celery for async email/SMS processing
+- **AI/ML**: Custom analytics engine with privacy-compliant models
 
-### Frontend (Next.js 14)
-- **Framework**: Next.js 14 with TypeScript
-- **UI Library**: Tailwind CSS with custom design system
-- **Icons**: Heroicons and Lucide React
-- **Charts**: Chart.js with react-chartjs-2
-- **Date Handling**: date-fns with timezone support
-- **Build Output**: Standalone mode for optimal deployment
+### Frontend (Next.js 14 V2)
+- **Framework**: Next.js 14 with TypeScript and App Router
+- **UI Library**: Tailwind CSS with shadcn/ui component system
+- **State Management**: React Query + Context API
+- **Forms**: React Hook Form with Zod validation
+- **Charts**: Chart.js with react-chartjs-2 + custom analytics dashboard
+- **Date Handling**: date-fns with comprehensive timezone support
+- **Build Output**: Standalone mode with optimizations
+- **Performance**: Virtual scrolling, lazy loading, code splitting
 
-### Integrations
-- **Payment**: Stripe Connect for payment processing and payouts
-- **Calendar**: Google Calendar API for two-way sync
-- **Notifications**: SendGrid (email) and Twilio (SMS)
-- **Analytics**: Built-in 6FB methodology tracking
+### V2 Integrations & Features
+- **Payment**: Enhanced Stripe Connect with automated onboarding
+- **Calendar**: Google Calendar API with two-way sync + webhook support
+- **Notifications**: SendGrid (email) and Twilio (SMS) with template management
+- **Marketing Suite**: Google My Business, Google Analytics 4, Meta Pixel
+- **AI Analytics**: Cross-user benchmarking with privacy compliance
+- **Review Management**: Automated review responses with SEO optimization
+- **GDPR Compliance**: Complete data protection and privacy management
+- **Security**: Multi-Factor Authentication (MFA) with TOTP support
 
 ## Prerequisites
 
@@ -57,12 +71,14 @@ The 6FB Booking Platform is a comprehensive barbershop booking and business mana
 - **Git**: Latest version
 - **Docker**: Optional, for containerized deployment
 
-### Required Accounts & API Keys
+### Required Accounts & API Keys (V2)
 - **Stripe**: Account with Connect capability
-- **Google Cloud**: Project with Calendar API enabled
-- **SendGrid**: Account for email notifications
+- **Google Cloud**: Project with Calendar API, Google My Business API enabled
+- **SendGrid**: Account for email notifications with template support
 - **Twilio**: Account for SMS notifications
+- **Meta Business**: Account for Facebook/Instagram Pixel integration
 - **Railway/Render/Vercel**: For hosting (optional)
+- **Redis**: For caching and session management (Redis Cloud or self-hosted)
 
 ## Environment Configuration
 
@@ -148,6 +164,233 @@ python -c "import secrets; print(secrets.token_urlsafe(64))"
 # Generate JWT secret (alternative method)
 openssl rand -hex 32
 ```
+
+## Staging Environment Setup
+
+BookedBarber V2 supports parallel staging and production environments for safe testing and deployment.
+
+### Staging Architecture
+
+The staging environment runs on separate ports and databases:
+- **Staging Backend**: Port 8001
+- **Staging Frontend**: Port 3001
+- **Staging Database**: Separate PostgreSQL database or schema
+- **Staging Redis**: Separate Redis database index
+
+### Staging Configuration
+
+#### Backend Staging Environment (.env.staging)
+```bash
+# Staging-specific configuration
+DATABASE_URL=postgresql://username:password@localhost:5432/sixfb_booking_staging
+SECRET_KEY=staging-specific-secret-key
+DEBUG=true
+ENVIRONMENT=staging
+LOG_LEVEL=DEBUG
+
+# Staging API settings
+APP_NAME=6FB Booking API (Staging)
+ALLOWED_ORIGINS=http://localhost:3001,https://staging.yourdomain.com
+
+# Use Stripe test keys for staging
+STRIPE_SECRET_KEY=sk_test_your_test_secret_key
+STRIPE_PUBLISHABLE_KEY=pk_test_your_test_publishable_key
+STRIPE_WEBHOOK_SECRET=whsec_your_test_webhook_secret
+
+# Staging integrations (use test/sandbox APIs)
+GOOGLE_CLIENT_ID=staging-google-client-id
+SENDGRID_API_KEY=SG.staging-sendgrid-key
+TWILIO_ACCOUNT_SID=staging-twilio-sid
+
+# Staging Redis
+REDIS_URL=redis://localhost:6379/1  # Different database index
+
+# Staging-specific features
+AI_ANALYTICS_ENABLED=true
+MARKETING_INTEGRATIONS_ENABLED=true
+GDPR_COMPLIANCE_MODE=strict
+MFA_ENFORCEMENT=optional
+```
+
+#### Frontend Staging Environment (.env.staging)
+```bash
+# Staging API configuration
+NEXT_PUBLIC_API_URL=http://localhost:8001
+# For remote staging: NEXT_PUBLIC_API_URL=https://staging-api.yourdomain.com
+
+# Staging Stripe keys
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_test_publishable_key
+
+# Staging analytics
+NEXT_PUBLIC_GA_MEASUREMENT_ID=G-STAGING-ID
+NEXT_PUBLIC_META_PIXEL_ID=staging_pixel_id
+
+# Staging environment settings
+NODE_ENV=development
+NEXT_TELEMETRY_DISABLED=1
+ENVIRONMENT=staging
+NEXT_PUBLIC_ENV=staging
+
+# Feature flags for staging
+NEXT_PUBLIC_AI_ANALYTICS_ENABLED=true
+NEXT_PUBLIC_MARKETING_SUITE_ENABLED=true
+NEXT_PUBLIC_GDPR_FEATURES_ENABLED=true
+NEXT_PUBLIC_MFA_ENABLED=true
+```
+
+### Running Staging Environment
+
+#### Method 1: Parallel Development Servers
+```bash
+# Terminal 1: Staging Backend (port 8001)
+cd backend-v2
+cp .env.staging .env
+uvicorn main:app --reload --host 0.0.0.0 --port 8001
+
+# Terminal 2: Staging Frontend (port 3001)
+cd backend-v2/frontend-v2
+cp .env.staging .env.local
+PORT=3001 npm run dev
+```
+
+#### Method 2: Using Docker Compose for Staging
+```yaml
+# docker-compose.staging.yml
+version: '3.8'
+
+services:
+  staging-backend:
+    build: ./backend-v2
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@staging-db:5432/staging
+      - ENVIRONMENT=staging
+      - DEBUG=true
+    depends_on:
+      - staging-db
+      - staging-redis
+
+  staging-frontend:
+    build: ./backend-v2/frontend-v2
+    ports:
+      - "3001:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://staging-backend:8000
+      - ENVIRONMENT=staging
+    depends_on:
+      - staging-backend
+
+  staging-db:
+    image: postgres:14
+    environment:
+      - POSTGRES_DB=staging
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - staging_postgres_data:/var/lib/postgresql/data
+
+  staging-redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+
+volumes:
+  staging_postgres_data:
+```
+
+#### Running with Docker Compose
+```bash
+# Start staging environment
+docker-compose -f docker-compose.staging.yml up -d
+
+# View logs
+docker-compose -f docker-compose.staging.yml logs -f
+
+# Stop staging environment
+docker-compose -f docker-compose.staging.yml down
+```
+
+### Staging Database Setup
+
+```bash
+# Create staging database
+sudo -u postgres psql
+CREATE DATABASE sixfb_booking_staging;
+CREATE USER staging_user WITH PASSWORD 'staging_password';
+GRANT ALL PRIVILEGES ON DATABASE sixfb_booking_staging TO staging_user;
+\q
+
+# Run migrations for staging
+cd backend-v2
+export DATABASE_URL="postgresql://staging_user:staging_password@localhost:5432/sixfb_booking_staging"
+alembic upgrade head
+
+# Seed staging data (optional)
+python scripts/seed_staging_data.py
+```
+
+### Staging Deployment to Cloud
+
+#### Railway Staging Setup
+```bash
+# Create staging service
+railway project new 6fb-booking-staging
+
+# Set staging environment variables
+railway variables set ENVIRONMENT=staging
+railway variables set DATABASE_URL="postgresql://staging..."
+railway variables set DEBUG=true
+
+# Deploy staging
+railway up
+```
+
+### Staging Testing Workflow
+
+1. **Deploy to Staging**
+   ```bash
+   git checkout develop
+   git push origin staging-deploy
+   ```
+
+2. **Run Staging Tests**
+   ```bash
+   # Backend staging tests
+   cd backend-v2
+   ENVIRONMENT=staging pytest tests/staging/
+
+   # Frontend staging tests
+   cd backend-v2/frontend-v2
+   npm run test:staging
+   ```
+
+3. **Manual QA Testing**
+   - Test new features on staging environment
+   - Verify integrations work with sandbox APIs
+   - Test GDPR compliance workflows
+   - Validate AI analytics (with anonymized data)
+   - Test MFA setup and authentication flows
+
+4. **Performance Testing**
+   ```bash
+   # Load test staging environment
+   cd backend-v2
+   python scripts/staging_load_test.py
+   ```
+
+5. **Staging Approval**
+   - All tests pass
+   - QA sign-off completed
+   - Performance metrics acceptable
+   - Security review completed
+
+6. **Promote to Production**
+   ```bash
+   git checkout main
+   git merge develop
+   git push origin main
+   ```
 
 ## Local Development Setup
 

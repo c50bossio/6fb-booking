@@ -5,7 +5,7 @@ from slowapi.errors import RateLimitExceeded
 from database import engine, Base
 import models
 import location_models
-from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, email_analytics, test_data, reviews, integrations, api_keys, commissions, privacy, cache, ai_analytics, mfa  # products, shopify_webhooks temporarily disabled due to bleach dependency
+from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, email_analytics, test_data, reviews, integrations, api_keys, commissions, privacy, cache, ai_analytics, mfa, tracking  # products, shopify_webhooks temporarily disabled due to bleach dependency
 from routers.services import public_router as services_public_router
 from utils.rate_limit import limiter, rate_limit_exceeded_handler
 from services.integration_service import IntegrationServiceFactory
@@ -185,6 +185,7 @@ app.include_router(commissions.router, prefix="/api/v1")  # Commission managemen
 app.include_router(privacy.router)  # GDPR compliance and privacy management
 app.include_router(cache.router)  # Redis cache management and monitoring
 app.include_router(ai_analytics.router, prefix="/api/v1")  # Revolutionary AI-powered cross-user analytics
+app.include_router(tracking.router)  # Conversion tracking and attribution
 # app.include_router(products.router)  # Product management and Shopify integration - disabled due to bleach dependency
 # app.include_router(shopify_webhooks.router)  # Shopify webhook handlers for real-time sync - disabled due to bleach dependency
 

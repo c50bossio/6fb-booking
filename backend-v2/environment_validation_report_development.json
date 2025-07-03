@@ -23,7 +23,7 @@
       "required": true,
       "description": "JWT secret key for authentication",
       "status": "PASS",
-      "message": "Strong secret key (64 characters)",
+      "message": "Strong secret key (56 characters)",
       "has_value": true
     },
     {
@@ -103,7 +103,7 @@
       "required": false,
       "description": "Email service API key",
       "status": "PASS",
-      "message": "Configured: \"SG.KNoTfMebTWuWaBNCDcck8Q.uFh...",
+      "message": "Configured: \"\"  # Format: SG.xxxxxxxxxxxxx...",
       "has_value": true
     },
     {
@@ -111,7 +111,7 @@
       "required": false,
       "description": "SMS service configuration",
       "status": "PASS",
-      "message": "Configured: \"ACe5b803b2dee8cfeffbfc1933083...",
+      "message": "Configured: \"\"     # Format: ACxxxxxxxxxxx...",
       "has_value": true
     }
   ],

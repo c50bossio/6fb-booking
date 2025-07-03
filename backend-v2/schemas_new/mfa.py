@@ -112,7 +112,7 @@ class BackupCodeVerificationRequest(BaseModel):
 
 class TrustedDeviceRequest(BaseModel):
     """Schema for managing trusted devices."""
-    action: str = Field(..., regex="^(list|revoke|revoke_all)$")
+    action: str = Field(..., pattern="^(list|revoke|revoke_all)$")
     device_token: Optional[str] = Field(None, description="Required for revoke action")
 
 
@@ -176,7 +176,7 @@ class MFAMethodsResponse(BaseModel):
 class MFARecoveryRequest(BaseModel):
     """Schema for MFA recovery request."""
     email: str
-    recovery_method: str = Field(..., regex="^(email|support)$")
+    recovery_method: str = Field(..., pattern="^(email|support)$")
 
 
 class MFARecoveryResponse(BaseModel):

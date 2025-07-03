@@ -26,6 +26,8 @@ class IntegrationType(enum.Enum):
     """Supported integration types"""
     GOOGLE_CALENDAR = "google_calendar"
     GOOGLE_MY_BUSINESS = "google_my_business"
+    GOOGLE_ADS = "google_ads"
+    META_BUSINESS = "meta_business"
     STRIPE = "stripe"
     SENDGRID = "sendgrid"
     TWILIO = "twilio"

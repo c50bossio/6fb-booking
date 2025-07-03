@@ -162,7 +162,7 @@ async def get_performance_matrix(
 async def get_aggregated_revenue(
     start_date: Optional[datetime] = Query(None),
     end_date: Optional[datetime] = Query(None),
-    group_by: str = Query("day", regex="^(day|week|month|location)$"),
+    group_by: str = Query("day", pattern="^(day|week|month|location)$"),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
@@ -237,7 +237,7 @@ async def get_chair_utilization(
 
 @router.get("/compensation")
 async def get_compensation_analytics(
-    model_type: Optional[str] = Query(None, regex="^(commission|booth_rental|hybrid)$"),
+    model_type: Optional[str] = Query(None, pattern="^(commission|booth_rental|hybrid)$"),
     start_date: Optional[datetime] = Query(None),
     end_date: Optional[datetime] = Query(None),
     db: Session = Depends(get_db),

@@ -46,6 +46,9 @@ class User(Base):
     # Location for multi-tenancy
     location_id = Column(Integer, ForeignKey("barbershop_locations.id"), nullable=True)
     
+    # Lifetime value for conversion tracking
+    lifetime_value = Column(Float, default=0.0)
+    
     # Relationships
     appointments = relationship("Appointment", back_populates="user", foreign_keys="Appointment.user_id")
     payments = relationship("Payment", back_populates="user", foreign_keys="Payment.user_id")
@@ -56,6 +59,13 @@ class User(Base):
     # AI Analytics relationships
     ai_insights = relationship("AIInsightCache", back_populates="user", cascade="all, delete-orphan")
     bi_reports = relationship("BusinessIntelligenceReport", back_populates="user", cascade="all, delete-orphan")
+    
+    # Conversion tracking relationships
+    conversion_events = relationship("ConversionEvent", back_populates="user")
+    tracking_config = relationship("TrackingConfiguration", back_populates="user", uselist=False)
+    conversion_goals = relationship("ConversionGoal", back_populates="user")
+    campaign_tracking = relationship("CampaignTracking", back_populates="user")
+    
     # Location relationships
     # Note: need to use string reference since BarbershopLocation is defined in location_models.py
     # locations = relationship("BarbershopLocation", secondary="barber_locations", back_populates="barbers")

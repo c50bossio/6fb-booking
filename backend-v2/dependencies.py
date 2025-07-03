@@ -18,3 +18,14 @@ async def get_current_admin_user(current_user: User = Depends(get_current_active
             detail="Not enough permissions"
         )
     return current_user
+
+def check_user_role(allowed_roles: list[str]):
+    """Dependency to check if user has one of the allowed roles."""
+    async def role_checker(current_user: User = Depends(get_current_active_user)) -> User:
+        if current_user.role not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not enough permissions"
+            )
+        return current_user
+    return role_checker
