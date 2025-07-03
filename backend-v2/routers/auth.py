@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from datetime import timedelta
+import logging
 from database import get_db
 from utils.rate_limit import login_rate_limit, refresh_rate_limit, password_reset_rate_limit, register_rate_limit
 from utils.auth import (
@@ -21,6 +22,8 @@ from utils.password_reset import (
 )
 import schemas
 import models
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -165,6 +168,16 @@ async def register(
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+    
+    # Create test data if requested
+    if user_data.create_test_data:
+        try:
+            from services import test_data_service
+            test_data_service.create_test_data_for_user(db, new_user.id, include_enterprise=False)
+            db.commit()
+        except Exception as e:
+            # Log error but don't fail registration
+            logger.error(f"Failed to create test data for user {new_user.id}: {str(e)}")
     
     return {
         "message": "User successfully registered",

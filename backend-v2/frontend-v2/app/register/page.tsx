@@ -16,7 +16,8 @@ export default function RegisterPage() {
   const [consent, setConsent] = useState({
     terms: false,
     privacy: false,
-    marketing: false
+    marketing: false,
+    testData: false
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -82,7 +83,7 @@ export default function RegisterPage() {
     setLoading(true)
 
     try {
-      await register(formData.email, formData.password, formData.name)
+      await register(formData.email, formData.password, formData.name, consent.testData)
       // Redirect to login with success message
       router.push('/login?registered=true')
     } catch (err: any) {
@@ -264,6 +265,25 @@ export default function RegisterPage() {
                 />
                 <label htmlFor="marketing-consent" className="ml-3 text-sm text-gray-700 dark:text-gray-300">
                   I would like to receive promotional emails and updates about new features (optional)
+                </label>
+              </div>
+
+              {/* Test Data Option */}
+              <div className="flex items-start bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md">
+                <input
+                  id="test-data-consent"
+                  type="checkbox"
+                  checked={consent.testData}
+                  onChange={() => handleConsentChange('testData')}
+                  className="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="test-data-consent" className="ml-3 text-sm text-gray-700 dark:text-gray-300">
+                  <span className="font-medium">Create sample data to help me learn the platform</span>
+                  <br />
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    Adds test barbers, clients, and appointments to explore features safely. 
+                    All test data is clearly marked and can be deleted anytime.
+                  </span>
                 </label>
               </div>
             </div>

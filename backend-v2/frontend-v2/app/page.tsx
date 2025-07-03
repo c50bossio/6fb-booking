@@ -169,10 +169,10 @@ export default function LandingPage() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
-              <Link href="/demo">
+              <Link href="/auth/signup">
                 <Button size="lg" variant="primary" className="group">
-                  <PlayIcon className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
-                  Try Live Demo
+                  <StarIcon className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
+                  Start Free Trial
                 </Button>
               </Link>
               <Link href="/register">
@@ -373,10 +373,10 @@ export default function LandingPage() {
             Join thousands of successful barbers using Booked Barber to build their six-figure business.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/demo">
+            <Link href="/auth/signup">
               <Button size="lg" variant="secondary">
-                <PlayIcon className="w-5 h-5 mr-2" />
-                Watch Demo
+                <StarIcon className="w-5 h-5 mr-2" />
+                Start Free Trial
               </Button>
             </Link>
             <Link href="/register">
@@ -401,7 +401,7 @@ export default function LandingPage() {
             <div>
               <h4 className="font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-sm">
-                <li><Link href="/demo" className="hover:text-white">Demo</Link></li>
+                <li><Link href="/auth/signup" className="hover:text-white">Free Trial</Link></li>
                 <li><Link href="#features" className="hover:text-white">Features</Link></li>
                 <li><Link href="#pricing" className="hover:text-white">Pricing</Link></li>
                 <li><Link href="/login" className="hover:text-white">Login</Link></li>

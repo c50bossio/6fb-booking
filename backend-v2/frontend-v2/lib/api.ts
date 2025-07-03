@@ -264,10 +264,10 @@ export async function logout() {
   localStorage.removeItem('refresh_token')
 }
 
-export async function register(email: string, password: string, name: string) {
+export async function register(email: string, password: string, name: string, createTestData: boolean = false) {
   return fetchAPI('/api/v1/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ email, password, name }),
+    body: JSON.stringify({ email, password, name, create_test_data: createTestData }),
   })
 }
 
