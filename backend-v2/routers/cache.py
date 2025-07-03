@@ -11,9 +11,11 @@ from datetime import date, datetime, timedelta
 from database import get_db
 from routers.auth import get_current_user
 from utils.auth import require_admin_role
-from services.cached_booking_service import cached_booking_service
-from services.cache_health_service import cache_monitoring_service, cache_health_checker
-from services.cache_invalidation_service import cache_invalidation_manager
+# Cached services temporarily disabled - use main services instead
+# from services.cached_booking_service import cached_booking_service
+# from services.cache_health_service import cache_monitoring_service, cache_health_checker
+# from services.cache_invalidation_service import cache_invalidation_manager
+from services.booking_service import BookingService
 import models
 
 router = APIRouter(prefix="/api/v1/cache", tags=["cache"])

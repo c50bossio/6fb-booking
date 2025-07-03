@@ -22,7 +22,7 @@ from models import (
     BusinessSegment, InsightType
 )
 from services.ai_benchmarking_service import AIBenchmarkingService
-from services.enhanced_analytics_service import EnhancedAnalyticsService
+from services.analytics_service import AnalyticsService as EnhancedAnalyticsService
 
 logger = logging.getLogger(__name__)
 

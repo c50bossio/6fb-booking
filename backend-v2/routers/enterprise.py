@@ -16,7 +16,7 @@ from location_schemas import (
     LocationUpdate,
     LocationResponse
 )
-from services.enterprise_analytics_service_mock import EnterpriseAnalyticsService
+from services.analytics_service import AnalyticsService as EnterpriseAnalyticsService
 
 router = APIRouter(
     prefix="/enterprise",

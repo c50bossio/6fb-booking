@@ -19,7 +19,7 @@ from models import (
     BenchmarkCategory, BusinessSegment, AIInsightCache, InsightType
 )
 from services.privacy_anonymization_service import PrivacyAnonymizationService
-from services.enhanced_analytics_service import EnhancedAnalyticsService
+from services.analytics_service import AnalyticsService as EnhancedAnalyticsService
 from utils.sanitization import sanitize_input
 
 logger = logging.getLogger(__name__)
