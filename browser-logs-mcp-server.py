@@ -685,10 +685,7 @@ class BrowserLogsMCP:
                 InitializationOptions(
                     server_name="browser-logs-mcp",
                     server_version="1.0.0",
-                    capabilities=self.server.get_capabilities(
-                        notification_options=None,
-                        experimental_capabilities=None,
-                    ),
+                    capabilities=self.server.get_capabilities(),
                 ),
             )
 
