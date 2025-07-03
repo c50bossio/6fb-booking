@@ -648,3 +648,163 @@ async def quick_send_message(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to send message"
         )
+
+# Review Response Automation Endpoints
+@router.post("/reviews/auto-response")
+async def generate_auto_response(
+    review_id: int,
+    auto_send: bool = Query(False, description="Automatically send the response"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Generate an automated response for a review"""
+    verify_admin_access(current_user)
+    
+    try:
+        from services.review_response_service import ReviewResponseService
+        from models.review import Review
+        
+        # Get the review
+        review = db.query(Review).filter_by(id=review_id, user_id=current_user.id).first()
+        if not review:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Review not found"
+            )
+        
+        # Initialize service
+        response_service = ReviewResponseService()
+        
+        # Generate response
+        response_text = await response_service.generate_auto_response(
+            db=db,
+            review=review,
+            user=current_user,
+            use_ai=True
+        )
+        
+        # Send response if auto_send is enabled
+        if auto_send and review.can_respond:
+            success = await response_service.send_auto_response(
+                db=db,
+                review=review,
+                response_text=response_text,
+                user=current_user
+            )
+            
+            return {
+                "response_text": response_text,
+                "auto_sent": success,
+                "message": "Response generated and sent successfully" if success else "Response generated but failed to send"
+            }
+        else:
+            return {
+                "response_text": response_text,
+                "auto_sent": False,
+                "message": "Response generated successfully"
+            }
+            
+    except Exception as e:
+        logger.error(f"Error generating auto-response: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate response: {str(e)}"
+        )
+
+@router.post("/reviews/process-pending")
+async def process_pending_reviews(
+    auto_respond: bool = Query(True, description="Automatically send responses"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Process all pending reviews and generate/send responses"""
+    verify_admin_access(current_user)
+    
+    try:
+        from services.review_response_service import ReviewResponseService
+        
+        response_service = ReviewResponseService()
+        
+        stats = await response_service.process_pending_reviews(
+            db=db,
+            user_id=current_user.id,
+            auto_respond=auto_respond
+        )
+        
+        return {
+            "success": True,
+            "stats": stats,
+            "message": f"Processed {stats['reviews_processed']} reviews, generated {stats['responses_generated']} responses, sent {stats['responses_sent']} responses"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error processing pending reviews: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to process reviews: {str(e)}"
+        )
+
+@router.post("/reviews/templates")
+async def create_response_template(
+    template_data: Dict[str, Any],
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Create a custom review response template"""
+    verify_admin_access(current_user)
+    
+    try:
+        from services.review_response_service import ReviewResponseService
+        
+        response_service = ReviewResponseService()
+        
+        template = await response_service.create_custom_template(
+            db=db,
+            user_id=current_user.id,
+            template_data=template_data
+        )
+        
+        return {
+            "success": True,
+            "template_id": template.id,
+            "message": f"Template '{template.name}' created successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error creating template: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create template: {str(e)}"
+        )
+
+@router.post("/reviews/templates/initialize")
+async def initialize_default_templates(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Initialize default review response templates for the user"""
+    verify_admin_access(current_user)
+    
+    try:
+        from services.review_response_service import ReviewResponseService
+        
+        response_service = ReviewResponseService()
+        
+        templates = await response_service.initialize_default_templates(
+            db=db,
+            user_id=current_user.id
+        )
+        
+        return {
+            "success": True,
+            "templates_created": len(templates),
+            "templates": [{"id": t.id, "name": t.name, "category": t.category} for t in templates],
+            "message": f"Initialized {len(templates)} default templates"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error initializing templates: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to initialize templates: {str(e)}"
+        )

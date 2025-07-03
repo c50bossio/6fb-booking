@@ -11,7 +11,7 @@ import logging
 
 from services.integration_service import BaseIntegrationService
 from services.gmb_service import GMBService as GMBServiceImpl
-from services.google_calendar_integration_service import GoogleCalendarIntegrationService as GCalServiceImpl
+from services.google_calendar_service import GoogleCalendarService as GCalServiceImpl
 from services.stripe_integration_service import StripeIntegrationService as StripeServiceImpl
 from models.integration import IntegrationType, Integration, IntegrationStatus
 from schemas_new.integration import IntegrationHealthCheck

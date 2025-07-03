@@ -155,12 +155,15 @@ export class APIHelpers {
   }
 
   async createBooking(bookingData: {
-    service_id: string;
+    service: string;
     barber_id: string;
-    appointment_time: string;
+    date: string;
+    time: string;
     client_name: string;
     client_email: string;
     client_phone: string;
+    duration?: number;
+    price?: number;
     notes?: string;
   }): Promise<APIResponse> {
     return this.makeRequest('POST', '/api/v1/appointments', bookingData);

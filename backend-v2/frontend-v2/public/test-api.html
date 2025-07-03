@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookedBarber V2 - API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #005a8b;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .loading {
+            color: #856404;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 BookedBarber V2 - API Test</h1>
+        
+        <div class="test-section">
+            <h3>Step 1: Test Backend Connection</h3>
+            <p>This tests if the backend server on port 8000 is responding.</p>
+            <button onclick="testBackend()">Test Backend</button>
+            <div id="backend-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Step 2: Test Authentication</h3>
+            <p>This tests the auth bypass endpoint.</p>
+            <button onclick="testAuth()">Test Login</button>
+            <div id="auth-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Step 3: Test Appointment Creation</h3>
+            <p>This tests creating an appointment (requires login first).</p>
+            <button onclick="testAppointment()" id="appointment-btn" disabled>Test Appointment</button>
+            <div id="appointment-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Step 4: Test Payment Intent</h3>
+            <p>This tests Stripe payment intent creation (requires appointment).</p>
+            <button onclick="testPayment()" id="payment-btn" disabled>Test Payment</button>
+            <div id="payment-result"></div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = null;
+        let appointmentId = null;
+
+        function showResult(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = message;
+            element.className = `result ${type}`;
+        }
+
+        function showLoading(elementId, message) {
+            showResult(elementId, message, 'loading');
+        }
+
+        async function testBackend() {
+            showLoading('backend-result', 'Testing backend connection...');
+            
+            try {
+                const response = await fetch('http://localhost:8000/', {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult('backend-result', 
+                        `✅ Backend Connected!\nStatus: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`, 
+                        'success'
+                    );
+                } else {
+                    showResult('backend-result', 
+                        `❌ Backend Error!\nStatus: ${response.status}\nResponse: ${await response.text()}`, 
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult('backend-result', 
+                    `❌ Connection Error!\nError: ${error.message}\n\nMake sure backend is running on port 8000:\ncd backend-v2 && uvicorn main:app --reload --port 8000`, 
+                    'error'
+                );
+            }
+        }
+
+        async function testAuth() {
+            showLoading('auth-result', 'Testing authentication...');
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/auth-test/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'test@example.com',
+                        password: 'test123'
+                    }),
+                    mode: 'cors'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    authToken = data.access_token;
+                    
+                    showResult('auth-result', 
+                        `✅ Authentication Successful!\nAccess Token: ${authToken.substring(0, 50)}...\nToken Type: ${data.token_type}\nRefresh Token: ${data.refresh_token ? 'Present' : 'Missing'}`, 
+                        'success'
+                    );
+                    
+                    // Enable next test
+                    document.getElementById('appointment-btn').disabled = false;
+                } else {
+                    const errorText = await response.text();
+                    showResult('auth-result', 
+                        `❌ Authentication Failed!\nStatus: ${response.status}\nError: ${errorText}`, 
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult('auth-result', 
+                    `❌ Authentication Error!\nError: ${error.message}`, 
+                    'error'
+                );
+            }
+        }
+
+        async function testAppointment() {
+            if (!authToken) {
+                showResult('appointment-result', '❌ Please complete authentication first!', 'error');
+                return;
+            }
+
+            showLoading('appointment-result', 'Creating test appointment...');
+            
+            try {
+                const appointmentData = {
+                    service: "Haircut",
+                    barber_id: 1,
+                    client_name: "Test Customer",
+                    client_email: "test@example.com",
+                    client_phone: "555-0123",
+                    date: new Date().toISOString().split('T')[0],
+                    time: "14:00",
+                    duration: 60,
+                    price: 50.00,
+                    notes: "Test appointment for payment flow"
+                };
+
+                const response = await fetch('http://localhost:8000/api/v1/appointments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(appointmentData),
+                    mode: 'cors'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    appointmentId = data.id;
+                    
+                    showResult('appointment-result', 
+                        `✅ Appointment Created!\nID: ${appointmentId}\nClient: ${data.client_name}\nDate: ${data.appointment_date}\nTime: ${data.appointment_time}\nPrice: $${data.price}`, 
+                        'success'
+                    );
+                    
+                    // Enable next test
+                    document.getElementById('payment-btn').disabled = false;
+                } else {
+                    const errorText = await response.text();
+                    showResult('appointment-result', 
+                        `❌ Appointment Creation Failed!\nStatus: ${response.status}\nError: ${errorText}`, 
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult('appointment-result', 
+                    `❌ Appointment Error!\nError: ${error.message}`, 
+                    'error'
+                );
+            }
+        }
+
+        async function testPayment() {
+            if (!authToken || !appointmentId) {
+                showResult('payment-result', '❌ Please complete authentication and appointment creation first!', 'error');
+                return;
+            }
+
+            showLoading('payment-result', 'Creating Stripe payment intent...');
+            
+            try {
+                const paymentData = {
+                    appointment_id: appointmentId,
+                    amount: 5000, // $50.00 in cents
+                    currency: 'usd'
+                };
+
+                const response = await fetch('http://localhost:8000/api/v1/payments/create-intent', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(paymentData),
+                    mode: 'cors'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    showResult('payment-result', 
+                        `✅ Payment Intent Created!\nClient Secret: ${data.client_secret.substring(0, 50)}...\nAmount: $${data.amount / 100}\nCurrency: ${data.currency}\nStatus: ${data.status}\n\n🎉 READY FOR LIVE STRIPE TESTING!\n\nNext steps:\n1. Use client_secret with Stripe.js\n2. Process payment with test card: 4242424242424242\n3. Then test $1.00 live payment\n4. Verify appointment appears in calendar`, 
+                        'success'
+                    );
+                } else {
+                    const errorText = await response.text();
+                    showResult('payment-result', 
+                        `❌ Payment Intent Failed!\nStatus: ${response.status}\nError: ${errorText}`, 
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult('payment-result', 
+                    `❌ Payment Error!\nError: ${error.message}`, 
+                    'error'
+                );
+            }
+        }
+
+        // Auto-run backend test on page load
+        window.addEventListener('load', function() {
+            setTimeout(testBackend, 1000);
+        });
+    </script>
+</body>
+</html>
