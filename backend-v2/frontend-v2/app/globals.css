@@ -32,6 +32,9 @@
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
     scroll-padding-top: 2rem;
+    /* Prevent horizontal scrolling on mobile */
+    overflow-x: hidden;
+    max-width: 100vw;
   }
   
   /* Optimize font rendering */
@@ -41,6 +44,11 @@
     -moz-osx-font-smoothing: grayscale;
     font-synthesis: none;
     font-variant-ligatures: none;
+    /* Prevent horizontal scrolling on mobile */
+    overflow-x: hidden;
+    max-width: 100vw;
+    min-height: 100vh;
+    position: relative;
   }
   
   /* Improve image and media performance */
@@ -1009,5 +1017,86 @@
       grid-template-columns: 1fr 1fr;
       gap: 1rem;
     }
+  }
+}
+
+/* Mobile Responsiveness Fixes */
+@layer utilities {
+  /* Prevent horizontal overflow on all screen sizes */
+  .no-overflow-x {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+  
+  /* Mobile-safe containers */
+  .mobile-safe {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+  
+  /* Responsive text that prevents overflow */
+  .text-responsive {
+    word-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+    overflow-wrap: break-word;
+  }
+  
+  /* Mobile touch targets */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+  
+  /* Prevent zoom on input focus (iOS) */
+  .no-zoom {
+    font-size: 16px !important;
+    transform-origin: left top;
+  }
+}
+
+/* Mobile-specific media queries */
+@media (max-width: 768px) {
+  /* Force all containers to be mobile-safe */
+  .container,
+  .max-w-7xl,
+  .max-w-6xl,
+  .max-w-5xl,
+  .max-w-4xl {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  /* Fix potential grid overflow issues */
+  .grid {
+    overflow-x: hidden;
+  }
+  
+  /* Ensure all children respect container width */
+  * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+/* iPhone specific fixes */
+@media (max-width: 480px) {
+  /* Additional safety for very small screens */
+  body {
+    overflow-x: hidden !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+  
+  /* Ensure tables are responsive */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
   }
 }

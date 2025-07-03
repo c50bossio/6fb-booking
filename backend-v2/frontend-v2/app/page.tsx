@@ -119,7 +119,7 @@ export default function LandingPage() {
   }
 
   return (
-    <main className="bg-white dark:bg-gray-900">
+    <main className="bg-white dark:bg-gray-900 mobile-safe no-overflow-x">
       {/* Header Navigation */}
       <header className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -127,20 +127,22 @@ export default function LandingPage() {
             <div className="flex items-center">
               <LogoFull variant="auto" size="md" href="/" />
             </div>
-            <div className="flex items-center space-x-4">
+            <nav role="navigation" aria-label="Main navigation" className="flex items-center space-x-4">
               <Link 
                 href="/login" 
-                className="inline-block bg-white dark:bg-gray-800 border-2 border-gray-800 dark:border-gray-200 text-gray-900 dark:text-gray-100 font-semibold px-6 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                className="inline-block bg-white dark:bg-gray-800 border-2 border-gray-800 dark:border-gray-200 text-gray-900 dark:text-gray-100 font-semibold px-6 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors touch-target"
+                aria-label="Sign in to your account"
               >
                 Login
               </Link>
               <Link 
                 href="/register" 
-                className="inline-block bg-primary-600 hover:bg-primary-700 text-white font-semibold px-6 py-2 rounded-lg transition-colors"
+                className="inline-block bg-primary-600 hover:bg-primary-700 text-white font-semibold px-6 py-2 rounded-lg transition-colors touch-target"
+                aria-label="Start your free trial"
               >
                 Start Free Trial
               </Link>
-            </div>
+            </nav>
           </div>
         </div>
       </header>

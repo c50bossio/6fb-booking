@@ -231,7 +231,7 @@ export async function login(email: string, password: string) {
   console.log('🚀 Login request body JSON:', JSON.stringify(requestBody));
   
   const response = await retryOperation(
-    () => fetchAPI('/api/v1/auth/login', {
+    () => fetchAPI('/api/v1/auth/login-simple', {
       method: 'POST',
       body: JSON.stringify(requestBody),
     }),

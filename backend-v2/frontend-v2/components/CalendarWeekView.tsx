@@ -78,6 +78,9 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
   // Performance monitoring and optimization
   const { measureRender, optimizedAppointmentFilter, memoizedDateCalculations, memoizedStatusColor } = useCalendarPerformance()
   
+  // Enhanced drag & drop with optimistic updates - MOVED UP to avoid initialization error
+  const [optimisticUpdates, setOptimisticUpdates] = useState<Map<number, { originalStartTime: string; newStartTime: string }>>(new Map())
+  
   // Performance monitoring
   useEffect(() => {
     if (appointments.length > 50) { // Only measure when there are many appointments
@@ -310,8 +313,7 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
            barber.email.split('@')[0]
   }, [])
 
-  // Enhanced drag & drop with optimistic updates and proper error handling
-  const [optimisticUpdates, setOptimisticUpdates] = useState<Map<number, { originalStartTime: string; newStartTime: string }>>(new Map())
+  // This state was moved up to avoid initialization error - see line 82
   
   // Check for conflicts before updating appointment
   const checkAndUpdateAppointment = async (appointmentId: number, newStartTime: string) => {
