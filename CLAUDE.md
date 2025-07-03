@@ -209,6 +209,101 @@ cd backend-v2/frontend-v2 && npm test
 ./scripts/test-integration.sh
 ```
 
+## 🔍 Browser Debugging & MCP Integration
+
+### Browser Logs MCP Server
+BookedBarber V2 includes a custom MCP server for real-time browser debugging that eliminates manual log copying.
+
+#### Features
+- **Real-time Console Monitoring**: Automatic capture of console.log, errors, warnings
+- **Network Request Tracking**: Monitor API calls, failed requests, response times  
+- **JavaScript Error Analysis**: Stack traces with source locations
+- **Multi-tab Support**: Switch monitoring between browser tabs
+- **Advanced Filtering**: Filter by log level, time range, URL patterns, HTTP status
+
+#### Setup (One-time)
+```bash
+# 1. Install dependencies
+pip install -r browser-logs-mcp-requirements.txt
+
+# 2. Start Chrome with debugging (every development session)
+google-chrome --remote-debugging-port=9222 --user-data-dir=/tmp/chrome-debug-6fb
+
+# 3. MCP server is already configured in Claude Desktop
+# Check ~/.config/claude-desktop/config.json
+```
+
+#### Usage with Claude
+```bash
+# Connect to browser
+connect_to_browser
+
+# Get recent console errors  
+get_console_logs level="error" since_minutes=5
+
+# Monitor failed API requests
+get_network_requests status_code=404 since_minutes=10
+
+# Watch live activity during development
+watch_logs_live duration_seconds=30
+
+# Get JavaScript errors with stack traces
+get_javascript_errors since_minutes=15
+
+# Switch between tabs
+get_browser_tabs
+switch_tab tab_id="ABC123"
+```
+
+#### Common Debugging Workflows
+
+**API Debugging:**
+```bash
+# 1. Open frontend and trigger API call
+# 2. Get recent network activity
+get_network_requests url_pattern="localhost:8000" since_minutes=2
+
+# 3. Check for errors
+get_console_logs level="error" since_minutes=2
+```
+
+**CORS Issues:**
+```bash
+# Real-time CORS monitoring
+watch_logs_live duration_seconds=60 include_network=true
+
+# Check specific CORS failures
+get_network_requests status_code=0 since_minutes=5
+```
+
+**Performance Analysis:**
+```bash
+# Monitor during performance testing
+watch_logs_live duration_seconds=120
+
+# Check for slow requests
+get_network_requests since_minutes=5
+```
+
+#### Integration with Development Workflow
+- **Before debugging**: `connect_to_browser`
+- **During development**: Use `watch_logs_live` for real-time monitoring
+- **After changes**: `get_console_logs` and `get_network_requests` for validation
+- **Error investigation**: `get_javascript_errors` with stack traces
+
+#### Chrome Debug Mode Script
+```bash
+# Convenience script (create if needed)
+./scripts/start-chrome-debug.sh
+
+# Or manual command
+google-chrome \
+  --remote-debugging-port=9222 \
+  --user-data-dir=/tmp/chrome-debug-6fb \
+  --disable-web-security \
+  --no-first-run
+```
+
 ## 🔐 Security Protocols
 
 ### Environment Variables

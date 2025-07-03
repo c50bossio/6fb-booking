@@ -124,6 +124,12 @@ BookedBarber V2 is a comprehensive business management platform designed specifi
 - **CI/CD**: GitHub Actions with automated testing and deployment
 - **Environment Management**: Multi-environment support (dev/staging/prod)
 
+### Development Tools & AI Integration
+- **Claude Code Integration**: Custom MCP (Model Context Protocol) servers for enhanced development
+- **Browser Logs MCP**: Real-time browser console and network request monitoring via Chrome DevTools Protocol
+- **Automated Debugging**: Direct access to browser logs, JavaScript errors, and network traffic
+- **AI-Assisted Development**: Claude can directly analyze browser behavior and performance issues
+
 ### AI & Machine Learning
 - **Analytics Engine**: Custom ML models for revenue forecasting
 - **Privacy**: Anonymization service for cross-user analytics

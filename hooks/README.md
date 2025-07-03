@@ -340,15 +340,83 @@ grep -c "ERROR" .git/hooks/*.log 2>/dev/null || echo "No logs found"
 git log --oneline --grep="bypass\|no-verify" --since="1 month ago"
 ```
 
+## 🤖 MCP Server Development Guidelines
+
+BookedBarber V2 includes custom MCP (Model Context Protocol) servers for enhanced development with Claude Code.
+
+### MCP Server Standards
+
+1. **Security First**
+   - Never expose sensitive data (API keys, passwords, PII)
+   - Validate all inputs from Claude
+   - Use secure protocols (HTTPS, WSS) for external connections
+   - Log access attempts for audit purposes
+
+2. **Error Handling**
+   - Provide clear, actionable error messages
+   - Handle network timeouts gracefully
+   - Include retry mechanisms for transient failures
+   - Never crash - always return CallToolResult
+
+3. **Performance**
+   - Implement connection pooling for external services
+   - Cache responses when appropriate (with TTL)
+   - Use async/await for I/O operations
+   - Limit resource usage (memory, CPU)
+
+4. **Testing**
+   - Include test scripts for MCP servers
+   - Test offline behavior and error conditions
+   - Verify configuration management
+   - Test with actual Chrome DevTools connections
+
+### Browser Logs MCP Standards
+
+Our Browser Logs MCP server (`browser-logs-mcp-server.py`) follows these patterns:
+
+```python
+# Good: Secure error handling
+try:
+    result = await self._send_command(method, params)
+    return CallToolResult(content=[TextContent(type="text", text=result)])
+except Exception as e:
+    logger.error(f"Error in {method}: {str(e)}")
+    return CallToolResult(content=[TextContent(type="text", text=f"Error: {str(e)}")])
+
+# Good: Input validation
+def validate_tab_id(tab_id: str) -> bool:
+    return tab_id and len(tab_id) < 100 and tab_id.isalnum()
+```
+
+### MCP Integration with Git Hooks
+
+**Pre-commit Hook for MCP Servers**:
+```bash
+# Check MCP server syntax and dependencies
+if [ -f "browser-logs-mcp-server.py" ]; then
+    python -m py_compile browser-logs-mcp-server.py || exit 1
+    pip check || exit 1
+fi
+```
+
+**Commit Message Validation**:
+```bash
+# Valid MCP-related commit types
+✅ feat(mcp): add new browser debugging capabilities
+✅ fix(mcp): resolve WebSocket connection timeout
+✅ docs(mcp): update setup guide for new features
+```
+
 ## 🤝 Contributing
 
-When modifying hooks:
+When modifying hooks or MCP servers:
 
 1. **Test thoroughly** in isolated environment
 2. **Follow shell scripting best practices**
 3. **Maintain backward compatibility**
 4. **Update documentation**
 5. **Consider edge cases**
+6. **Test MCP server integration** with Claude Desktop
 
 ### Hook Development Guidelines
 
