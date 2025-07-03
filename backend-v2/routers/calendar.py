@@ -15,7 +15,6 @@ from models import User, Appointment
 from config import settings
 import schemas
 from services.google_calendar_service import GoogleCalendarService, CalendarEvent, GoogleCalendarError
-from services.calendar_sync_service import CalendarSyncService
 
 router = APIRouter(prefix="/api/calendar", tags=["calendar"])
 
@@ -505,8 +504,14 @@ async def get_sync_status(
 ):
     """Get calendar sync status for the current user."""
     try:
-        sync_service = CalendarSyncService(db)
-        status = sync_service.get_sync_status_for_user(current_user)
+        # Use Google Calendar Service for sync status
+        calendar_service = GoogleCalendarService()
+        status = {
+            "connected": bool(current_user.google_calendar_credentials),
+            "total_appointments": 0,  # Could be calculated from appointments
+            "last_sync": None,  # Could be tracked separately
+            "sync_enabled": bool(current_user.google_calendar_credentials)
+        }
         return status
         
     except Exception as e:
@@ -540,7 +545,8 @@ async def check_appointment_conflicts(
         )
     
     try:
-        sync_service = CalendarSyncService(db)
+        # Use Google Calendar Service directly
+        calendar_service = GoogleCalendarService()
         conflicts = sync_service.check_calendar_conflicts(appointment)
         
         return {
@@ -570,7 +576,8 @@ async def bulk_sync_appointments(
         )
     
     try:
-        sync_service = CalendarSyncService(db)
+        # Use Google Calendar Service directly
+        calendar_service = GoogleCalendarService()
         results = sync_service.bulk_sync_user_appointments(
             current_user, 
             request.start_date, 
@@ -602,7 +609,8 @@ async def cleanup_orphaned_events(
         )
     
     try:
-        sync_service = CalendarSyncService(db)
+        # Use Google Calendar Service directly
+        calendar_service = GoogleCalendarService()
         results = sync_service.cleanup_orphaned_events(current_user)
         
         if 'error' in results:

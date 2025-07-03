@@ -1,9 +1,10 @@
 """
 API endpoints for conversion tracking and attribution.
 Handles event tracking, analytics, and platform configuration.
+Includes Meta Pixel and Conversions API integration.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
@@ -26,12 +27,18 @@ from schemas_new.tracking import (
 from services.conversion_tracking_service import ConversionTrackingService
 from utils.rate_limiter import RateLimiter
 
+# Import Meta tracking endpoints
+from api.v1.endpoints.meta_tracking import router as meta_tracking_router
+
 
 router = APIRouter(
     prefix="/api/v1/tracking",
     tags=["tracking"],
     responses={404: {"description": "Not found"}},
 )
+
+# Include Meta tracking router
+router.include_router(meta_tracking_router, prefix="", tags=["meta-tracking"])
 
 # Initialize services
 tracking_service = ConversionTrackingService()

@@ -2,6 +2,7 @@ from pydantic_settings import BaseSettings
 from pydantic import ConfigDict, validator
 import os
 import logging
+from utils.secret_management import get_secret
 
 # Configure logging for security warnings
 logger = logging.getLogger(__name__)
@@ -79,6 +80,99 @@ class Settings(BaseSettings):
     # Redis Configuration
     redis_url: str = "redis://localhost:6379/0"
     
+    # Google Analytics 4 (GA4) Configuration
+    ga4_measurement_id: str = ""  # GA4 Measurement ID (G-XXXXXXXXXX)
+    ga4_api_secret: str = ""  # GA4 Measurement Protocol API Secret
+    ga4_measurement_protocol_url: str = "https://www.google-analytics.com/mp/collect"
+    ga4_measurement_protocol_debug_url: str = "https://www.google-analytics.com/debug/mp/collect"
+    ga4_debug_mode: bool = True
+    ga4_collect_geo_data: bool = True
+    ga4_collect_advertising_id: bool = False
+    ga4_allow_google_signals: bool = True
+    ga4_allow_ad_personalization: bool = False
+    ga4_anonymize_ip: bool = True
+    ga4_respect_dnt: bool = True
+    ga4_consent_mode: bool = True
+    ga4_cookie_domain: str = "auto"
+    ga4_cookie_expires: int = 7776000  # 90 days
+    ga4_cookie_prefix: str = "_ga4_"
+    ga4_enhanced_measurement: bool = True
+    ga4_track_scrolls: bool = True
+    ga4_track_outbound_clicks: bool = True
+    ga4_track_site_search: bool = True
+    ga4_track_video_engagement: bool = True
+    ga4_track_file_downloads: bool = True
+    ga4_custom_dimensions: str = ""  # JSON string of custom dimensions mapping
+    ga4_ecommerce_tracking: bool = True
+    ga4_conversion_tracking: bool = True
+    ga4_enhanced_ecommerce: bool = True
+    ga4_data_retention_months: int = 26
+    ga4_reset_on_new_activity: bool = True
+    ga4_sampling_rate: float = 1.0
+    ga4_event_timeout: int = 2000
+    ga4_page_load_timeout: int = 5000
+    ga4_realtime_reporting: bool = True
+    ga4_realtime_threshold: int = 10
+    ga4_cross_domain_tracking: bool = False
+    ga4_cross_domain_linker: list = []
+    ga4_test_mode: bool = True
+    ga4_validate_events: bool = True
+    ga4_log_events: bool = True
+    ga4_batch_events: bool = True
+    ga4_batch_size: int = 10
+    ga4_batch_timeout: int = 1000
+    
+    # Google Tag Manager (GTM) Configuration
+    gtm_container_id: str = ""  # GTM Container ID (GTM-XXXXXXX)
+    gtm_container_public_id: str = ""  # GTM Container Public ID
+    gtm_server_container_url: str = ""  # Server-side container URL
+    gtm_server_container_api_key: str = ""  # Server-side container API key
+    gtm_measurement_protocol_url: str = "https://www.googletagmanager.com/gtm.js"
+    gtm_server_side_url: str = ""  # Server-side GTM URL
+    gtm_debug_mode: bool = True  # Enable debug mode for development
+    gtm_preview_mode: bool = False  # Enable preview mode for testing
+    gtm_consent_mode: bool = True  # Enable consent mode for GDPR/CCPA
+    gtm_anonymize_ip: bool = True  # Anonymize IP addresses for privacy
+    gtm_respect_dnt: bool = True  # Respect Do Not Track headers
+    gtm_enhanced_ecommerce: bool = True  # Enable enhanced e-commerce tracking
+    gtm_ecommerce_tracking: bool = True  # Enable e-commerce tracking
+    gtm_conversion_tracking: bool = True  # Enable conversion tracking
+    gtm_cross_domain_tracking: bool = False  # Enable cross-domain tracking
+    gtm_event_timeout: int = 2000  # Event timeout in milliseconds
+    gtm_page_load_timeout: int = 5000  # Page load timeout in milliseconds
+    gtm_batch_events: bool = True  # Batch events for better performance
+    gtm_batch_size: int = 10  # Number of events to batch
+    gtm_batch_timeout: int = 1000  # Batch timeout in milliseconds
+    gtm_custom_dimensions: str = ""  # JSON string of custom dimensions mapping
+    gtm_custom_metrics: str = ""  # JSON string of custom metrics mapping
+    gtm_secure_cookies: bool = True  # Use secure cookies
+    gtm_same_site_cookies: str = "Lax"  # SameSite cookie attribute
+    gtm_cookie_domain: str = "auto"  # Cookie domain (auto for current domain)
+    gtm_cookie_expires: int = 7776000  # Cookie expiration (90 days)
+    gtm_cookie_prefix: str = "_gtm_"  # Cookie prefix
+    gtm_datalayer_name: str = "dataLayer"  # DataLayer variable name
+    gtm_datalayer_limit: int = 150  # Maximum dataLayer entries
+    gtm_datalayer_timeout: int = 5000  # DataLayer timeout in milliseconds
+    gtm_ga4_integration: bool = True  # Enable GA4 integration via GTM
+    gtm_ga4_measurement_id: str = ""  # GA4 Measurement ID (if using GTM for GA4)
+    gtm_ga4_config_command: bool = True  # Use gtag config command for GA4
+    gtm_server_side_tagging: bool = False  # Enable server-side tagging
+    gtm_server_side_endpoint: str = ""  # Server-side endpoint URL
+    gtm_server_side_api_key: str = ""  # Server-side API key
+    gtm_server_side_container_id: str = ""  # Server-side container ID
+    gtm_conversion_linker: bool = True  # Enable conversion linker
+    gtm_conversion_linker_domains: list = []  # Domains for conversion linker
+    gtm_test_mode: bool = True  # Enable test mode for development
+    gtm_validate_events: bool = True  # Validate events before sending
+    gtm_log_events: bool = True  # Log events to console/logs
+    gtm_enable_monitoring: bool = True  # Enable GTM monitoring
+    gtm_async_loading: bool = True  # Load GTM asynchronously
+    gtm_defer_loading: bool = False  # Defer GTM loading
+    gtm_lazy_loading: bool = False  # Enable lazy loading for GTM
+    gtm_error_handling: bool = True  # Enable error handling
+    gtm_error_reporting: bool = True  # Enable error reporting
+    gtm_fallback_tracking: bool = True  # Enable fallback tracking
+    
     # Notification Settings
     appointment_reminder_hours: list[int] = [24, 2]  # Send reminders 24h and 2h before
     notification_retry_attempts: int = 3
@@ -138,10 +232,33 @@ class Settings(BaseSettings):
             missing.append("TWILIO_AUTH_TOKEN (required for SMS notifications)")
             
         return missing
+    
+    def load_secrets_securely(self):
+        """Load secrets using secure secret management."""
+        try:
+            # Load critical secrets with fallback
+            if not self.secret_key:
+                self.secret_key = get_secret('SECRET_KEY', required=False) or ""
+            if not self.jwt_secret_key:
+                self.jwt_secret_key = get_secret('JWT_SECRET_KEY', required=False) or ""
+            if not self.stripe_secret_key:
+                self.stripe_secret_key = get_secret('STRIPE_SECRET_KEY', required=False) or ""
+            if not self.stripe_publishable_key:
+                self.stripe_publishable_key = get_secret('STRIPE_PUBLISHABLE_KEY', required=False) or ""
+            if not self.stripe_webhook_secret:
+                self.stripe_webhook_secret = get_secret('STRIPE_WEBHOOK_SECRET', required=False) or ""
+                
+            logger.info("Secrets loaded securely from environment variables")
+            
+        except Exception as e:
+            logger.error(f"Error loading secrets: {e}")
+            if self.is_production():
+                raise ValueError("Failed to load required secrets in production environment")
 
 
-# Instantiate settings
+# Instantiate settings and load secrets
 settings = Settings()
+settings.load_secrets_securely()
 
 # Startup validation for critical security settings
 def validate_startup_security():

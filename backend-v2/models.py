@@ -43,8 +43,8 @@ class User(Base):
     # Test data flag
     is_test_data = Column(Boolean, default=False)
     
-    # Location for multi-tenancy
-    location_id = Column(Integer, ForeignKey("barbershop_locations.id"), nullable=True)
+    # Location for multi-tenancy (temporarily removed foreign key for initialization)
+    location_id = Column(Integer, nullable=True)
     
     # Lifetime value for conversion tracking
     lifetime_value = Column(Float, default=0.0)
@@ -60,11 +60,14 @@ class User(Base):
     ai_insights = relationship("AIInsightCache", back_populates="user", cascade="all, delete-orphan")
     bi_reports = relationship("BusinessIntelligenceReport", back_populates="user", cascade="all, delete-orphan")
     
-    # Conversion tracking relationships
-    conversion_events = relationship("ConversionEvent", back_populates="user")
-    tracking_config = relationship("TrackingConfiguration", back_populates="user", uselist=False)
-    conversion_goals = relationship("ConversionGoal", back_populates="user")
-    campaign_tracking = relationship("CampaignTracking", back_populates="user")
+    # Conversion tracking relationships (using string references for models in other files)
+    # conversion_events = relationship("ConversionEvent", back_populates="user")
+    # tracking_config = relationship("TrackingConfiguration", back_populates="user", uselist=False)
+    # conversion_goals = relationship("ConversionGoal", back_populates="user")
+    # campaign_tracking = relationship("CampaignTracking", back_populates="user")
+    
+    # Google Calendar integration relationship
+    google_calendar_settings = relationship("GoogleCalendarSettings", back_populates="user", uselist=False, cascade="all, delete-orphan")
     
     # Location relationships
     # Note: need to use string reference since BarbershopLocation is defined in location_models.py
@@ -313,8 +316,8 @@ class Client(Base):
     # Barber relationship (for backwards compatibility with V1)
     barber_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # The barber who manages this client
     
-    # Location for multi-tenancy
-    location_id = Column(Integer, ForeignKey("barbershop_locations.id"), nullable=True)
+    # Location for multi-tenancy (temporarily removed foreign key for initialization)
+    location_id = Column(Integer, nullable=True)
     
     # Communication Preferences
     communication_preferences = Column(JSON, default=dict)  # {sms: true, email: true, marketing: false}
@@ -493,8 +496,8 @@ class Service(Base):
     display_order = Column(Integer, default=0)
     image_url = Column(String, nullable=True)
     
-    # Location for multi-tenancy
-    location_id = Column(Integer, ForeignKey("barbershop_locations.id"), nullable=True)
+    # Location for multi-tenancy (temporarily removed foreign key for initialization)
+    location_id = Column(Integer, nullable=True)
     
     # Legacy field for backward compatibility - specific barber's service
     barber_id = Column(Integer, ForeignKey("users.id"), nullable=True)

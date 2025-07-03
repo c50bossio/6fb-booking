@@ -5,7 +5,7 @@ from slowapi.errors import RateLimitExceeded
 from database import engine, Base
 import models
 import location_models
-from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, email_analytics, test_data, reviews, integrations, api_keys, commissions, privacy, cache, ai_analytics, mfa, tracking  # products, shopify_webhooks temporarily disabled due to bleach dependency
+from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, email_analytics, test_data, reviews, integrations, api_keys, commissions, privacy, cache, ai_analytics, mfa, tracking, google_calendar  # products, shopify_webhooks temporarily disabled due to bleach dependency
 from routers.services import public_router as services_public_router
 from utils.rate_limit import limiter, rate_limit_exceeded_handler
 from services.integration_service import IntegrationServiceFactory
@@ -159,6 +159,7 @@ app.include_router(clients.router, prefix="/api/v1")
 app.include_router(users.router, prefix="/api/v1")
 app.include_router(timezones.router, prefix="/api/v1")
 app.include_router(calendar.router, prefix="/api/v1")
+app.include_router(google_calendar.router, prefix="/api/v1")  # Enhanced Google Calendar integration with V1 feature parity
 app.include_router(services.router, prefix="/api/v1")
 app.include_router(barbers.router, prefix="/api/v1")
 app.include_router(barber_availability.router, prefix="/api/v1")

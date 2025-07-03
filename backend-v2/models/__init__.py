@@ -96,6 +96,9 @@ from .ai_analytics import (
 from .mfa import (
     UserMFASecret, MFABackupCode, MFADeviceTrust, MFAEvent
 )
+from .google_calendar_settings import (
+    GoogleCalendarSettings, GoogleCalendarSyncLog
+)
 
 __all__ = [
     # Main models from parent models.py
@@ -129,5 +132,7 @@ __all__ = [
     'PerformanceBenchmark', 'AIInsightCache', 'CrossUserMetric', 'PredictiveModel', 'BusinessIntelligenceReport',
     'BenchmarkCategory', 'InsightType', 'BusinessSegment',
     # MFA Models
-    'UserMFASecret', 'MFABackupCode', 'MFADeviceTrust', 'MFAEvent'
+    'UserMFASecret', 'MFABackupCode', 'MFADeviceTrust', 'MFAEvent',
+    # Google Calendar Models
+    'GoogleCalendarSettings', 'GoogleCalendarSyncLog'
 ]

@@ -519,29 +519,15 @@ class MetaBusinessService:
         user_data: Dict[str, Any],
         custom_data: Dict[str, Any] = None,
         event_id: str = None,
-        action_source: str = "website"
+        action_source: str = "website",
+        test_event_code: str = None
     ) -> Dict[str, Any]:
-        """Send a conversion event via Conversions API"""
+        """Send a conversion event via Conversions API with enhanced privacy and deduplication"""
         try:
-            # Hash user data
-            hashed_user_data = {}
-            for key, value in user_data.items():
-                if value and key in ["em", "ph", "fn", "ln", "db", "ge", "ct", "st", "zp", "country"]:
-                    if key == "em":  # email
-                        value = value.lower().strip()
-                    elif key == "ph":  # phone
-                        value = "".join(filter(str.isdigit, value))
-                    elif key in ["fn", "ln", "ct", "st"]:  # names and locations
-                        value = value.lower().strip()
-                    elif key == "country":
-                        value = value.lower().strip()[:2]
-                    
-                    hashed_user_data[key] = hashlib.sha256(value.encode()).hexdigest()
-                elif key in ["client_ip_address", "client_user_agent", "fbc", "fbp"]:
-                    # These fields shouldn't be hashed
-                    hashed_user_data[key] = value
+            # Hash user data for privacy compliance
+            hashed_user_data = self._hash_user_data_for_conversions(user_data)
             
-            # Build event data
+            # Build event data with enhanced parameters
             event_data = {
                 "event_name": event_name,
                 "event_time": int(event_time.timestamp()),
@@ -549,11 +535,20 @@ class MetaBusinessService:
                 "user_data": hashed_user_data,
             }
             
+            # Add custom data if provided
             if custom_data:
-                event_data["custom_data"] = custom_data
+                # Clean and validate custom data
+                cleaned_custom_data = self._clean_custom_data(custom_data)
+                if cleaned_custom_data:
+                    event_data["custom_data"] = cleaned_custom_data
             
+            # Add event ID for deduplication
             if event_id:
                 event_data["event_id"] = event_id
+            
+            # Add test event code if in debug mode
+            if test_event_code:
+                event_data["test_event_code"] = test_event_code
             
             # Send to Conversions API
             payload = {
@@ -561,14 +556,24 @@ class MetaBusinessService:
                 "access_token": await self.get_access_token(integration)
             }
             
-            async with httpx.AsyncClient() as client:
+            # Add test event code to payload if provided
+            if test_event_code:
+                payload["test_event_code"] = test_event_code
+            
+            async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.post(
                     f"{self.graph_base_url}/{pixel_id}/events",
                     json=payload
                 )
                 
             if response.status_code in [200, 201]:
-                return response.json()
+                result = response.json()
+                
+                # Log success in debug mode
+                if os.getenv("META_CONVERSIONS_API_DEBUG", "false").lower() == "true":
+                    logger.info(f"Conversion event sent successfully: {event_name} (ID: {event_id})")
+                
+                return result
             else:
                 logger.error(f"Failed to send conversion event: {response.text}")
                 raise HTTPException(
@@ -579,6 +584,207 @@ class MetaBusinessService:
         except Exception as e:
             logger.error(f"Error sending conversion event: {str(e)}")
             raise
+
+    async def send_conversion_events_batch(
+        self,
+        integration: Integration,
+        pixel_id: str,
+        events: List[Dict[str, Any]],
+        test_event_code: str = None
+    ) -> Dict[str, Any]:
+        """Send multiple conversion events in a single batch for better performance"""
+        try:
+            processed_events = []
+            
+            for event in events:
+                # Extract event data
+                event_name = event.get("event_name")
+                event_time = event.get("event_time", datetime.utcnow())
+                user_data = event.get("user_data", {})
+                custom_data = event.get("custom_data", {})
+                event_id = event.get("event_id")
+                action_source = event.get("action_source", "website")
+                
+                # Ensure event_time is datetime
+                if isinstance(event_time, (int, float)):
+                    event_time = datetime.fromtimestamp(event_time)
+                elif isinstance(event_time, str):
+                    event_time = datetime.fromisoformat(event_time.replace('Z', '+00:00'))
+                
+                # Hash user data
+                hashed_user_data = self._hash_user_data_for_conversions(user_data)
+                
+                # Build event data
+                event_data = {
+                    "event_name": event_name,
+                    "event_time": int(event_time.timestamp()),
+                    "action_source": action_source,
+                    "user_data": hashed_user_data,
+                }
+                
+                # Add custom data if provided
+                if custom_data:
+                    cleaned_custom_data = self._clean_custom_data(custom_data)
+                    if cleaned_custom_data:
+                        event_data["custom_data"] = cleaned_custom_data
+                
+                # Add event ID for deduplication
+                if event_id:
+                    event_data["event_id"] = event_id
+                
+                processed_events.append(event_data)
+            
+            # Send batch to Conversions API
+            payload = {
+                "data": processed_events,
+                "access_token": await self.get_access_token(integration)
+            }
+            
+            # Add test event code if provided
+            if test_event_code:
+                payload["test_event_code"] = test_event_code
+            
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                response = await client.post(
+                    f"{self.graph_base_url}/{pixel_id}/events",
+                    json=payload
+                )
+                
+            if response.status_code in [200, 201]:
+                result = response.json()
+                
+                # Log batch success
+                if os.getenv("META_CONVERSIONS_API_DEBUG", "false").lower() == "true":
+                    logger.info(f"Batch conversion events sent successfully: {len(processed_events)} events")
+                
+                return result
+            else:
+                logger.error(f"Failed to send batch conversion events: {response.text}")
+                raise HTTPException(
+                    status_code=response.status_code,
+                    detail=f"Failed to send batch conversion events: {response.text}"
+                )
+                
+        except Exception as e:
+            logger.error(f"Error sending batch conversion events: {str(e)}")
+            raise
+
+    def _hash_user_data_for_conversions(self, user_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Hash user data according to Meta's Conversions API requirements"""
+        hashed_user_data = {}
+        
+        for key, value in user_data.items():
+            if not value:
+                continue
+                
+            # Fields that should be hashed
+            if key in ["em", "ph", "fn", "ln", "db", "ge", "ct", "st", "zp", "country"]:
+                # Normalize the value before hashing
+                if key == "em":  # email
+                    normalized_value = str(value).lower().strip()
+                elif key == "ph":  # phone
+                    # Remove all non-digit characters
+                    normalized_value = "".join(filter(str.isdigit, str(value)))
+                elif key in ["fn", "ln"]:  # first name, last name
+                    normalized_value = str(value).lower().strip()
+                elif key in ["ct", "st"]:  # city, state
+                    normalized_value = str(value).lower().strip()
+                elif key == "country":
+                    # Convert to 2-letter country code
+                    normalized_value = str(value).lower().strip()[:2]
+                elif key == "db":  # date of birth (YYYYMMDD format)
+                    normalized_value = str(value).replace("-", "").replace("/", "")
+                elif key == "ge":  # gender (m/f)
+                    normalized_value = str(value).lower().strip()[:1]
+                elif key == "zp":  # zip code
+                    normalized_value = str(value).strip()
+                else:
+                    normalized_value = str(value).lower().strip()
+                
+                # Hash the normalized value
+                if normalized_value:
+                    hashed_user_data[key] = hashlib.sha256(normalized_value.encode()).hexdigest()
+                    
+            # Fields that should NOT be hashed
+            elif key in ["client_ip_address", "client_user_agent", "fbc", "fbp", "external_id"]:
+                hashed_user_data[key] = str(value)
+        
+        return hashed_user_data
+
+    def _clean_custom_data(self, custom_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Clean and validate custom data for Conversions API"""
+        cleaned_data = {}
+        
+        # Standard e-commerce fields
+        ecommerce_fields = [
+            "currency", "value", "content_ids", "content_type", "content_name",
+            "content_category", "num_items", "order_id", "predicted_ltv",
+            "search_string", "status"
+        ]
+        
+        for field in ecommerce_fields:
+            if field in custom_data and custom_data[field] is not None:
+                value = custom_data[field]
+                
+                # Validate and convert value
+                if field == "value" and isinstance(value, (int, float, str)):
+                    try:
+                        cleaned_data[field] = float(value)
+                    except (ValueError, TypeError):
+                        continue
+                elif field == "num_items" and isinstance(value, (int, str)):
+                    try:
+                        cleaned_data[field] = int(value)
+                    except (ValueError, TypeError):
+                        continue
+                elif field == "content_ids" and isinstance(value, (list, tuple)):
+                    cleaned_data[field] = [str(item) for item in value if item is not None]
+                elif field == "status" and isinstance(value, bool):
+                    cleaned_data[field] = value
+                elif isinstance(value, (str, int, float)):
+                    cleaned_data[field] = str(value)
+        
+        # Add custom barbershop fields
+        barbershop_fields = [
+            "appointment_id", "barber_id", "service_id", "service_name",
+            "duration_minutes", "location_id", "user_role", "payment_method"
+        ]
+        
+        for field in barbershop_fields:
+            if field in custom_data and custom_data[field] is not None:
+                cleaned_data[field] = str(custom_data[field])
+        
+        return cleaned_data
+
+    async def validate_conversion_event(
+        self,
+        integration: Integration,
+        pixel_id: str,
+        event_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Validate a conversion event using Meta's validation endpoint"""
+        try:
+            payload = {
+                "data": [event_data],
+                "access_token": await self.get_access_token(integration)
+            }
+            
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"https://graph.facebook.com/v18.0/{pixel_id}/events",
+                    params={"debug": "1"},
+                    json=payload
+                )
+                
+            if response.status_code == 200:
+                return response.json()
+            else:
+                logger.error(f"Failed to validate conversion event: {response.text}")
+                return {"valid": False, "error": response.text}
+                
+        except Exception as e:
+            logger.error(f"Error validating conversion event: {str(e)}")
+            return {"valid": False, "error": str(e)}
     
     async def upload_offline_events(
         self,
