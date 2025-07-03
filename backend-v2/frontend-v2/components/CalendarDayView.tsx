@@ -1381,7 +1381,7 @@ const CalendarDayView = React.memo(function CalendarDayView({
                     </div>
                   </div>
                 )
-              }))
+              })
             )}
           </div>
         </div>

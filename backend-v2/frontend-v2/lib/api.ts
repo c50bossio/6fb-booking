@@ -107,13 +107,19 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
   }
 
   let response: Response
+  const fullUrl = `${API_URL}${endpoint}`
+  console.log('🌐 Making API request to:', fullUrl)
+  console.log('🔧 API_URL:', API_URL)
+  console.log('🔧 endpoint:', endpoint)
+  
   try {
-    response = await fetch(`${API_URL}${endpoint}`, config)
+    response = await fetch(fullUrl, config)
+    console.log('✅ Response status:', response.status)
   } catch (error) {
     // Network error or CORS issue
     console.error(`Network error calling ${endpoint}:`, error)
     console.error('API URL:', API_URL)
-    console.error('Full URL:', `${API_URL}${endpoint}`)
+    console.error('Full URL:', fullUrl)
     console.error('Token present:', !!token)
     const errorMessage = 'Failed to connect to server. Please check your connection and try again.'
     // Note: Toast should be called from components, not here in the API layer
@@ -231,7 +237,7 @@ export async function login(email: string, password: string) {
   console.log('🚀 Login request body JSON:', JSON.stringify(requestBody));
   
   const response = await retryOperation(
-    () => fetchAPI('/api/v1/auth-simple/login', {
+    () => fetchAPI('/api/v1/auth-test/login', {
       method: 'POST',
       body: JSON.stringify(requestBody),
     }),

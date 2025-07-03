@@ -61,7 +61,7 @@ class User(Base):
     bi_reports = relationship("BusinessIntelligenceReport", back_populates="user", cascade="all, delete-orphan")
     
     # Conversion tracking relationships (using string references for models in other files)
-    # conversion_events = relationship("ConversionEvent", back_populates="user")
+    conversion_events = relationship("ConversionEvent", back_populates="user")
     # tracking_config = relationship("TrackingConfiguration", back_populates="user", uselist=False)
     # conversion_goals = relationship("ConversionGoal", back_populates="user")
     # campaign_tracking = relationship("CampaignTracking", back_populates="user")

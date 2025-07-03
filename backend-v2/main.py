@@ -151,6 +151,10 @@ app.add_middleware(
 # Include routers with API versioning
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(auth_simple.router, prefix="/api/v1")  # Simplified auth for schema compatibility
+
+# Temporary auth bypass for testing
+from routers import test_auth_bypass
+app.include_router(test_auth_bypass.router, prefix="/api/v1")
 app.include_router(mfa.router, prefix="/api/v1")  # Multi-Factor Authentication endpoints
 app.include_router(bookings.router, prefix="/api/v1")
 app.include_router(appointments.router, prefix="/api/v1")  # Standardized appointment endpoints

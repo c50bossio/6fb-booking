@@ -76,20 +76,45 @@ function LoginContent() {
         console.log('Token received, fetching profile...')
         // Token is already stored in the login function
         // Fetch user profile to determine role
+        console.log('✅ Login successful, starting redirect process...')
+        
+        // Set up a timeout fallback to ensure redirect happens
+        const redirectTimeout = setTimeout(() => {
+          console.log('⏰ Timeout fallback - forcing redirect to dashboard')
+          window.location.href = '/dashboard'
+        }, 3000)
+        
         try {
+          console.log('📋 Fetching user profile...')
           const userProfile = await getProfile()
-          console.log('User profile:', userProfile)
-          // For now, always redirect to dashboard since admin requires special handling
-          const dashboardUrl = '/dashboard'
-          console.log('Redirecting to:', dashboardUrl)
+          console.log('✅ User profile fetched:', userProfile)
           
-          // Use window.location for immediate redirect
-          window.location.href = dashboardUrl
+          // Clear timeout since we got profile successfully
+          clearTimeout(redirectTimeout)
+          
+          // Always redirect to dashboard for now
+          const dashboardUrl = '/dashboard'
+          console.log('🎯 Redirecting to:', dashboardUrl)
+          
+          // Use both methods to ensure redirect works
+          router.push(dashboardUrl)
+          
+          // Also set a backup using window.location after short delay
+          setTimeout(() => {
+            if (window.location.pathname === '/login') {
+              console.log('🔄 Router.push failed, using window.location fallback')
+              window.location.href = dashboardUrl
+            }
+          }, 1000)
+          
         } catch (profileError) {
-          // If profile fetch fails, fallback to default dashboard
-          console.error('Failed to fetch user profile:', profileError)
-          console.log('Redirecting to default dashboard...')
-          router.push('/dashboard')
+          console.error('❌ Failed to fetch user profile:', profileError)
+          
+          // Clear timeout and redirect anyway
+          clearTimeout(redirectTimeout)
+          
+          console.log('🎯 Redirecting to dashboard despite profile error...')
+          window.location.href = '/dashboard'
         }
       } else {
         console.log('No access token in response')
