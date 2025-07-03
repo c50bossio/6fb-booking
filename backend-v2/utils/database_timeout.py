@@ -127,10 +127,16 @@ def query_timeout(db: Session, timeout_seconds: float = 30.0):
     start_time = time.time()
     
     try:
-        # Configure session timeout if supported
+        # Configure session timeout if supported (PostgreSQL only)
         if hasattr(db, 'execute'):
-            # Set query timeout on the session
-            db.execute("SET SESSION statement_timeout = :timeout", {"timeout": f"{int(timeout_seconds * 1000)}ms"})
+            try:
+                # Only set timeout for PostgreSQL databases
+                db_url = str(db.get_bind().url)
+                if 'postgresql' in db_url:
+                    db.execute("SET SESSION statement_timeout = :timeout", {"timeout": f"{int(timeout_seconds * 1000)}ms"})
+            except Exception as e:
+                # Ignore timeout setting errors for non-PostgreSQL databases
+                logger.debug(f"Could not set session timeout: {e}")
         
         yield db
         
@@ -149,11 +155,14 @@ def query_timeout(db: Session, timeout_seconds: float = 30.0):
         
         raise
     finally:
-        # Reset timeout
+        # Reset timeout (PostgreSQL only)
         try:
             if hasattr(db, 'execute'):
-                db.execute("SET SESSION statement_timeout = DEFAULT")
-        except:
+                db_url = str(db.get_bind().url)
+                if 'postgresql' in db_url:
+                    db.execute("SET SESSION statement_timeout = DEFAULT")
+        except Exception as e:
+            logger.debug(f"Could not reset session timeout: {e}")
             pass
 
 def with_query_timeout(db: Session, query_func: Callable[[], T], timeout_seconds: float = 30.0) -> T:
