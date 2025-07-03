@@ -93,6 +93,9 @@ from .ai_analytics import (
     PerformanceBenchmark, AIInsightCache, CrossUserMetric, PredictiveModel, BusinessIntelligenceReport,
     BenchmarkCategory, InsightType, BusinessSegment
 )
+from .mfa import (
+    UserMFASecret, MFABackupCode, MFADeviceTrust, MFAEvent
+)
 
 __all__ = [
     # Main models from parent models.py
@@ -124,5 +127,7 @@ __all__ = [
     'CancellationPolicy', 'AppointmentCancellation', 'WaitlistEntry', 'CancellationPolicyHistory',
     'CancellationReason', 'RefundType',
     'PerformanceBenchmark', 'AIInsightCache', 'CrossUserMetric', 'PredictiveModel', 'BusinessIntelligenceReport',
-    'BenchmarkCategory', 'InsightType', 'BusinessSegment'
+    'BenchmarkCategory', 'InsightType', 'BusinessSegment',
+    # MFA Models
+    'UserMFASecret', 'MFABackupCode', 'MFADeviceTrust', 'MFAEvent'
 ]

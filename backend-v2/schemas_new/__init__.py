@@ -40,5 +40,11 @@ try:
 except ImportError:
     pass
 
+try:
+    # Try importing from MFA schemas
+    from .mfa import *
+except ImportError:
+    pass
+
 # Note: Removed circular imports that were causing startup issues
 # If you need these schemas, import them directly from their respective modules

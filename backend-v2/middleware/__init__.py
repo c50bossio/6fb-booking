@@ -8,10 +8,16 @@ from .request_validation import (
     APIKeyValidationMiddleware,
     CSRFProtectionMiddleware
 )
+from .mfa_enforcement import (
+    MFAEnforcementMiddleware,
+    MFASessionManager
+)
 
 __all__ = [
     "SecurityHeadersMiddleware",
     "RequestValidationMiddleware", 
     "APIKeyValidationMiddleware",
-    "CSRFProtectionMiddleware"
+    "CSRFProtectionMiddleware",
+    "MFAEnforcementMiddleware",
+    "MFASessionManager"
 ]
