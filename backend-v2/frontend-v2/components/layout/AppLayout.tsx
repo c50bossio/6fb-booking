@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { getProfile, type User } from '@/lib/api'
+import { handleAuthError, isProtectedRoute } from '@/lib/auth-error-handler'
 import { ThemeProvider } from '@/lib/theme-provider'
 import { Sidebar } from './Sidebar'
 import { MobileNavigation } from './MobileNavigation'
@@ -41,7 +42,9 @@ export function AppLayout({ children }: AppLayoutProps) {
   // Simplified auth - only load user once, no complex route checking
   useEffect(() => {
     const loadUser = async () => {
-      if (isPublicRoute) {
+      const routeIsProtected = isProtectedRoute(pathname)
+      
+      if (!routeIsProtected) {
         setLoading(false)
         return
       }
@@ -51,14 +54,18 @@ export function AppLayout({ children }: AppLayoutProps) {
         setUser(userData)
         setError(null)
       } catch (err: any) {
-        // If auth fails, provide fallback user state for sidebar
-        setUser({ id: 0, email: 'guest', role: 'user', name: 'Guest' } as User)
-        setError(null)
+        console.log('AppLayout: Auth failed for protected route:', pathname)
         
-        // Only redirect to login on 401/403 for protected routes
-        if ((err.response?.status === 401 || err.response?.status === 403) && !isPublicRoute) {
-          router.replace('/login')
-        }
+        // Don't provide fake user data - leave as null for proper state management
+        setUser(null)
+        setError('Authentication required')
+        
+        // Use centralized auth error handling
+        handleAuthError(err, router, { 
+          clearTokens: true, 
+          redirectToLogin: routeIsProtected,
+          skipPublicRoutes: false 
+        })
       } finally {
         setLoading(false)
       }
@@ -68,7 +75,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     if (mounted) {
       loadUser()
     }
-  }, [pathname, mounted]) // Use pathname directly instead of isPublicRoute
+  }, [pathname, mounted])
 
   // Auto-collapse sidebar on mobile
   useEffect(() => {

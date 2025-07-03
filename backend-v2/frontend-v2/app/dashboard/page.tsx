@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getProfile, logout, getMyBookings, getClientDashboardMetrics, getDashboardAnalytics, type User, type DashboardAnalytics } from '@/lib/api'
+import { handleAuthError } from '@/lib/auth-error-handler'
 import { batchDashboardData } from '@/lib/requestBatcher'
 import { getDefaultDashboard } from '@/lib/routeGuards'
 import TimezoneSetupModal from '@/components/TimezoneSetupModal'
@@ -210,16 +211,22 @@ function DashboardContent() {
         }
       } catch (error) {
         console.error('Dashboard: Failed to load data:', error)
-        // Check if it's an auth error
-        if (error && (error as any).message?.includes('401')) {
-          console.log('Dashboard: Auth error, redirecting to login')
-          router.push('/login')
+        
+        // Use centralized auth error handling
+        if (handleAuthError(error, router)) {
+          // Auth error handled, clear state and let redirect happen
+          setUser(null)
+          setBookings([])
+          setClientMetrics(null)
+          setAnalytics(null)
+          return
         }
+        
+        // Non-auth error, just clear state
         setUser(null)
         setBookings([])
         setClientMetrics(null)
         setAnalytics(null)
-        // Don't redirect during render - let the loading state handle it
       } finally {
         setLoading(false)
       }

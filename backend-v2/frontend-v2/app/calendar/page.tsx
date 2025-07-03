@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { handleAuthError } from '@/lib/auth-error-handler'
 // Removed basic Calendar import - using ResponsiveCalendar instead
 import { useResponsiveCalendar } from '@/hooks/useResponsiveCalendar'
 import ResponsiveCalendar from '@/components/ResponsiveCalendar'
@@ -276,8 +277,19 @@ export default function CalendarPage() {
         // Calendar data loaded successfully
       } catch (err) {
         console.error('❌ Failed to load calendar data:', err)
+        
+        // Check if it's an authentication error
+        if (handleAuthError(err, router)) {
+          // Auth error handled, redirect will happen
+          return
+        }
+        
+        // Non-auth error, show error state
         const errorMessage = 'Failed to load calendar data. Please try again.'
+        setError(errorMessage)
         toastError('Loading Error', errorMessage)
+      } finally {
+        setLoading(false)
       }
     }
 

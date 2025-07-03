@@ -123,11 +123,15 @@ export default function BookPage() {
 
   const fetchNextAvailableSlot = async () => {
     try {
+      setLoadingNextAvailable(true)
       const next = await getNextAvailableSlot()
       setNextAvailable(next)
     } catch (err) {
       console.error('Failed to fetch next available slot:', err)
-      // Don't show error for this, it's not critical
+      // Don't show error for this, it's not critical for guest booking
+      setNextAvailable(null)
+    } finally {
+      setLoadingNextAvailable(false)
     }
   }
 

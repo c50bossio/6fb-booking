@@ -1,0 +1,132 @@
+{
+  "startTime": "2025-07-03T14:55:05.438Z",
+  "tests": [
+    {
+      "name": "Homepage Load",
+      "status": "passed",
+      "startTime": "2025-07-03T14:55:06.671Z",
+      "screenshots": [
+        "homepage-load-1751554507988.png"
+      ],
+      "errors": [],
+      "endTime": "2025-07-03T14:55:08.244Z"
+    },
+    {
+      "name": "Backend Connectivity",
+      "status": "failed",
+      "startTime": "2025-07-03T14:55:08.428Z",
+      "screenshots": [
+        "error-backend-connectivity-1751554508437.png"
+      ],
+      "errors": [
+        "Backend connectivity failed: Failed to fetch"
+      ],
+      "endTime": "2025-07-03T14:55:08.494Z"
+    },
+    {
+      "name": "Login Page",
+      "status": "passed",
+      "startTime": "2025-07-03T14:55:08.661Z",
+      "screenshots": [
+        "login-page-1751554510837.png"
+      ],
+      "errors": [],
+      "endTime": "2025-07-03T14:55:10.907Z"
+    },
+    {
+      "name": "Registration Page",
+      "status": "passed",
+      "startTime": "2025-07-03T14:55:11.069Z",
+      "screenshots": [
+        "register-page-1751554512640.png"
+      ],
+      "errors": [],
+      "endTime": "2025-07-03T14:55:12.714Z"
+    },
+    {
+      "name": "Calendar Page",
+      "status": "passed",
+      "startTime": "2025-07-03T14:55:12.902Z",
+      "screenshots": [
+        "calendar-page-1751554515146.png",
+        "calendar-loaded-1751554528212.png"
+      ],
+      "errors": [],
+      "endTime": "2025-07-03T14:55:28.403Z"
+    },
+    {
+      "name": "Calendar Mobile View",
+      "status": "passed",
+      "startTime": "2025-07-03T14:55:28.573Z",
+      "screenshots": [
+        "calendar-mobile-1751554531864.png"
+      ],
+      "errors": [],
+      "endTime": "2025-07-03T14:55:31.922Z"
+    },
+    {
+      "name": "Dashboard Access",
+      "status": "failed",
+      "startTime": "2025-07-03T14:55:32.106Z",
+      "screenshots": [
+        "dashboard-access-1751554534032.png",
+        "error-dashboard-access-1751554534112.png"
+      ],
+      "errors": [
+        "Dashboard or login redirect not working"
+      ],
+      "endTime": "2025-07-03T14:55:34.168Z"
+    },
+    {
+      "name": "Booking Page",
+      "status": "failed",
+      "startTime": "2025-07-03T14:55:34.356Z",
+      "screenshots": [
+        "booking-page-1751554536738.png",
+        "error-booking-page-1751554538817.png"
+      ],
+      "errors": [
+        "Booking form elements not found"
+      ],
+      "endTime": "2025-07-03T14:55:38.911Z"
+    },
+    {
+      "name": "Responsive Design",
+      "status": "passed",
+      "startTime": "2025-07-03T14:55:39.094Z",
+      "screenshots": [
+        "responsive-desktop-1751554541400.png",
+        "responsive-tablet-1751554543916.png",
+        "responsive-mobile-1751554546337.png"
+      ],
+      "errors": [],
+      "endTime": "2025-07-03T14:55:46.492Z"
+    },
+    {
+      "name": "Page Performance",
+      "status": "passed",
+      "startTime": "2025-07-03T14:55:46.644Z",
+      "screenshots": [],
+      "errors": [],
+      "metrics": {
+        "loadTime": 252.2999999821186,
+        "domContentLoaded": 43.69999998807907,
+        "firstPaint": 76,
+        "firstContentfulPaint": 76
+      },
+      "endTime": "2025-07-03T14:55:47.935Z"
+    }
+  ],
+  "summary": {
+    "total": 10,
+    "passed": 7,
+    "failed": 3,
+    "errors": [
+      "Backend Connectivity: Backend connectivity failed: Failed to fetch",
+      "Dashboard Access: Dashboard or login redirect not working",
+      "Booking Page: Booking form elements not found"
+    ]
+  },
+  "endTime": "2025-07-03T14:55:48.050Z",
+  "duration": 42612
+}
