@@ -518,6 +518,33 @@ REDIS_URL=redis://localhost:6379/1
 DEBUG=false
 ```
 
+## 🔧 Recent Infrastructure Fixes (2025-07-03)
+
+### Middleware ASGI Compatibility Fixes
+The following middleware issues were resolved to enable staging environment deployment:
+
+#### MultiTenancyMiddleware Fix
+- **Issue**: `TypeError: MultiTenancyMiddleware() takes no arguments`
+- **Fix**: Added proper `__init__(self, app)` method and ASGI interface
+- **Impact**: Enables location-based access control in staging environment
+
+#### RequestValidationMiddleware Fix  
+- **Issue**: `AttributeError: 'MutableHeaders' object has no attribute 'pop'`
+- **Fix**: Changed `response.headers.pop("Server", None)` to `del response.headers["Server"]`
+- **Impact**: Proper security header management in all environments
+
+#### BlackoutDate Model Fix
+- **Issue**: `AttributeError: module 'models' has no attribute 'BlackoutDate'`
+- **Fix**: Resolved config module circular import and added missing Sentry configuration
+- **Impact**: Enhanced recurring appointments service functionality
+
+### Staging Environment Compatibility
+All middleware now supports:
+- ✅ Development environment (ports 3000/8000)
+- ✅ Staging environment (ports 3001/8001)  
+- ✅ Parallel operation without conflicts
+- ✅ Environment-specific configuration loading
+
 ### Database Management
 
 #### Database Separation
@@ -573,6 +600,25 @@ docker-compose -f docker-compose.staging.yml logs
 
 # Restart staging environment
 docker-compose -f docker-compose.staging.yml restart
+```
+
+### Staging Environment Troubleshooting
+
+#### Common Staging Issues
+```bash
+# Middleware errors during startup
+# Check staging backend logs
+tail -f /Users/bossio/6fb-booking/backend-v2/staging_backend.log
+
+# Port conflicts
+lsof -ti:3001 | xargs kill -9  # Kill staging frontend
+lsof -ti:8001 | xargs kill -9  # Kill staging backend
+
+# Environment variable loading issues
+ENV_FILE=.env.staging python -c "from config import settings; print(settings.environment)"
+
+# Database migration issues
+ENV_FILE=.env.staging alembic upgrade head
 ```
 
 ### Best Practices for Environment Management
