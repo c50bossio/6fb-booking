@@ -11,6 +11,7 @@ import { touchDragManager, TouchDragManager } from '@/lib/touch-utils'
 import { conflictManager, ConflictAnalysis, ConflictResolution } from '@/lib/appointment-conflicts'
 import ConflictResolutionModal from './modals/ConflictResolutionModal'
 import { useCalendarPerformance } from '@/hooks/useCalendarPerformance'
+import { CALENDAR_THEME, getServiceConfig, getBarberSymbol } from '@/lib/calendar-constants'
 
 // Use standardized booking response interface
 import type { BookingResponse } from '@/lib/api'
@@ -678,68 +679,94 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
                       />
                     ))}
                     
-                    {/* Appointments - optimized rendering */}
-                    {getAppointmentsForDay(day).map((appointment) => (
-                      <div
-                        key={appointment.id}
-                        data-appointment-id={appointment.id}
-                        draggable={appointment.status !== 'completed' && appointment.status !== 'cancelled'}
-                        className={`calendar-appointment-week absolute left-1 right-1 rounded cursor-pointer transition-all text-white p-1 text-xs overflow-hidden ${
-                          getStatusColor(appointment.status)
-                        } ${
-                          draggedAppointment?.id === appointment.id 
-                            ? 'opacity-30 scale-95 animate-pulse ring-2 ring-white ring-opacity-50' 
-                            : 'hover:shadow-xl hover:scale-105 hover:z-20 hover:ring-2 hover:ring-white hover:ring-opacity-60'
-                        } ${
-                          appointment.status !== 'completed' && appointment.status !== 'cancelled' 
-                            ? 'cursor-move group' 
-                            : 'cursor-pointer'
-                        }`}
-                        style={appointment.style}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          if (!isDragging) {
-                            onAppointmentClick?.(appointment)
-                          }
-                        }}
-                        onDragStart={(e) => {
-                          if (appointment.status !== 'completed' && appointment.status !== 'cancelled') {
-                            e.dataTransfer.effectAllowed = 'move'
-                            setDraggedAppointment(appointment)
-                            setIsDragging(true)
-                          } else {
-                            e.preventDefault()
-                          }
-                        }}
-                        onDragEnd={() => {
-                          setDraggedAppointment(null)
-                          setDragOverSlot(null)
-                          setIsDragging(false)
-                        }}
-                      >
-                        {/* Drop zone indicator when dragging */}
-                        {isDragging && (
-                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                            <div className="bg-green-500 text-white px-2 py-1 rounded text-xs font-medium shadow-lg">
-                              Drop here
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* Success animation on drop - removed as it's not needed inside appointment */}
-                        
-                        <div 
-                          className="font-semibold truncate hover:underline cursor-pointer"
+                    {/* Appointments - optimized rendering with premium styling */}
+                    {getAppointmentsForDay(day).map((appointment) => {
+                      // Get service configuration for premium styling
+                      const serviceType = appointment.service_name?.toLowerCase() || 'haircut'
+                      const serviceConfig = getServiceConfig(serviceType)
+                      const barberSymbol = getBarberSymbol(appointment.barber_id?.toString() || appointment.barber_name || '')
+                      
+                      return (
+                        <div
+                          key={appointment.id}
+                          data-appointment-id={appointment.id}
+                          draggable={appointment.status !== 'completed' && appointment.status !== 'cancelled'}
+                          className={`calendar-appointment-week premium-appointment absolute left-1 right-1 rounded cursor-pointer transition-all text-white p-1 text-xs overflow-hidden relative ${
+                            getStatusColor(appointment.status)
+                          } ${
+                            draggedAppointment?.id === appointment.id 
+                              ? 'opacity-30 scale-95 animate-pulse ring-2 ring-white ring-opacity-50' 
+                              : 'hover:shadow-xl hover:scale-105 hover:z-20 hover:ring-2 hover:ring-white hover:ring-opacity-60'
+                          } ${
+                            appointment.status !== 'completed' && appointment.status !== 'cancelled' 
+                              ? 'cursor-move group' 
+                              : 'cursor-pointer'
+                          }`}
+                          style={{
+                            ...appointment.style,
+                            background: serviceConfig.gradient.light,
+                            borderColor: serviceConfig.color,
+                            boxShadow: `0 0 0 1px ${serviceConfig.color}40, ${serviceConfig.glow}`
+                          }}
                           onClick={(e) => {
                             e.stopPropagation()
-                            handleClientClick(appointment)
+                            if (!isDragging) {
+                              onAppointmentClick?.(appointment)
+                            }
+                          }}
+                          onDragStart={(e) => {
+                            if (appointment.status !== 'completed' && appointment.status !== 'cancelled') {
+                              e.dataTransfer.effectAllowed = 'move'
+                              setDraggedAppointment(appointment)
+                              setIsDragging(true)
+                            } else {
+                              e.preventDefault()
+                            }
+                          }}
+                          onDragEnd={() => {
+                            setDraggedAppointment(null)
+                            setDragOverSlot(null)
+                            setIsDragging(false)
                           }}
                         >
-                          {appointment.client_name || 'Client'}
+                          {/* Barber symbol in top-right corner */}
+                          <div className="absolute top-0.5 right-0.5 text-xs opacity-70 font-bold text-white bg-black bg-opacity-20 rounded-full w-4 h-4 flex items-center justify-center" title={`Barber: ${appointment.barber_name || 'Unknown'}`}>
+                            {barberSymbol}
+                          </div>
+                          
+                          {/* Service icon in bottom-left corner */}
+                          <div className="absolute bottom-0.5 left-0.5 text-xs opacity-80" title={`Service: ${appointment.service_name}`}>
+                            {serviceConfig.icon}
+                          </div>
+                          
+                          {/* Drop zone indicator when dragging */}
+                          {isDragging && (
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                              <div className="bg-green-500 text-white px-2 py-1 rounded text-xs font-medium shadow-lg">
+                                Drop here
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Premium shine effect on hover */}
+                          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
+                          
+                          {/* Content */}
+                          <div className="relative z-10 mt-1">
+                            <div 
+                              className="font-semibold truncate hover:underline cursor-pointer text-white"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleClientClick(appointment)
+                              }}
+                            >
+                              {appointment.client_name || 'Client'}
+                            </div>
+                            <div className="truncate opacity-90 text-white text-xs">{appointment.service_name}</div>
+                          </div>
                         </div>
-                        <div className="truncate opacity-90">{appointment.service_name}</div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 </div>
               ))}

@@ -24,6 +24,9 @@
     "test:e2e:gdpr": "playwright test tests/e2e/gdpr-compliance.spec.ts",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:ui": "playwright test --ui",
+    "test:e2e:calendar": "playwright test tests/e2e/calendar-views.spec.ts",
+    "test:e2e:appointment": "playwright test tests/e2e/complete-appointment-flow.spec.ts",
+    "test:calendar:full": "./scripts/run-calendar-test.sh",
     "optimize": "npm run lint:fix && npm run build:analyze",
     "size": "npx size-limit",
     "lighthouse": "npx lighthouse http://localhost:3000 --output-path=./lighthouse-report.html",
@@ -82,6 +85,7 @@
     "postcss": "^8.4.39",
     "puppeteer": "^24.11.2",
     "tailwindcss": "^3.4.4",
+    "ts-node": "^10.9.2",
     "typescript": "^5.5.3",
     "whatwg-fetch": "^3.6.20"
   }

@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Premium Calendar Styles */
+@import '../styles/calendar-premium.css';
+
 /* Modern CSS Reset & Performance Optimizations */
 @layer base {
   /* Box sizing and modern reset */

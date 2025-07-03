@@ -1,0 +1,855 @@
+/**
+ * Premium Calendar Visual Styles
+ * Enhanced visual design system for BookedBarber calendar
+ * Features: Glowing effects, magnetic snap zones, glassmorphism, service-specific treatments
+ * Performance: GPU-accelerated animations, 60fps optimized
+ * Accessibility: Respects prefers-reduced-motion, WCAG compliant contrast
+ * Compatibility: Works with existing Tailwind classes
+ */
+
+/* ============================================
+   CSS Custom Properties for Premium Theming
+   ============================================ */
+:root {
+  /* Premium Color Palette */
+  --premium-primary: #6366f1;
+  --premium-primary-light: #a5b4fc;
+  --premium-primary-dark: #4338ca;
+  --premium-accent: #8b5cf6;
+  --premium-success: #10b981;
+  --premium-warning: #f59e0b;
+  --premium-error: #ef4444;
+  
+  /* Glass and Blur Effects */
+  --glass-blur: 12px;
+  --glass-opacity: 0.1;
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-shadow: rgba(0, 0, 0, 0.1);
+  
+  /* Glow Effects */
+  --glow-primary: rgba(99, 102, 241, 0.4);
+  --glow-success: rgba(16, 185, 129, 0.4);
+  --glow-warning: rgba(245, 158, 11, 0.4);
+  --glow-error: rgba(239, 68, 68, 0.4);
+  --glow-accent: rgba(139, 92, 246, 0.4);
+  
+  /* Animation Timings */
+  --anim-fast: 150ms;
+  --anim-normal: 300ms;
+  --anim-slow: 500ms;
+  --anim-bezier: cubic-bezier(0.4, 0, 0.2, 1);
+  --anim-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  
+  /* Service-Specific Colors */
+  --service-haircut: #3b82f6;
+  --service-haircut-glow: rgba(59, 130, 246, 0.3);
+  --service-beard: #10b981;
+  --service-beard-glow: rgba(16, 185, 129, 0.3);
+  --service-color: #f59e0b;
+  --service-color-glow: rgba(245, 158, 11, 0.3);
+  --service-treatment: #8b5cf6;
+  --service-treatment-glow: rgba(139, 92, 246, 0.3);
+  --service-combo: #ec4899;
+  --service-combo-glow: rgba(236, 72, 153, 0.3);
+  --service-consultation: #06b6d4;
+  --service-consultation-glow: rgba(6, 182, 212, 0.3);
+  --service-wash: #6366f1;
+  --service-wash-glow: rgba(99, 102, 241, 0.3);
+  
+  /* Grid and Spacing */
+  --grid-gap: 1px;
+  --border-radius: 12px;
+  --border-radius-lg: 16px;
+  --border-radius-xl: 20px;
+  
+  /* Performance Optimizations */
+  --will-change: transform, opacity, box-shadow;
+  --gpu-hack: translateZ(0);
+}
+
+/* Dark Mode Variables */
+[data-theme="dark"], 
+.dark {
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: rgba(0, 0, 0, 0.3);
+  --glass-opacity: 0.05;
+}
+
+/* ============================================
+   1. Premium Calendar Grid with Glassmorphism
+   ============================================ */
+.calendar-premium-grid {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.9) 0%, 
+    rgba(247, 250, 252, 0.8) 100%
+  );
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 
+    0 8px 32px var(--glass-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  will-change: var(--will-change);
+  transform: var(--gpu-hack);
+}
+
+.dark .calendar-premium-grid {
+  background: linear-gradient(135deg, 
+    rgba(17, 24, 39, 0.9) 0%, 
+    rgba(31, 41, 55, 0.8) 100%
+  );
+}
+
+/* Enhanced Grid Lines with Gradients */
+.calendar-premium-grid::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(99, 102, 241, 0.1) 25%, 
+    rgba(139, 92, 246, 0.1) 50%, 
+    rgba(236, 72, 153, 0.1) 75%, 
+    transparent 100%
+  );
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity var(--anim-normal) var(--anim-bezier);
+  pointer-events: none;
+}
+
+.calendar-premium-grid:hover::before {
+  opacity: 1;
+}
+
+/* ============================================
+   2. Enhanced Time Slots with Glowing Effects
+   ============================================ */
+.calendar-time-slot {
+  position: relative;
+  transition: all var(--anim-normal) var(--anim-bezier);
+  border-radius: 8px;
+  will-change: var(--will-change);
+  transform: var(--gpu-hack);
+  overflow: hidden;
+}
+
+/* Available Time Slot with Magnetic Attraction */
+.calendar-time-slot.slot-available {
+  background: linear-gradient(135deg, 
+    rgba(16, 185, 129, 0.05) 0%, 
+    rgba(16, 185, 129, 0.02) 100%
+  );
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.calendar-time-slot.slot-available::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, 
+    var(--glow-success) 0%, 
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity var(--anim-fast) var(--anim-bezier);
+  border-radius: inherit;
+}
+
+.calendar-time-slot.slot-available:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 8px 25px var(--glow-success),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  border-color: var(--premium-success);
+  background: linear-gradient(135deg, 
+    rgba(16, 185, 129, 0.1) 0%, 
+    rgba(16, 185, 129, 0.05) 100%
+  );
+}
+
+.calendar-time-slot.slot-available:hover::before {
+  opacity: 0.6;
+}
+
+/* Magnetic Snap Zone Indicator */
+.calendar-time-slot.slot-available:hover::after {
+  content: '+ Add Appointment';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--premium-success);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0;
+  animation: magneticPulse var(--anim-normal) var(--anim-bounce);
+  pointer-events: none;
+  z-index: 10;
+}
+
+@keyframes magneticPulse {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Booked Time Slot */
+.calendar-time-slot.slot-booked {
+  background: linear-gradient(135deg, 
+    rgba(239, 68, 68, 0.05) 0%, 
+    rgba(239, 68, 68, 0.02) 100%
+  );
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Drop Target with Enhanced Visual Feedback */
+.calendar-time-slot.drop-target {
+  background: linear-gradient(135deg, 
+    var(--glow-primary) 0%, 
+    rgba(99, 102, 241, 0.1) 100%
+  );
+  border: 2px dashed var(--premium-primary);
+  transform: scale(1.05);
+  box-shadow: 
+    0 12px 30px var(--glow-primary),
+    inset 0 0 20px rgba(99, 102, 241, 0.1);
+  animation: dropTargetPulse 1s infinite alternate;
+}
+
+@keyframes dropTargetPulse {
+  0% {
+    box-shadow: 
+      0 12px 30px var(--glow-primary),
+      inset 0 0 20px rgba(99, 102, 241, 0.1);
+  }
+  100% {
+    box-shadow: 
+      0 16px 40px var(--glow-primary),
+      inset 0 0 30px rgba(99, 102, 241, 0.2);
+  }
+}
+
+/* ============================================
+   3. Premium Appointment Cards with Service-Specific Glows
+   ============================================ */
+.calendar-appointment {
+  position: relative;
+  border-radius: var(--border-radius);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  will-change: var(--will-change);
+  transform: var(--gpu-hack);
+  transition: all var(--anim-normal) var(--anim-bezier);
+}
+
+/* Service-Specific Appointment Styling */
+.calendar-appointment.service-haircut {
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.9) 0%, 
+    rgba(37, 99, 235, 0.95) 100%
+  );
+  border-left: 4px solid var(--service-haircut);
+}
+
+.calendar-appointment.service-haircut:hover {
+  box-shadow: 
+    0 8px 32px var(--service-haircut-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(-3px) scale(1.02);
+}
+
+.calendar-appointment.service-beard {
+  background: linear-gradient(135deg, 
+    rgba(16, 185, 129, 0.9) 0%, 
+    rgba(5, 150, 105, 0.95) 100%
+  );
+  border-left: 4px solid var(--service-beard);
+}
+
+.calendar-appointment.service-beard:hover {
+  box-shadow: 
+    0 8px 32px var(--service-beard-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(-3px) scale(1.02);
+}
+
+.calendar-appointment.service-color {
+  background: linear-gradient(135deg, 
+    rgba(245, 158, 11, 0.9) 0%, 
+    rgba(217, 119, 6, 0.95) 100%
+  );
+  border-left: 4px solid var(--service-color);
+}
+
+.calendar-appointment.service-color:hover {
+  box-shadow: 
+    0 8px 32px var(--service-color-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(-3px) scale(1.02);
+}
+
+.calendar-appointment.service-treatment {
+  background: linear-gradient(135deg, 
+    rgba(139, 92, 246, 0.9) 0%, 
+    rgba(124, 58, 237, 0.95) 100%
+  );
+  border-left: 4px solid var(--service-treatment);
+}
+
+.calendar-appointment.service-treatment:hover {
+  box-shadow: 
+    0 8px 32px var(--service-treatment-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(-3px) scale(1.02);
+}
+
+.calendar-appointment.service-combo {
+  background: linear-gradient(135deg, 
+    rgba(236, 72, 153, 0.9) 0%, 
+    rgba(190, 24, 93, 0.95) 100%
+  );
+  border-left: 4px solid var(--service-combo);
+}
+
+.calendar-appointment.service-combo:hover {
+  box-shadow: 
+    0 8px 32px var(--service-combo-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(-3px) scale(1.02);
+}
+
+.calendar-appointment.service-consultation {
+  background: linear-gradient(135deg, 
+    rgba(6, 182, 212, 0.9) 0%, 
+    rgba(8, 145, 178, 0.95) 100%
+  );
+  border-left: 4px solid var(--service-consultation);
+}
+
+.calendar-appointment.service-consultation:hover {
+  box-shadow: 
+    0 8px 32px var(--service-consultation-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(-3px) scale(1.02);
+}
+
+.calendar-appointment.service-wash {
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.9) 0%, 
+    rgba(67, 56, 202, 0.95) 100%
+  );
+  border-left: 4px solid var(--service-wash);
+}
+
+.calendar-appointment.service-wash:hover {
+  box-shadow: 
+    0 8px 32px var(--service-wash-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(-3px) scale(1.02);
+}
+
+/* Dragging State Enhancement */
+.calendar-appointment.dragging {
+  transform: scale(1.08) rotate(3deg);
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.3),
+    0 0 40px var(--glow-primary);
+  z-index: 1000;
+  cursor: grabbing !important;
+}
+
+/* Appointment Selection Enhancement */
+.calendar-appointment.selected {
+  ring-offset: 2px;
+  ring-offset-color: transparent;
+  animation: selectedPulse 2s infinite;
+}
+
+@keyframes selectedPulse {
+  0%, 100% {
+    box-shadow: 
+      0 0 0 3px rgba(255, 255, 255, 0.8),
+      0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+  50% {
+    box-shadow: 
+      0 0 0 6px rgba(255, 255, 255, 0.6),
+      0 12px 35px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* ============================================
+   4. Enhanced Service Badges with Micro-Interactions
+   ============================================ */
+.service-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  overflow: hidden;
+  transition: all var(--anim-fast) var(--anim-bezier);
+  backdrop-filter: blur(4px);
+}
+
+.service-badge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(255, 255, 255, 0.4) 50%, 
+    transparent 100%
+  );
+  transition: left var(--anim-slow) var(--anim-bezier);
+}
+
+.service-badge:hover::before {
+  left: 100%;
+}
+
+/* Service Badge Variants */
+.service-badge-haircut {
+  background: rgba(59, 130, 246, 0.9);
+  color: white;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.service-badge-shave {
+  background: rgba(16, 185, 129, 0.9);
+  color: white;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.service-badge-color {
+  background: rgba(245, 158, 11, 0.9);
+  color: white;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.service-badge-treatment {
+  background: rgba(139, 92, 246, 0.9);
+  color: white;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+/* ============================================
+   5. Today Indicator with Advanced Pulse Effect
+   ============================================ */
+.calendar-today-indicator {
+  position: relative;
+  background: linear-gradient(90deg, 
+    var(--premium-error) 0%, 
+    #ff6b6b 100%
+  );
+  height: 3px;
+  border-radius: 2px;
+  box-shadow: 0 0 20px var(--glow-error);
+  overflow: visible;
+}
+
+.calendar-today-indicator::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: -4px;
+  width: 12px;
+  height: 12px;
+  background: var(--premium-error);
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 
+    0 0 15px var(--glow-error),
+    0 0 0 4px rgba(239, 68, 68, 0.2);
+  animation: todayPulse 2s infinite;
+}
+
+@keyframes todayPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 
+      0 0 15px var(--glow-error),
+      0 0 0 4px rgba(239, 68, 68, 0.2);
+  }
+  50% {
+    transform: scale(1.2);
+    box-shadow: 
+      0 0 25px var(--glow-error),
+      0 0 0 8px rgba(239, 68, 68, 0.1);
+  }
+}
+
+/* ============================================
+   6. Professional Dividers and Spacing
+   ============================================ */
+.calendar-divider {
+  position: relative;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(156, 163, 175, 0.4) 20%, 
+    rgba(99, 102, 241, 0.6) 50%, 
+    rgba(156, 163, 175, 0.4) 80%, 
+    transparent 100%
+  );
+  margin: 16px 0;
+}
+
+.calendar-divider::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, 
+    var(--premium-primary) 0%, 
+    var(--premium-accent) 100%
+  );
+  border-radius: 2px;
+  box-shadow: 0 0 10px var(--glow-primary);
+}
+
+/* Time Column Enhancement */
+.calendar-time-column {
+  background: linear-gradient(180deg, 
+    rgba(249, 250, 251, 0.8) 0%, 
+    rgba(243, 244, 246, 0.6) 100%
+  );
+  border-right: 1px solid rgba(156, 163, 175, 0.3);
+  backdrop-filter: blur(4px);
+}
+
+.dark .calendar-time-column {
+  background: linear-gradient(180deg, 
+    rgba(17, 24, 39, 0.8) 0%, 
+    rgba(31, 41, 55, 0.6) 100%
+  );
+  border-right: 1px solid rgba(75, 85, 99, 0.3);
+}
+
+/* ============================================
+   7. Enhanced Background Patterns
+   ============================================ */
+.calendar-premium-background {
+  position: relative;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(236, 72, 153, 0.08) 0%, transparent 50%),
+    linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.dark .calendar-premium-background {
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(236, 72, 153, 0.05) 0%, transparent 50%),
+    linear-gradient(135deg, #111827 0%, #1f2937 100%);
+}
+
+/* Subtle Grid Pattern */
+.calendar-premium-background::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ============================================
+   8. 60fps Optimized Animations
+   ============================================ */
+.calendar-smooth-transition {
+  transition: transform var(--anim-normal) var(--anim-bezier),
+              opacity var(--anim-normal) var(--anim-bezier),
+              box-shadow var(--anim-normal) var(--anim-bezier);
+  will-change: transform, opacity, box-shadow;
+  transform: var(--gpu-hack);
+}
+
+/* GPU-Accelerated Hover Effects */
+.calendar-gpu-hover:hover {
+  transform: translateY(-2px) translateZ(0);
+  transition: transform var(--anim-fast) var(--anim-bezier);
+}
+
+/* Optimized Loading States */
+.calendar-loading-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(243, 244, 246, 0.8) 0%,
+    rgba(229, 231, 235, 0.9) 50%,
+    rgba(243, 244, 246, 0.8) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  will-change: background-position;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* ============================================
+   9. Responsive Design Enhancements
+   ============================================ */
+@media (max-width: 768px) {
+  .calendar-appointment {
+    padding: 12px;
+    border-radius: 10px;
+  }
+  
+  .calendar-time-slot {
+    min-height: 48px;
+    border-radius: 6px;
+  }
+  
+  /* Reduce blur effects on mobile for performance */
+  .calendar-premium-grid {
+    backdrop-filter: blur(6px);
+  }
+  
+  /* Simplified animations for mobile */
+  .calendar-appointment:hover {
+    transform: translateY(-1px) scale(1.01);
+  }
+}
+
+/* ============================================
+   10. Accessibility and Reduced Motion
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .calendar-appointment,
+  .calendar-time-slot,
+  .service-badge,
+  .calendar-today-indicator {
+    animation: none !important;
+    transition: opacity var(--anim-fast) ease-out,
+                color var(--anim-fast) ease-out,
+                background-color var(--anim-fast) ease-out;
+  }
+  
+  .calendar-appointment:hover,
+  .calendar-time-slot:hover {
+    transform: none;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .calendar-appointment {
+    border: 2px solid;
+    background: solid;
+    backdrop-filter: none;
+  }
+  
+  .calendar-time-slot {
+    border: 2px solid;
+    background: solid;
+  }
+  
+  .service-badge {
+    border: 2px solid;
+    backdrop-filter: none;
+  }
+}
+
+/* ============================================
+   11. Dark Mode Specific Enhancements
+   ============================================ */
+.dark .calendar-appointment {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dark .calendar-time-slot.slot-available {
+  background: linear-gradient(135deg, 
+    rgba(16, 185, 129, 0.08) 0%, 
+    rgba(16, 185, 129, 0.04) 100%
+  );
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.dark .service-badge {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+}
+
+/* ============================================
+   12. Performance Container Queries
+   ============================================ */
+@container (min-width: 640px) {
+  .calendar-appointment {
+    padding: 16px;
+  }
+  
+  .service-badge {
+    padding: 4px 12px;
+    font-size: 12px;
+  }
+}
+
+@container (min-width: 1024px) {
+  .calendar-premium-grid {
+    backdrop-filter: blur(16px);
+  }
+  
+  .calendar-appointment:hover {
+    transform: translateY(-4px) scale(1.03);
+  }
+}
+
+/* ============================================
+   13. Custom Scrollbar Styling
+   ============================================ */
+.calendar-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.calendar-scrollbar::-webkit-scrollbar-track {
+  background: linear-gradient(180deg, 
+    rgba(243, 244, 246, 0.4) 0%, 
+    rgba(229, 231, 235, 0.6) 100%
+  );
+  border-radius: 4px;
+}
+
+.calendar-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, 
+    var(--premium-primary) 0%, 
+    var(--premium-primary-dark) 100%
+  );
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.calendar-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, 
+    var(--premium-primary-light) 0%, 
+    var(--premium-primary) 100%
+  );
+}
+
+/* ============================================
+   14. Print Styles
+   ============================================ */
+@media print {
+  .calendar-premium-grid,
+  .calendar-appointment,
+  .calendar-time-slot {
+    background: white !important;
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    animation: none !important;
+    backdrop-filter: none !important;
+  }
+  
+  .service-badge {
+    background: #f3f4f6 !important;
+    color: #000 !important;
+    border: 1px solid #000 !important;
+  }
+}
+
+/* ============================================
+   15. Focus States for Keyboard Navigation
+   ============================================ */
+.calendar-focusable:focus-visible {
+  outline: 3px solid var(--premium-primary);
+  outline-offset: 2px;
+  border-radius: var(--border-radius);
+  animation: focusGlow var(--anim-normal) var(--anim-bezier);
+}
+
+@keyframes focusGlow {
+  0% {
+    box-shadow: 0 0 0 0 var(--glow-primary);
+  }
+  50% {
+    box-shadow: 0 0 20px 5px var(--glow-primary);
+  }
+  100% {
+    box-shadow: 0 0 0 3px var(--glow-primary);
+  }
+}
+
+/* ============================================
+   16. Advanced Layer Management
+   ============================================ */
+.calendar-layer-base {
+  z-index: 1;
+}
+
+.calendar-layer-appointments {
+  z-index: 10;
+}
+
+.calendar-layer-dragging {
+  z-index: 100;
+}
+
+.calendar-layer-modal {
+  z-index: 1000;
+}
+
+.calendar-layer-tooltip {
+  z-index: 1100;
+}
+
+/* ============================================
+   17. Experimental Features (Optional)
+   ============================================ */
+.calendar-experimental-glow {
+  filter: drop-shadow(0 0 20px var(--glow-primary));
+}
+
+.calendar-experimental-blur {
+  backdrop-filter: blur(20px) saturate(150%);
+}
+
+/* 3D Transform Effects (Use sparingly for performance) */
+.calendar-3d-hover:hover {
+  transform: perspective(1000px) rotateX(5deg) translateY(-5px);
+  transform-style: preserve-3d;
+}
+
+/* ============================================
+   End of Premium Calendar Styles
+   ============================================ */

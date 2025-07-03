@@ -10,6 +10,7 @@ import { useCalendarPerformance } from '@/hooks/useCalendarPerformance'
 import { useCalendarAccessibility } from '@/hooks/useCalendarAccessibility'
 import { useCalendarErrorReporting } from './calendar/CalendarErrorBoundary'
 import type { CalendarError } from '@/types/calendar'
+import { getServiceConfig, getBarberSymbol, type ServiceType } from '@/lib/calendar-constants'
 
 // Use standardized booking response interface
 import type { BookingResponse } from '@/lib/api'
@@ -568,79 +569,108 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
                 <div className="absolute top-1 right-1 w-2 h-2 bg-primary-500 rounded-full"></div>
               )}
 
-              {/* Appointments with enhanced selection */}
+              {/* Appointments with premium styling */}
               <div className="space-y-0.5 overflow-visible relative">
-                {visibleAppointments.map((appointment, idx) => (
-                  <div
-                    key={appointment.id}
-                    draggable={appointment.status !== 'completed' && appointment.status !== 'cancelled'}
-                    style={{
-                      zIndex: hoveredAppointment?.id === appointment.id ? 50 : 
-                              draggedAppointment?.id === appointment.id ? 40 :
-                              10 + idx,
-                      position: hoveredAppointment?.id === appointment.id ? 'relative' : 'relative'
-                    }}
-                    className={`text-xs px-1 py-0.5 rounded truncate border transition-all hover:shadow-md hover:z-50 ${getStatusColor(appointment.status)} ${
-                      draggedAppointment?.id === appointment.id ? 'opacity-50 animate-pulse' : ''
-                    } ${
-                      hoveredAppointment?.id === appointment.id ? 'shadow-lg scale-105 z-50 bg-opacity-95' : ''
-                    } ${
-                      appointment.status !== 'completed' && appointment.status !== 'cancelled' 
-                        ? 'cursor-move hover:shadow-md hover:scale-105' 
-                        : 'cursor-pointer'
-                    }`}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      if (!isDragging) {
-                        onAppointmentClick?.(appointment)
-                      }
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isDragging) {
-                        handleAppointmentHover(appointment, e)
-                      }
-                    }}
-                    onMouseLeave={() => setHoveredAppointment(null)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault()
+                {visibleAppointments.map((appointment, idx) => {
+                  // Get service configuration for premium styling
+                  const serviceType = appointment.service_name?.toLowerCase().includes('haircut') ? 'haircut' : 
+                                     appointment.service_name?.toLowerCase().includes('beard') ? 'beard' :
+                                     appointment.service_name?.toLowerCase().includes('color') ? 'color' : 
+                                     'haircut' // default fallback
+                  const serviceConfig = getServiceConfig(serviceType as ServiceType)
+                  const barberSymbol = getBarberSymbol(appointment.barber_id?.toString() || appointment.barber_name || '')
+                  
+                  return (
+                    <div
+                      key={appointment.id}
+                      draggable={appointment.status !== 'completed' && appointment.status !== 'cancelled'}
+                      style={{
+                        zIndex: hoveredAppointment?.id === appointment.id ? 50 : 
+                                draggedAppointment?.id === appointment.id ? 40 :
+                                10 + idx,
+                        position: hoveredAppointment?.id === appointment.id ? 'relative' : 'relative',
+                        background: serviceConfig.gradient.light,
+                        borderColor: serviceConfig.color,
+                        boxShadow: `0 0 0 1px ${serviceConfig.color}40, ${serviceConfig.glow}`
+                      }}
+                      className={`premium-appointment text-xs px-1 py-0.5 rounded truncate border transition-all hover:shadow-md hover:z-50 relative group overflow-hidden ${getStatusColor(appointment.status)} ${
+                        draggedAppointment?.id === appointment.id ? 'opacity-50 animate-pulse' : ''
+                      } ${
+                        hoveredAppointment?.id === appointment.id ? 'shadow-lg scale-105 z-50 bg-opacity-95' : ''
+                      } ${
+                        appointment.status !== 'completed' && appointment.status !== 'cancelled' 
+                          ? 'cursor-move hover:shadow-xl hover:scale-105' 
+                          : 'cursor-pointer'
+                      }`}
+                      onClick={(e) => {
                         e.stopPropagation()
                         if (!isDragging) {
                           onAppointmentClick?.(appointment)
                         }
-                      }
-                    }}
-                    tabIndex={0}
-                    role="button"
-                    aria-label={`Appointment: ${getClientName(appointment)} at ${format(new Date(appointment.start_time), 'h:mm a')} for ${appointment.service_name}`}
-                    title={`${format(new Date(appointment.start_time), 'h:mm a')} - ${getClientName(appointment)} ${
-                      appointment.status !== 'completed' && appointment.status !== 'cancelled' ? '(Drag to reschedule or press Enter to select)' : '(Press Enter to select)'
-                    }`}
-                    onDragStart={(e) => {
-                      if (appointment.status !== 'completed' && appointment.status !== 'cancelled') {
-                        e.dataTransfer.effectAllowed = 'move'
-                        setDraggedAppointment(appointment)
-                        setIsDragging(true)
-                        setHoveredAppointment(null)
-                      } else {
-                        e.preventDefault()
-                      }
-                    }}
-                    onDragEnd={() => {
-                      setDraggedAppointment(null)
-                      setDragOverDay(null)
-                      setIsDragging(false)
-                    }}
-                  >
-                    <span className="font-medium">
-                      {format(new Date(appointment.start_time), 'h:mm')}
-                    </span>
-                    {' '}
-                    <span className="opacity-90">
-                      {getClientName(appointment)}
-                    </span>
-                  </div>
-                ))}
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isDragging) {
+                          handleAppointmentHover(appointment, e)
+                        }
+                      }}
+                      onMouseLeave={() => setHoveredAppointment(null)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          if (!isDragging) {
+                            onAppointmentClick?.(appointment)
+                          }
+                        }
+                      }}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`Appointment: ${getClientName(appointment)} at ${format(new Date(appointment.start_time), 'h:mm a')} for ${appointment.service_name}`}
+                      title={`${format(new Date(appointment.start_time), 'h:mm a')} - ${getClientName(appointment)} ${
+                        appointment.status !== 'completed' && appointment.status !== 'cancelled' ? '(Drag to reschedule or press Enter to select)' : '(Press Enter to select)'
+                      }`}
+                      onDragStart={(e) => {
+                        if (appointment.status !== 'completed' && appointment.status !== 'cancelled') {
+                          e.dataTransfer.effectAllowed = 'move'
+                          setDraggedAppointment(appointment)
+                          setIsDragging(true)
+                          setHoveredAppointment(null)
+                        } else {
+                          e.preventDefault()
+                        }
+                      }}
+                      onDragEnd={() => {
+                        setDraggedAppointment(null)
+                        setDragOverDay(null)
+                        setIsDragging(false)
+                      }}
+                    >
+                      {/* Barber symbol in top-right corner */}
+                      <div className="absolute top-0 right-0 text-xs opacity-70 font-bold text-white bg-black bg-opacity-20 rounded-full w-3 h-3 flex items-center justify-center" title={`Barber: ${appointment.barber_name || 'Unknown'}`}>
+                        {barberSymbol}
+                      </div>
+                      
+                      {/* Service icon in bottom-left corner */}
+                      <div className="absolute bottom-0 left-0 text-xs opacity-80" title={`Service: ${appointment.service_name}`}>
+                        {serviceConfig.icon}
+                      </div>
+                      
+                      {/* Premium shine effect on hover */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
+                      
+                      {/* Content */}
+                      <div className="relative z-10">
+                        <span className="font-medium text-white">
+                          {format(new Date(appointment.start_time), 'h:mm')}
+                        </span>
+                        {' '}
+                        <span className="opacity-90 text-white">
+                          {getClientName(appointment)}
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })}
                 
                 {/* Show more indicator */}
                 {hiddenCount > 0 && (
@@ -724,7 +754,7 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
           )}
         </div>
         <div className="text-gray-500 dark:text-gray-400">
-          💡 Drag appointments to reschedule • Click any day to add appointment
+          💡 Drag appointments to reschedule • Click any day to add appointment • Service colors & barber symbols for easy identification
         </div>
       </div>
 

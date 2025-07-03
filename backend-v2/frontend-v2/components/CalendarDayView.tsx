@@ -15,6 +15,7 @@ import { useResponsive } from '@/hooks/useResponsive'
 import CalendarDayViewMobile from './calendar/CalendarDayViewMobile'
 import VirtualList from './VirtualList'
 import '@/styles/calendar-animations.css'
+import { getServiceConfig, getBarberSymbol, type ServiceType } from '@/lib/calendar-constants'
 
 // Use standardized booking response interface
 import type { BookingResponse } from '@/lib/api'
@@ -111,18 +112,29 @@ const VirtualizedAppointmentItem = React.memo(function VirtualizedAppointmentIte
   setSelectedClient: (client: any) => void
   setShowClientModal: (show: boolean) => void
 }) {
+  // Get service configuration for premium styling
+  const serviceType = appointment.service_name?.toLowerCase().includes('haircut') ? 'haircut' : 
+                     appointment.service_name?.toLowerCase().includes('beard') ? 'beard' :
+                     appointment.service_name?.toLowerCase().includes('color') ? 'color' : 
+                     'haircut' // default fallback
+  const serviceConfig = getServiceConfig(serviceType as ServiceType)
+  const barberSymbol = getBarberSymbol(appointment.barber_id?.toString() || appointment.barber_name || '')
+
   return (
     <div
-      className={`calendar-appointment absolute left-2 right-2 rounded-lg transition-all text-white p-3 border-l-4 shadow-sm hover:shadow-md ${getStatusColor(appointment.status)} ${
+      className={`calendar-appointment premium-appointment absolute left-2 right-2 rounded-lg transition-all text-white p-3 border-l-4 shadow-sm hover:shadow-md relative group overflow-hidden ${getStatusColor(appointment.status)} ${
         selectedAppointments.has(appointment.id) ? 'ring-2 ring-white ring-opacity-80 shadow-lg scale-[1.02]' : ''
       } ${
         appointment.status !== 'completed' && appointment.status !== 'cancelled' 
-          ? 'cursor-move hover:shadow-lg hover:scale-[1.02] hover:z-10 touch-target' 
+          ? 'cursor-move hover:shadow-xl hover:scale-[1.02] hover:z-10 touch-target' 
           : 'cursor-pointer'
       }`}
       style={{
         ...style,
-        animationDelay: `${index * 30}ms` // Stagger appointments
+        animationDelay: `${index * 30}ms`, // Stagger appointments
+        background: serviceConfig.gradient.light,
+        borderColor: serviceConfig.color,
+        boxShadow: `0 0 0 1px ${serviceConfig.color}40, ${serviceConfig.glow}`
       }}
       onClick={(e) => {
         e.stopPropagation()
@@ -143,36 +155,52 @@ const VirtualizedAppointmentItem = React.memo(function VirtualizedAppointmentIte
           </div>
         </div>
       )}
+
+      {/* Barber symbol in top-right corner */}
+      <div className="absolute top-0.5 right-0.5 text-xs opacity-70 font-bold text-white bg-black bg-opacity-20 rounded-full w-4 h-4 flex items-center justify-center" title={`Barber: ${appointment.barber_name || 'Unknown'}`}>
+        {barberSymbol}
+      </div>
       
-      <div 
-        className="font-semibold text-sm truncate hover:underline cursor-pointer"
-        onClick={(e) => {
-          e.stopPropagation()
-          // Find client by name and open detail modal
-          const client = clients.find(c => 
-            `${c.first_name} ${c.last_name}` === appointment.client_name ||
-            c.email === appointment.client_email
-          )
-          if (client) {
-            setSelectedClient(client)
-            setShowClientModal(true)
-          }
-        }}
-      >
-        {appointment.client_name || 'Client'}
+      {/* Service icon in bottom-left corner */}
+      <div className="absolute bottom-0.5 left-0.5 text-xs opacity-80" title={`Service: ${appointment.service_name}`}>
+        {serviceConfig.icon}
       </div>
-      <div className="text-xs opacity-90 truncate">
-        <span className={`service-badge ${getServiceBadgeClass(appointment.service_name)}`}>
-          {appointment.service_name}
-        </span>
+      
+      {/* Premium shine effect on hover */}
+      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
+      
+      {/* Content */}
+      <div className="relative z-10 mt-1">
+        <div 
+          className="font-semibold text-sm truncate hover:underline cursor-pointer text-white"
+          onClick={(e) => {
+            e.stopPropagation()
+            // Find client by name and open detail modal
+            const client = clients.find(c => 
+              `${c.first_name} ${c.last_name}` === appointment.client_name ||
+              c.email === appointment.client_email
+            )
+            if (client) {
+              setSelectedClient(client)
+              setShowClientModal(true)
+            }
+          }}
+        >
+          {appointment.client_name || 'Client'}
+        </div>
+        <div className="text-xs opacity-90 truncate">
+          <span className={`service-badge ${getServiceBadgeClass(appointment.service_name)} text-white`}>
+            {appointment.service_name}
+          </span>
+        </div>
+        <div className="text-xs opacity-75 mt-1 text-white">
+          {format(parseAPIDate(appointment.start_time), 'h:mm a')}
+          {appointment.duration_minutes && ` (${appointment.duration_minutes}m)`}
+        </div>
+        {appointment.barber_name && (
+          <div className="text-xs opacity-75 truncate text-white">{appointment.barber_name}</div>
+        )}
       </div>
-      <div className="text-xs opacity-75 mt-1">
-        {format(parseAPIDate(appointment.start_time), 'h:mm a')}
-        {appointment.duration_minutes && ` (${appointment.duration_minutes}m)`}
-      </div>
-      {appointment.barber_name && (
-        <div className="text-xs opacity-75 truncate">{appointment.barber_name}</div>
-      )}
     </div>
   )
 })
@@ -1242,89 +1270,118 @@ const CalendarDayView = React.memo(function CalendarDayView({
               />
             ) : (
               // Standard rendering for smaller lists
-              filteredAppointments.map((appointment, index) => (
-                <div
-                  key={appointment.id}
-                  data-appointment-id={appointment.id}
-                  draggable={appointment.status !== 'completed' && appointment.status !== 'cancelled'}
-                  className={`calendar-appointment absolute left-2 right-2 rounded-lg transition-all text-white p-3 border-l-4 shadow-sm hover:shadow-md ${getStatusColor(appointment.status)} ${
-                    draggedAppointment?.id === appointment.id ? 'dragging opacity-60' : ''
-                  } ${
-                    selectedAppointments.has(appointment.id) ? 'ring-2 ring-white ring-opacity-80 shadow-lg scale-[1.02]' : ''
-                  } ${
-                    appointment.status !== 'completed' && appointment.status !== 'cancelled' 
-                      ? 'cursor-move hover:shadow-lg hover:scale-[1.02] hover:z-10 touch-target' 
-                      : 'cursor-pointer'
-                  }`}
-                  style={{
-                    ...getAppointmentStyle(appointment),
-                    animationDelay: `${index * 30}ms` // Stagger appointments
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    if (!isDragging) {
-                      if (e.ctrlKey || e.metaKey || e.shiftKey || isSelectionMode) {
-                        toggleAppointmentSelection(appointment.id, e)
-                      } else {
-                        onAppointmentClick?.(appointment)
-                      }
-                    }
-                  }}
-                  onDragStart={(e) => {
-                    if (appointment.status !== 'completed' && appointment.status !== 'cancelled') {
-                      e.dataTransfer.effectAllowed = 'move'
-                      setDraggedAppointment(appointment)
-                      setIsDragging(true)
-                    } else {
-                      e.preventDefault()
-                    }
-                  }}
-                  onDragEnd={() => {
-                    setDraggedAppointment(null)
-                    setDragOverSlot(null)
-                    setIsDragging(false)
-                  }}
-                >
-                  {/* Selection indicator */}
-                  {selectedAppointments.has(appointment.id) && (
-                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-md">
-                      <div className="w-3 h-3 bg-primary-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs">✓</span>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div 
-                    className="font-semibold text-sm truncate hover:underline cursor-pointer"
+              filteredAppointments.map((appointment, index) => {
+                // Get service configuration for premium styling
+                const serviceType = appointment.service_name?.toLowerCase().includes('haircut') ? 'haircut' : 
+                                   appointment.service_name?.toLowerCase().includes('beard') ? 'beard' :
+                                   appointment.service_name?.toLowerCase().includes('color') ? 'color' : 
+                                   'haircut' // default fallback
+                const serviceConfig = getServiceConfig(serviceType as ServiceType)
+                const barberSymbol = getBarberSymbol(appointment.barber_id?.toString() || appointment.barber_name || '')
+
+                return (
+                  <div
+                    key={appointment.id}
+                    data-appointment-id={appointment.id}
+                    draggable={appointment.status !== 'completed' && appointment.status !== 'cancelled'}
+                    className={`calendar-appointment premium-appointment absolute left-2 right-2 rounded-lg transition-all text-white p-3 border-l-4 shadow-sm hover:shadow-md relative group overflow-hidden ${getStatusColor(appointment.status)} ${
+                      draggedAppointment?.id === appointment.id ? 'dragging opacity-60' : ''
+                    } ${
+                      selectedAppointments.has(appointment.id) ? 'ring-2 ring-white ring-opacity-80 shadow-lg scale-[1.02]' : ''
+                    } ${
+                      appointment.status !== 'completed' && appointment.status !== 'cancelled' 
+                        ? 'cursor-move hover:shadow-xl hover:scale-[1.02] hover:z-10 touch-target' 
+                        : 'cursor-pointer'
+                    }`}
+                    style={{
+                      ...getAppointmentStyle(appointment),
+                      animationDelay: `${index * 30}ms`, // Stagger appointments
+                      background: serviceConfig.gradient.light,
+                      borderColor: serviceConfig.color,
+                      boxShadow: `0 0 0 1px ${serviceConfig.color}40, ${serviceConfig.glow}`
+                    }}
                     onClick={(e) => {
                       e.stopPropagation()
-                      // Find client by name and open detail modal
-                      const client = clients.find(c => 
-                        `${c.first_name} ${c.last_name}` === appointment.client_name ||
-                        c.email === appointment.client_email
-                      )
-                      if (client) {
-                        setSelectedClient(client)
-                        setShowClientModal(true)
+                      if (!isDragging) {
+                        if (e.ctrlKey || e.metaKey || e.shiftKey || isSelectionMode) {
+                          toggleAppointmentSelection(appointment.id, e)
+                        } else {
+                          onAppointmentClick?.(appointment)
+                        }
                       }
                     }}
+                    onDragStart={(e) => {
+                      if (appointment.status !== 'completed' && appointment.status !== 'cancelled') {
+                        e.dataTransfer.effectAllowed = 'move'
+                        setDraggedAppointment(appointment)
+                        setIsDragging(true)
+                      } else {
+                        e.preventDefault()
+                      }
+                    }}
+                    onDragEnd={() => {
+                      setDraggedAppointment(null)
+                      setDragOverSlot(null)
+                      setIsDragging(false)
+                    }}
                   >
-                    {appointment.client_name || 'Client'}
+                    {/* Selection indicator */}
+                    {selectedAppointments.has(appointment.id) && (
+                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-md">
+                        <div className="w-3 h-3 bg-primary-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs">✓</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Barber symbol in top-right corner */}
+                    <div className="absolute top-0.5 right-0.5 text-xs opacity-70 font-bold text-white bg-black bg-opacity-20 rounded-full w-4 h-4 flex items-center justify-center" title={`Barber: ${appointment.barber_name || 'Unknown'}`}>
+                      {barberSymbol}
+                    </div>
+                    
+                    {/* Service icon in bottom-left corner */}
+                    <div className="absolute bottom-0.5 left-0.5 text-xs opacity-80" title={`Service: ${appointment.service_name}`}>
+                      {serviceConfig.icon}
+                    </div>
+                    
+                    {/* Premium shine effect on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
+                    
+                    {/* Content */}
+                    <div className="relative z-10">
+                      <div 
+                        className="font-semibold text-sm truncate hover:underline cursor-pointer text-white"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          // Find client by name and open detail modal
+                          const client = clients.find(c => 
+                            `${c.first_name} ${c.last_name}` === appointment.client_name ||
+                            c.email === appointment.client_email
+                          )
+                          if (client) {
+                            setSelectedClient(client)
+                            setShowClientModal(true)
+                          }
+                        }}
+                      >
+                        {appointment.client_name || 'Client'}
+                      </div>
+                      <div className="text-xs opacity-90 truncate">
+                        <span className={`service-badge ${getServiceBadgeClass(appointment.service_name)} text-white`}>
+                          {appointment.service_name}
+                        </span>
+                      </div>
+                      <div className="text-xs opacity-75 mt-1 text-white">
+                        {format(parseAPIDate(appointment.start_time), 'h:mm a')}
+                        {appointment.duration_minutes && ` (${appointment.duration_minutes}m)`}
+                      </div>
+                      {appointment.barber_name && (
+                        <div className="text-xs opacity-75 truncate text-white">{appointment.barber_name}</div>
+                      )}
+                    </div>
                   </div>
-                  <div className="text-xs opacity-90 truncate">
-                    <span className={`service-badge ${getServiceBadgeClass(appointment.service_name)}`}>
-                      {appointment.service_name}
-                    </span>
-                  </div>
-                  <div className="text-xs opacity-75 mt-1">
-                    {format(parseAPIDate(appointment.start_time), 'h:mm a')}
-                    {appointment.duration_minutes && ` (${appointment.duration_minutes}m)`}
-                  </div>
-                  {appointment.barber_name && (
-                    <div className="text-xs opacity-75 truncate">{appointment.barber_name}</div>
-                  )}
-                </div>
-              ))
+                )
+              }))
             )}
           </div>
         </div>
@@ -1361,7 +1418,7 @@ const CalendarDayView = React.memo(function CalendarDayView({
             <span>Completed</span>
           </div>
           <div className="text-gray-500 ml-6">
-            💡 {isTouchDevice ? 'Long press & drag appointments to reschedule' : 'Drag appointments to reschedule'} • {isSelectionMode ? 'Click to select/deselect' : 'Ctrl+click to select multiple'} • Click client names for details
+            💡 {isTouchDevice ? 'Long press & drag appointments to reschedule' : 'Drag appointments to reschedule'} • {isSelectionMode ? 'Click to select/deselect' : 'Ctrl+click to select multiple'} • Click client names for details • Service colors & barber symbols for identification
           </div>
         </div>
       </div>

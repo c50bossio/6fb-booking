@@ -17,6 +17,7 @@ const CalendarSync = lazy(() => import('@/components/CalendarSync'))
 const CalendarConflictResolver = lazy(() => import('@/components/CalendarConflictResolver'))
 import CreateAppointmentModal from '@/components/modals/CreateAppointmentModal'
 import TimePickerModal from '@/components/modals/TimePickerModal'
+import RescheduleModal from '@/components/modals/RescheduleModal'
 import { format } from 'date-fns'
 import { Card, CardContent, CardHeader } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -81,6 +82,8 @@ export default function CalendarPage() {
   const [pendingDate, setPendingDate] = useState<Date | null>(null)
   const [showSyncPanel, setShowSyncPanel] = useState(false)
   const [showConflictResolver, setShowConflictResolver] = useState(false)
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false)
+  const [rescheduleModalData, setRescheduleModalData] = useState<{ appointmentId: number; newStartTime: string } | null>(null)
   const [todayRevenue, setTodayRevenue] = useState(0)
   const [todayAppointmentCount, setTodayAppointmentCount] = useState(0)
 
@@ -438,27 +441,44 @@ export default function CalendarPage() {
     router.push(`/bookings?reschedule=${bookingId}`)
   }
 
-  const handleAppointmentUpdate = async (appointmentId: number, newStartTime: string) => {
+  const handleModalReschedule = async (updates: any) => {
     try {
-      // Parse the date and time from newStartTime
-      const newDate = new Date(newStartTime)
+      // Parse the date and time from start_time
+      const newDate = new Date(updates.start_time)
       const dateStr = format(newDate, 'yyyy-MM-dd')
       const timeStr = format(newDate, 'HH:mm')
       
-      // Show confirmation dialog
-      if (confirm(`Reschedule this appointment to ${format(newDate, 'MMM d, h:mm a')}?`)) {
-        // Rescheduling appointment with optimistic update...
-        
-        // Use enhanced API with optimistic updates and automatic rollback
-        await rescheduleOptimistic(appointmentId, dateStr, timeStr)
-        
-        toastSuccess('Appointment Rescheduled', 'Your appointment has been successfully rescheduled.')
-        // Appointment rescheduled successfully
+      // Use the same backend logic as existing reschedule
+      await rescheduleOptimistic(updates.id, dateStr, timeStr)
+      
+      // Close modal and show success
+      setShowRescheduleModal(false)
+      setRescheduleModalData(null)
+      toastSuccess('Appointment Rescheduled', 'Your appointment has been successfully rescheduled.')
+      
+      // TODO: Handle recurring appointments and notifications in future
+      if (updates.recurring_pattern) {
+        console.log('Recurring appointment requested:', updates.recurring_pattern)
       }
+      if (updates.notes) {
+        console.log('Reschedule note:', updates.notes)
+      }
+      
     } catch (err) {
       console.error('❌ Failed to reschedule appointment:', err)
-      const errorMessage = 'Failed to reschedule appointment. Please try again.'
-      toastError('Reschedule Failed', errorMessage)
+      toastError('Reschedule Failed', 'Failed to reschedule appointment. Please try again.')
+    }
+  }
+
+  const handleAppointmentUpdate = async (appointmentId: number, newStartTime: string) => {
+    try {
+      // Set modal data and show premium reschedule modal
+      setRescheduleModalData({ appointmentId, newStartTime })
+      setShowRescheduleModal(true)
+    } catch (err) {
+      console.error('❌ Failed to prepare reschedule modal:', err)
+      const errorMessage = 'Failed to prepare reschedule dialog. Please try again.'
+      toastError('Error', errorMessage)
     }
   }
 
@@ -849,6 +869,27 @@ export default function CalendarPage() {
           setPendingDate(null)
         }}
       />
+
+      {/* Premium Reschedule Modal */}
+      {showRescheduleModal && rescheduleModalData && (
+        <RescheduleModal
+          isOpen={showRescheduleModal}
+          onClose={() => {
+            setShowRescheduleModal(false)
+            setRescheduleModalData(null)
+          }}
+          onReschedule={handleModalReschedule}
+          appointment={
+            bookings.find(booking => booking.id === rescheduleModalData.appointmentId) || {
+              id: rescheduleModalData.appointmentId,
+              start_time: rescheduleModalData.newStartTime,
+              client_name: 'Client',
+              service_name: 'Service',
+              barber_name: 'Barber'
+            }
+          }
+        />
+      )}
       
       {/* Visual feedback overlay */}
       <CalendarVisualFeedback
