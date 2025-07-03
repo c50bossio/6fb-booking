@@ -11,31 +11,11 @@ import { useCalendarAccessibility } from '@/hooks/useCalendarAccessibility'
 import { useCalendarErrorReporting } from './calendar/CalendarErrorBoundary'
 import type { CalendarError } from '@/types/calendar'
 
-interface Appointment {
-  id: number
-  start_time: string
-  end_time?: string
-  service_name: string
-  client_name?: string
-  client_email?: string
-  client_phone?: string
-  barber_id?: number
-  barber_name?: string
-  status: string
-  duration_minutes?: number
-  // Support for nested client/barber objects
-  client?: {
-    id: number
-    first_name: string
-    last_name: string
-    email?: string
-    phone?: string
-  }
-  barber?: {
-    id: number
-    name: string
-    email?: string
-  }
+// Use standardized booking response interface
+import type { BookingResponse } from '@/lib/api'
+
+interface Appointment extends BookingResponse {
+  // Calendar-specific computed fields can be added here if needed
 }
 
 interface CalendarMonthViewProps {
@@ -92,25 +72,13 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  // Memoized helper functions for better performance
+  // Simplified helper functions - data is now normalized
   const getClientName = useCallback((appointment: Appointment): string => {
-    if (appointment.client_name) {
-      return appointment.client_name
-    }
-    if (appointment.client) {
-      return `${appointment.client.first_name} ${appointment.client.last_name}`.trim()
-    }
-    return 'Client'
+    return appointment.client_name // Always present due to normalization
   }, [])
 
   const getBarberName = useCallback((appointment: Appointment): string => {
-    if (appointment.barber_name) {
-      return appointment.barber_name
-    }
-    if (appointment.barber) {
-      return appointment.barber.name
-    }
-    return ''
+    return appointment.barber_name // Always present due to normalization
   }, [])
 
   // Memoized month calculations
@@ -191,8 +159,49 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
 
   const getAppointmentsForDay = useCallback((day: number) => {
     const dayKey = `${currentMonth.getFullYear()}-${currentMonth.getMonth()}-${day}`
-    return appointmentsByDay.get(dayKey) || []
-  }, [currentMonth, appointmentsByDay])
+    let dayAppointments = appointmentsByDay.get(dayKey) || []
+    
+    // Apply optimistic updates for better UX
+    dayAppointments = dayAppointments.map(appointment => {
+      const optimisticUpdate = optimisticUpdates.get(appointment.id)
+      if (optimisticUpdate) {
+        return {
+          ...appointment,
+          start_time: optimisticUpdate.newStartTime
+        }
+      }
+      return appointment
+    })
+    
+    // Filter out appointments that were moved to other days via optimistic updates
+    const targetDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
+    dayAppointments = dayAppointments.filter(appointment => {
+      const appointmentDate = new Date(appointment.start_time)
+      return appointmentDate.getDate() === targetDate.getDate() &&
+             appointmentDate.getMonth() === targetDate.getMonth() &&
+             appointmentDate.getFullYear() === targetDate.getFullYear()
+    })
+    
+    // Add appointments that were moved TO this day via optimistic updates
+    optimisticUpdates.forEach((update, appointmentId) => {
+      const updateDate = new Date(update.newStartTime)
+      if (updateDate.getDate() === targetDate.getDate() &&
+          updateDate.getMonth() === targetDate.getMonth() &&
+          updateDate.getFullYear() === targetDate.getFullYear()) {
+        
+        // Find the original appointment
+        const originalAppointment = appointments.find(apt => apt.id === appointmentId)
+        if (originalAppointment && !dayAppointments.find(apt => apt.id === appointmentId)) {
+          dayAppointments.push({
+            ...originalAppointment,
+            start_time: update.newStartTime
+          })
+        }
+      }
+    })
+    
+    return dayAppointments
+  }, [currentMonth, appointmentsByDay, optimisticUpdates, appointments])
 
   // Use memoized status color function
   const getStatusColor = memoizedStatusColor
@@ -213,6 +222,9 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
 
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
+  // Enhanced drag & drop with optimistic updates and proper error handling
+  const [optimisticUpdates, setOptimisticUpdates] = useState<Map<number, { originalStartTime: string; newStartTime: string }>>(new Map())
+  
   // Check for conflicts before updating appointment
   const checkAndUpdateAppointment = async (appointmentId: number, newStartTime: string) => {
     try {
@@ -226,6 +238,12 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
           timestamp: new Date()
         } as CalendarError
       }
+
+      // Store original state for rollback
+      const originalStartTime = appointment.start_time
+      
+      // Apply optimistic update immediately for better UX
+      setOptimisticUpdates(prev => new Map(prev.set(appointmentId, { originalStartTime, newStartTime })))
 
       // Create updated appointment for conflict checking
       const updatedAppointment = {
@@ -247,6 +265,13 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
       )
 
       if (analysis.hasConflicts && analysis.riskScore > 30) {
+        // Rollback optimistic update
+        setOptimisticUpdates(prev => {
+          const newMap = new Map(prev)
+          newMap.delete(appointmentId)
+          return newMap
+        })
+        
         // Show conflict resolution modal
         setConflictAnalysis(analysis)
         setPendingUpdate({ appointmentId, newStartTime })
@@ -256,7 +281,25 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
         if (onAppointmentUpdate) {
           try {
             await onAppointmentUpdate(appointmentId, newStartTime)
+            
+            // Success - clear optimistic update (it's now permanent)
+            setOptimisticUpdates(prev => {
+              const newMap = new Map(prev)
+              newMap.delete(appointmentId)
+              return newMap
+            })
+            
+            // Show success feedback
+            announce(`Appointment moved to ${format(new Date(newStartTime), 'EEEE, MMMM d at h:mm a')}`)
+            
           } catch (updateError: any) {
+            // Rollback optimistic update on failure
+            setOptimisticUpdates(prev => {
+              const newMap = new Map(prev)
+              newMap.delete(appointmentId)
+              return newMap
+            })
+            
             // Report error to monitoring
             reportError(updateError, {
               context: 'appointment-update',
@@ -265,10 +308,18 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
               originalStartTime: appointment.start_time
             })
             
+            // Show user-friendly error message
+            const userMessage = updateError.message?.includes('404') ? 'Appointment not found' :
+                               updateError.message?.includes('403') ? 'Permission denied' :
+                               updateError.message?.includes('409') ? 'Time slot no longer available' :
+                               'Failed to move appointment. Please try again.'
+            
+            announce(`Error: ${userMessage}`)
+            
             // Re-throw with calendar-specific error
             throw {
               name: 'AppointmentUpdateFailed',
-              message: updateError.message || 'Failed to update appointment',
+              message: userMessage,
               code: updateError.response?.status >= 500 ? 'SERVER_ERROR' : 'CALENDAR_SYNC_ERROR',
               recoverable: true,
               timestamp: new Date(),
@@ -278,6 +329,13 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
         }
       }
     } catch (error: any) {
+      // Ensure optimistic update is rolled back
+      setOptimisticUpdates(prev => {
+        const newMap = new Map(prev)
+        newMap.delete(appointmentId)
+        return newMap
+      })
+      
       // Report to error tracking
       reportError(error, {
         context: 'checkAndUpdateAppointment',
@@ -287,10 +345,9 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
       
       // Show user-friendly error message
       if (error.code === 'VALIDATION_ERROR') {
-        console.error('Validation error:', error.message)
+        announce(`Validation error: ${error.message}`)
       } else {
-        console.error('Failed to update appointment:', error)
-        // You might want to show a toast or notification here
+        announce(`Failed to move appointment: ${error.message || 'Unknown error'}`)
       }
     }
   }
@@ -511,14 +568,22 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
                 <div className="absolute top-1 right-1 w-2 h-2 bg-primary-500 rounded-full"></div>
               )}
 
-              {/* Appointments */}
-              <div className="space-y-0.5 overflow-hidden">
+              {/* Appointments with enhanced selection */}
+              <div className="space-y-0.5 overflow-visible relative">
                 {visibleAppointments.map((appointment, idx) => (
                   <div
                     key={appointment.id}
                     draggable={appointment.status !== 'completed' && appointment.status !== 'cancelled'}
-                    className={`text-xs px-1 py-0.5 rounded truncate border transition-all hover:shadow-sm ${getStatusColor(appointment.status)} ${
+                    style={{
+                      zIndex: hoveredAppointment?.id === appointment.id ? 50 : 
+                              draggedAppointment?.id === appointment.id ? 40 :
+                              10 + idx,
+                      position: hoveredAppointment?.id === appointment.id ? 'relative' : 'relative'
+                    }}
+                    className={`text-xs px-1 py-0.5 rounded truncate border transition-all hover:shadow-md hover:z-50 ${getStatusColor(appointment.status)} ${
                       draggedAppointment?.id === appointment.id ? 'opacity-50 animate-pulse' : ''
+                    } ${
+                      hoveredAppointment?.id === appointment.id ? 'shadow-lg scale-105 z-50 bg-opacity-95' : ''
                     } ${
                       appointment.status !== 'completed' && appointment.status !== 'cancelled' 
                         ? 'cursor-move hover:shadow-md hover:scale-105' 
@@ -536,8 +601,20 @@ const CalendarMonthView = React.memo(function CalendarMonthView({
                       }
                     }}
                     onMouseLeave={() => setHoveredAppointment(null)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        if (!isDragging) {
+                          onAppointmentClick?.(appointment)
+                        }
+                      }
+                    }}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`Appointment: ${getClientName(appointment)} at ${format(new Date(appointment.start_time), 'h:mm a')} for ${appointment.service_name}`}
                     title={`${format(new Date(appointment.start_time), 'h:mm a')} - ${getClientName(appointment)} ${
-                      appointment.status !== 'completed' && appointment.status !== 'cancelled' ? '(Drag to reschedule)' : ''
+                      appointment.status !== 'completed' && appointment.status !== 'cancelled' ? '(Drag to reschedule or press Enter to select)' : '(Press Enter to select)'
                     }`}
                     onDragStart={(e) => {
                       if (appointment.status !== 'completed' && appointment.status !== 'cancelled') {

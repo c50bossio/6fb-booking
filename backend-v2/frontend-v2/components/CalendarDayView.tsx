@@ -16,19 +16,11 @@ import CalendarDayViewMobile from './calendar/CalendarDayViewMobile'
 import VirtualList from './VirtualList'
 import '@/styles/calendar-animations.css'
 
-interface Appointment {
-  id: number
-  start_time: string
-  end_time?: string
-  service_name: string
-  client_name?: string
-  client_email?: string
-  client_phone?: string
-  barber_id?: number
-  barber_name?: string
-  status: string
-  duration_minutes?: number
-  height?: number
+// Use standardized booking response interface
+import type { BookingResponse } from '@/lib/api'
+
+interface Appointment extends BookingResponse {
+  height?: number // Calendar-specific computed field
 }
 
 interface Barber {

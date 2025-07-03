@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Calendar from '@/components/Calendar'
+import { Calendar } from '@/components/ui/Calendar'
 import CalendarDayView from '@/components/CalendarDayView'
 import TimeSlots from '@/components/TimeSlots'
 import PaymentForm from '@/components/PaymentForm'

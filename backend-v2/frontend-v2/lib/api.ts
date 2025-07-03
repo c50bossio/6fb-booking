@@ -431,14 +431,17 @@ export interface BookingResponse {
   price: number
   status: string
   created_at: string
-  // Additional fields from appointments
+  
+  // Critical fields required for calendar display (now guaranteed by normalization)
+  end_time: string
+  client_name: string
+  barber_name: string
+  
+  // Optional fields
   barber_id?: number
-  barber_name?: string
   client_id?: number
-  client_name?: string
   client_email?: string
   client_phone?: string
-  end_time?: string
   notes?: string
   service_id?: number
   recurring_pattern_id?: number
@@ -560,19 +563,90 @@ export async function createBooking(date: string, time: string, service: string)
   )
 }
 
-// Helper function to map AppointmentResponse to BookingResponse
-function mapAppointmentToBooking(appointment: AppointmentResponse): BookingResponse {
+// Unified data normalization function to ensure consistent appointment data
+function normalizeAppointmentData(rawData: any): BookingResponse {
+  // Validate required fields
+  if (!rawData || typeof rawData !== 'object') {
+    throw new Error('Invalid appointment data: expected object')
+  }
+  
+  if (!rawData.id) {
+    throw new Error('Invalid appointment data: missing id')
+  }
+  
+  if (!rawData.start_time) {
+    throw new Error('Invalid appointment data: missing start_time')
+  }
+  
+  // Validate start_time format
+  try {
+    new Date(rawData.start_time)
+  } catch {
+    throw new Error('Invalid appointment data: invalid start_time format')
+  }
+  // Calculate end_time if missing
+  const calculateEndTime = (startTime: string, duration: number): string => {
+    try {
+      const start = new Date(startTime)
+      const end = new Date(start.getTime() + (duration * 60 * 1000))
+      return end.toISOString()
+    } catch {
+      // Fallback to 30 minutes if calculation fails
+      const start = new Date(startTime)
+      const end = new Date(start.getTime() + (30 * 60 * 1000))
+      return end.toISOString()
+    }
+  }
+
+  // Normalize client name from various possible formats
+  const normalizeClientName = (data: any): string => {
+    if (data.client_name) return data.client_name
+    if (data.client) {
+      const firstName = data.client.first_name || ''
+      const lastName = data.client.last_name || ''
+      const fullName = `${firstName} ${lastName}`.trim()
+      return fullName || 'Guest'
+    }
+    return 'Guest'
+  }
+
+  // Normalize barber name from various possible formats
+  const normalizeBarberName = (data: any): string => {
+    if (data.barber_name) return data.barber_name
+    if (data.barber?.name) return data.barber.name
+    if (data.barber?.first_name && data.barber?.last_name) {
+      return `${data.barber.first_name} ${data.barber.last_name}`.trim()
+    }
+    if (data.barber?.email) {
+      return data.barber.email.split('@')[0]
+    }
+    return 'Staff'
+  }
+
   return {
-    id: appointment.id,
-    user_id: appointment.user_id,
-    service_name: appointment.service_name,
-    start_time: appointment.start_time,
-    duration_minutes: appointment.duration_minutes,
-    price: appointment.price,
-    status: appointment.status,
-    created_at: appointment.created_at,
-    // Add any additional fields that might be present
-    ...(appointment as any)
+    id: rawData.id,
+    user_id: rawData.user_id || 0,
+    service_name: rawData.service_name || 'Service',
+    start_time: rawData.start_time,
+    duration_minutes: rawData.duration_minutes || 30,
+    price: rawData.price || 0,
+    status: rawData.status || 'pending',
+    created_at: rawData.created_at || new Date().toISOString(),
+    
+    // Ensure these critical fields are always present for calendar views
+    end_time: rawData.end_time || calculateEndTime(rawData.start_time, rawData.duration_minutes || 30),
+    client_name: normalizeClientName(rawData),
+    barber_name: normalizeBarberName(rawData),
+    
+    // Optional fields with safe defaults
+    barber_id: rawData.barber_id || rawData.barber?.id,
+    client_id: rawData.client_id || rawData.client?.id,
+    client_email: rawData.client_email || rawData.client?.email,
+    client_phone: rawData.client_phone || rawData.client?.phone,
+    service_id: rawData.service_id,
+    notes: rawData.notes,
+    recurring_pattern_id: rawData.recurring_pattern_id,
+    google_event_id: rawData.google_event_id
   }
 }
 
@@ -589,7 +663,7 @@ export async function quickBooking(bookingData: QuickBookingData): Promise<Booki
     }
   )
   
-  return mapAppointmentToBooking(appointment)
+  return normalizeAppointmentData(appointment)
 }
 
 export async function getMyBookings(): Promise<BookingListResponse> {
@@ -611,8 +685,17 @@ export async function getMyBookings(): Promise<BookingListResponse> {
     response = await fetchAPI('/api/v1/appointments')
   }
   
-  // Map AppointmentResponse to BookingResponse format
-  const bookings: BookingResponse[] = (response.appointments || []).map(mapAppointmentToBooking)
+  // Map AppointmentResponse to BookingResponse format with error handling
+  const bookings: BookingResponse[] = (response.appointments || [])
+    .map((appointment, index) => {
+      try {
+        return normalizeAppointmentData(appointment)
+      } catch (error) {
+        console.warn(`Failed to normalize appointment at index ${index}:`, error, appointment)
+        return null // Filter out invalid appointments
+      }
+    })
+    .filter((booking): booking is BookingResponse => booking !== null)
   
   return {
     bookings,
@@ -624,7 +707,7 @@ export async function cancelBooking(bookingId: number): Promise<BookingResponse>
   const appointment = await fetchAPI(`/api/v1/appointments/${bookingId}/cancel`, {
     method: 'PUT',
   })
-  return mapAppointmentToBooking(appointment)
+  return normalizeAppointmentData(appointment)
 }
 
 export async function updateBooking(bookingId: number, data: {
@@ -637,7 +720,7 @@ export async function updateBooking(bookingId: number, data: {
     method: 'PUT',
     body: JSON.stringify(data),
   })
-  return mapAppointmentToBooking(appointment)
+  return normalizeAppointmentData(appointment)
 }
 
 export async function rescheduleBooking(bookingId: number, date: string, time: string): Promise<BookingResponse> {
@@ -645,7 +728,7 @@ export async function rescheduleBooking(bookingId: number, date: string, time: s
     method: 'POST',
     body: JSON.stringify({ date, time }),
   })
-  return mapAppointmentToBooking(appointment)
+  return normalizeAppointmentData(appointment)
 }
 
 // Client management functions

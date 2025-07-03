@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import Calendar from '@/components/Calendar'
+// Removed basic Calendar import - using ResponsiveCalendar instead
 import { useResponsiveCalendar } from '@/hooks/useResponsiveCalendar'
 import ResponsiveCalendar from '@/components/ResponsiveCalendar'
 
-// Lazy load heavy calendar components
+// Lazy load calendar components for optimal performance
 import { lazy, Suspense } from 'react'
 
 const CalendarWeekView = lazy(() => import('@/components/CalendarWeekView'))

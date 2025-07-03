@@ -12,18 +12,11 @@ import { conflictManager, ConflictAnalysis, ConflictResolution } from '@/lib/app
 import ConflictResolutionModal from './modals/ConflictResolutionModal'
 import { useCalendarPerformance } from '@/hooks/useCalendarPerformance'
 
-interface Appointment {
-  id: number
-  start_time: string
-  end_time?: string
-  service_name: string
-  client_name?: string
-  client_email?: string
-  client_phone?: string
-  barber_id?: number
-  barber_name?: string
-  status: string
-  duration_minutes?: number
+// Use standardized booking response interface
+import type { BookingResponse } from '@/lib/api'
+
+interface Appointment extends BookingResponse {
+  // Calendar-specific computed fields can be added here if needed
 }
 
 interface Barber {
@@ -252,11 +245,46 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
     return isSameDay(processedAppointment.parsedStartTime, day)
   }
 
-  // Get appointments for a specific day (optimized and memoized)
+  // Get appointments for a specific day (optimized and memoized) with optimistic updates
   const getAppointmentsForDay = useCallback((day: Date) => {
     const dayKey = format(day, 'yyyy-MM-dd')
-    return appointmentsByDay[dayKey] || []
-  }, [appointmentsByDay])
+    let dayAppointments = appointmentsByDay[dayKey] || []
+    
+    // Apply optimistic updates for better UX
+    dayAppointments = dayAppointments.map(appointment => {
+      const optimisticUpdate = optimisticUpdates.get(appointment.id)
+      if (optimisticUpdate) {
+        return {
+          ...appointment,
+          start_time: optimisticUpdate.newStartTime
+        }
+      }
+      return appointment
+    })
+    
+    // Filter out appointments that were moved to other days via optimistic updates
+    dayAppointments = dayAppointments.filter(appointment => {
+      const appointmentDate = new Date(appointment.start_time)
+      return format(appointmentDate, 'yyyy-MM-dd') === dayKey
+    })
+    
+    // Add appointments that were moved TO this day via optimistic updates
+    optimisticUpdates.forEach((update, appointmentId) => {
+      const updateDate = new Date(update.newStartTime)
+      if (format(updateDate, 'yyyy-MM-dd') === dayKey) {
+        // Find the original appointment
+        const originalAppointment = appointments.find(apt => apt.id === appointmentId)
+        if (originalAppointment && !dayAppointments.find(apt => apt.id === appointmentId)) {
+          dayAppointments.push({
+            ...originalAppointment,
+            start_time: update.newStartTime
+          })
+        }
+      }
+    })
+    
+    return dayAppointments
+  }, [appointmentsByDay, optimisticUpdates, appointments])
 
   // Get status color for CSS classes (memoized)
   const getStatusColor = useCallback((status: string) => {
@@ -275,17 +303,26 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
     }
   }, [])
 
-  // Format barber name (memoized)
+  // Format barber name (memoized) - for barber filter, not appointments
   const getBarberName = useCallback((barber: Barber) => {
     return barber.name || 
            (barber.first_name && barber.last_name ? `${barber.first_name} ${barber.last_name}` : '') ||
            barber.email.split('@')[0]
   }, [])
 
+  // Enhanced drag & drop with optimistic updates and proper error handling
+  const [optimisticUpdates, setOptimisticUpdates] = useState<Map<number, { originalStartTime: string; newStartTime: string }>>(new Map())
+  
   // Check for conflicts before updating appointment
-  const checkAndUpdateAppointment = (appointmentId: number, newStartTime: string) => {
+  const checkAndUpdateAppointment = async (appointmentId: number, newStartTime: string) => {
     const appointment = appointments.find(apt => apt.id === appointmentId)
     if (!appointment) return
+
+    // Store original state for rollback
+    const originalStartTime = appointment.start_time
+    
+    // Apply optimistic update immediately for better UX
+    setOptimisticUpdates(prev => new Map(prev.set(appointmentId, { originalStartTime, newStartTime })))
 
     // Create updated appointment for conflict checking
     const updatedAppointment = {
@@ -307,13 +344,41 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
     )
 
     if (analysis.hasConflicts && analysis.riskScore > 30) {
+      // Rollback optimistic update
+      setOptimisticUpdates(prev => {
+        const newMap = new Map(prev)
+        newMap.delete(appointmentId)
+        return newMap
+      })
+      
       // Show conflict resolution modal
       setConflictAnalysis(analysis)
       setPendingUpdate({ appointmentId, newStartTime })
       setShowConflictModal(true)
     } else {
       // No significant conflicts, proceed with update
-      onAppointmentUpdate?.(appointmentId, newStartTime)
+      if (onAppointmentUpdate) {
+        try {
+          await onAppointmentUpdate(appointmentId, newStartTime)
+          
+          // Success - clear optimistic update (it's now permanent)
+          setOptimisticUpdates(prev => {
+            const newMap = new Map(prev)
+            newMap.delete(appointmentId)
+            return newMap
+          })
+          
+        } catch (updateError: any) {
+          // Rollback optimistic update on failure
+          setOptimisticUpdates(prev => {
+            const newMap = new Map(prev)
+            newMap.delete(appointmentId)
+            return newMap
+          })
+          
+          console.error('Failed to update appointment:', updateError)
+        }
+      }
     }
   }
 
