@@ -1,0 +1,71 @@
+{
+  "timestamp": "2025-07-03T20:41:18.050Z",
+  "tests": [
+    {
+      "name": "Barber Login",
+      "passed": false,
+      "error": "this.page.waitForTimeout is not a function"
+    },
+    {
+      "name": "Mobile Responsiveness",
+      "passed": false,
+      "error": "this.page.waitForTimeout is not a function"
+    }
+  ],
+  "screenshots": [
+    {
+      "name": "login-page",
+      "path": "/Users/bossio/6fb-booking/backend-v2/frontend-v2/test-screenshots/barber-login-page-1751575278742.png",
+      "timestamp": "2025-07-03T20:41:18.806Z"
+    }
+  ],
+  "performance": {
+    "navigationTime": 85,
+    "metrics": {
+      "navigation": {
+        "domContentLoaded": 0,
+        "loadComplete": 0,
+        "domInteractive": null
+      },
+      "paint": {
+        "firstPaint": 0,
+        "firstContentfulPaint": 0
+      },
+      "memory": {
+        "usedJSHeapSize": 132202711,
+        "totalJSHeapSize": 146938347
+      }
+    },
+    "timestamp": "2025-07-03T20:41:22.525Z"
+  },
+  "errors": [
+    {
+      "type": "console",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "timestamp": "2025-07-03T20:41:19.227Z"
+    },
+    {
+      "type": "console",
+      "message": "Refused to execute script from 'http://localhost:3000/_next/static/chunks/app/login/page.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
+      "timestamp": "2025-07-03T20:41:19.227Z"
+    },
+    {
+      "type": "console",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "timestamp": "2025-07-03T20:41:22.140Z"
+    },
+    {
+      "type": "console",
+      "message": "Refused to execute script from 'http://localhost:3000/_next/static/chunks/app/login/page.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
+      "timestamp": "2025-07-03T20:41:22.140Z"
+    }
+  ],
+  "summary": {
+    "totalTests": 2,
+    "passedTests": 0,
+    "failedTests": 2,
+    "totalErrors": 4,
+    "totalScreenshots": 1,
+    "testDuration": "2025-07-03T20:41:22.525Z"
+  }
+}

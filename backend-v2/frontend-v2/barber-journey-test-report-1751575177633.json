@@ -1,0 +1,32 @@
+{
+  "timestamp": "2025-07-03T20:39:06.739Z",
+  "tests": [
+    {
+      "name": "Barber Login",
+      "passed": false,
+      "error": "Navigation timeout of 30000 ms exceeded"
+    }
+  ],
+  "screenshots": [],
+  "performance": {},
+  "errors": [],
+  "summary": {
+    "totalTests": 1,
+    "passedTests": 0,
+    "failedTests": 1,
+    "totalErrors": 0,
+    "totalScreenshots": 0,
+    "testDuration": "2025-07-03T20:39:37.633Z"
+  },
+  "recommendations": [
+    {
+      "priority": "high",
+      "category": "functionality",
+      "issue": "Failed tests detected",
+      "details": [
+        "Barber Login"
+      ],
+      "suggestion": "Review and fix failed test cases to ensure barber workflow functionality"
+    }
+  ]
+}

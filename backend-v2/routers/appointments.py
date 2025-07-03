@@ -10,6 +10,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date, datetime, time, timedelta
+import time as time_module
+import logging
+import uuid
 import schemas
 import models
 from database import get_db
@@ -25,6 +28,9 @@ from utils.rate_limit import (
     booking_cancel_rate_limit
 )
 from services.captcha_service import captcha_service
+
+# Configure logger for this module
+logger = logging.getLogger(__name__)
 
 # Create router with standardized appointment terminology
 router = APIRouter(
@@ -128,13 +134,39 @@ def create_appointment(
     db: Session = Depends(get_db)
 ):
     """Create a new appointment."""
+    # Get request ID from middleware (if available) or generate one
+    request_id = getattr(request.state, 'request_id', str(uuid.uuid4())[:8])
+    start_time = time_module.time()
+    
+    # Log request initiation
+    logger.info(
+        f"APPOINTMENT_API [{request_id}]: Starting appointment creation for user {current_user.id} "
+        f"(IP: {request.client.host if request.client else 'unknown'})"
+    )
+    
     try:
+        # Log and validate incoming request data
+        logger.info(f"APPOINTMENT_API [{request_id}]: Request data - Date: {appointment.date}, Time: {appointment.time}, Service: {appointment.service}")
+        
         # Convert date string to date object if needed
         from datetime import datetime
         if isinstance(appointment.date, str):
             booking_date = datetime.strptime(appointment.date, "%Y-%m-%d").date()
         else:
             booking_date = appointment.date
+        
+        # Log schema validation success
+        schema_validation_time = time_module.time()
+        logger.info(f"APPOINTMENT_API [{request_id}]: Schema validation completed in {schema_validation_time - start_time:.3f}s")
+        
+        # Log before calling service
+        logger.info(
+            f"APPOINTMENT_API [{request_id}]: Calling booking_service.create_booking with "
+            f"date={booking_date}, time={appointment.time}, service={appointment.service}, "
+            f"user_id={current_user.id}, barber_id={getattr(appointment, 'barber_id', None)}"
+        )
+        
+        service_start_time = time_module.time()
         
         # Use existing booking service with correct signature
         db_appointment = booking_service.create_booking(
@@ -147,8 +179,51 @@ def create_appointment(
             notes=getattr(appointment, 'notes', None),
             barber_id=getattr(appointment, 'barber_id', None)
         )
+        
+        service_end_time = time_module.time()
+        service_duration = service_end_time - service_start_time
+        
+        # Log service completion
+        logger.info(
+            f"APPOINTMENT_API [{request_id}]: Service call completed in {service_duration:.3f}s "
+            f"- Created appointment ID: {db_appointment.id if db_appointment else 'None'}"
+        )
+        
+        # Log total API request time
+        total_time = time_module.time() - start_time
+        logger.info(
+            f"APPOINTMENT_API [{request_id}]: Request completed successfully in {total_time:.3f}s "
+            f"(Schema: {schema_validation_time - start_time:.3f}s, Service: {service_duration:.3f}s)"
+        )
+        
         return db_appointment
+        
+    except HTTPException as http_exc:
+        # Log HTTP exceptions with timing
+        error_time = time_module.time() - start_time
+        logger.error(
+            f"APPOINTMENT_API [{request_id}]: HTTP exception after {error_time:.3f}s - "
+            f"Status: {http_exc.status_code}, Detail: {http_exc.detail}"
+        )
+        raise
+        
     except Exception as e:
+        # Log unexpected exceptions with timing and full context
+        error_time = time_module.time() - start_time
+        logger.error(
+            f"APPOINTMENT_API [{request_id}]: Unexpected error after {error_time:.3f}s - "
+            f"Type: {type(e).__name__}, Message: {str(e)}, "
+            f"User: {current_user.id}, Date: {appointment.date}, Time: {appointment.time}"
+        )
+        
+        # Check if this might be a timeout or connection issue
+        if 'timeout' in str(e).lower() or 'connection' in str(e).lower():
+            logger.error(f"APPOINTMENT_API [{request_id}]: Potential timeout/connection issue detected")
+            raise HTTPException(
+                status_code=504, 
+                detail="Request timeout - the server took too long to process your appointment request"
+            )
+        
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/quick", response_model=schemas.AppointmentResponse)

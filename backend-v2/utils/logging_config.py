@@ -401,7 +401,7 @@ def setup_logging(environment: str = "development", log_level: str = "INFO"):
     # Console handler
     console_handler = logging.StreamHandler(sys.stdout)
     if environment == "production":
-        console_handler.setFormatter(MaskedStructuredFormatter())
+        console_handler.setFormatter(StructuredFormatter())
     else:
         # Use masking even in development for sensitive data protection
         console_formatter = logging.Formatter(
@@ -428,7 +428,7 @@ def setup_logging(environment: str = "development", log_level: str = "INFO"):
         backupCount=5
     )
     error_handler.setLevel(logging.ERROR)
-    error_handler.setFormatter(MaskedStructuredFormatter())
+    error_handler.setFormatter(StructuredFormatter())
     root_logger.addHandler(error_handler)
     
     # Configure specific loggers

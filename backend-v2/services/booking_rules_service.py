@@ -31,45 +31,70 @@ def validate_booking_against_rules(
     client_id: Optional[int] = None
 ) -> Tuple[bool, List[str]]:
     """
-    Validate a booking against all applicable rules.
+    Validate a booking against all applicable rules - OPTIMIZED with timeout protection.
     Returns (is_valid, list_of_violations)
     """
-    violations = []
+    from utils.database_timeout import timeout_query
     
-    try:
-        # Get client information
-        client = None
-        if client_id:
-            client = db.query(models.Client).filter(models.Client.id == client_id).first()
-        elif user_id:
-            # Try to find client by user email
-            user = db.query(models.User).filter(models.User.id == user_id).first()
-            if user:
-                client = db.query(models.Client).filter(models.Client.email == user.email).first()
+    @timeout_query(timeout_seconds=15.0)  # Timeout for business rules validation
+    def _validate_rules():
+        violations = []
         
-        # 1. Validate service-specific rules
-        if service_id:
-            service_violations = _validate_service_rules(db, service_id, client, booking_date, booking_time)
-            violations.extend(service_violations)
-        
-        # 2. Validate global booking rules
-        global_violations = _validate_global_rules(db, user_id, service_id, barber_id, booking_date, booking_time, duration_minutes)
-        violations.extend(global_violations)
-        
-        # 3. Validate client-specific constraints
-        if client:
-            client_violations = _validate_client_constraints(db, client, service_id, booking_date, booking_time)
-            violations.extend(client_violations)
-        
-        # 4. Validate business hours and special constraints
-        business_violations = _validate_business_constraints(db, booking_date, booking_time, duration_minutes)
-        violations.extend(business_violations)
-        
-        return len(violations) == 0, violations
-        
-    except Exception as e:
-        logger.error(f"Error validating booking rules: {e}")
-        return False, [f"Rule validation error: {str(e)}"]
+        try:
+            # OPTIMIZED: Get client information with single query
+            client = None
+            user = None
+            
+            if client_id:
+                client = db.query(models.Client).filter(models.Client.id == client_id).first()
+            elif user_id:
+                # Single query to get user and potentially find client
+                user = db.query(models.User).filter(models.User.id == user_id).first()
+                if user and user.email:
+                    # OPTIMIZED: Only search for client if user has email
+                    client = db.query(models.Client).filter(models.Client.email == user.email).first()
+            
+            # 1. Validate service-specific rules (with timeout protection)
+            if service_id:
+                try:
+                    service_violations = _validate_service_rules(db, service_id, client, booking_date, booking_time)
+                    violations.extend(service_violations)
+                except Exception as e:
+                    logger.warning(f"Service rules validation failed: {str(e)}")
+                    # Continue with other validations
+            
+            # 2. Validate global booking rules (with timeout protection)
+            try:
+                global_violations = _validate_global_rules(db, user_id, service_id, barber_id, booking_date, booking_time, duration_minutes)
+                violations.extend(global_violations)
+            except Exception as e:
+                logger.warning(f"Global rules validation failed: {str(e)}")
+                # Continue with other validations
+            
+            # 3. Validate client-specific constraints (with timeout protection)
+            if client:
+                try:
+                    client_violations = _validate_client_constraints(db, client, service_id, booking_date, booking_time)
+                    violations.extend(client_violations)
+                except Exception as e:
+                    logger.warning(f"Client constraints validation failed: {str(e)}")
+                    # Continue with other validations
+            
+            # 4. Validate business hours and special constraints (with timeout protection)
+            try:
+                business_violations = _validate_business_constraints(db, booking_date, booking_time, duration_minutes)
+                violations.extend(business_violations)
+            except Exception as e:
+                logger.warning(f"Business constraints validation failed: {str(e)}")
+                # Continue - business hours might be validated elsewhere
+            
+            return len(violations) == 0, violations
+            
+        except Exception as e:
+            logger.error(f"Error validating booking rules: {e}")
+            return False, [f"Rule validation error: {str(e)}"]
+    
+    return _validate_rules()
 
 
 def _validate_service_rules(

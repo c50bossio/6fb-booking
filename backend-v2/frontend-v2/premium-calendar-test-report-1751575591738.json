@@ -1,0 +1,72 @@
+{
+  "timestamp": "2025-07-03T20:45:01.118Z",
+  "tests": [
+    {
+      "name": "Calendar Page Access",
+      "passed": false,
+      "error": "Navigation timeout of 15000 ms exceeded"
+    },
+    {
+      "name": "Homepage Calendar Features",
+      "passed": false,
+      "error": "Navigation timeout of 15000 ms exceeded"
+    },
+    {
+      "name": "Booking Page Calendar",
+      "passed": false,
+      "error": "Navigation timeout of 15000 ms exceeded"
+    },
+    {
+      "name": "Premium Calendar Components",
+      "passed": false,
+      "details": {
+        "pagesWithCalendar": 0,
+        "totalPremiumFeatures": 0,
+        "bestPage": null,
+        "allResults": []
+      }
+    },
+    {
+      "name": "Calendar Interactivity",
+      "passed": false,
+      "error": "Navigation timeout of 15000 ms exceeded"
+    }
+  ],
+  "screenshots": [],
+  "performance": {},
+  "errors": [],
+  "summary": {
+    "totalTests": 5,
+    "passedTests": 0,
+    "failedTests": 5,
+    "totalErrors": 0,
+    "totalScreenshots": 0,
+    "testDuration": "2025-07-03T20:46:31.738Z"
+  },
+  "analysis": {
+    "calendarImplementation": "none",
+    "premiumFeatures": [],
+    "userExperience": "basic",
+    "technicalImplementation": "unknown"
+  },
+  "recommendations": [
+    {
+      "priority": "high",
+      "category": "functionality",
+      "issue": "No calendar implementation detected",
+      "suggestion": "Implement a calendar system for barber appointment management"
+    },
+    {
+      "priority": "medium",
+      "category": "user experience",
+      "issue": "Limited premium calendar features",
+      "suggestion": "Add drag & drop functionality, view switching, and visual enhancements for better barber productivity"
+    },
+    {
+      "priority": "low",
+      "category": "enhancement",
+      "issue": "Basic user experience",
+      "suggestion": "Consider upgrading to a more feature-rich calendar solution for enhanced barber workflows"
+    }
+  ]
+}

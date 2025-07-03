@@ -1,0 +1,143 @@
+{
+  "timestamp": "2025-07-03T20:42:57.358Z",
+  "tests": [
+    {
+      "name": "Barber Login",
+      "passed": false,
+      "details": {
+        "loginEmail": "admin@bookedbarber.com",
+        "redirectUrl": "http://localhost:3000/login?",
+        "timestamp": "2025-07-03T20:43:06.632Z"
+      }
+    },
+    {
+      "name": "Mobile Responsiveness",
+      "passed": true,
+      "details": {
+        "viewport": {
+          "width": 375,
+          "height": 667,
+          "isMobile": true
+        },
+        "touch": {
+          "hasTouchSupport": false,
+          "hasPointerEvents": true
+        },
+        "responsiveElements": {
+          "hamburgerMenu": 0,
+          "responsiveNavigation": 0,
+          "flexibleLayout": 9
+        }
+      }
+    }
+  ],
+  "screenshots": [
+    {
+      "name": "login-page",
+      "path": "/Users/bossio/6fb-booking/backend-v2/frontend-v2/test-screenshots/barber-login-page-1751575378120.png",
+      "timestamp": "2025-07-03T20:42:58.172Z"
+    },
+    {
+      "name": "after-login",
+      "path": "/Users/bossio/6fb-booking/backend-v2/frontend-v2/test-screenshots/barber-after-login-1751575386547.png",
+      "timestamp": "2025-07-03T20:43:06.632Z"
+    },
+    {
+      "name": "mobile-homepage",
+      "path": "/Users/bossio/6fb-booking/backend-v2/frontend-v2/test-screenshots/barber-mobile-homepage-1751575389717.png",
+      "timestamp": "2025-07-03T20:43:09.864Z"
+    },
+    {
+      "name": "mobile-calendar",
+      "path": "/Users/bossio/6fb-booking/backend-v2/frontend-v2/test-screenshots/barber-mobile-calendar-1751575392935.png",
+      "timestamp": "2025-07-03T20:43:12.977Z"
+    }
+  ],
+  "performance": {
+    "navigationTime": 87,
+    "metrics": {
+      "navigation": {
+        "domContentLoaded": 0,
+        "loadComplete": 0,
+        "domInteractive": null
+      },
+      "paint": {
+        "firstPaint": 0,
+        "firstContentfulPaint": 0
+      },
+      "memory": {
+        "usedJSHeapSize": 206457504,
+        "totalJSHeapSize": 211198464
+      }
+    },
+    "timestamp": "2025-07-03T20:43:13.080Z"
+  },
+  "errors": [
+    {
+      "type": "console",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "timestamp": "2025-07-03T20:42:58.116Z"
+    },
+    {
+      "type": "console",
+      "message": "Refused to execute script from 'http://localhost:3000/_next/static/chunks/app/login/page.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
+      "timestamp": "2025-07-03T20:42:58.116Z"
+    },
+    {
+      "type": "console",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "timestamp": "2025-07-03T20:43:01.558Z"
+    },
+    {
+      "type": "console",
+      "message": "Refused to execute script from 'http://localhost:3000/_next/static/chunks/app/login/page.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
+      "timestamp": "2025-07-03T20:43:01.558Z"
+    },
+    {
+      "type": "console",
+      "message": "Network error calling /api/v1/auth/me: JSHandle@error",
+      "timestamp": "2025-07-03T20:43:13.063Z"
+    },
+    {
+      "type": "console",
+      "message": "API URL: http://localhost:8000",
+      "timestamp": "2025-07-03T20:43:13.063Z"
+    },
+    {
+      "type": "console",
+      "message": "Full URL: http://localhost:8000/api/v1/auth/me",
+      "timestamp": "2025-07-03T20:43:13.063Z"
+    },
+    {
+      "type": "console",
+      "message": "Token present: false",
+      "timestamp": "2025-07-03T20:43:13.063Z"
+    }
+  ],
+  "summary": {
+    "totalTests": 2,
+    "passedTests": 1,
+    "failedTests": 1,
+    "totalErrors": 8,
+    "totalScreenshots": 4,
+    "testDuration": "2025-07-03T20:43:13.080Z"
+  },
+  "recommendations": [
+    {
+      "priority": "high",
+      "category": "functionality",
+      "issue": "Failed tests detected",
+      "details": [
+        "Barber Login"
+      ],
+      "suggestion": "Review and fix failed test cases to ensure barber workflow functionality"
+    },
+    {
+      "priority": "medium",
+      "category": "stability",
+      "issue": "Console/Network errors detected",
+      "details": "8 errors found",
+      "suggestion": "Address console errors and network failures for improved stability"
+    }
+  ]
+}
