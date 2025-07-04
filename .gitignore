@@ -20,19 +20,56 @@ build/
 .env.*
 !.env.template
 !.env.example
-!.env.template.secure
+# Remove the exception for .env.template.secure to prevent confusion
+# Template files should be clearly named as .example or .template only
 
 # EXPLICIT PRODUCTION FILE EXCLUSIONS (CRITICAL SECURITY)
 .env.production
 .env.staging
+.env.development
+.env.local
+.env.production.ready
+.env.development.secure
+.env.local.minimal
+.env.template.secure
 backend/.env.production
 backend/.env.staging
+backend/.env.development
+backend/.env.local
+backend/.env.production.ready
+backend/.env.development.secure
 frontend/.env.production
 frontend/.env.staging
+frontend/.env.development
+frontend/.env.local
+frontend/.env.production.ready
+frontend/.env.development.secure
+frontend/.env.local.minimal
+frontend/.env.template.secure
 backend-v2/.env.production
 backend-v2/.env.staging
+backend-v2/.env.development
+backend-v2/.env.local
+backend-v2/.env.production.ready
+backend-v2/.env.development.secure
+backend-v2/.env.local.minimal
+backend-v2/.env.template.secure
 backend-v2/frontend-v2/.env.production
+backend-v2/frontend-v2/.env.staging
+backend-v2/frontend-v2/.env.development
+backend-v2/frontend-v2/.env.local
+backend-v2/frontend-v2/.env.production.ready
+backend-v2/frontend-v2/.env.development.secure
+backend-v2/frontend-v2/.env.local.minimal
+backend-v2/frontend-v2/.env.template.secure
 frontend-v2/.env.production
+frontend-v2/.env.staging
+frontend-v2/.env.development
+frontend-v2/.env.local
+frontend-v2/.env.production.ready
+frontend-v2/.env.development.secure
+frontend-v2/.env.local.minimal
+frontend-v2/.env.template.secure
 
 # Database - NEVER COMMIT
 *.db
