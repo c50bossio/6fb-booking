@@ -36,7 +36,7 @@ from services.privacy_anonymization_service import PrivacyAnonymizationService, 
 from routers.ai_analytics import check_ai_analytics_consent
 
 
-client = TestClient(app)
+# Client will be initialized in test methods to avoid import conflicts
 
 
 class TestAIAnalyticsInfrastructure:

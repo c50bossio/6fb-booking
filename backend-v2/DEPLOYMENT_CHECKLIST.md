@@ -67,12 +67,20 @@
 - [ ] Payout system configured for barbers
 - [ ] Tax settings configured if required
 
-#### Email Service (SendGrid)
-- [ ] SendGrid account setup with verified domain
-- [ ] Email templates configured
-- [ ] Test emails sent successfully
-- [ ] Unsubscribe links working
-- [ ] DMARC/SPF records configured
+#### Email Service (SendGrid) - ⚠️ PRODUCTION REQUIREMENTS
+- [ ] **SendGrid Pro plan** with dedicated IP address (required for production)
+- [ ] **IP warmup process** completed (minimum 2-4 weeks)
+- [ ] **Domain authentication** (bookedbarber.com) verified
+- [ ] **Verified senders** configured (noreply@bookedbarber.com, support@bookedbarber.com)
+- [ ] **Email templates** with BookedBarber branding
+- [ ] **Deliverability testing** to major providers (Gmail, Outlook, corporate domains)
+- [ ] **Bounce and complaint webhooks** configured for automated list hygiene
+- [ ] **Email analytics tracking** implemented
+- [ ] **Unsubscribe mechanism** working for marketing emails
+- [ ] **DMARC/SPF/DKIM records** configured and verified
+- [ ] **Sender reputation monitoring** dashboard setup
+
+**Note**: Free SendGrid accounts use shared IPs that may be blacklisted by corporate email servers. Production deployment requires dedicated IP to ensure reliable delivery.
 
 #### SMS Service (Twilio)
 - [ ] Twilio account setup
