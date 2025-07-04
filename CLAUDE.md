@@ -209,6 +209,28 @@ cd backend-v2/frontend-v2 && npm test
 ./scripts/test-integration.sh
 ```
 
+### Debugging Requirements
+**MANDATORY browser logs MCP connection for ALL debugging tasks:**
+
+```bash
+# ALWAYS start debugging with browser connection
+connect_to_browser
+
+# Required for frontend development
+watch_logs_live duration_seconds=30
+
+# Required after making changes
+get_console_logs level="error" since_minutes=5
+get_network_requests since_minutes=5
+```
+
+**Debugging task completion criteria:**
+1. ✅ Browser logs MCP connected and active
+2. ✅ Real-time monitoring performed during testing  
+3. ✅ No console errors after implementing changes
+4. ✅ All network requests successful (status 200-299)
+5. ✅ JavaScript errors resolved with stack trace verification
+
 ## 🔍 Browser Debugging & MCP Integration
 
 ### Browser Logs MCP Server
@@ -468,6 +490,104 @@ python manage.py dbshell
 - ❌ "This should be in utils" → ✅ "Let me check where this is"
 - ❌ "The function probably..." → ✅ "Reading the function signature"
 - ❌ "Next.js typically..." → ✅ "Checking this project's implementation"
+
+## 🚨 MANDATORY DEBUGGING PROTOCOL
+
+### Browser Logs MCP - ALWAYS FIRST STEP
+**When encountering ANY error, bug, or unexpected behavior:**
+
+1. **IMMEDIATE ACTION**: Connect to browser first
+   ```bash
+   connect_to_browser
+   ```
+
+2. **MANDATORY for these scenarios:**
+   - ❗ **Frontend errors** (React, Next.js issues)
+   - ❗ **API failures** (404, 500, timeout errors)
+   - ❗ **CORS issues** (cross-origin problems)
+   - ❗ **Authentication failures** (login/JWT issues)
+   - ❗ **Performance problems** (slow loading, network delays)
+   - ❗ **JavaScript errors** (console errors, exceptions)
+   - ❗ **Network request failures** (failed API calls)
+
+### Error-Specific Debugging Commands
+
+#### **Frontend JavaScript Errors**
+```bash
+# 1. Connect and get recent errors
+connect_to_browser
+get_javascript_errors since_minutes=30
+
+# 2. Check console for context
+get_console_logs level="error" since_minutes=15
+```
+
+#### **API/Backend Integration Issues**
+```bash
+# 1. Monitor API requests in real-time
+connect_to_browser
+watch_logs_live duration_seconds=60 include_network=true
+
+# 2. Check failed requests
+get_network_requests status_code=404 since_minutes=10
+get_network_requests status_code=500 since_minutes=10
+```
+
+#### **CORS/Authentication Problems**
+```bash
+# 1. Monitor CORS failures
+connect_to_browser
+get_network_requests status_code=0 since_minutes=5
+
+# 2. Watch live during auth flow
+watch_logs_live duration_seconds=30
+```
+
+#### **Performance/Loading Issues**
+```bash
+# 1. Monitor during performance testing
+connect_to_browser
+watch_logs_live duration_seconds=120
+
+# 2. Check for slow requests
+get_network_requests since_minutes=5
+get_console_logs level="warn" since_minutes=10
+```
+
+### 🛡️ DEBUGGING WORKFLOW (MANDATORY)
+
+#### **BEFORE investigating any bug:**
+1. ✅ `connect_to_browser`
+2. ✅ Open affected page/feature in Chrome
+3. ✅ Reproduce the issue while monitoring
+
+#### **DURING debugging:**
+1. ✅ Use `watch_logs_live` for real-time monitoring
+2. ✅ Capture logs with appropriate filters
+3. ✅ Switch tabs if testing multiple pages
+
+#### **AFTER implementing fixes:**
+1. ✅ `get_console_logs` to verify errors are gone
+2. ✅ `get_network_requests` to confirm API calls work
+3. ✅ `clear_logs` to start fresh for next debugging session
+
+### ⚠️ DEBUGGING VIOLATIONS (PROHIBITED)
+**NEVER debug these issues without browser logs MCP:**
+- ❌ Guessing about frontend errors
+- ❌ Assuming API failures without network logs
+- ❌ Debugging CORS issues without live monitoring
+- ❌ Fixing JavaScript errors without stack traces
+- ❌ Performance optimization without real data
+
+### 🎯 Chrome Setup Reminder
+Always ensure Chrome is running with debugging:
+```bash
+# Use the convenience script
+./scripts/start-chrome-debug.sh
+
+# Or manual startup
+google-chrome --remote-debugging-port=9222 --user-data-dir=/tmp/chrome-debug-6fb
+```
 
 ---
 
