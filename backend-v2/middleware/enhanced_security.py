@@ -4,8 +4,7 @@ Enhances existing middleware with production security features
 """
 
 from fastapi import Request, Response, HTTPException
-from fastapi.middleware.base import BaseHTTPMiddleware
-from starlette.middleware.base import BaseHTTPMiddleware as StarletteBaseMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 import time
 import redis
 import json

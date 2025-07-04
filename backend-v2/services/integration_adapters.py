@@ -56,25 +56,21 @@ class GMBServiceAdapter(BaseIntegrationService):
     
     async def exchange_code_for_tokens(self, code: str, redirect_uri: str) -> Dict[str, Any]:
         """Exchange authorization code for tokens"""
-        # TODO: Implement actual OAuth token exchange
-        return {
-            "access_token": "dummy_access_token",
-            "refresh_token": "dummy_refresh_token",
-            "expires_in": 3600
-        }
+        return await self._impl.exchange_code_for_tokens(code, redirect_uri)
     
     async def refresh_access_token(self, refresh_token: str) -> Dict[str, Any]:
         """Refresh access token"""
-        # TODO: Implement actual token refresh
-        return {
-            "access_token": "refreshed_access_token",
-            "expires_in": 3600
-        }
+        return await self._impl.refresh_access_token(refresh_token)
     
     async def verify_connection(self, access_token: str) -> bool:
         """Verify connection with access token"""
-        # TODO: Implement actual connection verification
-        return bool(access_token)
+        try:
+            # Try to get business locations to verify the token works
+            locations = await self._impl.get_business_locations_raw(access_token)
+            return len(locations) >= 0  # Even 0 locations means valid token
+        except Exception as e:
+            logger.warning(f"GMB connection verification failed: {e}")
+            return False
     
     async def perform_health_check(self, integration: Integration) -> IntegrationHealthCheck:
         """Check health of GMB integration"""

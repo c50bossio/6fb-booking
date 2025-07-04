@@ -256,6 +256,43 @@ class GMBService:
                 detail=f"Error getting business locations: {str(e)}"
             )
     
+    async def get_business_locations_raw(self, access_token: str) -> List[Dict[str, Any]]:
+        """Get business locations using raw access token (for verification)"""
+        try:
+            headers = {"Authorization": f"Bearer {access_token}"}
+            async with httpx.AsyncClient() as client:
+                # First get accounts
+                accounts_response = await client.get(
+                    f"{self.gmb_base_url}/accounts",
+                    headers=headers
+                )
+                
+                if accounts_response.status_code != 200:
+                    return []
+                
+                accounts_data = accounts_response.json()
+                accounts = accounts_data.get("accounts", [])
+                
+                if not accounts:
+                    return []
+                
+                # Get locations for the first account
+                account_id = accounts[0]["name"]
+                locations_response = await client.get(
+                    f"{self.gmb_base_url}/{account_id}/locations",
+                    headers=headers
+                )
+                
+                if locations_response.status_code != 200:
+                    return []
+                
+                locations_data = locations_response.json()
+                return locations_data.get("locations", [])
+                
+        except Exception as e:
+            logger.warning(f"Failed to get business locations for verification: {e}")
+            return []
+    
     async def get_location_reviews(
         self,
         integration: Integration,

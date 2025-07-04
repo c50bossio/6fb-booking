@@ -5,6 +5,7 @@
 
 export enum IntegrationType {
   GOOGLE_CALENDAR = 'google_calendar',
+  GOOGLE_MY_BUSINESS = 'google_my_business',
   STRIPE = 'stripe',
   SENDGRID = 'sendgrid',
   TWILIO = 'twilio',
