@@ -84,8 +84,8 @@ export default function RegisterPage() {
 
     try {
       await register(formData.email, formData.password, formData.name, consent.testData)
-      // Redirect to login with success message
-      router.push('/login?registered=true')
+      // Redirect to check-email page instead of login
+      router.push(`/check-email?email=${encodeURIComponent(formData.email)}`)
     } catch (err: any) {
       if (err.response?.data?.detail) {
         setError(err.response.data.detail)

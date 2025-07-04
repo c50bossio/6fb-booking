@@ -38,6 +38,43 @@ router = APIRouter(
     tags=["appointments"]
 )
 
+# DEBUG: Minimal test endpoint to isolate the hang issue
+@router.post("/debug-test")
+def debug_test_endpoint():
+    """Minimal test endpoint with no dependencies"""
+    logger.info("DEBUG: Minimal endpoint called successfully")
+    return {"status": "ok", "message": "minimal endpoint works"}
+
+@router.post("/debug-test-auth")
+def debug_test_auth_endpoint(current_user: schemas.User = Depends(get_current_user)):
+    """Test endpoint with only auth dependency"""
+    logger.info(f"DEBUG: Auth test endpoint called for user {current_user.id}")
+    return {"status": "ok", "message": "auth endpoint works", "user_id": current_user.id}
+
+@router.post("/debug-test-db")
+def debug_test_db_endpoint(db: Session = Depends(get_db)):
+    """Test endpoint with only database dependency"""
+    logger.info("DEBUG: DB test endpoint called")
+    return {"status": "ok", "message": "db endpoint works"}
+
+@router.post("/debug-test-combined")
+def debug_test_combined_endpoint(
+    appointment: schemas.AppointmentCreate,
+    current_user: schemas.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Test endpoint with ALL appointment creation dependencies"""
+    logger.info(f"DEBUG: Combined test endpoint called for user {current_user.id}")
+    logger.info(f"DEBUG: Appointment data - Date: {appointment.date}, Time: {appointment.time}, Service: {appointment.service}")
+    return {
+        "status": "ok", 
+        "message": "combined endpoint works",
+        "user_id": current_user.id,
+        "appointment_date": appointment.date.isoformat(),
+        "appointment_time": appointment.time,
+        "service": appointment.service
+    }
+
 @router.get("/slots", response_model=schemas.SlotsResponse)
 @booking_slots_rate_limit
 def get_available_appointment_slots(
@@ -126,7 +163,7 @@ def get_available_appointment_slots(
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/", response_model=schemas.AppointmentResponse)
-@booking_create_rate_limit
+@booking_create_rate_limit  # RE-ENABLED AFTER FIXING RATE LIMITING TIMEOUT
 def create_appointment(
     request: Request,
     appointment: schemas.AppointmentCreate,
@@ -134,9 +171,28 @@ def create_appointment(
     db: Session = Depends(get_db)
 ):
     """Create a new appointment."""
+    # IMMEDIATE logging to catch any blocking issues
+    logger.info("APPOINTMENT_API: Function entry - immediate log")
+    
     # Get request ID from middleware (if available) or generate one
     request_id = getattr(request.state, 'request_id', str(uuid.uuid4())[:8])
+    logger.info(f"APPOINTMENT_API [{request_id}]: Got request ID")
+    
     start_time = time_module.time()
+    logger.info(f"APPOINTMENT_API [{request_id}]: Got start time")
+    
+    # Add a hard timeout of 30 seconds for the entire appointment creation
+    import signal
+    logger.info(f"APPOINTMENT_API [{request_id}]: Imported signal")
+    
+    def timeout_handler(signum, frame):
+        logger.error(f"APPOINTMENT_API [{request_id}]: Hard timeout after 30 seconds")
+        raise HTTPException(status_code=504, detail="Appointment creation timed out")
+    
+    # Set timeout signal
+    old_handler = signal.signal(signal.SIGALRM, timeout_handler)
+    signal.alarm(30)  # 30 second timeout
+    logger.info(f"APPOINTMENT_API [{request_id}]: Timeout handler set")
     
     # Log request initiation
     logger.info(
@@ -196,9 +252,17 @@ def create_appointment(
             f"(Schema: {schema_validation_time - start_time:.3f}s, Service: {service_duration:.3f}s)"
         )
         
+        # Clear timeout
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, old_handler)
+        
         return db_appointment
         
     except HTTPException as http_exc:
+        # Clear timeout on exception
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, old_handler)
+        
         # Log HTTP exceptions with timing
         error_time = time_module.time() - start_time
         logger.error(
@@ -208,6 +272,10 @@ def create_appointment(
         raise
         
     except Exception as e:
+        # Clear timeout on exception
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, old_handler)
+        
         # Log unexpected exceptions with timing and full context
         error_time = time_module.time() - start_time
         logger.error(

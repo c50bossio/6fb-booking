@@ -9,15 +9,21 @@ from fastapi import Request, Response
 from fastapi.responses import JSONResponse
 from config import settings
 
-# Create limiter instance using client IP address
-# Disable rate limiting in test environment
+# Create limiter instance using client IP address with in-memory storage
+# Using in-memory storage to avoid Redis connection timeouts that were causing 120s hangs
 def get_rate_limit_key(request: Request) -> str:
-    """Get rate limit key. Returns None in test environment to disable rate limiting."""
-    if settings.environment == "test" or os.environ.get("TESTING", "").lower() == "true":
-        return None  # Disable rate limiting in test environment
-    return get_remote_address(request)
+    """Get rate limit key. Use simple approach to avoid Redis timeouts."""
+    try:
+        return get_remote_address(request)
+    except Exception as e:
+        # Fallback to a default key if remote address fails
+        return "127.0.0.1"
 
-limiter = Limiter(key_func=get_rate_limit_key)
+# Use in-memory storage instead of Redis to prevent timeout issues
+limiter = Limiter(
+    key_func=get_rate_limit_key,
+    storage_uri="memory://"  # Force in-memory storage instead of Redis
+)
 
 # Rate limit configurations
 # Use higher limits in development for easier testing

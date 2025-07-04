@@ -80,6 +80,26 @@ class Settings(BaseSettings):
     # Redis Configuration
     redis_url: str = "redis://localhost:6379/0"
     
+    # AI Provider Configuration - CRITICAL: Set via environment variables only
+    # Anthropic Claude
+    anthropic_api_key: str = ""  # Set ANTHROPIC_API_KEY environment variable
+    anthropic_default_model: str = "claude-3-sonnet-20240229"
+    
+    # OpenAI GPT
+    openai_api_key: str = ""  # Set OPENAI_API_KEY environment variable
+    openai_default_model: str = "gpt-4-turbo-preview"
+    
+    # Google Gemini
+    google_ai_api_key: str = ""  # Set GOOGLE_AI_API_KEY environment variable
+    google_ai_default_model: str = "gemini-pro"
+    
+    # AI Provider Settings
+    default_ai_provider: str = "anthropic"  # Default AI provider to use
+    ai_temperature: float = 0.7  # Default temperature for AI responses
+    ai_max_tokens: int = 500  # Default max tokens for responses
+    ai_retry_attempts: int = 3  # Number of retry attempts on failure
+    ai_fallback_enabled: bool = True  # Enable fallback to other providers
+    
     # Google Analytics 4 (GA4) Configuration
     ga4_measurement_id: str = ""  # GA4 Measurement ID (G-XXXXXXXXXX)
     ga4_api_secret: str = ""  # GA4 Measurement Protocol API Secret
@@ -247,6 +267,14 @@ class Settings(BaseSettings):
                 self.stripe_publishable_key = get_secret('STRIPE_PUBLISHABLE_KEY', required=False) or ""
             if not self.stripe_webhook_secret:
                 self.stripe_webhook_secret = get_secret('STRIPE_WEBHOOK_SECRET', required=False) or ""
+            
+            # Load AI provider API keys
+            if not self.anthropic_api_key:
+                self.anthropic_api_key = get_secret('ANTHROPIC_API_KEY', required=False) or ""
+            if not self.openai_api_key:
+                self.openai_api_key = get_secret('OPENAI_API_KEY', required=False) or ""
+            if not self.google_ai_api_key:
+                self.google_ai_api_key = get_secret('GOOGLE_AI_API_KEY', required=False) or ""
                 
             logger.info("Secrets loaded securely from environment variables")
             

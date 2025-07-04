@@ -224,3 +224,15 @@ def parse_google_datetime(dt_str: str) -> datetime:
         dt_str = dt_str[:-1] + '+00:00'
     
     return datetime.fromisoformat(dt_str)
+
+
+def convert_to_user_timezone(dt: datetime, user_timezone: str) -> datetime:
+    """Convert a datetime to user's timezone for display."""
+    return convert_to_timezone(dt, user_timezone)
+
+
+def get_business_timezone() -> str:
+    """Get the business timezone - defaults to UTC."""
+    # In production, this could come from business settings
+    from config import settings
+    return getattr(settings, 'business_timezone', 'UTC')

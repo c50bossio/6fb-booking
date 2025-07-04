@@ -1,0 +1,56 @@
+{
+  "timestamp": "2025-07-03T22:10:59.562Z",
+  "stagingUrls": {
+    "frontend": "http://localhost:3002",
+    "backend": "http://localhost:8001"
+  },
+  "testResults": [
+    {
+      "test": "Backend Health",
+      "status": "passed",
+      "details": {
+        "statusCode": 302,
+        "headers": {
+          "date": "Thu, 03 Jul 2025 22:10:58 GMT",
+          "server": "uvicorn",
+          "content-length": "0",
+          "location": "https://app.bookedbarber.com/book",
+          "x-request-id": "dad6ac0e-4cb7-43c5-8b75-da1a2ea8581f",
+          "x-content-type-options": "nosniff",
+          "x-frame-options": "DENY",
+          "x-xss-protection": "1; mode=block",
+          "referrer-policy": "strict-origin-when-cross-origin",
+          "permissions-policy": "geolocation=(), microphone=(), camera=()",
+          "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://api.stripe.com wss://; frame-src 'self' https://js.stripe.com https://hooks.stripe.com; object-src 'none'; base-uri 'self'; form-action 'self'"
+        }
+      }
+    },
+    {
+      "test": "Frontend Accessibility",
+      "status": "passed",
+      "details": {
+        "accessible": true
+      }
+    },
+    {
+      "test": "API Endpoints",
+      "status": "completed",
+      "details": {
+        "endpointsTested": 4
+      }
+    },
+    {
+      "test": "Calendar Page",
+      "status": "passed",
+      "details": {
+        "accessible": true
+      }
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "passed": 3,
+    "failed": 0,
+    "completed": 1
+  }
+}

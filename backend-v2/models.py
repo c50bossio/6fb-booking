@@ -43,6 +43,12 @@ class User(Base):
     # Test data flag
     is_test_data = Column(Boolean, default=False)
     
+    # Email verification fields
+    email_verified = Column(Boolean, default=False)  # Whether email has been verified
+    verification_token = Column(String, nullable=True)  # Token for email verification
+    verification_token_expires = Column(DateTime, nullable=True)  # When verification token expires
+    verified_at = Column(DateTime, nullable=True)  # When email was verified
+    
     # Location for multi-tenancy (temporarily removed foreign key for initialization)
     location_id = Column(Integer, nullable=True)
     
@@ -61,7 +67,7 @@ class User(Base):
     bi_reports = relationship("BusinessIntelligenceReport", back_populates="user", cascade="all, delete-orphan")
     
     # Conversion tracking relationships (using string references for models in other files)
-    conversion_events = relationship("ConversionEvent", back_populates="user")
+    # conversion_events = relationship("ConversionEvent", back_populates="user")  # Temporarily disabled - model removed in migration
     # tracking_config = relationship("TrackingConfiguration", back_populates="user", uselist=False)
     # conversion_goals = relationship("ConversionGoal", back_populates="user")
     # campaign_tracking = relationship("CampaignTracking", back_populates="user")

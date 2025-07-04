@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "dev:turbo": "next dev --turbo",
-    "staging": "next dev -p 3001",
-    "staging:turbo": "next dev --turbo -p 3001",
+    "staging": "cp .env.staging .env.local && next dev -p 3001",
+    "staging:turbo": "cp .env.staging .env.local && next dev --turbo -p 3001",
     "build": "next build",
     "build:analyze": "ANALYZE=true next build",
     "build:profile": "next build --profile",

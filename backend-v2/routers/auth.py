@@ -20,6 +20,12 @@ from utils.password_reset import (
     use_reset_token,
     send_reset_email
 )
+from utils.email_verification import (
+    create_verification_token,
+    verify_email_token,
+    send_verification_email,
+    resend_verification_email
+)
 import schemas
 import models
 
@@ -43,6 +49,14 @@ async def login(request: Request, user_credentials: schemas.UserLogin, db: Sessi
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Check if email is verified
+    if not user.email_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Email address not verified. Please check your email and click the verification link to complete your account setup.",
+            headers={"X-Verification-Required": "true"}
         )
     
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -169,6 +183,15 @@ async def register(
     db.commit()
     db.refresh(new_user)
     
+    # Create verification token and send verification email
+    try:
+        verification_token = create_verification_token(db, new_user)
+        send_verification_email(new_user.email, verification_token, new_user.name)
+        logger.info(f"Verification email sent to {new_user.email}")
+    except Exception as e:
+        logger.error(f"Failed to send verification email to {new_user.email}: {str(e)}")
+        # Continue with registration even if email fails
+    
     # Create test data if requested
     if user_data.create_test_data:
         try:
@@ -180,7 +203,7 @@ async def register(
             logger.error(f"Failed to create test data for user {new_user.id}: {str(e)}")
     
     return {
-        "message": "User successfully registered",
+        "message": "User successfully registered. Please check your email to verify your account before signing in.",
         "user": new_user
     }
 
@@ -226,3 +249,57 @@ async def update_user_timezone(
     db.refresh(current_user)
     
     return current_user
+
+@router.get("/verify-email", response_model=schemas.EmailVerificationResponse)
+async def verify_email(token: str, db: Session = Depends(get_db)):
+    """Verify email address using verification token."""
+    user = verify_email_token(db, token)
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired verification token"
+        )
+    
+    return {
+        "message": "Email successfully verified! You can now log in to your account.",
+        "detail": f"Welcome to BookedBarber, {user.name}!"
+    }
+
+@router.post("/resend-verification", response_model=schemas.EmailVerificationResponse)
+async def resend_verification(
+    request: Request,
+    verification_request: schemas.EmailVerificationRequest,
+    db: Session = Depends(get_db)
+):
+    """Resend verification email to user."""
+    # Find user by email
+    user = db.query(models.User).filter(models.User.email == verification_request.email).first()
+    
+    if not user:
+        # Return success even if user not found (security best practice)
+        return {"message": "If the email exists and is unverified, a verification email has been sent"}
+    
+    if user.email_verified:
+        return {
+            "message": "Email address is already verified",
+            "detail": "You can log in to your account"
+        }
+    
+    # Resend verification email
+    success = resend_verification_email(db, user)
+    
+    if success:
+        return {"message": "Verification email sent successfully"}
+    else:
+        return {"message": "Unable to send verification email at this time"}
+
+@router.get("/verification-status", response_model=schemas.VerificationStatusResponse)
+async def get_verification_status(
+    current_user: models.User = Depends(get_current_user)
+):
+    """Get email verification status for current user."""
+    return {
+        "email_verified": current_user.email_verified,
+        "verification_required": not current_user.email_verified
+    }

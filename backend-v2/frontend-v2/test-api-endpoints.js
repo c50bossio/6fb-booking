@@ -137,7 +137,7 @@ class APIEndpointTester {
     // Test protected endpoints (should return 401/403)
     await this.testEndpoint('/api/v1/auth/me', 'GET', true);
     await this.testEndpoint('/api/v1/appointments/', 'GET', true);
-    await this.testEndpoint('/api/v1/bookings/my', 'GET', true);
+    await this.testEndpoint('/api/v1/bookings/', 'GET', true);
 
     // Test public endpoints that should work without auth
     await this.testEndpoint('/api/v1/appointments/slots', 'GET', false);

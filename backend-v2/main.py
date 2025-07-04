@@ -7,7 +7,7 @@ import models
 import location_models
 # Import tracking models to register them with SQLAlchemy
 import models.tracking
-from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar  # products, shopify_webhooks, email_analytics, cache temporarily disabled due to archived services
+from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents
 from routers.services import public_router as services_public_router
 from utils.rate_limit import limiter, rate_limit_exceeded_handler
 from services.integration_service import IntegrationServiceFactory
@@ -91,28 +91,48 @@ async def startup_event():
 import logging
 import os
 
-# Add Sentry enhancement middleware (early in chain for comprehensive coverage)
-if sentry_configured:
-    secret_key = os.getenv("SECRET_KEY")
-    app.add_middleware(SentryEnhancementMiddleware, secret_key=secret_key)
+logger = logging.getLogger(__name__)
 
-# Add request validation middleware (order matters - this should be first)
-app.add_middleware(RequestValidationMiddleware)
+# Environment-based middleware configuration
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+ENABLE_DEVELOPMENT_MODE = os.getenv("ENABLE_DEVELOPMENT_MODE", "true").lower() == "true"
 
-# Add API key validation for webhook endpoints
-app.add_middleware(APIKeyValidationMiddleware, protected_paths={"/api/v1/webhooks", "/api/v1/internal"})
+if ENVIRONMENT == "development" and ENABLE_DEVELOPMENT_MODE:
+    # Lightweight middleware stack for development
+    logger.info("🔧 Development mode: Using lightweight middleware stack")
+    
+    # Only essential middleware for development
+    app.add_middleware(SecurityHeadersMiddleware)
+    
+    # Skip heavy middleware in development
+    logger.info("⚡ Skipping heavy middleware: RequestValidation, MultiTenancy, FinancialSecurity, MFA")
+    
+else:
+    # Full production middleware stack
+    logger.info("🔒 Production mode: Using full middleware stack")
+    
+    # Add Sentry enhancement middleware (early in chain for comprehensive coverage)
+    if sentry_configured:
+        secret_key = os.getenv("SECRET_KEY")
+        app.add_middleware(SentryEnhancementMiddleware, secret_key=secret_key)
 
-# Add multi-tenancy middleware for location-based access control
-app.add_middleware(MultiTenancyMiddleware)
+    # Add request validation middleware (order matters - this should be first)
+    app.add_middleware(RequestValidationMiddleware)
 
-# Add financial security middleware for payment endpoints
-app.add_middleware(FinancialSecurityMiddleware)
+    # Add API key validation for webhook endpoints
+    app.add_middleware(APIKeyValidationMiddleware, protected_paths={"/api/v1/webhooks", "/api/v1/internal"})
 
-# Add MFA enforcement middleware for admin operations
-app.add_middleware(MFAEnforcementMiddleware)
+    # Add multi-tenancy middleware for location-based access control
+    app.add_middleware(MultiTenancyMiddleware)
 
-# Add enhanced security headers middleware
-app.add_middleware(SecurityHeadersMiddleware)
+    # Add financial security middleware for payment endpoints
+    app.add_middleware(FinancialSecurityMiddleware)
+
+    # Add MFA enforcement middleware for admin operations
+    app.add_middleware(MFAEnforcementMiddleware)
+
+    # Add enhanced security headers middleware
+    app.add_middleware(SecurityHeadersMiddleware)
 
 # Add rate limit exceeded handler
 app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
@@ -193,6 +213,7 @@ app.include_router(commissions.router, prefix="/api/v1")  # Commission managemen
 app.include_router(privacy.router)  # GDPR compliance and privacy management
 # app.include_router(cache.router)  # Redis cache management and monitoring - disabled due to archived services
 app.include_router(ai_analytics.router, prefix="/api/v1")  # Revolutionary AI-powered cross-user analytics
+app.include_router(agents.router, prefix="/api/v1")  # AI Agent management - enabled with mock provider
 app.include_router(tracking.router)  # Conversion tracking and attribution
 # app.include_router(products.router)  # Product management and Shopify integration - disabled due to bleach dependency
 # app.include_router(shopify_webhooks.router)  # Shopify webhook handlers for real-time sync - disabled due to bleach dependency

@@ -1,0 +1,346 @@
+'use client'
+
+import React from 'react'
+import { TrendingUp, TrendingDown, BarChart3, PieChart, Activity } from 'lucide-react'
+import { Card } from '@/components/ui/Card'
+
+interface AnalyticsData {
+  total_revenue: number
+  total_conversations: number
+  success_rate: number
+  avg_response_time: number
+  roi: number
+  top_performing_agents: Array<{
+    name: string
+    revenue: number
+    conversion_rate: number
+  }>
+  conversation_trends: Array<{
+    date: string
+    conversations: number
+    revenue: number
+  }>
+  revenue_by_agent_type: Record<string, number>
+}
+
+interface AgentAnalyticsProps {
+  data: AnalyticsData
+  dateRange: string
+}
+
+export function AgentAnalytics({ data, dateRange }: AgentAnalyticsProps) {
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount)
+  }
+
+  const formatPercentage = (value: number) => {
+    return `${value.toFixed(1)}%`
+  }
+
+  // Calculate trend direction (mock data for demonstration)
+  const getTrendDirection = (type: string) => {
+    // In a real implementation, this would compare with previous period
+    const trends = {
+      revenue: Math.random() > 0.5,
+      conversations: Math.random() > 0.5,
+      success_rate: Math.random() > 0.5
+    }
+    return trends[type as keyof typeof trends]
+  }
+
+  const getTrendPercentage = (type: string) => {
+    // Mock trend percentage - in real implementation, calculate from historical data
+    return (Math.random() * 20 + 5).toFixed(1)
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Conversation Trends Chart */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Conversation Trends
+          </h3>
+          <BarChart3 className="w-5 h-5 text-gray-400" />
+        </div>
+
+        {data.conversation_trends.length > 0 ? (
+          <div className="space-y-4">
+            {/* Simple bar chart representation */}
+            <div className="grid grid-cols-7 gap-2 h-32">
+              {data.conversation_trends.slice(-7).map((trend, index) => {
+                const maxConversations = Math.max(...data.conversation_trends.map(t => t.conversations))
+                const height = maxConversations > 0 ? (trend.conversations / maxConversations) * 100 : 0
+                
+                return (
+                  <div key={index} className="flex flex-col items-center justify-end">
+                    <div
+                      className="w-full bg-primary-500 rounded-t"
+                      style={{ height: `${height}%` }}
+                      title={`${trend.conversations} conversations on ${trend.date}`}
+                    />
+                    <span className="text-xs text-gray-600 mt-1">
+                      {new Date(trend.date).toLocaleDateString('en-US', { weekday: 'short' })}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+            
+            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+              <span>Daily Conversations</span>
+              <span>Last 7 days</span>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-12">
+            <Activity className="w-12 h-12 text-gray-400 mb-4" />
+            <p className="text-gray-600 dark:text-gray-400 text-center">
+              No conversation data available yet.<br />
+              Start using your agents to see trends here.
+            </p>
+          </div>
+        )}
+      </Card>
+
+      {/* Performance Metrics Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Revenue Performance */}
+        <Card className="p-6">
+          <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">
+            Revenue Performance
+          </h4>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                {formatCurrency(data.total_revenue)}
+              </span>
+              <div className={`flex items-center text-sm ${
+                getTrendDirection('revenue') ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {getTrendDirection('revenue') ? (
+                  <TrendingUp className="w-4 h-4 mr-1" />
+                ) : (
+                  <TrendingDown className="w-4 h-4 mr-1" />
+                )}
+                {getTrendPercentage('revenue')}%
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Total revenue generated by AI agents in the last {dateRange.replace('d', ' days')}
+            </p>
+          </div>
+        </Card>
+
+        {/* Conversation Volume */}
+        <Card className="p-6">
+          <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">
+            Conversation Volume
+          </h4>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                {data.total_conversations.toLocaleString()}
+              </span>
+              <div className={`flex items-center text-sm ${
+                getTrendDirection('conversations') ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {getTrendDirection('conversations') ? (
+                  <TrendingUp className="w-4 h-4 mr-1" />
+                ) : (
+                  <TrendingDown className="w-4 h-4 mr-1" />
+                )}
+                {getTrendPercentage('conversations')}%
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Total conversations initiated by your agents
+            </p>
+          </div>
+        </Card>
+
+        {/* Success Rate */}
+        <Card className="p-6">
+          <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">
+            Success Rate
+          </h4>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                {formatPercentage(data.success_rate)}
+              </span>
+              <div className={`flex items-center text-sm ${
+                getTrendDirection('success_rate') ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {getTrendDirection('success_rate') ? (
+                  <TrendingUp className="w-4 h-4 mr-1" />
+                ) : (
+                  <TrendingDown className="w-4 h-4 mr-1" />
+                )}
+                {getTrendPercentage('success_rate')}%
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Percentage of conversations that achieved their goal
+            </p>
+          </div>
+        </Card>
+      </div>
+
+      {/* ROI Analysis */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            ROI Analysis
+          </h3>
+          <PieChart className="w-5 h-5 text-gray-400" />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* ROI Overview */}
+          <div className="space-y-4">
+            <div className="text-center">
+              <div className="text-4xl font-bold text-green-600 mb-2">
+                {data.roi.toFixed(1)}x
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Average Return on Investment
+              </p>
+            </div>
+            
+            <div className="space-y-3">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600 dark:text-gray-400">Revenue Generated:</span>
+                <span className="font-medium text-green-600">
+                  +{formatCurrency(data.total_revenue)}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600 dark:text-gray-400">Estimated AI Costs:</span>
+                <span className="font-medium text-red-600">
+                  -{formatCurrency(data.total_revenue / data.roi)}
+                </span>
+              </div>
+              <div className="border-t pt-2">
+                <div className="flex justify-between text-sm font-medium">
+                  <span className="text-gray-900 dark:text-white">Net Profit:</span>
+                  <span className="text-green-600">
+                    {formatCurrency(data.total_revenue - (data.total_revenue / data.roi))}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ROI Breakdown by Agent Type */}
+          <div className="space-y-4">
+            <h4 className="font-medium text-gray-900 dark:text-white">
+              Revenue by Agent Type
+            </h4>
+            <div className="space-y-3">
+              {Object.entries(data.revenue_by_agent_type).length > 0 ? (
+                Object.entries(data.revenue_by_agent_type).map(([type, revenue]) => {
+                  const percentage = data.total_revenue > 0 
+                    ? (revenue / data.total_revenue) * 100 
+                    : 0
+
+                  return (
+                    <div key={type} className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="capitalize text-gray-600 dark:text-gray-400">
+                          {type.replace('_', ' ')}
+                        </span>
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {formatCurrency(revenue)} ({percentage.toFixed(1)}%)
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div
+                          className="bg-primary-500 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  )
+                })
+              ) : (
+                <div className="text-center py-8">
+                  <PieChart className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600 dark:text-gray-400">
+                    No revenue data by agent type yet
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Insights & Recommendations */}
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          AI-Powered Insights
+        </h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-3">
+            <h4 className="font-medium text-gray-900 dark:text-white">Performance Insights</h4>
+            <div className="space-y-2 text-sm">
+              {data.success_rate > 75 ? (
+                <div className="flex items-start space-x-2 text-green-700 dark:text-green-400">
+                  <TrendingUp className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>Excellent agent performance! Your success rate is above industry average.</span>
+                </div>
+              ) : data.success_rate > 50 ? (
+                <div className="flex items-start space-x-2 text-yellow-700 dark:text-yellow-400">
+                  <Activity className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>Good performance with room for improvement. Consider optimizing agent prompts.</span>
+                </div>
+              ) : (
+                <div className="flex items-start space-x-2 text-red-700 dark:text-red-400">
+                  <TrendingDown className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>Low success rate detected. Review agent configurations and target criteria.</span>
+                </div>
+              )}
+              
+              {data.roi > 3 ? (
+                <div className="flex items-start space-x-2 text-green-700 dark:text-green-400">
+                  <TrendingUp className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>Outstanding ROI! Your agents are generating significant value.</span>
+                </div>
+              ) : (
+                <div className="flex items-start space-x-2 text-yellow-700 dark:text-yellow-400">
+                  <Activity className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>Consider scaling successful agent types to improve overall ROI.</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <h4 className="font-medium text-gray-900 dark:text-white">Recommendations</h4>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-start space-x-2 text-gray-700 dark:text-gray-300">
+                <span className="w-1.5 h-1.5 bg-primary-500 rounded-full mt-2 flex-shrink-0" />
+                <span>Experiment with different AI providers to optimize costs and performance.</span>
+              </div>
+              <div className="flex items-start space-x-2 text-gray-700 dark:text-gray-300">
+                <span className="w-1.5 h-1.5 bg-primary-500 rounded-full mt-2 flex-shrink-0" />
+                <span>Use A/B testing for agent messages to improve conversion rates.</span>
+              </div>
+              <div className="flex items-start space-x-2 text-gray-700 dark:text-gray-300">
+                <span className="w-1.5 h-1.5 bg-primary-500 rounded-full mt-2 flex-shrink-0" />
+                <span>Monitor client sentiment and adjust agent tone accordingly.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
+    </div>
+  )
+}

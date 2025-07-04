@@ -292,6 +292,27 @@ export async function changePassword(currentPassword: string, newPassword: strin
   })
 }
 
+// Email verification functions
+export async function verifyEmail(token: string) {
+  return fetchAPI(`/api/v1/auth/verify-email?token=${encodeURIComponent(token)}`, {
+    method: 'GET',
+  })
+}
+
+export async function resendVerification(email: string) {
+  return fetchAPI('/api/v1/auth/resend-verification', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  })
+}
+
+export async function getVerificationStatus() {
+  return fetchAPI('/api/v1/auth/verification-status', {
+    method: 'GET',
+    requireAuth: true,
+  })
+}
+
 export async function refreshToken() {
   const refresh_token = localStorage.getItem('refresh_token')
   if (!refresh_token) {
@@ -5584,6 +5605,399 @@ export interface Location {
   }
   enterpriseId?: string
   enterpriseName?: string
+}
+
+// ============================================================================
+// AI AGENT SYSTEM API
+// ============================================================================
+
+export interface AgentTemplate {
+  agent_type: string
+  name: string
+  description: string
+  default_config: any
+  prompt_templates: any
+  tone_settings: any
+}
+
+export interface AgentInstanceCreate {
+  agent_id: number
+  name: string
+  config: any
+}
+
+export interface AgentInstanceUpdate {
+  name?: string
+  config?: any
+  status?: 'draft' | 'active' | 'paused' | 'inactive' | 'error'
+}
+
+export interface AgentInstance {
+  id: number
+  name: string
+  agent_id: number
+  status: 'draft' | 'active' | 'paused' | 'inactive' | 'error'
+  total_conversations: number
+  successful_conversations: number
+  total_revenue_generated: number
+  last_run_at: string | null
+  next_run_at: string | null
+  agent: {
+    name: string
+    agent_type: string
+    description: string
+  }
+}
+
+export interface AgentConversation {
+  id: string
+  agent_instance_id: number
+  client_id: number
+  status: 'pending' | 'in_progress' | 'waiting_response' | 'completed' | 'failed' | 'opted_out'
+  channel: string
+  conversation_data: any
+  goal_achieved: boolean
+  revenue_generated: number
+  token_cost: number
+  total_tokens_used: number
+  created_at: string
+  updated_at: string
+}
+
+export interface AgentSubscription {
+  id: number
+  user_id: number
+  tier: string
+  status: string
+  conversations_used: number
+  conversation_limit: number | null
+  agents_used: number
+  agent_limit: number
+  trial_ends_at?: string
+  billing_cycle_start: string
+  billing_cycle_end: string
+  created_at: string
+  updated_at: string
+}
+
+export interface AgentAnalytics {
+  total_agents: number
+  active_agents: number
+  total_conversations: number
+  successful_conversations: number
+  total_revenue_generated: number
+  total_cost: number
+  roi: number
+  success_rate: number
+  top_performing_agents: Array<{
+    id: number
+    name: string
+    success_rate: number
+    revenue_generated: number
+  }>
+}
+
+export interface AIProvider {
+  name: string
+  status: 'available' | 'unavailable'
+  config?: any
+}
+
+// Agent Templates API
+export async function getAgentTemplates(): Promise<AgentTemplate[]> {
+  try {
+    return await fetchAPI('/api/v1/agents/templates')
+  } catch (error) {
+    // Return mock data for development
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('Agent templates API not available, using mock data')
+      return [
+        {
+          agent_type: 'rebooking',
+          name: 'Rebooking Agent',
+          description: 'Automatically reach out to clients for their next appointment',
+          default_config: {
+            rebooking_intervals: { default: 28 },
+            max_conversations_per_run: 50,
+            supported_channels: ['sms', 'email'],
+            message_timing: { avoid_weekends: true }
+          },
+          prompt_templates: {},
+          tone_settings: {}
+        },
+        {
+          agent_type: 'birthday_wishes',
+          name: 'Birthday Wishes Agent',
+          description: 'Send personalized birthday messages with special offers',
+          default_config: {
+            birthday_discount: 20,
+            discount_validity_days: 30,
+            max_conversations_per_run: 25,
+            supported_channels: ['sms', 'email']
+          },
+          prompt_templates: {},
+          tone_settings: {}
+        },
+        {
+          agent_type: 'no_show_fee',
+          name: 'No-Show Fee Collection',
+          description: 'Handle no-show fee collection professionally',
+          default_config: {
+            max_conversations_per_run: 20,
+            supported_channels: ['sms', 'email']
+          },
+          prompt_templates: {},
+          tone_settings: {}
+        }
+      ]
+    }
+    throw error
+  }
+}
+
+export async function getAgentTemplate(agentType: string): Promise<AgentTemplate> {
+  try {
+    return await fetchAPI(`/api/v1/agents/templates/${agentType}`)
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      const templates = await getAgentTemplates()
+      const template = templates.find(t => t.agent_type === agentType)
+      if (template) return template
+    }
+    throw error
+  }
+}
+
+// Agent Instances API
+export async function createAgentInstance(instance: AgentInstanceCreate): Promise<AgentInstance> {
+  return fetchAPI('/api/v1/agents/instances', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(instance)
+  })
+}
+
+export async function getAgentInstances(status?: string): Promise<AgentInstance[]> {
+  const params = new URLSearchParams()
+  if (status) params.append('status', status)
+  
+  try {
+    return await fetchAPI(`/api/v1/agents/instances${params.toString() ? '?' + params.toString() : ''}`)
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('Agent instances API not available, using mock data')
+      return [
+        {
+          id: 1,
+          name: 'My Rebooking Agent',
+          agent_id: 1,
+          status: 'active',
+          total_conversations: 45,
+          successful_conversations: 38,
+          total_revenue_generated: 2850,
+          last_run_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+          next_run_at: new Date(Date.now() + 22 * 60 * 60 * 1000).toISOString(),
+          agent: {
+            name: 'Rebooking Agent',
+            agent_type: 'rebooking',
+            description: 'Automatically reach out to clients for their next appointment'
+          }
+        },
+        {
+          id: 2,
+          name: 'Birthday Special Agent',
+          agent_id: 2,
+          status: 'paused',
+          total_conversations: 12,
+          successful_conversations: 8,
+          total_revenue_generated: 960,
+          last_run_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+          next_run_at: null,
+          agent: {
+            name: 'Birthday Wishes Agent',
+            agent_type: 'birthday_wishes',
+            description: 'Send personalized birthday messages with special offers'
+          }
+        }
+      ]
+    }
+    throw error
+  }
+}
+
+export async function getAgentInstance(instanceId: number): Promise<AgentInstance> {
+  return fetchAPI(`/api/v1/agents/instances/${instanceId}`)
+}
+
+export async function updateAgentInstance(instanceId: number, update: AgentInstanceUpdate): Promise<AgentInstance> {
+  return fetchAPI(`/api/v1/agents/instances/${instanceId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(update)
+  })
+}
+
+export async function activateAgentInstance(instanceId: number): Promise<AgentInstance> {
+  return fetchAPI(`/api/v1/agents/instances/${instanceId}/activate`, {
+    method: 'POST'
+  })
+}
+
+export async function pauseAgentInstance(instanceId: number): Promise<AgentInstance> {
+  return fetchAPI(`/api/v1/agents/instances/${instanceId}/pause`, {
+    method: 'POST'
+  })
+}
+
+export async function deleteAgentInstance(instanceId: number): Promise<{ message: string }> {
+  return fetchAPI(`/api/v1/agents/instances/${instanceId}`, {
+    method: 'DELETE'
+  })
+}
+
+// Agent Conversations API
+export async function getAgentConversations(params?: {
+  instance_id?: number
+  status?: string
+  limit?: number
+  offset?: number
+}): Promise<AgentConversation[]> {
+  const searchParams = new URLSearchParams()
+  if (params?.instance_id) searchParams.append('instance_id', params.instance_id.toString())
+  if (params?.status) searchParams.append('status', params.status)
+  if (params?.limit) searchParams.append('limit', params.limit.toString())
+  if (params?.offset) searchParams.append('offset', params.offset.toString())
+
+  return fetchAPI(`/api/v1/agents/conversations${searchParams.toString() ? '?' + searchParams.toString() : ''}`)
+}
+
+export async function getAgentConversation(conversationId: string): Promise<AgentConversation> {
+  return fetchAPI(`/api/v1/agents/conversations/${conversationId}`)
+}
+
+// Agent Analytics API
+export async function getAgentAnalytics(params?: {
+  start_date?: string
+  end_date?: string
+}): Promise<AgentAnalytics> {
+  const searchParams = new URLSearchParams()
+  if (params?.start_date) searchParams.append('start_date', params.start_date)
+  if (params?.end_date) searchParams.append('end_date', params.end_date)
+
+  try {
+    return await fetchAPI(`/api/v1/agents/analytics${searchParams.toString() ? '?' + searchParams.toString() : ''}`)
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('Agent analytics API not available, using mock data')
+      return {
+        total_agents: 2,
+        active_agents: 1,
+        total_conversations: 57,
+        successful_conversations: 46,
+        total_revenue_generated: 3810,
+        total_cost: 45.25,
+        roi: 8325,
+        success_rate: 80.7,
+        top_performing_agents: [
+          { id: 1, name: 'My Rebooking Agent', success_rate: 84.4, revenue_generated: 2850 },
+          { id: 2, name: 'Birthday Special Agent', success_rate: 66.7, revenue_generated: 960 }
+        ]
+      }
+    }
+    throw error
+  }
+}
+
+export async function getAgentInstanceAnalytics(instanceId: number, params?: {
+  start_date?: string
+  end_date?: string
+}): Promise<any> {
+  const searchParams = new URLSearchParams()
+  if (params?.start_date) searchParams.append('start_date', params.start_date)
+  if (params?.end_date) searchParams.append('end_date', params.end_date)
+
+  return fetchAPI(`/api/v1/agents/instances/${instanceId}/analytics${searchParams.toString() ? '?' + searchParams.toString() : ''}`)
+}
+
+// Agent Subscription API
+export async function getAgentSubscription(): Promise<AgentSubscription> {
+  try {
+    return await fetchAPI('/api/v1/agents/subscription')
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('Agent subscription API not available, using mock data')
+      return {
+        id: 1,
+        user_id: 1,
+        tier: 'trial',
+        status: 'active',
+        conversations_used: 57,
+        conversation_limit: 100,
+        agents_used: 2,
+        agent_limit: 3,
+        trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        billing_cycle_start: new Date().toISOString(),
+        billing_cycle_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    }
+    throw error
+  }
+}
+
+export async function createAgentSubscription(subscription: {
+  tier: string
+  billing_cycle?: string
+}): Promise<AgentSubscription> {
+  return fetchAPI('/api/v1/agents/subscription', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(subscription)
+  })
+}
+
+// AI Providers API
+export async function getAIProviders(): Promise<{ 
+  available_providers: string[]
+  provider_info: Record<string, any>
+  validation_status: Record<string, boolean>
+}> {
+  try {
+    return await fetchAPI('/api/v1/agents/providers')
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('AI providers API not available, using mock data')
+      return {
+        available_providers: ['anthropic', 'openai', 'google', 'mock'],
+        provider_info: {
+          anthropic: { name: 'Claude (Anthropic)', status: 'available' },
+          openai: { name: 'GPT-4 (OpenAI)', status: 'available' },
+          google: { name: 'Gemini (Google)', status: 'available' },
+          mock: { name: 'Mock Provider (Development)', status: 'available' }
+        },
+        validation_status: {
+          anthropic: false,
+          openai: false,
+          google: false,
+          mock: true
+        }
+      }
+    }
+    throw error
+  }
+}
+
+export async function estimateAgentCost(request: {
+  messages: any[]
+  provider?: string
+  max_tokens?: number
+}): Promise<{ estimated_costs: Record<string, number> }> {
+  return fetchAPI('/api/v1/agents/providers/estimate-cost', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request)
+  })
 }
 
 

@@ -304,7 +304,7 @@ describe('RequestBatcher', () => {
       })
 
       const requests = [
-        { endpoint: '/api/v1/bookings/my', priority: 8 },
+        { endpoint: '/api/v1/bookings/', priority: 8 },
         { endpoint: '/api/v1/dashboard/metrics', priority: 6 },
         { endpoint: '/api/v1/analytics/dashboard/1', priority: 5 }
       ]

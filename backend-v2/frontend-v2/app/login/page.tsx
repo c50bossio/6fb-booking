@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { login, getProfile } from '@/lib/api'
+import { login, getProfile, resendVerification } from '@/lib/api'
 import { getDefaultDashboard } from '@/lib/routeGuards'
 import { useAsyncOperation } from '@/lib/useAsyncOperation'
 import { LoadingButton, ErrorDisplay, SuccessMessage } from '@/components/LoadingStates'
@@ -20,8 +20,11 @@ function LoginContent() {
   const searchParams = useSearchParams()
   const [rememberMe, setRememberMe] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
+  const [verificationError, setVerificationError] = useState(false)
+  const [showResendButton, setShowResendButton] = useState(false)
   
   const [loginState, loginActions] = useAsyncOperation()
+  const [resendState, resendActions] = useAsyncOperation()
 
   // Initialize form validation
   const {
@@ -51,9 +54,11 @@ function LoginContent() {
 
   useEffect(() => {
     if (searchParams.get('registered') === 'true') {
-      setSuccessMessage('Registration successful! Please sign in.')
+      setSuccessMessage('Registration successful! Please check your email to verify your account before signing in.')
     } else if (searchParams.get('reset') === 'true') {
       setSuccessMessage('Password reset successful! Please sign in with your new password.')
+    } else if (searchParams.get('verified') === 'true') {
+      setSuccessMessage('Email verified successfully! You can now sign in to your account.')
     }
   }, [searchParams])
 
@@ -119,11 +124,34 @@ function LoginContent() {
       } else {
         console.log('No access token in response')
       }
-    } catch (err) {
-      // Error is already handled by useAsyncOperation
+    } catch (err: any) {
+      // Check if this is a verification error (403 status)
+      if (err.message && err.message.includes('Email address not verified')) {
+        setVerificationError(true)
+        setShowResendButton(true)
+      } else {
+        setVerificationError(false)
+        setShowResendButton(false)
+      }
       console.error('Login failed:', err)
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleResendVerification = async () => {
+    if (!values.email) {
+      return
+    }
+
+    try {
+      await resendActions.execute(() => resendVerification(values.email))
+      setSuccessMessage('Verification email sent! Please check your email and click the verification link.')
+      setVerificationError(false)
+      setShowResendButton(false)
+    } catch (error: any) {
+      console.error('Resend verification failed:', error)
+      // Error will be shown by the useAsyncOperation
     }
   }
 
@@ -147,6 +175,43 @@ function LoginContent() {
               
               {loginState.error && (
                 <FormError error={loginState.error} />
+              )}
+
+              {verificationError && (
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-yellow-600" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                        Email Verification Required
+                      </h3>
+                      <p className="mt-1 text-sm text-yellow-700 dark:text-yellow-300">
+                        Please verify your email address before signing in. Check your inbox for a verification email.
+                      </p>
+                      {showResendButton && (
+                        <div className="mt-3">
+                          <LoadingButton
+                            onClick={handleResendVerification}
+                            loading={resendState.loading}
+                            loadingText="Sending..."
+                            variant="secondary"
+                            size="sm"
+                          >
+                            Resend Verification Email
+                          </LoadingButton>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {resendState.error && (
+                <FormError error={resendState.error} />
               )}
 
               <FormField>

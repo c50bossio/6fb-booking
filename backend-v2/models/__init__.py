@@ -99,6 +99,10 @@ from .mfa import (
 from .google_calendar_settings import (
     GoogleCalendarSettings, GoogleCalendarSyncLog
 )
+from .agent import (
+    Agent, AgentInstance, AgentConversation, AgentMetrics, AgentSubscription, AgentTemplate,
+    AgentType, AgentStatus, ConversationStatus, SubscriptionTier
+)
 
 __all__ = [
     # Main models from parent models.py
@@ -134,5 +138,8 @@ __all__ = [
     # MFA Models
     'UserMFASecret', 'MFABackupCode', 'MFADeviceTrust', 'MFAEvent',
     # Google Calendar Models
-    'GoogleCalendarSettings', 'GoogleCalendarSyncLog'
+    'GoogleCalendarSettings', 'GoogleCalendarSyncLog',
+    # AI Agent Models
+    'Agent', 'AgentInstance', 'AgentConversation', 'AgentMetrics', 'AgentSubscription', 'AgentTemplate',
+    'AgentType', 'AgentStatus', 'ConversationStatus', 'SubscriptionTier'
 ]

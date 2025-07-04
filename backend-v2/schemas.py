@@ -62,6 +62,18 @@ class ChangePasswordRequest(BaseModel):
 class ChangePasswordResponse(BaseModel):
     message: str
 
+# Email verification schemas
+class EmailVerificationRequest(BaseModel):
+    email: EmailStr
+
+class EmailVerificationResponse(BaseModel):
+    message: str
+    detail: Optional[str] = None
+
+class VerificationStatusResponse(BaseModel):
+    email_verified: bool
+    verification_required: bool = True
+
 class UserBase(BaseModel):
     email: EmailStr
     name: str
@@ -87,6 +99,8 @@ class User(UserBase):
     created_at: datetime
     role: Optional[str] = "user"
     timezone: Optional[str] = "UTC"
+    email_verified: bool = False
+    verified_at: Optional[datetime] = None
     
     class Config:
         from_attributes = True

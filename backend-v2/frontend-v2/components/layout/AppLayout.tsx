@@ -23,8 +23,8 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { isMobile } = useResponsive()
 
   // Define public routes that don't require authentication
-  const publicRoutes = ['/', '/login', '/register', '/forgot-password', '/reset-password', '/terms', '/privacy', '/cookies']
-  const isPublicRoute = publicRoutes.includes(pathname) || pathname.startsWith('/reset-password/')
+  const publicRoutes = ['/', '/login', '/register', '/forgot-password', '/reset-password', '/terms', '/privacy', '/cookies', '/agents']
+  const isPublicRoute = publicRoutes.includes(pathname) || pathname.startsWith('/reset-password/') || pathname.startsWith('/agents/')
 
   const [user, setUser] = useState<User | null>(null)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)

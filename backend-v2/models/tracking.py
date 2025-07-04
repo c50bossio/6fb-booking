@@ -103,7 +103,7 @@ class ConversionEvent(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
-    user = relationship("User", back_populates="conversion_events")
+    # user = relationship("User", back_populates="conversion_events")  # Temporarily disabled - relationship removed
     attribution_path = relationship("AttributionPath", back_populates="conversion_event", uselist=False)
     
     # Indexes for performance
