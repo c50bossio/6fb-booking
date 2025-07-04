@@ -39,7 +39,7 @@ export function AgentAnalytics({ data, dateRange }: AgentAnalyticsProps) {
   }
 
   const formatPercentage = (value: number) => {
-    return `${value.toFixed(1)}%`
+    return `${(value ?? 0).toFixed(1)}%`
   }
 
   // Calculate trend direction (mock data for demonstration)
@@ -55,7 +55,7 @@ export function AgentAnalytics({ data, dateRange }: AgentAnalyticsProps) {
 
   const getTrendPercentage = (type: string) => {
     // Mock trend percentage - in real implementation, calculate from historical data
-    return (Math.random() * 20 + 5).toFixed(1)
+    return ((Math.random() * 20 + 5) ?? 0).toFixed(1)
   }
 
   return (
@@ -206,7 +206,7 @@ export function AgentAnalytics({ data, dateRange }: AgentAnalyticsProps) {
           <div className="space-y-4">
             <div className="text-center">
               <div className="text-4xl font-bold text-green-600 mb-2">
-                {data.roi.toFixed(1)}x
+                {(data.roi ?? 0).toFixed(1)}x
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Average Return on Investment
@@ -256,7 +256,7 @@ export function AgentAnalytics({ data, dateRange }: AgentAnalyticsProps) {
                           {type.replace('_', ' ')}
                         </span>
                         <span className="font-medium text-gray-900 dark:text-white">
-                          {formatCurrency(revenue)} ({percentage.toFixed(1)}%)
+                          {formatCurrency(revenue)} ({(percentage ?? 0).toFixed(1)}%)
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">

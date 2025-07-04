@@ -7,7 +7,8 @@ import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Select } from '@/components/ui/Select'
 import { AgentAnalytics } from '@/components/agents/AgentAnalytics'
-import { api } from '@/lib/api'
+import { BusinessIntelligenceDashboard } from '@/components/agents/BusinessIntelligenceDashboard'
+import { getAgentAnalytics } from '@/lib/api'
 
 interface AnalyticsData {
   total_revenue: number
@@ -26,6 +27,35 @@ interface AnalyticsData {
     revenue: number
   }>
   revenue_by_agent_type: Record<string, number>
+  optimization_recommendations?: Array<{
+    type: string
+    priority: string
+    title: string
+    description: string
+    action: string
+    potential_impact: string
+  }>
+  competitive_benchmarks?: {
+    industry_averages: {
+      success_rate: number
+      avg_response_time: number
+      roi: number
+      engagement_rate: number
+    }
+    top_quartile: {
+      success_rate: number
+      avg_response_time: number
+      roi: number
+      engagement_rate: number
+    }
+    your_performance_vs_industry?: string
+  }
+  current_period_performance?: {
+    today_conversations: number
+    today_revenue: number
+    active_conversations: number
+    agents_running: number
+  }
 }
 
 export default function AgentAnalyticsPage() {
@@ -59,14 +89,12 @@ export default function AgentAnalyticsPage() {
           startDate.setDate(endDate.getDate() - 30)
       }
 
-      const response = await api.get('/agents/analytics', {
-        params: {
-          start_date: startDate.toISOString(),
-          end_date: endDate.toISOString()
-        }
+      const analytics = await getAgentAnalytics({
+        start_date: startDate.toISOString(),
+        end_date: endDate.toISOString()
       })
       
-      setAnalytics(response.data)
+      setAnalytics(analytics)
     } catch (error) {
       console.error('Failed to load analytics:', error)
     } finally {
@@ -74,17 +102,19 @@ export default function AgentAnalyticsPage() {
     }
   }
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number | undefined | null) => {
+    const value = amount ?? 0
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
-    }).format(amount)
+    }).format(value)
   }
 
-  const formatPercentage = (value: number) => {
-    return `${value.toFixed(1)}%`
+  const formatPercentage = (value: number | undefined | null) => {
+    const safeValue = value ?? 0
+    return `${safeValue.toFixed(1)}%`
   }
 
   if (loading) {
@@ -155,7 +185,7 @@ export default function AgentAnalyticsPage() {
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Conversations</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {analytics.total_conversations.toLocaleString()}
+                    {(analytics.total_conversations ?? 0).toLocaleString()}
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
@@ -191,7 +221,7 @@ export default function AgentAnalyticsPage() {
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">ROI</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {analytics.roi.toFixed(1)}x
+                    {(analytics.roi ?? 0).toFixed(1)}x
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
@@ -291,6 +321,9 @@ export default function AgentAnalyticsPage() {
               </div>
             </Card>
           </div>
+
+          {/* Business Intelligence Dashboard */}
+          <BusinessIntelligenceDashboard data={analytics} />
 
           {/* Detailed Analytics Component */}
           <AgentAnalytics 

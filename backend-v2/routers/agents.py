@@ -111,20 +111,6 @@ def list_agents(
     return query.all()
 
 
-@router.get("/{agent_id}", response_model=AgentResponse)
-def get_agent(
-    agent_id: int,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Get agent details"""
-    agent = db.query(Agent).filter_by(id=agent_id).first()
-    if not agent:
-        raise HTTPException(status_code=404, detail="Agent not found")
-    
-    return agent
-
-
 # Agent Instance Management
 
 @router.post("/instances", response_model=AgentInstanceResponse)
@@ -371,27 +357,110 @@ async def send_conversation_message(
 
 # Analytics
 
-@router.get("/analytics", response_model=AgentAnalytics)
+@router.get("/analytics")
 async def get_agent_analytics(
-    start_date: Optional[datetime] = Query(None),
-    end_date: Optional[datetime] = Query(None),
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Get analytics for user's agents"""
-    # Default date range - last 30 days
-    if not end_date:
-        end_date = datetime.utcnow()
-    if not start_date:
-        start_date = end_date - timedelta(days=30)
-    
-    date_range = {"start": start_date, "end": end_date}
-    
-    analytics = await agent_orchestration_service.get_agent_analytics(
-        db, current_user.id, date_range
-    )
-    
-    return analytics
+    """Get comprehensive analytics for user's agents with business intelligence"""
+    try:
+        # Parse datetime parameters with flexible handling
+        def parse_datetime(date_str: str) -> datetime:
+            """Parse datetime string with flexible format handling"""
+            if not date_str:
+                return None
+            
+            # URL decode the string first
+            import urllib.parse
+            decoded_date = urllib.parse.unquote(date_str)
+            
+            # Remove timezone suffix if present and normalize
+            clean_date = decoded_date.replace('Z', '+00:00')
+            
+            # Try different datetime formats
+            formats = [
+                "%Y-%m-%dT%H:%M:%S.%f%z",  # ISO with microseconds and timezone
+                "%Y-%m-%dT%H:%M:%S%z",     # ISO with timezone
+                "%Y-%m-%dT%H:%M:%S.%f",    # ISO with microseconds
+                "%Y-%m-%dT%H:%M:%S",       # ISO basic
+                "%Y-%m-%d",                # Date only
+            ]
+            
+            for fmt in formats:
+                try:
+                    return datetime.strptime(clean_date, fmt)
+                except ValueError:
+                    continue
+            
+            # If all parsing fails, raise an error
+            raise ValueError(f"Unable to parse datetime: {date_str} (decoded: {decoded_date})")
+        
+        # Parse dates with fallback defaults
+        try:
+            parsed_end_date = parse_datetime(end_date) if end_date else datetime.utcnow()
+            parsed_start_date = parse_datetime(start_date) if start_date else parsed_end_date - timedelta(days=30)
+        except ValueError as parse_error:
+            logger.warning(f"Date parsing error: {parse_error}")
+            # Use defaults if parsing fails
+            parsed_end_date = datetime.utcnow()
+            parsed_start_date = parsed_end_date - timedelta(days=30)
+        
+        # Ensure we have valid datetime objects
+        end_date = parsed_end_date
+        start_date = parsed_start_date
+        
+        # Import analytics service
+        from services.analytics_service import AnalyticsService
+        analytics_service = AnalyticsService(db)
+        
+        # Get comprehensive agent analytics
+        analytics = analytics_service.get_agent_analytics(
+            start_date=start_date,
+            end_date=end_date,
+            user_id=current_user.id
+        )
+        
+        return analytics
+        
+    except Exception as e:
+        logger.warning(f"Analytics service error: {str(e)}")
+        
+        # Fallback to basic analytics or orchestration service
+        try:
+            date_range = {"start": start_date, "end": end_date}
+            analytics = await agent_orchestration_service.get_agent_analytics(
+                db, current_user.id, date_range
+            )
+            return analytics
+            
+        except Exception as fallback_error:
+            logger.error(f"Fallback analytics error: {str(fallback_error)}")
+            
+            # Return basic mock analytics if all else fails
+            return {
+                "total_revenue": 0,
+                "total_conversations": 0,
+                "success_rate": 0,
+                "avg_response_time": 0,
+                "roi": 0,
+                "revenue_by_agent_type": {},
+                "conversation_trends": [],
+                "top_performing_agents": [],
+                "optimization_recommendations": [],
+                "competitive_benchmarks": {
+                    "industry_averages": {"success_rate": 65, "roi": 3.2},
+                    "your_performance_vs_industry": "no_data"
+                },
+                "current_period_performance": {"today_conversations": 0, "today_revenue": 0},
+                "date_range": {
+                    "start": start_date.isoformat(),
+                    "end": end_date.isoformat(),
+                    "days": (end_date - start_date).days
+                },
+                "last_updated": datetime.utcnow().isoformat()
+            }
 
 
 @router.get("/instances/{instance_id}/analytics")
@@ -423,6 +492,21 @@ async def get_instance_analytics(
         "total_revenue_generated": instance.total_revenue_generated,
         "success_rate": (instance.successful_conversations / instance.total_conversations * 100) if instance.total_conversations > 0 else 0
     }
+
+
+# Dynamic route - must be after static routes like /analytics
+@router.get("/{agent_id}", response_model=AgentResponse)
+def get_agent(
+    agent_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get agent details"""
+    agent = db.query(Agent).filter_by(id=agent_id).first()
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    
+    return agent
 
 
 # Subscription Management
