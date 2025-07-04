@@ -127,6 +127,294 @@
       "migrated_to": "backend-v2/models.py",
       "timestamp": "2025-06-28",
       "description": "Booking rules and restrictions (age limits, patch tests, consultation requirements)"
+    },
+    "UserMFASecret": {
+      "migrated_from": "original",
+      "migrated_to": "models/mfa.py",
+      "timestamp": "2025-07-03",
+      "description": "Stores MFA secrets for users using TOTP (Time-based One-Time Password)."
+    },
+    "MFABackupCode": {
+      "migrated_from": "original",
+      "migrated_to": "models/mfa.py",
+      "timestamp": "2025-07-03",
+      "description": "Stores backup codes for MFA recovery."
+    },
+    "MFADeviceTrust": {
+      "migrated_from": "original",
+      "migrated_to": "models/mfa.py",
+      "timestamp": "2025-07-03",
+      "description": "Stores trusted devices for MFA to reduce prompts on recognized devices."
+    },
+    "MFAEvent": {
+      "migrated_from": "original",
+      "migrated_to": "models/mfa.py",
+      "timestamp": "2025-07-03",
+      "description": "Audit log for MFA-related events."
+    },
+    "IdempotencyKey": {
+      "migrated_from": "original",
+      "migrated_to": "models/idempotency.py",
+      "timestamp": "2025-07-03",
+      "description": "Model for tracking idempotency keys and their responses."
+    },
+    "CancellationPolicy": {
+      "migrated_from": "original",
+      "migrated_to": "models/cancellation.py",
+      "timestamp": "2025-07-03",
+      "description": "Configurable cancellation policies for different services and timeframes"
+    },
+    "AppointmentCancellation": {
+      "migrated_from": "original",
+      "migrated_to": "models/cancellation.py",
+      "timestamp": "2025-07-03",
+      "description": "Track cancellation details and refund calculations"
+    },
+    "WaitlistEntry": {
+      "migrated_from": "original",
+      "migrated_to": "models/cancellation.py",
+      "timestamp": "2025-07-03",
+      "description": "Manage waitlist for cancelled appointment slots"
+    },
+    "CancellationPolicyHistory": {
+      "migrated_from": "original",
+      "migrated_to": "models/cancellation.py",
+      "timestamp": "2025-07-03",
+      "description": "Track changes to cancellation policies for audit purposes"
+    },
+    "Review": {
+      "migrated_from": "original",
+      "migrated_to": "models/review.py",
+      "timestamp": "2025-07-03",
+      "description": "Stores customer reviews from various platforms with sentiment analysis"
+    },
+    "ReviewResponse": {
+      "migrated_from": "original",
+      "migrated_to": "models/review.py",
+      "timestamp": "2025-07-03",
+      "description": "Stores response drafts and templates for reviews."
+    },
+    "ReviewTemplate": {
+      "migrated_from": "original",
+      "migrated_to": "models/review.py",
+      "timestamp": "2025-07-03",
+      "description": "Pre-defined response templates for different review scenarios."
+    },
+    "Integration": {
+      "migrated_from": "original",
+      "migrated_to": "models/integration.py",
+      "timestamp": "2025-07-03",
+      "description": "Stores integration configurations and OAuth tokens for third-party services."
+    },
+    "APIKey": {
+      "migrated_from": "original",
+      "migrated_to": "models/api_key.py",
+      "timestamp": "2025-07-03",
+      "description": "API Key model for service authentication."
+    },
+    "PerformanceBenchmark": {
+      "migrated_from": "original",
+      "migrated_to": "models/ai_analytics.py",
+      "timestamp": "2025-07-03",
+      "description": "Anonymized performance benchmarks aggregated across all users."
+    },
+    "AIInsightCache": {
+      "migrated_from": "original",
+      "migrated_to": "models/ai_analytics.py",
+      "timestamp": "2025-07-03",
+      "description": "Cache for AI-generated insights to optimize performance."
+    },
+    "CrossUserMetric": {
+      "migrated_from": "original",
+      "migrated_to": "models/ai_analytics.py",
+      "timestamp": "2025-07-03",
+      "description": "Anonymized metrics for cross-user pattern analysis."
+    },
+    "PredictiveModel": {
+      "migrated_from": "original",
+      "migrated_to": "models/ai_analytics.py",
+      "timestamp": "2025-07-03",
+      "description": "Metadata and performance tracking for ML models used in predictions."
+    },
+    "BusinessIntelligenceReport": {
+      "migrated_from": "original",
+      "migrated_to": "models/ai_analytics.py",
+      "timestamp": "2025-07-03",
+      "description": "Generated business intelligence reports combining multiple AI insights."
+    },
+    "GoogleCalendarSettings": {
+      "migrated_from": "original",
+      "migrated_to": "models/google_calendar_settings.py",
+      "timestamp": "2025-07-03",
+      "description": "Google Calendar integration settings for barbers in V2 system"
+    },
+    "GoogleCalendarSyncLog": {
+      "migrated_from": "original",
+      "migrated_to": "models/google_calendar_settings.py",
+      "timestamp": "2025-07-03",
+      "description": "Log of Google Calendar sync operations for tracking and debugging"
+    },
+    "Agent": {
+      "migrated_from": "original",
+      "migrated_to": "models/agent.py",
+      "timestamp": "2025-07-03",
+      "description": "Agent template definitions"
+    },
+    "AgentInstance": {
+      "migrated_from": "original",
+      "migrated_to": "models/agent.py",
+      "timestamp": "2025-07-03",
+      "description": "Active agent instances for each barbershop"
+    },
+    "AgentConversation": {
+      "migrated_from": "original",
+      "migrated_to": "models/agent.py",
+      "timestamp": "2025-07-03",
+      "description": "Track individual agent-client conversations"
+    },
+    "AgentMetrics": {
+      "migrated_from": "original",
+      "migrated_to": "models/agent.py",
+      "timestamp": "2025-07-03",
+      "description": "Daily metrics for agent performance"
+    },
+    "AgentSubscription": {
+      "migrated_from": "original",
+      "migrated_to": "models/agent.py",
+      "timestamp": "2025-07-03",
+      "description": "Subscription and billing for agent features"
+    },
+    "AgentTemplate": {
+      "migrated_from": "original",
+      "migrated_to": "models/agent.py",
+      "timestamp": "2025-07-03",
+      "description": "Saved conversation templates and prompts"
+    },
+    "Product": {
+      "migrated_from": "original",
+      "migrated_to": "models/product.py",
+      "timestamp": "2025-07-03",
+      "description": "Main product catalog. Supports integration with Shopify and other e-commerce platforms."
+    },
+    "ProductVariant": {
+      "migrated_from": "original",
+      "migrated_to": "models/product.py",
+      "timestamp": "2025-07-03",
+      "description": "Product variants for size, color, style options."
+    },
+    "InventoryItem": {
+      "migrated_from": "original",
+      "migrated_to": "models/product.py",
+      "timestamp": "2025-07-03",
+      "description": "Inventory tracking for products across multiple locations."
+    },
+    "Order": {
+      "migrated_from": "original",
+      "migrated_to": "models/product.py",
+      "timestamp": "2025-07-03",
+      "description": "Retail orders for product sales (separate from service appointments)."
+    },
+    "OrderItem": {
+      "migrated_from": "original",
+      "migrated_to": "models/product.py",
+      "timestamp": "2025-07-03",
+      "description": "Individual items within an order."
+    },
+    "POSTransaction": {
+      "migrated_from": "original",
+      "migrated_to": "models/product.py",
+      "timestamp": "2025-07-03",
+      "description": "Point of sale transactions for in-person retail sales."
+    },
+    "NotificationPreferences": {
+      "migrated_from": "original",
+      "migrated_to": "models/notification_preferences.py",
+      "timestamp": "2025-07-03",
+      "description": "Enhanced user notification preferences with granular control"
+    },
+    "NotificationPreferenceAudit": {
+      "migrated_from": "original",
+      "migrated_to": "models/notification_preferences.py",
+      "timestamp": "2025-07-03",
+      "description": "Audit log for notification preference changes (GDPR compliance)"
+    },
+    "UnsubscribeRequest": {
+      "migrated_from": "original",
+      "migrated_to": "models/notification_preferences.py",
+      "timestamp": "2025-07-03",
+      "description": "Track unsubscribe requests for compliance"
+    },
+    "NotificationChannel": {
+      "migrated_from": "original",
+      "migrated_to": "models/notification_preferences.py",
+      "timestamp": "2025-07-03",
+      "description": "Define available notification channels and their settings"
+    },
+    "NotificationTemplate": {
+      "migrated_from": "original",
+      "migrated_to": "models/notification_preferences.py",
+      "timestamp": "2025-07-03",
+      "description": "Enhanced notification templates with better organization"
+    },
+    "ConversionEvent": {
+      "migrated_from": "original",
+      "migrated_to": "models/tracking.py",
+      "timestamp": "2025-07-03",
+      "description": "Tracks individual conversion events from various sources."
+    },
+    "AttributionPath": {
+      "migrated_from": "original",
+      "migrated_to": "models/tracking.py",
+      "timestamp": "2025-07-03",
+      "description": "Stores the attribution path for each conversion."
+    },
+    "TrackingConfiguration": {
+      "migrated_from": "original",
+      "migrated_to": "models/tracking.py",
+      "timestamp": "2025-07-03",
+      "description": "Stores user-specific tracking configuration and settings."
+    },
+    "ConversionGoal": {
+      "migrated_from": "original",
+      "migrated_to": "models/tracking.py",
+      "timestamp": "2025-07-03",
+      "description": "Defines conversion goals and their values."
+    },
+    "CampaignTracking": {
+      "migrated_from": "original",
+      "migrated_to": "models/tracking.py",
+      "timestamp": "2025-07-03",
+      "description": "Tracks marketing campaign performance and ROI."
+    },
+    "UserConsent": {
+      "migrated_from": "original",
+      "migrated_to": "models/consent.py",
+      "timestamp": "2025-07-03",
+      "description": "Tracks general user consents for terms, privacy policy, marketing, etc."
+    },
+    "CookieConsent": {
+      "migrated_from": "original",
+      "migrated_to": "models/consent.py",
+      "timestamp": "2025-07-03",
+      "description": "Tracks cookie consent preferences by category."
+    },
+    "DataProcessingLog": {
+      "migrated_from": "original",
+      "migrated_to": "models/consent.py",
+      "timestamp": "2025-07-03",
+      "description": "Logs all data processing activities for GDPR compliance."
+    },
+    "DataExportRequest": {
+      "migrated_from": "original",
+      "migrated_to": "models/consent.py",
+      "timestamp": "2025-07-03",
+      "description": "Manages user data export requests (GDPR Article 20 - Right to data portability)."
+    },
+    "LegalConsentAudit": {
+      "migrated_from": "original",
+      "migrated_to": "models/consent.py",
+      "timestamp": "2025-07-03",
+      "description": "Comprehensive audit trail for all consent-related changes."
     }
   },
   "endpoints": {
@@ -371,6 +659,126 @@
       "migrated_to": "backend-v2/frontend-v2/components/analytics/SixFigureAnalyticsDashboard.tsx",
       "timestamp": "2025-06-29",
       "description": "Unified analytics dashboard component combining Six Figure Barber methodology, AI coaching insights, and comprehensive business metrics. Replaced duplicate SixFigureBarberDashboard, SixFigureCoach, and RevenueTrends components."
+    },
+    "WebhookLogs": {
+      "migrated_from": "original",
+      "migrated_to": "components/WebhookLogs.tsx",
+      "timestamp": "2025-07-03",
+      "description": "React Component"
+    },
+    "ClientCommunication": {
+      "migrated_from": "original",
+      "migrated_to": "components/ClientCommunication.tsx",
+      "timestamp": "2025-07-03",
+      "description": "React Component"
+    },
+    "WebhookDocumentation": {
+      "migrated_from": "original",
+      "migrated_to": "components/WebhookDocumentation.tsx",
+      "timestamp": "2025-07-03",
+      "description": "React Component"
+    },
+    "SimpleLoading": {
+      "migrated_from": "original",
+      "migrated_to": "components/LazyComponents.tsx",
+      "timestamp": "2025-07-03",
+      "description": "React Component"
+    },
+    "CalendarWeekView": {
+      "migrated_from": "original",
+      "migrated_to": "app/calendar/page.tsx",
+      "timestamp": "2025-07-03",
+      "description": "React Component"
+    },
+    "CalendarDayView": {
+      "migrated_from": "original",
+      "migrated_to": "app/calendar/page.tsx",
+      "timestamp": "2025-07-03",
+      "description": "React Component"
+    },
+    "CalendarMonthView": {
+      "migrated_from": "original",
+      "migrated_to": "app/calendar/page.tsx",
+      "timestamp": "2025-07-03",
+      "description": "React Component"
+    },
+    "CalendarSync": {
+      "migrated_from": "original",
+      "migrated_to": "app/calendar/page.tsx",
+      "timestamp": "2025-07-03",
+      "description": "React Component"
+    },
+    "CalendarConflictResolver": {
+      "migrated_from": "original",
+      "migrated_to": "app/calendar/page.tsx",
+      "timestamp": "2025-07-03",
+      "description": "React Component"
+    },
+    "RevenueChart": {
+      "migrated_from": "original",
+      "migrated_to": "components/analytics/RevenueChart.tsx",
+      "timestamp": "2025-07-03",
+      "description": "React Component"
+    },
+    "ClientRetentionChart": {
+      "migrated_from": "original",
+      "migrated_to": "components/analytics/ClientRetentionChart.tsx",
+      "timestamp": "2025-07-03",
+      "description": "React Component"
+    },
+    "PerformanceMetrics": {
+      "migrated_from": "original",
+      "migrated_to": "components/analytics/PerformanceMetrics.tsx",
+      "timestamp": "2025-07-03",
+      "description": "React Component"
+    },
+    "PaymentForm": {
+      "migrated_from": "original",
+      "migrated_to": "components/PaymentForm.tsx",
+      "timestamp": "2025-07-03",
+      "description": "React Component"
+    },
+    "StripeConnectOnboarding": {
+      "migrated_from": "original",
+      "migrated_to": "components/StripeConnectOnboarding.tsx",
+      "timestamp": "2025-07-03",
+      "description": "React Component"
+    },
+    "RefundManager": {
+      "migrated_from": "original",
+      "migrated_to": "app/payments/page.tsx",
+      "timestamp": "2025-07-03",
+      "description": "React Component"
+    },
+    "CampaignCard": {
+      "migrated_from": "original",
+      "migrated_to": "components/marketing/CampaignCard.tsx",
+      "timestamp": "2025-07-03",
+      "description": "React Component"
+    },
+    "TemplateEditor": {
+      "migrated_from": "original",
+      "migrated_to": "components/marketing/TemplateEditor.tsx",
+      "timestamp": "2025-07-03",
+      "description": "React Component"
+    },
+    "ImportWizard": {
+      "migrated_from": "original",
+      "migrated_to": "components/import/ImportWizard.tsx",
+      "timestamp": "2025-07-03",
+      "description": "React Component"
+    },
+    "ExportBuilder": {
+      "migrated_from": "original",
+      "migrated_to": "components/LazyComponents.tsx",
+      "timestamp": "2025-07-03",
+      "description": "React Component"
+    },
+    "EmbedCodeGenerator": {
+      "migrated_from": "original",
+      "migrated_to": "components/booking/EmbedCodeGenerator.tsx",
+      "timestamp": "2025-07-03",
+      "description": "React Component"
     }
   },
   "services": {
@@ -385,6 +793,354 @@
       "migrated_to": "Enhanced client management with analytics, preferences, notes, tags, and booking integration",
       "timestamp": "2025-06-28",
       "description": "services/client_service.py, routers/clients.py, frontend-v2/app/clients/"
+    },
+    "CancellationPolicyService": {
+      "migrated_from": "original",
+      "migrated_to": "services/cancellation_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Service for managing cancellation policies and processing cancellations"
+    },
+    "KeywordGenerationService": {
+      "migrated_from": "original",
+      "migrated_to": "services/keyword_generation_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Smart Keyword Generation Engine for review response optimization."
+    },
+    "TimezoneService": {
+      "migrated_from": "original",
+      "migrated_to": "services/timezone_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Centralized timezone service for all timezone operations."
+    },
+    "EnhancedOAuth2Service": {
+      "migrated_from": "original",
+      "migrated_to": "services/enhanced_oauth2_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Enhanced OAuth2 service with security improvements."
+    },
+    "ConversationService": {
+      "migrated_from": "original",
+      "migrated_to": "services/conversation_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Handles AI-powered conversations between agents and clients"
+    },
+    "ReviewService": {
+      "migrated_from": "original",
+      "migrated_to": "services/review_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Service for managing reviews and generating SEO-optimized responses"
+    },
+    "WaitlistService": {
+      "migrated_from": "original",
+      "migrated_to": "services/waitlist_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Service for managing appointment waitlists"
+    },
+    "GTMService": {
+      "migrated_from": "original",
+      "migrated_to": "services/gtm_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Google Tag Manager Server-Side Service"
+    },
+    "SmartCTAService": {
+      "migrated_from": "original",
+      "migrated_to": "services/smart_cta_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Intelligent Call-to-Action Generation System."
+    },
+    "GMBService": {
+      "migrated_from": "original",
+      "migrated_to": "services/gmb_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Google My Business API service with OAuth and review management"
+    },
+    "HolidayService": {
+      "migrated_from": "original",
+      "migrated_to": "services/enhanced_recurring_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Service for managing holidays and blackout dates"
+    },
+    "BlackoutDateService": {
+      "migrated_from": "original",
+      "migrated_to": "services/blackout_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Service for comprehensive blackout date management"
+    },
+    "ConflictDetectionService": {
+      "migrated_from": "original",
+      "migrated_to": "services/enhanced_recurring_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Service for detecting and resolving conflicts in recurring appointments"
+    },
+    "RecurringSeriesService": {
+      "migrated_from": "original",
+      "migrated_to": "services/enhanced_recurring_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Service for managing recurring appointment series"
+    },
+    "EnhancedRecurringService": {
+      "migrated_from": "original",
+      "migrated_to": "services/enhanced_recurring_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Enhanced service for recurring appointment management"
+    },
+    "ReviewResponseService": {
+      "migrated_from": "original",
+      "migrated_to": "services/review_response_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Automated review response service with SEO optimization and intelligent templates."
+    },
+    "WebhookService": {
+      "migrated_from": "original",
+      "migrated_to": "services/webhook_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Service for managing webhook configuration and delivery"
+    },
+    "CacheMonitoringService": {
+      "migrated_from": "original",
+      "migrated_to": "services/cache_health_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Service for continuous cache monitoring and alerting."
+    },
+    "MarketingService": {
+      "migrated_from": "original",
+      "migrated_to": "services/marketing_service.py",
+      "timestamp": "2025-07-03",
+      "description": "MarketingService service"
+    },
+    "NotificationService": {
+      "migrated_from": "original",
+      "migrated_to": "services/notification_service.py",
+      "timestamp": "2025-07-03",
+      "description": "NotificationService service"
+    },
+    "SEOOptimizationService": {
+      "migrated_from": "original",
+      "migrated_to": "services/seo_optimization_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Intelligent SEO Optimization System for review responses."
+    },
+    "ConversionTrackingService": {
+      "migrated_from": "original",
+      "migrated_to": "services/conversion_tracking_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Service for managing conversion tracking across multiple platforms"
+    },
+    "PaymentService": {
+      "migrated_from": "original",
+      "migrated_to": "services/payment_service.py",
+      "timestamp": "2025-07-03",
+      "description": "PaymentService service"
+    },
+    "MetaBusinessService": {
+      "migrated_from": "original",
+      "migrated_to": "services/meta_business_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Meta Business API service with OAuth, ads management, and conversion tracking"
+    },
+    "MetaDeduplicationService": {
+      "migrated_from": "original",
+      "migrated_to": "services/meta_deduplication_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Service for managing event deduplication between Meta Pixel and Conversions API"
+    },
+    "StripeIntegrationService": {
+      "migrated_from": "original",
+      "migrated_to": "services/stripe_integration_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Stripe specific integration service"
+    },
+    "MFAService": {
+      "migrated_from": "original",
+      "migrated_to": "services/mfa_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Service for managing Multi-Factor Authentication"
+    },
+    "CacheInvalidationManager": {
+      "migrated_from": "original",
+      "migrated_to": "services/cache_invalidation_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Manages cache invalidation operations."
+    },
+    "PrivacyAnonymizationService": {
+      "migrated_from": "original",
+      "migrated_to": "services/privacy_anonymization_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Service for privacy-compliant anonymization of cross-user data."
+    },
+    "GoogleAdsService": {
+      "migrated_from": "original",
+      "migrated_to": "services/google_ads_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Google Ads API service with OAuth and campaign management"
+    },
+    "ShopifyIntegrationService": {
+      "migrated_from": "original",
+      "migrated_to": "services/shopify_integration_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Shopify integration service for managing e-commerce functionality."
+    },
+    "DynamicContentAssemblyService": {
+      "migrated_from": "original",
+      "migrated_to": "services/dynamic_content_assembly.py",
+      "timestamp": "2025-07-03",
+      "description": "Dynamic Content Assembly System that orchestrates all AI services to generate"
+    },
+    "CaptchaService": {
+      "migrated_from": "original",
+      "migrated_to": "services/captcha_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Service for managing CAPTCHA requirements and verification."
+    },
+    "ExportService": {
+      "migrated_from": "original",
+      "migrated_to": "services/export_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Service for handling data exports in various formats"
+    },
+    "GA4AnalyticsService": {
+      "migrated_from": "original",
+      "migrated_to": "services/ga4_analytics_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Google Analytics 4 integration service"
+    },
+    "EmailABTestingService": {
+      "migrated_from": "original",
+      "migrated_to": "services/email_ab_testing.py",
+      "timestamp": "2025-07-03",
+      "description": "Service for managing email A/B tests and statistical analysis"
+    },
+    "APIKeyService": {
+      "migrated_from": "original",
+      "migrated_to": "services/api_key_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Service for managing API keys."
+    },
+    "PredictiveModelingService": {
+      "migrated_from": "original",
+      "migrated_to": "services/predictive_modeling_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Service for ML-powered business forecasting and predictions."
+    },
+    "GMBServiceAdapter": {
+      "migrated_from": "original",
+      "migrated_to": "services/integration_adapters.py",
+      "timestamp": "2025-07-03",
+      "description": "Adapter for Google My Business service"
+    },
+    "GoogleCalendarServiceAdapter": {
+      "migrated_from": "original",
+      "migrated_to": "services/integration_adapters.py",
+      "timestamp": "2025-07-03",
+      "description": "Adapter for Google Calendar service"
+    },
+    "StripeServiceAdapter": {
+      "migrated_from": "original",
+      "migrated_to": "services/integration_adapters.py",
+      "timestamp": "2025-07-03",
+      "description": "Adapter for Stripe service"
+    },
+    "SendGridServiceAdapter": {
+      "migrated_from": "original",
+      "migrated_to": "services/integration_adapters.py",
+      "timestamp": "2025-07-03",
+      "description": "Adapter for SendGrid email service"
+    },
+    "TwilioServiceAdapter": {
+      "migrated_from": "original",
+      "migrated_to": "services/integration_adapters.py",
+      "timestamp": "2025-07-03",
+      "description": "Adapter for Twilio SMS service"
+    },
+    "ServiceCommissionCalculator": {
+      "migrated_from": "original",
+      "migrated_to": "services/base_commission.py",
+      "timestamp": "2025-07-03",
+      "description": "Calculator for service-based commissions (appointments)."
+    },
+    "UnifiedCommissionService": {
+      "migrated_from": "original",
+      "migrated_to": "services/base_commission.py",
+      "timestamp": "2025-07-03",
+      "description": "Unified service for all commission calculations."
+    },
+    "GoogleCalendarService": {
+      "migrated_from": "original",
+      "migrated_to": "services/google_calendar_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Service for managing Google Calendar integration."
+    },
+    "BaseIntegrationService": {
+      "migrated_from": "original",
+      "migrated_to": "services/integration_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Abstract base class for integration services."
+    },
+    "IntegrationServiceFactory": {
+      "migrated_from": "original",
+      "migrated_to": "services/integration_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Factory for creating integration service instances"
+    },
+    "RedisConnectionManager": {
+      "migrated_from": "original",
+      "migrated_to": "services/redis_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Manages Redis connections with pooling and failover."
+    },
+    "RedisCacheService": {
+      "migrated_from": "original",
+      "migrated_to": "services/redis_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Core Redis caching service with TTL management."
+    },
+    "CommissionService": {
+      "migrated_from": "original",
+      "migrated_to": "services/commission_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Service for calculating and managing commissions across services and retail sales."
+    },
+    "BusinessContextService": {
+      "migrated_from": "original",
+      "migrated_to": "services/business_context_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Service for extracting business context from existing models"
+    },
+    "ImportService": {
+      "migrated_from": "original",
+      "migrated_to": "services/import_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Service for handling data imports from various sources"
+    },
+    "AIBenchmarkingService": {
+      "migrated_from": "original",
+      "migrated_to": "services/ai_benchmarking_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Service for AI-powered industry benchmarking and competitive intelligence."
+    },
+    "AgentOrchestrationService": {
+      "migrated_from": "original",
+      "migrated_to": "services/agent_orchestration_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Manages the lifecycle and execution of AI agents"
+    },
+    "CommissionRateManager": {
+      "migrated_from": "original",
+      "migrated_to": "services/commission_rate_manager.py",
+      "timestamp": "2025-07-03",
+      "description": "Centralized management of commission rates across the platform."
+    },
+    "AnalyticsService": {
+      "migrated_from": "original",
+      "migrated_to": "services/analytics_service.py",
+      "timestamp": "2025-07-03",
+      "description": "AnalyticsService service"
+    },
+    "BookingCacheService": {
+      "migrated_from": "original",
+      "migrated_to": "services/booking_cache_service.py",
+      "timestamp": "2025-07-03",
+      "description": "Caching service specifically for booking-related operations."
     }
   }
 }

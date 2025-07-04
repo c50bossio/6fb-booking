@@ -165,6 +165,84 @@
       "message": "🧪 Running relevant tests for changes..."
     },
     {
+      "name": "frontend_page_verification",
+      "description": "Verify frontend pages load correctly after changes",
+      "event": "PostToolUse",
+      "matchers": [
+        "Edit(file_path:*/frontend-v2/app/*)",
+        "Edit(file_path:*/frontend-v2/components/*)",
+        "Edit(file_path:*/frontend-v2/lib/*)",
+        "Write(file_path:*/frontend-v2/app/*)",
+        "Write(file_path:*/frontend-v2/components/*)",
+        "Write(file_path:*/frontend-v2/lib/*)",
+        "MultiEdit(file_path:*/frontend-v2/app/*)",
+        "MultiEdit(file_path:*/frontend-v2/components/*)",
+        "MultiEdit(file_path:*/frontend-v2/lib/*)"
+      ],
+      "command": "/Users/bossio/6fb-booking/.claude/scripts/verify-frontend.sh",
+      "blocking": true,
+      "message": "🌐 Verifying frontend pages load correctly..."
+    },
+    {
+      "name": "analytics_page_verification",
+      "description": "Comprehensive verification for analytics pages and components",
+      "event": "PostToolUse",
+      "matchers": [
+        "Edit(file_path:*agents/analytics*)",
+        "Edit(file_path:*BusinessIntelligenceDashboard*)",
+        "Edit(file_path:*AgentAnalytics*)",
+        "Edit(file_path:*/routers/agents.py)",
+        "Edit(file_path:*/services/analytics_service.py)",
+        "Write(file_path:*agents/analytics*)",
+        "Write(file_path:*BusinessIntelligenceDashboard*)",
+        "Write(file_path:*AgentAnalytics*)",
+        "Write(file_path:*/routers/agents.py)",
+        "Write(file_path:*/services/analytics_service.py)",
+        "MultiEdit(file_path:*agents/analytics*)",
+        "MultiEdit(file_path:*BusinessIntelligenceDashboard*)",
+        "MultiEdit(file_path:*AgentAnalytics*)",
+        "MultiEdit(file_path:*/routers/agents.py)",
+        "MultiEdit(file_path:*/services/analytics_service.py)"
+      ],
+      "command": "/Users/bossio/6fb-booking/.claude/scripts/verify-analytics.sh",
+      "blocking": true,
+      "message": "📊 Verifying analytics pages work correctly..."
+    },
+    {
+      "name": "api_endpoint_verification",
+      "description": "Verify API endpoints work after backend changes",
+      "event": "PostToolUse",
+      "matchers": [
+        "Edit(file_path:*/backend-v2/routers/*)",
+        "Edit(file_path:*/backend-v2/services/*)",
+        "Edit(file_path:*/backend-v2/api/*)",
+        "Write(file_path:*/backend-v2/routers/*)",
+        "Write(file_path:*/backend-v2/services/*)",
+        "Write(file_path:*/backend-v2/api/*)",
+        "MultiEdit(file_path:*/backend-v2/routers/*)",
+        "MultiEdit(file_path:*/backend-v2/services/*)",
+        "MultiEdit(file_path:*/backend-v2/api/*)"
+      ],
+      "command": "/Users/bossio/6fb-booking/.claude/scripts/verify-api.sh",
+      "blocking": true,
+      "message": "🔌 Verifying API endpoints work correctly..."
+    },
+    {
+      "name": "feature_duplication_check",
+      "description": "Verify features don't already exist before implementation",
+      "event": "PreToolUse",
+      "matchers": [
+        "Write(file_path:*/backend-v2/services/*)",
+        "Write(file_path:*/backend-v2/routers/*)",
+        "Write(file_path:*/backend-v2/models/*)",
+        "Write(file_path:*/frontend-v2/components/*)",
+        "Write(file_path:*/frontend-v2/app/*)"
+      ],
+      "command": "/Users/bossio/6fb-booking/.claude/scripts/verify-feature-exists.sh ${CLAUDE_PLANNED_FEATURE:-unknown}",
+      "blocking": true,
+      "message": "🔍 Checking if feature already exists..."
+    },
+    {
       "name": "notification_summary",
       "description": "Provide development summary and next steps",
       "event": "Stop",

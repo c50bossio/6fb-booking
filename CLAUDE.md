@@ -33,6 +33,42 @@ BookedBarber is a comprehensive booking and business management platform for bar
 
 ## 🛡️ CRITICAL SAFETY PROTOCOLS
 
+### 🚨 MANDATORY PAGE VERIFICATION PROTOCOL
+
+**BEFORE claiming any page is working, Claude MUST use automated verification hooks:**
+
+```bash
+# These hooks run automatically after code changes:
+# ✅ Frontend changes → .claude/scripts/verify-frontend.sh
+# ✅ Analytics changes → .claude/scripts/verify-analytics.sh  
+# ✅ Backend changes → .claude/scripts/verify-api.sh
+```
+
+**Rules for Claude:**
+1. **NEVER** claim a page "should now load" without verification
+2. **ALWAYS** let hooks run and report actual results
+3. **NEVER** bypass verification for "simple" changes
+4. **REPORT** actual browser status, not assumptions
+
+### Hook-Based Verification System
+
+The project uses Claude Hooks (`.claude/hooks.json`) that automatically verify functionality:
+
+#### Frontend Verification Hook
+- **Triggers**: After editing frontend files (*.tsx, *.ts, *.js)
+- **Actions**: Connects to browser, checks for JavaScript errors, verifies page loads
+- **Required**: Cannot proceed until pages load successfully
+
+#### Analytics Verification Hook  
+- **Triggers**: After editing analytics-related files
+- **Actions**: Tests API endpoints, checks for toFixed() errors, verifies data display
+- **Required**: Prevents reporting success without browser confirmation
+
+#### API Verification Hook
+- **Triggers**: After editing backend files (routers/, services/, models/)
+- **Actions**: Tests endpoints, validates parameter parsing, checks error handling
+- **Required**: Ensures API changes don't break frontend integration
+
 ### Before Starting ANY Work
 ```bash
 # 1. Ensure clean working directory
@@ -53,6 +89,7 @@ git checkout -b feature/description-YYYYMMDD
 2. **Test Continuously**: Run tests after every significant change
 3. **Focus**: Complete one task at a time from TodoList
 4. **Review**: Always `git diff` before committing
+5. **Verification**: Let hooks run automatically - never claim success without them
 
 ### Emergency Recovery
 ```bash
