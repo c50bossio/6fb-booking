@@ -49,6 +49,13 @@ class User(Base):
     verification_token_expires = Column(DateTime, nullable=True)  # When verification token expires
     verified_at = Column(DateTime, nullable=True)  # When email was verified
     
+    # Trial system fields
+    user_type = Column(String, default="client")  # client, barber, barbershop
+    trial_started_at = Column(DateTime, nullable=True)  # When trial started
+    trial_expires_at = Column(DateTime, nullable=True)  # When trial expires
+    trial_active = Column(Boolean, default=True)  # Whether trial is active
+    subscription_status = Column(String, default="trial")  # trial, active, expired, cancelled
+    
     # Location for multi-tenancy (temporarily removed foreign key for initialization)
     location_id = Column(Integer, nullable=True)
     
@@ -78,6 +85,28 @@ class User(Base):
     # Location relationships
     # Note: need to use string reference since BarbershopLocation is defined in location_models.py
     # locations = relationship("BarbershopLocation", secondary="barber_locations", back_populates="barbers")
+    
+    @property
+    def is_trial_active(self) -> bool:
+        """Check if user's trial is still active"""
+        if not self.trial_active:
+            return False
+        if not self.trial_expires_at:
+            return True  # No expiration set
+        from datetime import datetime, timezone
+        return self.trial_expires_at > datetime.now(timezone.utc).replace(tzinfo=None)
+    
+    @property
+    def trial_days_remaining(self) -> int:
+        """Get number of days remaining in trial"""
+        if not self.trial_expires_at:
+            return 14  # Default trial length
+        from datetime import datetime, timezone
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        if self.trial_expires_at <= now:
+            return 0
+        delta = self.trial_expires_at - now
+        return max(0, delta.days)
 
 class Appointment(Base):
     __tablename__ = "appointments"

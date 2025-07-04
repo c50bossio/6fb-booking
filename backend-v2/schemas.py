@@ -6,6 +6,12 @@ from datetime import date as Date, time as Time
 from enum import Enum
 import pytz
 
+# User Type Enum for 14-day trial system
+class UserType(str, Enum):
+    CLIENT = "client"
+    BARBER = "barber"
+    BARBERSHOP = "barbershop"
+
 # Auth schemas
 class UserLogin(BaseModel):
     email: EmailStr  # Modern API - use 'email' directly
@@ -80,6 +86,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
+    user_type: UserType = UserType.CLIENT
     create_test_data: Optional[bool] = False
     
     @validator('password')

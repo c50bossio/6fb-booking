@@ -237,7 +237,7 @@ export async function login(email: string, password: string) {
   console.log('🚀 Login request body JSON:', JSON.stringify(requestBody));
   
   const response = await retryOperation(
-    () => fetchAPI('/api/v1/auth-test/login', {
+    () => fetchAPI('/api/v1/auth/login', {
       method: 'POST',
       body: JSON.stringify(requestBody),
     }),
@@ -264,10 +264,10 @@ export async function logout() {
   localStorage.removeItem('refresh_token')
 }
 
-export async function register(email: string, password: string, name: string, createTestData: boolean = false) {
+export async function register(email: string, password: string, name: string, createTestData: boolean = false, userType: string = 'client') {
   return fetchAPI('/api/v1/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ email, password, name, create_test_data: createTestData }),
+    body: JSON.stringify({ email, password, name, create_test_data: createTestData, user_type: userType }),
   })
 }
 

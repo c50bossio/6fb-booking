@@ -11,7 +11,8 @@ export default function RegisterPage() {
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    userType: 'client'
   })
   const [consent, setConsent] = useState({
     terms: false,
@@ -83,7 +84,7 @@ export default function RegisterPage() {
     setLoading(true)
 
     try {
-      await register(formData.email, formData.password, formData.name, consent.testData)
+      await register(formData.email, formData.password, formData.name, consent.testData, formData.userType)
       // Redirect to check-email page instead of login
       router.push(`/check-email?email=${encodeURIComponent(formData.email)}`)
     } catch (err: any) {
@@ -143,6 +144,26 @@ export default function RegisterPage() {
                 onChange={handleInputChange}
                 className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               />
+            </div>
+
+            <div>
+              <label htmlFor="userType" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                I am a...
+              </label>
+              <select
+                id="userType"
+                name="userType"
+                value={formData.userType}
+                onChange={handleInputChange}
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              >
+                <option value="client">Client (I book appointments)</option>
+                <option value="barber">Barber (I provide services)</option>
+                <option value="barbershop">Barbershop Owner (I run a business)</option>
+              </select>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                This helps us customize your 14-day free trial with relevant features and test data.
+              </p>
             </div>
 
             <div>

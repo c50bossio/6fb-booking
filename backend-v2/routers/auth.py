@@ -171,12 +171,22 @@ async def register(
             detail="Email already registered"
         )
     
-    # Create new user
+    # Create new user with 14-day trial
+    from datetime import datetime, timedelta, timezone
+    
     hashed_password = get_password_hash(user_data.password)
+    trial_start = datetime.now(timezone.utc).replace(tzinfo=None)
+    trial_end = trial_start + timedelta(days=14)
+    
     new_user = models.User(
         email=user_data.email,
         name=user_data.name,
-        hashed_password=hashed_password
+        hashed_password=hashed_password,
+        user_type=user_data.user_type.value,
+        trial_started_at=trial_start,
+        trial_expires_at=trial_end,
+        trial_active=True,
+        subscription_status="trial"
     )
     
     db.add(new_user)
