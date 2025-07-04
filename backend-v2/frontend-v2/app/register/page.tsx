@@ -214,7 +214,7 @@ export default function RegisterPage() {
                   type="checkbox"
                   checked={consent.terms}
                   onChange={() => handleConsentChange('terms')}
-                  className="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="mt-0.5 h-4 w-4 text-primary-500 border-gray-300 rounded focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-primary-400"
                   required
                 />
                 <label htmlFor="terms-consent" className="ml-3 text-sm text-gray-700 dark:text-gray-300">
@@ -223,7 +223,7 @@ export default function RegisterPage() {
                     href="/terms" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-500 underline"
+                    className="text-primary-600 hover:text-primary-500 underline"
                   >
                     Terms of Service
                   </a>
@@ -237,7 +237,7 @@ export default function RegisterPage() {
                   type="checkbox"
                   checked={consent.privacy}
                   onChange={() => handleConsentChange('privacy')}
-                  className="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="mt-0.5 h-4 w-4 text-primary-500 border-gray-300 rounded focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-primary-400"
                   required
                 />
                 <label htmlFor="privacy-consent" className="ml-3 text-sm text-gray-700 dark:text-gray-300">
@@ -246,7 +246,7 @@ export default function RegisterPage() {
                     href="/privacy" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-500 underline"
+                    className="text-primary-600 hover:text-primary-500 underline"
                   >
                     Privacy Policy
                   </a>
@@ -261,7 +261,7 @@ export default function RegisterPage() {
                   type="checkbox"
                   checked={consent.marketing}
                   onChange={() => handleConsentChange('marketing')}
-                  className="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="mt-0.5 h-4 w-4 text-primary-500 border-gray-300 rounded focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-primary-400"
                 />
                 <label htmlFor="marketing-consent" className="ml-3 text-sm text-gray-700 dark:text-gray-300">
                   I would like to receive promotional emails and updates about new features (optional)
@@ -275,7 +275,7 @@ export default function RegisterPage() {
                   type="checkbox"
                   checked={consent.testData}
                   onChange={() => handleConsentChange('testData')}
-                  className="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="mt-0.5 h-4 w-4 text-primary-500 border-gray-300 rounded focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-primary-400"
                 />
                 <label htmlFor="test-data-consent" className="ml-3 text-sm text-gray-700 dark:text-gray-300">
                   <span className="font-medium">Create sample data to help me learn the platform</span>
@@ -290,11 +290,11 @@ export default function RegisterPage() {
 
             <div className="text-xs text-gray-500">
               <span className="text-red-500">*</span> Required fields. You can review our{' '}
-              <a href="/cookies" className="text-blue-600 hover:text-blue-500 underline">
+              <a href="/cookies" className="text-primary-600 hover:text-primary-500 underline">
                 Cookie Policy
               </a>{' '}
               and change your cookie preferences after registration in your{' '}
-              <a href="/settings/privacy" className="text-blue-600 hover:text-blue-500 underline">
+              <a href="/settings/privacy" className="text-primary-600 hover:text-primary-500 underline">
                 privacy settings
               </a>.
             </div>
@@ -304,7 +304,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading || !isPasswordValid() || formData.password !== formData.confirmPassword || !consent.terms || !consent.privacy}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Creating account...' : 'Create account'}
             </button>
@@ -313,11 +313,11 @@ export default function RegisterPage() {
           <div className="text-center space-y-2">
             <p className="text-sm text-gray-600">
               Already have an account?{' '}
-              <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500">
+              <Link href="/login" className="font-medium text-primary-600 hover:text-primary-500">
                 Sign in
               </Link>
             </p>
-            <Link href="/" className="text-sm text-blue-600 hover:text-blue-500">
+            <Link href="/" className="text-sm text-primary-600 hover:text-primary-500">
               Back to home
             </Link>
           </div>
