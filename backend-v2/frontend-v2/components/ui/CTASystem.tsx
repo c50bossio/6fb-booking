@@ -45,7 +45,6 @@ const CTA_CONFIGS: Record<string, CTAConfig> = {
     variant: 'primary',
     size: 'lg',
     elevated: true,
-    icon: StarIcon,
     description: 'Begin your 14-day free trial with demo data',
     analytics: 'register_primary',
     enabled: true,

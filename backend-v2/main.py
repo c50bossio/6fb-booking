@@ -17,7 +17,7 @@ from middleware.multi_tenancy import MultiTenancyMiddleware
 from middleware.financial_security import FinancialSecurityMiddleware
 from middleware.sentry_middleware import SentryEnhancementMiddleware
 from middleware.enhanced_security import EnhancedSecurityMiddleware, WebhookSecurityMiddleware
-from config.security_config import SecurityConfig
+from middleware.configuration_security import ConfigurationSecurityMiddleware, configuration_reporter
 import logging
 
 # Initialize Sentry error tracking (must be done before importing FastAPI app)
@@ -65,14 +65,10 @@ async def startup_event():
         # logger.info("Double-booking prevention system activated")
         
         # Initialize MFA middleware instance for session management
-        # Find the MFA middleware in the middleware stack
-        # TODO: Fix middleware iteration - app.middleware is not iterable
-        # for middleware in app.middleware:
-        #     if hasattr(middleware, 'cls') and middleware.cls == MFAEnforcementMiddleware:
-        #         # Store reference to middleware instance
-        #         app.state.mfa_middleware = middleware.cls(app)
-        #         logger.info("MFA enforcement middleware initialized")
-        #         break
+        # Create a reference to the MFA middleware for session management
+        if not hasattr(app.state, 'mfa_middleware'):
+            app.state.mfa_middleware = MFAEnforcementMiddleware(app)
+            logger.info("MFA enforcement middleware initialized for session management")
         
         # Log Sentry status
         if sentry_configured:
@@ -116,6 +112,11 @@ else:
     # Add enhanced security middleware stack
     environment = ENVIRONMENT if ENVIRONMENT != "development" else "production"
     
+    # Add configuration security middleware (first for critical security validation)
+    config_security_middleware = ConfigurationSecurityMiddleware(app, check_interval_minutes=30)
+    app.add_middleware(ConfigurationSecurityMiddleware, check_interval_minutes=30)
+    configuration_reporter.set_middleware(config_security_middleware)
+    
     # Add Sentry enhancement middleware (early in chain for comprehensive coverage)
     if sentry_configured:
         secret_key = os.getenv("SECRET_KEY")
@@ -150,37 +151,66 @@ else:
     # Add enhanced security headers middleware
     app.add_middleware(SecurityHeadersMiddleware)
     
-    logger.info("✅ Enhanced security stack applied with production-grade settings")
+    logger.info("✅ Enhanced security stack applied with production-grade settings and configuration validation")
 
 # Add rate limit exceeded handler
 app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 
-# Enhanced CORS setup using security configuration
-security_config = SecurityConfig.get_environment_specific_config(ENVIRONMENT)
-
-# Get allowed origins from security config, fallback to environment or defaults
-allowed_origins = security_config.get("CORS_ALLOWED_ORIGINS", [])
-if not allowed_origins:
-    # Fallback to environment variable or defaults
-    allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001").split(",")
-
-# Add Railway and Vercel deployment URLs if they exist
-railway_url = os.getenv("RAILWAY_PUBLIC_DOMAIN")
-vercel_url = os.getenv("VERCEL_URL")
-
-if railway_url:
-    allowed_origins.append(f"https://{railway_url}")
-if vercel_url:
-    allowed_origins.append(f"https://{vercel_url}")
-
-logger.info(f"CORS configured for environment '{ENVIRONMENT}' with origins: {allowed_origins}")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_credentials=security_config.get("CORS_ALLOW_CREDENTIALS", True),
-    allow_methods=security_config.get("CORS_ALLOW_METHODS", ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]),
-    allow_headers=security_config.get("CORS_ALLOW_HEADERS", [
+# Production-ready CORS configuration with enhanced security
+def configure_cors():
+    """Configure CORS with environment-specific security settings"""
+    
+    # Base allowed origins from environment or defaults
+    allowed_origins = []
+    
+    if ENVIRONMENT == "production":
+        # Production: Only allow specific verified domains
+        production_origins = os.getenv("PRODUCTION_ORIGINS", "").split(",")
+        production_origins = [origin.strip() for origin in production_origins if origin.strip()]
+        
+        if production_origins:
+            allowed_origins = production_origins
+        else:
+            # Fallback for production - no localhost allowed
+            logger.warning("No PRODUCTION_ORIGINS set - using minimal secure defaults")
+            allowed_origins = ["https://bookedbarber.com", "https://app.bookedbarber.com"]
+    
+    elif ENVIRONMENT == "staging":
+        # Staging: Allow staging domains
+        staging_origins = os.getenv("STAGING_ORIGINS", "").split(",")
+        staging_origins = [origin.strip() for origin in staging_origins if origin.strip()]
+        
+        if staging_origins:
+            allowed_origins = staging_origins
+        else:
+            # Fallback staging domains
+            allowed_origins = [
+                "https://staging.bookedbarber.com",
+                "https://staging-app.bookedbarber.com"
+            ]
+    
+    else:
+        # Development: Allow localhost and development domains
+        dev_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001").split(",")
+        allowed_origins = [origin.strip() for origin in dev_origins if origin.strip()]
+    
+    # Add deployment platform URLs if they exist
+    railway_url = os.getenv("RAILWAY_PUBLIC_DOMAIN")
+    vercel_url = os.getenv("VERCEL_URL")
+    render_url = os.getenv("RENDER_EXTERNAL_URL")
+    
+    if railway_url and ENVIRONMENT != "production":
+        allowed_origins.append(f"https://{railway_url}")
+    if vercel_url and ENVIRONMENT != "production":
+        allowed_origins.append(f"https://{vercel_url}")
+    if render_url:
+        allowed_origins.append(render_url)
+    
+    # Remove duplicates and empty values
+    allowed_origins = list(set([origin for origin in allowed_origins if origin]))
+    
+    # Security headers for CORS
+    allowed_headers = [
         "Accept",
         "Accept-Language", 
         "Content-Language",
@@ -188,11 +218,35 @@ app.add_middleware(
         "Authorization",
         "X-Requested-With",
         "X-CSRFToken",
-        "Cache-Control"
-    ]),
-    expose_headers=["Content-Length", "Content-Range"],
-    max_age=86400  # 24 hours
-)
+        "Cache-Control",
+        "X-Device-Fingerprint",  # For MFA device trust
+        "X-Trust-Token",         # For MFA device trust
+        "X-MFA-Token"           # For MFA session management
+    ]
+    
+    # Production-specific security
+    if ENVIRONMENT == "production":
+        allowed_methods = ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+        max_age = 3600  # 1 hour for production
+    else:
+        allowed_methods = ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+        max_age = 86400  # 24 hours for development
+    
+    logger.info(f"CORS configured for environment '{ENVIRONMENT}' with {len(allowed_origins)} origins")
+    logger.info(f"Allowed origins: {allowed_origins}")
+    
+    return {
+        "allow_origins": allowed_origins,
+        "allow_credentials": True,
+        "allow_methods": allowed_methods,
+        "allow_headers": allowed_headers,
+        "expose_headers": ["Content-Length", "Content-Range", "X-MFA-Required", "X-User-ID"],
+        "max_age": max_age
+    }
+
+# Configure and apply CORS
+cors_config = configure_cors()
+app.add_middleware(CORSMiddleware, **cors_config)
 
 # Include routers with API versioning
 app.include_router(auth.router, prefix="/api/v1")
@@ -262,3 +316,23 @@ def health_check():
         health_status["sentry"] = {"enabled": False}
     
     return health_status
+
+@app.get("/security/status")
+def security_status():
+    """Get security configuration status"""
+    from config import settings
+    
+    # Only provide detailed info in non-production environments
+    if settings.is_production():
+        return {
+            "environment": "production",
+            "configuration_secure": configuration_reporter.get_compliance_report().get("production_ready", False),
+            "security_score": configuration_reporter.get_compliance_report().get("security_score", 0)
+        }
+    else:
+        return configuration_reporter.get_security_status()
+
+@app.get("/security/compliance")
+def security_compliance():
+    """Get security compliance report"""
+    return configuration_reporter.get_compliance_report()

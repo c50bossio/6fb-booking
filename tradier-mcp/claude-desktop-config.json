@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "tradier-mcp": {
+      "command": "python",
+      "args": ["/path/to/your/tradier-mcp-project/tradier_mcp_server.py"],
+      "env": {
+        "PYTHONPATH": "/path/to/your/tradier-mcp-project"
+      }
+    }
+  }
+}

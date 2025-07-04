@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registration Test - Manual Browser Check</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .pass { color: green; font-weight: bold; }
+        .fail { color: red; font-weight: bold; }
+        h2 { color: #333; }
+        .instruction {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>📋 BookedBarber Registration Page Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Instructions:</h2>
+        <div class="instruction">
+            <p>1. Open a new browser tab</p>
+            <p>2. Navigate to: <strong>http://localhost:3001/register</strong></p>
+            <p>3. Follow the test steps below and check each item</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>1. Password Requirements Display</h2>
+        <p>Check that the password requirements section shows:</p>
+        <ul>
+            <li>☐ At least 8 characters (NOT 12)</li>
+            <li>☐ One uppercase letter</li>
+            <li>☐ One lowercase letter</li>
+            <li>☐ One number</li>
+            <li>☐ One special character (!@#$%^&*)</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Real-time Validation Test</h2>
+        <p>Type these passwords in the password field and verify the indicators:</p>
+        
+        <h3>Test 1: Type "pass"</h3>
+        <ul>
+            <li>☐ Length indicator: ❌ (red)</li>
+            <li>☐ Uppercase indicator: ❌ (red)</li>
+            <li>☐ Lowercase indicator: ✅ (green)</li>
+            <li>☐ Number indicator: ❌ (red)</li>
+            <li>☐ Special char indicator: ❌ (red)</li>
+        </ul>
+
+        <h3>Test 2: Type "Pass"</h3>
+        <ul>
+            <li>☐ Length indicator: ❌ (red)</li>
+            <li>☐ Uppercase indicator: ✅ (green)</li>
+            <li>☐ Lowercase indicator: ✅ (green)</li>
+            <li>☐ Number indicator: ❌ (red)</li>
+            <li>☐ Special char indicator: ❌ (red)</li>
+        </ul>
+
+        <h3>Test 3: Type "Pass1"</h3>
+        <ul>
+            <li>☐ Length indicator: ❌ (red)</li>
+            <li>☐ Uppercase indicator: ✅ (green)</li>
+            <li>☐ Lowercase indicator: ✅ (green)</li>
+            <li>☐ Number indicator: ✅ (green)</li>
+            <li>☐ Special char indicator: ❌ (red)</li>
+        </ul>
+
+        <h3>Test 4: Type "Pass123!"</h3>
+        <ul>
+            <li>☐ Length indicator: ✅ (green) - 8 characters</li>
+            <li>☐ Uppercase indicator: ✅ (green)</li>
+            <li>☐ Lowercase indicator: ✅ (green)</li>
+            <li>☐ Number indicator: ✅ (green)</li>
+            <li>☐ Special char indicator: ✅ (green)</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Form Submission Test</h2>
+        <p>Fill out the form with these values:</p>
+        <ul>
+            <li>Name: <code>Test User</code></li>
+            <li>Email: <code>test.[timestamp]@example.com</code> (use current timestamp)</li>
+            <li>User Type: <code>Client</code> (select radio button)</li>
+            <li>Password: <code>Pass123!</code></li>
+            <li>Confirm Password: <code>Pass123!</code></li>
+            <li>☐ Check both consent boxes</li>
+        </ul>
+        
+        <p><strong>Submit the form and verify:</strong></p>
+        <ul>
+            <li>☐ No validation errors appear</li>
+            <li>☐ Successfully redirected to /check-email page</li>
+            <li>☐ No console errors (open Developer Tools)</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Results Summary:</h2>
+        <p>All tests passed? <span class="pass">YES</span> / <span class="fail">NO</span></p>
+        <p>Issues found:</p>
+        <textarea rows="5" style="width: 100%;" placeholder="List any issues here..."></textarea>
+    </div>
+
+    <button onclick="window.open('http://localhost:3001/register', '_blank')">Open Registration Page</button>
+    <button onclick="window.print()">Print Test Results</button>
+</body>
+</html>

@@ -63,13 +63,17 @@ def create_payment_intent(
                 detail="Booking is not in pending status"
             )
         
+        # Get idempotency key from request header
+        idempotency_key = request.headers.get("Idempotency-Key")
+        
         # Create payment intent
         result = PaymentService.create_payment_intent(
             amount=appointment.price,
             booking_id=payment_data.booking_id,
             db=db,
             gift_certificate_code=payment_data.gift_certificate_code,
-            user_id=current_user.id
+            user_id=current_user.id,
+            idempotency_key=idempotency_key
         )
         
         # Log payment API operation
@@ -132,11 +136,15 @@ def confirm_payment(
                 detail="Booking not found"
             )
         
+        # Get idempotency key from request header
+        idempotency_key = request.headers.get("Idempotency-Key")
+        
         # Confirm the payment
         result = PaymentService.confirm_payment(
             payment_intent_id=payment_data.payment_intent_id,
             booking_id=payment_data.booking_id,
-            db=db
+            db=db,
+            idempotency_key=idempotency_key
         )
         
         # Log payment confirmation
@@ -195,12 +203,16 @@ def create_refund(
         )
     
     try:
+        # Get idempotency key from request header
+        idempotency_key = request.headers.get("Idempotency-Key")
+        
         result = PaymentService.process_refund(
             payment_id=refund_data.payment_id,
             amount=refund_data.amount,
             reason=refund_data.reason,
             initiated_by_id=current_user.id,
-            db=db
+            db=db,
+            idempotency_key=idempotency_key
         )
         
         # Log refund API operation

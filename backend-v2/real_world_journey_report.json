@@ -1,0 +1,50 @@
+{
+  "timestamp": "2025-07-04T08:38:18.999447",
+  "test_results": [
+    {
+      "journey": "new_customer_booking",
+      "success_rate": 25.0,
+      "duration": 0.5899598598480225,
+      "details": {
+        "browse_services": false,
+        "check_availability": false,
+        "account_creation": true,
+        "login": false
+      }
+    },
+    {
+      "journey": "barbershop_owner_setup",
+      "success_rate": 50.0,
+      "duration": 0.37845706939697266,
+      "details": {
+        "owner_registration": true,
+        "owner_login": false
+      }
+    },
+    {
+      "journey": "payment_notification_flow",
+      "success_rate": 0,
+      "duration": 0.37369275093078613,
+      "details": {}
+    },
+    {
+      "journey": "performance_load_test",
+      "details": {
+        "concurrent_browsing": {
+          "success_rate": 0.0,
+          "avg_response_ms": 28.571043014526367
+        }
+      }
+    }
+  ],
+  "avg_success_rate": 25.0,
+  "readiness_score": 60.0,
+  "integrations": {
+    "Stripe Payments": false,
+    "Google Calendar": false,
+    "SendGrid Email": true,
+    "Twilio SMS": true,
+    "Google My Business": false
+  },
+  "recommendations": []
+}

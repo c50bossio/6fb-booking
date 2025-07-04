@@ -8,8 +8,8 @@ import {
   BuildingStorefrontIcon,
   UserGroupIcon,
   ChartBarIcon,
-  TrendingUpIcon,
-  TrendingDownIcon
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon
 } from '@heroicons/react/24/outline'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -152,7 +152,7 @@ export function EnterpriseAnalyticsView({ data, loading = false }: EnterpriseAna
                             : 'text-red-600 dark:text-red-400'
                         }`}
                       >
-                        {location.growth > 0 ? <TrendingUpIcon className="w-4 h-4 mr-1" /> : <TrendingDownIcon className="w-4 h-4 mr-1" />}
+                        {location.growth > 0 ? <ArrowTrendingUpIcon className="w-4 h-4 mr-1" /> : <ArrowTrendingDownIcon className="w-4 h-4 mr-1" />}
                         {Math.abs(location.growth)}%
                       </span>
                     </td>

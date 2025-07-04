@@ -12,7 +12,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { jest } from '@jest/globals';
-import { PaymentForm } from '@/components/PaymentForm';
+import PaymentForm from '@/components/PaymentForm';
 import * as stripeReact from '@stripe/react-stripe-js';
 import * as api from '@/lib/api';
 

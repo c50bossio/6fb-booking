@@ -5,8 +5,8 @@ import { AnalyticsCardGrid } from '@/components/analytics/shared/AnalyticsCard'
 import { 
   StarIcon,
   ChatBubbleLeftEllipsisIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
   CheckCircleIcon,
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline'
@@ -215,7 +215,7 @@ export default function ReviewsAnalyticsSection({ userRole, dateRange }: Reviews
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <TrendingUpIcon className="w-5 h-5 text-green-600" />
+              <ArrowTrendingUpIcon className="w-5 h-5 text-green-600" />
               <span>Top Positive Keywords</span>
             </CardTitle>
           </CardHeader>
@@ -245,7 +245,7 @@ export default function ReviewsAnalyticsSection({ userRole, dateRange }: Reviews
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <TrendingDownIcon className="w-5 h-5 text-red-600" />
+              <ArrowTrendingDownIcon className="w-5 h-5 text-red-600" />
               <span>Areas for Improvement</span>
             </CardTitle>
           </CardHeader>

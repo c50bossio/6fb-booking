@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Form Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Registration Form Test</h2>
+        <p>This page tests the registration functionality directly.</p>
+        
+        <form id="registrationForm">
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="userType">User Type:</label>
+                <select id="userType" name="userType" required>
+                    <option value="client">Client</option>
+                    <option value="barber">Barber</option>
+                    <option value="barbershop">Barbershop Owner</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password:</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required>
+            </div>
+            
+            <button type="submit">Register</button>
+        </form>
+        
+        <div id="result" class="result"></div>
+        <div id="log" class="log" style="display: none;"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('registrationForm');
+        const result = document.getElementById('result');
+        const log = document.getElementById('log');
+        
+        function addLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            log.innerHTML += `[${timestamp}] ${message}<br>`;
+            log.scrollTop = log.scrollHeight;
+            log.style.display = 'block';
+        }
+        
+        function showResult(message, isSuccess = false) {
+            result.textContent = message;
+            result.className = `result ${isSuccess ? 'success' : 'error'}`;
+            result.style.display = 'block';
+        }
+        
+        // Pre-fill with test data
+        document.getElementById('name').value = 'Test User';
+        document.getElementById('email').value = 'testuser' + Date.now() + '@example.com';
+        document.getElementById('password').value = 'TestPassword123!';
+        document.getElementById('confirmPassword').value = 'TestPassword123!';
+        
+        addLog('Page loaded. Form pre-filled with test data.');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            addLog('Form submitted. Starting registration process...');
+            
+            const formData = new FormData(form);
+            const data = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                password: formData.get('password'),
+                user_type: formData.get('userType'),
+                create_test_data: false
+            };
+            
+            addLog(`Sending registration data: ${JSON.stringify(data, null, 2)}`);
+            
+            // Password validation
+            if (data.password !== formData.get('confirmPassword')) {
+                addLog('Password validation failed: passwords do not match');
+                showResult('Passwords do not match');
+                return;
+            }
+            
+            try {
+                addLog('Making API request to http://localhost:8000/api/v1/auth/register');
+                
+                const response = await fetch('http://localhost:8000/api/v1/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                addLog(`API Response status: ${response.status}`);
+                
+                const responseData = await response.json();
+                addLog(`API Response body: ${JSON.stringify(responseData, null, 2)}`);
+                
+                if (response.ok) {
+                    showResult('Registration successful! Check your email for verification.', true);
+                    addLog('Registration completed successfully');
+                } else {
+                    showResult(`Registration failed: ${responseData.detail || 'Unknown error'}`);
+                    addLog(`Registration failed with status ${response.status}`);
+                }
+                
+            } catch (error) {
+                addLog(`Network error: ${error.message}`);
+                showResult(`Network error: ${error.message}. Make sure the backend is running on port 8000.`);
+            }
+        });
+        
+        // Test connection on page load
+        fetch('http://localhost:8000/')
+            .then(response => response.json())
+            .then(data => {
+                addLog(`Backend connection test successful: ${JSON.stringify(data)}`);
+            })
+            .catch(error => {
+                addLog(`Backend connection test failed: ${error.message}`);
+            });
+    </script>
+</body>
+</html>

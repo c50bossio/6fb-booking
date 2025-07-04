@@ -141,6 +141,8 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
         if (refreshResponse.ok) {
           const data = await refreshResponse.json()
           localStorage.setItem('token', data.access_token)
+          // Also update the cookie
+          document.cookie = `token=${data.access_token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
           if (data.refresh_token) {
             localStorage.setItem('refresh_token', data.refresh_token)
           }
@@ -152,6 +154,8 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
       // If refresh fails, redirect to login
       localStorage.removeItem('token')
       localStorage.removeItem('refresh_token')
+      // Remove the cookie
+      document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
       if (typeof window !== 'undefined') {
         window.location.href = '/login'
       }
@@ -251,6 +255,9 @@ export async function login(email: string, password: string) {
   // Store tokens
   if (response.access_token) {
     localStorage.setItem('token', response.access_token)
+    // Also set as httpOnly:false cookie so middleware can detect auth
+    // Note: httpOnly:false is needed because we're setting from client-side
+    document.cookie = `token=${response.access_token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
   }
   if (response.refresh_token) {
     localStorage.setItem('refresh_token', response.refresh_token)
@@ -262,6 +269,8 @@ export async function login(email: string, password: string) {
 export async function logout() {
   localStorage.removeItem('token')
   localStorage.removeItem('refresh_token')
+  // Remove the cookie by setting it with an expired date
+  document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
 }
 
 export async function register(email: string, password: string, name: string, createTestData: boolean = false, userType: string = 'client') {
@@ -327,6 +336,8 @@ export async function refreshToken() {
   // Update tokens
   if (response.access_token) {
     localStorage.setItem('token', response.access_token)
+    // Also update the cookie
+    document.cookie = `token=${response.access_token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
   }
   if (response.refresh_token) {
     localStorage.setItem('refresh_token', response.refresh_token)

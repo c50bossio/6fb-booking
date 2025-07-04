@@ -36,40 +36,66 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
         
-        # Security Headers (OWASP recommended)
+        # Enhanced Security Headers (OWASP + Production hardening)
         security_headers = {
             # XSS Protection
             "X-XSS-Protection": "1; mode=block",
             "X-Content-Type-Options": "nosniff",
             "X-Frame-Options": "DENY",
             
-            # Content Security Policy
+            # Enhanced Content Security Policy
             "Content-Security-Policy": (
                 "default-src 'self'; "
-                "script-src 'self' 'unsafe-inline' https://js.stripe.com; "
-                "style-src 'self' 'unsafe-inline'; "
-                "img-src 'self' data: https:; "
-                "font-src 'self' https:; "
-                "connect-src 'self' https://api.stripe.com; "
-                "frame-src https://js.stripe.com; "
-                "object-src 'none';"
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.google-analytics.com https://www.googletagmanager.com; "
+                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+                "img-src 'self' data: https: blob:; "
+                "font-src 'self' https://fonts.gstatic.com; "
+                "connect-src 'self' https://api.stripe.com https://www.google-analytics.com https://analytics.google.com; "
+                "frame-src 'self' https://js.stripe.com; "
+                "media-src 'self' data: blob:; "
+                "object-src 'none'; "
+                "base-uri 'self'; "
+                "form-action 'self'; "
+                "frame-ancestors 'none'; "
+                "block-all-mixed-content; "
+                "upgrade-insecure-requests;"
             ),
             
-            # HSTS (HTTP Strict Transport Security)
-            "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
+            # HSTS (HTTP Strict Transport Security) - Enhanced for production
+            "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
             
-            # Referrer Policy
+            # Referrer Policy - More restrictive
             "Referrer-Policy": "strict-origin-when-cross-origin",
             
-            # Feature Policy
+            # Enhanced Permissions Policy (Feature Policy replacement)
             "Permissions-Policy": (
-                "geolocation=(), "
-                "microphone=(), "
+                "accelerometer=(), "
+                "ambient-light-sensor=(), "
+                "autoplay=(), "
+                "battery=(), "
                 "camera=(), "
-                "payment=(self), "
-                "usb=(), "
+                "cross-origin-isolated=(), "
+                "display-capture=(), "
+                "document-domain=(), "
+                "encrypted-media=(), "
+                "execution-while-not-rendered=(), "
+                "execution-while-out-of-viewport=(), "
+                "fullscreen=(), "
+                "geolocation=(), "
+                "gyroscope=(), "
+                "keyboard-map=(), "
                 "magnetometer=(), "
-                "gyroscope=()"
+                "microphone=(), "
+                "midi=(), "
+                "navigation-override=(), "
+                "payment=(self), "
+                "picture-in-picture=(), "
+                "publickey-credentials-get=(), "
+                "screen-wake-lock=(), "
+                "sync-xhr=(), "
+                "usb=(), "
+                "web-share=(), "
+                "xr-spatial-tracking=()"
             ),
             
             # Additional security headers
@@ -77,7 +103,19 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "X-Permitted-Cross-Domain-Policies": "none",
             "Cross-Origin-Embedder-Policy": "require-corp",
             "Cross-Origin-Opener-Policy": "same-origin",
-            "Cross-Origin-Resource-Policy": "same-origin"
+            "Cross-Origin-Resource-Policy": "same-origin",
+            
+            # Additional hardening headers
+            "X-DNS-Prefetch-Control": "off",
+            "X-Download-Options": "noopen",
+            "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0",
+            
+            # Custom security headers for BookedBarber
+            "X-Security-Policy": "BookedBarber-Security-v2.0",
+            "X-MFA-Enforcement": "enabled",
+            "X-API-Version": "v2.0"
         }
         
         # Apply security headers

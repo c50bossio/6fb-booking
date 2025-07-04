@@ -1,0 +1,7 @@
+{
+  "email": "uniqueuser123@example.com",
+  "name": "Test User",
+  "password": "TestPassword123!",
+  "user_type": "client",
+  "create_test_data": false
+}

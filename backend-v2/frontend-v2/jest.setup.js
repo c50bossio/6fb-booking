@@ -24,17 +24,29 @@ jest.mock('next/router', () => require('next-router-mock'))
 // Mock Next.js navigation
 jest.mock('next/navigation', () => require('next-router-mock'))
 
-// Global mocks removed to avoid module resolution issues
-// Individual tests should handle their own mocking as needed
+// Global mocks for common modules
+jest.mock('next/image', () => ({
+  __esModule: true,
+  default: (props) => {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img {...props} alt={props.alt} />
+  },
+}))
 
-// Mock ResizeObserver
+jest.mock('next/link', () => ({
+  __esModule: true,
+  default: ({ children, ...props }) => {
+    return <a {...props}>{children}</a>
+  },
+}))
+
+// Mock Web APIs not available in Jest environment
 global.ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
   disconnect: jest.fn(),
 }))
 
-// Mock IntersectionObserver
 global.IntersectionObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
@@ -55,6 +67,7 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: jest.fn(),
   })),
 })
+
 
 // Mock localStorage
 const localStorageMock = {
@@ -122,4 +135,12 @@ afterEach(() => {
   jest.clearAllMocks()
   localStorage.clear()
   sessionStorage.clear()
+  // Clear any timers
+  jest.clearAllTimers()
+})
+
+// Increase test stability
+beforeEach(() => {
+  // Reset any global state
+  jest.clearAllMocks()
 })

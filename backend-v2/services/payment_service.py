@@ -9,6 +9,7 @@ import secrets
 import string
 from services.payment_security import PaymentSecurity, audit_logger
 from utils.logging_config import get_audit_logger
+from utils.security_logging import get_security_logger, SecurityEventType
 
 # Configure Stripe
 stripe.api_key = settings.stripe_secret_key
@@ -23,13 +24,90 @@ class PaymentService:
         booking_id: int, 
         db: Session, 
         gift_certificate_code: Optional[str] = None,
-        user_id: Optional[int] = None
+        user_id: Optional[int] = None,
+        idempotency_key: Optional[str] = None
     ):
         """Create a Stripe payment intent for a booking with optional gift certificate"""
         try:
-            # Validate payment amount
-            if not PaymentSecurity.validate_payment_amount(amount):
-                raise ValueError("Invalid payment amount")
+            # Idempotency check - prevent duplicate payment intents
+            if idempotency_key:
+                from utils.idempotency import IdempotencyManager, IdempotencyKeyGenerator
+                manager = IdempotencyManager(db)
+                
+                # Check for existing result
+                existing_result = manager.get_result(idempotency_key)
+                if existing_result.is_duplicate:
+                    logger.info(f"Returning cached payment intent for idempotency key: {idempotency_key}")
+                    return existing_result.response_data
+                
+                # Validate idempotency key format
+                if not IdempotencyKeyGenerator.validate_key(idempotency_key):
+                    raise ValueError("Invalid idempotency key format")
+            
+            # Enhanced payment amount validation with risk assessment
+            amount_validation = PaymentSecurity.validate_payment_amount(amount, user_id, db)
+            if not amount_validation["valid"]:
+                risk_factors = ", ".join(amount_validation["risk_factors"])
+                warnings = "; ".join(amount_validation["warnings"])
+                raise ValueError(f"Payment amount validation failed: {warnings} (Risk factors: {risk_factors})")
+            
+            # Log high-risk transactions
+            if amount_validation["risk_level"] in ["medium", "high"]:
+                logger.warning(
+                    f"High-risk payment intent - User: {user_id}, Amount: ${amount}, "
+                    f"Risk Level: {amount_validation['risk_level']}, "
+                    f"Factors: {amount_validation['risk_factors']}"
+                )
+                
+                # Additional audit logging for high-risk transactions
+                audit_logger.log_security_violation(
+                    user_id, "high_risk_payment",
+                    f"Payment amount ${amount} has risk level {amount_validation['risk_level']}: {amount_validation['warnings']}"
+                )
+            
+            # Check for suspicious payment activity patterns
+            if user_id:
+                suspicious_activity = PaymentSecurity.detect_suspicious_payment_activity(user_id, db)
+                if suspicious_activity["is_suspicious"]:
+                    logger.warning(
+                        f"Suspicious payment activity detected - User: {user_id}, "
+                        f"Suspicion Score: {suspicious_activity['suspicion_score']}, "
+                        f"Patterns: {suspicious_activity['patterns']}, "
+                        f"Recommendation: {suspicious_activity['recommendation']}"
+                    )
+                    
+                    # Block high-risk users
+                    if suspicious_activity["recommendation"] == "block":
+                        # Enhanced security logging
+                        security_logger = get_security_logger(db)
+                        security_logger.log_payment_security_event(
+                            event_type=SecurityEventType.PAYMENT_BLOCKED,
+                            user_id=user_id,
+                            amount=amount,
+                            risk_factors=suspicious_activity['patterns'],
+                            details={
+                                "suspicion_score": suspicious_activity['suspicion_score'],
+                                "booking_id": booking_id,
+                                "recommendation": suspicious_activity['recommendation']
+                            }
+                        )
+                        
+                        # Legacy audit logging for compatibility
+                        audit_logger.log_security_violation(
+                            user_id, "payment_blocked_suspicious_activity",
+                            f"Payment blocked due to suspicious activity: {suspicious_activity['patterns']}"
+                        )
+                        raise ValueError(
+                            "Payment blocked due to suspicious activity. Please contact support."
+                        )
+                    
+                    # Log for review/monitoring
+                    elif suspicious_activity["recommendation"] in ["review", "monitor"]:
+                        audit_logger.log_security_violation(
+                            user_id, "suspicious_payment_pattern",
+                            f"Suspicious payment patterns detected: {suspicious_activity['patterns']} "
+                            f"(Score: {suspicious_activity['suspicion_score']})"
+                        )
             
             # Get the appointment
             appointment = db.query(Appointment).filter(Appointment.id == booking_id).first()
@@ -170,7 +248,7 @@ class PaymentService:
                     payment.id, gift_certificate_code, gift_cert_amount_used
                 )
             
-            return {
+            result = {
                 "client_secret": client_secret,
                 "payment_intent_id": stripe_intent_id,
                 "amount": final_amount,
@@ -179,18 +257,107 @@ class PaymentService:
                 "payment_id": payment.id
             }
             
+            # Store result in idempotency system if key provided
+            if idempotency_key:
+                from utils.idempotency import IdempotencyKeyGenerator
+                request_data = {
+                    "amount": amount,
+                    "booking_id": booking_id,
+                    "gift_certificate_code": gift_certificate_code,
+                    "user_id": user_id
+                }
+                request_hash = IdempotencyKeyGenerator.generate_content_hash(request_data)
+                
+                manager.store_result(
+                    idempotency_key=idempotency_key,
+                    operation_type="payment_intent",
+                    user_id=user_id,
+                    request_hash=request_hash,
+                    response_data=result,
+                    ttl_hours=24
+                )
+                logger.info(f"Stored payment intent result for idempotency key: {idempotency_key}")
+            
+            return result
+            
         except stripe.error.StripeError as e:
             logger.error(f"Stripe error creating payment intent: {str(e)}")
+            
+            # Enhanced error logging with security context
+            security_logger = get_security_logger(db)
+            security_logger.log_payment_security_event(
+                event_type=SecurityEventType.PAYMENT_HIGH_RISK,
+                user_id=user_id or 0,
+                amount=amount,
+                details={
+                    "error_type": "stripe_error",
+                    "error_code": getattr(e, 'code', 'unknown'),
+                    "error_message": str(e),
+                    "booking_id": booking_id,
+                    "idempotency_key": idempotency_key
+                }
+            )
+            
+            db.rollback()
             raise Exception(f"Payment processing error: {str(e)}")
+        except ValueError as e:
+            # Value errors are validation failures, log as security events
+            logger.warning(f"Payment validation error: {str(e)}")
+            
+            security_logger = get_security_logger(db)
+            security_logger.log_payment_security_event(
+                event_type=SecurityEventType.PAYMENT_HIGH_RISK,
+                user_id=user_id or 0,
+                amount=amount,
+                details={
+                    "error_type": "validation_error",
+                    "error_message": str(e),
+                    "booking_id": booking_id,
+                    "idempotency_key": idempotency_key
+                }
+            )
+            
+            db.rollback()
+            raise
         except Exception as e:
-            logger.error(f"Error creating payment intent: {str(e)}")
+            logger.error(f"Unexpected error creating payment intent: {str(e)}")
+            
+            # Log unexpected errors as potential security issues
+            security_logger = get_security_logger(db)
+            security_logger.log_payment_security_event(
+                event_type=SecurityEventType.PAYMENT_HIGH_RISK,
+                user_id=user_id or 0,
+                amount=amount,
+                details={
+                    "error_type": "unexpected_error",
+                    "error_message": str(e),
+                    "booking_id": booking_id,
+                    "idempotency_key": idempotency_key
+                }
+            )
+            
             db.rollback()
             raise
     
     @staticmethod
-    def confirm_payment(payment_intent_id: Optional[str], booking_id: int, db: Session):
+    def confirm_payment(payment_intent_id: Optional[str], booking_id: int, db: Session, idempotency_key: Optional[str] = None):
         """Confirm payment and update booking status"""
         try:
+            # Idempotency check - prevent duplicate payment confirmations
+            if idempotency_key:
+                from utils.idempotency import IdempotencyManager, IdempotencyKeyGenerator
+                manager = IdempotencyManager(db)
+                
+                # Check for existing result
+                existing_result = manager.get_result(idempotency_key)
+                if existing_result.is_duplicate:
+                    logger.info(f"Returning cached payment confirmation for idempotency key: {idempotency_key}")
+                    return existing_result.response_data
+                
+                # Validate idempotency key format
+                if not IdempotencyKeyGenerator.validate_key(idempotency_key):
+                    raise ValueError("Invalid idempotency key format")
+            
             # Get payment record
             payment = db.query(Payment).filter(
                 Payment.appointment_id == booking_id
@@ -236,13 +403,34 @@ class PaymentService:
             
             db.commit()
             
-            return {
+            result = {
                 "success": True,
                 "appointment_id": appointment.id,
                 "payment_id": payment.id,
                 "amount_charged": payment.amount - payment.gift_certificate_amount_used,
                 "gift_certificate_used": payment.gift_certificate_amount_used
             }
+            
+            # Store result in idempotency system if key provided
+            if idempotency_key:
+                from utils.idempotency import IdempotencyKeyGenerator
+                request_data = {
+                    "payment_intent_id": payment_intent_id,
+                    "booking_id": booking_id
+                }
+                request_hash = IdempotencyKeyGenerator.generate_content_hash(request_data)
+                
+                manager.store_result(
+                    idempotency_key=idempotency_key,
+                    operation_type="payment_confirm",
+                    user_id=payment.user_id,
+                    request_hash=request_hash,
+                    response_data=result,
+                    ttl_hours=24
+                )
+                logger.info(f"Stored payment confirmation result for idempotency key: {idempotency_key}")
+            
+            return result
             
         except stripe.error.StripeError as e:
             logger.error(f"Stripe error confirming payment: {str(e)}")
@@ -258,13 +446,40 @@ class PaymentService:
         amount: float, 
         reason: str, 
         initiated_by_id: int, 
-        db: Session
+        db: Session,
+        idempotency_key: Optional[str] = None
     ):
         """Process a refund for a payment"""
         try:
-            # Validate refund amount
-            if not PaymentSecurity.validate_payment_amount(amount):
-                raise ValueError("Invalid refund amount")
+            # Idempotency check - prevent duplicate refund processing
+            if idempotency_key:
+                from utils.idempotency import IdempotencyManager, IdempotencyKeyGenerator
+                manager = IdempotencyManager(db)
+                
+                # Check for existing result
+                existing_result = manager.get_result(idempotency_key)
+                if existing_result.is_duplicate:
+                    logger.info(f"Returning cached refund result for idempotency key: {idempotency_key}")
+                    return existing_result.response_data
+                
+                # Validate idempotency key format
+                if not IdempotencyKeyGenerator.validate_key(idempotency_key):
+                    raise ValueError("Invalid idempotency key format")
+            
+            # Enhanced refund amount validation
+            amount_validation = PaymentSecurity.validate_payment_amount(amount, initiated_by_id, db)
+            if not amount_validation["valid"]:
+                risk_factors = ", ".join(amount_validation["risk_factors"])
+                warnings = "; ".join(amount_validation["warnings"])
+                raise ValueError(f"Refund amount validation failed: {warnings} (Risk factors: {risk_factors})")
+            
+            # Log high-risk refunds
+            if amount_validation["risk_level"] in ["medium", "high"]:
+                logger.warning(
+                    f"High-risk refund - Initiated by: {initiated_by_id}, Amount: ${amount}, "
+                    f"Risk Level: {amount_validation['risk_level']}, "
+                    f"Factors: {amount_validation['risk_factors']}"
+                )
             
             # Get the payment record
             payment = db.query(Payment).filter(Payment.id == payment_id).first()
@@ -349,12 +564,35 @@ class PaymentService:
                 initiated_by_id, payment_id, amount, reason
             )
             
-            return {
+            result = {
                 "refund_id": refund.id,
                 "amount": amount,
                 "status": "completed",
                 "stripe_refund_id": stripe_refund_id
             }
+            
+            # Store result in idempotency system if key provided
+            if idempotency_key:
+                from utils.idempotency import IdempotencyKeyGenerator
+                request_data = {
+                    "payment_id": payment_id,
+                    "amount": amount,
+                    "reason": reason,
+                    "initiated_by_id": initiated_by_id
+                }
+                request_hash = IdempotencyKeyGenerator.generate_content_hash(request_data)
+                
+                manager.store_result(
+                    idempotency_key=idempotency_key,
+                    operation_type="payment_refund",
+                    user_id=initiated_by_id,
+                    request_hash=request_hash,
+                    response_data=result,
+                    ttl_hours=48  # Longer TTL for refunds
+                )
+                logger.info(f"Stored refund result for idempotency key: {idempotency_key}")
+            
+            return result
             
         except stripe.error.StripeError as e:
             logger.error(f"Stripe error processing refund: {str(e)}")

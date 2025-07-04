@@ -1,0 +1,77 @@
+{
+  "timestamp": "2025-07-04T08:36:00.549017",
+  "summary": {
+    "total_tests": 19,
+    "passed": 7,
+    "failed": 12,
+    "success_rate": "36.8%",
+    "avg_response_time": "572ms"
+  },
+  "detailed_results": {
+    "authentication": {
+      "registration": false,
+      "login": false,
+      "token_refresh": false,
+      "profile_access": false,
+      "logout": false
+    },
+    "integrations": {
+      "google_oauth": false,
+      "calendar_endpoints": false,
+      "gmb_endpoints": false,
+      "notification_endpoints": false,
+      "analytics_tracking": false
+    },
+    "performance": {
+      "Root Endpoint": {
+        "avg_ms": "1",
+        "min_ms": "1",
+        "max_ms": "1",
+        "meets_sla": true
+      },
+      "Services List": {
+        "avg_ms": "2",
+        "min_ms": "2",
+        "max_ms": "2",
+        "meets_sla": true
+      },
+      "Business List": {
+        "avg_ms": "1",
+        "min_ms": "1",
+        "max_ms": "2",
+        "meets_sla": true
+      },
+      "API Documentation": {
+        "avg_ms": "1",
+        "min_ms": "1",
+        "max_ms": "1",
+        "meets_sla": true
+      }
+    },
+    "error_handling": {
+      "invalid_auth": true,
+      "rate_limiting": false,
+      "validation_errors": true,
+      "not_found_errors": true,
+      "server_errors": false
+    }
+  },
+  "performance_metrics": [
+    [
+      "auth/register",
+      0.5724048614501953
+    ]
+  ],
+  "errors": [],
+  "production_readiness": {
+    "score": "20%",
+    "critical_features": {
+      "Authentication": false,
+      "Business Management": false,
+      "Appointment Booking": false,
+      "Payment Processing": false,
+      "Error Handling": true
+    },
+    "recommendation": "Needs improvements"
+  }
+}

@@ -1,222 +1,196 @@
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
-})
-
-const { withSentryConfig } = require('@sentry/nextjs')
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // React strict mode for better error detection
   reactStrictMode: true,
-  output: 'standalone',
-  typescript: {
-    // TypeScript error checking restored - ignoreBuildErrors removed
+
+  // Enable SWC minification for better performance
+  swcMinify: true,
+
+  // Image optimization configuration
+  images: {
+    domains: ['localhost', 'bookedbarber.com', 'api.bookedbarber.com'],
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60,
   },
-  env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
-  },
-  
-  // Enhanced bundle optimization
+
+  // Compression
+  compress: true,
+
+  // Performance optimizations
   experimental: {
+    optimizeCss: true,
     optimizePackageImports: [
       '@heroicons/react',
-      'lucide-react', 
-      'date-fns',
-      '@radix-ui/react-dialog',
-      '@radix-ui/react-dropdown-menu',
-      '@radix-ui/react-toast',
+      'lucide-react',
+      '@radix-ui',
+      'class-variance-authority',
+      'clsx',
+      'tailwind-merge'
     ],
-    // Enable SWC minification for better performance
-    swcMinify: true,
-    // Tree shaking optimizations
-    esmExternals: true,
-    // Modular imports removed - not supported in Next.js 14.2.5
   },
-  
-  // Image optimization
-  images: {
-    domains: [],
-    formats: ['image/webp', 'image/avif'],
-    minimumCacheTTL: 86400, // 24 hours
-  },
-  
-  // Compiler optimizations
-  compiler: {
-    // Remove console.log in production
-    removeConsole: process.env.NODE_ENV === 'production' ? {
-      exclude: ['error', 'warn'],
-    } : false,
-  },
-  
-  // Enhanced Webpack optimizations
-  webpack: (config, { dev, isServer }) => {
-    if (!dev && !isServer) {
-      // Enhanced bundle splitting for better caching
-      config.optimization.splitChunks = {
-        chunks: 'all',
-        maxInitialRequests: 25,
-        maxAsyncRequests: 30,
-        cacheGroups: {
-          default: false,
-          vendors: false,
-          // Framework chunk (React, Next.js core)
-          framework: {
-            chunks: 'all',
-            name: 'framework',
-            test: /(?<!node_modules.*)[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
-            priority: 40,
-            enforce: true,
-          },
-          // UI Libraries chunk
-          ui: {
-            name: 'ui',
-            chunks: 'all',
-            test: /[\\/]node_modules[\\/](@radix-ui|@heroicons|lucide-react|class-variance-authority)[\\/]/,
-            priority: 30,
-          },
-          // Charts and heavy libraries
-          charts: {
-            test: /[\\/]node_modules[\\/](chart\.js|react-chartjs-2)[\\/]/,
-            name: 'charts',
-            priority: 25,
-            chunks: 'all',
-          },
-          // Date utilities
-          dates: {
-            test: /[\\/]node_modules[\\/](date-fns|date-fns-tz)[\\/]/,
-            name: 'dates',
-            priority: 25,
-            chunks: 'all',
-          },
-          // Payment related
-          payments: {
-            test: /[\\/]node_modules[\\/](@stripe)[\\/]/,
-            name: 'payments',
-            priority: 25,
-            chunks: 'all',
-          },
-          // Common vendor libraries
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendor',
-            priority: 10,
-            chunks: 'all',
-            minChunks: 2,
-          },
-          // Common application code
-          common: {
-            minChunks: 2,
-            chunks: 'all',
-            name: 'common',
-            priority: 5,
-            reuseExistingChunk: true,
+
+  // Webpack optimizations
+  webpack: (config, { isServer, dev }) => {
+    // Bundle analyzer in development
+    if (!isServer && !dev) {
+      const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
+      config.plugins.push(
+        new BundleAnalyzerPlugin({
+          analyzerMode: 'static',
+          reportFilename: '../bundle-analyzer.html',
+          openAnalyzer: false,
+        })
+      )
+    }
+
+    // Optimize chunks
+    if (!dev) {
+      config.optimization = {
+        ...config.optimization,
+        moduleIds: 'deterministic',
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            default: false,
+            vendors: false,
+            // Vendor chunk
+            vendor: {
+              name: 'vendor',
+              chunks: 'all',
+              test: /node_modules/,
+              priority: 20,
+            },
+            // Common components chunk
+            common: {
+              name: 'common',
+              minChunks: 2,
+              chunks: 'all',
+              priority: 10,
+              reuseExistingChunk: true,
+              enforce: true,
+            },
+            // UI components chunk
+            ui: {
+              name: 'ui',
+              test: /components\/ui/,
+              chunks: 'all',
+              priority: 30,
+            },
+            // React/Next.js framework chunk
+            framework: {
+              name: 'framework',
+              test: /[\\/]node_modules[\\/](react|react-dom|next)[\\/]/,
+              chunks: 'all',
+              priority: 40,
+              enforce: true,
+            },
           },
         },
       }
-      
-      // Tree shaking optimizations
-      config.optimization.usedExports = true
-      config.optimization.sideEffects = false
     }
-    
-    // Module resolution optimizations
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      '@': require('path').resolve(__dirname),
-    }
-    
+
     return config
   },
-  
-  // Performance optimizations
+
+  // Headers for security and performance
   async headers() {
     return [
       {
-        source: '/_next/static/(.*)',
+        source: '/:path*',
         headers: [
           {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on'
           },
           {
             key: 'X-Frame-Options',
-            value: 'DENY',
+            value: 'SAMEORIGIN'
           },
           {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
+            key: 'X-Content-Type-Options',
+            value: 'nosniff'
           },
-        ],
+          {
+            key: 'Referrer-Policy',
+            value: 'origin-when-cross-origin'
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()'
+          }
+        ]
+      },
+      {
+        source: '/fonts/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ]
+      },
+      {
+        source: '/images/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=604800, stale-while-revalidate=86400'
+          }
+        ]
+      }
+    ]
+  },
+
+  // Redirects
+  async redirects() {
+    return [
+      {
+        source: '/home',
+        destination: '/',
+        permanent: true,
       },
     ]
   },
-  
-  // Removed rewrites to use direct API calls
-}
 
-// Only enable Sentry integration if properly configured
-const shouldEnableSentry = process.env.NEXT_PUBLIC_SENTRY_DSN && 
-                           process.env.NEXT_PUBLIC_SENTRY_DSN !== 'REPLACE_WITH_PRODUCTION_SENTRY_DSN' &&
-                           process.env.SENTRY_ORG && 
-                           process.env.SENTRY_PROJECT
+  // Rewrites for API proxy
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/:path*`,
+      },
+    ]
+  },
 
-let finalConfig = withBundleAnalyzer(nextConfig)
+  // Environment variables
+  env: {
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+  },
 
-if (shouldEnableSentry) {
-  // Sentry configuration options
-  const sentryOptions = {
-    // For all available options, see:
-    // https://github.com/getsentry/sentry-webpack-plugin#options
-
-    // Suppress source map uploading logs during build
-    silent: true,
-    
-    // Organization and project for Sentry
-    org: process.env.SENTRY_ORG,
-    project: process.env.SENTRY_PROJECT,
-    
-    // Authentication token for uploads
-    authToken: process.env.SENTRY_AUTH_TOKEN,
-    
-    // Only upload source maps in production with auth token
-    dryRun: process.env.NODE_ENV !== 'production' || !process.env.SENTRY_AUTH_TOKEN,
-    
-    // Upload source maps for better error tracking
-    widenClientFileUpload: true,
-    
-    // Automatically configure release
-    automaticVerifyWrite: false,
-    
-    // Hide sensitive information from source maps
-    hideSourceMaps: true,
-    
-    // Disable Sentry CLI telemetry
-    telemetry: false,
-    
-    // Transpile the SDK
-    transpileClientSDK: true,
-    
-    // Enable automatic bundle size optimization
-    bundleSizeOptimizations: {
-      excludeDebugStatements: true,
-      excludeReplayIframe: process.env.NEXT_PUBLIC_SENTRY_ENABLE_REPLAY !== 'true',
-      excludeReplayShadowDom: true,
-      excludeReplayWorker: true,
+  // Enable modular imports for specific packages
+  modularizeImports: {
+    '@heroicons/react/24/outline': {
+      transform: '@heroicons/react/24/outline/{{member}}',
     },
-  }
+    '@heroicons/react/24/solid': {
+      transform: '@heroicons/react/24/solid/{{member}}',
+    },
+    'lucide-react': {
+      transform: 'lucide-react/dist/esm/icons/{{member}}',
+    },
+  },
 
-  finalConfig = withSentryConfig(finalConfig, sentryOptions)
-  console.log('Sentry integration enabled with project:', process.env.SENTRY_PROJECT)
-} else {
-  console.log('Sentry integration disabled - missing configuration')
+  // Production optimizations
+  productionBrowserSourceMaps: false,
+  
+  // Disable x-powered-by header
+  poweredByHeader: false,
+
+  // Output configuration
+  output: 'standalone',
 }
 
-module.exports = finalConfig
+module.exports = nextConfig

@@ -12,7 +12,7 @@ export default function RegisterPage() {
     email: '',
     password: '',
     confirmPassword: '',
-    userType: 'client'
+    userType: 'barber'
   })
   const [consent, setConsent] = useState({
     terms: false,
@@ -26,7 +26,8 @@ export default function RegisterPage() {
     hasMinLength: false,
     hasUpperCase: false,
     hasLowerCase: false,
-    hasDigit: false
+    hasDigit: false,
+    hasSpecialChar: false
   })
 
   // Validate password strength
@@ -35,11 +36,12 @@ export default function RegisterPage() {
       hasMinLength: password.length >= 8,
       hasUpperCase: /[A-Z]/.test(password),
       hasLowerCase: /[a-z]/.test(password),
-      hasDigit: /\d/.test(password)
+      hasDigit: /\d/.test(password),
+      hasSpecialChar: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
     })
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
     
@@ -56,7 +58,8 @@ export default function RegisterPage() {
     return passwordStrength.hasMinLength &&
            passwordStrength.hasUpperCase &&
            passwordStrength.hasLowerCase &&
-           passwordStrength.hasDigit
+           passwordStrength.hasDigit &&
+           passwordStrength.hasSpecialChar
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -125,10 +128,13 @@ export default function RegisterPage() {
                 name="name"
                 type="text"
                 required
+                aria-required="true"
+                aria-describedby="name-help"
                 value={formData.name}
                 onChange={handleInputChange}
-                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
+              <div id="name-help" className="sr-only">Enter your full name</div>
             </div>
 
             <div>
@@ -140,10 +146,13 @@ export default function RegisterPage() {
                 name="email"
                 type="email"
                 required
+                aria-required="true"
+                aria-describedby="email-help"
                 value={formData.email}
                 onChange={handleInputChange}
-                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
+              <div id="email-help" className="sr-only">Enter a valid email address for account verification</div>
             </div>
 
             <div>
@@ -153,16 +162,18 @@ export default function RegisterPage() {
               <select
                 id="userType"
                 name="userType"
+                required
+                aria-required="true"
+                aria-describedby="userType-help"
                 value={formData.userType}
                 onChange={handleInputChange}
-                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="client">Client (I book appointments)</option>
                 <option value="barber">Barber (I provide services)</option>
                 <option value="barbershop">Barbershop Owner (I run a business)</option>
               </select>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                This helps us customize your 14-day free trial with relevant features and test data.
+              <p id="userType-help" className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Registration is for service providers only. Clients can book appointments through your barbershop's booking page.
               </p>
             </div>
 
@@ -175,13 +186,15 @@ export default function RegisterPage() {
                 name="password"
                 type="password"
                 required
+                aria-required="true"
+                aria-describedby="password-requirements"
                 value={formData.password}
                 onChange={handleInputChange}
-                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
               
               {/* Password Requirements */}
-              <div className="mt-2 space-y-1">
+              <div id="password-requirements" className="mt-2 space-y-1">
                 <p className="text-xs text-gray-600 dark:text-gray-400">Password must contain:</p>
                 <div className="space-y-1">
                   <div className={`text-xs flex items-center ${passwordStrength.hasMinLength ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'}`}>
@@ -200,6 +213,10 @@ export default function RegisterPage() {
                     <span className="mr-2">{passwordStrength.hasDigit ? '✓' : '○'}</span>
                     One number
                   </div>
+                  <div className={`text-xs flex items-center ${passwordStrength.hasSpecialChar ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'}`}>
+                    <span className="mr-2">{passwordStrength.hasSpecialChar ? '✓' : '○'}</span>
+                    One special character (!@#$%^&*)
+                  </div>
                 </div>
               </div>
             </div>
@@ -213,10 +230,13 @@ export default function RegisterPage() {
                 name="confirmPassword"
                 type="password"
                 required
+                aria-required="true"
+                aria-describedby="confirmPassword-help"
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
-                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
+              <div id="confirmPassword-help" className="sr-only">Re-enter your password to confirm</div>
               {formData.confirmPassword && formData.password !== formData.confirmPassword && (
                 <p className="mt-1 text-xs text-red-600 dark:text-red-400">Passwords do not match</p>
               )}
@@ -235,7 +255,7 @@ export default function RegisterPage() {
                   type="checkbox"
                   checked={consent.terms}
                   onChange={() => handleConsentChange('terms')}
-                  className="mt-0.5 h-4 w-4 text-primary-500 border-gray-300 rounded focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-primary-400"
+                  className="mt-0.5 h-4 w-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-blue-400"
                   required
                 />
                 <label htmlFor="terms-consent" className="ml-3 text-sm text-gray-700 dark:text-gray-300">
@@ -244,7 +264,7 @@ export default function RegisterPage() {
                     href="/terms" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-primary-600 hover:text-primary-500 underline"
+                    className="text-blue-600 hover:text-blue-500 underline"
                   >
                     Terms of Service
                   </a>
@@ -258,7 +278,7 @@ export default function RegisterPage() {
                   type="checkbox"
                   checked={consent.privacy}
                   onChange={() => handleConsentChange('privacy')}
-                  className="mt-0.5 h-4 w-4 text-primary-500 border-gray-300 rounded focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-primary-400"
+                  className="mt-0.5 h-4 w-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-blue-400"
                   required
                 />
                 <label htmlFor="privacy-consent" className="ml-3 text-sm text-gray-700 dark:text-gray-300">
@@ -267,7 +287,7 @@ export default function RegisterPage() {
                     href="/privacy" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-primary-600 hover:text-primary-500 underline"
+                    className="text-blue-600 hover:text-blue-500 underline"
                   >
                     Privacy Policy
                   </a>
@@ -282,7 +302,7 @@ export default function RegisterPage() {
                   type="checkbox"
                   checked={consent.marketing}
                   onChange={() => handleConsentChange('marketing')}
-                  className="mt-0.5 h-4 w-4 text-primary-500 border-gray-300 rounded focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-primary-400"
+                  className="mt-0.5 h-4 w-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-blue-400"
                 />
                 <label htmlFor="marketing-consent" className="ml-3 text-sm text-gray-700 dark:text-gray-300">
                   I would like to receive promotional emails and updates about new features (optional)
@@ -296,7 +316,7 @@ export default function RegisterPage() {
                   type="checkbox"
                   checked={consent.testData}
                   onChange={() => handleConsentChange('testData')}
-                  className="mt-0.5 h-4 w-4 text-primary-500 border-gray-300 rounded focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-primary-400"
+                  className="mt-0.5 h-4 w-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-blue-400"
                 />
                 <label htmlFor="test-data-consent" className="ml-3 text-sm text-gray-700 dark:text-gray-300">
                   <span className="font-medium">Create sample data to help me learn the platform</span>
@@ -311,11 +331,11 @@ export default function RegisterPage() {
 
             <div className="text-xs text-gray-500 dark:text-gray-400">
               <span className="text-red-500 dark:text-red-400">*</span> Required fields. You can review our{' '}
-              <a href="/cookies" className="text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300 underline">
+              <a href="/cookies" className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 underline">
                 Cookie Policy
               </a>{' '}
               and change your cookie preferences after registration in your{' '}
-              <a href="/settings/privacy" className="text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300 underline">
+              <a href="/settings/privacy" className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 underline">
                 privacy settings
               </a>.
             </div>
@@ -325,7 +345,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading || !isPasswordValid() || formData.password !== formData.confirmPassword || !consent.terms || !consent.privacy}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Creating account...' : 'Create account'}
             </button>
@@ -334,11 +354,11 @@ export default function RegisterPage() {
           <div className="text-center space-y-2">
             <p className="text-sm text-gray-600 dark:text-gray-300">
               Already have an account?{' '}
-              <Link href="/login" className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300">
+              <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
                 Sign in
               </Link>
             </p>
-            <Link href="/" className="text-sm text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300">
+            <Link href="/" className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
               Back to home
             </Link>
           </div>

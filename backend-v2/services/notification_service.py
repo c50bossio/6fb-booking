@@ -130,6 +130,10 @@ class NotificationService:
                 html_content=body
             )
             
+            # Add reply-to address if configured
+            if hasattr(settings, 'sendgrid_reply_to') and settings.sendgrid_reply_to:
+                message.reply_to = settings.sendgrid_reply_to
+            
             # Add template ID if provided (for SendGrid dynamic templates)
             if template_id:
                 message.template_id = template_id

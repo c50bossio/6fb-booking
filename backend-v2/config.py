@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     
     # App settings
     app_name: str = "6FB Booking API"
-    debug: bool = True
+    debug: bool = False  # Explicitly disabled for production security
     
     # Security & Authentication - CRITICAL: These must be set via environment variables
     secret_key: str = ""  # REQUIRED: Set SECRET_KEY environment variable
@@ -234,6 +234,14 @@ class Settings(BaseSettings):
         """Check if running in production environment"""
         return self.environment.lower() == 'production'
     
+    def is_staging(self) -> bool:
+        """Check if running in staging environment"""
+        return self.environment.lower() == 'staging'
+    
+    def is_development(self) -> bool:
+        """Check if running in development environment"""
+        return self.environment.lower() == 'development'
+    
     def validate_required_credentials(self) -> list[str]:
         """Validate that all required credentials are set. Returns list of missing credentials."""
         missing = []
@@ -252,6 +260,54 @@ class Settings(BaseSettings):
             missing.append("TWILIO_AUTH_TOKEN (required for SMS notifications)")
             
         return missing
+    
+    def validate_production_security(self) -> list[str]:
+        """Validate production security configuration. Returns list of security issues."""
+        issues = []
+        
+        if self.is_production():
+            # Critical production security checks
+            if self.debug:
+                issues.append("CRITICAL: DEBUG mode is enabled in production")
+            
+            if not self.secret_key or len(self.secret_key) < 32:
+                issues.append("CRITICAL: SECRET_KEY must be at least 32 characters in production")
+            
+            if not self.jwt_secret_key or len(self.jwt_secret_key) < 32:
+                issues.append("CRITICAL: JWT_SECRET_KEY must be at least 32 characters in production")
+            
+            # Check for localhost in production URLs
+            if "localhost" in self.cors_origins:
+                issues.append("CRITICAL: localhost found in CORS origins in production")
+            
+            if "localhost" in self.frontend_url:
+                issues.append("CRITICAL: localhost found in frontend URL in production")
+            
+            if self.database_url.startswith("sqlite"):
+                issues.append("WARNING: SQLite database in production - consider PostgreSQL")
+            
+            # Check for weak or default values
+            if self.secret_key in ["your-secret-key-here", "test-secret-key", "changeme"]:
+                issues.append("CRITICAL: Using default/weak SECRET_KEY in production")
+            
+            if self.jwt_secret_key in ["your-jwt-secret-here", "test-jwt-secret", "changeme"]:
+                issues.append("CRITICAL: Using default/weak JWT_SECRET_KEY in production")
+            
+            # Validate external service configurations
+            if self.stripe_secret_key and not self.stripe_secret_key.startswith("sk_live_"):
+                issues.append("WARNING: Using Stripe test key in production")
+            
+            # Check security settings
+            if self.bcrypt_rounds < 12:
+                issues.append("WARNING: BCrypt rounds should be at least 12 in production")
+            
+            if self.access_token_expire_minutes > 60:
+                issues.append("WARNING: Access token expiry is too long for production")
+            
+            if self.refresh_token_expire_days > 30:
+                issues.append("WARNING: Refresh token expiry is too long for production")
+        
+        return issues
     
     def load_secrets_securely(self):
         """Load secrets using secure secret management."""
@@ -303,16 +359,34 @@ def validate_startup_security():
             logger.warning(f"Development mode: {error_msg}")
             logger.warning("Application will start but some features may not work")
     
-    # Additional security checks
-    if settings.is_production():
-        if settings.debug:
-            logger.warning("DEBUG mode is enabled in production - this is a security risk")
+    # Production security validation
+    production_issues = settings.validate_production_security()
+    
+    if production_issues:
+        critical_issues = [issue for issue in production_issues if issue.startswith("CRITICAL")]
+        warning_issues = [issue for issue in production_issues if issue.startswith("WARNING")]
         
-        if "localhost" in settings.allowed_origins:
-            logger.warning("Localhost is allowed in CORS origins in production")
+        if critical_issues:
+            error_msg = f"CRITICAL SECURITY ISSUES: {'; '.join(critical_issues)}"
+            logger.error(error_msg)
             
-        if settings.database_url.startswith("sqlite"):
-            logger.warning("Using SQLite in production - consider PostgreSQL for better performance")
+            if settings.is_production():
+                raise ValueError(f"Production startup failed due to critical security issues: {error_msg}")
+            else:
+                logger.error(f"Development mode: {error_msg}")
+                logger.error("Fix these issues before deploying to production")
+        
+        if warning_issues:
+            warning_msg = f"SECURITY WARNINGS: {'; '.join(warning_issues)}"
+            logger.warning(warning_msg)
+    
+    # Environment-specific checks
+    if settings.is_production():
+        logger.info("✅ Production security validation passed")
+    elif settings.is_staging():
+        logger.info("🔧 Staging environment - security checks applied")
+    else:
+        logger.info("🔧 Development environment - reduced security checks")
 
 # Run startup validation
 validate_startup_security()

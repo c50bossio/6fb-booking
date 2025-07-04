@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Login Issue</title>
+</head>
+<body>
+    <h1>Debug Login Connection Issue</h1>
+    
+    <div id="results" style="white-space: pre-wrap; font-family: monospace;"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        function log(message, isError = false) {
+            const timestamp = new Date().toISOString();
+            const prefix = isError ? '❌' : '✅';
+            results.innerHTML += `${timestamp} ${prefix} ${message}\n`;
+            console.log(message);
+        }
+        
+        async function runTests() {
+            log('Starting connection tests...\n');
+            
+            // Test 1: Basic fetch to backend
+            try {
+                log('Test 1: Basic fetch to backend test endpoint');
+                const testResponse = await fetch('http://localhost:8000/api/v1/auth/test');
+                const testData = await testResponse.json();
+                log(`Backend test endpoint response: ${JSON.stringify(testData)}`);
+            } catch (error) {
+                log(`Backend test endpoint failed: ${error.message}`, true);
+                log(`Error type: ${error.name}`, true);
+                log(`Full error: ${error.stack}`, true);
+            }
+            
+            // Test 2: Login endpoint with OPTIONS (CORS preflight)
+            try {
+                log('\nTest 2: CORS preflight check');
+                const corsResponse = await fetch('http://localhost:8000/api/v1/auth/login', {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Origin': 'http://localhost:3000',
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'content-type'
+                    }
+                });
+                log(`CORS preflight status: ${corsResponse.status}`);
+                log(`CORS headers: ${corsResponse.headers.get('access-control-allow-origin')}`);
+            } catch (error) {
+                log(`CORS preflight failed: ${error.message}`, true);
+            }
+            
+            // Test 3: Actual login request
+            try {
+                log('\nTest 3: Actual login request');
+                const loginResponse = await fetch('http://localhost:8000/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'admin.test@bookedbarber.com',
+                        password: 'AdminTest123'
+                    })
+                });
+                
+                log(`Login response status: ${loginResponse.status}`);
+                
+                if (loginResponse.ok) {
+                    const loginData = await loginResponse.json();
+                    log(`Login successful! Token received: ${loginData.access_token?.substring(0, 50)}...`);
+                } else {
+                    const errorText = await loginResponse.text();
+                    log(`Login failed with status ${loginResponse.status}: ${errorText}`, true);
+                }
+            } catch (error) {
+                log(`Login request failed: ${error.message}`, true);
+                log(`Error type: ${error.name}`, true);
+                log(`Full error: ${error.stack}`, true);
+            }
+            
+            // Test 4: Check if this is a mixed content issue
+            log('\nTest 4: Environment checks');
+            log(`Current page protocol: ${window.location.protocol}`);
+            log(`Current page host: ${window.location.host}`);
+            log(`Is secure context: ${window.isSecureContext}`);
+            
+            // Test 5: Network connectivity
+            try {
+                log('\nTest 5: Testing network connectivity');
+                const start = Date.now();
+                await fetch('http://localhost:8000/');
+                const latency = Date.now() - start;
+                log(`Backend latency: ${latency}ms`);
+            } catch (error) {
+                log('Cannot reach backend at all', true);
+            }
+            
+            log('\n--- Tests completed ---');
+        }
+        
+        // Run tests when page loads
+        window.onload = runTests;
+    </script>
+</body>
+</html>

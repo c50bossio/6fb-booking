@@ -464,6 +464,20 @@ export class BookingLinkGenerator {
         } else if (!options.omitEmpty) {
           cleaned[key] = []
         }
+      } else if (typeof value === 'object') {
+        // Handle object values by JSON stringifying them
+        try {
+          const jsonValue = JSON.stringify(value)
+          if (jsonValue !== '{}' || !options.omitEmpty) {
+            cleaned[key] = jsonValue
+          }
+        } catch (error) {
+          // If JSON stringify fails, convert to string
+          const stringValue = String(value)
+          if (stringValue !== '' || !options.omitEmpty) {
+            cleaned[key] = stringValue
+          }
+        }
       } else {
         const stringValue = String(value)
         if (stringValue !== '' || !options.omitEmpty) {
@@ -501,16 +515,37 @@ export class BookingLinkGenerator {
       return params
     }
 
-    const searchParams = new URLSearchParams(queryString)
+    // Remove leading '?' if present
+    const cleanQueryString = queryString.startsWith('?') ? queryString.substring(1) : queryString
     
-    searchParams.forEach((value, key) => {
-      // Handle comma-separated arrays
-      if (value.includes(',')) {
+    // Parse manually for better Jest compatibility
+    const pairs = cleanQueryString.split('&')
+    
+    pairs.forEach(pair => {
+      if (!pair) return
+      
+      const [key, value] = pair.split('=').map(decodeURIComponent)
+      if (!key || value === undefined) return
+      
+      // Handle JSON values first (for custom objects) to avoid splitting on commas inside JSON
+      if (key === 'custom' && (value.startsWith('{') || value.startsWith('['))) {
+        try {
+          (params as any)[key] = JSON.parse(value)
+          return
+        } catch (error) {
+          // If JSON parse fails, treat as string (fall through)
+        }
+      }
+
+      // Handle comma-separated arrays for specific fields only
+      const arrayFields = ['service', 'barber', 'services', 'barbers']
+      if (value.includes(',') && arrayFields.includes(key)) {
         const arrayValue = value.split(',').map(v => v.trim()).filter(v => v)
         if (arrayValue.length > 1) {
           (params as any)[key] = arrayValue
           return
         }
+        // If only one value after split, treat as single value (fall through)
       }
 
       // Handle numeric values
@@ -527,6 +562,7 @@ export class BookingLinkGenerator {
         (params as any)[key] = value === 'true'
         return
       }
+
 
       // Default to string
       (params as any)[key] = value
