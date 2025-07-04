@@ -25,18 +25,17 @@ def create_test_user():
             hashed_password = pwd_context.hash("testpass123")
             conn.execute(
                 text("""
-                    INSERT INTO users (email, first_name, last_name, hashed_password, role, is_active, created_at, updated_at)
-                    VALUES (:email, :first_name, :last_name, :hashed_password, :role, :is_active, :created_at, :updated_at)
+                    INSERT INTO users (email, name, hashed_password, role, email_verified, verified_at, created_at)
+                    VALUES (:email, :name, :hashed_password, :role, :email_verified, :verified_at, :created_at)
                 """),
                 {
                     "email": "test-barber@6fb.com",
-                    "first_name": "Test",
-                    "last_name": "Barber",
+                    "name": "Test Barber",
                     "hashed_password": hashed_password,
                     "role": "barber",
-                    "is_active": True,
-                    "created_at": datetime.utcnow(),
-                    "updated_at": datetime.utcnow()
+                    "email_verified": True,
+                    "verified_at": datetime.utcnow(),
+                    "created_at": datetime.utcnow()
                 }
             )
             conn.commit()

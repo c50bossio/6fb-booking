@@ -98,18 +98,18 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8">
-      <div className="max-w-md w-full space-y-8">
+    <main className="flex min-h-screen flex-col items-center justify-center p-8 bg-gray-50 dark:bg-gray-900">
+      <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900">Create Account</h2>
-          <p className="mt-2 text-gray-600">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Create Account</h2>
+          <p className="mt-2 text-gray-600 dark:text-gray-300">
             Join us to get started
           </p>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="bg-red-50 text-red-500 p-3 rounded-md text-sm">
+            <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-md text-sm border border-red-200 dark:border-red-800">
               {error}
             </div>
           )}
@@ -126,7 +126,7 @@ export default function RegisterPage() {
                 required
                 value={formData.name}
                 onChange={handleInputChange}
-                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
 
@@ -141,7 +141,7 @@ export default function RegisterPage() {
                 required
                 value={formData.email}
                 onChange={handleInputChange}
-                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
 
@@ -156,26 +156,26 @@ export default function RegisterPage() {
                 required
                 value={formData.password}
                 onChange={handleInputChange}
-                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               />
               
               {/* Password Requirements */}
               <div className="mt-2 space-y-1">
-                <p className="text-xs text-gray-600">Password must contain:</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">Password must contain:</p>
                 <div className="space-y-1">
-                  <div className={`text-xs flex items-center ${passwordStrength.hasMinLength ? 'text-green-600' : 'text-gray-400'}`}>
+                  <div className={`text-xs flex items-center ${passwordStrength.hasMinLength ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'}`}>
                     <span className="mr-2">{passwordStrength.hasMinLength ? '✓' : '○'}</span>
                     At least 8 characters
                   </div>
-                  <div className={`text-xs flex items-center ${passwordStrength.hasUpperCase ? 'text-green-600' : 'text-gray-400'}`}>
+                  <div className={`text-xs flex items-center ${passwordStrength.hasUpperCase ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'}`}>
                     <span className="mr-2">{passwordStrength.hasUpperCase ? '✓' : '○'}</span>
                     One uppercase letter
                   </div>
-                  <div className={`text-xs flex items-center ${passwordStrength.hasLowerCase ? 'text-green-600' : 'text-gray-400'}`}>
+                  <div className={`text-xs flex items-center ${passwordStrength.hasLowerCase ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'}`}>
                     <span className="mr-2">{passwordStrength.hasLowerCase ? '✓' : '○'}</span>
                     One lowercase letter
                   </div>
-                  <div className={`text-xs flex items-center ${passwordStrength.hasDigit ? 'text-green-600' : 'text-gray-400'}`}>
+                  <div className={`text-xs flex items-center ${passwordStrength.hasDigit ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'}`}>
                     <span className="mr-2">{passwordStrength.hasDigit ? '✓' : '○'}</span>
                     One number
                   </div>
@@ -194,17 +194,17 @@ export default function RegisterPage() {
                 required
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
-                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               />
               {formData.confirmPassword && formData.password !== formData.confirmPassword && (
-                <p className="mt-1 text-xs text-red-600">Passwords do not match</p>
+                <p className="mt-1 text-xs text-red-600 dark:text-red-400">Passwords do not match</p>
               )}
             </div>
           </div>
 
           {/* Consent Checkboxes */}
           <div className="space-y-4 border-t pt-4">
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Privacy & Consent</h3>
+            <h3 className="text-sm font-medium text-gray-900 dark:text-white">Privacy & Consent</h3>
             
             {/* Required Consents */}
             <div className="space-y-3">
@@ -288,13 +288,13 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <div className="text-xs text-gray-500">
-              <span className="text-red-500">*</span> Required fields. You can review our{' '}
-              <a href="/cookies" className="text-primary-600 hover:text-primary-500 underline">
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              <span className="text-red-500 dark:text-red-400">*</span> Required fields. You can review our{' '}
+              <a href="/cookies" className="text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300 underline">
                 Cookie Policy
               </a>{' '}
               and change your cookie preferences after registration in your{' '}
-              <a href="/settings/privacy" className="text-primary-600 hover:text-primary-500 underline">
+              <a href="/settings/privacy" className="text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300 underline">
                 privacy settings
               </a>.
             </div>
@@ -304,20 +304,20 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading || !isPasswordValid() || formData.password !== formData.confirmPassword || !consent.terms || !consent.privacy}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Creating account...' : 'Create account'}
             </button>
           </div>
 
           <div className="text-center space-y-2">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Already have an account?{' '}
-              <Link href="/login" className="font-medium text-primary-600 hover:text-primary-500">
+              <Link href="/login" className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300">
                 Sign in
               </Link>
             </p>
-            <Link href="/" className="text-sm text-primary-600 hover:text-primary-500">
+            <Link href="/" className="text-sm text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300">
               Back to home
             </Link>
           </div>

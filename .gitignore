@@ -160,3 +160,5 @@ backend-v2/frontend-v2/test-reports/
 # Puppeteer artifacts
 /puppeteer-*.js
 /analyze-pages-*.js
+# Debug and test files archive
+backend-v2/debug-archive/

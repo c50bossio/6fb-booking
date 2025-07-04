@@ -67,10 +67,10 @@ export function handleAuthError(
 
   // Check if we should skip redirect for public routes
   if (skipPublicRoutes && typeof window !== 'undefined') {
-    const publicRoutes = ['/', '/login', '/register', '/book', '/privacy', '/terms']
+    const publicRoutes = ['/', '/login', '/register', '/check-email', '/verify-email', '/book', '/privacy', '/terms', '/agents']
     const currentPath = window.location.pathname
     
-    if (publicRoutes.includes(currentPath)) {
+    if (publicRoutes.includes(currentPath) || currentPath.startsWith('/agents/') || currentPath.startsWith('/verify-email/')) {
       console.log('Auth error on public route, not redirecting')
       return true
     }
@@ -106,13 +106,16 @@ export function isProtectedRoute(pathname: string): boolean {
     '/',
     '/login', 
     '/register',
+    '/check-email',
+    '/verify-email',
     '/book',
     '/privacy',
     '/terms',
-    '/about'
+    '/about',
+    '/agents'
   ]
   
-  return !publicRoutes.includes(pathname)
+  return !publicRoutes.includes(pathname) && !pathname.startsWith('/agents/') && !pathname.startsWith('/verify-email/')
 }
 
 /**

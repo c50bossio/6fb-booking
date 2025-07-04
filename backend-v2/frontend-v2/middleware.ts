@@ -20,6 +20,8 @@ const publicRoutes = [
   '/',
   '/login',
   '/register',
+  '/check-email',
+  '/verify-email',
   '/forgot-password',
   '/reset-password',
   '/book',
