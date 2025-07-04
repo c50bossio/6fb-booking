@@ -16,6 +16,8 @@ from middleware import SecurityHeadersMiddleware, RequestValidationMiddleware, A
 from middleware.multi_tenancy import MultiTenancyMiddleware
 from middleware.financial_security import FinancialSecurityMiddleware
 from middleware.sentry_middleware import SentryEnhancementMiddleware
+from middleware.enhanced_security import EnhancedSecurityMiddleware, WebhookSecurityMiddleware
+from config.security_config import SecurityConfig
 import logging
 
 # Initialize Sentry error tracking (must be done before importing FastAPI app)
@@ -108,13 +110,27 @@ if ENVIRONMENT == "development" and ENABLE_DEVELOPMENT_MODE:
     logger.info("⚡ Skipping heavy middleware: RequestValidation, MultiTenancy, FinancialSecurity, MFA")
     
 else:
-    # Full production middleware stack
-    logger.info("🔒 Production mode: Using full middleware stack")
+    # Full production middleware stack with enhanced security
+    logger.info("🔒 Production mode: Using full middleware stack with enhanced security")
+    
+    # Add enhanced security middleware stack
+    environment = ENVIRONMENT if ENVIRONMENT != "development" else "production"
     
     # Add Sentry enhancement middleware (early in chain for comprehensive coverage)
     if sentry_configured:
         secret_key = os.getenv("SECRET_KEY")
         app.add_middleware(SentryEnhancementMiddleware, secret_key=secret_key)
+
+    # Add enhanced security middleware with rate limiting and monitoring
+    app.add_middleware(EnhancedSecurityMiddleware, environment=environment)
+    
+    # Add webhook security middleware for signature validation
+    webhook_secrets = {
+        "/api/v1/webhooks/stripe": os.getenv("STRIPE_WEBHOOK_SECRET", ""),
+        "/api/v1/webhooks/sendgrid": os.getenv("SENDGRID_WEBHOOK_SECRET", ""),
+        "/api/v1/webhooks/twilio": os.getenv("TWILIO_WEBHOOK_SECRET", "")
+    }
+    app.add_middleware(WebhookSecurityMiddleware, webhook_secrets=webhook_secrets)
 
     # Add request validation middleware (order matters - this should be first)
     app.add_middleware(RequestValidationMiddleware)
@@ -133,15 +149,20 @@ else:
 
     # Add enhanced security headers middleware
     app.add_middleware(SecurityHeadersMiddleware)
+    
+    logger.info("✅ Enhanced security stack applied with production-grade settings")
 
 # Add rate limit exceeded handler
 app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 
-# Enhanced CORS setup for development and production
-import os
+# Enhanced CORS setup using security configuration
+security_config = SecurityConfig.get_environment_specific_config(ENVIRONMENT)
 
-# Get allowed origins from environment or use defaults
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001").split(",")
+# Get allowed origins from security config, fallback to environment or defaults
+allowed_origins = security_config.get("CORS_ALLOWED_ORIGINS", [])
+if not allowed_origins:
+    # Fallback to environment variable or defaults
+    allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001").split(",")
 
 # Add Railway and Vercel deployment URLs if they exist
 railway_url = os.getenv("RAILWAY_PUBLIC_DOMAIN")
@@ -152,21 +173,23 @@ if railway_url:
 if vercel_url:
     allowed_origins.append(f"https://{vercel_url}")
 
+logger.info(f"CORS configured for environment '{ENVIRONMENT}' with origins: {allowed_origins}")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allow_headers=[
+    allow_credentials=security_config.get("CORS_ALLOW_CREDENTIALS", True),
+    allow_methods=security_config.get("CORS_ALLOW_METHODS", ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]),
+    allow_headers=security_config.get("CORS_ALLOW_HEADERS", [
         "Accept",
-        "Accept-Language",
+        "Accept-Language", 
         "Content-Language",
         "Content-Type",
         "Authorization",
         "X-Requested-With",
         "X-CSRFToken",
         "Cache-Control"
-    ],
+    ]),
     expose_headers=["Content-Length", "Content-Range"],
     max_age=86400  # 24 hours
 )
@@ -175,9 +198,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(auth_simple.router, prefix="/api/v1")  # Simplified auth for schema compatibility
 
-# Temporary auth bypass for testing
-from routers import test_auth_bypass
-app.include_router(test_auth_bypass.router, prefix="/api/v1")
+# Removed auth bypass - using real authentication only
 app.include_router(mfa.router, prefix="/api/v1")  # Multi-Factor Authentication endpoints
 app.include_router(bookings.router, prefix="/api/v1")
 app.include_router(appointments.router, prefix="/api/v1")  # Standardized appointment endpoints

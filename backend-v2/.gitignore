@@ -3,10 +3,17 @@
 
 # Environment variables - NEVER commit these!
 .env
-.env.local
-.env.production
-.env.staging
-.env.development
+.env.*
+!.env.template
+!.env.example
+*.env
+.env.local*
+.env.production*
+.env.staging*
+.env.development*
+.env.secure*
+.env.minimal*
+.env.ready*
 
 # Python cache
 __pycache__/
@@ -34,8 +41,11 @@ Thumbs.db
 *.log
 logs/
 
-# Security reports
+# Security reports and audit files
 security_report_*.json
+security_audit_report.json
+*.security.json
+audit_*.json
 
 # Backup files
 *.bak

@@ -22,9 +22,19 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
-.env*.local
+# local env files - NEVER commit these!
 .env
+.env.*
+!.env.template
+!.env.example
+*.env
+.env.local*
+.env.production*
+.env.staging*
+.env.development*
+.env.secure*
+.env.minimal*
+.env.ready*
 
 # vercel
 .vercel
