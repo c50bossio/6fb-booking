@@ -7,7 +7,7 @@ import models
 import location_models
 # Import tracking models to register them with SQLAlchemy
 import models.tracking
-from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents
+from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents
 from routers.services import public_router as services_public_router
 from utils.rate_limit import limiter, rate_limit_exceeded_handler
 from services.integration_service import IntegrationServiceFactory
@@ -268,6 +268,7 @@ app.include_router(barber_availability.router, prefix="/api/v1")
 app.include_router(recurring_appointments.router, prefix="/api/v1")
 app.include_router(webhooks.router, prefix="/api/v1")
 app.include_router(analytics.router, prefix="/api/v1")
+app.include_router(dashboard.router, prefix="/api/v1")
 app.include_router(booking_rules.router, prefix="/api/v1")
 app.include_router(notifications.router, prefix="/api/v1")
 app.include_router(imports.router, prefix="/api/v1")
@@ -276,7 +277,7 @@ app.include_router(sms_webhooks.router, prefix="/api/v1")
 app.include_router(webhook_management.router, prefix="/api/v1")  # Re-enabled with webhook models
 app.include_router(enterprise.router, prefix="/api/v1")
 app.include_router(marketing.router, prefix="/api/v1")
-app.include_router(short_urls.router)  # No prefix for branded short URLs
+app.include_router(short_urls.router, prefix="/s")  # Prefix for branded short URLs to avoid conflicts
 app.include_router(notification_preferences.router)  # No prefix, includes its own /api/v1
 # app.include_router(email_analytics.router, prefix="/api/v1")  # Disabled - service archived
 app.include_router(test_data.router, prefix="/api/v1")
