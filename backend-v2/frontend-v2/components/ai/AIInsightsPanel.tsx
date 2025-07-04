@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge'
 import { 
   SparklesIcon,
   ChartBarIcon,
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   LightBulbIcon,
   ShieldCheckIcon,
   EyeIcon,
@@ -227,7 +227,7 @@ export default function AIInsightsPanel({ userId, className = '', onInsightClick
   const getInsightIcon = (type: AIInsight['type']) => {
     switch (type) {
       case 'benchmark': return <ChartBarIcon className="w-5 h-5" />
-      case 'prediction': return <TrendingUpIcon className="w-5 h-5" />
+      case 'prediction': return <ArrowTrendingUpIcon className="w-5 h-5" />
       case 'coaching': return <LightBulbIcon className="w-5 h-5" />
       case 'opportunity': return <SparklesIcon className="w-5 h-5" />
       default: return <SparklesIcon className="w-5 h-5" />
@@ -330,7 +330,7 @@ export default function AIInsightsPanel({ userId, className = '', onInsightClick
           {[
             { id: 'insights', label: 'Insights', icon: LightBulbIcon },
             { id: 'benchmarks', label: 'Benchmarks', icon: ChartBarIcon },
-            { id: 'predictions', label: 'Forecasts', icon: TrendingUpIcon }
+            { id: 'predictions', label: 'Forecasts', icon: ArrowTrendingUpIcon }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -428,7 +428,7 @@ export default function AIInsightsPanel({ userId, className = '', onInsightClick
                   <h4 className="font-semibold capitalize flex items-center gap-2">
                     {metric === 'revenue' && <CurrencyDollarIcon className="w-4 h-4" />}
                     {metric === 'appointments' && <UsersIcon className="w-4 h-4" />}
-                    {metric === 'efficiency' && <TrendingUpIcon className="w-4 h-4" />}
+                    {metric === 'efficiency' && <ArrowTrendingUpIcon className="w-4 h-4" />}
                     {metric.replace('_', ' ')}
                   </h4>
                   <div className={`text-2xl font-bold ${getPercentileColor(data.percentile_rank)}`}>
@@ -471,7 +471,7 @@ export default function AIInsightsPanel({ userId, className = '', onInsightClick
           <div className="space-y-3">
             <div className="bg-white rounded-lg p-4 border border-gray-200">
               <h4 className="font-semibold mb-2 flex items-center gap-2">
-                <TrendingUpIcon className="w-4 h-4" />
+                <ArrowTrendingUpIcon className="w-4 h-4" />
                 Revenue Forecast
               </h4>
               <p className="text-sm text-gray-600 mb-2">

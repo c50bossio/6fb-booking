@@ -26,10 +26,16 @@ from utils.email_verification import (
     send_verification_email,
     resend_verification_email
 )
+from services.mfa_service import MFAService
+from services.suspicious_login_detection import get_suspicious_login_detector
+from services.password_security import validate_password_strength
+from models.mfa import UserMFASecret, MFADeviceTrust
+from utils.logging_config import get_audit_logger
 import schemas
 import models
 
 logger = logging.getLogger(__name__)
+audit_logger = get_audit_logger()
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -41,10 +47,48 @@ async def test_auth_route():
 @router.post("/login", response_model=schemas.Token)
 # @login_rate_limit  # Temporarily disabled for debugging
 async def login(request: Request, user_credentials: schemas.UserLogin, db: Session = Depends(get_db)):
-    """Login endpoint that returns a JWT access token."""
+    """Enhanced login endpoint with MFA support."""
+    client_ip = request.client.host if request.client else "unknown"
+    user_agent = request.headers.get("user-agent", "Unknown")
+    
+    # Authenticate user
     user = authenticate_user(db, user_credentials.email, user_credentials.password)
     
     if not user:
+        # Log failed login attempt
+        audit_logger.log_auth_event(
+            "login_failed",
+            ip_address=client_ip,
+            details={"email": user_credentials.email, "reason": "invalid_credentials", "user_agent": user_agent}
+        )
+        
+        # Check for suspicious login patterns (failed login)
+        # We need to try to find the user for suspicious login detection
+        user_for_detection = db.query(models.User).filter(
+            models.User.email == user_credentials.email
+        ).first()
+        
+        if user_for_detection:
+            detector = get_suspicious_login_detector(db)
+            suspicious_alerts = detector.detect_suspicious_login(
+                user_id=user_for_detection.id,
+                ip_address=client_ip,
+                user_agent=user_agent,
+                login_success=False
+            )
+            
+            # If high-severity alerts, add additional security headers
+            if any(alert.severity in ["critical", "high"] for alert in suspicious_alerts):
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Authentication failed. Account security measures activated.",
+                    headers={
+                        "WWW-Authenticate": "Bearer",
+                        "X-Security-Alert": "true",
+                        "X-Alert-Level": "high"
+                    }
+                )
+        
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -53,12 +97,57 @@ async def login(request: Request, user_credentials: schemas.UserLogin, db: Sessi
     
     # Check if email is verified
     if not user.email_verified:
+        audit_logger.log_auth_event(
+            "login_failed",
+            user_id=user.id,
+            ip_address=client_ip,
+            details={"reason": "email_not_verified", "user_agent": user_agent}
+        )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Email address not verified. Please check your email and click the verification link to complete your account setup.",
             headers={"X-Verification-Required": "true"}
         )
     
+    # Check if user has MFA enabled
+    mfa_secret = db.query(UserMFASecret).filter(
+        UserMFASecret.user_id == user.id,
+        UserMFASecret.is_enabled == True
+    ).first()
+    
+    if mfa_secret:
+        # Check if device is trusted
+        device_fingerprint = request.headers.get("X-Device-Fingerprint", "")
+        trust_token = request.headers.get("X-Trust-Token", "")
+        
+        is_trusted = False
+        if device_fingerprint and trust_token:
+            is_trusted = MFAService.verify_device_trust(
+                user_id=user.id,
+                trust_token=trust_token,
+                device_fingerprint=device_fingerprint,
+                db=db
+            )
+        
+        if not is_trusted:
+            # MFA verification required
+            audit_logger.log_auth_event(
+                "mfa_required",
+                user_id=user.id,
+                ip_address=client_ip,
+                details={"device_trusted": False, "user_agent": user_agent}
+            )
+            raise HTTPException(
+                status_code=status.HTTP_202_ACCEPTED,
+                detail="MFA verification required",
+                headers={
+                    "X-MFA-Required": "true",
+                    "X-User-ID": str(user.id),
+                    "X-MFA-Methods": "totp,backup_code"
+                }
+            )
+    
+    # Generate tokens for successful login
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.email, "role": user.role},
@@ -68,11 +157,56 @@ async def login(request: Request, user_credentials: schemas.UserLogin, db: Sessi
         data={"sub": user.email}
     )
     
-    return {
+    # Check for suspicious login patterns (successful login)
+    detector = get_suspicious_login_detector(db)
+    suspicious_alerts = detector.detect_suspicious_login(
+        user_id=user.id,
+        ip_address=client_ip,
+        user_agent=user_agent,
+        login_success=True
+    )
+    
+    # Log successful login
+    audit_logger.log_auth_event(
+        "login_success",
+        user_id=user.id,
+        ip_address=client_ip,
+        details={
+            "mfa_enabled": bool(mfa_secret), 
+            "device_trusted": True,
+            "suspicious_alerts": len(suspicious_alerts),
+            "alert_types": [alert.alert_type for alert in suspicious_alerts] if suspicious_alerts else [],
+            "user_agent": user_agent
+        }
+    )
+    
+    # Add security headers if suspicious activity detected
+    headers = {}
+    if suspicious_alerts:
+        headers["X-Security-Notice"] = "Unusual login pattern detected"
+        headers["X-Alert-Count"] = str(len(suspicious_alerts))
+        
+        # For medium/high severity alerts, recommend additional security measures
+        if any(alert.severity in ["medium", "high", "critical"] for alert in suspicious_alerts):
+            headers["X-Security-Recommendation"] = "Enable MFA for enhanced security"
+    
+    response_data = {
         "access_token": access_token,
         "refresh_token": refresh_token,
         "token_type": "bearer"
     }
+    
+    # If there are headers to add, we need to return a Response object
+    if headers:
+        from fastapi import Response
+        from fastapi.responses import JSONResponse
+        
+        response = JSONResponse(content=response_data)
+        for header, value in headers.items():
+            response.headers[header] = value
+        return response
+    
+    return response_data
 
 @router.post("/refresh", response_model=schemas.Token)
 @refresh_rate_limit
@@ -81,26 +215,64 @@ async def refresh_token(
     refresh_request: schemas.RefreshTokenRequest,
     db: Session = Depends(get_db)
 ):
-    """Refresh access token using refresh token."""
-    user = verify_refresh_token(refresh_request.refresh_token, db)
+    """Refresh access token using refresh token with enhanced security logging."""
+    client_ip = request.client.host if request.client else "unknown"
+    user_agent = request.headers.get("user-agent", "Unknown")
     
-    # Create new access token
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.email, "role": user.role},
-        expires_delta=access_token_expires
-    )
-    
-    # Create new refresh token (rotate for security)
-    new_refresh_token = create_refresh_token(
-        data={"sub": user.email}
-    )
-    
-    return {
-        "access_token": access_token,
-        "refresh_token": new_refresh_token,
-        "token_type": "bearer"
-    }
+    try:
+        user = verify_refresh_token(refresh_request.refresh_token, db)
+        
+        if not user:
+            # Log failed refresh attempt
+            audit_logger.log_auth_event(
+                "token_refresh_failed",
+                ip_address=client_ip,
+                details={"reason": "invalid_refresh_token"}
+            )
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid refresh token"
+            )
+        
+        # Create new access token
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={"sub": user.email, "role": user.role},
+            expires_delta=access_token_expires
+        )
+        
+        # Create new refresh token (rotate for security)
+        new_refresh_token = create_refresh_token(
+            data={"sub": user.email}
+        )
+        
+        # Log successful token refresh
+        audit_logger.log_auth_event(
+            "token_refresh_success",
+            user_id=user.id,
+            ip_address=client_ip,
+            details={"token_rotated": True}
+        )
+        
+        return {
+            "access_token": access_token,
+            "refresh_token": new_refresh_token,
+            "token_type": "bearer"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        # Log unexpected errors
+        audit_logger.log_auth_event(
+            "token_refresh_error",
+            ip_address=client_ip,
+            details={"error": str(e)}
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Token refresh failed"
+        )
 
 @router.get("/me", response_model=schemas.User)
 async def get_me(current_user: models.User = Depends(get_current_user)):
@@ -171,6 +343,35 @@ async def register(
             detail="Email already registered"
         )
     
+    # Validate user type - clients cannot register through dashboard
+    if user_data.user_type == "client":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Client registration is not allowed. Clients should book appointments through your barbershop's booking page. Please select 'Barber' or 'Barbershop Owner' to register for dashboard access."
+        )
+    
+    # Validate password strength
+    password_validation = validate_password_strength(
+        user_data.password,
+        user_data={
+            "email": user_data.email,
+            "name": user_data.name
+        }
+    )
+    
+    if not password_validation.is_valid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "message": "Password does not meet security requirements",
+                "errors": password_validation.errors,
+                "warnings": password_validation.warnings,
+                "recommendations": password_validation.recommendations,
+                "strength_score": password_validation.strength_score,
+                "strength_level": password_validation.strength_level
+            }
+        )
+    
     # Create new user with 14-day trial
     from datetime import datetime, timedelta, timezone
     
@@ -219,21 +420,112 @@ async def register(
 
 @router.post("/change-password", response_model=schemas.ChangePasswordResponse)
 async def change_password(
+    request: Request,
     password_change: schemas.ChangePasswordRequest,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
-    """Change the password for the authenticated user."""
+    """Change the password for the authenticated user with enhanced security."""
+    client_ip = request.client.host if request.client else "unknown"
+    user_agent = request.headers.get("user-agent", "Unknown")
+    
     # Verify current password
     if not verify_password(password_change.current_password, current_user.hashed_password):
+        # Log failed password change attempt
+        audit_logger.log_auth_event(
+            "password_change_failed",
+            user_id=current_user.id,
+            ip_address=client_ip,
+            details={"reason": "incorrect_current_password"}
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Current password is incorrect"
         )
     
+    # Check if user has MFA enabled - require MFA for password changes
+    mfa_secret = db.query(UserMFASecret).filter(
+        UserMFASecret.user_id == current_user.id,
+        UserMFASecret.is_enabled == True
+    ).first()
+    
+    if mfa_secret and hasattr(password_change, 'mfa_code'):
+        # Verify MFA code if provided
+        if password_change.mfa_code:
+            success, error_msg = MFAService.verify_totp_code(
+                user_id=current_user.id,
+                code=password_change.mfa_code,
+                db=db,
+                ip_address=client_ip,
+                user_agent=user_agent
+            )
+            if not success:
+                audit_logger.log_auth_event(
+                    "password_change_failed",
+                    user_id=current_user.id,
+                    ip_address=client_ip,
+                    details={"reason": "invalid_mfa_code"}
+                )
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid MFA code"
+                )
+        elif current_user.role in ["admin", "super_admin"]:
+            # Require MFA for admin password changes
+            audit_logger.log_auth_event(
+                "password_change_failed",
+                user_id=current_user.id,
+                ip_address=client_ip,
+                details={"reason": "mfa_required_for_admin"}
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="MFA verification required for admin password changes",
+                headers={"X-MFA-Required": "true"}
+            )
+    
+    # Validate new password strength
+    password_validation = validate_password_strength(
+        password_change.new_password,
+        user_data={
+            "email": current_user.email,
+            "name": current_user.name
+        }
+    )
+    
+    if not password_validation.is_valid:
+        audit_logger.log_auth_event(
+            "password_change_failed",
+            user_id=current_user.id,
+            ip_address=client_ip,
+            details={"reason": "weak_password", "strength_score": password_validation.strength_score}
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "message": "New password does not meet security requirements",
+                "errors": password_validation.errors,
+                "warnings": password_validation.warnings,
+                "recommendations": password_validation.recommendations,
+                "strength_score": password_validation.strength_score,
+                "strength_level": password_validation.strength_level
+            }
+        )
+    
     # Update password
     current_user.hashed_password = get_password_hash(password_change.new_password)
     db.commit()
+    
+    # Log successful password change
+    audit_logger.log_auth_event(
+        "password_change_success",
+        user_id=current_user.id,
+        ip_address=client_ip,
+        details={
+            "mfa_verified": bool(mfa_secret and hasattr(password_change, 'mfa_code')),
+            "user_role": current_user.role
+        }
+    )
     
     return {"message": "Password successfully changed"}
 
@@ -312,4 +604,45 @@ async def get_verification_status(
     return {
         "email_verified": current_user.email_verified,
         "verification_required": not current_user.email_verified
+    }
+
+@router.get("/password-policy")
+async def get_password_policy():
+    """Get current password policy requirements."""
+    from services.password_security import password_security_service
+    
+    policy = password_security_service.get_password_policy()
+    return {
+        "policy": policy,
+        "message": "Password must meet all security requirements for account protection"
+    }
+
+@router.post("/validate-password")
+async def validate_password_endpoint(
+    password_data: dict,  # {"password": "string", "user_data": {...}}
+    current_user: models.User = Depends(get_current_user)
+):
+    """Validate password strength without changing it."""
+    password = password_data.get("password", "")
+    
+    if not password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password is required"
+        )
+    
+    user_data = {
+        "email": current_user.email,
+        "name": current_user.name
+    }
+    
+    validation_result = validate_password_strength(password, user_data)
+    
+    return {
+        "is_valid": validation_result.is_valid,
+        "strength_score": validation_result.strength_score,
+        "strength_level": validation_result.strength_level,
+        "errors": validation_result.errors,
+        "warnings": validation_result.warnings,
+        "recommendations": validation_result.recommendations
     }

@@ -11,7 +11,7 @@ import React, { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/badge'
 import { 
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   TrendingDownIcon,
   MinusIcon,
   InformationCircleIcon,
@@ -108,7 +108,7 @@ export default function BenchmarkWidget({
   }
 
   const getPerformanceIcon = (percentile: number) => {
-    if (percentile >= 75) return <TrendingUpIcon className="w-4 h-4" />
+    if (percentile >= 75) return <ArrowTrendingUpIcon className="w-4 h-4" />
     if (percentile >= 50) return <MinusIcon className="w-4 h-4" />
     return <TrendingDownIcon className="w-4 h-4" />
   }
@@ -268,7 +268,7 @@ export default function BenchmarkWidget({
           {benchmarkData.improvement_potential && benchmarkData.improvement_potential > 0 && (
             <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
               <div className="flex items-start gap-2">
-                <TrendingUpIcon className="w-4 h-4 text-blue-600 mt-0.5" />
+                <ArrowTrendingUpIcon className="w-4 h-4 text-blue-600 mt-0.5" />
                 <div>
                   <div className="text-sm font-medium text-blue-900">Growth Opportunity</div>
                   <div className="text-sm text-blue-700">

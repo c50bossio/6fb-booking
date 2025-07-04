@@ -7,7 +7,7 @@ import { AnalyticsLayout } from '@/components/analytics/AnalyticsLayout'
 import { DateRangeSelector, DateRangePreset } from '@/components/analytics/shared/DateRangeSelector'
 import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { AIInsightsPanel } from '@/components/ai/AIInsightsPanel'
+import AIInsightsPanel from '@/components/ai/AIInsightsPanel'
 
 // Role-based view components
 import { BarberAnalyticsView } from '@/components/analytics/views/BarberAnalyticsView'
