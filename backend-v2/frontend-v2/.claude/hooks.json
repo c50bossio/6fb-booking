@@ -1,0 +1,46 @@
+{
+  "dependency_validation": {
+    "description": "Validate imports exist before file edits to prevent server crashes",
+    "trigger": "before_file_edit",
+    "conditions": [
+      "file_contains_imports",
+      "file_type_in(['tsx', 'ts', 'js', 'jsx'])"
+    ],
+    "script": ".claude/scripts/validate-dependencies.sh",
+    "blocking": true,
+    "timeout": 30
+  },
+  "server_stability_check": {
+    "description": "Test compilation after component creation",
+    "trigger": "after_file_create",
+    "conditions": [
+      "file_path_contains('components/')",
+      "file_extension_in(['tsx', 'ts'])"
+    ],
+    "script": ".claude/scripts/test-compilation.sh",
+    "blocking": true,
+    "timeout": 60
+  },
+  "build_cache_monitor": {
+    "description": "Detect corrupted build cache states",
+    "trigger": "before_npm_command",
+    "conditions": [
+      "command_includes('dev')",
+      "command_includes('build')"
+    ],
+    "script": ".claude/scripts/check-build-cache.sh",
+    "blocking": false,
+    "timeout": 10
+  },
+  "import_cycle_detection": {
+    "description": "Detect circular imports that cause build failures",
+    "trigger": "after_file_edit",
+    "conditions": [
+      "file_contains_imports",
+      "file_type_in(['tsx', 'ts'])"
+    ],
+    "script": ".claude/scripts/detect-import-cycles.sh",
+    "blocking": true,
+    "timeout": 45
+  }
+}

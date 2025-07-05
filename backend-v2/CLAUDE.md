@@ -98,6 +98,227 @@ backend-v2/
 ├── models/                  # SQLAlchemy models
 ├── services/               # Business services layer
 └── config/                 # Configuration management
+
+## 🚨 SERVER CRASH RECOVERY PROTOCOL
+
+### **Emergency Server Recovery (Critical Issues)**
+
+When the frontend development server crashes or becomes unresponsive:
+
+#### **Phase 1: Immediate Assessment**
+```bash
+# Check server status
+ps aux | grep "next dev" | grep -v grep
+lsof -i :3000 :8000
+
+# Check recent error patterns
+tail -n 50 frontend-v2/server_output.log | grep -E "(Error|Failed|Cannot find)"
+```
+
+#### **Phase 2: Process Cleanup**
+```bash
+# Kill all Node.js processes
+pkill -f "next dev"
+pkill -f "npm run dev"
+
+# Force kill if needed
+lsof -ti:3000 | xargs kill -9
+lsof -ti:8000 | xargs kill -9
+
+# Clear process locks
+rm -f frontend-v2/dev-server.pid frontend-v2/frontend.pid
+```
+
+#### **Phase 3: Cache Cleanup**
+```bash
+# Remove corrupted build cache
+rm -rf frontend-v2/.next
+rm -rf frontend-v2/node_modules/.cache
+rm -rf frontend-v2/tsconfig.tsbuildinfo
+
+# Clear npm cache if needed
+npm cache clean --force
+```
+
+#### **Phase 4: Dependency Validation**
+```bash
+# Use automated hook to check dependencies
+.claude/scripts/validate-dependencies.sh frontend-v2/components/UnifiedCalendar.tsx
+
+# Or manually check for missing imports
+find frontend-v2/components -name "*.tsx" -exec grep -l "import.*@/" {} \; | head -5
+```
+
+### **Common Server Crash Patterns**
+
+#### **1. Missing Import Dependencies**
+**Symptoms:**
+- `Error: Cannot find module './9774.js'`
+- Webpack module resolution errors
+- Pages return 404 despite existing
+
+**Resolution:**
+```bash
+# Find missing dependencies
+grep -r "import.*@/lib/" frontend-v2/components/ | grep -E "(touch-utils|appointment-conflicts|calendar-constants)"
+
+# Create missing files with basic exports
+touch frontend-v2/lib/touch-utils.ts
+touch frontend-v2/lib/appointment-conflicts.ts
+touch frontend-v2/hooks/useCalendarAccessibility.ts
+touch frontend-v2/hooks/useResponsive.ts
+touch frontend-v2/lib/calendar-constants.ts
+touch frontend-v2/styles/calendar-animations.css
+```
+
+#### **2. Circular Import Dependencies**
+**Symptoms:**
+- Server starts but pages fail to load
+- Webpack compilation hangs
+- Memory usage spikes
+
+**Resolution:**
+```bash
+# Use automated detection
+.claude/scripts/detect-import-cycles.sh frontend-v2/components/UnifiedCalendar.tsx
+
+# Manual check for circular imports
+grep -r "import.*UnifiedCalendar" frontend-v2/app/
+grep -r "import.*CalendarWeekView" frontend-v2/components/
+```
+
+#### **3. TypeScript Compilation Errors**
+**Symptoms:**
+- Build fails with type errors
+- Components not rendering
+- Hot reload stops working
+
+**Resolution:**
+```bash
+# Test compilation
+npx tsc --noEmit --skipLibCheck frontend-v2/components/UnifiedCalendar.tsx
+
+# Check for common issues
+grep -E "(any\[\]|object\[\]|Function)" frontend-v2/components/UnifiedCalendar.tsx
+```
+
+#### **4. Multiple Server Conflicts**
+**Symptoms:**
+- `EADDRINUSE` port conflicts
+- Multiple processes running
+- Inconsistent behavior
+
+**Resolution:**
+```bash
+# Use comprehensive cleanup
+.claude/scripts/cleanup-all-servers.sh
+
+# Manual cleanup
+pkill -f "next dev" && sleep 2
+cd frontend-v2 && npm run dev
+```
+
+### **Rapid Recovery Commands**
+
+#### **Quick Fix (Under 60 seconds)**
+```bash
+# One-liner emergency recovery
+cd frontend-v2 && pkill -f "next dev"; rm -rf .next; npm run dev
+```
+
+#### **Complete Reset (Under 5 minutes)**
+```bash
+# Full environment reset
+cd frontend-v2
+pkill -f "next dev"
+rm -rf .next node_modules/.cache tsconfig.tsbuildinfo
+npm cache clean --force
+npm install
+npm run dev
+```
+
+#### **Dependency Recovery**
+```bash
+# Create minimal missing dependencies
+echo "export {};" > lib/touch-utils.ts
+echo "export {};" > lib/appointment-conflicts.ts
+echo "export const useCalendarAccessibility = () => ({});" > hooks/useCalendarAccessibility.ts
+echo "export const useResponsive = () => ({});" > hooks/useResponsive.ts
+echo "export {};" > lib/calendar-constants.ts
+touch styles/calendar-animations.css
+```
+
+### **Prevention with Claude Hooks**
+
+The frontend now has automated prevention hooks at `.claude/hooks.json`:
+
+- **`dependency_validation`**: Blocks edits if imports don't exist
+- **`server_stability_check`**: Tests compilation after component creation  
+- **`build_cache_monitor`**: Detects corrupted cache states
+- **`import_cycle_detection`**: Prevents circular import issues
+
+#### **Hook Override (Emergency Only)**
+```bash
+# Bypass hooks for critical fixes
+export CLAUDE_BYPASS_HOOKS=true
+# Remember to unset after emergency work
+unset CLAUDE_BYPASS_HOOKS
+```
+
+### **Server Health Monitoring**
+
+#### **Real-time Server Status**
+```bash
+# Monitor server health
+watch "curl -s -o /dev/null -w '%{http_code}' http://localhost:3000"
+
+# Watch error logs
+tail -f frontend-v2/server_output.log | grep -E "(Error|Failed|Warning)"
+```
+
+#### **Performance Indicators**
+- **Normal**: Server starts in <5 seconds
+- **Warning**: Server takes >10 seconds to start
+- **Critical**: Server fails to start or crashes within 1 minute
+
+### **Escalation Procedures**
+
+#### **If Standard Recovery Fails:**
+1. **Check for filesystem issues**: `df -h` and `ls -la frontend-v2/`
+2. **Verify Node.js version**: `node --version` (should be 18+)
+3. **Check system resources**: `htop` or `top`
+4. **Review recent changes**: `git log --oneline -10`
+5. **Consider environment variables**: Check `.env.local` for corruption
+
+#### **Nuclear Option (Last Resort)**
+```bash
+# Complete repository reset
+git stash
+git clean -fdx
+git reset --hard HEAD
+npm install
+cd frontend-v2 && npm install && npm run dev
+```
+
+### **Post-Recovery Verification**
+
+After successful recovery:
+```bash
+# Verify pages load
+curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/dashboard
+curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/calendar
+
+# Test hooks are working
+.claude/scripts/validate-dependencies.sh frontend-v2/components/UnifiedCalendar.tsx
+```
+
+### **Documentation Updates**
+
+When encountering new crash patterns:
+1. **Document the symptoms** in this section
+2. **Add recovery steps** with tested commands
+3. **Update hook scripts** if prevention is possible
+4. **Commit changes** to preserve institutional knowledge
 ```
 
 ## 🔄 V2 Migration Workflow
@@ -646,5 +867,116 @@ ENV_FILE=.env.staging alembic upgrade head
 5. **Document environment-specific configurations**
 6. **Use environment-specific credentials** (test vs production keys)
 
+## 🛡️ "DON'T BREAK WORKING THINGS" PROTECTION SYSTEM
+
+### Core Principle
+**Working systems must remain working.** Any change that breaks existing functionality is considered a critical failure, regardless of what new features it enables.
+
+### 🚨 Critical Authentication Dependency Rules
+
+#### Landing Page Independence (MANDATORY)
+1. **Homepage (`app/page.tsx`) MUST NOT depend on authentication state**
+   - No `useAuth` hooks in landing page components
+   - No conditional rendering based on user login status
+   - Must load completely even if backend is down
+   - Use static CTAs as fallback, auth-aware CTAs as enhancement
+
+2. **Error Boundary Requirements**
+   - ALL authentication-dependent components MUST be wrapped in error boundaries
+   - Error boundaries MUST provide static fallbacks
+   - Never let auth failures crash entire pages
+
+3. **Graceful Degradation Checklist**
+   ```typescript
+   // ✅ GOOD: Graceful degradation
+   function AuthAwareCTA() {
+     const { user, isLoading, error } = useAuth()
+     
+     // Show static CTA if auth fails
+     if (error || !isLoading && !user) {
+       return <StaticRegisterButton />
+     }
+     
+     return user ? <DashboardButton /> : <RegisterButton />
+   }
+   
+   // ❌ BAD: Crashes if auth fails
+   function BadCTA() {
+     const { user } = useAuth() // No error handling
+     return user ? <Dashboard /> : <Login />
+   }
+   ```
+
+#### Component Dependency Chain Rules
+
+1. **Independent Component Design**
+   - Components must work independently of external systems
+   - Backend dependencies must have fallbacks
+   - API failures must not crash UI components
+
+2. **Critical Path Protection**
+   - Registration flow MUST NOT depend on complex auth state
+   - Login page MUST work even if other systems fail  
+   - Homepage MUST load even if auth/analytics/marketing systems are down
+
+3. **Change Impact Analysis (MANDATORY)**
+   Before ANY modification to core components:
+   - ✅ List all components that import this file
+   - ✅ Identify all pages that use this component
+   - ✅ Test each dependent page still works
+   - ✅ Verify no authentication dependency loops
+
+### 🔍 Automated Protection Hooks
+
+The project uses Claude Hooks to automatically enforce these rules:
+
+1. **`auth_dependency_validation`**: Prevents auth dependencies in landing pages
+2. **`error_boundary_verification`**: Ensures error boundaries exist  
+3. **`homepage_resilience_test`**: Tests homepage works when backend is down
+4. **`component_dependency_check`**: Validates component independence
+
+### 🚨 Emergency Recovery Protocol
+
+If working functionality breaks:
+
+1. **IMMEDIATE ACTION**: Revert the breaking change
+   ```bash
+   git checkout HEAD~1 -- path/to/broken/file
+   ```
+
+2. **ANALYZE**: Identify the dependency chain that caused the break
+
+3. **FIX PROPERLY**: Implement with proper error boundaries and fallbacks
+
+4. **TEST**: Verify the fix doesn't break anything else
+
+### 🎯 Success Criteria
+
+Before marking ANY task complete:
+- ✅ All existing functionality still works
+- ✅ Homepage loads independently  
+- ✅ Registration flow works completely
+- ✅ Login flow works completely
+- ✅ No authentication dependency loops
+- ✅ All automated hooks pass
+
+### 📊 Component Risk Assessment
+
+**High Risk (Change with extreme caution):**
+- `app/page.tsx` (Homepage)
+- `hooks/useAuth.ts` (Authentication)
+- `components/ui/AuthCTAs.tsx` (Authentication CTAs)
+- `components/ui/CTASystem.tsx` (Global CTA system)
+
+**Medium Risk:**
+- Dashboard components
+- Registration components
+- API client files
+
+**Low Risk:**
+- Individual feature pages
+- Utility functions
+- Static components
+
 ---
-Last updated: 2025-07-03
+Last updated: 2025-07-04
