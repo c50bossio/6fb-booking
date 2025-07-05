@@ -18,6 +18,17 @@ import models
 from database import get_db
 from routers.auth import get_current_user
 from utils.auth import require_admin_role, get_current_user_optional
+
+def require_admin_or_enterprise_owner(current_user: schemas.User = Depends(get_current_user)) -> schemas.User:
+    """Allow admin or enterprise owner access"""
+    if current_user.role == "admin":
+        return current_user
+    if hasattr(current_user, 'unified_role') and current_user.unified_role in ["enterprise_owner", "shop_owner", "super_admin"]:
+        return current_user
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Admin or enterprise owner access required"
+    )
 from services import booking_service
 from services.appointment_enhancement import enhance_appointments_list
 from utils.rate_limit import (
@@ -443,7 +454,7 @@ def get_all_appointments(
     date_from: Optional[date] = Query(None, description="Start date filter"),
     date_to: Optional[date] = Query(None, description="End date filter"),
     barber_id: Optional[int] = Query(None, description="Filter by barber ID"),
-    current_user: schemas.User = Depends(require_admin_role),
+    current_user: schemas.User = Depends(require_admin_or_enterprise_owner),
     db: Session = Depends(get_db)
 ):
     """Get all appointments (admin/staff only)."""

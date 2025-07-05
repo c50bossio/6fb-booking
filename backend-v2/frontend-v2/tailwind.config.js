@@ -366,6 +366,8 @@ module.exports = {
         'slide-right': 'slideRight 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
         'pulse-gentle': 'pulseGentle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'pulse-strong': 'pulseStrong 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'bounce-gentle': 'bounceGentle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'slide-in-right': 'slideInRight 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
         
         // iOS-style animations with proper easing
         'ios-bounce': 'iosBounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
@@ -428,6 +430,10 @@ module.exports = {
           '0%': { transform: 'translate3d(-16px, 0, 0)', opacity: '0' },
           '100%': { transform: 'translate3d(0, 0, 0)', opacity: '1' },
         },
+        slideInRight: {
+          '0%': { transform: 'translate3d(100%, 0, 0)', opacity: '0' },
+          '100%': { transform: 'translate3d(0, 0, 0)', opacity: '1' },
+        },
         pulseGentle: {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.8' },
@@ -435,6 +441,10 @@ module.exports = {
         pulseStrong: {
           '0%, 100%': { opacity: '1', transform: 'scale(1)' },
           '50%': { opacity: '0.7', transform: 'scale(1.02)' },
+        },
+        bounceGentle: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-4px)' },
         },
         
         // Enhanced iOS-style keyframes

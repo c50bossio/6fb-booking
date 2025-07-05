@@ -76,11 +76,11 @@ const CalendarWeekView = React.memo(function CalendarWeekView({
   const scheduleGridRef = useRef<HTMLDivElement>(null)
   const isTouchDevice = TouchDragManager.isTouchDevice()
   
+  // Enhanced drag & drop with optimistic updates - MUST BE FIRST to avoid initialization error
+  const [optimisticUpdates, setOptimisticUpdates] = useState<Map<number, { originalStartTime: string; newStartTime: string }>>(() => new Map())
+  
   // Performance monitoring and optimization
   const { measureRender, optimizedAppointmentFilter, memoizedDateCalculations, memoizedStatusColor } = useCalendarPerformance()
-  
-  // Enhanced drag & drop with optimistic updates - MOVED UP to avoid initialization error
-  const [optimisticUpdates, setOptimisticUpdates] = useState<Map<number, { originalStartTime: string; newStartTime: string }>>(new Map())
   
   // Performance monitoring
   useEffect(() => {

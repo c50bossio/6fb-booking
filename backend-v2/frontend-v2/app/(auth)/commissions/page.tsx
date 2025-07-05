@@ -21,7 +21,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useToast } from '@/hooks/use-toast'
 import { fetchAPI } from '@/lib/api'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils'
+import { formatters } from '@/lib/formatters'
 
 interface CommissionData {
   barber_id: number
@@ -427,7 +428,7 @@ export default function CommissionsPage() {
                       {payoutHistory.map((payout) => (
                         <tr key={payout.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                            {formatDate(payout.processed_at || payout.period_end)}
+                            {formatters.date(payout.processed_at || payout.period_end)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900 dark:text-white">

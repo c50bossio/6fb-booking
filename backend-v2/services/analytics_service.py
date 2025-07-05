@@ -29,15 +29,17 @@ class AnalyticsService:
         self, 
         user_id: Optional[int] = None,
         date_range: Optional[DateRange] = None,
-        group_by: str = "day"  # day, week, month, year
+        group_by: str = "day",  # day, week, month, year
+        user_ids: Optional[List[int]] = None  # For organization filtering
     ) -> Dict[str, Any]:
         """
-        Get revenue analytics for a specific user or all users
+        Get revenue analytics for a specific user, organization, or all users
         
         Args:
-            user_id: Optional user ID to filter by
+            user_id: Optional single user ID to filter by (legacy)
             date_range: Optional date range to filter by
             group_by: Grouping period (day, week, month, year)
+            user_ids: Optional list of user IDs for organization filtering
             
         Returns:
             Dictionary containing revenue analytics data
@@ -50,7 +52,10 @@ class AnalyticsService:
             func.avg(Payment.amount).label('average_transaction')
         ).filter(Payment.status == 'completed')
         
-        if user_id:
+        # Support both single user_id and multiple user_ids
+        if user_ids:
+            query = query.filter(Payment.user_id.in_(user_ids))
+        elif user_id:
             query = query.filter(Payment.user_id == user_id)
             
         if date_range:
@@ -104,21 +109,26 @@ class AnalyticsService:
     def get_appointment_analytics(
         self,
         user_id: Optional[int] = None,
-        date_range: Optional[DateRange] = None
+        date_range: Optional[DateRange] = None,
+        user_ids: Optional[List[int]] = None  # For organization filtering
     ) -> Dict[str, Any]:
         """
         Get appointment analytics including completion rates, no-shows, etc.
         
         Args:
-            user_id: Optional user ID to filter by
+            user_id: Optional single user ID to filter by (legacy)
             date_range: Optional date range to filter by
+            user_ids: Optional list of user IDs for organization filtering
             
         Returns:
             Dictionary containing appointment analytics
         """
         query = self.db.query(Appointment)
         
-        if user_id:
+        # Support both single user_id and multiple user_ids
+        if user_ids:
+            query = query.filter(Appointment.user_id.in_(user_ids))
+        elif user_id:
             query = query.filter(Appointment.user_id == user_id)
             
         if date_range:
@@ -478,21 +488,23 @@ class AnalyticsService:
     def get_advanced_dashboard_summary(
         self,
         user_id: Optional[int] = None,
-        date_range: Optional[DateRange] = None
+        date_range: Optional[DateRange] = None,
+        user_ids: Optional[List[int]] = None  # For organization filtering
     ) -> Dict[str, Any]:
         """
         Get an advanced comprehensive dashboard summary with enhanced analytics
         
         Args:
-            user_id: Optional user ID to filter by
+            user_id: Optional single user ID to filter by (legacy)
             date_range: Optional date range to filter by
+            user_ids: Optional list of user IDs for organization filtering
             
         Returns:
             Dictionary containing advanced dashboard summary data
         """
-        # Get all analytics data
-        revenue_analytics = self.get_revenue_analytics(user_id, date_range, "month")
-        appointment_analytics = self.get_appointment_analytics(user_id, date_range)
+        # Get all analytics data with organization support
+        revenue_analytics = self.get_revenue_analytics(user_id, date_range, "month", user_ids)
+        appointment_analytics = self.get_appointment_analytics(user_id, date_range, user_ids)
         retention_metrics = self.get_client_retention_metrics(user_id, date_range)
         clv_analytics = self.get_client_lifetime_value_analytics(user_id, date_range)
         pattern_analytics = self.get_appointment_patterns_analytics(user_id, date_range)

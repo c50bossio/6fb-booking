@@ -46,12 +46,35 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             # Enhanced Content Security Policy
             "Content-Security-Policy": (
                 "default-src 'self'; "
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.google-analytics.com https://www.googletagmanager.com; "
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' "
+                    "https://js.stripe.com "
+                    "https://www.google-analytics.com "
+                    "https://www.googletagmanager.com "
+                    "https://connect.facebook.net "  # Meta Pixel
+                    "https://*.facebook.com "        # Meta domains
+                    "https://www.googleadservices.com "  # Google Ads
+                    "https://googleads.g.doubleclick.net "  # Google Ads conversions
+                    "https://www.google.com; "  # Google Ads gtag
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-                "img-src 'self' data: https: blob:; "
+                "img-src 'self' data: https: blob: "
+                    "https://www.facebook.com "  # Meta Pixel tracking
+                    "https://www.google-analytics.com "  # GA tracking pixels
+                    "https://www.googletagmanager.com "  # GTM pixels
+                    "https://googleads.g.doubleclick.net "  # Google Ads pixels
+                    "https://www.google.com; "  # Google conversion pixels
                 "font-src 'self' https://fonts.gstatic.com; "
-                "connect-src 'self' https://api.stripe.com https://www.google-analytics.com https://analytics.google.com; "
-                "frame-src 'self' https://js.stripe.com; "
+                "connect-src 'self' "
+                    "https://api.stripe.com "
+                    "https://www.google-analytics.com "
+                    "https://analytics.google.com "
+                    "https://region1.google-analytics.com "  # GA4 endpoint
+                    "https://graph.facebook.com "  # Meta Graph API
+                    "https://www.facebook.com "  # Meta Pixel endpoint
+                    "https://googleads.g.doubleclick.net "  # Google Ads
+                    "https://www.google-analytics.com/g/collect "  # GA4 collection
+                    "https://stats.g.doubleclick.net; "  # Google stats
+                "frame-src 'self' https://js.stripe.com "
+                    "https://bid.g.doubleclick.net; "  # Google Ads frames
                 "media-src 'self' data: blob:; "
                 "object-src 'none'; "
                 "base-uri 'self'; "

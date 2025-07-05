@@ -141,7 +141,7 @@ export class CalendarApiEnhanced {
     priority?: number
   }>): Promise<any[]> {
     const calendarRequests = requests.map((req, index) => {
-      let endpoint = '/api/v1/appointments'
+      let endpoint = '/api/v1/appointments/'
       const params = new URLSearchParams()
       
       if (req.dateRange) {

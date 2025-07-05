@@ -120,7 +120,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <div className="min-h-screen bg-gray-50 dark:bg-dark-surface-100 transition-colors duration-200">
         {/* Desktop Layout */}
         {mounted && !isMobile && !isPublicRoute && (
-          <div className="flex h-screen overflow-hidden">
+          <div className="flex min-h-screen">
             {/* Sidebar */}
             <Sidebar
               user={user}
@@ -139,8 +139,8 @@ export function AppLayout({ children }: AppLayoutProps) {
               />
               
               {/* Page Content */}
-              <main className="flex-1 overflow-auto">
-                <div className="h-full">
+              <main className="flex-1">
+                <div>
                   {error && !isPublicRoute ? (
                     <div className="p-6">
                       <div className="bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-800 rounded-ios-lg p-4">
@@ -174,7 +174,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
         {/* Mobile Layout */}
         {mounted && isMobile && !isPublicRoute && (
-          <div className="flex flex-col h-screen">
+          <div className="flex flex-col min-h-screen">
             {/* Header */}
             <Header
               user={user}
@@ -184,7 +184,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             />
             
             {/* Page Content */}
-            <main className="flex-1 overflow-auto pb-20">
+            <main className="flex-1 pb-20">
               {error && !isPublicRoute ? (
                 <div className="p-4">
                   <div className="bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-800 rounded-ios-lg p-4">
@@ -217,7 +217,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
         {/* Default layout during SSR/initial load - shows desktop layout */}
         {!mounted && !isPublicRoute && (
-          <div className="flex h-screen overflow-hidden">
+          <div className="flex min-h-screen">
             {/* Sidebar */}
             <Sidebar
               user={user}
@@ -236,8 +236,8 @@ export function AppLayout({ children }: AppLayoutProps) {
               />
               
               {/* Page Content */}
-              <main className="flex-1 overflow-auto">
-                <div className="h-full">
+              <main className="flex-1">
+                <div>
                   {error && !isPublicRoute ? (
                     <div className="p-6">
                       <div className="bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-800 rounded-ios-lg p-4">

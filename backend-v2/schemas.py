@@ -49,6 +49,45 @@ class RegistrationResponse(BaseModel):
     message: str
     user: 'User'
 
+class CompleteRegistrationData(BaseModel):
+    """Complete registration data including user account and organization setup"""
+    # User account data
+    firstName: str = Field(..., min_length=1, max_length=100)
+    lastName: str = Field(..., min_length=1, max_length=100)
+    email: EmailStr
+    password: str = Field(..., min_length=8)
+    user_type: UserType
+    
+    # Business/Organization data
+    businessName: str = Field(..., min_length=1, max_length=255)
+    businessType: str = Field(..., pattern="^(individual|studio|salon|enterprise)$")
+    address: Dict[str, str]  # street, city, state, zipCode
+    phone: Optional[str] = None
+    website: Optional[str] = None
+    chairCount: int = Field(1, ge=1, le=1000)
+    barberCount: int = Field(1, ge=1, le=1000)
+    description: Optional[str] = None
+    
+    # Pricing data
+    pricingInfo: Optional[Dict[str, Any]] = None  # chairs, monthlyTotal, tier
+    
+    # Consent data
+    consent: Dict[str, bool]  # terms, privacy, marketing, testData
+    
+    @validator('consent')
+    def validate_consent(cls, v):
+        required_consents = ['terms', 'privacy']
+        for consent_type in required_consents:
+            if consent_type not in v or not v[consent_type]:
+                raise ValueError(f'{consent_type} consent is required')
+        return v
+
+class CompleteRegistrationResponse(BaseModel):
+    """Response from complete registration with user and organization"""
+    message: str
+    user: 'User'
+    organization: 'OrganizationResponse'
+
 class ChangePasswordRequest(BaseModel):
     current_password: str
     new_password: str
@@ -101,13 +140,55 @@ class UserCreate(UserBase):
             raise ValueError('Password must contain at least one digit')
         return v
 
+class PrimaryOrganization(BaseModel):
+    """Primary organization information for User schema"""
+    id: int
+    name: str
+    billing_plan: str
+    subscription_status: str
+
 class User(UserBase):
     id: int
     created_at: datetime
+    updated_at: Optional[datetime] = None
+    
+    # Unified Role System
+    unified_role: Optional[str] = None
+    role_migrated: Optional[bool] = False
+    
+    # Legacy fields (deprecated, kept for backwards compatibility)
     role: Optional[str] = "user"
+    user_type: Optional[str] = None
+    
+    # Core user fields
     timezone: Optional[str] = "UTC"
     email_verified: bool = False
     verified_at: Optional[datetime] = None
+    
+    # Organization fields (for new organization system)
+    primary_organization_id: Optional[int] = None
+    primary_organization: Optional[PrimaryOrganization] = None
+    
+    # Trial and subscription fields (legacy - prefer organization-based)
+    trial_started_at: Optional[datetime] = None
+    trial_expires_at: Optional[datetime] = None
+    trial_active: Optional[bool] = False
+    subscription_status: Optional[str] = None
+    is_trial_active: Optional[bool] = False
+    trial_days_remaining: Optional[int] = None
+    
+    # Permission helpers (computed on frontend)
+    is_business_owner: Optional[bool] = False
+    is_staff_member: Optional[bool] = False
+    is_system_admin: Optional[bool] = False
+    can_manage_billing: Optional[bool] = False
+    can_manage_staff: Optional[bool] = False
+    can_view_analytics: Optional[bool] = False
+    
+    # Onboarding fields
+    onboarding_completed: Optional[bool] = False
+    onboarding_status: Optional[Dict[str, Any]] = None
+    is_new_user: Optional[bool] = True
     
     class Config:
         from_attributes = True
@@ -130,6 +211,15 @@ class UserInDB(User):
 
 # Timezone schemas
 class TimezoneUpdate(BaseModel):
+    timezone: str
+
+class OnboardingUpdate(BaseModel):
+    completed: Optional[bool] = None
+    completed_steps: Optional[List[str]] = None
+    current_step: Optional[int] = None
+    skipped: Optional[bool] = None
+
+class TimezoneUpdateValidated(BaseModel):
     timezone: str = Field(..., description="Valid timezone identifier (e.g., 'America/New_York')")
     
     @validator('timezone')
@@ -2347,5 +2437,347 @@ class TopClickedUrlsResponse(BaseModel):
         from_attributes = True
 
 
+# Organization Schemas
+from models.organization import BillingPlan as BillingPlanEnum, UserRole as UserRoleEnum, OrganizationType as OrganizationTypeEnum
+
+class BillingPlan(str, Enum):
+    INDIVIDUAL = "individual"
+    STUDIO = "studio"
+    SALON = "salon"
+    ENTERPRISE = "enterprise"
+
+class UserRole(str, Enum):
+    OWNER = "owner"
+    MANAGER = "manager"
+    BARBER = "barber"
+    RECEPTIONIST = "receptionist"
+    VIEWER = "viewer"
+
+class OrganizationType(str, Enum):
+    HEADQUARTERS = "headquarters"
+    LOCATION = "location"
+    FRANCHISE = "franchise"
+    INDEPENDENT = "independent"
+
+class OrganizationBase(BaseModel):
+    """Base organization schema"""
+    name: str = Field(..., min_length=1, max_length=255)
+    slug: str = Field(..., min_length=1, max_length=100)
+    description: Optional[str] = None
+    street_address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    zip_code: Optional[str] = None
+    country: str = "US"
+    phone: Optional[str] = None
+    email: Optional[EmailStr] = None
+    website: Optional[str] = None
+    timezone: str = "UTC"
+    business_hours: Optional[Dict[str, Any]] = None
+
+class OrganizationCreate(OrganizationBase):
+    """Schema for creating an organization"""
+    chairs_count: int = Field(1, ge=1, le=1000)
+    billing_plan: BillingPlan = BillingPlan.INDIVIDUAL
+    organization_type: OrganizationType = OrganizationType.INDEPENDENT
+    parent_organization_id: Optional[int] = None
+    billing_contact_email: Optional[EmailStr] = None
+    tax_id: Optional[str] = None
+
+class OrganizationUpdate(BaseModel):
+    """Schema for updating an organization"""
+    name: Optional[str] = Field(None, min_length=1, max_length=255)
+    description: Optional[str] = None
+    street_address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    zip_code: Optional[str] = None
+    country: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[EmailStr] = None
+    website: Optional[str] = None
+    timezone: Optional[str] = None
+    business_hours: Optional[Dict[str, Any]] = None
+    chairs_count: Optional[int] = Field(None, ge=1, le=1000)
+    billing_plan: Optional[BillingPlan] = None
+    billing_contact_email: Optional[EmailStr] = None
+    tax_id: Optional[str] = None
+    monthly_revenue_limit: Optional[float] = Field(None, ge=0)
+    features_enabled: Optional[Dict[str, Any]] = None
+
+class OrganizationResponse(OrganizationBase):
+    """Schema for organization response"""
+    id: int
+    chairs_count: int
+    billing_plan: str
+    subscription_status: str
+    organization_type: str
+    parent_organization_id: Optional[int] = None
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+    
+    # Computed fields
+    total_chairs_count: Optional[int] = None
+    is_enterprise: Optional[bool] = None
+    enabled_features: Optional[Dict[str, Any]] = None
+    
+    # Billing fields
+    monthly_revenue_limit: Optional[float] = None
+    billing_contact_email: Optional[str] = None
+    tax_id: Optional[str] = None
+    stripe_account_id: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+class UserOrganizationBase(BaseModel):
+    """Base user-organization relationship schema"""
+    role: UserRole = UserRole.BARBER
+    is_primary: bool = False
+    permissions: Optional[Dict[str, Any]] = None
+    can_manage_billing: bool = False
+    can_manage_staff: bool = False
+    can_view_analytics: bool = True
+
+class UserOrganizationCreate(UserOrganizationBase):
+    """Schema for creating user-organization relationship"""
+    user_id: int
+    organization_id: int
+
+class UserOrganizationUpdate(BaseModel):
+    """Schema for updating user-organization relationship"""
+    role: Optional[UserRole] = None
+    is_primary: Optional[bool] = None
+    permissions: Optional[Dict[str, Any]] = None
+    can_manage_billing: Optional[bool] = None
+    can_manage_staff: Optional[bool] = None
+    can_view_analytics: Optional[bool] = None
+
+class UserOrganizationResponse(UserOrganizationBase):
+    """Schema for user-organization response"""
+    id: int
+    user_id: int
+    organization_id: int
+    joined_at: datetime
+    created_at: datetime
+    last_accessed_at: Optional[datetime] = None
+    
+    # Related data
+    organization: Optional[OrganizationResponse] = None
+
+    class Config:
+        from_attributes = True
+
+class OrganizationWithUsers(OrganizationResponse):
+    """Organization with associated users"""
+    user_organizations: List[UserOrganizationResponse] = []
+    total_users: Optional[int] = None
+
+class UserWithOrganizations(BaseModel):
+    """User with their organizations"""
+    id: int
+    email: str
+    name: str
+    organizations: List[UserOrganizationResponse] = []
+    primary_organization: Optional[OrganizationResponse] = None
+
+    class Config:
+        from_attributes = True
+
+class OrganizationStatsResponse(BaseModel):
+    """Organization statistics response"""
+    organization_id: int
+    total_chairs: int
+    active_staff: int
+    monthly_appointments: int
+    monthly_revenue: float
+    trial_days_remaining: Optional[int] = None
+    subscription_status: str
+    enabled_features: Dict[str, Any]
+
+class BillingPlanFeatures(BaseModel):
+    """Features available for each billing plan"""
+    appointments: bool = True
+    payments: bool = True
+    analytics: bool = True
+    sms_notifications: bool = True
+    email_marketing: bool = False
+    google_calendar: bool = True
+    staff_management: bool = False
+    inventory_management: bool = False
+    multi_location: bool = False
+    api_access: bool = False
+    white_label: bool = False
+    max_staff: Optional[int] = None
+
+# Billing schemas
+class BillingPlanTier(BaseModel):
+    """Pricing tier for billing plans"""
+    chairs_from: int
+    chairs_to: Optional[int] = None  # None means unlimited
+    price_per_chair_monthly: float
+    price_per_chair_yearly: float  # Yearly price per chair (with discount)
+
+class BillingPlanResponse(BaseModel):
+    """Available billing plans with pricing tiers"""
+    plan_name: str
+    base_features: BillingPlanFeatures
+    pricing_tiers: List[BillingPlanTier]
+    trial_days: int = 14
+    minimum_chairs: int = 1
+    yearly_discount_percentage: float = 20.0  # 20% discount for yearly billing
+
+class PriceCalculationRequest(BaseModel):
+    """Request body for price calculation"""
+    chairs_count: int = Field(..., ge=1, description="Number of chairs to calculate pricing for")
+    billing_cycle: str = Field("monthly", pattern="^(monthly|yearly)$", description="Billing cycle: monthly or yearly")
+    
+    @validator('chairs_count')
+    def validate_chairs(cls, v):
+        if v < 1:
+            raise ValueError('Chairs count must be at least 1')
+        if v > 1000:
+            raise ValueError('Chairs count cannot exceed 1000')
+        return v
+
+class PriceCalculationResponse(BaseModel):
+    """Response with calculated pricing"""
+    chairs_count: int
+    billing_cycle: str
+    price_per_chair: float
+    total_monthly: float
+    total_yearly: float
+    savings_yearly: float  # Amount saved with yearly billing
+    applicable_tier: BillingPlanTier
+    features_included: BillingPlanFeatures
+
+class BillingContact(BaseModel):
+    """Billing contact information"""
+    name: str
+    email: EmailStr
+    phone: Optional[str] = None
+    address_line1: Optional[str] = None
+    address_line2: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    postal_code: Optional[str] = None
+    country: str = "US"
+
+class SubscriptionCreateRequest(BaseModel):
+    """Create subscription request"""
+    organization_id: int
+    chairs_count: int = Field(..., ge=1, description="Number of chairs for subscription")
+    billing_cycle: str = Field("monthly", pattern="^(monthly|yearly)$")
+    payment_method_id: str  # Stripe payment method ID
+    billing_contact: BillingContact
+    promo_code: Optional[str] = None
+    
+    @validator('chairs_count')
+    def validate_chairs(cls, v):
+        if v < 1:
+            raise ValueError('Chairs count must be at least 1')
+        return v
+
+class SubscriptionUpdateRequest(BaseModel):
+    """Update subscription request"""
+    chairs_count: Optional[int] = Field(None, ge=1, description="New number of chairs")
+    billing_cycle: Optional[str] = Field(None, pattern="^(monthly|yearly)$")
+    payment_method_id: Optional[str] = None  # Update payment method
+    billing_contact: Optional[BillingContact] = None
+    
+    @validator('chairs_count')
+    def validate_chairs(cls, v):
+        if v is not None and v < 1:
+            raise ValueError('Chairs count must be at least 1')
+        return v
+
+class SubscriptionResponse(BaseModel):
+    """Full subscription details"""
+    id: int
+    organization_id: int
+    stripe_subscription_id: str
+    stripe_customer_id: str
+    status: str  # active, trialing, past_due, canceled, incomplete
+    chairs_count: int
+    billing_cycle: str
+    current_period_start: datetime
+    current_period_end: datetime
+    trial_end: Optional[datetime] = None
+    trial_days_remaining: Optional[int] = None
+    cancel_at_period_end: bool = False
+    canceled_at: Optional[datetime] = None
+    price_per_chair: float
+    total_monthly: float
+    total_yearly: float
+    next_billing_date: datetime
+    payment_method_last4: Optional[str] = None
+    payment_method_brand: Optional[str] = None
+    billing_contact: BillingContact
+    features_enabled: BillingPlanFeatures
+    created_at: datetime
+    updated_at: datetime
+    
+    @validator('trial_days_remaining')
+    def calculate_trial_days(cls, v, values):
+        if 'trial_end' in values and values['trial_end']:
+            days_remaining = (values['trial_end'] - datetime.utcnow()).days
+            return max(0, days_remaining)
+        return v
+
+    class Config:
+        from_attributes = True
+
+class SubscriptionCancelRequest(BaseModel):
+    """Cancel subscription request"""
+    organization_id: int
+    reason: Optional[str] = None
+    feedback: Optional[str] = None
+    cancel_immediately: bool = False  # If False, cancels at end of billing period
+
+class SubscriptionCancelResponse(BaseModel):
+    """Response after canceling subscription"""
+    message: str
+    subscription_id: int
+    cancel_at: datetime  # When the subscription will be canceled
+    refund_amount: Optional[float] = None  # If any refund is due
+
+class PaymentHistoryItem(BaseModel):
+    """Individual payment history item"""
+    id: str  # Stripe payment intent ID
+    amount: float
+    currency: str = "usd"
+    status: str  # succeeded, failed, pending
+    description: str
+    created_at: datetime
+    invoice_url: Optional[str] = None
+
+class PaymentHistoryResponse(BaseModel):
+    """Payment history for organization"""
+    organization_id: int
+    payments: List[PaymentHistoryItem]
+    total_paid: float
+    next_payment_date: Optional[datetime] = None
+    next_payment_amount: Optional[float] = None
+
+class TrialStatusResponse(BaseModel):
+    """Trial status information"""
+    organization_id: int
+    is_in_trial: bool
+    trial_start_date: datetime
+    trial_end_date: datetime
+    trial_days_remaining: int
+    features_available: BillingPlanFeatures
+    requires_payment_method: bool
+    
+    @validator('trial_days_remaining')
+    def calculate_remaining_days(cls, v, values):
+        if 'trial_end_date' in values:
+            days_remaining = (values['trial_end_date'] - datetime.utcnow()).days
+            return max(0, days_remaining)
+        return v
+
 # Model rebuilds to resolve forward references
 SMSConversationResponse.model_rebuild()
+OrganizationResponse.model_rebuild()
+UserOrganizationResponse.model_rebuild()

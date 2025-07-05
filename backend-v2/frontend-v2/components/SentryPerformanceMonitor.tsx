@@ -217,7 +217,7 @@ export function SentryPerformanceMonitor({
  */
 export function usePerformanceTracking(feature: string) {
   return {
-    trackOperation: async <T>(
+    trackOperation: async <T,>(
       operationName: string,
       operation: () => Promise<T> | T,
       metadata?: Record<string, any>

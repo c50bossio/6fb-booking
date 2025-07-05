@@ -11,7 +11,7 @@ import { Checkbox } from '@/components/ui/Checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/RadioGroup';
 import { Textarea } from '@/components/ui/Textarea';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { Progress } from '@/components/ui/Progress';
+import { Progress } from '@/components/ui/progress';
 import { format, addDays, addWeeks, addMonths } from 'date-fns';
 import { 
   Calendar, 

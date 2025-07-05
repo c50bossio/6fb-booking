@@ -1,0 +1,247 @@
+{
+  "widgets": [
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 0,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AWS/ElastiCache", "CPUUtilization", "CacheClusterId", "bookedbarber-redis-prod"],
+          [".", "DatabaseMemoryUsagePercentage", ".", "."],
+          [".", "NetworkBytesIn", ".", "."],
+          [".", "NetworkBytesOut", ".", "."]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-east-1",
+        "title": "BookedBarber Redis - System Metrics",
+        "period": 300,
+        "stat": "Average",
+        "yAxis": {
+          "left": {
+            "min": 0,
+            "max": 100
+          }
+        },
+        "annotations": {
+          "horizontal": [
+            {
+              "label": "High CPU Warning",
+              "value": 70
+            },
+            {
+              "label": "High Memory Warning", 
+              "value": 80
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12,
+      "y": 0,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AWS/ElastiCache", "CacheHits", "CacheClusterId", "bookedbarber-redis-prod"],
+          [".", "CacheMisses", ".", "."],
+          [".", "CacheHitRate", ".", "."]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-east-1",
+        "title": "BookedBarber Redis - Cache Performance",
+        "period": 300,
+        "stat": "Average",
+        "yAxis": {
+          "left": {
+            "min": 0
+          }
+        },
+        "annotations": {
+          "horizontal": [
+            {
+              "label": "Low Hit Rate Warning",
+              "value": 85
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 6,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AWS/ElastiCache", "CurrConnections", "CacheClusterId", "bookedbarber-redis-prod"],
+          [".", "NewConnections", ".", "."]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-east-1",
+        "title": "BookedBarber Redis - Connections",
+        "period": 300,
+        "stat": "Average",
+        "yAxis": {
+          "left": {
+            "min": 0
+          }
+        },
+        "annotations": {
+          "horizontal": [
+            {
+              "label": "High Connection Warning",
+              "value": 45
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 8,
+      "y": 6,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AWS/ElastiCache", "Evictions", "CacheClusterId", "bookedbarber-redis-prod"],
+          [".", "Reclaimed", ".", "."]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-east-1",
+        "title": "BookedBarber Redis - Memory Management",
+        "period": 300,
+        "stat": "Sum",
+        "yAxis": {
+          "left": {
+            "min": 0
+          }
+        },
+        "annotations": {
+          "horizontal": [
+            {
+              "label": "High Evictions Warning",
+              "value": 100
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 16,
+      "y": 6,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AWS/ElastiCache", "ReplicationLag", "CacheClusterId", "bookedbarber-redis-prod"]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-east-1",
+        "title": "BookedBarber Redis - Replication",
+        "period": 300,
+        "stat": "Average",
+        "yAxis": {
+          "left": {
+            "min": 0
+          }
+        }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 12,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AWS/ElastiCache", "StringBasedCmds", "CacheClusterId", "bookedbarber-redis-prod"],
+          [".", "HashBasedCmds", ".", "."],
+          [".", "ListBasedCmds", ".", "."],
+          [".", "SetBasedCmds", ".", "."],
+          [".", "SortedSetBasedCmds", ".", "."]
+        ],
+        "view": "timeSeries",
+        "stacked": true,
+        "region": "us-east-1",
+        "title": "BookedBarber Redis - Command Types",
+        "period": 300,
+        "stat": "Sum",
+        "yAxis": {
+          "left": {
+            "min": 0
+          }
+        }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12,
+      "y": 12,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AWS/ElastiCache", "GetTypeCmds", "CacheClusterId", "bookedbarber-redis-prod"],
+          [".", "SetTypeCmds", ".", "."],
+          [".", "KeybasedCmds", ".", "."],
+          [".", "HyperLogLogBasedCmds", ".", "."]
+        ],
+        "view": "timeSeries",
+        "stacked": true,
+        "region": "us-east-1",
+        "title": "BookedBarber Redis - Operation Types",
+        "period": 300,
+        "stat": "Sum",
+        "yAxis": {
+          "left": {
+            "min": 0
+          }
+        }
+      }
+    },
+    {
+      "type": "log",
+      "x": 0,
+      "y": 18,
+      "width": 24,
+      "height": 6,
+      "properties": {
+        "query": "SOURCE '/aws/elasticache/bookedbarber' | fields @timestamp, @message\n| filter @message like /ERROR/\n| sort @timestamp desc\n| limit 100",
+        "region": "us-east-1",
+        "title": "BookedBarber Redis - Error Logs",
+        "view": "table"
+      }
+    }
+  ],
+  "properties": {
+    "metrics": [
+      ["AWS/ElastiCache", "CPUUtilization", "CacheClusterId", "bookedbarber-redis-prod"],
+      [".", "DatabaseMemoryUsagePercentage", ".", "."],
+      [".", "CacheHits", ".", "."],
+      [".", "CacheMisses", ".", "."],
+      [".", "CurrConnections", ".", "."],
+      [".", "Evictions", ".", "."],
+      [".", "NetworkBytesIn", ".", "."],
+      [".", "NetworkBytesOut", ".", "."]
+    ],
+    "view": "timeSeries",
+    "stacked": false,
+    "region": "us-east-1",
+    "title": "BookedBarber Redis Dashboard",
+    "period": 300,
+    "stat": "Average"
+  }
+}

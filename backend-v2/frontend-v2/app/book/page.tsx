@@ -22,6 +22,7 @@ import {
   isToday as checkIsToday,
   isTomorrow as checkIsTomorrow
 } from '@/lib/timezone'
+import { useCustomerPixels, fireConversionEvent } from '@/hooks/useCustomerPixels'
 
 
 const SERVICES = [
@@ -55,6 +56,12 @@ export default function BookPage() {
   
   // Get user timezone on mount and parse URL parameters
   const searchParams = useSearchParams()
+  
+  // Get organization slug from URL parameter
+  const organizationSlug = searchParams.get('org') || searchParams.get('shop') || undefined
+  
+  // Load customer tracking pixels
+  const { pixelsLoaded, error: pixelError } = useCustomerPixels(organizationSlug)
   
   useEffect(() => {
     setUserTimezone(getTimezoneDisplayName())
@@ -217,6 +224,11 @@ export default function BookPage() {
   const handleServiceSelect = (service: string) => {
     setSelectedService(service)
     setStep(2)
+    
+    // Fire event when booking flow starts
+    if (pixelsLoaded) {
+      fireConversionEvent('booking_flow_started', 0, 'USD')
+    }
   }
 
   const handleDateSelect = (date: Date) => {
@@ -267,6 +279,12 @@ export default function BookPage() {
         setGuestBookingResponse(guestBooking)
         setBookingId(guestBooking.id)
         setStep(4)
+        
+        // Fire conversion event for tracking pixels
+        if (pixelsLoaded) {
+          const service = SERVICES.find(s => s.id === selectedService)
+          fireConversionEvent('booking_completed', service?.amount || 0, 'USD')
+        }
       }
     } catch (err: any) {
       console.error('Quick booking failed:', err)
@@ -295,6 +313,12 @@ export default function BookPage() {
         const booking = await appointmentsAPI.create(appointmentData)
         setBookingId(booking.id)
         setStep(4)
+        
+        // Fire conversion event for tracking pixels
+        if (pixelsLoaded) {
+          const service = SERVICES.find(s => s.id === selectedService)
+          fireConversionEvent('booking_completed', service?.amount || 0, 'USD')
+        }
       } else {
         // Guest user booking
         if (!guestInfo.first_name || !guestInfo.last_name || !guestInfo.email || !guestInfo.phone) {
@@ -313,6 +337,12 @@ export default function BookPage() {
         setGuestBookingResponse(guestBooking)
         setBookingId(guestBooking.id)
         setStep(4)
+        
+        // Fire conversion event for tracking pixels
+        if (pixelsLoaded) {
+          const service = SERVICES.find(s => s.id === selectedService)
+          fireConversionEvent('booking_completed', service?.amount || 0, 'USD')
+        }
       }
     } catch (err: any) {
       console.error('Booking failed:', err)

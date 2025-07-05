@@ -48,7 +48,9 @@ import {
 import type { ComponentType } from 'react'
 
 // Types
-export type UserRole = 'user' | 'barber' | 'admin' | 'super_admin'
+export type UserRole = 'user' | 'barber' | 'admin' | 'super_admin' | 
+  'enterprise_owner' | 'shop_owner' | 'individual_barber' | 
+  'shop_manager' | 'receptionist' | 'client' | 'platform_admin'
 
 export interface NavigationItem {
   name: string
@@ -81,28 +83,59 @@ export interface BreadcrumbItem {
   isLast?: boolean
 }
 
-// Simplified navigation filter - always shows basic navigation
+// Enhanced navigation filter that handles unified roles
 export function filterNavigationByRole(
   items: NavigationItem[],
   userRole?: string | null
 ): NavigationItem[] {
-  // Always show basic navigation items - no complex filtering
+  // Always show basic navigation items
   const basicItems = [
     items.find(item => item.name === 'Dashboard'),
     items.find(item => item.name === 'Calendar & Scheduling'),
     items.find(item => item.name === 'Settings')
   ].filter(Boolean) as NavigationItem[]
   
-  // If we have a user role, show role-specific items too
-  if (userRole) {
-    const roleItems = items.filter(item => {
-      if (!item.roles || item.roles.length === 0) return false
-      return item.roles.includes(userRole as UserRole)
-    })
-    return [...basicItems, ...roleItems]
+  if (!userRole) {
+    return basicItems
   }
   
-  return basicItems
+  // Map unified roles to equivalent access levels
+  const roleMapping: Record<string, string[]> = {
+    // Platform-level roles
+    'super_admin': ['super_admin', 'admin', 'barber'],
+    'platform_admin': ['super_admin', 'admin', 'barber'],
+    
+    // Business owner roles - enterprise owners get everything
+    'enterprise_owner': ['super_admin', 'admin', 'barber'],
+    'shop_owner': ['admin', 'barber'],
+    'individual_barber': ['barber'],
+    
+    // Staff roles
+    'shop_manager': ['admin', 'barber'],
+    'barber': ['barber'],
+    'receptionist': ['barber'], // Can manage appointments
+    
+    // Client roles
+    'client': ['user'],
+    'user': ['user']
+  }
+  
+  // Get equivalent roles for the user's role
+  const equivalentRoles = roleMapping[userRole] || [userRole]
+  
+  // Filter items based on role permissions
+  const roleItems = items.filter(item => {
+    if (!item.roles || item.roles.length === 0) return false
+    
+    // Check if any of the item's required roles match the user's equivalent roles
+    return item.roles.some(role => equivalentRoles.includes(role))
+  })
+  
+  // Remove duplicates (basic items might also be in roleItems)
+  const allItemNames = new Set(basicItems.map(item => item.name))
+  const additionalItems = roleItems.filter(item => !allItemNames.has(item.name))
+  
+  return [...basicItems, ...additionalItems]
 }
 
 // Main navigation items (for sidebar)
@@ -286,6 +319,13 @@ export const navigationItems: NavigationItem[] = [
         roles: ['admin', 'super_admin']
       },
       {
+        name: 'Staff Invitations',
+        href: '/dashboard/staff/invitations',
+        icon: UserPlusIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Invite team members'
+      },
+      {
         name: 'Booking Rules',
         href: '/admin/booking-rules',
         icon: ClipboardDocumentListIcon,
@@ -350,6 +390,13 @@ export const navigationItems: NavigationItem[] = [
         href: '/settings/integrations',
         icon: CloudIcon,
         description: 'Connect third-party services'
+      },
+      {
+        name: 'Tracking Pixels',
+        href: '/settings/tracking-pixels',
+        icon: ChartBarIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Manage conversion tracking pixels'
       }
     ]
   },
@@ -476,6 +523,13 @@ export const quickActions: QuickAction[] = [
     href: '/export',
     icon: DocumentArrowDownIcon,
     description: 'Download business data',
+    roles: ['admin', 'super_admin']
+  },
+  {
+    name: 'Tracking Pixels',
+    href: '/settings/tracking-pixels',
+    icon: ChartBarIcon,
+    description: 'Set up conversion tracking',
     roles: ['admin', 'super_admin']
   }
 ]

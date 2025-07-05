@@ -35,9 +35,8 @@
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
     scroll-padding-top: 2rem;
-    /* Prevent horizontal scrolling on mobile */
-    overflow-x: hidden;
-    max-width: 100vw;
+    /* Simple scrolling - let browser handle naturally */
+    height: 100%;
   }
   
   /* Optimize font rendering */
@@ -47,11 +46,10 @@
     -moz-osx-font-smoothing: grayscale;
     font-synthesis: none;
     font-variant-ligatures: none;
-    /* Prevent horizontal scrolling on mobile */
-    overflow-x: hidden;
-    max-width: 100vw;
-    min-height: 100vh;
-    position: relative;
+    /* Simple scrolling - let browser handle naturally */
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
   }
   
   /* Improve image and media performance */
@@ -194,10 +192,6 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     
-    /* Performance optimizations */
-    transform: var(--transform-gpu); /* Force GPU acceleration */
-    transition: var(--transition-smooth);
-    
     /* Better mobile scrolling */
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: none;
@@ -206,6 +200,14 @@
     -webkit-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
     text-size-adjust: 100%;
+  }
+  
+  /* Mobile-specific scrolling fixes - simplified */
+  @media (max-width: 768px) {
+    /* Enable smooth scrolling on iOS */
+    body {
+      -webkit-overflow-scrolling: touch;
+    }
   }
   
   /* Enhanced Scrollbar with iOS-style design */
@@ -1087,15 +1089,8 @@
   }
 }
 
-/* iPhone specific fixes */
+/* Small screen fixes */
 @media (max-width: 480px) {
-  /* Additional safety for very small screens */
-  body {
-    overflow-x: hidden !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
-  }
-  
   /* Ensure tables are responsive */
   table {
     display: block;

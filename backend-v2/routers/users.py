@@ -76,6 +76,46 @@ def update_user_profile(
     
     return current_user
 
+@router.put("/onboarding", response_model=schemas.UserResponse)
+def update_onboarding_status(
+    onboarding_data: schemas.OnboardingUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """Update user's onboarding status"""
+    # Update onboarding fields
+    if onboarding_data.completed is not None:
+        current_user.onboarding_completed = onboarding_data.completed
+    
+    # Update onboarding status JSON
+    if current_user.onboarding_status is None:
+        current_user.onboarding_status = {}
+    
+    if onboarding_data.completed_steps is not None:
+        current_user.onboarding_status["completed_steps"] = onboarding_data.completed_steps
+    
+    if onboarding_data.current_step is not None:
+        current_user.onboarding_status["current_step"] = onboarding_data.current_step
+    
+    if onboarding_data.skipped is not None:
+        current_user.onboarding_status["skipped"] = onboarding_data.skipped
+    
+    # Mark user as not new if they're completing onboarding
+    if onboarding_data.completed:
+        current_user.is_new_user = False
+    
+    try:
+        db.commit()
+        db.refresh(current_user)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to update onboarding status: {str(e)}"
+        )
+    
+    return current_user
+
 @router.get("/", response_model=List[schemas.UserResponse])
 def get_all_users(
     role: str = None,

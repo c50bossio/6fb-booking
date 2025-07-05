@@ -156,11 +156,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const effectiveSize = isIconButton ? (size === 'md' ? 'icon' : size === 'sm' ? 'icon-sm' : size === 'lg' ? 'icon-lg' : size) : size
 
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+      console.log('[Button] handleClick called, isDisabled:', isDisabled, 'onClick:', !!onClick)
       if (onClick && !isDisabled) {
         // Add haptic feedback for mobile devices
         if (navigator.vibrate && 'ontouchstart' in window) {
           navigator.vibrate(1)
         }
+        console.log('[Button] Calling onClick handler')
         onClick(e)
       }
     }

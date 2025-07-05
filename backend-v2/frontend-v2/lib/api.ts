@@ -273,11 +273,78 @@ export async function logout() {
   document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
 }
 
-export async function register(email: string, password: string, name: string, createTestData: boolean = false, userType: string = 'client') {
-  return fetchAPI('/api/v1/auth/register', {
+// @deprecated - Use registerComplete() instead. This old function uses a single "name" field.
+// export async function register(email: string, password: string, name: string, createTestData: boolean = false, userType: string = 'client') {
+//   return fetchAPI('/api/v1/auth/register', {
+//     method: 'POST',
+//     body: JSON.stringify({ email, password, name, role: userType }),
+//   })
+// }
+
+export interface CompleteRegistrationData {
+  firstName: string
+  lastName: string
+  email: string
+  password: string
+  user_type: 'barber' | 'barbershop'
+  businessName: string
+  businessType: 'individual' | 'studio' | 'salon' | 'enterprise'
+  address: {
+    street: string
+    city: string
+    state: string
+    zipCode: string
+  }
+  phone?: string
+  website?: string
+  chairCount: number
+  barberCount: number
+  description?: string
+  pricingInfo?: {
+    chairs: number
+    monthlyTotal: number
+    tier: string
+  }
+  consent: {
+    terms: boolean
+    privacy: boolean
+    marketing: boolean
+    testData: boolean
+  }
+}
+
+export async function registerComplete(registrationData: CompleteRegistrationData) {
+  return fetchAPI('/api/v1/auth/register-complete', {
     method: 'POST',
-    body: JSON.stringify({ email, password, name, create_test_data: createTestData, user_type: userType }),
+    body: JSON.stringify(registrationData),
   })
+}
+
+// Trial status functions
+export interface TrialStatus {
+  organization_id: number
+  organization_name: string
+  subscription_status: string
+  trial_active: boolean
+  trial_started_at: string | null
+  trial_expires_at: string | null
+  days_remaining: number
+  chairs_count: number
+  monthly_cost: number
+  pricing_breakdown: {
+    monthly_total: number
+    chair_cost: number
+    base_fee: number
+    savings?: number
+  }
+  stripe_customer_id: string | null
+  stripe_subscription_id: string | null
+  features_enabled: Record<string, any>
+  billing_plan: string
+}
+
+export async function getTrialStatus(organizationId: number): Promise<TrialStatus> {
+  return fetchAPI(`/api/v1/organizations/${organizationId}/trial-status`)
 }
 
 export async function forgotPassword(email: string) {
@@ -359,7 +426,7 @@ export async function getAppointments() {
 }
 
 export async function createAppointment(data: any) {
-  return fetchAPI('/api/v1/appointments', {
+  return fetchAPI('/api/v1/appointments/', {
     method: 'POST',
     body: JSON.stringify(data),
   })
@@ -380,14 +447,73 @@ export interface ValidationError {
 }
 
 // TypeScript interfaces matching backend schemas
+// Unified Role System Types
+export type UnifiedUserRole = 
+  | 'super_admin'
+  | 'platform_admin'
+  | 'enterprise_owner'
+  | 'shop_owner'
+  | 'individual_barber'
+  | 'shop_manager'
+  | 'barber'
+  | 'receptionist'
+  | 'client'
+  | 'viewer'
+
 export interface User {
   id: number
   email: string
   name: string
-  role?: string // user, barber, admin
+  first_name?: string
+  last_name?: string
+  email_verified?: boolean
+  
+  // Unified Role System
+  unified_role: UnifiedUserRole
+  role_migrated?: boolean
+  
+  // Legacy fields (deprecated, kept for backwards compatibility)
+  role?: string // DEPRECATED: user, barber, admin
+  user_type?: string // DEPRECATED: client, barber, barbershop
+  
+  // Core user fields
   timezone?: string // User's preferred timezone
   created_at: string
   updated_at?: string
+  
+  // Organization fields (for new organization system)
+  primary_organization_id?: number
+  primary_organization?: {
+    id: number
+    name: string
+    billing_plan: string
+    subscription_status: string
+  }
+  
+  // Trial and subscription fields (legacy - prefer organization-based)
+  trial_started_at?: string
+  trial_expires_at?: string
+  trial_active?: boolean
+  subscription_status?: string // trial, active, expired, cancelled
+  is_trial_active?: boolean
+  trial_days_remaining?: number
+  
+  // Onboarding fields
+  onboarding_completed?: boolean
+  onboarding_status?: {
+    completed_steps: string[]
+    current_step: number
+    skipped?: boolean
+  }
+  is_new_user?: boolean
+  
+  // Permission helpers (computed on frontend)
+  is_business_owner?: boolean
+  is_staff_member?: boolean
+  is_system_admin?: boolean
+  can_manage_billing?: boolean
+  can_manage_staff?: boolean
+  can_view_analytics?: boolean
 }
 
 export interface TimeSlot {
@@ -589,7 +715,7 @@ export async function updateBookingSettings(updates: BookingSettingsUpdate): Pro
 
 export async function createBooking(date: string, time: string, service: string): Promise<BookingResponse> {
   return retryOperation(
-    () => fetchAPI('/api/v1/appointments', {
+    () => fetchAPI('/api/v1/appointments/', {
       method: 'POST',
       body: JSON.stringify({ date, time, service }),
     }),
@@ -715,12 +841,12 @@ export async function getMyBookings(): Promise<BookingListResponse> {
       response = await fetchAPI('/api/v1/appointments/all/list')
     } else {
       // For regular users, fetch only their appointments
-      response = await fetchAPI('/api/v1/appointments')
+      response = await fetchAPI('/api/v1/appointments/')
     }
   } catch (error) {
     // Fallback to user appointments if profile fetch fails
     console.warn('Failed to get user profile, falling back to user appointments:', error)
-    response = await fetchAPI('/api/v1/appointments')
+    response = await fetchAPI('/api/v1/appointments/')
   }
   
   // Map AppointmentResponse to BookingResponse format with error handling
@@ -1002,6 +1128,18 @@ export async function updateUserProfile(profileData: { name?: string; email?: st
   return fetchAPI('/api/v1/users/profile', {
     method: 'PUT',
     body: JSON.stringify(profileData),
+  })
+}
+
+export async function updateOnboardingStatus(onboardingData: {
+  completed?: boolean
+  completed_steps?: string[]
+  current_step?: number
+  skipped?: boolean
+}): Promise<User> {
+  return fetchAPI('/api/v1/users/onboarding', {
+    method: 'PUT',
+    body: JSON.stringify(onboardingData),
   })
 }
 
@@ -5284,7 +5422,7 @@ export const appointmentsAPI = {
 
   // Create new appointment
   async create(appointmentData: AppointmentCreate): Promise<AppointmentResponse> {
-    return fetchAPI('/api/v1/appointments', {
+    return fetchAPI('/api/v1/appointments/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(appointmentData)
@@ -6009,6 +6147,73 @@ export async function estimateAgentCost(request: {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(request)
   })
+}
+
+// Customer Tracking Pixels API
+export interface TrackingPixel {
+  gtm_container_id?: string
+  ga4_measurement_id?: string
+  meta_pixel_id?: string
+  google_ads_conversion_id?: string
+  google_ads_conversion_label?: string
+  tracking_enabled: boolean
+  custom_tracking_code?: string
+}
+
+export interface TrackingTestResult {
+  pixel_type: string
+  is_valid: boolean
+  is_active: boolean
+  message: string
+  details?: Record<string, any>
+}
+
+export interface PixelInstructions {
+  name: string
+  steps: string[]
+  format: string
+  example: string
+  help_url?: string
+}
+
+// Get current organization's tracking pixels
+export async function getCustomerPixels(): Promise<TrackingPixel> {
+  return fetchAPI('/api/v1/customer-pixels/')
+}
+
+// Update tracking pixels
+export async function updateCustomerPixels(pixelData: Partial<TrackingPixel>): Promise<TrackingPixel> {
+  return fetchAPI('/api/v1/customer-pixels/', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(pixelData)
+  })
+}
+
+// Remove a specific tracking pixel
+export async function removeCustomerPixel(pixelType: 'gtm' | 'ga4' | 'meta' | 'google_ads'): Promise<{ message: string }> {
+  return fetchAPI(`/api/v1/customer-pixels/${pixelType}`, {
+    method: 'DELETE'
+  })
+}
+
+// Test tracking pixels
+export async function testCustomerPixels(): Promise<TrackingTestResult[]> {
+  return fetchAPI('/api/v1/customer-pixels/test', {
+    method: 'POST'
+  })
+}
+
+// Get setup instructions for a pixel type
+export async function getPixelInstructions(pixelType: 'gtm' | 'ga4' | 'meta' | 'google_ads'): Promise<PixelInstructions> {
+  return fetchAPI(`/api/v1/customer-pixels/instructions?pixel_type=${pixelType}`, {
+    method: 'POST'
+  })
+}
+
+// Public endpoint - Get tracking pixels for a booking page (no auth required)
+export async function getPublicTrackingPixels(organizationSlug: string): Promise<TrackingPixel> {
+  return fetchAPI(`/api/v1/customer-pixels/public/${organizationSlug}`, {}, false)
 }
 
 

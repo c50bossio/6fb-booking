@@ -15,6 +15,8 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/com
 import { QuickActions } from '@/components/QuickActions'
 import CalendarDayMini from '@/components/calendar/CalendarDayMini'
 import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton'
+import { TrialStatusBanner } from '@/components/ui/TrialStatusBanner'
+import { TrialWarningSystem } from '@/components/ui/TrialWarningSystem'
 
 // Simple Icon Components
 const BookIcon = () => (
@@ -103,6 +105,13 @@ function DashboardContent() {
         }
         setUser(userData)
         
+        // Check if user needs onboarding
+        if (!userData.onboarding_completed && userData.is_new_user !== false) {
+          console.log('Dashboard: Redirecting new user to welcome page')
+          router.push('/dashboard/welcome')
+          return
+        }
+        
         // Check if user should be redirected to role-specific dashboard
         // Temporarily disabled to allow admin users to see the dashboard
         // const defaultDashboard = getDefaultDashboard(userData)
@@ -122,7 +131,7 @@ function DashboardContent() {
         // Prepare batched requests based on user role
         const dashboardRequests = [
           {
-            endpoint: '/api/v1/appointments',
+            endpoint: '/api/v1/appointments/',
             priority: 8,
             cacheKey: `user_appointments_${userData.id}`,
             cacheTtl: 30000 // 30 seconds
@@ -436,6 +445,30 @@ function DashboardContent() {
             </Button>
           </div>
         </div>
+
+        {/* Trial Warning System */}
+        {user && (user.subscription_status === 'trial' || user.is_trial_active) && (
+          <TrialWarningSystem
+            trialStatus={{
+              is_trial_active: user.is_trial_active || false,
+              trial_days_remaining: user.trial_days_remaining || 0,
+              trial_started_at: user.trial_started_at || null,
+              trial_expires_at: user.trial_expires_at || null,
+              subscription_status: user.subscription_status || 'trial',
+              user_type: user.user_type || user.role || 'barber'
+            }}
+            onUpgrade={() => router.push('/billing/plans')}
+            onDismiss={(warningId) => console.log('Dismissed warning:', warningId)}
+          />
+        )}
+
+        {/* Trial Status Banner */}
+        {user && user.primary_organization_id && (user.subscription_status === 'trial' || user.is_trial_active || user.primary_organization?.subscription_status === 'trial') && (
+          <TrialStatusBanner
+            organizationId={user.primary_organization_id}
+            className="mb-6"
+          />
+        )}
 
         {/* Success Message */}
         {showSuccess && (

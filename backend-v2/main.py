@@ -7,7 +7,7 @@ import models
 import location_models
 # Import tracking models to register them with SQLAlchemy
 import models.tracking
-from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents
+from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking
 from routers.services import public_router as services_public_router
 from utils.rate_limit import limiter, rate_limit_exceeded_handler
 from services.integration_service import IntegrationServiceFactory
@@ -286,11 +286,17 @@ app.include_router(reviews.router, prefix="/api/v1")  # Re-enabled for testing
 app.include_router(integrations.router)  # Integration management endpoints - re-enabled for testing
 app.include_router(api_keys.router, prefix="/api/v1")  # API key management
 app.include_router(commissions.router, prefix="/api/v1")  # Commission management
+app.include_router(billing.router, prefix="/api/v1")  # Chair-based billing and subscription management
+app.include_router(invitations.router)  # Staff invitation management
+app.include_router(organizations.router, prefix="/api/v1")  # Organization management
+app.include_router(trial_monitoring.router, prefix="/api/v1")  # Trial expiration monitoring and notifications
 app.include_router(privacy.router)  # GDPR compliance and privacy management
 # app.include_router(cache.router)  # Redis cache management and monitoring - disabled due to archived services
 app.include_router(ai_analytics.router, prefix="/api/v1")  # Revolutionary AI-powered cross-user analytics
 app.include_router(agents.router, prefix="/api/v1")  # AI Agent management - enabled with mock provider
 app.include_router(tracking.router)  # Conversion tracking and attribution
+app.include_router(customer_pixels.router)  # Customer tracking pixel management
+app.include_router(public_booking.router)  # Public booking endpoints for organization-specific pages
 # app.include_router(products.router)  # Product management and Shopify integration - disabled due to bleach dependency
 # app.include_router(shopify_webhooks.router)  # Shopify webhook handlers for real-time sync - disabled due to bleach dependency
 

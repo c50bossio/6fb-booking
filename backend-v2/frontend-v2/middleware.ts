@@ -104,16 +104,16 @@ export function middleware(request: NextRequest) {
   const isAdminRoute = adminRoutes.some(route => path === route || path.startsWith(route + '/'))
 
   // Protected routes that require authentication
-  const protectedRoutes = ['/dashboard', '/appointments', '/clients', '/analytics', '/settings']
+  const protectedRoutes = ['/dashboard', '/appointments', '/clients', '/analytics', '/settings', '/calendar']
   const isProtectedRoute = protectedRoutes.some(route => path.startsWith(route))
   
-  // Redirect authenticated users away from auth pages (to dashboard)
-  if (hasToken && (path === '/login' || path === '/register')) {
-    const url = new URL('/dashboard', request.url)
+  // Simplified auth page handling - always allow access to login/register
+  // Let the frontend handle auth state validation
+  if (path === '/login' || path === '/register') {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🔒 Authenticated user redirected from auth page: ${path} → /dashboard`)
+      console.log(`🔓 Allowing access to auth page: ${path}`)
     }
-    return NextResponse.redirect(url)
+    // Don't redirect - let users access login page directly
   }
   
   // Redirect unauthenticated users from protected pages (to login)

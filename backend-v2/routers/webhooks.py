@@ -10,10 +10,11 @@ from datetime import datetime
 
 from database import get_db
 from config import settings
-from models import Payment, Refund, Payout
+from models import Payment, Refund, Payout, Organization
 from services.payment_security import PaymentSecurity, audit_logger
 from services.notification_service import notification_service
 from services.webhook_security import get_webhook_security_service, get_webhook_rate_limiter
+from services.stripe_service import StripeSubscriptionService
 from utils.idempotency import webhook_idempotent
 
 router = APIRouter(
@@ -91,6 +92,15 @@ async def handle_stripe_webhook(
             await handle_transfer_created(event.data.object, db)
         elif event.type == 'transfer.failed':
             await handle_transfer_failed(event.data.object, db)
+        # Subscription webhook events
+        elif event.type in [
+            'customer.subscription.created',
+            'customer.subscription.updated',
+            'customer.subscription.deleted',
+            'invoice.payment_succeeded',
+            'invoice.payment_failed'
+        ]:
+            await handle_subscription_event(event, db)
         else:
             logger.info(f"Unhandled event type: {event.type}")
         
@@ -375,6 +385,28 @@ async def handle_sms_status_webhook(
     except Exception as e:
         logger.error(f"SMS status webhook error: {str(e)}")
         return {"status": "error"}
+
+async def handle_subscription_event(event: Any, db: Session):
+    """Handle Stripe subscription lifecycle events"""
+    try:
+        # Initialize Stripe service
+        stripe_service = StripeSubscriptionService(db)
+        
+        # Process the event
+        result = stripe_service.handle_subscription_webhook({
+            "type": event.type,
+            "data": {
+                "object": event.data.object
+            }
+        })
+        
+        logger.info(f"Processed subscription event {event.type}: {result}")
+        
+    except Exception as e:
+        logger.error(f"Error handling subscription webhook {event.type}: {str(e)}")
+        # Don't raise - we still want to return 200 to Stripe
+        # to prevent webhook retries
+
 
 @router.get("/health", response_model=None)
 def webhook_health() -> Dict[str, Any]:

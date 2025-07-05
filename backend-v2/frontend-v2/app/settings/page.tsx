@@ -52,6 +52,12 @@ const settingsCards: SettingCard[] = [
     description: 'Manage test data for exploring platform features',
     href: '/settings/test-data',
     icon: '🧪'
+  },
+  {
+    title: 'Tracking Pixels',
+    description: 'Manage conversion tracking pixels for your booking pages',
+    href: '/settings/tracking-pixels',
+    icon: '📊'
   }
 ]
 

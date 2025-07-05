@@ -7,12 +7,9 @@ import { handleAuthError } from '@/lib/auth-error-handler'
 import { useResponsiveCalendar } from '@/hooks/useResponsiveCalendar'
 import ResponsiveCalendar from '@/components/ResponsiveCalendar'
 
-// Lazy load calendar components for optimal performance
-import { lazy, Suspense } from 'react'
-
-const CalendarWeekView = lazy(() => import('@/components/CalendarWeekView'))
-const CalendarDayView = lazy(() => import('@/components/CalendarDayView'))  
-const CalendarMonthView = lazy(() => import('@/components/CalendarMonthView'))
+// Import unified calendar component
+import { Suspense, lazy } from 'react'
+import UnifiedCalendar from '@/components/UnifiedCalendar'
 const CalendarSync = lazy(() => import('@/components/CalendarSync'))
 const CalendarConflictResolver = lazy(() => import('@/components/CalendarConflictResolver'))
 import CreateAppointmentModal from '@/components/modals/CreateAppointmentModal'
@@ -289,10 +286,7 @@ export default function CalendarPage() {
         
         // Non-auth error, show error state
         const errorMessage = 'Failed to load calendar data. Please try again.'
-        setError(errorMessage)
         toastError('Loading Error', errorMessage)
-      } finally {
-        setLoading(false)
       }
     }
 
@@ -700,11 +694,13 @@ export default function CalendarPage() {
       </div>
 
       <CalendarErrorBoundary context={`calendar-${viewMode}-view`}>
-        {viewMode === 'day' ? (
-          // Day View
-          <Card variant="glass" padding="none" className="col-span-full h-[800px]">
-            <Suspense fallback={<CalendarSkeleton view="day" showStats={false} />}>
-              <CalendarDayView
+        <Card variant="glass" padding="none" className="col-span-full">
+          <Suspense fallback={<CalendarSkeleton view={viewMode} showStats={false} />}>
+            <UnifiedCalendar
+              view={viewMode}
+              onViewChange={setViewMode}
+              currentDate={selectedDate || new Date()}
+              onDateChange={setSelectedDate}
               appointments={bookings}
               barbers={filteredBarbers}
               selectedBarberId={selectedBarberId}
@@ -719,70 +715,28 @@ export default function CalendarPage() {
                 setSelectedDate(date)
                 setPreselectedTime(format(date, 'HH:mm'))
                 setShowCreateModal(true)
-              }}
-              onAppointmentUpdate={handleAppointmentUpdate}
-              currentDate={selectedDate || new Date()}
-              onDateChange={setSelectedDate}
-              />
-            </Suspense>
-          </Card>
-        ) : viewMode === 'week' ? (
-          // Week View
-          <Card variant="glass" padding="none" className="col-span-full">
-            <Suspense fallback={<CalendarSkeleton view="week" showStats={false} />}>
-              <CalendarWeekView
-              appointments={bookings}
-              barbers={filteredBarbers}
-              selectedBarberId={selectedBarberId}
-              onBarberSelect={setSelectedBarberId}
-              onAppointmentClick={(appointment) => {
-                // Set selected date to appointment date
-                const appointmentDate = new Date(appointment.start_time)
-                setSelectedDate(appointmentDate)
-              }}
-              onTimeSlotClick={(date) => {
-                // Open modal with pre-selected date/time
-                setSelectedDate(date)
-                setPreselectedTime(format(date, 'HH:mm'))
-                setShowCreateModal(true)
-              }}
-              onAppointmentUpdate={handleAppointmentUpdate}
-              currentDate={selectedDate || new Date()}
-              onDateChange={setSelectedDate}
-              />
-            </Suspense>
-          </Card>
-        ) : (
-          // Enhanced Month View
-          <Card variant="glass" padding="none" className="col-span-full">
-            <Suspense fallback={<CalendarSkeleton view="month" showStats={false} />}>
-              <CalendarMonthView
-              selectedDate={selectedDate}
-              onDateSelect={setSelectedDate}
-              appointments={bookings}
-              selectedBarberId={selectedBarberId}
-              onAppointmentClick={(appointment) => {
-                // Set selected date to appointment date and view details
-                const appointmentDate = new Date(appointment.start_time)
-                setSelectedDate(appointmentDate)
-                // Could open appointment details modal here
               }}
               onAppointmentUpdate={handleAppointmentUpdate}
               onDayClick={(date) => {
-                // Single click to create new appointment with time picker
+                // Single click to set selected date for time picker
                 setPendingDate(date)
                 setShowTimePickerModal(true)
               }}
               onDayDoubleClick={(date) => {
-                // Double-click also creates appointment (backward compatibility)
+                // Double-click creates appointment with default time
                 setSelectedDate(date)
-                setPreselectedTime('09:00') // Default time
+                setPreselectedTime('09:00')
                 setShowCreateModal(true)
               }}
-              />
-            </Suspense>
-          </Card>
-        )}
+              startHour={8}
+              endHour={19}
+              slotDuration={30}
+              isLoading={loading}
+              onRefresh={refreshOptimistic}
+              className="h-[800px]"
+            />
+          </Suspense>
+        </Card>
       </CalendarErrorBoundary>
 
       {/* Google Calendar Sync Panel */}

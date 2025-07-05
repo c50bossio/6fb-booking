@@ -72,7 +72,6 @@ export function PricingConfirmation({
 }: PricingConfirmationProps) {
   const [selectedChairs, setSelectedChairs] = useState(chairCount)
   const [monthlyTotal, setMonthlyTotal] = useState(0)
-  const [showFeatures, setShowFeatures] = useState(false)
 
   const tierName = getTierName(selectedChairs)
   const features = businessTypeFeatures[businessType]
@@ -120,7 +119,7 @@ export function PricingConfirmation({
           Confirm your pricing plan
         </h2>
         <p className="mt-2 text-gray-600 dark:text-gray-300">
-          Review your plan details and start your free 14-day trial
+          Review your plan details and confirm your selection
         </p>
       </div>
 
@@ -203,69 +202,59 @@ export function PricingConfirmation({
                   </div>
                 </div>
 
-                {/* Features Toggle */}
-                <Button
-                  variant="outline"
-                  onClick={() => setShowFeatures(!showFeatures)}
-                  className="w-full"
-                >
-                  {showFeatures ? 'Hide' : 'View'} Plan Features
-                  <Zap className="h-4 w-4 ml-2" />
-                </Button>
+                {/* Plan Features Header */}
+                <div className="text-center">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center justify-center">
+                    <Star className="h-5 w-5 text-yellow-500 mr-2" />
+                    What's Included
+                  </h3>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Features List */}
-          {showFeatures && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center">
-                  <Star className="h-5 w-5 text-yellow-500 mr-2" />
-                  What's Included
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {features.map((feature, index) => (
-                    <div key={index} className="flex items-center space-x-3">
-                      <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">
-                        {feature}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                
-                {/* Additional Benefits */}
-                <div className="mt-6 pt-6 border-t">
-                  <h4 className="font-medium text-gray-900 dark:text-white mb-3">
-                    Plus these benefits:
-                  </h4>
-                  <div className="grid gap-3">
-                    <div className="flex items-center space-x-3">
-                      <Shield className="h-4 w-4 text-blue-500" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        Bank-level security & encryption
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <TrendingUp className="h-4 w-4 text-green-500" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        No setup or cancellation fees
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <Zap className="h-4 w-4 text-purple-500" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        24/7 customer support
-                      </span>
-                    </div>
+          {/* Features List - Always Visible */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="space-y-3">
+                {features.map((feature, index) => (
+                  <div key={index} className="flex items-center space-x-3">
+                    <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      {feature}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Additional Benefits */}
+              <div className="mt-6 pt-6 border-t">
+                <h4 className="font-medium text-gray-900 dark:text-white mb-3">
+                  Plus these benefits:
+                </h4>
+                <div className="grid gap-3">
+                  <div className="flex items-center space-x-3">
+                    <Shield className="h-4 w-4 text-blue-500" />
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      Bank-level security & encryption
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <TrendingUp className="h-4 w-4 text-green-500" />
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      No setup or cancellation fees
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Zap className="h-4 w-4 text-purple-500" />
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      24/7 customer support
+                    </span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 

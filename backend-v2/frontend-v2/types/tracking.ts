@@ -1,9 +1,45 @@
 // Conversion tracking type definitions
 
-import { ConversionEventType, ConversionEventParams, PurchaseEventParams } from '@/components/tracking'
+// Define ConversionEventType enum
+export enum ConversionEventType {
+  PAGE_VIEW = 'page_view',
+  VIEW_CONTENT = 'view_content',
+  SEARCH = 'search',
+  ADD_TO_CART = 'add_to_cart',
+  ADD_TO_WISHLIST = 'add_to_wishlist',
+  INITIATE_CHECKOUT = 'begin_checkout',
+  ADD_PAYMENT_INFO = 'add_payment_info',
+  PURCHASE = 'purchase',
+  LEAD = 'lead',
+  COMPLETE_REGISTRATION = 'complete_registration',
+  CONTACT = 'contact',
+  SUBMIT_APPLICATION = 'submit_application',
+  SUBSCRIBE = 'subscribe',
+  START_TRIAL = 'start_trial',
+  SCHEDULE = 'schedule'
+}
 
-// Re-export for convenience
-export { ConversionEventType, ConversionEventParams, PurchaseEventParams }
+// Define ConversionEventParams interface
+export interface ConversionEventParams {
+  value?: number
+  currency?: string
+  content_name?: string
+  content_category?: string
+  content_ids?: string[]
+  contents?: Array<{ id: string; quantity: number }>
+  content_type?: string
+  num_items?: number
+}
+
+// Define PurchaseEventParams interface
+export interface PurchaseEventParams extends ConversionEventParams {
+  transaction_id: string
+  affiliation?: string
+  revenue?: number
+  tax?: number
+  shipping?: number
+  coupon?: string
+}
 
 // Event Type Enum (matching backend)
 export enum EventType {

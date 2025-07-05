@@ -26,7 +26,7 @@ def create_verification_token(db: Session, user: models.User) -> str:
     user.verification_token_expires = expires_at
     
     db.commit()
-    db.refresh(user)
+    # Remove unnecessary refresh - user is already in session
     
     return token
 

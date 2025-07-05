@@ -14,6 +14,7 @@ models_file = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(models_file)
 
 # Import all the classes from models.py
+UnifiedUserRole = models_file.UnifiedUserRole
 User = models_file.User
 Appointment = models_file.Appointment
 Payment = models_file.Payment
@@ -103,10 +104,18 @@ from .agent import (
     Agent, AgentInstance, AgentConversation, AgentMetrics, AgentSubscription, AgentTemplate,
     AgentType, AgentStatus, ConversationStatus, SubscriptionTier
 )
+# Organization Models
+from .organization import (
+    Organization, UserOrganization, BillingPlan, UserRole, OrganizationType
+)
+# Invitation Models
+from .invitation import (
+    StaffInvitation, InvitationStatus, InvitationRole
+)
 
 __all__ = [
     # Main models from parent models.py
-    'User', 'Appointment', 'Payment', 'Service', 'BarberAvailability',
+    'UnifiedUserRole', 'User', 'Appointment', 'Payment', 'Service', 'BarberAvailability',
     'PasswordResetToken', 'Payout', 'GiftCertificate', 'Client', 'Refund',
     'BookingSettings', 'ServiceCategoryEnum', 'ServicePricingRule', 'ServiceBookingRule',
     'NotificationTemplate', 'NotificationPreference', 'NotificationStatus', 'NotificationQueue',
@@ -141,5 +150,9 @@ __all__ = [
     'GoogleCalendarSettings', 'GoogleCalendarSyncLog',
     # AI Agent Models
     'Agent', 'AgentInstance', 'AgentConversation', 'AgentMetrics', 'AgentSubscription', 'AgentTemplate',
-    'AgentType', 'AgentStatus', 'ConversationStatus', 'SubscriptionTier'
+    'AgentType', 'AgentStatus', 'ConversationStatus', 'SubscriptionTier',
+    # Organization Models
+    'Organization', 'UserOrganization', 'BillingPlan', 'UserRole', 'OrganizationType',
+    # Invitation Models
+    'StaffInvitation', 'InvitationStatus', 'InvitationRole'
 ]

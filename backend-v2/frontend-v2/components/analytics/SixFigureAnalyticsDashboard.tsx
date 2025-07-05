@@ -99,11 +99,12 @@ export default function SixFigureAnalyticsDashboard({
       }
 
       // Client acquisition insight
-      if (metrics.recommendations.client_acquisition.additional_clients_needed > 0) {
+      const additionalClients = metrics?.recommendations?.client_acquisition?.additional_clients_needed || 0
+      if (additionalClients > 0) {
         insights.push({
           type: 'action',
           title: 'Client Acquisition',
-          message: `Acquire ${Math.round(metrics.recommendations.client_acquisition.additional_clients_needed)} more clients per month to hit your target.`,
+          message: `Acquire ${Math.round(additionalClients)} more clients per month to hit your target.`,
           actionText: 'Marketing Tools'
         })
       }
@@ -149,12 +150,33 @@ export default function SixFigureAnalyticsDashboard({
       setLoading(true)
       setError(null)
       
+      console.log('🔍 Fetching Six Figure Barber metrics...', { targetIncome, userId })
       const data = await getSixFigureBarberMetrics(targetIncome, userId)
+      
+      console.log('📊 Received metrics data:', data)
+      
+      // Validate data structure before setting state
+      if (!data || typeof data !== 'object') {
+        throw new Error('Invalid data structure received from API')
+      }
+      
+      // Check for required fields
+      const requiredFields = ['current_performance', 'targets', 'recommendations']
+      const missingFields = requiredFields.filter(field => !data[field])
+      if (missingFields.length > 0) {
+        throw new Error(`Missing required fields: ${missingFields.join(', ')}`)
+      }
+      
       setMetrics(data)
       
-      // Generate insights with the new data
-      const newInsights = generateInsights(todayStats, data)
-      setInsights(newInsights)
+      // Generate insights with the new data (with safety check)
+      try {
+        const newInsights = generateInsights(todayStats, data)
+        setInsights(newInsights)
+      } catch (insightError) {
+        console.warn('Failed to generate insights:', insightError)
+        setInsights([])
+      }
       
       setRetryCount(0)
     } catch (err) {
@@ -395,7 +417,7 @@ export default function SixFigureAnalyticsDashboard({
               </div>
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              Target: {formatters.currency(recommendations.price_optimization.recommended_average_ticket)}
+              Target: {formatters.currency(recommendations?.price_optimization?.recommended_average_ticket || 0)}
             </p>
           </CardContent>
         </Card>
@@ -456,7 +478,7 @@ export default function SixFigureAnalyticsDashboard({
               <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-900/30 rounded-lg">
                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Recommended</span>
                 <span className="text-lg font-bold text-green-700 dark:text-green-300">
-                  {formatters.currency(recommendations.price_optimization.recommended_average_ticket)}
+                  {formatters.currency(recommendations?.price_optimization?.recommended_average_ticket || 0)}
                 </span>
               </div>
               {recommendations.price_optimization.recommended_increase_percentage > 0 && (
@@ -484,20 +506,20 @@ export default function SixFigureAnalyticsDashboard({
             <div className="space-y-4">
               <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Current Monthly</span>
-                <span className="text-lg font-bold text-gray-900 dark:text-white">{Math.round(recommendations.client_acquisition.current_monthly_clients)}</span>
+                <span className="text-lg font-bold text-gray-900 dark:text-white">{Math.round(recommendations?.client_acquisition?.current_monthly_clients || 0)}</span>
               </div>
               <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-900/30 rounded-lg">
                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Target Monthly</span>
                 <span className="text-lg font-bold text-green-700 dark:text-green-300">
-                  {Math.round(recommendations.client_acquisition.target_monthly_clients)}
+                  {Math.round(recommendations?.client_acquisition?.target_monthly_clients || 0)}
                 </span>
               </div>
-              {recommendations.client_acquisition.additional_clients_needed > 0 && (
+              {(recommendations?.client_acquisition?.additional_clients_needed || 0) > 0 && (
                 <div className="p-3 bg-orange-50 dark:bg-orange-900/30 rounded-lg">
                   <p className="text-sm text-orange-800 dark:text-orange-300">
                     <strong>Goal:</strong> Acquire{' '}
                     <span className="font-bold">
-                      {Math.round(recommendations.client_acquisition.additional_clients_needed)} more clients per month
+                      {Math.round(recommendations?.client_acquisition?.additional_clients_needed || 0)} more clients per month
                     </span>{' '}
                     to reach your target.
                   </p>

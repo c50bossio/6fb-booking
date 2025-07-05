@@ -8,7 +8,7 @@ import { useThemeStyles } from '@/hooks/useTheme'
 interface LogoProps {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
   variant?: 'auto' | 'color' | 'mono' | 'color-bg'
-  href?: string
+  href?: string | null
   className?: string
   showTagline?: boolean
 }
@@ -80,7 +80,7 @@ export function Logo({
     </div>
   )
   
-  if (href) {
+  if (href && href !== null) {
     return (
       <Link href={href} className="inline-block">
         {logoImage}
@@ -114,13 +114,14 @@ export function LogoFull({
   size = 'lg',
   variant = 'color',
   href,
-  className = ''
-}: Omit<LogoProps, 'showTagline'>) {
+  className = '',
+  noLink = false
+}: Omit<LogoProps, 'showTagline'> & { noLink?: boolean }) {
   return (
     <Logo 
       size={size}
       variant={variant}
-      href={href}
+      href={noLink ? null : href}
       className={className}
       showTagline={true}
     />

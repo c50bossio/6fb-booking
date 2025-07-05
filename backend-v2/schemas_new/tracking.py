@@ -2,10 +2,11 @@
 Pydantic schemas for conversion tracking and attribution.
 """
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, field_validator
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 from enum import Enum
+import re
 
 from models.tracking import EventType, AttributionModel, ConversionStatus
 
@@ -250,3 +251,153 @@ class PlatformTestResponse(BaseModel):
     success: bool
     message: str
     details: Optional[Dict[str, Any]] = None
+
+
+# Customer Pixel Management Schemas
+
+class TrackingPixelUpdate(BaseModel):
+    """Schema for updating organization tracking pixels"""
+    
+    gtm_container_id: Optional[str] = Field(None, max_length=50, description="Google Tag Manager Container ID (GTM-XXXXXXX)")
+    ga4_measurement_id: Optional[str] = Field(None, max_length=50, description="Google Analytics 4 Measurement ID (G-XXXXXXXXXX)")
+    meta_pixel_id: Optional[str] = Field(None, max_length=50, description="Meta/Facebook Pixel ID")
+    google_ads_conversion_id: Optional[str] = Field(None, max_length=50, description="Google Ads Conversion ID (AW-XXXXXXXXX)")
+    google_ads_conversion_label: Optional[str] = Field(None, max_length=50, description="Google Ads Conversion Label")
+    tracking_enabled: Optional[bool] = Field(None, description="Enable/disable all tracking pixels")
+    custom_tracking_code: Optional[str] = Field(None, description="Custom HTML/JS tracking code")
+    tracking_settings: Optional[Dict[str, Any]] = Field(None, description="Advanced tracking settings")
+    
+    @field_validator('gtm_container_id')
+    def validate_gtm_id(cls, v):
+        if v and not re.match(r'^GTM-[A-Z0-9]{6,}$', v):
+            raise ValueError('Invalid GTM Container ID format. Must be GTM-XXXXXXX')
+        return v
+    
+    @field_validator('ga4_measurement_id')
+    def validate_ga4_id(cls, v):
+        if v and not re.match(r'^G-[A-Z0-9]{10,}$', v):
+            raise ValueError('Invalid GA4 Measurement ID format. Must be G-XXXXXXXXXX')
+        return v
+    
+    @field_validator('meta_pixel_id')
+    def validate_meta_pixel_id(cls, v):
+        if v and not re.match(r'^\d{10,20}$', v):
+            raise ValueError('Invalid Meta Pixel ID format. Must be numeric')
+        return v
+    
+    @field_validator('google_ads_conversion_id')
+    def validate_google_ads_id(cls, v):
+        if v and not re.match(r'^AW-\d{9,}$', v):
+            raise ValueError('Invalid Google Ads Conversion ID format. Must be AW-XXXXXXXXX')
+        return v
+    
+    @field_validator('custom_tracking_code')
+    def validate_custom_code(cls, v):
+        if v:
+            # Basic security check - no script tags with src
+            if re.search(r'<script[^>]+src\s*=', v, re.IGNORECASE):
+                raise ValueError('External script sources not allowed in custom tracking code')
+            # Limit length
+            if len(v) > 10000:
+                raise ValueError('Custom tracking code too long (max 10000 characters)')
+        return v
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "gtm_container_id": "GTM-ABC123",
+                "ga4_measurement_id": "G-1234567890",
+                "meta_pixel_id": "123456789012345",
+                "google_ads_conversion_id": "AW-123456789",
+                "google_ads_conversion_label": "abcDEFghijk",
+                "tracking_enabled": True,
+                "tracking_settings": {
+                    "enhanced_conversions": True,
+                    "cookieless_tracking": False
+                }
+            }
+        }
+
+
+class TrackingPixelResponse(BaseModel):
+    """Schema for tracking pixel response"""
+    
+    gtm_container_id: Optional[str] = None
+    ga4_measurement_id: Optional[str] = None
+    meta_pixel_id: Optional[str] = None
+    google_ads_conversion_id: Optional[str] = None
+    google_ads_conversion_label: Optional[str] = None
+    tracking_enabled: bool = True
+    custom_tracking_code: Optional[str] = None
+    tracking_settings: Optional[Dict[str, Any]] = None
+    
+    class Config:
+        from_attributes = True
+
+
+class TrackingTestResult(BaseModel):
+    """Schema for pixel test results"""
+    
+    pixel_type: str = Field(..., description="Type of pixel tested (gtm, ga4, meta, google_ads)")
+    is_valid: bool = Field(..., description="Whether the pixel ID is valid")
+    is_active: bool = Field(..., description="Whether the pixel is firing correctly")
+    message: str = Field(..., description="Test result message")
+    details: Optional[Dict[str, Any]] = Field(None, description="Additional test details")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "pixel_type": "gtm",
+                "is_valid": True,
+                "is_active": True,
+                "message": "GTM container loaded successfully",
+                "details": {
+                    "container_version": "2",
+                    "tags_count": 5
+                }
+            }
+        }
+
+
+class PublicTrackingPixels(BaseModel):
+    """Schema for public-facing tracking pixels (used on booking pages)"""
+    
+    gtm_container_id: Optional[str] = None
+    ga4_measurement_id: Optional[str] = None
+    meta_pixel_id: Optional[str] = None
+    google_ads_conversion_id: Optional[str] = None
+    google_ads_conversion_label: Optional[str] = None
+    custom_tracking_code: Optional[str] = None
+    tracking_enabled: bool = True
+    
+    class Config:
+        from_attributes = True
+
+
+class PixelInstructions(BaseModel):
+    """Schema for pixel setup instructions"""
+    
+    pixel_type: str = Field(..., description="Type of pixel (gtm, ga4, meta, google_ads)")
+    title: str = Field(..., description="Instruction title")
+    description: str = Field(..., description="Brief description of the pixel")
+    setup_steps: List[str] = Field(..., description="Step-by-step setup instructions")
+    format_example: str = Field(..., description="Example of correct ID format")
+    validation_regex: str = Field(..., description="Regex pattern for validation")
+    help_url: Optional[str] = Field(None, description="URL to official documentation")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "pixel_type": "gtm",
+                "title": "Google Tag Manager Setup",
+                "description": "Track all website events with GTM",
+                "setup_steps": [
+                    "Go to tagmanager.google.com",
+                    "Create or select a container",
+                    "Copy your Container ID"
+                ],
+                "format_example": "GTM-ABC123",
+                "validation_regex": "^GTM-[A-Z0-9]{6,}$",
+                "help_url": "https://support.google.com/tagmanager/answer/6103696"
+            }
+        }

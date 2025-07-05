@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -38,6 +38,18 @@ export function BusinessInformation({
   onBack 
 }: BusinessInformationProps) {
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [zipSuggestions, setZipSuggestions] = useState<{city: string, state: string} | null>(null)
+
+  // Common US ZIP to City/State mappings (sample data - in production this would be from an API)
+  const zipDatabase: Record<string, {city: string, state: string}> = {
+    '10001': { city: 'New York', state: 'NY' },
+    '90210': { city: 'Beverly Hills', state: 'CA' },
+    '60601': { city: 'Chicago', state: 'IL' },
+    '33101': { city: 'Miami', state: 'FL' },
+    '75201': { city: 'Dallas', state: 'TX' },
+    '30301': { city: 'Atlanta', state: 'GA' },
+    '02101': { city: 'Boston', state: 'MA' }
+  }
 
   const getTitle = () => {
     switch (businessType) {
@@ -117,7 +129,51 @@ export function BusinessInformation({
     }
   }
 
+  const formatPhoneNumber = (value: string): string => {
+    // Remove all non-numeric characters
+    const cleaned = value.replace(/\D/g, '')
+    
+    // Apply US phone number formatting
+    if (cleaned.length <= 3) {
+      return cleaned
+    } else if (cleaned.length <= 6) {
+      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`
+    } else {
+      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`
+    }
+  }
+
+  const handleZipCodeLookup = (zipCode: string) => {
+    // Clean zip code (remove non-numeric)
+    const cleanZip = zipCode.replace(/\D/g, '').slice(0, 5)
+    
+    if (cleanZip.length === 5 && zipDatabase[cleanZip]) {
+      const suggestion = zipDatabase[cleanZip]
+      setZipSuggestions(suggestion)
+    } else {
+      setZipSuggestions(null)
+    }
+  }
+
+  const applyZipSuggestion = () => {
+    if (zipSuggestions) {
+      updateField('address.city', zipSuggestions.city)
+      updateField('address.state', zipSuggestions.state)
+      setZipSuggestions(null)
+    }
+  }
+
   const updateField = (field: string, value: any) => {
+    // Special handling for phone number formatting
+    if (field === 'phone') {
+      value = formatPhoneNumber(value)
+    }
+
+    // Special handling for ZIP code lookup
+    if (field === 'address.zipCode') {
+      handleZipCodeLookup(value)
+    }
+
     if (field.includes('.')) {
       const [parent, child] = field.split('.')
       onUpdate({
@@ -233,6 +289,38 @@ export function BusinessInformation({
                 placeholder="12345"
                 className={errors.zipCode ? 'border-red-500' : ''}
               />
+              
+              {/* ZIP Code Auto-fill Suggestion */}
+              {zipSuggestions && (
+                <div className="mt-2 p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span className="text-sm text-green-700 dark:text-green-300">
+                        Auto-fill: <strong>{zipSuggestions.city}, {zipSuggestions.state}</strong>
+                      </span>
+                    </div>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={applyZipSuggestion}
+                        className="text-xs px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                      >
+                        Apply
+                      </button>
+                      <button
+                        onClick={() => setZipSuggestions(null)}
+                        className="text-xs px-3 py-1 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 transition-colors"
+                      >
+                        Dismiss
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               {errors.zipCode && (
                 <p className="text-sm text-red-600 mt-1">{errors.zipCode}</p>
               )}

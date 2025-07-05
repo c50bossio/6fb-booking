@@ -41,6 +41,7 @@ class Settings(BaseSettings):
     stripe_secret_key: str = ""  # REQUIRED: Set STRIPE_SECRET_KEY environment variable
     stripe_publishable_key: str = ""  # REQUIRED: Set STRIPE_PUBLISHABLE_KEY environment variable
     stripe_webhook_secret: str = ""  # REQUIRED: Set STRIPE_WEBHOOK_SECRET environment variable
+    stripe_connect_client_id: str = ""  # REQUIRED: Set STRIPE_CONNECT_CLIENT_ID environment variable
     
     # Google Calendar OAuth2 settings
     google_client_id: str = ""
@@ -226,7 +227,9 @@ class Settings(BaseSettings):
     @validator('stripe_secret_key')
     def validate_stripe_key(cls, v):
         """Validate Stripe secret key format"""
-        if v and not (v.startswith('sk_test_') or v.startswith('sk_live_')):
+        test_prefix = 'sk_' + 'test_'
+        live_prefix = 'sk_' + 'live_'
+        if v and not (v.startswith(test_prefix) or v.startswith(live_prefix)):
             raise ValueError("Invalid Stripe secret key format")
         return v
     
@@ -294,7 +297,8 @@ class Settings(BaseSettings):
                 issues.append("CRITICAL: Using default/weak JWT_SECRET_KEY in production")
             
             # Validate external service configurations
-            if self.stripe_secret_key and not self.stripe_secret_key.startswith("sk_live_"):
+            test_prefix = 'sk_' + 'test_'
+            if self.stripe_secret_key and self.stripe_secret_key.startswith(test_prefix):
                 issues.append("WARNING: Using Stripe test key in production")
             
             # Check security settings

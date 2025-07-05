@@ -1,11 +1,13 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { Badge } from '@/components/ui/Badge'
+import { StripePaymentForm } from '@/components/ui/StripePaymentForm'
+import { createSetupIntent, attachPaymentMethod, isStripeAvailable } from '@/lib/stripe'
 import { 
   CreditCard, 
   Calendar, 
@@ -14,7 +16,8 @@ import {
   Clock, 
   AlertTriangle,
   Gift,
-  Zap
+  Zap,
+  Loader2
 } from 'lucide-react'
 
 interface PricingInfo {
@@ -50,76 +53,77 @@ export function PaymentSetup({
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null)
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
-
-  // Mock payment form state
-  const [cardForm, setCardForm] = useState({
-    number: '',
-    expiryMonth: '',
-    expiryYear: '',
-    cvc: '',
-    name: '',
-    zipCode: ''
-  })
+  const [setupIntentClientSecret, setSetupIntentClientSecret] = useState<string | null>(null)
+  const [organizationId, setOrganizationId] = useState<number | null>(null)
 
   const trialEndDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
   const billingStartDate = new Date(trialEndDate.getTime() + 24 * 60 * 60 * 1000)
 
+  // Check if Stripe is available
+  const stripeEnabled = isStripeAvailable()
+
   const handleStartTrial = async () => {
     setLoading(true)
+    setErrors({})
     
-    // Simulate API call to start trial
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
-    setStep('payment')
-    setLoading(false)
+    try {
+      // In a real implementation, you would get the organization ID from the registration context
+      // For now, we'll use a placeholder
+      const orgId = 1 // This should come from your registration flow
+      setOrganizationId(orgId)
+      
+      if (stripeEnabled) {
+        // Create a setup intent for collecting payment method
+        const setupIntent = await createSetupIntent(orgId)
+        setSetupIntentClientSecret(setupIntent.clientSecret)
+      }
+      
+      setStep('payment')
+    } catch (error) {
+      console.error('Failed to start trial:', error)
+      setErrors({ general: 'Failed to start trial. Please try again.' })
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const validateCardForm = () => {
-    const newErrors: Record<string, string> = {}
-
-    if (!cardForm.number || cardForm.number.length < 16) {
-      newErrors.number = 'Please enter a valid card number'
-    }
-
-    if (!cardForm.expiryMonth || !cardForm.expiryYear) {
-      newErrors.expiry = 'Please enter expiry date'
-    }
-
-    if (!cardForm.cvc || cardForm.cvc.length < 3) {
-      newErrors.cvc = 'Please enter CVC'
-    }
-
-    if (!cardForm.name.trim()) {
-      newErrors.name = 'Please enter cardholder name'
-    }
-
-    if (!cardForm.zipCode || cardForm.zipCode.length < 5) {
-      newErrors.zipCode = 'Please enter billing ZIP code'
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleAddPaymentMethod = async () => {
-    if (!validateCardForm()) return
-
+  const handlePaymentSuccess = async () => {
     setLoading(true)
+    
+    try {
+      // Payment method has been attached via Stripe Elements
+      // Mark as complete
+      setPaymentMethod({
+        type: 'card',
+        last4: '****', // Stripe will provide this in real implementation
+        brand: 'visa'
+      })
+      
+      setStep('complete')
+      
+      // Notify parent component
+      onComplete({
+        trialStarted: true,
+        paymentMethodAdded: true
+      })
+    } catch (error) {
+      console.error('Payment setup error:', error)
+      setErrors({ general: 'Failed to complete payment setup' })
+    } finally {
+      setLoading(false)
+    }
+  }
 
-    // Simulate Stripe integration
-    await new Promise(resolve => setTimeout(resolve, 2000))
+  const handlePaymentError = (error: string) => {
+    setErrors({ payment: error })
+  }
 
-    // Mock successful payment method addition
-    setPaymentMethod({
-      type: 'card',
-      last4: cardForm.number.slice(-4),
-      brand: 'Visa', // Mock brand detection
-      expiryMonth: parseInt(cardForm.expiryMonth),
-      expiryYear: parseInt(cardForm.expiryYear)
-    })
-
+  const handleSkipPayment = () => {
     setStep('complete')
-    setLoading(false)
+    onComplete({
+      trialStarted: true,
+      paymentMethodAdded: false
+    })
   }
 
   const handleComplete = () => {
@@ -128,21 +132,6 @@ export function PaymentSetup({
       paymentMethodAdded: !!paymentMethod
     })
     onFinish()
-  }
-
-  const formatCardNumber = (value: string) => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '')
-    const matches = v.match(/\d{4,16}/g)
-    const match = matches && matches[0] || ''
-    const parts = []
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4))
-    }
-    if (parts.length) {
-      return parts.join(' ')
-    } else {
-      return v
-    }
   }
 
   if (step === 'trial') {
@@ -289,123 +278,43 @@ export function PaymentSetup({
           </p>
         </div>
 
-        <div className="max-w-2xl mx-auto grid gap-6 lg:grid-cols-2">
-          {/* Payment Form */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <CreditCard className="h-5 w-5 mr-2" />
-                Payment Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="cardNumber">Card Number</Label>
-                <Input
-                  id="cardNumber"
-                  placeholder="1234 5678 9012 3456"
-                  value={formatCardNumber(cardForm.number)}
-                  onChange={(e) => setCardForm(prev => ({ 
-                    ...prev, 
-                    number: e.target.value.replace(/\s/g, '') 
-                  }))}
-                  maxLength={19}
-                  className={errors.number ? 'border-red-500' : ''}
-                />
-                {errors.number && (
-                  <p className="text-sm text-red-600 mt-1">{errors.number}</p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <Label htmlFor="expiryMonth">Month</Label>
-                  <Input
-                    id="expiryMonth"
-                    placeholder="MM"
-                    value={cardForm.expiryMonth}
-                    onChange={(e) => setCardForm(prev => ({ 
-                      ...prev, 
-                      expiryMonth: e.target.value 
-                    }))}
-                    maxLength={2}
-                    className={errors.expiry ? 'border-red-500' : ''}
-                  />
+        <div className="max-w-2xl mx-auto">
+          {stripeEnabled && setupIntentClientSecret ? (
+            // Use real Stripe Elements
+            <StripePaymentForm
+              clientSecret={setupIntentClientSecret}
+              onSuccess={handlePaymentSuccess}
+              onError={handlePaymentError}
+              submitLabel="Save Payment Method"
+              isLoading={loading}
+            />
+          ) : (
+            // Fallback UI when Stripe is not configured
+            <Card>
+              <CardContent className="py-8">
+                <div className="text-center">
+                  <AlertTriangle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    Payment Setup Unavailable
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Payment processing is not configured for this environment.
+                  </p>
+                  <Button
+                    onClick={handleSkipPayment}
+                    className="mt-4"
+                    variant="outline"
+                  >
+                    Continue without payment method
+                  </Button>
                 </div>
-                <div>
-                  <Label htmlFor="expiryYear">Year</Label>
-                  <Input
-                    id="expiryYear"
-                    placeholder="YY"
-                    value={cardForm.expiryYear}
-                    onChange={(e) => setCardForm(prev => ({ 
-                      ...prev, 
-                      expiryYear: e.target.value 
-                    }))}
-                    maxLength={2}
-                    className={errors.expiry ? 'border-red-500' : ''}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="cvc">CVC</Label>
-                  <Input
-                    id="cvc"
-                    placeholder="123"
-                    value={cardForm.cvc}
-                    onChange={(e) => setCardForm(prev => ({ 
-                      ...prev, 
-                      cvc: e.target.value 
-                    }))}
-                    maxLength={4}
-                    className={errors.cvc ? 'border-red-500' : ''}
-                  />
-                </div>
-              </div>
-              {errors.expiry && (
-                <p className="text-sm text-red-600">{errors.expiry}</p>
-              )}
-              {errors.cvc && (
-                <p className="text-sm text-red-600">{errors.cvc}</p>
-              )}
+              </CardContent>
+            </Card>
+          )}
+        </div>
 
-              <div>
-                <Label htmlFor="cardName">Cardholder Name</Label>
-                <Input
-                  id="cardName"
-                  placeholder="John Doe"
-                  value={cardForm.name}
-                  onChange={(e) => setCardForm(prev => ({ 
-                    ...prev, 
-                    name: e.target.value 
-                  }))}
-                  className={errors.name ? 'border-red-500' : ''}
-                />
-                {errors.name && (
-                  <p className="text-sm text-red-600 mt-1">{errors.name}</p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="zipCode">Billing ZIP Code</Label>
-                <Input
-                  id="zipCode"
-                  placeholder="12345"
-                  value={cardForm.zipCode}
-                  onChange={(e) => setCardForm(prev => ({ 
-                    ...prev, 
-                    zipCode: e.target.value 
-                  }))}
-                  className={errors.zipCode ? 'border-red-500' : ''}
-                />
-                {errors.zipCode && (
-                  <p className="text-sm text-red-600 mt-1">{errors.zipCode}</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Security & Billing Info */}
-          <div className="space-y-6">
+          {/* Billing Schedule Info */}
+          <div className="grid gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -464,32 +373,6 @@ export function PaymentSetup({
               </CardContent>
             </Card>
           </div>
-        </div>
-
-        <div className="max-w-2xl mx-auto">
-          <Button
-            onClick={handleAddPaymentMethod}
-            disabled={loading}
-            size="lg"
-            className="w-full"
-          >
-            {loading ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                Securing payment method...
-              </>
-            ) : (
-              <>
-                <Shield className="h-4 w-4 mr-2" />
-                Secure Payment Method
-              </>
-            )}
-          </Button>
-          
-          <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
-            You won't be charged until your trial ends on {trialEndDate.toLocaleDateString()}
-          </p>
-        </div>
 
         <div className="flex justify-between pt-6 max-w-2xl mx-auto">
           <Button variant="outline" onClick={() => setStep('trial')}>

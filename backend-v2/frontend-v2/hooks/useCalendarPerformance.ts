@@ -245,6 +245,7 @@ export function useCalendarPerformance(): CalendarPerformanceHook {
           // Warn if memory usage is critical
           if (memInfo.usedJSHeapSize > 100 * 1024 * 1024) { // 100MB threshold
             // Only warn once per minute to reduce noise
+            const now = Date.now()
             const lastMemWarn = renderTimersRef.current.get('memory_warn') || 0
             if (now - lastMemWarn > 60000) {
               console.warn('High memory usage detected:', Math.round(memInfo.usedJSHeapSize / 1024 / 1024), 'MB')

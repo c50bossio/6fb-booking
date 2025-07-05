@@ -1,22 +1,43 @@
 """
-Simple rate limiter for conversion tracking endpoints.
-Uses in-memory storage for simplicity (can be replaced with Redis in production).
+Rate limiter for conversion tracking endpoints.
+Uses Redis when available, falls back to in-memory storage.
 """
 
 from fastapi import Request, HTTPException
 from datetime import datetime, timedelta
-from typing import Dict, List
+from typing import Dict, List, Optional
 import asyncio
+import logging
+
+logger = logging.getLogger(__name__)
+
+# Try to import Redis rate limiter
+try:
+    from services.redis_rate_limiter import RedisRateLimiter
+    redis_available = True
+except ImportError:
+    redis_available = False
+    logger.info("Redis rate limiter not available, using in-memory rate limiter")
 
 
 class RateLimiter:
-    """Simple in-memory rate limiter"""
+    """Rate limiter with Redis support and in-memory fallback"""
     
     def __init__(self, requests_per_minute: int = 60):
         self.requests_per_minute = requests_per_minute
         self.requests: Dict[str, List[datetime]] = {}
         self.cleanup_interval = 60  # Clean up old entries every minute
         self._cleanup_task = None
+        
+        # Initialize Redis rate limiter if available
+        self.redis_limiter: Optional[RedisRateLimiter] = None
+        if redis_available:
+            try:
+                self.redis_limiter = RedisRateLimiter()
+                logger.info("Using Redis-based rate limiter")
+            except Exception as e:
+                logger.warning(f"Failed to initialize Redis rate limiter: {e}")
+                self.redis_limiter = None
     
     async def check_rate_limit(self, request: Request, key: str, count: int = 1):
         """
@@ -30,6 +51,25 @@ class RateLimiter:
         Raises:
             HTTPException: If rate limit is exceeded
         """
+        # Try Redis rate limiter first
+        if self.redis_limiter:
+            try:
+                # Convert key to user_id if it's numeric
+                user_id = int(key) if key.isdigit() else None
+                await self.redis_limiter.check_rate_limit(
+                    request=request,
+                    user_id=user_id,
+                    resource="tracking",
+                    count=count
+                )
+                return
+            except HTTPException:
+                # Re-raise rate limit exceptions
+                raise
+            except Exception as e:
+                logger.warning(f"Redis rate limiter failed, falling back to in-memory: {e}")
+        
+        # Fallback to in-memory rate limiting
         now = datetime.utcnow()
         minute_ago = now - timedelta(minutes=1)
         

@@ -9,10 +9,11 @@ import {
   ScissorsIcon,
   QuestionMarkCircleIcon
 } from '@heroicons/react/24/outline'
-import { type User } from '@/lib/api'
+import { type User, type UnifiedUserRole } from '@/lib/api'
 import { useThemeStyles } from '@/hooks/useTheme'
 import { filterNavigationByRole, navigationItems, type NavigationItem } from '@/lib/navigation'
 import { Logo } from '@/components/ui/Logo'
+import { UserPermissions, RoleMigrationHelper } from '@/lib/permissions'
 
 interface SidebarProps {
   user: User | null
@@ -25,7 +26,16 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
   const { colors, isDark } = useThemeStyles()
   const [expandedSections, setExpandedSections] = useState<Set<string>>(() => new Set(['dashboard', 'calendar & scheduling']))
   
-  // Removed debug logging for cleaner production code
+  // Helper function to get role display name
+  const getRoleDisplayName = (user: User): string => {
+    if (user.unified_role) {
+      return UserPermissions.getRoleDisplayName(user.unified_role)
+    }
+    // Fallback for legacy roles
+    if (user.role === 'admin') return 'Administrator'
+    if (user.role === 'barber') return 'Barber'
+    return 'Client'
+  }
 
   const toggleSection = (sectionName: string) => {
     console.log('Sidebar: Toggling section', sectionName) // Debug log
@@ -40,8 +50,8 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
 
   // Memoize navigation items to prevent re-renders
   const filteredNavigationItems = useMemo(() => 
-    filterNavigationByRole(navigationItems, user?.role), 
-    [user?.role]
+    filterNavigationByRole(navigationItems, user?.unified_role || user?.role), 
+    [user?.unified_role, user?.role]
   )
 
   const isActive = (href: string) => {
@@ -199,8 +209,7 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
                 {user.name || 'User'}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                {user.role === 'admin' ? 'Administrator' : 
-                 user.role === 'barber' ? 'Barber' : 'Client'}
+                {getRoleDisplayName(user)}
               </p>
             </div>
           </div>

@@ -1,11 +1,13 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { BusinessType } from './BusinessTypeSelection'
+import { ValidationDisplay, ValidationSummary } from '@/components/ui/ValidationDisplay'
+import { getFieldError } from '@/lib/registrationValidation'
 
 export interface AccountInfo {
   firstName: string
@@ -32,6 +34,7 @@ interface PasswordStrength {
 interface AccountSetupProps {
   businessType: BusinessType
   accountInfo: AccountInfo
+  validationErrors?: Array<{ field: string; message: string }>
   onUpdate: (info: AccountInfo) => void
   onNext: () => void
   onBack: () => void
@@ -40,11 +43,14 @@ interface AccountSetupProps {
 export function AccountSetup({ 
   businessType, 
   accountInfo, 
+  validationErrors = [],
   onUpdate, 
   onNext, 
   onBack 
 }: AccountSetupProps) {
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [emailSuggestion, setEmailSuggestion] = useState<string>('')
+  const [showEmailSuggestion, setShowEmailSuggestion] = useState(false)
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>({
     hasMinLength: false,
     hasUpperCase: false,
@@ -52,6 +58,23 @@ export function AccountSetup({
     hasDigit: false,
     hasSpecialChar: false
   })
+
+  // Common email domain suggestions
+  const commonDomains = [
+    'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 
+    'aol.com', 'icloud.com', 'live.com', 'msn.com'
+  ]
+
+  // Smart defaults based on business type
+  useEffect(() => {
+    if (businessType && accountInfo.firstName && accountInfo.lastName && !accountInfo.email) {
+      // For solo barbers, suggest a professional email format
+      if (businessType === 'solo' && accountInfo.firstName && accountInfo.lastName) {
+        const suggestedEmail = `${accountInfo.firstName.toLowerCase()}.${accountInfo.lastName.toLowerCase()}@`
+        // Don't auto-fill, just prepare for suggestion
+      }
+    }
+  }, [businessType, accountInfo.firstName, accountInfo.lastName])
 
   const validatePassword = (password: string) => {
     const strength = {
@@ -71,6 +94,64 @@ export function AccountSetup({
            passwordStrength.hasLowerCase &&
            passwordStrength.hasDigit &&
            passwordStrength.hasSpecialChar
+  }
+
+  const checkEmailTypo = (email: string) => {
+    if (!email.includes('@')) return
+
+    const [localPart, domainPart] = email.split('@')
+    if (!domainPart) return
+
+    // Find the closest matching domain
+    for (const domain of commonDomains) {
+      const similarity = calculateSimilarity(domainPart.toLowerCase(), domain)
+      if (similarity > 0.6 && similarity < 1) {
+        const suggestion = `${localPart}@${domain}`
+        setEmailSuggestion(suggestion)
+        setShowEmailSuggestion(true)
+        return
+      }
+    }
+    setShowEmailSuggestion(false)
+  }
+
+  const calculateSimilarity = (str1: string, str2: string): number => {
+    const longer = str1.length > str2.length ? str1 : str2
+    const shorter = str1.length > str2.length ? str2 : str1
+    
+    if (longer.length === 0) return 1.0
+    
+    const distance = levenshteinDistance(longer, shorter)
+    return (longer.length - distance) / longer.length
+  }
+
+  const levenshteinDistance = (str1: string, str2: string): number => {
+    const matrix = []
+    for (let i = 0; i <= str2.length; i++) {
+      matrix[i] = [i]
+    }
+    for (let j = 0; j <= str1.length; j++) {
+      matrix[0][j] = j
+    }
+    for (let i = 1; i <= str2.length; i++) {
+      for (let j = 1; j <= str1.length; j++) {
+        if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1]
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1,
+            matrix[i][j - 1] + 1,
+            matrix[i - 1][j] + 1
+          )
+        }
+      }
+    }
+    return matrix[str2.length][str1.length]
+  }
+
+  const applySuggestion = () => {
+    updateField('email', emailSuggestion)
+    setShowEmailSuggestion(false)
   }
 
   const validateForm = (): boolean => {
@@ -141,6 +222,11 @@ export function AccountSetup({
     if (field === 'password') {
       validatePassword(value)
     }
+
+    // Special handling for email validation and suggestions
+    if (field === 'email') {
+      checkEmailTypo(value)
+    }
     
     // Clear error when user starts typing
     if (errors[field]) {
@@ -195,9 +281,7 @@ export function AccountSetup({
                   placeholder="John"
                   className={errors.firstName ? 'border-red-500' : ''}
                 />
-                {errors.firstName && (
-                  <p className="text-sm text-red-600 mt-1">{errors.firstName}</p>
-                )}
+                <ValidationDisplay error={errors.firstName || getFieldError(validationErrors, 'firstName')} />
               </div>
 
               <div>
@@ -209,9 +293,7 @@ export function AccountSetup({
                   placeholder="Doe"
                   className={errors.lastName ? 'border-red-500' : ''}
                 />
-                {errors.lastName && (
-                  <p className="text-sm text-red-600 mt-1">{errors.lastName}</p>
-                )}
+                <ValidationDisplay error={errors.lastName || getFieldError(validationErrors, 'lastName')} />
               </div>
             </div>
           </div>
@@ -227,9 +309,40 @@ export function AccountSetup({
                 type="email"
                 value={accountInfo.email}
                 onChange={(e) => updateField('email', e.target.value)}
-                placeholder="john@example.com"
+                placeholder={businessType === 'solo' ? 'your.name@gmail.com' : 'contact@yourbusiness.com'}
                 className={errors.email ? 'border-red-500' : ''}
               />
+              
+              {/* Email Domain Suggestion */}
+              {showEmailSuggestion && (
+                <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <svg className="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span className="text-sm text-blue-700 dark:text-blue-300">
+                        Did you mean <strong>{emailSuggestion}</strong>?
+                      </span>
+                    </div>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={applySuggestion}
+                        className="text-xs px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                      >
+                        Yes, use this
+                      </button>
+                      <button
+                        onClick={() => setShowEmailSuggestion(false)}
+                        className="text-xs px-3 py-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+                      >
+                        No, keep mine
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               {errors.email && (
                 <p className="text-sm text-red-600 mt-1">{errors.email}</p>
               )}

@@ -5,7 +5,7 @@ import { AlertTriangle, RefreshCw, Info, CheckCircle, XCircle, WifiOff, Clock, A
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
+import { Badge } from '@/components/ui/Badge'
 import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
 

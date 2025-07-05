@@ -13,6 +13,32 @@ def utcnow():
 
 # Webhook models will be defined at the end of this file
 
+# Unified Role System for User Hierarchy
+class UnifiedUserRole(enum.Enum):
+    """
+    Unified role system replacing dual role/user_type system.
+    Provides clear hierarchy for business management and permissions.
+    """
+    # System roles
+    SUPER_ADMIN = "super_admin"           # Platform administrator
+    PLATFORM_ADMIN = "platform_admin"    # Platform support staff
+    
+    # Business owners
+    ENTERPRISE_OWNER = "enterprise_owner" # Multi-location owner
+    SHOP_OWNER = "shop_owner"            # Single barbershop owner
+    INDIVIDUAL_BARBER = "individual_barber" # Solo barber (no organization)
+    
+    # Staff roles
+    SHOP_MANAGER = "shop_manager"        # Location manager
+    BARBER = "barber"                    # Staff barber
+    RECEPTIONIST = "receptionist"        # Front desk staff
+    
+    # Client role
+    CLIENT = "client"                    # Booking client
+    
+    # Limited access
+    VIEWER = "viewer"                    # Read-only access
+
 class User(Base):
     __tablename__ = "users"
     
@@ -49,8 +75,14 @@ class User(Base):
     verification_token_expires = Column(DateTime, nullable=True)  # When verification token expires
     verified_at = Column(DateTime, nullable=True)  # When email was verified
     
+    # Unified Role System
+    unified_role = Column(String(50), default=UnifiedUserRole.CLIENT.value, nullable=False, index=True)  # Unified role system
+    role_migrated = Column(Boolean, default=False)  # Track if user was migrated to unified role system
+    
+    # Legacy fields (kept for backwards compatibility during transition)
+    user_type = Column(String, default="client")  # DEPRECATED: client, barber, barbershop
+    
     # Trial system fields
-    user_type = Column(String, default="client")  # client, barber, barbershop
     trial_started_at = Column(DateTime, nullable=True)  # When trial started
     trial_expires_at = Column(DateTime, nullable=True)  # When trial expires
     trial_active = Column(Boolean, default=True)  # Whether trial is active
@@ -61,6 +93,11 @@ class User(Base):
     
     # Lifetime value for conversion tracking
     lifetime_value = Column(Float, default=0.0)
+    
+    # Onboarding fields
+    onboarding_completed = Column(Boolean, default=False)
+    onboarding_status = Column(JSON, nullable=True)  # Stores completed_steps, current_step, skipped
+    is_new_user = Column(Boolean, default=True)  # Track if user is new for welcome flow
     
     # Relationships
     appointments = relationship("Appointment", back_populates="user", foreign_keys="Appointment.user_id")
@@ -81,6 +118,9 @@ class User(Base):
     
     # Google Calendar integration relationship
     google_calendar_settings = relationship("GoogleCalendarSettings", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    
+    # Organization relationships
+    user_organizations = relationship("UserOrganization", back_populates="user", cascade="all, delete-orphan")
     
     # Location relationships
     # Note: need to use string reference since BarbershopLocation is defined in location_models.py
@@ -107,6 +147,135 @@ class User(Base):
             return 0
         delta = self.trial_expires_at - now
         return max(0, delta.days)
+    
+    @property
+    def primary_organization(self):
+        """Get the user's primary organization"""
+        primary_relation = next(
+            (uo for uo in self.user_organizations if uo.is_primary),
+            None
+        )
+        return primary_relation.organization if primary_relation else None
+    
+    @property
+    def organizations(self):
+        """Get all organizations this user belongs to"""
+        return [uo.organization for uo in self.user_organizations]
+    
+    def get_role_in_organization(self, organization_id: int) -> str:
+        """Get user's role in a specific organization"""
+        user_org = next(
+            (uo for uo in self.user_organizations if uo.organization_id == organization_id),
+            None
+        )
+        return user_org.role if user_org else None
+    
+    def is_owner_of_organization(self, organization_id: int) -> bool:
+        """Check if user is owner of a specific organization"""
+        from models.organization import UserRole
+        return self.get_role_in_organization(organization_id) == UserRole.OWNER.value
+    
+    # Unified Role System Helper Methods
+    
+    @property
+    def is_business_owner(self) -> bool:
+        """Check if user owns any type of business"""
+        return self.unified_role in [
+            UnifiedUserRole.ENTERPRISE_OWNER.value,
+            UnifiedUserRole.SHOP_OWNER.value,
+            UnifiedUserRole.INDIVIDUAL_BARBER.value
+        ]
+    
+    @property 
+    def is_staff_member(self) -> bool:
+        """Check if user is staff (not owner, not client)"""
+        return self.unified_role in [
+            UnifiedUserRole.SHOP_MANAGER.value,
+            UnifiedUserRole.BARBER.value,
+            UnifiedUserRole.RECEPTIONIST.value
+        ]
+    
+    @property
+    def is_system_admin(self) -> bool:
+        """Check if user has system admin privileges"""
+        return self.unified_role in [
+            UnifiedUserRole.SUPER_ADMIN.value,
+            UnifiedUserRole.PLATFORM_ADMIN.value
+        ]
+    
+    @property
+    def can_manage_billing(self) -> bool:
+        """Check if user can access billing features"""
+        return self.unified_role in [
+            UnifiedUserRole.SUPER_ADMIN.value,
+            UnifiedUserRole.PLATFORM_ADMIN.value,
+            UnifiedUserRole.ENTERPRISE_OWNER.value,
+            UnifiedUserRole.SHOP_OWNER.value,
+            UnifiedUserRole.INDIVIDUAL_BARBER.value
+        ]
+    
+    @property
+    def can_manage_staff(self) -> bool:
+        """Check if user can manage staff members"""
+        return self.unified_role in [
+            UnifiedUserRole.SUPER_ADMIN.value,
+            UnifiedUserRole.ENTERPRISE_OWNER.value,
+            UnifiedUserRole.SHOP_OWNER.value,
+            UnifiedUserRole.SHOP_MANAGER.value
+        ]
+    
+    @property
+    def can_view_analytics(self) -> bool:
+        """Check if user can view business analytics"""
+        return self.unified_role in [
+            UnifiedUserRole.SUPER_ADMIN.value,
+            UnifiedUserRole.PLATFORM_ADMIN.value,
+            UnifiedUserRole.ENTERPRISE_OWNER.value,
+            UnifiedUserRole.SHOP_OWNER.value,
+            UnifiedUserRole.INDIVIDUAL_BARBER.value,
+            UnifiedUserRole.SHOP_MANAGER.value,
+            UnifiedUserRole.BARBER.value
+        ]
+    
+    def get_business_hierarchy_level(self) -> str:
+        """Get the business hierarchy level for chair-based billing"""
+        role_to_level = {
+            UnifiedUserRole.INDIVIDUAL_BARBER.value: "individual",
+            UnifiedUserRole.SHOP_OWNER.value: "studio",  # Default, can be upgraded based on chair count
+            UnifiedUserRole.ENTERPRISE_OWNER.value: "enterprise",
+            UnifiedUserRole.SHOP_MANAGER.value: "studio",
+            UnifiedUserRole.BARBER.value: "studio",
+            UnifiedUserRole.RECEPTIONIST.value: "studio"
+        }
+        return role_to_level.get(self.unified_role, "individual")
+    
+    def migrate_from_legacy_roles(self) -> bool:
+        """
+        Migrate user from legacy role/user_type system to unified role system.
+        Returns True if migration was needed and completed.
+        """
+        if self.role_migrated:
+            return False  # Already migrated
+        
+        # Mapping logic for legacy roles
+        if self.role == "admin":
+            self.unified_role = UnifiedUserRole.SUPER_ADMIN.value
+        elif self.role == "barber" and self.user_type == "barbershop":
+            self.unified_role = UnifiedUserRole.SHOP_OWNER.value
+        elif self.role == "barber" and self.user_type == "barber":
+            self.unified_role = UnifiedUserRole.INDIVIDUAL_BARBER.value
+        elif self.role == "barber" and self.user_type == "client":
+            self.unified_role = UnifiedUserRole.BARBER.value
+        elif self.user_type == "barber":
+            self.unified_role = UnifiedUserRole.INDIVIDUAL_BARBER.value
+        elif self.user_type == "barbershop":
+            self.unified_role = UnifiedUserRole.SHOP_OWNER.value
+        else:
+            self.unified_role = UnifiedUserRole.CLIENT.value
+        
+        self.role_migrated = True
+        return True
+
 
 class Appointment(Base):
     __tablename__ = "appointments"

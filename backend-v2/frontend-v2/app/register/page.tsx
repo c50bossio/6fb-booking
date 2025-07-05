@@ -1,95 +1,68 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { MultiStepRegistration, RegistrationData } from '@/components/registration'
+import { registerComplete, CompleteRegistrationData } from '@/lib/api'
 import Link from 'next/link'
-import { register } from '@/lib/api'
+import { LogoFull } from '@/components/ui/Logo'
+import { ArrowLeftIcon, SparklesIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
 
 export default function RegisterPage() {
   const router = useRouter()
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    userType: 'barber'
-  })
-  const [consent, setConsent] = useState({
-    terms: false,
-    privacy: false,
-    marketing: false,
-    testData: false
-  })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [passwordStrength, setPasswordStrength] = useState({
-    hasMinLength: false,
-    hasUpperCase: false,
-    hasLowerCase: false,
-    hasDigit: false,
-    hasSpecialChar: false
-  })
+  
+  // Debug: Log when component mounts
+  React.useEffect(() => {
+    console.log('[RegisterPage] Component mounted successfully')
+    console.log('[RegisterPage] handleComplete function exists:', !!handleComplete)
+    console.log('[RegisterPage] handleCancel function exists:', !!handleCancel)
+  }, [])
 
-  // Validate password strength
-  const validatePassword = (password: string) => {
-    setPasswordStrength({
-      hasMinLength: password.length >= 8,
-      hasUpperCase: /[A-Z]/.test(password),
-      hasLowerCase: /[a-z]/.test(password),
-      hasDigit: /\d/.test(password),
-      hasSpecialChar: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
-    })
-  }
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-    
-    if (name === 'password') {
-      validatePassword(value)
-    }
-  }
-
-  const handleConsentChange = (type: keyof typeof consent) => {
-    setConsent(prev => ({ ...prev, [type]: !prev[type] }))
-  }
-
-  const isPasswordValid = () => {
-    return passwordStrength.hasMinLength &&
-           passwordStrength.hasUpperCase &&
-           passwordStrength.hasLowerCase &&
-           passwordStrength.hasDigit &&
-           passwordStrength.hasSpecialChar
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleComplete = async (data: RegistrationData) => {
+    setLoading(true)
     setError('')
 
-    // Validate passwords match
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match')
-      return
-    }
-
-    // Validate password strength
-    if (!isPasswordValid()) {
-      setError('Password does not meet requirements')
-      return
-    }
-
-    // Validate required consent
-    if (!consent.terms || !consent.privacy) {
-      setError('You must agree to the Terms of Service and Privacy Policy to create an account')
-      return
-    }
-
-    setLoading(true)
-
     try {
-      await register(formData.email, formData.password, formData.name, consent.testData, formData.userType)
-      // Redirect to check-email page instead of login
-      router.push(`/check-email?email=${encodeURIComponent(formData.email)}`)
+      // Map the registration data to the complete registration API format
+      const registrationPayload: CompleteRegistrationData = {
+        firstName: data.accountInfo.firstName,
+        lastName: data.accountInfo.lastName,
+        email: data.accountInfo.email,
+        password: data.accountInfo.password,
+        user_type: data.businessType === 'individual' ? 'barber' : 'barbershop',
+        businessName: data.businessInfo.businessName,
+        businessType: data.businessType || 'individual',
+        address: {
+          street: data.businessInfo.address.street,
+          city: data.businessInfo.address.city,
+          state: data.businessInfo.address.state,
+          zipCode: data.businessInfo.address.zipCode
+        },
+        phone: data.businessInfo.phone,
+        website: data.businessInfo.website,
+        chairCount: data.businessInfo.chairCount,
+        barberCount: data.businessInfo.barberCount,
+        description: data.businessInfo.description,
+        pricingInfo: data.pricingInfo ? {
+          chairs: data.pricingInfo.chairs,
+          monthlyTotal: data.pricingInfo.monthlyTotal,
+          tier: data.pricingInfo.tier
+        } : undefined,
+        consent: {
+          terms: data.accountInfo.consent.terms,
+          privacy: data.accountInfo.consent.privacy,
+          marketing: data.accountInfo.consent.marketing,
+          testData: data.accountInfo.consent.testData
+        }
+      }
+
+      // Call the complete registration API
+      await registerComplete(registrationPayload)
+
+      // Redirect to check-email page
+      router.push(`/check-email?email=${encodeURIComponent(data.accountInfo.email)}`)
     } catch (err: any) {
       if (err.response?.data?.detail) {
         setError(err.response.data.detail)
@@ -101,269 +74,231 @@ export default function RegisterPage() {
     }
   }
 
+  const handleCancel = () => {
+    router.push('/')
+  }
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8 bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Create Account</h2>
-          <p className="mt-2 text-gray-600 dark:text-gray-300">
-            Join us to get started
+    <div className="bg-gray-50 dark:bg-gray-900">
+
+      {/* Header */}
+      <header className="relative z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <Link href="/" className="flex items-center space-x-3 group">
+              <ArrowLeftIcon className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors" />
+              <LogoFull variant="auto" size="md" noLink={true} />
+            </Link>
+            
+            <div className="flex items-center space-x-6">
+              <span className="hidden sm:flex items-center text-sm text-gray-600 dark:text-gray-400">
+                Already have an account?
+              </span>
+              <Link
+                href="/login"
+                className="text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 transition-colors"
+              >
+                Sign in
+              </Link>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4">
+        <div className="text-center space-y-4">
+          <div className="inline-flex items-center justify-center p-2 bg-primary-100 dark:bg-primary-900/20 rounded-full">
+            <SparklesIcon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+          </div>
+          
+          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white">
+            Start Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-blue-600 dark:from-primary-400 dark:to-blue-400">Six Figure</span> Journey
+          </h1>
+          
+          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+            Join thousands of barbers building their empire with BookedBarber's all-in-one platform
+          </p>
+
+          {/* Trust Indicators */}
+          <div className="flex flex-wrap justify-center items-center gap-6 pt-4">
+            <div className="flex items-center space-x-2">
+              <CheckCircleIcon className="w-5 h-5 text-green-500" />
+              <span className="text-sm text-gray-600 dark:text-gray-400">14-day free trial</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <CheckCircleIcon className="w-5 h-5 text-green-500" />
+              <span className="text-sm text-gray-600 dark:text-gray-400">No credit card required</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <CheckCircleIcon className="w-5 h-5 text-green-500" />
+              <span className="text-sm text-gray-600 dark:text-gray-400">Cancel anytime</span>
+            </div>
+          </div>
+
+          {/* Social Proof - Success Metrics */}
+          <div className="pt-6">
+            <div className="flex flex-wrap justify-center items-center gap-8 text-center">
+              <div className="flex flex-col items-center">
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">2,500+</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Active Barbers</div>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">$1.2M+</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Revenue Generated</div>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">150k+</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Appointments Booked</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Error Notification */}
+      {error && (
+        <div className="fixed top-20 right-4 z-50 max-w-md">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-red-200 dark:border-red-800 p-4">
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0">
+                <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white">Registration Error</h3>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{error}</p>
+              </div>
+              <button
+                onClick={() => setError('')}
+                className="flex-shrink-0 ml-4 text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
+              >
+                <span className="sr-only">Close</span>
+                <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Loading Overlay */}
+      {loading && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl transform scale-100 transition-all">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="relative">
+                <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary-200 dark:border-primary-800"></div>
+                <div className="absolute inset-0 animate-spin rounded-full h-16 w-16 border-4 border-transparent border-t-primary-600 dark:border-t-primary-400"></div>
+              </div>
+              <div className="text-center">
+                <p className="text-lg font-medium text-gray-900 dark:text-white">Creating your account...</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">This will just take a moment</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Registration Form Container */}
+      <div className="relative z-10">
+        <MultiStepRegistration
+          onComplete={handleComplete}
+          onCancel={handleCancel}
+        />
+      </div>
+
+      {/* Customer Testimonials */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
+        <div className="text-center mb-12">
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            Trusted by Barbers Nationwide
+          </h3>
+          <p className="text-gray-600 dark:text-gray-300">
+            See what other barbers are saying about BookedBarber
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-md text-sm border border-red-200 dark:border-red-800">
-              {error}
-            </div>
-          )}
-
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Name
-              </label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required
-                aria-required="true"
-                aria-describedby="name-help"
-                value={formData.name}
-                onChange={handleInputChange}
-                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-              <div id="name-help" className="sr-only">Enter your full name</div>
-            </div>
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                aria-required="true"
-                aria-describedby="email-help"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-              <div id="email-help" className="sr-only">Enter a valid email address for account verification</div>
-            </div>
-
-            <div>
-              <label htmlFor="userType" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                I am a...
-              </label>
-              <select
-                id="userType"
-                name="userType"
-                required
-                aria-required="true"
-                aria-describedby="userType-help"
-                value={formData.userType}
-                onChange={handleInputChange}
-                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="barber">Barber (I provide services)</option>
-                <option value="barbershop">Barbershop Owner (I run a business)</option>
-              </select>
-              <p id="userType-help" className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Registration is for service providers only. Clients can book appointments through your barbershop's booking page.
-              </p>
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                aria-required="true"
-                aria-describedby="password-requirements"
-                value={formData.password}
-                onChange={handleInputChange}
-                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-              
-              {/* Password Requirements */}
-              <div id="password-requirements" className="mt-2 space-y-1">
-                <p className="text-xs text-gray-600 dark:text-gray-400">Password must contain:</p>
-                <div className="space-y-1">
-                  <div className={`text-xs flex items-center ${passwordStrength.hasMinLength ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'}`}>
-                    <span className="mr-2">{passwordStrength.hasMinLength ? '✓' : '○'}</span>
-                    At least 8 characters
-                  </div>
-                  <div className={`text-xs flex items-center ${passwordStrength.hasUpperCase ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'}`}>
-                    <span className="mr-2">{passwordStrength.hasUpperCase ? '✓' : '○'}</span>
-                    One uppercase letter
-                  </div>
-                  <div className={`text-xs flex items-center ${passwordStrength.hasLowerCase ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'}`}>
-                    <span className="mr-2">{passwordStrength.hasLowerCase ? '✓' : '○'}</span>
-                    One lowercase letter
-                  </div>
-                  <div className={`text-xs flex items-center ${passwordStrength.hasDigit ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'}`}>
-                    <span className="mr-2">{passwordStrength.hasDigit ? '✓' : '○'}</span>
-                    One number
-                  </div>
-                  <div className={`text-xs flex items-center ${passwordStrength.hasSpecialChar ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'}`}>
-                    <span className="mr-2">{passwordStrength.hasSpecialChar ? '✓' : '○'}</span>
-                    One special character (!@#$%^&*)
-                  </div>
-                </div>
+        <div className="grid md:grid-cols-3 gap-8">
+          {/* Testimonial 1 */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+            <div className="flex items-center mb-4">
+              <div className="flex text-yellow-400">
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
               </div>
             </div>
-
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Confirm Password
-              </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                required
-                aria-required="true"
-                aria-describedby="confirmPassword-help"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-              <div id="confirmPassword-help" className="sr-only">Re-enter your password to confirm</div>
-              {formData.confirmPassword && formData.password !== formData.confirmPassword && (
-                <p className="mt-1 text-xs text-red-600 dark:text-red-400">Passwords do not match</p>
-              )}
+            <blockquote className="text-gray-700 dark:text-gray-300 mb-4">
+              "BookedBarber completely transformed my business. I went from struggling to fill my chair to being booked solid 3 weeks out. The automated reminders alone cut my no-shows by 80%."
+            </blockquote>
+            <div className="flex items-center">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm">
+                MJ
+              </div>
+              <div className="ml-3">
+                <p className="font-semibold text-gray-900 dark:text-white">Marcus Johnson</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Solo Barber, Atlanta</p>
+              </div>
             </div>
           </div>
 
-          {/* Consent Checkboxes */}
-          <div className="space-y-4 border-t pt-4">
-            <h3 className="text-sm font-medium text-gray-900 dark:text-white">Privacy & Consent</h3>
-            
-            {/* Required Consents */}
-            <div className="space-y-3">
-              <div className="flex items-start">
-                <input
-                  id="terms-consent"
-                  type="checkbox"
-                  checked={consent.terms}
-                  onChange={() => handleConsentChange('terms')}
-                  className="mt-0.5 h-4 w-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-blue-400"
-                  required
-                />
-                <label htmlFor="terms-consent" className="ml-3 text-sm text-gray-700 dark:text-gray-300">
-                  I agree to the{' '}
-                  <a 
-                    href="/terms" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-500 underline"
-                  >
-                    Terms of Service
-                  </a>
-                  <span className="text-red-500 ml-1">*</span>
-                </label>
-              </div>
-
-              <div className="flex items-start">
-                <input
-                  id="privacy-consent"
-                  type="checkbox"
-                  checked={consent.privacy}
-                  onChange={() => handleConsentChange('privacy')}
-                  className="mt-0.5 h-4 w-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-blue-400"
-                  required
-                />
-                <label htmlFor="privacy-consent" className="ml-3 text-sm text-gray-700 dark:text-gray-300">
-                  I agree to the{' '}
-                  <a 
-                    href="/privacy" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-500 underline"
-                  >
-                    Privacy Policy
-                  </a>
-                  <span className="text-red-500 ml-1">*</span>
-                </label>
-              </div>
-
-              {/* Optional Marketing Consent */}
-              <div className="flex items-start">
-                <input
-                  id="marketing-consent"
-                  type="checkbox"
-                  checked={consent.marketing}
-                  onChange={() => handleConsentChange('marketing')}
-                  className="mt-0.5 h-4 w-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-blue-400"
-                />
-                <label htmlFor="marketing-consent" className="ml-3 text-sm text-gray-700 dark:text-gray-300">
-                  I would like to receive promotional emails and updates about new features (optional)
-                </label>
-              </div>
-
-              {/* Test Data Option */}
-              <div className="flex items-start bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md">
-                <input
-                  id="test-data-consent"
-                  type="checkbox"
-                  checked={consent.testData}
-                  onChange={() => handleConsentChange('testData')}
-                  className="mt-0.5 h-4 w-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-blue-400"
-                />
-                <label htmlFor="test-data-consent" className="ml-3 text-sm text-gray-700 dark:text-gray-300">
-                  <span className="font-medium">Create sample data to help me learn the platform</span>
-                  <br />
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    Adds test barbers, clients, and appointments to explore features safely. 
-                    All test data is clearly marked and can be deleted anytime.
-                  </span>
-                </label>
+          {/* Testimonial 2 */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+            <div className="flex items-center mb-4">
+              <div className="flex text-yellow-400">
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
               </div>
             </div>
-
-            <div className="text-xs text-gray-500 dark:text-gray-400">
-              <span className="text-red-500 dark:text-red-400">*</span> Required fields. You can review our{' '}
-              <a href="/cookies" className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 underline">
-                Cookie Policy
-              </a>{' '}
-              and change your cookie preferences after registration in your{' '}
-              <a href="/settings/privacy" className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 underline">
-                privacy settings
-              </a>.
+            <blockquote className="text-gray-700 dark:text-gray-300 mb-4">
+              "Running 4 locations was a nightmare before BookedBarber. Now I can see everything from one dashboard, manage my staff schedules, and track performance across all shops. Revenue is up 40%."
+            </blockquote>
+            <div className="flex items-center">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center text-white font-bold text-sm">
+                CR
+              </div>
+              <div className="ml-3">
+                <p className="font-semibold text-gray-900 dark:text-white">Carlos Rodriguez</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Shop Owner, Miami</p>
+              </div>
             </div>
           </div>
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading || !isPasswordValid() || formData.password !== formData.confirmPassword || !consent.terms || !consent.privacy}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Creating account...' : 'Create account'}
-            </button>
+          {/* Testimonial 3 */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+            <div className="flex items-center mb-4">
+              <div className="flex text-yellow-400">
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+              </div>
+            </div>
+            <blockquote className="text-gray-700 dark:text-gray-300 mb-4">
+              "The analytics are incredible. I can see exactly which services are most profitable, when my peak hours are, and how to optimize my pricing. Made my first six figures this year!"
+            </blockquote>
+            <div className="flex items-center">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                AW
+              </div>
+              <div className="ml-3">
+                <p className="font-semibold text-gray-900 dark:text-white">Angela Williams</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Independent Barber, Houston</p>
+              </div>
+            </div>
           </div>
-
-          <div className="text-center space-y-2">
-            <p className="text-sm text-gray-600 dark:text-gray-300">
-              Already have an account?{' '}
-              <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
-                Sign in
-              </Link>
-            </p>
-            <Link href="/" className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
-              Back to home
-            </Link>
-          </div>
-        </form>
+        </div>
       </div>
-    </main>
+
+    </div>
   )
 }

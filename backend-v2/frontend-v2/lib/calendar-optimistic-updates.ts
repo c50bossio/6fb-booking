@@ -550,7 +550,7 @@ export const calendarOptimisticManager = CalendarOptimisticManager.getInstance()
 import { useState, useEffect } from 'react'
 
 export function useCalendarOptimisticUpdates() {
-  const [state, setState] = useState<CalendarState>(calendarOptimisticManager.getState())
+  const [state, setState] = useState<CalendarState>(() => calendarOptimisticManager.getState())
 
   useEffect(() => {
     const unsubscribe = calendarOptimisticManager.subscribe(setState)
