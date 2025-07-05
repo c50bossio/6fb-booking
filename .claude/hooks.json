@@ -243,6 +243,104 @@
       "message": "🔍 Checking if feature already exists..."
     },
     {
+      "name": "auth_dependency_validation",
+      "description": "Prevent authentication dependencies in landing pages",
+      "event": "PreToolUse",
+      "matchers": [
+        "Edit(file_path:*/app/page.tsx)",
+        "Write(file_path:*/app/page.tsx)",
+        "MultiEdit(file_path:*/app/page.tsx)"
+      ],
+      "command": "/Users/bossio/6fb-booking/.claude/scripts/check-auth-dependencies.sh",
+      "blocking": true,
+      "message": "🛡️ Checking for auth dependencies in landing page..."
+    },
+    {
+      "name": "error_boundary_verification",
+      "description": "Ensure error boundaries exist for auth-dependent components",
+      "event": "PostToolUse",
+      "matchers": [
+        "Edit(file_path:*AuthCTAs*)",
+        "Edit(file_path:*useAuth*)",
+        "Edit(file_path:*CTASystem*)",
+        "Write(file_path:*AuthCTAs*)",
+        "Write(file_path:*useAuth*)",
+        "Write(file_path:*CTASystem*)",
+        "MultiEdit(file_path:*AuthCTAs*)",
+        "MultiEdit(file_path:*useAuth*)",
+        "MultiEdit(file_path:*CTASystem*)"
+      ],
+      "command": "/Users/bossio/6fb-booking/.claude/scripts/verify-error-boundaries.sh",
+      "blocking": true,
+      "message": "🛡️ Verifying error boundaries for auth components..."
+    },
+    {
+      "name": "homepage_resilience_test",
+      "description": "Test homepage works when backend systems are down",
+      "event": "PostToolUse",
+      "matchers": [
+        "Edit(file_path:*/app/page.tsx)",
+        "Edit(file_path:*/components/ui/AuthCTAs.tsx)",
+        "Edit(file_path:*/hooks/useAuth.ts)",
+        "Write(file_path:*/app/page.tsx)",
+        "Write(file_path:*/components/ui/AuthCTAs.tsx)",
+        "Write(file_path:*/hooks/useAuth.ts)",
+        "MultiEdit(file_path:*/app/page.tsx)",
+        "MultiEdit(file_path:*/components/ui/AuthCTAs.tsx)",
+        "MultiEdit(file_path:*/hooks/useAuth.ts)"
+      ],
+      "command": "/Users/bossio/6fb-booking/.claude/scripts/test-homepage-resilience.sh",
+      "blocking": true,
+      "message": "🏠 Testing homepage resilience with backend offline..."
+    },
+    {
+      "name": "component_dependency_check",
+      "description": "Validate component independence and dependency chains",
+      "event": "PostToolUse",
+      "matchers": [
+        "Edit(file_path:*/components/*)",
+        "Edit(file_path:*/hooks/*)",
+        "Write(file_path:*/components/*)",
+        "Write(file_path:*/hooks/*)",
+        "MultiEdit(file_path:*/components/*)",
+        "MultiEdit(file_path:*/hooks/*)"
+      ],
+      "command": "/Users/bossio/6fb-booking/.claude/scripts/check-component-dependencies.sh",
+      "blocking": false,
+      "message": "🔗 Checking component dependency chains..."
+    },
+    {
+      "name": "pre_development_cleanup",
+      "description": "Clean up all Next.js processes before development starts",
+      "event": "Start",
+      "matchers": ["*"],
+      "command": "/Users/bossio/6fb-booking/.claude/scripts/cleanup-all-servers.sh",
+      "blocking": true,
+      "message": "🧹 Cleaning up existing Next.js processes..."
+    },
+    {
+      "name": "server_conflict_detection",
+      "description": "Detect and prevent EADDRINUSE port conflicts",
+      "event": "PreToolUse",
+      "matchers": [
+        "Bash(command:*npm run dev*)",
+        "Bash(command:*next dev*)",
+        "Bash(command:*npm start*)"
+      ],
+      "command": "/Users/bossio/6fb-booking/.claude/scripts/detect-server-conflicts.sh",
+      "blocking": true,
+      "message": "🔍 Checking for existing server processes..."
+    },
+    {
+      "name": "development_session_cleanup",
+      "description": "Clean up development processes on session exit",
+      "event": "Stop",
+      "matchers": ["*"],
+      "command": "/Users/bossio/6fb-booking/.claude/scripts/cleanup-dev-session.sh",
+      "blocking": false,
+      "message": "🧹 Cleaning up development session..."
+    },
+    {
       "name": "notification_summary",
       "description": "Provide development summary and next steps",
       "event": "Stop",

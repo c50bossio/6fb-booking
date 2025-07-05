@@ -20,6 +20,17 @@ BookedBarber is a comprehensive booking and business management platform for bar
 - **Digital Advertising Hub**: Google Ads and Meta pixel integration with attribution tracking
 - **Integration Management**: Centralized hub for all third-party service connections
 
+### Client Journey & Registration
+- **Guest Booking**: Clients can book appointments through barber/barbershop booking pages without accounts
+- **Optional Account Creation**: After booking, clients are offered account benefits:
+  - View, edit, and reschedule upcoming appointments
+  - Complete appointment history and easy rebooking
+  - Saved payment methods and card on file storage
+  - Loyalty tracking and rewards program participation
+  - Personalized SMS/email notification preferences
+- **Client Dashboard**: Self-service portal for appointment management and account preferences
+- **Seamless Integration**: Client accounts integrate with barber booking pages for enhanced experience
+
 ### Technology Stack
 - **Backend**: FastAPI (Python 3.9+) with SQLAlchemy ORM
 - **Frontend**: Next.js 14 with TypeScript, Tailwind CSS, and shadcn/ui
@@ -483,17 +494,75 @@ docker-compose up -d
 2. **CORS Errors**: Verify allowed origins in settings
 3. **Auth Failures**: Check JWT secret configuration
 4. **Payment Issues**: Verify Stripe webhook endpoint
+5. **Multiple Server Conflicts**: Use automated cleanup scripts (most common issue)
+6. **Port Conflicts (EADDRINUSE)**: Run server conflict detection
+7. **Internal Server Error**: Usually caused by multiple Next.js processes
+8. **Missing Buttons/Components**: Often due to frontend build conflicts
+
+### Server Management & Conflict Resolution
+
+**Automated Server Conflict Prevention:**
+BookedBarber V2 includes comprehensive automation to prevent the common "multiple Next.js servers" issue that causes Internal Server Errors and missing button functionality.
+
+**Quick Fix for Server Conflicts:**
+```bash
+# Automatic cleanup and restart
+./.claude/scripts/cleanup-all-servers.sh
+cd backend-v2/frontend-v2 && npm run dev
+
+# Or use the comprehensive startup script
+./scripts/start-dev-clean.sh
+```
+
+**Claude Hooks Auto-Management:**
+- **Pre-Development Cleanup**: Automatically runs when Claude starts
+- **Conflict Detection**: Prevents `npm run dev` when conflicts exist  
+- **Session Cleanup**: Gracefully shuts down servers when Claude exits
+
+**Manual Conflict Resolution:**
+```bash
+# Kill all Next.js processes
+pkill -f "next dev" && pkill -f "npm run dev"
+
+# Clear corrupted build cache
+rm -rf backend-v2/frontend-v2/.next
+
+# Check what's using ports
+lsof -i :3000 && lsof -i :8000
+
+# Force kill specific process
+kill -9 <PID>
+```
+
+**Server Management Scripts:**
+```bash
+# Clean startup with dependency check
+./scripts/start-dev-clean.sh --watch
+
+# Detect conflicts before starting
+./.claude/scripts/detect-server-conflicts.sh
+
+# Emergency cleanup
+./.claude/scripts/cleanup-all-servers.sh
+```
 
 ### Debug Commands
 ```bash
 # Check system health
 ./scripts/health-check.sh
 
-# View logs
-docker-compose logs -f
+# Check for server conflicts
+./.claude/scripts/detect-server-conflicts.sh
+
+# View server logs
+tail -f .claude/logs/frontend.log
+tail -f .claude/logs/backend.log
 
 # Database console
 python manage.py dbshell
+
+# Check port usage
+lsof -i :3000 -i :8000
 ```
 
 ## 📚 Additional Resources

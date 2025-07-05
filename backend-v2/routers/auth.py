@@ -33,6 +33,7 @@ from models.mfa import UserMFASecret, MFADeviceTrust
 from utils.logging_config import get_audit_logger
 import schemas
 import models
+from schemas import UserType
 
 logger = logging.getLogger(__name__)
 audit_logger = get_audit_logger()
@@ -150,7 +151,7 @@ async def login(request: Request, user_credentials: schemas.UserLogin, db: Sessi
     # Generate tokens for successful login
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.email, "role": user.role},
+        data={"sub": user.email, "role": user.user_type},
         expires_delta=access_token_expires
     )
     refresh_token = create_refresh_token(
@@ -237,7 +238,7 @@ async def refresh_token(
         # Create new access token
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(
-            data={"sub": user.email, "role": user.role},
+            data={"sub": user.email, "role": user.user_type},
             expires_delta=access_token_expires
         )
         
@@ -275,9 +276,55 @@ async def refresh_token(
         )
 
 @router.get("/me", response_model=schemas.User)
-async def get_me(current_user: models.User = Depends(get_current_user)):
-    """Get current user information."""
-    return current_user
+async def get_me(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Get current user information with organization details."""
+    # Get user's primary organization from UserOrganization table
+    from models.organization import UserOrganization
+    from models import Organization
+    
+    user_org = db.query(UserOrganization).join(Organization).filter(
+        UserOrganization.user_id == current_user.id,
+        UserOrganization.is_primary == True
+    ).first()
+    
+    # Create user response with organization information
+    user_dict = {
+        "id": current_user.id,
+        "email": current_user.email,
+        "name": current_user.name,
+        "unified_role": current_user.unified_role,
+        "role_migrated": current_user.role_migrated,
+        "role": current_user.role,
+        "user_type": current_user.user_type,
+        "timezone": current_user.timezone,
+        "created_at": current_user.created_at.isoformat() if current_user.created_at else None,
+        "updated_at": current_user.created_at.isoformat() if current_user.created_at else None,
+        "trial_started_at": current_user.trial_started_at.isoformat() if current_user.trial_started_at else None,
+        "trial_expires_at": current_user.trial_expires_at.isoformat() if current_user.trial_expires_at else None,
+        "trial_active": current_user.trial_active,
+        "subscription_status": current_user.subscription_status,
+        "is_trial_active": current_user.is_trial_active,
+        "trial_days_remaining": current_user.trial_days_remaining,
+        "is_business_owner": current_user.is_business_owner,
+        "is_staff_member": current_user.is_staff_member,
+        "is_system_admin": current_user.is_system_admin,
+        "can_manage_billing": current_user.can_manage_billing,
+        "can_manage_staff": current_user.can_manage_staff,
+        "can_view_analytics": current_user.can_view_analytics
+    }
+    
+    # Add organization information if available
+    if user_org and user_org.organization:
+        org = user_org.organization
+        user_dict["primary_organization_id"] = org.id
+        user_dict["primary_organization"] = {
+            "id": org.id,
+            "name": org.name,
+            "billing_plan": org.billing_plan,
+            "subscription_status": org.subscription_status
+        }
+    
+    return user_dict
 
 @router.post("/forgot-password", response_model=schemas.PasswordResetResponse)
 @password_reset_rate_limit
@@ -344,7 +391,7 @@ async def register(
         )
     
     # Validate user type - clients cannot register through dashboard
-    if user_data.user_type == "client":
+    if user_data.role == "client":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Client registration is not allowed. Clients should book appointments through your barbershop's booking page. Please select 'Barber' or 'Barbershop Owner' to register for dashboard access."
@@ -383,7 +430,7 @@ async def register(
         email=user_data.email,
         name=user_data.name,
         hashed_password=hashed_password,
-        user_type=user_data.user_type.value,
+        role=user_data.role,
         trial_started_at=trial_start,
         trial_expires_at=trial_end,
         trial_active=True,
@@ -403,8 +450,246 @@ async def register(
         logger.error(f"Failed to send verification email to {new_user.email}: {str(e)}")
         # Continue with registration even if email fails
     
+    # Create test data if requested (disabled for now as schema doesn't include this field)
+    # if hasattr(user_data, 'create_test_data') and user_data.create_test_data:
+    #     try:
+    #         from services import test_data_service
+    #         test_data_service.create_test_data_for_user(db, new_user.id, include_enterprise=False)
+    #         db.commit()
+    #     except Exception as e:
+    #         # Log error but don't fail registration
+    #         logger.error(f"Failed to create test data for user {new_user.id}: {str(e)}")
+    
+    return {
+        "message": "User successfully registered. Please check your email to verify your account before signing in.",
+        "user": new_user
+    }
+
+@router.post("/register-complete", response_model=schemas.CompleteRegistrationResponse)
+@register_rate_limit
+async def register_complete(
+    request: Request,
+    registration_data: schemas.CompleteRegistrationData,
+    db: Session = Depends(get_db)
+):
+    """Register a new user with complete business setup including organization creation."""
+    client_ip = request.client.host if request.client else "unknown"
+    
+    # Check if user already exists
+    existing_user = db.query(models.User).filter(models.User.email == registration_data.email).first()
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
+    
+    # Validate user type - clients cannot register through dashboard
+    if registration_data.user_type == "client":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Client registration is not allowed. Clients should book appointments through your barbershop's booking page. Please select 'Barber' or 'Barbershop Owner' to register for dashboard access."
+        )
+    
+    # Validate password strength
+    password_validation = validate_password_strength(
+        registration_data.password,
+        user_data={
+            "email": registration_data.email,
+            "name": f"{registration_data.firstName} {registration_data.lastName}"
+        }
+    )
+    
+    if not password_validation.is_valid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "message": "Password does not meet security requirements",
+                "errors": password_validation.errors,
+                "warnings": password_validation.warnings,
+                "recommendations": password_validation.recommendations,
+                "strength_score": password_validation.strength_score,
+                "strength_level": password_validation.strength_level
+            }
+        )
+    
+    # Create user first
+    from datetime import datetime, timedelta, timezone
+    
+    hashed_password = get_password_hash(registration_data.password)
+    trial_start = datetime.now(timezone.utc).replace(tzinfo=None)
+    trial_end = trial_start + timedelta(days=14)
+    
+    new_user = models.User(
+        email=registration_data.email,
+        name=f"{registration_data.firstName} {registration_data.lastName}",
+        hashed_password=hashed_password,
+        role=registration_data.user_type.value if hasattr(registration_data.user_type, 'value') else registration_data.user_type,
+        trial_started_at=trial_start,
+        trial_expires_at=trial_end,
+        trial_active=True,
+        subscription_status="trial"
+    )
+    
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    
+    # Create organization
+    # Map business type to billing plan and organization type
+    business_type_mapping = {
+        "individual": ("individual", "independent"),
+        "studio": ("studio", "independent"),
+        "salon": ("salon", "independent"),
+        "enterprise": ("enterprise", "franchise")
+    }
+    
+    billing_plan, org_type = business_type_mapping.get(registration_data.businessType, ("individual", "independent"))
+    
+    # Override billing plan if pricing info is provided
+    if registration_data.pricingInfo and registration_data.pricingInfo.get('tier'):
+        pricing_tier = registration_data.pricingInfo.get('tier', '').lower()
+        if pricing_tier in ['individual', 'studio', 'salon', 'enterprise']:
+            billing_plan = pricing_tier
+    
+    # Calculate chair count from pricing info if available
+    calculated_chairs = registration_data.chairCount
+    if registration_data.pricingInfo and registration_data.pricingInfo.get('chairs'):
+        calculated_chairs = registration_data.pricingInfo.get('chairs', registration_data.chairCount)
+    
+    # Generate slug from business name
+    import re
+    slug_base = re.sub(r'[^a-zA-Z0-9]+', '-', registration_data.businessName.lower()).strip('-')
+    slug = slug_base
+    counter = 1
+    while db.query(models.Organization).filter(models.Organization.slug == slug).first():
+        slug = f"{slug_base}-{counter}"
+        counter += 1
+    
+    # Create organization
+    from models.organization import BillingPlan, OrganizationType
+    
+    # Define features based on billing plan
+    plan_features = {
+        "individual": {
+            "max_staff": 1,
+            "email_marketing": False,
+            "staff_management": False,
+            "inventory_management": False,
+            "multi_location": False,
+            "api_access": False,
+            "white_label": False
+        },
+        "studio": {
+            "max_staff": 5,
+            "email_marketing": True,
+            "staff_management": True,
+            "inventory_management": False,
+            "multi_location": False,
+            "api_access": False,
+            "white_label": False
+        },
+        "salon": {
+            "max_staff": 10,
+            "email_marketing": True,
+            "staff_management": True,
+            "inventory_management": True,
+            "multi_location": False,
+            "api_access": False,
+            "white_label": False
+        },
+        "enterprise": {
+            "max_staff": None,
+            "email_marketing": True,
+            "staff_management": True,
+            "inventory_management": True,
+            "multi_location": True,
+            "api_access": True,
+            "white_label": True
+        }
+    }
+    
+    features_enabled = plan_features.get(billing_plan, plan_features["individual"])
+    
+    organization = models.Organization(
+        name=registration_data.businessName,
+        slug=slug,
+        description=registration_data.description,
+        street_address=registration_data.address.get('street', ''),
+        city=registration_data.address.get('city', ''),
+        state=registration_data.address.get('state', ''),
+        zip_code=registration_data.address.get('zipCode', ''),
+        country="US",
+        phone=registration_data.phone,
+        email=registration_data.email,
+        website=registration_data.website,
+        timezone="UTC",  # TODO: Detect from location or let user set
+        chairs_count=calculated_chairs,
+        billing_plan=billing_plan,
+        organization_type=org_type,
+        billing_contact_email=registration_data.email,
+        features_enabled=features_enabled,
+        subscription_status='trial',
+        subscription_started_at=trial_start,
+        subscription_expires_at=trial_end
+    )
+    
+    db.add(organization)
+    db.commit()
+    db.refresh(organization)
+    
+    # Add user as organization owner
+    from models.organization import UserRole
+    user_org = models.UserOrganization(
+        user_id=new_user.id,
+        organization_id=organization.id,
+        role=UserRole.OWNER.value,
+        is_primary=True,
+        can_manage_billing=True,
+        can_manage_staff=True,
+        can_view_analytics=True
+    )
+    
+    db.add(user_org)
+    db.commit()
+    
+    # Create Stripe customer and subscription for trial
+    try:
+        from services.stripe_service import StripeSubscriptionService
+        stripe_service = StripeSubscriptionService(db)
+        
+        # Create Stripe customer
+        stripe_customer = stripe_service.create_stripe_customer(new_user, organization)
+        organization.stripe_customer_id = stripe_customer['id']
+        
+        # Create subscription with trial period (no payment method required)
+        subscription = stripe_service.create_subscription(
+            customer_id=stripe_customer['id'],
+            chairs_count=calculated_chairs,
+            trial_days=14,  # 14-day trial
+            payment_method_id=None  # No payment method during registration
+        )
+        
+        organization.stripe_subscription_id = subscription['id']
+        db.commit()
+        
+        logger.info(f"Stripe subscription created for organization {organization.id}: {subscription['id']}")
+        
+    except Exception as e:
+        logger.error(f"Failed to create Stripe subscription for organization {organization.id}: {str(e)}")
+        # Don't fail registration if Stripe setup fails - user can add payment later
+        # But log the error for follow-up
+    
+    # Create verification token and send verification email
+    try:
+        verification_token = create_verification_token(db, new_user)
+        send_verification_email(new_user.email, verification_token, new_user.name)
+        logger.info(f"Verification email sent to {new_user.email}")
+    except Exception as e:
+        logger.error(f"Failed to send verification email to {new_user.email}: {str(e)}")
+        # Continue with registration even if email fails
+    
     # Create test data if requested
-    if user_data.create_test_data:
+    if registration_data.consent.get('testData', False):
         try:
             from services import test_data_service
             test_data_service.create_test_data_for_user(db, new_user.id, include_enterprise=False)
@@ -413,9 +698,28 @@ async def register(
             # Log error but don't fail registration
             logger.error(f"Failed to create test data for user {new_user.id}: {str(e)}")
     
+    # Log successful registration
+    audit_logger.log_auth_event(
+        "complete_registration_success",
+        user_id=new_user.id,
+        ip_address=client_ip,
+        details={
+            "organization_id": organization.id,
+            "business_type": registration_data.businessType,
+            "chair_count": calculated_chairs,
+            "billing_plan": billing_plan,
+            "pricing_info": registration_data.pricingInfo,
+            "monthly_total": registration_data.pricingInfo.get('monthlyTotal') if registration_data.pricingInfo else None,
+            "stripe_customer_id": organization.stripe_customer_id,
+            "stripe_subscription_id": organization.stripe_subscription_id,
+            "test_data_requested": registration_data.consent.get('testData', False)
+        }
+    )
+    
     return {
-        "message": "User successfully registered. Please check your email to verify your account before signing in.",
-        "user": new_user
+        "message": "Account and business successfully created! Please check your email to verify your account before signing in.",
+        "user": new_user,
+        "organization": organization
     }
 
 @router.post("/change-password", response_model=schemas.ChangePasswordResponse)
@@ -470,7 +774,7 @@ async def change_password(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Invalid MFA code"
                 )
-        elif current_user.role in ["admin", "super_admin"]:
+        elif current_user.user_type in ["admin", "super_admin"]:
             # Require MFA for admin password changes
             audit_logger.log_auth_event(
                 "password_change_failed",
@@ -523,7 +827,7 @@ async def change_password(
         ip_address=client_ip,
         details={
             "mfa_verified": bool(mfa_secret and hasattr(password_change, 'mfa_code')),
-            "user_role": current_user.role
+            "user_role": current_user.user_type
         }
     )
     

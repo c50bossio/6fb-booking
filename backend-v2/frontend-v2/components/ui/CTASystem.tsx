@@ -6,7 +6,8 @@ import {
   StarIcon,
   PlayIcon,
   CheckIcon,
-  UserPlusIcon
+  UserPlusIcon,
+  ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline'
 
 /**
@@ -40,7 +41,7 @@ const CTA_CONFIGS: Record<string, CTAConfig> = {
   // Primary registration CTA
   register: {
     id: 'register',
-    label: 'Start Free Trial',
+    label: 'Start **Free** Trial',
     href: '/register',
     variant: 'primary',
     size: 'lg',
@@ -62,6 +63,20 @@ const CTA_CONFIGS: Record<string, CTAConfig> = {
     analytics: 'login_secondary',
     enabled: true,
     priority: 2
+  },
+  
+  // Logout CTA (for authenticated users)
+  logout: {
+    id: 'logout',
+    label: 'Logout',
+    href: '#', // Will be handled by onClick
+    variant: 'ghost',
+    size: 'md',
+    icon: ArrowRightOnRectangleIcon,
+    description: 'Sign out of your account',
+    analytics: 'logout_action',
+    enabled: true,
+    priority: 1
   },
   
   // Demo CTA (DISABLED - as per consolidation plan)
@@ -149,6 +164,7 @@ export interface CTAButtonProps {
   className?: string
   showIcon?: boolean
   children?: React.ReactNode // Override label if needed
+  onLogout?: () => Promise<void> // For logout button functionality
 }
 
 export interface CTAGroupProps {
@@ -156,6 +172,7 @@ export interface CTAGroupProps {
   orientation?: 'horizontal' | 'vertical'
   spacing?: 'tight' | 'normal' | 'loose'
   className?: string
+  onLogout?: () => Promise<void> // For logout button functionality
 }
 
 // ==================== CORE COMPONENTS ====================
@@ -170,7 +187,8 @@ export function CTAButton({
   size, 
   className = '', 
   showIcon = true,
-  children 
+  children,
+  onLogout
 }: CTAButtonProps) {
   const config = getCTAConfig(ctaId)
   
@@ -189,6 +207,40 @@ export function CTAButton({
   const IconComponent = config.icon
   const effectiveSize = size || config.size || 'md'
   
+  // Helper function to render label with bold text support
+  const renderLabel = (label: string) => {
+    // Check if label contains **bold** markdown
+    if (label.includes('**')) {
+      const parts = label.split('**')
+      return (
+        <>
+          {parts.map((part, index) => 
+            index % 2 === 1 ? <strong key={index}>{part}</strong> : part
+          )}
+        </>
+      )
+    }
+    return label
+  }
+  
+  // Handle logout button specially
+  if (ctaId === 'logout') {
+    return (
+      <Button 
+        variant={config.variant} 
+        size={effectiveSize}
+        elevated={config.elevated}
+        className={`${className} group`}
+        data-analytics={config.analytics}
+        leftIcon={showIcon && IconComponent ? <IconComponent /> : undefined}
+        onClick={onLogout}
+      >
+        {children || renderLabel(config.label)}
+      </Button>
+    )
+  }
+  
+  // Regular CTA buttons with links
   return (
     <Link href={config.href}>
       <Button 
@@ -199,7 +251,7 @@ export function CTAButton({
         data-analytics={config.analytics}
         leftIcon={showIcon && IconComponent ? <IconComponent /> : undefined}
       >
-        {children || config.label}
+        {children || renderLabel(config.label)}
       </Button>
     </Link>
   )
@@ -214,7 +266,8 @@ export function CTAGroup({
   ctaIds, 
   orientation = 'horizontal', 
   spacing = 'normal',
-  className = ''
+  className = '',
+  onLogout
 }: CTAGroupProps) {
   const validCTAs = ctaIds
     .map(id => getCTAConfig(id))
@@ -241,6 +294,7 @@ export function CTAGroup({
           key={cta.id} 
           ctaId={cta.id}
           showIcon={true}
+          onLogout={onLogout}
         />
       ))}
     </div>
@@ -251,10 +305,26 @@ export function CTAGroup({
 
 /**
  * Header CTAs - Optimized for navigation
+ * Authentication-aware: shows login/register for guests, logout for authenticated users
  */
 export function HeaderCTAs({ className = '' }: { className?: string }) {
   return (
     <nav role="navigation" aria-label="Account actions" className={`flex items-center space-x-3 ${className}`}>
+      <CTAButton ctaId="login" size="md" showIcon={false} />
+      <CTAButton ctaId="register" size="md" showIcon={true} />
+    </nav>
+  )
+}
+
+/**
+ * Authentication-Aware Header CTAs
+ * Shows different CTAs based on authentication state
+ */
+export function AuthHeaderCTAs({ className = '' }: { className?: string }) {
+  // This will be imported and used by pages that need auth-aware CTAs
+  return (
+    <nav role="navigation" aria-label="Account actions" className={`flex items-center space-x-3 ${className}`}>
+      {/* This component will be enhanced with auth state checking */}
       <CTAButton ctaId="login" size="md" showIcon={false} />
       <CTAButton ctaId="register" size="md" showIcon={true} />
     </nav>

@@ -15,7 +15,8 @@ import {
   StarIcon
 } from '@heroicons/react/24/outline'
 import { useState } from 'react'
-import { HeaderCTAs, HeroCTAs, FooterCTAs, CTADebugPanel } from '@/components/ui/CTASystem'
+import { FooterCTAs, CTADebugPanel } from '@/components/ui/CTASystem'
+import { AuthHeaderCTAs, AuthHeroCTAs } from '@/components/ui/AuthCTAs'
 
 export default function LandingPage() {
   const [selectedPlan, setSelectedPlan] = useState<'starter' | 'professional' | 'enterprise'>('professional')
@@ -128,7 +129,18 @@ export default function LandingPage() {
             <div className="flex items-center">
               <LogoFull variant="auto" size="md" href="/" />
             </div>
-            <HeaderCTAs />
+            <nav className="hidden md:flex items-center space-x-8">
+              <Link href="/billing/plans" className="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-colors">
+                Pricing
+              </Link>
+              <Link href="#features" className="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-colors">
+                Features
+              </Link>
+              <Link href="#testimonials" className="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-colors">
+                Testimonials
+              </Link>
+            </nav>
+            <AuthHeaderCTAs />
           </div>
         </div>
       </header>
@@ -155,7 +167,7 @@ export default function LandingPage() {
             </p>
 
             <div className="pt-8">
-              <HeroCTAs />
+              <AuthHeroCTAs />
             </div>
 
             <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -348,7 +360,7 @@ export default function LandingPage() {
           <p className="text-xl text-primary-100 mb-8">
             Join thousands of successful barbers using Booked Barber to build their six-figure business.
           </p>
-          <HeroCTAs />
+          <AuthHeroCTAs />
         </div>
       </section>
 
@@ -367,7 +379,7 @@ export default function LandingPage() {
               <ul className="space-y-2 text-sm">
                 <li><Link href="/register" className="hover:text-white">Free Trial</Link></li>
                 <li><Link href="#features" className="hover:text-white">Features</Link></li>
-                <li><Link href="#pricing" className="hover:text-white">Pricing</Link></li>
+                <li><Link href="/billing/plans" className="hover:text-white">Pricing</Link></li>
                 <li><Link href="/login" className="hover:text-white">Login</Link></li>
               </ul>
             </div>
@@ -395,8 +407,6 @@ export default function LandingPage() {
         </div>
       </footer>
       
-      {/* Development Debug Panel */}
-      <CTADebugPanel />
     </main>
   )
 }
