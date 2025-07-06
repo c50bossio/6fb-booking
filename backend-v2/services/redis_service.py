@@ -37,20 +37,44 @@ class RedisConnectionManager:
             self._initialized = True
     
     def _initialize_connection(self) -> None:
-        """Initialize Redis connection pool."""
+        """Initialize Redis connection pool with environment-aware configuration."""
         try:
-            # Parse Redis URL
+            # Get environment and configuration
+            environment = getattr(settings, 'environment', 'development')
+            elasticache_enabled = getattr(settings, 'aws_elasticache_enabled', False)
+            
+            # Parse Redis URL based on environment
             redis_url = getattr(settings, 'redis_url', 'redis://localhost:6379/0')
             
+            # Override with local Redis in development if ElastiCache URL is configured
+            if environment == 'development' and 'amazonaws.com' in redis_url:
+                redis_url = 'redis://localhost:6379/0'
+                logger.info("Development mode: Using local Redis instead of ElastiCache")
+            elif environment == 'production' and elasticache_enabled:
+                logger.info("Production mode: Using AWS ElastiCache")
+            
+            # Get pool configuration from settings
+            max_connections = getattr(settings, 'redis_max_connections', 20)
+            socket_timeout = getattr(settings, 'redis_socket_timeout', 5)
+            
             # Create connection pool with optimized settings
+            pool_kwargs = {
+                'max_connections': max_connections,
+                'retry_on_timeout': True,
+                'retry_on_error': [redis.exceptions.ConnectionError],
+                'health_check_interval': 30,
+                'socket_connect_timeout': socket_timeout,
+                'socket_timeout': socket_timeout,
+            }
+            
+            # Add SSL configuration if enabled
+            if getattr(settings, 'redis_ssl', False):
+                pool_kwargs['connection_class'] = redis.SSLConnection
+                logger.info("SSL enabled for Redis connection")
+            
             self._connection_pool = redis.ConnectionPool.from_url(
                 redis_url,
-                max_connections=20,  # Optimize for concurrent booking requests
-                retry_on_timeout=True,
-                retry_on_error=[redis.exceptions.ConnectionError],
-                health_check_interval=30,
-                socket_connect_timeout=5,
-                socket_timeout=5,
+                **pool_kwargs
             )
             
             # Create Redis client
@@ -63,10 +87,16 @@ class RedisConnectionManager:
             
             # Test connection
             self._test_connection()
-            logger.info("Redis connection pool initialized successfully")
+            
+            # Log connection details
+            masked_url = redis_url.split('@')[-1] if '@' in redis_url else redis_url
+            logger.info(f"Redis connection pool initialized successfully to {masked_url}")
+            logger.info(f"Environment: {environment}, Max connections: {max_connections}")
             
         except Exception as e:
             logger.error(f"Failed to initialize Redis connection: {e}")
+            if environment == 'development':
+                logger.error("Make sure Redis is running locally: redis-server")
             self._client = None
             self._is_healthy = False
     

@@ -3,9 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { handleAuthError } from '@/lib/auth-error-handler'
-// Removed basic Calendar import - using ResponsiveCalendar instead
-import { useResponsiveCalendar } from '@/hooks/useResponsiveCalendar'
-import ResponsiveCalendar from '@/components/ResponsiveCalendar'
+// Using UnifiedCalendar for all calendar views
 
 // Import unified calendar component
 import { Suspense, lazy } from 'react'
@@ -60,7 +58,6 @@ import {
 
 export default function CalendarPage() {
   const router = useRouter()
-  const responsive = useResponsiveCalendar()
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date())
   const [filteredBookings, setFilteredBookings] = useState<BookingResponse[]>([])
   const [user, setUser] = useState<User | null>(null)

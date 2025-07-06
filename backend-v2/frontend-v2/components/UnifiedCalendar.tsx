@@ -102,6 +102,15 @@ interface UnifiedCalendarState {
   optimisticUpdates: Map<number, { originalStartTime: string; newStartTime: string }>
 }
 
+// Drag & Drop handlers interface
+interface DragHandlers {
+  handleDragOver: (e: React.DragEvent, day: Date, hour: number, minute: number) => void
+  handleDragLeave: () => void
+  handleDragStart: (e: React.DragEvent, appointment: Appointment) => void
+  handleDragEnd: () => void
+  handleDrop: (e: React.DragEvent, day: Date, hour: number, minute: number) => void
+}
+
 const UnifiedCalendar = React.memo(function UnifiedCalendar({
   view,
   onViewChange,
@@ -169,6 +178,198 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
   const isTouchDevice = TouchDragManager.isTouchDevice()
   const scheduleGridRef = useRef<HTMLDivElement>(null)
   
+  // Enhanced drag & drop with optimistic updates
+  const checkAndUpdateAppointment = useCallback(async (appointmentId: number, newStartTime: string) => {
+    console.log('[DRAG DEBUG] checkAndUpdateAppointment called:', { appointmentId, newStartTime })
+    
+    const appointment = appointments.find(apt => apt.id === appointmentId)
+    if (!appointment) {
+      console.error('[DRAG DEBUG] Appointment not found:', appointmentId)
+      return
+    }
+
+    // Store original state for rollback
+    const originalStartTime = appointment.start_time
+    console.log('[DRAG DEBUG] Original start time:', originalStartTime)
+    
+    // Apply optimistic update immediately for better UX
+    setState(prev => ({
+      ...prev,
+      optimisticUpdates: new Map(prev.optimisticUpdates.set(appointmentId, { originalStartTime, newStartTime }))
+    }))
+
+    // Create updated appointment for conflict checking
+    const updatedAppointment = {
+      ...appointment,
+      start_time: newStartTime,
+      id: appointmentId
+    }
+
+    // Analyze conflicts
+    const analysis = conflictManager.analyzeConflicts(
+      updatedAppointment,
+      appointments,
+      {
+        bufferTime: 15,
+        checkBarberAvailability: true,
+        workingHours: { start: startHour, end: endHour },
+        allowAdjacent: false
+      }
+    )
+
+    if (analysis.hasConflicts && analysis.riskScore > 30) {
+      // Rollback optimistic update
+      setState(prev => {
+        const newMap = new Map(prev.optimisticUpdates)
+        newMap.delete(appointmentId)
+        return {
+          ...prev,
+          optimisticUpdates: newMap,
+          conflictAnalysis: analysis,
+          pendingUpdate: { appointmentId, newStartTime },
+          showConflictModal: true
+        }
+      })
+    } else {
+      // No significant conflicts, proceed with update
+      if (onAppointmentUpdate) {
+        console.log('[DRAG DEBUG] Calling onAppointmentUpdate with:', { appointmentId, newStartTime })
+        try {
+          await onAppointmentUpdate(appointmentId, newStartTime)
+          console.log('[DRAG DEBUG] Update successful!')
+          
+          // Success - clear optimistic update (it's now permanent)
+          setState(prev => {
+            const newMap = new Map(prev.optimisticUpdates)
+            newMap.delete(appointmentId)
+            return {
+              ...prev,
+              optimisticUpdates: newMap
+            }
+          })
+          
+        } catch (updateError: any) {
+          console.error('[DRAG DEBUG] Update failed:', updateError)
+          // Rollback optimistic update on failure
+          setState(prev => {
+            const newMap = new Map(prev.optimisticUpdates)
+            newMap.delete(appointmentId)
+            return {
+              ...prev,
+              optimisticUpdates: newMap
+            }
+          })
+          
+          console.error('Failed to update appointment:', updateError)
+        }
+      } else {
+        console.error('[DRAG DEBUG] onAppointmentUpdate is not defined!')
+      }
+    }
+  }, [appointments, onAppointmentUpdate, startHour, endHour])
+
+  // Drag & Drop handlers
+  const dragHandlers: DragHandlers = useMemo(() => ({
+    handleDragOver: (e: React.DragEvent, day: Date, hour: number, minute: number) => {
+      e.preventDefault() // Always prevent default to allow drop
+      if (state.draggedAppointment) {
+        e.dataTransfer.dropEffect = 'move'
+        setState(prev => ({ ...prev, dragOverSlot: { day, hour, minute } }))
+      } else {
+        // Still prevent default to allow drop even if state is not set yet
+        console.log('[DRAG DEBUG] DragOver but no draggedAppointment in state')
+      }
+    },
+
+    handleDragLeave: () => {
+      setState(prev => ({ ...prev, dragOverSlot: null }))
+    },
+
+    handleDragStart: (e: React.DragEvent, appointment: Appointment) => {
+      console.log('[DRAG DEBUG] DragStart triggered:', appointment.id, appointment.status)
+      if (appointment.status !== 'completed' && appointment.status !== 'cancelled') {
+        e.dataTransfer.effectAllowed = 'move'
+        e.dataTransfer.setData('text/plain', appointment.id.toString())
+        
+        // Add drag image
+        const dragImage = e.currentTarget as HTMLElement
+        e.dataTransfer.setDragImage(dragImage, dragImage.offsetWidth / 2, dragImage.offsetHeight / 2)
+        
+        setState(prev => ({ 
+          ...prev, 
+          draggedAppointment: appointment, 
+          isDragging: true 
+        }))
+        console.log('[DRAG DEBUG] Drag started successfully')
+      } else {
+        console.log('[DRAG DEBUG] Preventing drag - status:', appointment.status)
+        e.preventDefault()
+      }
+    },
+
+    handleDragEnd: () => {
+      console.log('[DRAG DEBUG] DragEnd triggered')
+      setState(prev => ({ 
+        ...prev, 
+        draggedAppointment: null, 
+        dragOverSlot: null, 
+        isDragging: false 
+      }))
+    },
+
+    handleDrop: (e: React.DragEvent, day: Date, hour: number, minute: number) => {
+      e.preventDefault()
+      console.log('[DRAG DEBUG] Drop triggered')
+      
+      const draggedApp = state.draggedAppointment // Store reference before clearing
+      
+      if (draggedApp && onAppointmentUpdate) {
+        const newDate = new Date(day)
+        newDate.setHours(hour, minute, 0, 0)
+        console.log('[DRAG DEBUG] Dropping appointment', draggedApp.id, 'to', newDate.toISOString())
+        
+        // Check if the new time is valid (not in the past for today)
+        const now = new Date()
+        const isToday = isSameDay(day, now)
+        if (!isToday || newDate > now) {
+          // Show success animation
+          setState(prev => ({ 
+            ...prev, 
+            dropSuccess: { day, hour, minute },
+            draggedAppointment: null,
+            dragOverSlot: null,
+            isDragging: false
+          }))
+          
+          setTimeout(() => {
+            setState(prev => ({ ...prev, dropSuccess: null }))
+          }, 600)
+          
+          // Use the stored reference for the update
+          checkAndUpdateAppointment(draggedApp.id, newDate.toISOString())
+        } else {
+          console.log('[DRAG DEBUG] Cannot drop in the past')
+          // Clear drag state
+          setState(prev => ({ 
+            ...prev, 
+            draggedAppointment: null,
+            dragOverSlot: null,
+            isDragging: false
+          }))
+        }
+      } else {
+        console.log('[DRAG DEBUG] No dragged appointment or update handler')
+        // Clear drag state
+        setState(prev => ({ 
+          ...prev, 
+          draggedAppointment: null,
+          dragOverSlot: null,
+          isDragging: false
+        }))
+      }
+    }
+  }), [state.draggedAppointment, onAppointmentUpdate, checkAndUpdateAppointment])
+  
   // Performance monitoring
   useEffect(() => {
     const endMeasure = measureRender(`UnifiedCalendar-${view}`)
@@ -181,6 +382,143 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
       setState(prev => ({ ...prev, currentDate }))
     }
   }, [currentDate, state.currentDate])
+
+  // Filter appointments based on current view and filters
+  const filteredAppointments = useMemo(() => {
+    // Calculate date range based on view
+    let startDate: Date
+    let endDate: Date
+    
+    switch (view) {
+      case 'day':
+        startDate = startOfDay(state.currentDate)
+        endDate = new Date(startDate)
+        endDate.setDate(endDate.getDate() + 1) // Next day start
+        break
+      case 'week':
+        startDate = startOfWeek(state.currentDate)
+        endDate = new Date(startDate)
+        endDate.setDate(endDate.getDate() + 7) // Next week start
+        break
+      case 'month':
+        startDate = startOfMonth(state.currentDate)
+        endDate = new Date(startDate)
+        endDate.setMonth(endDate.getMonth() + 1) // Next month start
+        break
+    }
+    
+    return optimizedAppointmentFilter(appointments, {
+      startDate,
+      endDate,
+      selectedBarberId
+    })
+  }, [appointments, state.currentDate, view, selectedBarberId, optimizedAppointmentFilter])
+
+  // Touch drag support for appointments
+  useEffect(() => {
+    if (!isTouchDevice) return
+
+    const appointmentElements = document.querySelectorAll('.unified-calendar-appointment')
+    const cleanupFunctions: (() => void)[] = []
+
+    appointmentElements.forEach((appointmentEl) => {
+      const appointmentId = appointmentEl.getAttribute('data-appointment-id')
+      const appointment = filteredAppointments.find(apt => apt.id.toString() === appointmentId)
+      
+      if (!appointment || appointment.status === 'completed' || appointment.status === 'cancelled') {
+        return
+      }
+
+      const cleanup = touchDragManager.initializeTouchDrag(appointmentEl as HTMLElement, {
+        onDragStart: (element) => {
+          setState(prev => ({
+            ...prev,
+            draggedAppointment: appointment,
+            isDragging: true
+          }))
+          return true
+        },
+        onDragMove: (element, position) => {
+          // Find which day and time slot we're over
+          const grid = scheduleGridRef.current
+          if (!grid) return
+          
+          const rect = grid.getBoundingClientRect()
+          const relativeX = position.clientX - rect.left
+          const relativeY = position.clientY - rect.top
+          
+          // Calculate day and time slot based on current view
+          if (view === 'week') {
+            const dayWidth = rect.width / 7
+            const dayIndex = Math.floor(relativeX / dayWidth)
+            const slotHeight = 48 // 48px per slot
+            const slotIndex = Math.floor(relativeY / slotHeight)
+            
+            const weekStart = startOfWeek(state.currentDate)
+            const timeSlots = []
+            for (let hour = startHour; hour < endHour; hour++) {
+              for (let minute = 0; minute < 60; minute += slotDuration) {
+                timeSlots.push({ hour, minute })
+              }
+            }
+            
+            if (dayIndex >= 0 && dayIndex < 7 && slotIndex >= 0 && slotIndex < timeSlots.length) {
+              const targetDay = addDays(weekStart, dayIndex)
+              const slot = timeSlots[slotIndex]
+              setState(prev => ({ 
+                ...prev, 
+                dragOverSlot: { day: targetDay, hour: slot.hour, minute: slot.minute } 
+              }))
+            }
+          } else if (view === 'day') {
+            const slotHeight = 40 // 40px per slot in day view
+            const slotIndex = Math.floor(relativeY / slotHeight)
+            
+            const timeSlots = []
+            for (let hour = startHour; hour < endHour; hour++) {
+              for (let minute = 0; minute < 60; minute += slotDuration) {
+                timeSlots.push({ hour, minute })
+              }
+            }
+            
+            if (slotIndex >= 0 && slotIndex < timeSlots.length) {
+              const slot = timeSlots[slotIndex]
+              setState(prev => ({ 
+                ...prev, 
+                dragOverSlot: { day: state.currentDate, hour: slot.hour, minute: slot.minute } 
+              }))
+            }
+          }
+        },
+        onDragEnd: (element, dropTarget) => {
+          if (state.draggedAppointment && onAppointmentUpdate && state.dragOverSlot) {
+            const newDate = new Date(state.dragOverSlot.day)
+            newDate.setHours(state.dragOverSlot.hour, state.dragOverSlot.minute, 0, 0)
+            
+            // Check if the new time is valid (not in the past for today)
+            const now = new Date()
+            const isToday = isSameDay(state.dragOverSlot.day, now)
+            if (!isToday || newDate > now) {
+              checkAndUpdateAppointment(state.draggedAppointment.id, newDate.toISOString())
+            }
+          }
+          setState(prev => ({
+            ...prev,
+            draggedAppointment: null,
+            dragOverSlot: null,
+            isDragging: false
+          }))
+        },
+        canDrag: () => appointment.status !== 'completed' && appointment.status !== 'cancelled'
+      })
+
+      if (cleanup) cleanupFunctions.push(cleanup)
+    })
+
+    return () => {
+      cleanupFunctions.forEach(cleanup => cleanup())
+    }
+  }, [filteredAppointments, isTouchDevice, view, state.currentDate, state.draggedAppointment, state.dragOverSlot, onAppointmentUpdate, checkAndUpdateAppointment, startHour, endHour, slotDuration])
   
   // Helper functions
   const getClientName = useCallback((appointment: Appointment): string => {
@@ -214,15 +552,6 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
     setState(prev => ({ ...prev, currentDate: newDate }))
     onDateChange?.(newDate)
   }, [view, state.currentDate, onDateChange])
-  
-  // Filter appointments based on current view and filters
-  const filteredAppointments = useMemo(() => {
-    return optimizedAppointmentFilter(appointments, {
-      startDate: state.currentDate,
-      view,
-      selectedBarberId
-    })
-  }, [appointments, state.currentDate, view, selectedBarberId, optimizedAppointmentFilter])
   
   // Get current period title
   const getPeriodTitle = useCallback(() => {
@@ -300,8 +629,25 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
               return (
                 <div 
                   key={`${hour}-${minute}`}
-                  className="h-10 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer relative"
+                  className={`h-10 border-b border-gray-100 dark:border-gray-800 cursor-pointer relative transition-all ${
+                    state.dragOverSlot && 
+                    isSameDay(state.dragOverSlot.day, state.currentDate) && 
+                    state.dragOverSlot.hour === hour && 
+                    state.dragOverSlot.minute === minute
+                      ? 'bg-green-100 dark:bg-green-900/30 ring-2 ring-green-500 border-green-400 border-dashed'
+                      : state.dropSuccess &&
+                        isSameDay(state.dropSuccess.day, state.currentDate) &&
+                        state.dropSuccess.hour === hour &&
+                        state.dropSuccess.minute === minute
+                      ? 'bg-green-200 dark:bg-green-800/40 ring-2 ring-green-400 animate-pulse'
+                      : state.isDragging
+                      ? 'hover:bg-green-50 dark:hover:bg-green-900/10 hover:border-green-300 hover:border-dashed'
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                  }`}
                   onClick={() => onTimeSlotClick?.(slotDate)}
+                  onDragOver={(e) => dragHandlers.handleDragOver(e, state.currentDate, hour, minute)}
+                  onDragLeave={dragHandlers.handleDragLeave}
+                  onDrop={(e) => dragHandlers.handleDrop(e, state.currentDate, hour, minute)}
                 >
                   {/* Render appointments for this time slot */}
                   {dayAppointments
@@ -309,19 +655,101 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
                       const aptTime = new Date(apt.start_time)
                       return aptTime.getHours() === hour && aptTime.getMinutes() === minute
                     })
-                    .map(appointment => (
-                      <div 
-                        key={appointment.id}
-                        className="absolute inset-0 m-1 p-2 bg-blue-100 border border-blue-300 rounded text-xs cursor-pointer hover:bg-blue-200"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onAppointmentClick?.(appointment)
-                        }}
-                      >
-                        <div className="font-medium">{getClientName(appointment)}</div>
-                        <div className="text-gray-600">{appointment.service_name}</div>
-                      </div>
-                    ))
+                    .map(appointment => {
+                      // Apply optimistic updates
+                      const optimisticUpdate = state.optimisticUpdates.get(appointment.id)
+                      const displayAppointment = optimisticUpdate ? 
+                        { ...appointment, start_time: optimisticUpdate.newStartTime } : 
+                        appointment
+                      
+{
+                        // Get service configuration for premium styling
+                        const serviceType = appointment.service_name?.toLowerCase() || 'haircut'
+                        const serviceConfig = getServiceConfig(serviceType)
+                        const barberSymbol = getBarberSymbol(appointment.barber_id?.toString() || appointment.barber_name || '')
+                        
+                        return (
+                          <div 
+                            key={appointment.id}
+                            data-appointment-id={appointment.id}
+                            draggable={appointment.status !== 'completed' && appointment.status !== 'cancelled'}
+                            className={`unified-calendar-appointment premium-appointment absolute inset-0 m-1 p-2 rounded text-xs cursor-pointer overflow-hidden transition-all text-white group ${
+                              getStatusColor(appointment.status)
+                            } ${
+                              state.draggedAppointment?.id === appointment.id 
+                                ? 'opacity-30 scale-95 ring-2 ring-white ring-opacity-50 animate-pulse' 
+                                : 'hover:shadow-xl hover:scale-105 hover:z-20 hover:ring-2 hover:ring-white hover:ring-opacity-60'
+                            } ${
+                              appointment.status !== 'completed' && appointment.status !== 'cancelled' 
+                                ? 'cursor-move' 
+                                : 'cursor-pointer'
+                            }`}
+                            style={{
+                              background: serviceConfig?.gradient?.light || 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                              borderColor: serviceConfig?.color || '#3b82f6',
+                              boxShadow: `0 0 0 1px ${serviceConfig?.color || '#3b82f6'}40, ${serviceConfig?.glow || '0 4px 12px rgba(59, 130, 246, 0.3)'}`
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              if (!state.isDragging) {
+                                onAppointmentClick?.(appointment)
+                              }
+                            }}
+                            onDragStart={(e) => dragHandlers.handleDragStart(e, appointment)}
+                            onDragEnd={dragHandlers.handleDragEnd}
+                          >
+                            {/* Barber symbol in top-right corner */}
+                            <div className="absolute top-1 right-1 text-xs opacity-70 font-bold text-white bg-black bg-opacity-20 rounded-full w-5 h-5 flex items-center justify-center" title={`Barber: ${appointment.barber_name || 'Unknown'}`}>
+                              {barberSymbol}
+                            </div>
+                            
+                            {/* Service icon in bottom-left corner */}
+                            <div className="absolute bottom-1 left-1 text-sm opacity-80" title={`Service: ${appointment.service_name}`}>
+                              {serviceConfig?.icon || '✂️'}
+                            </div>
+                            
+                            {/* Premium shine effect on hover */}
+                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
+                            
+                            {/* Content */}
+                            <div className="relative z-10 space-y-1">
+                              <div className="font-medium text-white">{getClientName(appointment)}</div>
+                              <div className="text-white text-xs opacity-90">{appointment.service_name}</div>
+                              {appointment.duration_minutes && (
+                                <div className="text-white text-xs opacity-75">{appointment.duration_minutes} min</div>
+                              )}
+                            </div>
+                            
+                            {/* Drop zone indicator when dragging */}
+                            {state.isDragging && state.draggedAppointment?.id !== appointment.id && (
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                                <div className="bg-green-500 text-white px-2 py-1 rounded text-xs font-medium shadow-lg">
+                                  Drop here
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Move button fallback for non-drag browsers or touch devices */}
+                            {appointment.status !== 'completed' && appointment.status !== 'cancelled' && !state.isDragging && (
+                              <button
+                                className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/20 hover:bg-white/30 rounded p-1"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  console.log('[DRAG DEBUG] Move button clicked for appointment:', appointment.id)
+                                  // Trigger the same update flow as drag and drop
+                                  onAppointmentUpdate?.(appointment.id, appointment.start_time)
+                                }}
+                                title="Move appointment"
+                              >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                </svg>
+                              </button>
+                            )}
+                          </div>
+                        )
+                      }
+                    })
                   }
                 </div>
               )
@@ -390,21 +818,118 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
                 return (
                   <div 
                     key={day.toISOString()}
-                    className="border-r border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer relative"
+                    className={`border-r border-gray-200 dark:border-gray-700 cursor-pointer relative transition-all ${
+                      state.dragOverSlot && 
+                      isSameDay(state.dragOverSlot.day, day) && 
+                      state.dragOverSlot.hour === hour && 
+                      state.dragOverSlot.minute === minute
+                        ? 'bg-green-100 dark:bg-green-900/30 ring-2 ring-green-500 border-green-400 border-dashed'
+                        : state.dropSuccess &&
+                          isSameDay(state.dropSuccess.day, day) &&
+                          state.dropSuccess.hour === hour &&
+                          state.dropSuccess.minute === minute
+                        ? 'bg-green-200 dark:bg-green-800/40 ring-2 ring-green-400 animate-pulse'
+                        : state.isDragging
+                        ? 'hover:bg-green-50 dark:hover:bg-green-900/10 hover:border-green-300 hover:border-dashed'
+                        : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
                     onClick={() => onTimeSlotClick?.(slotDate)}
+                    onDragOver={(e) => dragHandlers.handleDragOver(e, day, hour, minute)}
+                    onDragLeave={dragHandlers.handleDragLeave}
+                    onDrop={(e) => dragHandlers.handleDrop(e, day, hour, minute)}
                   >
-                    {slotAppointments.map(appointment => (
-                      <div 
-                        key={appointment.id}
-                        className="absolute inset-0 m-0.5 p-1 bg-blue-100 border border-blue-300 rounded text-xs cursor-pointer hover:bg-blue-200 overflow-hidden"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onAppointmentClick?.(appointment)
-                        }}
-                      >
-                        <div className="font-medium truncate">{getClientName(appointment)}</div>
-                      </div>
-                    ))}
+                    {slotAppointments.map(appointment => {
+                      // Apply optimistic updates
+                      const optimisticUpdate = state.optimisticUpdates.get(appointment.id)
+                      const displayAppointment = optimisticUpdate ? 
+                        { ...appointment, start_time: optimisticUpdate.newStartTime } : 
+                        appointment
+                      
+                      {
+                        // Get service configuration for premium styling
+                        const serviceType = appointment.service_name?.toLowerCase() || 'haircut'
+                        const serviceConfig = getServiceConfig(serviceType)
+                        const barberSymbol = getBarberSymbol(appointment.barber_id?.toString() || appointment.barber_name || '')
+                        
+                        return (
+                          <div 
+                            key={appointment.id}
+                            data-appointment-id={appointment.id}
+                            draggable={appointment.status !== 'completed' && appointment.status !== 'cancelled'}
+                            className={`unified-calendar-appointment premium-appointment absolute inset-0 m-0.5 p-1 rounded text-xs cursor-pointer overflow-hidden transition-all text-white group ${
+                              getStatusColor(appointment.status)
+                            } ${
+                              state.draggedAppointment?.id === appointment.id 
+                                ? 'dragging opacity-30 scale-95 ring-2 ring-white ring-opacity-50 animate-pulse' 
+                                : 'hover:shadow-xl hover:scale-105 hover:z-20 hover:ring-2 hover:ring-white hover:ring-opacity-60'
+                            } ${
+                              appointment.status !== 'completed' && appointment.status !== 'cancelled' 
+                                ? 'cursor-move' 
+                                : 'cursor-pointer'
+                            }`}
+                            style={{
+                              background: serviceConfig?.gradient?.light || 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                              borderColor: serviceConfig?.color || '#3b82f6',
+                              boxShadow: `0 0 0 1px ${serviceConfig?.color || '#3b82f6'}40, ${serviceConfig?.glow || '0 4px 12px rgba(59, 130, 246, 0.3)'}`
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              if (!state.isDragging) {
+                                onAppointmentClick?.(appointment)
+                              }
+                            }}
+                            onDragStart={(e) => dragHandlers.handleDragStart(e, appointment)}
+                            onDragEnd={dragHandlers.handleDragEnd}
+                          >
+                            {/* Barber symbol in top-right corner */}
+                            <div className="absolute top-0.5 right-0.5 text-xs opacity-70 font-bold text-white bg-black bg-opacity-20 rounded-full w-4 h-4 flex items-center justify-center" title={`Barber: ${appointment.barber_name || 'Unknown'}`}>
+                              {barberSymbol}
+                            </div>
+                            
+                            {/* Service icon in bottom-left corner */}
+                            <div className="absolute bottom-0.5 left-0.5 text-xs opacity-80" title={`Service: ${appointment.service_name}`}>
+                              {serviceConfig?.icon || '✂️'}
+                            </div>
+                            
+                            {/* Premium shine effect on hover */}
+                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
+                            
+                            {/* Content */}
+                            <div className="relative z-10 mt-1">
+                              <div className="font-medium truncate text-white">{getClientName(appointment)}</div>
+                              <div className="truncate opacity-90 text-white text-xs">{appointment.service_name}</div>
+                            </div>
+                            
+                            {/* Drop zone indicator when dragging */}
+                            {state.isDragging && state.draggedAppointment?.id !== appointment.id && (
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                                <div className="bg-green-500 text-white px-2 py-1 rounded text-xs font-medium shadow-lg">
+                                  Drop here
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Move button fallback for non-drag browsers or touch devices */}
+                            {appointment.status !== 'completed' && appointment.status !== 'cancelled' && !state.isDragging && (
+                              <button
+                                className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/20 hover:bg-white/30 rounded p-1"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  console.log('[DRAG DEBUG] Move button clicked for appointment:', appointment.id)
+                                  // Trigger the same update flow as drag and drop
+                                  onAppointmentUpdate?.(appointment.id, appointment.start_time)
+                                }}
+                                title="Move appointment"
+                              >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                </svg>
+                              </button>
+                            )}
+                          </div>
+                        )
+                      }
+                    })}
                   </div>
                 )
               })}
@@ -475,18 +1000,38 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
                   
                   {/* Appointment indicators */}
                   <div className="space-y-1">
-                    {dayAppointments.slice(0, 3).map(appointment => (
-                      <div 
-                        key={appointment.id}
-                        className="text-xs p-1 bg-blue-100 border border-blue-300 rounded truncate cursor-pointer hover:bg-blue-200"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onAppointmentClick?.(appointment)
-                        }}
-                      >
-                        {getClientName(appointment)}
-                      </div>
-                    ))}
+                    {dayAppointments.slice(0, 3).map(appointment => {
+                      // Get service configuration for premium styling
+                      const serviceType = appointment.service_name?.toLowerCase() || 'haircut'
+                      const serviceConfig = getServiceConfig(serviceType)
+                      
+                      return (
+                        <div 
+                          key={appointment.id}
+                          data-appointment-id={appointment.id}
+                          draggable={appointment.status !== 'completed' && appointment.status !== 'cancelled'}
+                          className={`unified-calendar-appointment text-xs p-1 rounded truncate cursor-pointer transition-all text-white ${
+                            getStatusColor(appointment.status)
+                          } ${
+                            appointment.status !== 'completed' && appointment.status !== 'cancelled' 
+                              ? 'cursor-move hover:scale-105' 
+                              : 'cursor-pointer'
+                          }`}
+                          style={{
+                            background: serviceConfig?.gradient?.light || 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                            borderColor: serviceConfig?.color || '#3b82f6'
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onAppointmentClick?.(appointment)
+                          }}
+                          onDragStart={(e) => dragHandlers.handleDragStart(e, appointment)}
+                          onDragEnd={dragHandlers.handleDragEnd}
+                        >
+                          {getClientName(appointment)}
+                        </div>
+                      )
+                    })}
                     {dayAppointments.length > 3 && (
                       <div className="text-xs text-gray-500">
                         +{dayAppointments.length - 3} more

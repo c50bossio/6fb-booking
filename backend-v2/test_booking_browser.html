@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Booking Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #000;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 10px 10px 0;
+        }
+        .button:hover {
+            background: #333;
+        }
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .warning {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #d4edda;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Conversion Tracking Booking Page</h1>
+        
+        <div class="info">
+            <h3>📊 Test Organization Details</h3>
+            <ul>
+                <li><strong>Organization:</strong> Test Pixel Shop</li>
+                <li><strong>Barber:</strong> Pixel Test User</li>
+                <li><strong>URL Slug:</strong> test-pixel-shop</li>
+            </ul>
+        </div>
+
+        <div class="success">
+            <h3>🎯 Configured Tracking Pixels</h3>
+            <ul>
+                <li><strong>GTM Container:</strong> GTM-NEWTESTCONTAINER</li>
+                <li><strong>GA4 Measurement ID:</strong> G-9876543210</li>
+                <li><strong>Google Ads Conversion:</strong> AW-1111111111 / test-conversion</li>
+                <li><strong>Custom Tracking:</strong> Enabled</li>
+            </ul>
+        </div>
+
+        <div class="warning">
+            <h3>⚠️ Important Testing Notes</h3>
+            <ul>
+                <li>Open browser developer tools (F12) before clicking the links</li>
+                <li>Go to Network tab to see pixel requests</li>
+                <li>Go to Console tab to see tracking events</li>
+                <li>Clear cookies/cache if you see authentication issues</li>
+            </ul>
+        </div>
+
+        <h2>🔗 Direct Links</h2>
+        <p>Click these links to open the booking page directly:</p>
+        
+        <a href="http://localhost:3001/book/test-pixel-shop" target="_blank" class="button">
+            Open Booking Page (Port 3001)
+        </a>
+        
+        <a href="http://localhost:3000/book/test-pixel-shop" target="_blank" class="button">
+            Open Booking Page (Port 3000)
+        </a>
+
+        <h2>🖼️ Embedded Preview</h2>
+        <p>The booking page should appear below in an iframe:</p>
+        
+        <iframe src="http://localhost:3001/book/test-pixel-shop" title="Booking Page Preview"></iframe>
+
+        <h2>🔍 What to Look For</h2>
+        <ol>
+            <li><strong>Page Load Event:</strong> Look for "page_view" in console</li>
+            <li><strong>Service Selection:</strong> "service_selected" event when choosing a service</li>
+            <li><strong>Date/Time Selection:</strong> "datetime_selected" event</li>
+            <li><strong>Checkout Start:</strong> "begin_checkout" event when entering info</li>
+            <li><strong>Payment Info:</strong> "add_payment_info" event</li>
+            <li><strong>Purchase Complete:</strong> "purchase" event on confirmation</li>
+        </ol>
+
+        <script>
+            // Log when page loads
+            console.log('Test page loaded. Opening developer tools will help you see tracking events.');
+            
+            // Listen for messages from iframe (if implemented)
+            window.addEventListener('message', function(e) {
+                if (e.data && e.data.type === 'tracking_event') {
+                    console.log('Tracking Event Received:', e.data);
+                }
+            });
+        </script>
+    </div>
+</body>
+</html>

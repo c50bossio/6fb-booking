@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Authentication</title>
+</head>
+<body>
+    <h1>Clearing Authentication State...</h1>
+    <script>
+        // Clear all authentication-related localStorage items
+        localStorage.removeItem('token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('user');
+        
+        // Clear all localStorage to be safe
+        localStorage.clear();
+        
+        // Clear sessionStorage too
+        sessionStorage.clear();
+        
+        console.log('Cleared all authentication tokens and storage');
+        
+        // Redirect to homepage after clearing
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 1000);
+    </script>
+    <p>Redirecting to homepage in 1 second...</p>
+</body>
+</html>

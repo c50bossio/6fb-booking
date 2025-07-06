@@ -1,0 +1,191 @@
+{
+  "timestamp": "20250704190243",
+  "test_email": "test.user.20250704190243@bookedbarber.com",
+  "results": [
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "Starting BookedBarber V2 Registration Journey Tests"
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "Test timestamp: 20250704190243"
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "Test email: test.user.20250704190243@bookedbarber.com"
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "\n=================================================="
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "Running: API Health Check"
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "=================================================="
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "Testing API health..."
+    },
+    {
+      "time": "19:02:46",
+      "status": "PASS",
+      "message": "API is healthy (docs accessible)"
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "\n=================================================="
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "Running: Registration Flow"
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "=================================================="
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "Starting registration flow test..."
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "Sending registration request..."
+    },
+    {
+      "time": "19:02:46",
+      "status": "FAIL",
+      "message": "Registration failed: 422"
+    },
+    {
+      "time": "19:02:46",
+      "status": "FAIL",
+      "message": "Error: {\"detail\":[{\"type\":\"enum\",\"loc\":[\"body\",\"user_type\"],\"msg\":\"Input should be 'client', 'barber' or 'barbershop'\",\"input\":\"SHOP_OWNER\",\"ctx\":{\"expected\":\"'client', 'barber' or 'barbershop'\"},\"url\":\"https://errors.pydantic.dev/2.11/v/enum\"}]}"
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "\n=================================================="
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "Running: Onboarding Flow"
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "=================================================="
+    },
+    {
+      "time": "19:02:46",
+      "status": "WARN",
+      "message": "Skipping onboarding test - no auth token"
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "\n=================================================="
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "Running: Trial Status"
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "=================================================="
+    },
+    {
+      "time": "19:02:46",
+      "status": "WARN",
+      "message": "Skipping trial status test - missing data"
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "\n=================================================="
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "Running: Organization Analytics"
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "=================================================="
+    },
+    {
+      "time": "19:02:46",
+      "status": "WARN",
+      "message": "Skipping analytics test - no auth token"
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "\n=================================================="
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "Running: Payment Scenarios"
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "=================================================="
+    },
+    {
+      "time": "19:02:46",
+      "status": "WARN",
+      "message": "Skipping payment test - no auth token"
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "\n=================================================="
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "TEST SUMMARY"
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "=================================================="
+    },
+    {
+      "time": "19:02:46",
+      "status": "INFO",
+      "message": "Total tests: 6"
+    },
+    {
+      "time": "19:02:46",
+      "status": "PASS",
+      "message": "Passed: 1"
+    },
+    {
+      "time": "19:02:46",
+      "status": "FAIL",
+      "message": "Failed: 5"
+    }
+  ]
+}

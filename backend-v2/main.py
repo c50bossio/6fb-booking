@@ -4,10 +4,9 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from database import engine, Base
 import models
-import location_models
 # Import tracking models to register them with SQLAlchemy
 import models.tracking
-from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking
+from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health
 from routers.services import public_router as services_public_router
 from utils.rate_limit import limiter, rate_limit_exceeded_handler
 from services.integration_service import IntegrationServiceFactory
@@ -29,6 +28,12 @@ Base.metadata.create_all(bind=engine)
 
 # Create FastAPI app
 app = FastAPI(title="6FB Booking API v2")
+
+# Root health check endpoint
+@app.get("/health")
+async def health_check():
+    """Simple health check endpoint"""
+    return {"status": "healthy", "service": "BookedBarber API"}
 
 # Add rate limiter to app state
 app.state.limiter = limiter
@@ -248,6 +253,9 @@ def configure_cors():
 cors_config = configure_cors()
 app.add_middleware(CORSMiddleware, **cors_config)
 
+# Include health router (no prefix for easy access)
+app.include_router(health.router)
+
 # Include routers with API versioning
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(auth_simple.router, prefix="/api/v1")  # Simplified auth for schema compatibility
@@ -282,7 +290,7 @@ app.include_router(notification_preferences.router)  # No prefix, includes its o
 # app.include_router(email_analytics.router, prefix="/api/v1")  # Disabled - service archived
 app.include_router(test_data.router, prefix="/api/v1")
 app.include_router(reviews.router, prefix="/api/v1")  # Re-enabled for testing
-# app.include_router(locations.router, prefix="/api/v1")  # Temporarily disabled due to schema error
+# app.include_router(locations.router, prefix="/api/v1")  # Temporarily disabled - needs proper schema implementation
 app.include_router(integrations.router)  # Integration management endpoints - re-enabled for testing
 app.include_router(api_keys.router, prefix="/api/v1")  # API key management
 app.include_router(commissions.router, prefix="/api/v1")  # Commission management

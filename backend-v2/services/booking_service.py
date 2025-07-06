@@ -377,7 +377,7 @@ def get_available_slots_with_barber_availability(
         
         for barber in available_barbers:
             barber_data = get_available_slots_with_barber_availability(
-                db, target_date, barber.id, user_timezone, include_next_available=False
+                db, target_date, barber.id, service_id, user_timezone, include_next_available=False
             )
             
             if barber_data["slots"]:

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registration Test</title>
+    <meta charset="utf-8">
+</head>
+<body>
+    <h1>Registration System Test</h1>
+    
+    <div style="margin: 20px; padding: 20px; border: 1px solid #ccc;">
+        <h2>Test 1: Clear Authentication</h2>
+        <button onclick="clearAuth()">Clear All Auth</button>
+        <div id="auth-status"></div>
+    </div>
+    
+    <div style="margin: 20px; padding: 20px; border: 1px solid #ccc;">
+        <h2>Test 2: Access Registration Page</h2>
+        <button onclick="testRegistration()">Test Registration Access</button>
+        <div id="reg-status"></div>
+    </div>
+    
+    <div style="margin: 20px; padding: 20px; border: 1px solid #ccc;">
+        <h2>Test 3: Direct Navigation</h2>
+        <a href="/register" target="_blank">Open Registration Page</a>
+    </div>
+    
+    <script>
+        function clearAuth() {
+            // Clear all auth-related storage
+            localStorage.removeItem('token')
+            localStorage.removeItem('refresh_token')
+            localStorage.clear()
+            sessionStorage.clear()
+            
+            // Clear auth cookies
+            document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
+            
+            document.getElementById('auth-status').innerHTML = '<p style="color: green;">✓ Authentication cleared!</p>'
+        }
+        
+        async function testRegistration() {
+            const status = document.getElementById('reg-status')
+            status.innerHTML = '<p>Testing...</p>'
+            
+            try {
+                const response = await fetch('/register')
+                const text = await response.text()
+                
+                if (response.ok) {
+                    // Check if it contains the multi-step form
+                    const hasMultiStep = text.includes('MultiStepRegistration')
+                    const hasFirstName = text.includes('firstName') || text.includes('First Name')
+                    const hasLastName = text.includes('lastName') || text.includes('Last Name')
+                    
+                    status.innerHTML = `
+                        <p style="color: green;">✓ Registration page loads (${response.status})</p>
+                        <p>Multi-step form: ${hasMultiStep ? '✓' : '✗'}</p>
+                        <p>First Name field: ${hasFirstName ? '✓' : '✗'}</p>
+                        <p>Last Name field: ${hasLastName ? '✓' : '✗'}</p>
+                    `
+                } else {
+                    status.innerHTML = `<p style="color: red;">✗ Registration page error: ${response.status}</p>`
+                }
+            } catch (err) {
+                status.innerHTML = `<p style="color: red;">✗ Error: ${err.message}</p>`
+            }
+        }
+    </script>
+</body>
+</html>

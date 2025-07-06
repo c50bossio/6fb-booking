@@ -462,7 +462,7 @@ export class CalendarApiEnhanced {
   private async callCreateAppointmentAPI(data: any): Promise<BookingResponse> {
     // This would call the actual API endpoint
     // For now, simulating with the existing API structure
-    const response = await fetch('/api/appointments', {
+    const response = await fetch('/api/v1/appointments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -476,7 +476,7 @@ export class CalendarApiEnhanced {
   }
 
   private async callUpdateAppointmentAPI(id: number, data: any): Promise<BookingResponse> {
-    const response = await fetch(`/api/appointments/${id}`, {
+    const response = await fetch(`/api/v1/appointments/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -524,7 +524,7 @@ export class CalendarApiEnhanced {
   }
 
   private async callDeleteAppointmentAPI(id: number): Promise<void> {
-    const response = await fetch(`/api/appointments/${id}`, {
+    const response = await fetch(`/api/v1/appointments/${id}`, {
       method: 'DELETE'
     })
     
@@ -539,7 +539,7 @@ export class CalendarApiEnhanced {
     endTime: string,
     excludeId?: number
   ): Promise<BookingResponse[]> {
-    const response = await fetch('/api/appointments/conflicts', {
+    const response = await fetch('/api/v1/appointments/conflicts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ barberId, startTime, endTime, excludeId })
@@ -558,7 +558,7 @@ export class CalendarApiEnhanced {
     duration: number
   ): Promise<string[]> {
     const response = await fetch(
-      `/api/barbers/${barberId}/available-slots?date=${date}&duration=${duration}`
+      `/api/v1/barbers/${barberId}/available-slots?date=${date}&duration=${duration}`
     )
     
     if (!response.ok) {

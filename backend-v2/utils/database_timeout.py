@@ -70,10 +70,16 @@ def timeout_query(timeout_seconds: float = 30.0):
             def timeout_handler_func(signum, frame):
                 raise DatabaseTimeoutError(f"Query exceeded timeout of {timeout_seconds} seconds")
             
-            # Set up timeout signal (Unix only)
+            # Set up timeout signal (Unix only, main thread only)
+            import threading
             try:
-                old_handler = signal.signal(signal.SIGALRM, timeout_handler_func)
-                signal.alarm(int(timeout_seconds))
+                # Check if we're in the main thread
+                if threading.current_thread() is threading.main_thread():
+                    old_handler = signal.signal(signal.SIGALRM, timeout_handler_func)
+                    signal.alarm(int(timeout_seconds))
+                else:
+                    # In a thread, skip signal-based timeout
+                    raise AttributeError("Not in main thread")
                 
                 try:
                     result = func(*args, **kwargs)

@@ -1,0 +1,138 @@
+{
+  "timestamp": "2025-07-04T19:04:13.592264",
+  "results": [
+    {
+      "message": "\n\ud83e\uddea Testing Phase 7.3 Features",
+      "status": "INFO"
+    },
+    {
+      "message": "==================================================",
+      "status": "INFO"
+    },
+    {
+      "message": "\nTesting: Admin Login",
+      "status": "INFO"
+    },
+    {
+      "message": "Testing admin login...",
+      "status": "INFO"
+    },
+    {
+      "message": "Admin login successful",
+      "status": "PASS"
+    },
+    {
+      "message": "\nTesting: Onboarding Endpoints",
+      "status": "INFO"
+    },
+    {
+      "message": "Testing onboarding endpoints...",
+      "status": "INFO"
+    },
+    {
+      "message": "Onboarding status update successful",
+      "status": "PASS"
+    },
+    {
+      "message": "Onboarding steps correctly updated",
+      "status": "PASS"
+    },
+    {
+      "message": "\nTesting: Trial Status Endpoints",
+      "status": "INFO"
+    },
+    {
+      "message": "Testing trial status endpoints...",
+      "status": "INFO"
+    },
+    {
+      "message": "Trial status endpoint response: 404",
+      "status": "INFO"
+    },
+    {
+      "message": "Trial status endpoint exists",
+      "status": "PASS"
+    },
+    {
+      "message": "\nTesting: Organization Analytics",
+      "status": "INFO"
+    },
+    {
+      "message": "Testing organization-based analytics...",
+      "status": "INFO"
+    },
+    {
+      "message": "Client metrics retrieved successfully",
+      "status": "PASS"
+    },
+    {
+      "message": "Analytics data structure correct",
+      "status": "PASS"
+    },
+    {
+      "message": "\nTesting: Payment Status Endpoint",
+      "status": "INFO"
+    },
+    {
+      "message": "Testing payment status endpoint...",
+      "status": "INFO"
+    },
+    {
+      "message": "Payment status endpoint response: 404",
+      "status": "INFO"
+    },
+    {
+      "message": "Payment status endpoint exists",
+      "status": "PASS"
+    },
+    {
+      "message": "\nTesting: Frontend Accessibility",
+      "status": "INFO"
+    },
+    {
+      "message": "Testing frontend accessibility...",
+      "status": "INFO"
+    },
+    {
+      "message": "Homepage page accessible",
+      "status": "PASS"
+    },
+    {
+      "message": "Registration page returned 500",
+      "status": "WARN"
+    },
+    {
+      "message": "Login page returned 500",
+      "status": "WARN"
+    },
+    {
+      "message": "Dashboard page returned 500",
+      "status": "WARN"
+    },
+    {
+      "message": "\n==================================================",
+      "status": "INFO"
+    },
+    {
+      "message": "TEST SUMMARY",
+      "status": "INFO"
+    },
+    {
+      "message": "Total tests: 6",
+      "status": "INFO"
+    },
+    {
+      "message": "Passed: 5",
+      "status": "PASS"
+    },
+    {
+      "message": "Failed: 1",
+      "status": "FAIL"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "passed": 5,
+    "failed": 1
+  }
+}

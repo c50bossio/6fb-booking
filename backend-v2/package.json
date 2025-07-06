@@ -1,0 +1,37 @@
+{
+  "name": "bookedbarber-v2",
+  "version": "2.0.0",
+  "description": "BookedBarber V2 - Development Environment",
+  "scripts": {
+    "dev": "pm2 start ecosystem.config.js --only bookedbarber-backend,bookedbarber-frontend",
+    "dev:all": "pm2 start ecosystem.config.js",
+    "dev:clean": "npm run clean && npm run dev",
+    "start": "pm2 start ecosystem.config.js --env production",
+    "stop": "pm2 stop ecosystem.config.js",
+    "restart": "pm2 restart ecosystem.config.js",
+    "logs": "pm2 logs",
+    "logs:backend": "pm2 logs bookedbarber-backend",
+    "logs:frontend": "pm2 logs bookedbarber-frontend",
+    "status": "pm2 status",
+    "monitor": "pm2 monit",
+    "clean": "./scripts/deep-clean-dev.sh",
+    "health": "node scripts/health-check.js",
+    "test:stability": "node scripts/stability-test.js",
+    "kill": "pm2 kill",
+    "setup": "npm install && cd frontend-v2 && npm install",
+    "pm2:install": "npm install -g pm2",
+    "pm2:startup": "pm2 startup",
+    "pm2:save": "pm2 save"
+  },
+  "dependencies": {
+    "puppeteer": "^24.11.2",
+    "pm2": "^5.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

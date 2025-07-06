@@ -80,6 +80,17 @@ class Settings(BaseSettings):
     
     # Redis Configuration
     redis_url: str = "redis://localhost:6379/0"
+    redis_host: str = "localhost"
+    redis_port: int = 6379
+    redis_ssl: bool = False
+    redis_max_connections: int = 20
+    redis_socket_timeout: int = 5
+    
+    # AWS ElastiCache Configuration
+    aws_elasticache_enabled: bool = False
+    aws_elasticache_cluster_id: str = ""
+    aws_elasticache_primary_endpoint: str = ""
+    aws_elasticache_port: int = 6379
     
     # AI Provider Configuration - CRITICAL: Set via environment variables only
     # Anthropic Claude

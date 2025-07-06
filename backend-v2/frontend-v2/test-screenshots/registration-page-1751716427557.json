@@ -1,0 +1,9 @@
+{
+  "name": "registration-page",
+  "timestamp": 1751716427557,
+  "url": "http://localhost:3000/register",
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  }
+}

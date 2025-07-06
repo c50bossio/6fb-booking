@@ -10,21 +10,7 @@ const SimpleLoading = ({ className }: { className?: string }) => (
   </div>
 )
 
-// Calendar Components - Heavy components that benefit from lazy loading
-export const CalendarWeekView = dynamic(() => import('./CalendarWeekView'), {
-  loading: () => <CardLoading className="h-[600px]" />,
-  ssr: false,
-})
-
-export const CalendarDayView = dynamic(() => import('./CalendarDayView'), {
-  loading: () => <CardLoading className="h-[600px]" />,
-  ssr: false,
-})
-
-export const CalendarMonthView = dynamic(() => import('./CalendarMonthView'), {
-  loading: () => <CardLoading className="h-[600px]" />,
-  ssr: false,
-})
+// Calendar Components - Using UnifiedCalendar instead of separate view components
 
 export const CalendarSync = dynamic(() => import('./CalendarSync'), {
   loading: () => <CardLoading />,
@@ -149,9 +135,7 @@ export const preloadCalendarComponents = () => {
   if (typeof window !== 'undefined') {
     // Preload calendar components on user interaction
     const preload = () => {
-      import('./CalendarWeekView')
-      import('./CalendarDayView')
-      import('./CalendarMonthView')
+      import('./UnifiedCalendar')
     }
     
     // Preload on first user interaction

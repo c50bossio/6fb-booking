@@ -1,0 +1,26 @@
+{
+  "timestamp": "2025-07-05T00:13:08.767265",
+  "status": "Completed",
+  "login": true,
+  "calendar_loaded": false,
+  "themes_tested": [],
+  "views_tested": [
+    "Month",
+    "Week",
+    "Day"
+  ],
+  "navigation_tested": false,
+  "appointments_found": 0,
+  "drag_drop_tested": false,
+  "console_errors": [
+    "[ERROR] Heading level skipped from h0 to h2 JSHandle@node",
+    "[ERROR] Interactive element missing accessible name JSHandle@node",
+    "[ERROR] Interactive element missing accessible name JSHandle@node",
+    "[ERROR] Interactive element missing accessible name JSHandle@node",
+    "[ERROR] Interactive element missing accessible name JSHandle@node"
+  ],
+  "network_errors": [
+    "http://localhost:3001/dashboard?_rsc=3y0gy",
+    "http://localhost:3001/dashboard/welcome?_rsc=sdv3u"
+  ]
+}

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Calendar } from '@/components/ui/Calendar'
-import CalendarDayView from '@/components/CalendarDayView'
+import UnifiedCalendar from '@/components/UnifiedCalendar'
 import TimeSlots from '@/components/TimeSlots'
 import PaymentForm from '@/components/PaymentForm'
 import TimezoneTooltip from '@/components/TimezoneTooltip'
@@ -400,11 +400,11 @@ export default function BookPage() {
     return formatTimeWithTimezone(time, false)
   }
 
-  // Convert time slots to appointment format for CalendarDayView
+  // Convert time slots to appointment format for UnifiedCalendar
   const convertTimeSlotsToAppointments = () => {
     if (!selectedDate || !selectedService) return []
     
-    // Create available slot indicators for CalendarDayView
+    // Create available slot indicators for UnifiedCalendar
     const availableSlots = timeSlots
       .filter(slot => slot.available)
       .map((slot, index) => {
@@ -716,7 +716,8 @@ export default function BookPage() {
                   </div>
                 ) : (
                   <div className="h-[600px] bg-white rounded-lg border border-gray-200 overflow-hidden">
-                    <CalendarDayView
+                    <UnifiedCalendar
+                      view="day"
                       appointments={convertTimeSlotsToAppointments()}
                       currentDate={selectedDate || new Date()}
                       onDateChange={(date) => {
@@ -745,6 +746,7 @@ export default function BookPage() {
                       startHour={8}
                       endHour={20}
                       slotDuration={30}
+                      className="h-full"
                     />
                   </div>
                 )}

@@ -2,14 +2,14 @@
 # This file configures both backend and frontend services
 
 services:
-  # Backend API Service
+  # Backend V2 API Service
   - type: web
-    name: 6fb-booking-backend
+    name: sixfb-backend-v2
     env: python
     region: oregon
     plan: starter # Options: starter ($7/month), standard ($25/month), pro ($85/month)
-    buildCommand: cd backend && ./render-build.sh
-    startCommand: cd backend && gunicorn main:app -w 2 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT --timeout 120 --keep-alive 5 --log-level info
+    buildCommand: cd backend-v2 && pip install -r requirements.txt
+    startCommand: cd backend-v2 && uvicorn main:app --host 0.0.0.0 --port $PORT --log-level info
     envVars:
       - key: PYTHON_VERSION
         value: "3.11.10"
@@ -26,7 +26,7 @@ services:
         generateValue: true
       - key: DATABASE_URL
         fromDatabase:
-          name: 6fb-booking-db
+          name: sixfb-db
           property: connectionString
       - key: STRIPE_SECRET_KEY
         sync: false  # Set manually in Render dashboard
@@ -51,7 +51,7 @@ services:
       - key: LOG_LEVEL
         value: info
       - key: CORS_ALLOWED_ORIGINS
-        value: https://sixfb-frontend.onrender.com,http://localhost:3000
+        value: https://sixfb-frontend-v2.onrender.com,http://localhost:3000
       - key: MAX_WORKERS
         value: "2"
       - key: WEB_CONCURRENCY
@@ -81,17 +81,17 @@ services:
     # Additional Render settings
     dockerCommand: ""  # Use default
 
-  # Frontend Next.js Application
+  # Frontend V2 Next.js Application
   - type: web
-    name: 6fb-booking-frontend
+    name: sixfb-frontend-v2
     env: node
     region: oregon
     plan: starter # Options: starter ($7/month), standard ($25/month)
     buildCommand: |
-      cd frontend && \
+      cd backend-v2/frontend-v2 && \
       npm ci && \
       npm run build
-    startCommand: cd frontend && npm run start
+    startCommand: cd backend-v2/frontend-v2 && npm run start
     envVars:
       - key: NODE_ENV
         value: production
@@ -114,11 +114,11 @@ services:
     # Performance configurations
     numInstances: 1  # Increase for horizontal scaling
 
-# Database
+# Database (using existing sixfb-db from backend-v2/render.yaml)
 databases:
-  - name: 6fb-booking-db
-    databaseName: sixfb_booking
-    user: sixfb_user
+  - name: sixfb-db
+    databaseName: sixfb
+    user: sixfb
     region: oregon
     plan: starter  # $7/month - upgrade to standard ($22/month) for production
     ipAllowList: []  # Allow connections from all IPs (Render services)

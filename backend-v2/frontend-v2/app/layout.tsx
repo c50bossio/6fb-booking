@@ -6,6 +6,7 @@ import { AppLayout } from '@/components/layout/AppLayout'
 import { Toaster } from '@/components/ui/toaster'
 import { QueryProvider } from '@/components/providers/QueryProvider'
 import CookieConsent from '@/components/CookieConsent'
+import { DevHealthMonitor } from '@/components/DevHealthMonitor'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -185,6 +186,7 @@ export default function RootLayout({
             </AppLayout>
             <Toaster />
             <CookieConsent />
+            <DevHealthMonitor />
           </ErrorBoundary>
         </QueryProvider>
         
