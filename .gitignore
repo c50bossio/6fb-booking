@@ -18,8 +18,12 @@ build/
 # FastAPI & Environment Variables - CRITICAL SECURITY
 .env
 .env.*
+*.env
 !.env.template
 !.env.example
+backend-v2/.env
+backend-v2/.env.*
+backend-v2/*.env
 # Remove the exception for .env.template.secure to prevent confusion
 # Template files should be clearly named as .example or .template only
 
@@ -199,3 +203,10 @@ backend-v2/frontend-v2/test-reports/
 /analyze-pages-*.js
 # Debug and test files archive
 backend-v2/debug-archive/
+
+# AWS and API credentials
+*credentials*.txt
+aws_credentials*
+backend-v2/aws_credentials*
+backend-v2/production_keys*
+
