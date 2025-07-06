@@ -1,0 +1,55 @@
+# Core dependencies only - no bloat
+fastapi==0.109.2
+uvicorn[standard]==0.27.1
+sqlalchemy==2.0.25
+psycopg2-binary==2.9.9
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.9
+pydantic[email]==2.6.0
+pydantic-settings==2.1.0
+alembic==1.13.1
+httpx==0.26.0
+stripe==7.12.0
+slowapi==0.1.9
+pytz==2024.1
+bleach==6.1.0
+
+# Google Calendar Integration
+google-api-python-client==2.114.0
+google-auth==2.26.2
+google-auth-oauthlib==1.2.0
+google-auth-httplib2==0.2.0
+
+# Notification dependencies
+sendgrid==6.11.0
+twilio==9.0.0
+jinja2==3.1.3
+redis==5.0.1
+celery==5.3.4
+
+# Export dependencies
+pandas==2.2.0
+openpyxl==3.1.2
+reportlab==4.0.9
+
+# Analytics and A/B testing
+scipy==1.12.0
+numpy==1.26.4
+
+# Error tracking and monitoring
+sentry-sdk[fastapi]==1.40.6
+
+# Multi-Factor Authentication
+pyotp==2.9.0
+qrcode==7.4.2
+
+# AI Provider Dependencies
+anthropic>=0.8.0
+openai>=1.0.0
+google-generativeai>=0.3.0
+
+# Development only
+pytest>=7.0.0,<8.0.0
+pytest-asyncio==0.23.4
+pytest-cov==4.1.0
