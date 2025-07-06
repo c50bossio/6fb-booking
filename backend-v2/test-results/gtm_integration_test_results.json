@@ -1,0 +1,76 @@
+{
+  "total_tests": 11,
+  "passed": 11,
+  "failed": 0,
+  "success_rate": 100.0,
+  "test_results": [
+    {
+      "test": "Configuration Loading",
+      "status": "PASS",
+      "message": "Found 49 GTM configuration settings",
+      "timestamp": "2025-07-03T10:14:32.589425"
+    },
+    {
+      "test": "Service Initialization",
+      "status": "PASS",
+      "message": "Service initialized with 8 dimensions, 4 metrics",
+      "timestamp": "2025-07-03T10:14:32.589446"
+    },
+    {
+      "test": "GA4 Integration Compatibility",
+      "status": "PASS",
+      "message": "GA4 (40 settings) and GTM (49 settings) are compatible",
+      "timestamp": "2025-07-03T10:14:32.589533"
+    },
+    {
+      "test": "Event Validation",
+      "status": "PASS",
+      "message": "All validation tests passed",
+      "timestamp": "2025-07-03T10:14:32.589581"
+    },
+    {
+      "test": "Page View Tracking",
+      "status": "PASS",
+      "message": "Page view tracked successfully",
+      "timestamp": "2025-07-03T10:14:32.589632"
+    },
+    {
+      "test": "Appointment Booking Tracking",
+      "status": "PASS",
+      "message": "Appointment booking tracked successfully",
+      "timestamp": "2025-07-03T10:14:32.589701"
+    },
+    {
+      "test": "Payment Tracking",
+      "status": "PASS",
+      "message": "Payment tracked successfully",
+      "timestamp": "2025-07-03T10:14:32.589742"
+    },
+    {
+      "test": "User Registration Tracking",
+      "status": "PASS",
+      "message": "User registration tracked successfully",
+      "timestamp": "2025-07-03T10:14:32.589775"
+    },
+    {
+      "test": "Custom Event Tracking",
+      "status": "PASS",
+      "message": "Custom event tracked successfully",
+      "timestamp": "2025-07-03T10:14:32.589836"
+    },
+    {
+      "test": "Batch Functionality",
+      "status": "PASS",
+      "message": "Successfully batched and flushed 5 events",
+      "timestamp": "2025-07-03T10:14:32.589985"
+    },
+    {
+      "test": "Error Handling",
+      "status": "PASS",
+      "message": "Invalid event was properly rejected",
+      "timestamp": "2025-07-03T10:14:32.590004"
+    }
+  ],
+  "timestamp": "2025-07-03T10:14:32.590015",
+  "overall_status": "PASS"
+}

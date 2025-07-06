@@ -1,0 +1,99 @@
+{
+  "testName": "registration-flow",
+  "timestamp": "2025-07-05T11:54:06.915Z",
+  "environment": {
+    "baseUrl": "http://localhost:3000",
+    "apiUrl": "http://localhost:8000",
+    "headless": false
+  },
+  "results": [
+    {
+      "name": "Form Validation Test",
+      "steps": [],
+      "success": false,
+      "errors": [
+        {
+          "message": "net::ERR_CONNECTION_REFUSED at http://localhost:3000/register",
+          "stack": "Error: net::ERR_CONNECTION_REFUSED at http://localhost:3000/register\n    at navigate (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Frame.js:184:27)\n    at async Deferred.race (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/puppeteer-core/lib/cjs/puppeteer/util/Deferred.js:36:20)\n    at async CdpFrame.goto (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Frame.js:150:25)\n    at async CdpPage.goto (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/puppeteer-core/lib/cjs/puppeteer/api/Page.js:574:20)\n    at async RegistrationFlowTester.testFormValidation (/Users/bossio/6fb-booking/backend-v2/frontend-v2/tests/e2e/puppeteer/registration-flow-test.js:231:13)\n    at async RegistrationFlowTester.runAllTests (/Users/bossio/6fb-booking/backend-v2/frontend-v2/tests/e2e/puppeteer/registration-flow-test.js:548:13)",
+          "timestamp": "2025-07-05T11:54:06.674Z"
+        }
+      ],
+      "screenshots": [],
+      "performance": {},
+      "startTime": 1751716446638,
+      "duration": 36
+    },
+    {
+      "name": "Duplicate Email Test",
+      "steps": [],
+      "success": false,
+      "errors": [
+        {
+          "message": "net::ERR_CONNECTION_REFUSED at http://localhost:3000/register",
+          "stack": "Error: net::ERR_CONNECTION_REFUSED at http://localhost:3000/register\n    at navigate (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Frame.js:184:27)\n    at async Deferred.race (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/puppeteer-core/lib/cjs/puppeteer/util/Deferred.js:36:20)\n    at async CdpFrame.goto (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Frame.js:150:25)\n    at async CdpPage.goto (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/puppeteer-core/lib/cjs/puppeteer/api/Page.js:574:20)\n    at async RegistrationFlowTester.testDuplicateEmail (/Users/bossio/6fb-booking/backend-v2/frontend-v2/tests/e2e/puppeteer/registration-flow-test.js:394:13)\n    at async RegistrationFlowTester.runAllTests (/Users/bossio/6fb-booking/backend-v2/frontend-v2/tests/e2e/puppeteer/registration-flow-test.js:549:13)",
+          "timestamp": "2025-07-05T11:54:06.718Z"
+        }
+      ],
+      "screenshots": [],
+      "performance": {},
+      "startTime": 1751716446674,
+      "duration": 44
+    },
+    {
+      "name": "Payment Failure Test",
+      "steps": [],
+      "success": false,
+      "errors": [
+        {
+          "message": "net::ERR_CONNECTION_REFUSED at http://localhost:3000/register",
+          "stack": "Error: net::ERR_CONNECTION_REFUSED at http://localhost:3000/register\n    at navigate (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Frame.js:184:27)\n    at async Deferred.race (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/puppeteer-core/lib/cjs/puppeteer/util/Deferred.js:36:20)\n    at async CdpFrame.goto (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Frame.js:150:25)\n    at async CdpPage.goto (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/puppeteer-core/lib/cjs/puppeteer/api/Page.js:574:20)\n    at async RegistrationFlowTester.testPaymentFailure (/Users/bossio/6fb-booking/backend-v2/frontend-v2/tests/e2e/puppeteer/registration-flow-test.js:301:13)\n    at async RegistrationFlowTester.runAllTests (/Users/bossio/6fb-booking/backend-v2/frontend-v2/tests/e2e/puppeteer/registration-flow-test.js:550:13)",
+          "timestamp": "2025-07-05T11:54:06.762Z"
+        }
+      ],
+      "screenshots": [],
+      "performance": {},
+      "startTime": 1751716446718,
+      "duration": 44
+    },
+    {
+      "name": "Complete Registration Test",
+      "steps": [],
+      "success": false,
+      "errors": [
+        {
+          "message": "net::ERR_CONNECTION_REFUSED at http://localhost:3000/register",
+          "stack": "Error: net::ERR_CONNECTION_REFUSED at http://localhost:3000/register\n    at navigate (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Frame.js:184:27)\n    at async Deferred.race (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/puppeteer-core/lib/cjs/puppeteer/util/Deferred.js:36:20)\n    at async CdpFrame.goto (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Frame.js:150:25)\n    at async CdpPage.goto (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/puppeteer-core/lib/cjs/puppeteer/api/Page.js:574:20)\n    at async RegistrationFlowTester.testCompleteRegistration (/Users/bossio/6fb-booking/backend-v2/frontend-v2/tests/e2e/puppeteer/registration-flow-test.js:65:13)\n    at async RegistrationFlowTester.runAllTests (/Users/bossio/6fb-booking/backend-v2/frontend-v2/tests/e2e/puppeteer/registration-flow-test.js:551:13)",
+          "timestamp": "2025-07-05T11:54:06.800Z"
+        }
+      ],
+      "screenshots": [
+        "registration-error-1751716446800.png"
+      ],
+      "performance": {},
+      "startTime": 1751716446762,
+      "duration": 38
+    },
+    {
+      "name": "Organization Creation Test",
+      "steps": [],
+      "success": false,
+      "errors": [
+        {
+          "message": "net::ERR_CONNECTION_REFUSED at http://localhost:3000/register",
+          "stack": "Error: net::ERR_CONNECTION_REFUSED at http://localhost:3000/register\n    at navigate (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Frame.js:184:27)\n    at async Deferred.race (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/puppeteer-core/lib/cjs/puppeteer/util/Deferred.js:36:20)\n    at async CdpFrame.goto (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Frame.js:150:25)\n    at async CdpPage.goto (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/puppeteer-core/lib/cjs/puppeteer/api/Page.js:574:20)\n    at async RegistrationFlowTester.testOrganizationCreation (/Users/bossio/6fb-booking/backend-v2/frontend-v2/tests/e2e/puppeteer/registration-flow-test.js:457:13)\n    at async RegistrationFlowTester.runAllTests (/Users/bossio/6fb-booking/backend-v2/frontend-v2/tests/e2e/puppeteer/registration-flow-test.js:552:13)",
+          "timestamp": "2025-07-05T11:54:06.915Z"
+        }
+      ],
+      "screenshots": [],
+      "performance": {},
+      "startTime": 1751716446881,
+      "duration": 34
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "passed": 0,
+    "failed": 5,
+    "duration": 196
+  }
+}

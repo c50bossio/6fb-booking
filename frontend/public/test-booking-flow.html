@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>6FB Booking Flow Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 40px auto;
+            max-width: 800px;
+            padding: 0 20px;
+            background: #f5f5f5;
+        }
+        h1 { color: #333; }
+        #output {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        .step {
+            margin: 10px 0;
+            padding: 8px 12px;
+            border-left: 3px solid #ddd;
+        }
+        .success {
+            color: #10b981;
+            border-left-color: #10b981;
+            background: #f0fdf4;
+        }
+        .error {
+            color: #ef4444;
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+        .info {
+            color: #3b82f6;
+            border-left-color: #3b82f6;
+            background: #eff6ff;
+        }
+        button {
+            margin: 5px;
+            padding: 12px 24px;
+            background: #14b8a6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        button:hover {
+            background: #0f766e;
+        }
+        pre {
+            background: #f9fafb;
+            padding: 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+        .booking-details {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            padding: 16px;
+            border-radius: 6px;
+            margin-top: 16px;
+        }
+        .booking-details h3 {
+            margin-top: 0;
+            color: #065f46;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e6fffa;
+        }
+        .detail-label {
+            font-weight: 500;
+            color: #065f46;
+        }
+        a {
+            color: #14b8a6;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 6FB Booking Flow Test</h1>
+    <p>This test will walk through the complete booking process using the public API.</p>
+
+    <button id="runTest">Run Booking Test</button>
+    <button id="clearOutput" style="background: #6b7280;">Clear Output</button>
+
+    <div id="output"></div>
+
+    <script>
+        const API_BASE = '/api/proxy/api/v1/booking/public';
+        const output = document.getElementById('output');
+        const runButton = document.getElementById('runTest');
+        const clearButton = document.getElementById('clearOutput');
+
+        function log(message, className = 'info') {
+            const div = document.createElement('div');
+            div.className = `step ${className}`;
+            div.innerHTML = message;
+            output.appendChild(div);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function clearOutput() {
+            output.innerHTML = '';
+        }
+
+        clearButton.onclick = clearOutput;
+        runButton.onclick = testBookingFlow;
+
+        async function testBookingFlow() {
+            clearOutput();
+            runButton.disabled = true;
+            runButton.textContent = 'Running...';
+
+            try {
+                // 1. Get shops
+                log('📍 <strong>Step 1: Getting available shops...</strong>');
+                const shopsRes = await fetch(`${API_BASE}/shops`);
+                if (!shopsRes.ok) throw new Error(`Failed to get shops: ${shopsRes.status}`);
+
+                const shops = await shopsRes.json();
+                log(`✅ Found ${shops.length} shops`, 'success');
+
+                if (shops.length === 0) {
+                    log('❌ No shops available', 'error');
+                    return;
+                }
+
+                const shop = shops[0];
+                log(`📍 Using shop: <strong>${shop.name}</strong> (ID: ${shop.id})`);
+
+                // 2. Get services
+                log('<br>💈 <strong>Step 2: Getting available services...</strong>');
+                const servicesRes = await fetch(`${API_BASE}/shops/${shop.id}/services`);
+                if (!servicesRes.ok) throw new Error(`Failed to get services: ${servicesRes.status}`);
+
+                const services = await servicesRes.json();
+                log(`✅ Found ${services.length} services`, 'success');
+
+                const service = services[0];
+                log(`💈 Using service: <strong>${service.name}</strong> - $${service.base_price} (${service.duration_minutes} min)`);
+
+                // 3. Get barbers
+                log('<br>👤 <strong>Step 3: Getting available barbers...</strong>');
+                const barbersRes = await fetch(`${API_BASE}/shops/${shop.id}/barbers`);
+                if (!barbersRes.ok) throw new Error(`Failed to get barbers: ${barbersRes.status}`);
+
+                const barbers = await barbersRes.json();
+                log(`✅ Found ${barbers.length} barbers`, 'success');
+
+                const barber = barbers[0];
+                log(`👤 Using barber: <strong>${barber.first_name} ${barber.last_name}</strong> (ID: ${barber.id})`);
+
+                // 4. Get availability
+                log('<br>📅 <strong>Step 4: Checking availability...</strong>');
+
+                // Get next Monday
+                const today = new Date();
+                const daysUntilMonday = (8 - today.getDay()) % 7 || 7;
+                const nextMonday = new Date(today);
+                nextMonday.setDate(today.getDate() + daysUntilMonday);
+                const dateStr = nextMonday.toISOString().split('T')[0];
+
+                log(`📅 Checking availability for: ${dateStr} (${nextMonday.toLocaleDateString('en-US', { weekday: 'long' })})`);
+
+                const availRes = await fetch(
+                    `${API_BASE}/barbers/${barber.id}/availability?service_id=${service.id}&start_date=${dateStr}&end_date=${dateStr}`
+                );
+                if (!availRes.ok) throw new Error(`Failed to get availability: ${availRes.status}`);
+
+                const availability = await availRes.json();
+                const availableSlots = availability.slots.filter(s => s.available);
+
+                log(`✅ Found ${availableSlots.length} available time slots`, 'success');
+
+                if (availableSlots.length === 0) {
+                    log('❌ No available slots found', 'error');
+                    return;
+                }
+
+                const slot = availableSlots[0];
+                log(`🕐 Using time slot: <strong>${slot.start_time}</strong>`);
+
+                // 5. Create booking
+                log('<br>📝 <strong>Step 5: Creating booking...</strong>');
+
+                const uniqueEmail = `test.customer.${Date.now()}@example.com`;
+                const bookingData = {
+                    location_id: shop.id,
+                    barber_id: barber.id,
+                    service_id: service.id,
+                    appointment_date: slot.date,
+                    appointment_time: slot.start_time,
+                    client_first_name: 'Test',
+                    client_last_name: 'Customer',
+                    client_email: uniqueEmail,
+                    client_phone: '5551234567',
+                    notes: 'Test booking from browser UI test',
+                    timezone: shop.timezone || 'America/New_York'
+                };
+
+                log('📤 Sending booking request...');
+                log(`<pre>${JSON.stringify(bookingData, null, 2)}</pre>`);
+
+                const bookingRes = await fetch(`${API_BASE}/bookings/create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bookingData)
+                });
+
+                if (!bookingRes.ok) {
+                    const error = await bookingRes.json();
+                    throw new Error(error.message || error.error || `Booking failed: ${bookingRes.status}`);
+                }
+
+                const result = await bookingRes.json();
+
+                log('<br>🎉 <strong>BOOKING CREATED SUCCESSFULLY!</strong>', 'success');
+
+                // Show booking details
+                const details = result.appointment_details;
+                const detailsHtml = `
+                    <div class="booking-details">
+                        <h3>📋 Booking Confirmation</h3>
+                        <div class="detail-row">
+                            <span class="detail-label">Confirmation Token:</span>
+                            <span><code>${result.booking_token}</code></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Appointment ID:</span>
+                            <span>${result.appointment_id}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Barber:</span>
+                            <span>${details.barber}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Service:</span>
+                            <span>${details.service}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Date:</span>
+                            <span>${new Date(details.date).toLocaleDateString('en-US', {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            })}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Time:</span>
+                            <span>${details.time}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Duration:</span>
+                            <span>${details.duration}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Price:</span>
+                            <span>${details.price}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Location:</span>
+                            <span>${details.location}</span>
+                        </div>
+                        <div class="detail-row" style="border-bottom: none;">
+                            <span class="detail-label">Payment Status:</span>
+                            <span>${details.payment.payment_status}</span>
+                        </div>
+                    </div>
+                `;
+
+                log(detailsHtml);
+
+                // Add confirmation link
+                log(`<br>👉 <a href="/book/confirmation/${result.booking_token}" target="_blank">View Confirmation Page</a>`);
+
+            } catch (error) {
+                log(`<br>❌ <strong>Error:</strong> ${error.message}`, 'error');
+                console.error('Full error:', error);
+            } finally {
+                runButton.disabled = false;
+                runButton.textContent = 'Run Booking Test';
+            }
+        }
+
+        // Show instructions
+        log('👋 Welcome to the 6FB Booking Flow Test!');
+        log('Click the "Run Booking Test" button above to start the test.');
+        log('This will create a real test booking in the system.');
+    </script>
+</body>
+</html>

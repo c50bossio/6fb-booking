@@ -1,0 +1,1058 @@
+{
+  "metadata": {
+    "baseUrl": "http://localhost:3000",
+    "crawledAt": "2025-06-28T06:23:59.522Z",
+    "totalPages": 16,
+    "totalErrors": 4,
+    "routesTested": 20
+  },
+  "pages": [
+    {
+      "route": "/",
+      "url": "http://localhost:3000/",
+      "status": 200,
+      "statusText": "OK",
+      "responseTime": 23,
+      "contentType": "text/html; charset=utf-8",
+      "timestamp": "2025-06-28T06:23:56.897Z",
+      "title": "6FB Booking",
+      "metaTags": {
+        "viewport": "width=device-width, initial-scale=1",
+        "description": "Simple booking platform"
+      },
+      "headings": {
+        "h1": [
+          "6FB Booking"
+        ],
+        "h2": [],
+        "h3": []
+      },
+      "links": [
+        {
+          "href": "/login",
+          "text": "Login"
+        }
+      ],
+      "forms": [],
+      "scripts": [
+        {
+          "src": "/_next/static/chunks/main-app.js?v=1751091836887"
+        },
+        {
+          "src": "/_next/static/chunks/app-pages-internals.js"
+        },
+        {
+          "src": "/_next/static/chunks/app/page.js"
+        },
+        {
+          "src": "/_next/static/chunks/polyfills.js"
+        },
+        {
+          "src": "/_next/static/chunks/webpack.js?v=1751091836887"
+        }
+      ],
+      "images": [],
+      "components": {
+        "react": false,
+        "nextjs": true,
+        "tailwind": true,
+        "bootstrap": false,
+        "modals": false,
+        "dropdowns": false,
+        "login": true,
+        "signup": false,
+        "calendar": false,
+        "booking": true,
+        "stripe": false
+      },
+      "errors": [
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag"
+      ]
+    },
+    {
+      "route": "/login",
+      "url": "http://localhost:3000/login",
+      "status": 200,
+      "statusText": "OK",
+      "responseTime": 20,
+      "contentType": "text/html; charset=utf-8",
+      "timestamp": "2025-06-28T06:23:57.019Z",
+      "title": "6FB Booking",
+      "metaTags": {
+        "viewport": "width=device-width, initial-scale=1",
+        "description": "Simple booking platform"
+      },
+      "headings": {
+        "h1": [],
+        "h2": [
+          "Login"
+        ],
+        "h3": []
+      },
+      "links": [
+        {
+          "href": "/",
+          "text": "Back to home"
+        }
+      ],
+      "forms": [
+        {
+          "action": "",
+          "method": "GET",
+          "inputs": [
+            {
+              "type": "email",
+              "name": "email",
+              "placeholder": ""
+            },
+            {
+              "type": "password",
+              "name": "password",
+              "placeholder": ""
+            }
+          ]
+        }
+      ],
+      "scripts": [
+        {
+          "src": "/_next/static/chunks/main-app.js?v=1751091837003"
+        },
+        {
+          "src": "/_next/static/chunks/app-pages-internals.js"
+        },
+        {
+          "src": "/_next/static/chunks/app/login/page.js"
+        },
+        {
+          "src": "/_next/static/chunks/polyfills.js"
+        },
+        {
+          "src": "/_next/static/chunks/webpack.js?v=1751091837003"
+        }
+      ],
+      "images": [],
+      "components": {
+        "react": false,
+        "nextjs": true,
+        "tailwind": true,
+        "bootstrap": false,
+        "modals": false,
+        "dropdowns": false,
+        "login": true,
+        "signup": false,
+        "calendar": false,
+        "booking": true,
+        "stripe": false
+      },
+      "errors": [
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag"
+      ]
+    },
+    {
+      "route": "/signup",
+      "url": "http://localhost:3000/signup",
+      "status": 404,
+      "statusText": "Not Found",
+      "responseTime": 170,
+      "contentType": "text/html; charset=utf-8",
+      "timestamp": "2025-06-28T06:23:57.291Z",
+      "title": "404: This page could not be found.",
+      "metaTags": {
+        "viewport": "width=device-width, initial-scale=1",
+        "robots": "noindex",
+        "description": "Simple booking platform"
+      },
+      "headings": {
+        "h1": [
+          "404"
+        ],
+        "h2": [
+          "This page could not be found."
+        ],
+        "h3": []
+      },
+      "links": [],
+      "forms": [],
+      "scripts": [
+        {
+          "src": "/_next/static/chunks/main-app.js?v=1751091837266"
+        },
+        {
+          "src": "/_next/static/chunks/app-pages-internals.js"
+        },
+        {
+          "src": "/_next/static/chunks/polyfills.js"
+        },
+        {
+          "src": "/_next/static/chunks/webpack.js?v=1751091837266"
+        }
+      ],
+      "images": [],
+      "components": {
+        "react": false,
+        "nextjs": true,
+        "tailwind": true,
+        "bootstrap": false,
+        "modals": false,
+        "dropdowns": false,
+        "login": false,
+        "signup": true,
+        "calendar": false,
+        "booking": true,
+        "stripe": false
+      },
+      "errors": [
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag"
+      ]
+    },
+    {
+      "route": "/register",
+      "url": "http://localhost:3000/register",
+      "status": 404,
+      "statusText": "Not Found",
+      "responseTime": 14,
+      "contentType": "text/html; charset=utf-8",
+      "timestamp": "2025-06-28T06:23:57.407Z",
+      "title": "404: This page could not be found.",
+      "metaTags": {
+        "viewport": "width=device-width, initial-scale=1",
+        "robots": "noindex",
+        "description": "Simple booking platform"
+      },
+      "headings": {
+        "h1": [
+          "404"
+        ],
+        "h2": [
+          "This page could not be found."
+        ],
+        "h3": []
+      },
+      "links": [],
+      "forms": [],
+      "scripts": [
+        {
+          "src": "/_next/static/chunks/main-app.js?v=1751091837397"
+        },
+        {
+          "src": "/_next/static/chunks/app-pages-internals.js"
+        },
+        {
+          "src": "/_next/static/chunks/polyfills.js"
+        },
+        {
+          "src": "/_next/static/chunks/webpack.js?v=1751091837397"
+        }
+      ],
+      "images": [],
+      "components": {
+        "react": false,
+        "nextjs": true,
+        "tailwind": true,
+        "bootstrap": false,
+        "modals": false,
+        "dropdowns": false,
+        "login": false,
+        "signup": true,
+        "calendar": false,
+        "booking": true,
+        "stripe": false
+      },
+      "errors": [
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag"
+      ]
+    },
+    {
+      "route": "/dashboard",
+      "url": "http://localhost:3000/dashboard",
+      "status": 200,
+      "statusText": "OK",
+      "responseTime": 119,
+      "contentType": "text/html; charset=utf-8",
+      "timestamp": "2025-06-28T06:23:57.627Z",
+      "title": "6FB Booking",
+      "metaTags": {
+        "viewport": "width=device-width, initial-scale=1",
+        "description": "Simple booking platform"
+      },
+      "headings": {
+        "h1": [],
+        "h2": [],
+        "h3": []
+      },
+      "links": [],
+      "forms": [],
+      "scripts": [
+        {
+          "src": "/_next/static/chunks/main-app.js?v=1751091837610"
+        },
+        {
+          "src": "/_next/static/chunks/app-pages-internals.js"
+        },
+        {
+          "src": "/_next/static/chunks/app/dashboard/page.js"
+        },
+        {
+          "src": "/_next/static/chunks/polyfills.js"
+        },
+        {
+          "src": "/_next/static/chunks/webpack.js?v=1751091837610"
+        }
+      ],
+      "images": [],
+      "components": {
+        "react": false,
+        "nextjs": true,
+        "tailwind": true,
+        "bootstrap": false,
+        "modals": false,
+        "dropdowns": false,
+        "login": false,
+        "signup": false,
+        "calendar": false,
+        "booking": true,
+        "stripe": false
+      },
+      "errors": [
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag"
+      ]
+    },
+    {
+      "route": "/booking",
+      "url": "http://localhost:3000/booking",
+      "status": 404,
+      "statusText": "Not Found",
+      "responseTime": 14,
+      "contentType": "text/html; charset=utf-8",
+      "timestamp": "2025-06-28T06:23:57.742Z",
+      "title": "404: This page could not be found.",
+      "metaTags": {
+        "viewport": "width=device-width, initial-scale=1",
+        "robots": "noindex",
+        "description": "Simple booking platform"
+      },
+      "headings": {
+        "h1": [
+          "404"
+        ],
+        "h2": [
+          "This page could not be found."
+        ],
+        "h3": []
+      },
+      "links": [],
+      "forms": [],
+      "scripts": [
+        {
+          "src": "/_next/static/chunks/main-app.js?v=1751091837732"
+        },
+        {
+          "src": "/_next/static/chunks/app-pages-internals.js"
+        },
+        {
+          "src": "/_next/static/chunks/polyfills.js"
+        },
+        {
+          "src": "/_next/static/chunks/webpack.js?v=1751091837732"
+        }
+      ],
+      "images": [],
+      "components": {
+        "react": false,
+        "nextjs": true,
+        "tailwind": true,
+        "bootstrap": false,
+        "modals": false,
+        "dropdowns": false,
+        "login": false,
+        "signup": false,
+        "calendar": false,
+        "booking": true,
+        "stripe": false
+      },
+      "errors": [
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag"
+      ]
+    },
+    {
+      "route": "/appointments",
+      "url": "http://localhost:3000/appointments",
+      "status": 404,
+      "statusText": "Not Found",
+      "responseTime": 16,
+      "contentType": "text/html; charset=utf-8",
+      "timestamp": "2025-06-28T06:23:57.859Z",
+      "title": "404: This page could not be found.",
+      "metaTags": {
+        "viewport": "width=device-width, initial-scale=1",
+        "robots": "noindex",
+        "description": "Simple booking platform"
+      },
+      "headings": {
+        "h1": [
+          "404"
+        ],
+        "h2": [
+          "This page could not be found."
+        ],
+        "h3": []
+      },
+      "links": [],
+      "forms": [],
+      "scripts": [
+        {
+          "src": "/_next/static/chunks/main-app.js?v=1751091837849"
+        },
+        {
+          "src": "/_next/static/chunks/app-pages-internals.js"
+        },
+        {
+          "src": "/_next/static/chunks/polyfills.js"
+        },
+        {
+          "src": "/_next/static/chunks/webpack.js?v=1751091837849"
+        }
+      ],
+      "images": [],
+      "components": {
+        "react": false,
+        "nextjs": true,
+        "tailwind": true,
+        "bootstrap": false,
+        "modals": false,
+        "dropdowns": false,
+        "login": false,
+        "signup": false,
+        "calendar": false,
+        "booking": true,
+        "stripe": false
+      },
+      "errors": [
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag"
+      ]
+    },
+    {
+      "route": "/calendar",
+      "url": "http://localhost:3000/calendar",
+      "status": 404,
+      "statusText": "Not Found",
+      "responseTime": 24,
+      "contentType": "text/html; charset=utf-8",
+      "timestamp": "2025-06-28T06:23:57.985Z",
+      "title": "404: This page could not be found.",
+      "metaTags": {
+        "viewport": "width=device-width, initial-scale=1",
+        "robots": "noindex",
+        "description": "Simple booking platform"
+      },
+      "headings": {
+        "h1": [
+          "404"
+        ],
+        "h2": [
+          "This page could not be found."
+        ],
+        "h3": []
+      },
+      "links": [],
+      "forms": [],
+      "scripts": [
+        {
+          "src": "/_next/static/chunks/main-app.js?v=1751091837972"
+        },
+        {
+          "src": "/_next/static/chunks/app-pages-internals.js"
+        },
+        {
+          "src": "/_next/static/chunks/polyfills.js"
+        },
+        {
+          "src": "/_next/static/chunks/webpack.js?v=1751091837972"
+        }
+      ],
+      "images": [],
+      "components": {
+        "react": false,
+        "nextjs": true,
+        "tailwind": true,
+        "bootstrap": false,
+        "modals": false,
+        "dropdowns": false,
+        "login": false,
+        "signup": false,
+        "calendar": true,
+        "booking": true,
+        "stripe": false
+      },
+      "errors": [
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag"
+      ]
+    },
+    {
+      "route": "/profile",
+      "url": "http://localhost:3000/profile",
+      "status": 404,
+      "statusText": "Not Found",
+      "responseTime": 25,
+      "contentType": "text/html; charset=utf-8",
+      "timestamp": "2025-06-28T06:23:58.112Z",
+      "title": "404: This page could not be found.",
+      "metaTags": {
+        "viewport": "width=device-width, initial-scale=1",
+        "robots": "noindex",
+        "description": "Simple booking platform"
+      },
+      "headings": {
+        "h1": [
+          "404"
+        ],
+        "h2": [
+          "This page could not be found."
+        ],
+        "h3": []
+      },
+      "links": [],
+      "forms": [],
+      "scripts": [
+        {
+          "src": "/_next/static/chunks/main-app.js?v=1751091838099"
+        },
+        {
+          "src": "/_next/static/chunks/app-pages-internals.js"
+        },
+        {
+          "src": "/_next/static/chunks/polyfills.js"
+        },
+        {
+          "src": "/_next/static/chunks/webpack.js?v=1751091838099"
+        }
+      ],
+      "images": [],
+      "components": {
+        "react": false,
+        "nextjs": true,
+        "tailwind": true,
+        "bootstrap": false,
+        "modals": false,
+        "dropdowns": false,
+        "login": false,
+        "signup": false,
+        "calendar": false,
+        "booking": true,
+        "stripe": false
+      },
+      "errors": [
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag"
+      ]
+    },
+    {
+      "route": "/settings",
+      "url": "http://localhost:3000/settings",
+      "status": 404,
+      "statusText": "Not Found",
+      "responseTime": 24,
+      "contentType": "text/html; charset=utf-8",
+      "timestamp": "2025-06-28T06:23:58.238Z",
+      "title": "404: This page could not be found.",
+      "metaTags": {
+        "viewport": "width=device-width, initial-scale=1",
+        "robots": "noindex",
+        "description": "Simple booking platform"
+      },
+      "headings": {
+        "h1": [
+          "404"
+        ],
+        "h2": [
+          "This page could not be found."
+        ],
+        "h3": []
+      },
+      "links": [],
+      "forms": [],
+      "scripts": [
+        {
+          "src": "/_next/static/chunks/main-app.js?v=1751091838223"
+        },
+        {
+          "src": "/_next/static/chunks/app-pages-internals.js"
+        },
+        {
+          "src": "/_next/static/chunks/polyfills.js"
+        },
+        {
+          "src": "/_next/static/chunks/webpack.js?v=1751091838223"
+        }
+      ],
+      "images": [],
+      "components": {
+        "react": false,
+        "nextjs": true,
+        "tailwind": true,
+        "bootstrap": false,
+        "modals": false,
+        "dropdowns": false,
+        "login": false,
+        "signup": false,
+        "calendar": false,
+        "booking": true,
+        "stripe": false
+      },
+      "errors": [
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag"
+      ]
+    },
+    {
+      "route": "/admin",
+      "url": "http://localhost:3000/admin",
+      "status": 404,
+      "statusText": "Not Found",
+      "responseTime": 25,
+      "contentType": "text/html; charset=utf-8",
+      "timestamp": "2025-06-28T06:23:58.364Z",
+      "title": "404: This page could not be found.",
+      "metaTags": {
+        "viewport": "width=device-width, initial-scale=1",
+        "robots": "noindex",
+        "description": "Simple booking platform"
+      },
+      "headings": {
+        "h1": [
+          "404"
+        ],
+        "h2": [
+          "This page could not be found."
+        ],
+        "h3": []
+      },
+      "links": [],
+      "forms": [],
+      "scripts": [
+        {
+          "src": "/_next/static/chunks/main-app.js?v=1751091838346"
+        },
+        {
+          "src": "/_next/static/chunks/app-pages-internals.js"
+        },
+        {
+          "src": "/_next/static/chunks/polyfills.js"
+        },
+        {
+          "src": "/_next/static/chunks/webpack.js?v=1751091838346"
+        }
+      ],
+      "images": [],
+      "components": {
+        "react": false,
+        "nextjs": true,
+        "tailwind": true,
+        "bootstrap": false,
+        "modals": false,
+        "dropdowns": false,
+        "login": false,
+        "signup": false,
+        "calendar": false,
+        "booking": true,
+        "stripe": false
+      },
+      "errors": [
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag"
+      ]
+    },
+    {
+      "route": "/contact",
+      "url": "http://localhost:3000/contact",
+      "status": 404,
+      "statusText": "Not Found",
+      "responseTime": 15,
+      "contentType": "text/html; charset=utf-8",
+      "timestamp": "2025-06-28T06:23:58.940Z",
+      "title": "404: This page could not be found.",
+      "metaTags": {
+        "viewport": "width=device-width, initial-scale=1",
+        "robots": "noindex",
+        "description": "Simple booking platform"
+      },
+      "headings": {
+        "h1": [
+          "404"
+        ],
+        "h2": [
+          "This page could not be found."
+        ],
+        "h3": []
+      },
+      "links": [],
+      "forms": [],
+      "scripts": [
+        {
+          "src": "/_next/static/chunks/main-app.js?v=1751091838930"
+        },
+        {
+          "src": "/_next/static/chunks/app-pages-internals.js"
+        },
+        {
+          "src": "/_next/static/chunks/polyfills.js"
+        },
+        {
+          "src": "/_next/static/chunks/webpack.js?v=1751091838930"
+        }
+      ],
+      "images": [],
+      "components": {
+        "react": false,
+        "nextjs": true,
+        "tailwind": true,
+        "bootstrap": false,
+        "modals": false,
+        "dropdowns": false,
+        "login": false,
+        "signup": false,
+        "calendar": false,
+        "booking": true,
+        "stripe": false
+      },
+      "errors": [
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag"
+      ]
+    },
+    {
+      "route": "/about",
+      "url": "http://localhost:3000/about",
+      "status": 404,
+      "statusText": "Not Found",
+      "responseTime": 13,
+      "contentType": "text/html; charset=utf-8",
+      "timestamp": "2025-06-28T06:23:59.054Z",
+      "title": "404: This page could not be found.",
+      "metaTags": {
+        "viewport": "width=device-width, initial-scale=1",
+        "robots": "noindex",
+        "description": "Simple booking platform"
+      },
+      "headings": {
+        "h1": [
+          "404"
+        ],
+        "h2": [
+          "This page could not be found."
+        ],
+        "h3": []
+      },
+      "links": [],
+      "forms": [],
+      "scripts": [
+        {
+          "src": "/_next/static/chunks/main-app.js?v=1751091839044"
+        },
+        {
+          "src": "/_next/static/chunks/app-pages-internals.js"
+        },
+        {
+          "src": "/_next/static/chunks/polyfills.js"
+        },
+        {
+          "src": "/_next/static/chunks/webpack.js?v=1751091839044"
+        }
+      ],
+      "images": [],
+      "components": {
+        "react": false,
+        "nextjs": true,
+        "tailwind": true,
+        "bootstrap": false,
+        "modals": false,
+        "dropdowns": false,
+        "login": false,
+        "signup": false,
+        "calendar": false,
+        "booking": true,
+        "stripe": false
+      },
+      "errors": [
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag"
+      ]
+    },
+    {
+      "route": "/services",
+      "url": "http://localhost:3000/services",
+      "status": 404,
+      "statusText": "Not Found",
+      "responseTime": 19,
+      "contentType": "text/html; charset=utf-8",
+      "timestamp": "2025-06-28T06:23:59.175Z",
+      "title": "404: This page could not be found.",
+      "metaTags": {
+        "viewport": "width=device-width, initial-scale=1",
+        "robots": "noindex",
+        "description": "Simple booking platform"
+      },
+      "headings": {
+        "h1": [
+          "404"
+        ],
+        "h2": [
+          "This page could not be found."
+        ],
+        "h3": []
+      },
+      "links": [],
+      "forms": [],
+      "scripts": [
+        {
+          "src": "/_next/static/chunks/main-app.js?v=1751091839162"
+        },
+        {
+          "src": "/_next/static/chunks/app-pages-internals.js"
+        },
+        {
+          "src": "/_next/static/chunks/polyfills.js"
+        },
+        {
+          "src": "/_next/static/chunks/webpack.js?v=1751091839162"
+        }
+      ],
+      "images": [],
+      "components": {
+        "react": false,
+        "nextjs": true,
+        "tailwind": true,
+        "bootstrap": false,
+        "modals": false,
+        "dropdowns": false,
+        "login": false,
+        "signup": false,
+        "calendar": false,
+        "booking": true,
+        "stripe": false
+      },
+      "errors": [
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag"
+      ]
+    },
+    {
+      "route": "/barbers",
+      "url": "http://localhost:3000/barbers",
+      "status": 404,
+      "statusText": "Not Found",
+      "responseTime": 23,
+      "contentType": "text/html; charset=utf-8",
+      "timestamp": "2025-06-28T06:23:59.299Z",
+      "title": "404: This page could not be found.",
+      "metaTags": {
+        "viewport": "width=device-width, initial-scale=1",
+        "robots": "noindex",
+        "description": "Simple booking platform"
+      },
+      "headings": {
+        "h1": [
+          "404"
+        ],
+        "h2": [
+          "This page could not be found."
+        ],
+        "h3": []
+      },
+      "links": [],
+      "forms": [],
+      "scripts": [
+        {
+          "src": "/_next/static/chunks/main-app.js?v=1751091839284"
+        },
+        {
+          "src": "/_next/static/chunks/app-pages-internals.js"
+        },
+        {
+          "src": "/_next/static/chunks/polyfills.js"
+        },
+        {
+          "src": "/_next/static/chunks/webpack.js?v=1751091839284"
+        }
+      ],
+      "images": [],
+      "components": {
+        "react": false,
+        "nextjs": true,
+        "tailwind": true,
+        "bootstrap": false,
+        "modals": false,
+        "dropdowns": false,
+        "login": false,
+        "signup": false,
+        "calendar": false,
+        "booking": true,
+        "stripe": false
+      },
+      "errors": [
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag"
+      ]
+    },
+    {
+      "route": "/pricing",
+      "url": "http://localhost:3000/pricing",
+      "status": 404,
+      "statusText": "Not Found",
+      "responseTime": 20,
+      "contentType": "text/html; charset=utf-8",
+      "timestamp": "2025-06-28T06:23:59.420Z",
+      "title": "404: This page could not be found.",
+      "metaTags": {
+        "viewport": "width=device-width, initial-scale=1",
+        "robots": "noindex",
+        "description": "Simple booking platform"
+      },
+      "headings": {
+        "h1": [
+          "404"
+        ],
+        "h2": [
+          "This page could not be found."
+        ],
+        "h3": []
+      },
+      "links": [],
+      "forms": [],
+      "scripts": [
+        {
+          "src": "/_next/static/chunks/main-app.js?v=1751091839408"
+        },
+        {
+          "src": "/_next/static/chunks/app-pages-internals.js"
+        },
+        {
+          "src": "/_next/static/chunks/polyfills.js"
+        },
+        {
+          "src": "/_next/static/chunks/webpack.js?v=1751091839408"
+        }
+      ],
+      "images": [],
+      "components": {
+        "react": false,
+        "nextjs": true,
+        "tailwind": true,
+        "bootstrap": false,
+        "modals": false,
+        "dropdowns": false,
+        "login": false,
+        "signup": false,
+        "calendar": false,
+        "booking": true,
+        "stripe": false
+      },
+      "errors": [
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag",
+        "Potential JavaScript error found in script tag"
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "route": "/api/health",
+      "url": "http://localhost:3000/api/health",
+      "error": "html.match is not a function"
+    },
+    {
+      "route": "/api/auth/me",
+      "url": "http://localhost:3000/api/auth/me",
+      "error": "html.match is not a function"
+    },
+    {
+      "route": "/api/appointments",
+      "url": "http://localhost:3000/api/appointments",
+      "error": "html.match is not a function"
+    },
+    {
+      "route": "/api/bookings",
+      "url": "http://localhost:3000/api/bookings",
+      "error": "html.match is not a function"
+    }
+  ],
+  "summary": {
+    "statusCodes": {
+      "200": 3,
+      "404": 13
+    },
+    "pageTypes": {
+      "public": [
+        "/",
+        "/contact",
+        "/about"
+      ],
+      "auth": [
+        "/login",
+        "/signup",
+        "/register"
+      ],
+      "dashboard": [
+        "/dashboard",
+        "/profile",
+        "/settings"
+      ],
+      "api": [],
+      "admin": [
+        "/admin"
+      ],
+      "other": [
+        "/booking",
+        "/appointments",
+        "/calendar",
+        "/services",
+        "/barbers",
+        "/pricing"
+      ]
+    },
+    "performance": {
+      "average": 35.25,
+      "min": 13,
+      "max": 170,
+      "count": 16
+    },
+    "technologies": [
+      "Next.js",
+      "Tailwind CSS"
+    ],
+    "forms": {
+      "totalForms": 1,
+      "formTypes": {
+        "login": 1
+      },
+      "inputTypes": {
+        "email": 1,
+        "password": 1
+      }
+    },
+    "accessibility": {
+      "missingAltText": 0,
+      "h1Issues": 2
+    }
+  }
+}

@@ -1,0 +1,545 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Button } from '@/components/ui/Button'
+import { Card, CardContent } from '@/components/ui/Card'
+import { Badge } from '@/components/ui/Badge'
+import { Star, Clock, Shield, Users, CheckCircle, ArrowRight, Calendar, MapPin, Phone, Mail } from 'lucide-react'
+import { useEnhancedConversionTracking, ConversionEvents } from '@/hooks/useEnhancedConversionTracking'
+import { createGuestBooking, createGuestQuickBooking, getNextAvailableSlot, type GuestBookingCreate, type GuestQuickBookingCreate, type NextAvailableSlot, type GuestInformation } from '@/lib/api'
+import { toastError, toastSuccess } from '@/hooks/use-toast'
+
+// High-converting service options with visual appeal
+const PREMIUM_SERVICES = [
+  { 
+    id: 'signature-cut', 
+    name: 'Signature Cut', 
+    description: 'Our most popular premium cut',
+    duration: '45 min', 
+    price: 65, 
+    originalPrice: 80,
+    popular: true,
+    features: ['Hot towel treatment', 'Scalp massage', 'Styling']
+  },
+  { 
+    id: 'classic-cut', 
+    name: 'Classic Cut', 
+    description: 'Perfect for everyday style',
+    duration: '30 min', 
+    price: 45, 
+    features: ['Precision cut', 'Basic styling']
+  },
+  { 
+    id: 'beard-trim', 
+    name: 'Beard Trim & Shape', 
+    description: 'Professional beard styling',
+    duration: '20 min', 
+    price: 30, 
+    features: ['Hot towel', 'Precise trimming', 'Beard oil']
+  },
+  { 
+    id: 'full-service', 
+    name: 'Full Service Experience', 
+    description: 'The complete package',
+    duration: '75 min', 
+    price: 95, 
+    originalPrice: 115,
+    premium: true,
+    features: ['Haircut', 'Beard trim', 'Hot towel', 'Scalp massage', 'Styling']
+  }
+]
+
+// Social proof data
+const SOCIAL_PROOF = {
+  totalCustomers: 2847,
+  averageRating: 4.9,
+  recentBookings: [
+    { name: 'Marcus', time: '3 min ago', service: 'Signature Cut' },
+    { name: 'David', time: '7 min ago', service: 'Full Service' },
+    { name: 'James', time: '12 min ago', service: 'Classic Cut' }
+  ],
+  reviews: [
+    { name: 'Michael R.', rating: 5, text: 'Best cut I\'ve ever had. Worth every penny!' },
+    { name: 'Tony S.', rating: 5, text: 'Professional service, great atmosphere.' },
+    { name: 'Carlos M.', rating: 5, text: 'Always consistent quality. Highly recommend.' }
+  ]
+}
+
+interface ConversionOptimizedBookingProps {
+  organizationSlug?: string
+  barberName?: string
+  shopName?: string
+  logoUrl?: string
+  primaryColor?: string
+  accentColor?: string
+}
+
+export default function ConversionOptimizedBooking({
+  organizationSlug,
+  barberName = 'Professional Barber',
+  shopName = 'Premium Barbershop',
+  logoUrl,
+  primaryColor = '#000000',
+  accentColor = '#FFD700'
+}: ConversionOptimizedBookingProps) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  
+  // Booking flow state
+  const [step, setStep] = useState(1)
+  const [selectedService, setSelectedService] = useState<string | null>(null)
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+  const [selectedTime, setSelectedTime] = useState<string | null>(null)
+  const [guestInfo, setGuestInfo] = useState<GuestInformation>({ 
+    first_name: '', 
+    last_name: '', 
+    email: '', 
+    phone: '' 
+  })
+  
+  // UI state
+  const [loading, setLoading] = useState(false)
+  const [nextAvailable, setNextAvailable] = useState<NextAvailableSlot | null>(null)
+  const [showReviews, setShowReviews] = useState(false)
+  const [urgencyTimer, setUrgencyTimer] = useState(180) // 3 minutes countdown
+  
+  // Enhanced conversion tracking
+  const { trackConversionEvent, pixelsLoaded, error: pixelError } = useEnhancedConversionTracking(organizationSlug)
+  
+  // Fire page view conversion event on mount
+  useEffect(() => {
+    if (pixelsLoaded) {
+      const pageViewEvent = ConversionEvents.pageView({
+        page_title: `Book with ${barberName} | ${shopName}`,
+        page_location: window.location.href,
+        content_group1: 'booking_funnel',
+        content_group2: organizationSlug || 'default'
+      })
+      trackConversionEvent(pageViewEvent.event, pageViewEvent.data)
+    }
+  }, [pixelsLoaded, barberName, shopName, organizationSlug, trackConversionEvent])
+  
+  // Urgency timer effect
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setUrgencyTimer(prev => Math.max(0, prev - 1))
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
+  
+  // Fetch next available slot on mount
+  useEffect(() => {
+    const fetchNext = async () => {
+      try {
+        const next = await getNextAvailableSlot()
+        setNextAvailable(next)
+      } catch (err) {
+        console.error('Failed to fetch next available slot:', err)
+      }
+    }
+    fetchNext()
+  }, [])
+  
+  const handleServiceSelection = (serviceId: string) => {
+    const service = PREMIUM_SERVICES.find(s => s.id === serviceId)
+    if (!service) return
+    
+    setSelectedService(serviceId)
+    setStep(2)
+    
+    // Fire conversion event for service selection
+    if (pixelsLoaded) {
+      const beginBookingEvent = ConversionEvents.beginBooking(service.name, service.price, {
+        content_ids: [serviceId],
+        num_items: 1
+      })
+      trackConversionEvent(beginBookingEvent.event, beginBookingEvent.data)
+    }
+  }
+  
+  const handleQuickBooking = async () => {
+    if (!selectedService || !nextAvailable) return
+    
+    setLoading(true)
+    try {
+      const service = PREMIUM_SERVICES.find(s => s.id === selectedService)
+      if (!service) throw new Error('Service not found')
+      
+      const quickBooking: GuestQuickBookingCreate = {
+        service_name: service.name,
+        service_price: service.price,
+        guest_information: guestInfo
+      }
+      
+      const result = await createGuestQuickBooking(quickBooking)
+      
+      // Fire purchase conversion event
+      if (pixelsLoaded) {
+        const purchaseEvent = ConversionEvents.completeBooking(
+          service.name,
+          service.price,
+          result.booking_id.toString(),
+          {
+            email: guestInfo.email,
+            phone: guestInfo.phone,
+            first_name: guestInfo.first_name,
+            last_name: guestInfo.last_name,
+            content_ids: [selectedService]
+          }
+        )
+        trackConversionEvent(purchaseEvent.event, purchaseEvent.data)
+      }
+      
+      toastSuccess('Booking confirmed! Check your email for details.')
+      setStep(4) // Success step
+      
+    } catch (error) {
+      console.error('Quick booking failed:', error)
+      toastError('Booking failed. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+  
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
+  
+  const selectedServiceData = selectedService ? PREMIUM_SERVICES.find(s => s.id === selectedService) : null
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Header with branding */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              {logoUrl && (
+                <img src={logoUrl} alt={shopName} className="h-12 w-12 object-cover rounded-full" />
+              )}
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">{barberName}</h1>
+                <p className="text-sm text-gray-600">{shopName}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                ))}
+                <span className="text-sm font-medium">{SOCIAL_PROOF.averageRating}</span>
+              </div>
+              <span className="text-sm text-gray-500">({SOCIAL_PROOF.totalCustomers}+ customers)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Main booking flow */}
+          <div className="lg:col-span-2">
+            {/* Step 1: Service Selection */}
+            {step === 1 && (
+              <div className="space-y-6">
+                <div className="text-center mb-8">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">Choose Your Service</h2>
+                  <p className="text-gray-600">Experience premium barbering with our signature services</p>
+                </div>
+                
+                {/* Urgency banner */}
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-red-600" />
+                      <span className="text-red-800 font-medium">Limited time offer expires in {formatTime(urgencyTimer)}</span>
+                    </div>
+                    <Badge variant="destructive">Save up to $20</Badge>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  {PREMIUM_SERVICES.map((service) => (
+                    <Card 
+                      key={service.id} 
+                      className={`cursor-pointer transition-all duration-200 hover:shadow-lg border-2 ${
+                        service.popular ? 'border-blue-500 bg-blue-50' : 
+                        service.premium ? 'border-purple-500 bg-purple-50' : 
+                        'border-gray-200 hover:border-gray-300'
+                      }`}
+                      onClick={() => handleServiceSelection(service.id)}
+                    >
+                      <CardContent className="p-6">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="text-xl font-bold text-gray-900">{service.name}</h3>
+                            <p className="text-gray-600 text-sm">{service.description}</p>
+                          </div>
+                          {service.popular && <Badge className="bg-blue-500">Most Popular</Badge>}
+                          {service.premium && <Badge className="bg-purple-500">Premium</Badge>}
+                        </div>
+                        
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-2xl font-bold" style={{ color: primaryColor }}>${service.price}</span>
+                            {service.originalPrice && (
+                              <span className="text-lg text-gray-500 line-through">${service.originalPrice}</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1 text-gray-500">
+                            <Clock className="w-4 h-4" />
+                            <span className="text-sm">{service.duration}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          {service.features.map((feature, idx) => (
+                            <div key={idx} className="flex items-center gap-2 text-sm text-gray-600">
+                              <CheckCircle className="w-4 h-4 text-green-500" />
+                              <span>{feature}</span>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        <Button 
+                          className="w-full mt-4" 
+                          style={{ backgroundColor: primaryColor }}
+                        >
+                          Select Service <ArrowRight className="w-4 h-4 ml-2" />
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Quick booking option */}
+            {step === 2 && selectedServiceData && (
+              <div className="space-y-6">
+                <div className="text-center mb-8">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">Book Your {selectedServiceData.name}</h2>
+                  <p className="text-gray-600">Get the next available appointment or choose a specific time</p>
+                </div>
+
+                {/* Quick booking option */}
+                {nextAvailable && (
+                  <Card className="border-2 border-green-500 bg-green-50">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="bg-green-500 text-white p-2 rounded-full">
+                          <Calendar className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-900">Next Available</h3>
+                          <p className="text-gray-600">Book the earliest slot - most convenient option</p>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-white rounded-lg p-4 mb-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-gray-900">{nextAvailable.date}</p>
+                            <p className="text-sm text-gray-600">{nextAvailable.time}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-2xl font-bold" style={{ color: primaryColor }}>${selectedServiceData.price}</p>
+                            <p className="text-sm text-gray-600">{selectedServiceData.duration}</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <Button 
+                        className="w-full mb-4" 
+                        size="lg"
+                        style={{ backgroundColor: primaryColor }}
+                        onClick={() => setStep(3)}
+                      >
+                        Book This Slot <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                      
+                      <Button variant="outline" className="w-full" onClick={() => setStep(2.5)}>
+                        Choose Different Time
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            )}
+
+            {/* Step 3: Contact information */}
+            {step === 3 && (
+              <div className="space-y-6">
+                <div className="text-center mb-8">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">Almost Done!</h2>
+                  <p className="text-gray-600">Just need your contact information to confirm your booking</p>
+                </div>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="grid md:grid-cols-2 gap-4 mb-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          value={guestInfo.first_name}
+                          onChange={(e) => {
+                            setGuestInfo(prev => ({ ...prev, first_name: e.target.value }))
+                            // Track contact info start on first input
+                            if (e.target.value.length === 1 && pixelsLoaded) {
+                              const contactEvent = ConversionEvents.addContactInfo()
+                              trackConversionEvent(contactEvent.event, contactEvent.data)
+                            }
+                          }}
+                          placeholder="Your first name"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          value={guestInfo.last_name}
+                          onChange={(e) => setGuestInfo(prev => ({ ...prev, last_name: e.target.value }))}
+                          placeholder="Your last name"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid md:grid-cols-2 gap-4 mb-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                          <input
+                            type="email"
+                            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            value={guestInfo.email}
+                            onChange={(e) => setGuestInfo(prev => ({ ...prev, email: e.target.value }))}
+                            placeholder="your@email.com"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                          <input
+                            type="tel"
+                            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            value={guestInfo.phone}
+                            onChange={(e) => setGuestInfo(prev => ({ ...prev, phone: e.target.value }))}
+                            placeholder="(555) 123-4567"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg mb-6">
+                      <Shield className="w-5 h-5 text-blue-600" />
+                      <p className="text-sm text-blue-800">Your information is secure and will only be used for your booking confirmation.</p>
+                    </div>
+
+                    <Button 
+                      className="w-full" 
+                      size="lg"
+                      style={{ backgroundColor: primaryColor }}
+                      onClick={handleQuickBooking}
+                      disabled={loading || !guestInfo.first_name || !guestInfo.email}
+                    >
+                      {loading ? 'Confirming...' : `Confirm Booking - $${selectedServiceData?.price}`}
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Step 4: Success */}
+            {step === 4 && (
+              <div className=\"text-center space-y-6\">
+                <div className=\"bg-green-100 p-8 rounded-lg\">
+                  <CheckCircle className=\"w-16 h-16 text-green-600 mx-auto mb-4\" />
+                  <h2 className=\"text-3xl font-bold text-gray-900 mb-2\">Booking Confirmed!</h2>
+                  <p className=\"text-gray-600\">You'll receive a confirmation email shortly with all the details.</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Sidebar with social proof */}
+          <div className=\"space-y-6\">
+            {/* Recent bookings */}
+            <Card>
+              <CardContent className=\"p-6\">
+                <h3 className=\"font-bold text-gray-900 mb-4 flex items-center gap-2\">
+                  <Users className=\"w-5 h-5\" />
+                  Recent Bookings
+                </h3>
+                <div className=\"space-y-3\">
+                  {SOCIAL_PROOF.recentBookings.map((booking, idx) => (
+                    <div key={idx} className=\"flex items-center justify-between text-sm\">
+                      <span className=\"font-medium\">{booking.name}</span>
+                      <span className=\"text-gray-500\">{booking.time}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Reviews */}
+            <Card>
+              <CardContent className=\"p-6\">
+                <h3 className=\"font-bold text-gray-900 mb-4\">What Customers Say</h3>
+                <div className=\"space-y-4\">
+                  {SOCIAL_PROOF.reviews.slice(0, 2).map((review, idx) => (
+                    <div key={idx} className=\"border-l-4 border-yellow-400 pl-4\">
+                      <div className=\"flex items-center gap-1 mb-2\">
+                        {[...Array(review.rating)].map((_, i) => (
+                          <Star key={i} className=\"w-4 h-4 fill-yellow-400 text-yellow-400\" />
+                        ))}
+                      </div>
+                      <p className=\"text-sm text-gray-600 mb-2\">\"{review.text}\"</p>
+                      <p className=\"text-xs text-gray-500 font-medium\">- {review.name}</p>
+                    </div>
+                  ))}
+                </div>
+                <Button variant="outline" size="sm" className="w-full mt-4" onClick={() => setShowReviews(!showReviews)}>
+                  {showReviews ? 'Show Less' : 'Read More Reviews'}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Trust signals */}
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="font-bold text-gray-900 mb-4">Why Choose Us</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Shield className="w-5 h-5 text-green-600" />
+                    <span className="text-sm">100% Satisfaction Guarantee</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <span className="text-sm">Licensed & Experienced</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Clock className="w-5 h-5 text-green-600" />
+                    <span className="text-sm">Always On Time</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Star className="w-5 h-5 text-green-600" />
+                    <span className="text-sm">{SOCIAL_PROOF.averageRating}/5 Rating</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

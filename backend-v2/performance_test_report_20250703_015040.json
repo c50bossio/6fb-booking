@@ -1,0 +1,102 @@
+{
+  "test_timestamp": "2025-07-03T01:50:40.872458",
+  "executive_summary": {
+    "overall_api_success_rate": 0,
+    "average_response_time": 0,
+    "database_accessible": false,
+    "frontend_accessible": true,
+    "performance_grade": "C",
+    "critical_issues": [
+      "Database not accessible"
+    ]
+  },
+  "detailed_results": {
+    "api_performance": {
+      "/api/v1/health": {
+        "error": "'ComprehensivePerformanceTester' object has no attribute 'base_url'"
+      },
+      "/api/v1/appointments": {
+        "error": "'ComprehensivePerformanceTester' object has no attribute 'base_url'"
+      },
+      "/api/v1/users": {
+        "error": "'ComprehensivePerformanceTester' object has no attribute 'base_url'"
+      },
+      "/api/v1/barbers": {
+        "error": "'ComprehensivePerformanceTester' object has no attribute 'base_url'"
+      },
+      "/api/v1/services": {
+        "error": "'ComprehensivePerformanceTester' object has no attribute 'base_url'"
+      }
+    },
+    "database_performance": {
+      "query_analysis": {
+        "database_accessible": false,
+        "error": "mean requires at least one data point"
+      },
+      "connection_pooling": {
+        "total_connection_attempts": 100,
+        "successful_connections": 100,
+        "connection_success_rate": 100.0,
+        "total_execution_time": 0.012762069702148438,
+        "connections_per_second": 7835.719623374683
+      }
+    },
+    "frontend_performance": {
+      "frontend_accessible": true,
+      "page_load_time": 0.019865989685058594,
+      "content_size": 61641,
+      "static_assets": [
+        {
+          "url": "http://localhost:3000/favicon.ico",
+          "size": 1359,
+          "content_type": "image/x-icon"
+        }
+      ],
+      "total_static_size": 1359,
+      "performance_score": {
+        "score": 100,
+        "grade": "A",
+        "recommendations": []
+      }
+    },
+    "memory_analysis": {
+      "total_snapshots": 5,
+      "initial_memory": 41287680,
+      "final_memory": 46465024,
+      "total_growth": 622592,
+      "avg_growth_per_snapshot": 155648,
+      "potential_leak": false,
+      "growth_rate": 124518.4
+    },
+    "stress_testing": {
+      "error": "'ComprehensivePerformanceTester' object has no attribute 'base_url'"
+    },
+    "system_metrics": {
+      "cpu_avg": 9.45,
+      "cpu_max": 22.8,
+      "memory_avg": 52.59,
+      "memory_max": 52.7,
+      "samples": 10
+    }
+  },
+  "bottlenecks_identified": [],
+  "scaling_recommendations": [
+    "Implement Redis caching layer",
+    "Add comprehensive monitoring with Sentry/DataDog",
+    "Set up auto-scaling with Kubernetes",
+    "Configure database connection pooling",
+    "Implement rate limiting for API endpoints",
+    "Add health checks and circuit breakers",
+    "Set up CDN for global content delivery"
+  ],
+  "production_readiness": {
+    "score": 50,
+    "level": "Major Issues",
+    "issues": [
+      "API success rate below 95%",
+      "Database not accessible"
+    ],
+    "can_handle_10k_users": false,
+    "recommended_concurrent_users": 100
+  }
+}

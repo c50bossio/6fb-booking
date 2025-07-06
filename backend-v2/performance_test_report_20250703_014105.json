@@ -1,0 +1,102 @@
+{
+  "test_timestamp": "2025-07-03T01:41:05.433990",
+  "executive_summary": {
+    "overall_api_success_rate": 0,
+    "average_response_time": 0,
+    "database_accessible": false,
+    "frontend_accessible": true,
+    "performance_grade": "C",
+    "critical_issues": [
+      "Database not accessible"
+    ]
+  },
+  "detailed_results": {
+    "api_performance": {
+      "/api/v1/health": {
+        "error": "asyncio.run() cannot be called from a running event loop"
+      },
+      "/api/v1/appointments": {
+        "error": "asyncio.run() cannot be called from a running event loop"
+      },
+      "/api/v1/users": {
+        "error": "asyncio.run() cannot be called from a running event loop"
+      },
+      "/api/v1/barbers": {
+        "error": "asyncio.run() cannot be called from a running event loop"
+      },
+      "/api/v1/services": {
+        "error": "asyncio.run() cannot be called from a running event loop"
+      }
+    },
+    "database_performance": {
+      "query_analysis": {
+        "database_accessible": false,
+        "error": "mean requires at least one data point"
+      },
+      "connection_pooling": {
+        "total_connection_attempts": 100,
+        "successful_connections": 100,
+        "connection_success_rate": 100.0,
+        "total_execution_time": 0.01645803451538086,
+        "connections_per_second": 6076.059684195277
+      }
+    },
+    "frontend_performance": {
+      "frontend_accessible": true,
+      "page_load_time": 0.01842498779296875,
+      "content_size": 61470,
+      "static_assets": [
+        {
+          "url": "http://localhost:3000/favicon.ico",
+          "size": 1359,
+          "content_type": "image/x-icon"
+        }
+      ],
+      "total_static_size": 1359,
+      "performance_score": {
+        "score": 100,
+        "grade": "A",
+        "recommendations": []
+      }
+    },
+    "memory_analysis": {
+      "total_snapshots": 5,
+      "initial_memory": 41385984,
+      "final_memory": 47202304,
+      "total_growth": 737280,
+      "avg_growth_per_snapshot": 184320,
+      "potential_leak": false,
+      "growth_rate": 147456.0
+    },
+    "stress_testing": {
+      "error": "asyncio.run() cannot be called from a running event loop"
+    },
+    "system_metrics": {
+      "cpu_avg": 6.977777777777778,
+      "cpu_max": 14.9,
+      "memory_avg": 49.83333333333333,
+      "memory_max": 49.9,
+      "samples": 9
+    }
+  },
+  "bottlenecks_identified": [],
+  "scaling_recommendations": [
+    "Implement Redis caching layer",
+    "Add comprehensive monitoring with Sentry/DataDog",
+    "Set up auto-scaling with Kubernetes",
+    "Configure database connection pooling",
+    "Implement rate limiting for API endpoints",
+    "Add health checks and circuit breakers",
+    "Set up CDN for global content delivery"
+  ],
+  "production_readiness": {
+    "score": 50,
+    "level": "Major Issues",
+    "issues": [
+      "API success rate below 95%",
+      "Database not accessible"
+    ],
+    "can_handle_10k_users": false,
+    "recommended_concurrent_users": 100
+  }
+}

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .log {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .success {
+            color: #28a745;
+        }
+        .info {
+            color: #17a2b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Registration Form Debug Test</h1>
+        <p>This page will test the registration functionality directly and show you what's happening.</p>
+        
+        <div>
+            <button onclick="testAPIConnection()">1. Test API Connection</button>
+            <button onclick="testRegistrationAPI()">2. Test Registration API</button>
+            <button onclick="testFrontendRegistration()">3. Test Frontend Registration</button>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+        
+        <div id="log" class="log"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            logDiv.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        // Test 1: Basic API connection
+        async function testAPIConnection() {
+            log('🔍 Testing API Connection...', 'info');
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/health', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                log(`📡 Response Status: ${response.status}`, response.ok ? 'success' : 'error');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ API Connection successful: ${JSON.stringify(data)}`, 'success');
+                } else {
+                    log(`❌ API Connection failed: ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                log(`🚨 Network Error: ${error.message}`, 'error');
+                log(`🔧 This might be a CORS issue or backend not running`, 'error');
+            }
+        }
+
+        // Test 2: Direct registration API call
+        async function testRegistrationAPI() {
+            log('🧪 Testing Registration API directly...', 'info');
+            
+            const testData = {
+                email: 'test.direct@example.com',
+                password: 'MyPassword123',
+                name: 'Test User',
+                create_test_data: false
+            };
+            
+            log(`📤 Sending registration request: ${JSON.stringify(testData, null, 2)}`, 'info');
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                log(`📡 Response Status: ${response.status}`, response.ok ? 'success' : 'error');
+                log(`📡 Response Headers: ${JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2)}`, 'info');
+                
+                const responseText = await response.text();
+                log(`📊 Raw Response: ${responseText}`, 'info');
+                
+                if (response.ok) {
+                    try {
+                        const data = JSON.parse(responseText);
+                        log(`✅ Registration API successful: ${JSON.stringify(data, null, 2)}`, 'success');
+                    } catch (e) {
+                        log(`✅ Registration API successful but response not JSON: ${responseText}`, 'success');
+                    }
+                } else {
+                    log(`❌ Registration API failed: ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                log(`🚨 Registration API Error: ${error.message}`, 'error');
+                log(`🔧 Full error: ${error.stack}`, 'error');
+            }
+        }
+
+        // Test 3: Frontend registration function
+        async function testFrontendRegistration() {
+            log('🎯 Testing Frontend Registration Function...', 'info');
+            
+            // Import the register function from the frontend
+            // This simulates what happens when the form is submitted
+            const API_URL = 'http://localhost:8000';
+            
+            async function fetchAPI(endpoint, options = {}) {
+                const fullUrl = `${API_URL}${endpoint}`;
+                log(`🌐 Making API request to: ${fullUrl}`, 'info');
+                
+                const config = {
+                    ...options,
+                    headers: {
+                        ...(!(options.body instanceof FormData) && { 'Content-Type': 'application/json' }),
+                        ...options.headers,
+                    },
+                };
+                
+                log(`🔧 Request config: ${JSON.stringify(config, null, 2)}`, 'info');
+                
+                try {
+                    const response = await fetch(fullUrl, config);
+                    log(`✅ Response status: ${response.status}`, response.ok ? 'success' : 'error');
+                    return response;
+                } catch (error) {
+                    log(`🚨 Network error: ${error.message}`, 'error');
+                    throw error;
+                }
+            }
+            
+            async function register(email, password, name, createTestData = false) {
+                const response = await fetchAPI('/api/v1/auth/register', {
+                    method: 'POST',
+                    body: JSON.stringify({ email, password, name, create_test_data: createTestData }),
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    log(`❌ Registration failed: ${JSON.stringify(errorData, null, 2)}`, 'error');
+                    throw new Error(errorData.detail || 'Registration failed');
+                }
+                
+                const data = await response.json();
+                log(`✅ Registration successful: ${JSON.stringify(data, null, 2)}`, 'success');
+                return data;
+            }
+            
+            // Test the registration
+            try {
+                const result = await register('test.frontend@example.com', 'MyPassword123', 'Test User Frontend', false);
+                log(`🎉 Frontend registration test completed successfully!`, 'success');
+            } catch (error) {
+                log(`❌ Frontend registration test failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run first test
+        log('🚀 Registration Debug Test Page Loaded', 'info');
+        log('👆 Click the buttons above to run tests', 'info');
+        log('💡 This will help us identify where the registration is failing', 'info');
+    </script>
+</body>
+</html>

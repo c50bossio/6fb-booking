@@ -1,0 +1,19 @@
+{
+  "timestamp": "2025-07-03T01:32:36.096Z",
+  "analysis": {
+    "currentAnalytics": {},
+    "dashboardLayout": {},
+    "userWorkflows": {},
+    "integrationOpportunities": {},
+    "aiInsightPlacements": {},
+    "performanceMetrics": {},
+    "errors": [
+      {
+        "type": "analysis_error",
+        "message": "socket hang up"
+      }
+    ]
+  },
+  "recommendations": [],
+  "mockups": []
+}

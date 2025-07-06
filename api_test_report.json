@@ -1,0 +1,190 @@
+{
+  "summary": {
+    "total_tests": 14,
+    "passed": 4,
+    "failed": 9,
+    "warnings": 1,
+    "timestamp": "2025-06-28T01:02:04.540060"
+  },
+  "results": [
+    {
+      "timestamp": "2025-06-28T01:02:04.524465",
+      "endpoint": "/health",
+      "method": "GET",
+      "status": "PASS",
+      "details": {
+        "status_code": 200,
+        "response_time": "0.005s",
+        "message": "Health check successful",
+        "data": {
+          "status": "healthy"
+        }
+      }
+    },
+    {
+      "timestamp": "2025-06-28T01:02:04.525174",
+      "endpoint": "/api/v1/health",
+      "method": "GET",
+      "status": "FAIL",
+      "details": {
+        "status_code": 404,
+        "response_time": "0.001s",
+        "message": "Health check failed",
+        "data": {
+          "detail": "Not Found"
+        }
+      }
+    },
+    {
+      "timestamp": "2025-06-28T01:02:04.525729",
+      "endpoint": "/api/v1/auth/health",
+      "method": "GET",
+      "status": "FAIL",
+      "details": {
+        "status_code": 404,
+        "response_time": "0.001s",
+        "message": "Endpoint not accessible"
+      }
+    },
+    {
+      "timestamp": "2025-06-28T01:02:04.526233",
+      "endpoint": "/docs",
+      "method": "GET",
+      "status": "PASS",
+      "details": {
+        "status_code": 200,
+        "response_time": "0.000s",
+        "message": "Endpoint accessible"
+      }
+    },
+    {
+      "timestamp": "2025-06-28T01:02:04.526711",
+      "endpoint": "/redoc",
+      "method": "GET",
+      "status": "PASS",
+      "details": {
+        "status_code": 200,
+        "response_time": "0.000s",
+        "message": "Endpoint accessible"
+      }
+    },
+    {
+      "timestamp": "2025-06-28T01:02:04.527720",
+      "endpoint": "/openapi.json",
+      "method": "GET",
+      "status": "PASS",
+      "details": {
+        "status_code": 200,
+        "response_time": "0.001s",
+        "message": "Endpoint accessible"
+      }
+    },
+    {
+      "timestamp": "2025-06-28T01:02:04.528251",
+      "endpoint": "/api/v1/auth/register",
+      "method": "POST",
+      "status": "FAIL",
+      "details": {
+        "status_code": 404,
+        "response_time": "0.001s",
+        "message": "Registration failed",
+        "error": {
+          "detail": "Not Found"
+        }
+      }
+    },
+    {
+      "timestamp": "2025-06-28T01:02:04.528770",
+      "endpoint": "/api/v1/auth/token",
+      "method": "POST",
+      "status": "FAIL",
+      "details": {
+        "status_code": 404,
+        "response_time": "0.001s",
+        "message": "Login failed",
+        "error": {
+          "detail": "Not Found"
+        }
+      }
+    },
+    {
+      "timestamp": "2025-06-28T01:02:04.529234",
+      "endpoint": "/api/v1/auth/me",
+      "method": "GET",
+      "status": "FAIL",
+      "details": {
+        "status_code": 404,
+        "response_time": "0.000s",
+        "message": "Failed to get current user",
+        "error": {
+          "detail": "Not Found"
+        }
+      }
+    },
+    {
+      "timestamp": "2025-06-28T01:02:04.529723",
+      "endpoint": "/api/v1/auth/forgot-password",
+      "method": "POST",
+      "status": "FAIL",
+      "details": {
+        "status_code": 404,
+        "response_time": "0.000s",
+        "message": "Password reset failed",
+        "error": {
+          "detail": "Not Found"
+        }
+      }
+    },
+    {
+      "timestamp": "2025-06-28T01:02:04.530225",
+      "endpoint": "/api/v1/auth/logout",
+      "method": "POST",
+      "status": "FAIL",
+      "details": {
+        "status_code": 404,
+        "response_time": "0.000s",
+        "message": "Logout failed",
+        "error": {
+          "detail": "Not Found"
+        }
+      }
+    },
+    {
+      "timestamp": "2025-06-28T01:02:04.530714",
+      "endpoint": "/api/v1/auth/token",
+      "method": "POST",
+      "status": "FAIL",
+      "details": {
+        "status_code": 404,
+        "response_time": "0.000s",
+        "message": "Invalid login not properly rejected",
+        "error": {
+          "detail": "Not Found"
+        }
+      }
+    },
+    {
+      "timestamp": "2025-06-28T01:02:04.531171",
+      "endpoint": "/api/v1/appointments",
+      "method": "GET",
+      "status": "FAIL",
+      "details": {
+        "status_code": 404,
+        "response_time": "0.000s",
+        "message": "Unauthorized access not properly blocked",
+        "error": {
+          "detail": "Not Found"
+        }
+      }
+    },
+    {
+      "timestamp": "2025-06-28T01:02:04.539969",
+      "endpoint": "/api/v1/auth/token",
+      "method": "POST",
+      "status": "WARNING",
+      "details": {
+        "message": "Rate limiting may not be properly configured"
+      }
+    }
+  ]
+}

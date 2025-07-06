@@ -1,0 +1,285 @@
+{
+  "test_timestamp": "2025-07-03T08:40:15.522915",
+  "analyses": {
+    "system_performance": {
+      "cpu_stats": {
+        "average": 6.75,
+        "max": 7.7,
+        "min": 5.2,
+        "p95": 7.7
+      },
+      "memory_stats": {
+        "average": 48.8,
+        "max": 48.8,
+        "min": 48.8,
+        "p95": 48.8
+      },
+      "disk_io_stats": {
+        "total_samples": 10,
+        "read_bytes_total": 2593153228800,
+        "write_bytes_total": 1813781471232
+      },
+      "collection_duration": 10,
+      "sample_rate": 1.1053651772828885
+    },
+    "frontend_performance": {
+      "connectivity": {
+        "accessible": false,
+        "error": "HTTPConnectionPool(host='localhost', port=3000): Max retries exceeded with url: / (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x103f81dc0>: Failed to establish a new connection: [Errno 61] Connection refused'))"
+      },
+      "load_times": {
+        "error": "No successful load time measurements"
+      },
+      "content": {
+        "error": "HTTPConnectionPool(host='localhost', port=3000): Max retries exceeded with url: / (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x103f83200>: Failed to establish a new connection: [Errno 61] Connection refused'))"
+      },
+      "load_performance": {
+        "error": "No successful requests under load"
+      }
+    },
+    "database_performance": {
+      "exists": true,
+      "file_size": 0,
+      "table_count": 0,
+      "tables": [],
+      "table_stats": {},
+      "basic_query_time": 0.00011420249938964844,
+      "performance_score": 100
+    },
+    "process_analysis": {
+      "python_processes": [
+        {
+          "pid": 27004,
+          "name": "python3.12",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.060399373372395836,
+          "cmdline": "/Users/bossio/.pyenv/versions/3.12.7/bin/python3.12 /Users/bossio/.pyenv/versions/3.12.7/bin/uvicorn main:app --reload --host 0.0.0.0 --port 8000"
+        },
+        {
+          "pid": 27038,
+          "name": "python3.12",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.028133392333984375,
+          "cmdline": "/Users/bossio/.pyenv/versions/3.12.7/bin/python3.12 -c from multiprocessing.resource_tracker import main;main(4)"
+        },
+        {
+          "pid": 28476,
+          "name": "python3.12",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.6219228108723958,
+          "cmdline": "/Users/bossio/.pyenv/versions/3.12.7/bin/python -m pytest tests/ --tb=no --ignore=tests/test_e2e_booking_flow.py --ignore=tests/test_stripe_connect.py --ignore=tests/integration/test_system_integration.py --ignore=tests/integration/test_tracking_endpoints.py --ignore=tests/unit/test_conversion_tracking_service.py -q"
+        },
+        {
+          "pid": 28547,
+          "name": "python3.12",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.5341529846191406,
+          "cmdline": "/Users/bossio/.pyenv/versions/3.12.7/bin/python3.12 -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=5, pipe_handle=7) --multiprocessing-fork"
+        },
+        {
+          "pid": 28593,
+          "name": "python3.12",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.07034937540690103,
+          "cmdline": "/Users/bossio/.pyenv/versions/3.12.7/bin/python tests/performance_test_simplified.py"
+        },
+        {
+          "pid": 65404,
+          "name": "python3.12",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.009059906005859375,
+          "cmdline": "/Users/bossio/.pyenv/versions/3.12.7/bin/python -c from multiprocessing.resource_tracker import main;main(4)"
+        },
+        {
+          "pid": 71408,
+          "name": "python3.12",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.06345113118489584,
+          "cmdline": "/Users/bossio/.pyenv/versions/3.12.7/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=5, pipe_handle=7) --multiprocessing-fork"
+        },
+        {
+          "pid": 99109,
+          "name": "python3.12",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.059795379638671875,
+          "cmdline": "/Users/bossio/.pyenv/versions/3.12.7/bin/python main_simple.py"
+        }
+      ],
+      "node_processes": [
+        {
+          "pid": 14643,
+          "name": "node",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.16307830810546875,
+          "cmdline": "/usr/local/bin/node /Users/bossio/6fb-booking/backend/sentry-mcp-server.js"
+        },
+        {
+          "pid": 14644,
+          "name": "node",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.18568038940429688,
+          "cmdline": "npm exec @modelcontextprotocol/server-filesystem /Users/bossio/6fb-booking    "
+        },
+        {
+          "pid": 14645,
+          "name": "node",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.18262863159179688,
+          "cmdline": "npm exec @modelcontextprotocol/server-github   "
+        },
+        {
+          "pid": 14662,
+          "name": "node",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.12833277384440106,
+          "cmdline": "node /Users/bossio/.npm/_npx/a3241bba59c344f5/node_modules/.bin/mcp-server-filesystem /Users/bossio/6fb-booking"
+        },
+        {
+          "pid": 14679,
+          "name": "node",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.11876424153645833,
+          "cmdline": "node /Users/bossio/.npm/_npx/3dfbf5a9eea4a1b3/node_modules/.bin/mcp-server-github"
+        },
+        {
+          "pid": 16457,
+          "name": "node",
+          "cpu_percent": 0.0,
+          "memory_percent": 2.0287831624348955,
+          "cmdline": "claude   "
+        },
+        {
+          "pid": 16467,
+          "name": "node",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.18984476725260419,
+          "cmdline": "npm exec @modelcontextprotocol/server-filesystem /Users/bossio/6fb-booking   "
+        },
+        {
+          "pid": 16474,
+          "name": "node",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.1865069071451823,
+          "cmdline": "npm exec @modelcontextprotocol/server-github  "
+        },
+        {
+          "pid": 16711,
+          "name": "node",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.11739730834960938,
+          "cmdline": "node /Users/bossio/.npm/_npx/a3241bba59c344f5/node_modules/.bin/mcp-server-filesystem /Users/bossio/6fb-booking"
+        },
+        {
+          "pid": 16743,
+          "name": "node",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.1125653584798177,
+          "cmdline": "node /Users/bossio/.npm/_npx/3dfbf5a9eea4a1b3/node_modules/.bin/mcp-server-github"
+        },
+        {
+          "pid": 17430,
+          "name": "node",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.8261680603027344,
+          "cmdline": "claude   "
+        },
+        {
+          "pid": 17440,
+          "name": "node",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.1869519551595052,
+          "cmdline": "npm exec @modelcontextprotocol/server-filesystem /Users/bossio/6fb-booking   "
+        },
+        {
+          "pid": 17447,
+          "name": "node",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.17652511596679688,
+          "cmdline": "npm exec @modelcontextprotocol/server-github  "
+        },
+        {
+          "pid": 17730,
+          "name": "node",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.10391871134440105,
+          "cmdline": "node /Users/bossio/.npm/_npx/3dfbf5a9eea4a1b3/node_modules/.bin/mcp-server-github"
+        },
+        {
+          "pid": 17746,
+          "name": "node",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.11199315388997395,
+          "cmdline": "node /Users/bossio/.npm/_npx/a3241bba59c344f5/node_modules/.bin/mcp-server-filesystem /Users/bossio/6fb-booking"
+        },
+        {
+          "pid": 19215,
+          "name": "node",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.3544489542643229,
+          "cmdline": "claude   "
+        },
+        {
+          "pid": 19226,
+          "name": "node",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.17496744791666669,
+          "cmdline": "npm exec @modelcontextprotocol/server-filesystem /Users/bossio/6fb-booking   "
+        },
+        {
+          "pid": 19233,
+          "name": "node",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.17795562744140625,
+          "cmdline": "npm exec @modelcontextprotocol/server-github  "
+        },
+        {
+          "pid": 19501,
+          "name": "node",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.10852813720703125,
+          "cmdline": "node /Users/bossio/.npm/_npx/a3241bba59c344f5/node_modules/.bin/mcp-server-filesystem /Users/bossio/6fb-booking"
+        },
+        {
+          "pid": 19517,
+          "name": "node",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.10611216227213542,
+          "cmdline": "node /Users/bossio/.npm/_npx/3dfbf5a9eea4a1b3/node_modules/.bin/mcp-server-github"
+        },
+        {
+          "pid": 66530,
+          "name": "node20",
+          "cpu_percent": 0.0,
+          "memory_percent": 0.09333292643229166,
+          "cmdline": "/Applications/Elgato Stream Deck.app/Contents/Helpers/node20 --no-global-search-paths --enable-source-maps /Users/bossio/Library/Application Support/com.elgato.StreamDeck/Plugins/com.elgato.volume-controller.sdPlugin/bin/plugin.js -port 28196 -pluginUUID 490ea9effe37b765964d4cdb31e433d9 -registerEvent registerPlugin -info {\"application\":{\"font\":\".AppleSystemUIFont\",\"language\":\"en\",\"platform\":\"mac\",\"platformVersion\":\"15.5.0\",\"version\":\"6.9.0.21694\"},\"colors\":{\"buttonPressedBackgroundColor\":\"#303030FF\",\"buttonPressedBorderColor\":\"#646464FF\",\"buttonPressedTextColor\":\"#969696FF\",\"disabledColor\":\"#007AFF7F\",\"highlightColor\":\"#007AFFFF\",\"mouseDownColor\":\"#2EA8FFFF\"},\"devicePixelRatio\":2,\"devices\":[{\"id\":\"59fafc572e6faf3db87534307c45d960\",\"name\":\"Stream Deck +\",\"size\":{\"columns\":4,\"rows\":2},\"type\":7},{\"id\":\"793f06fd00c3235a707d817060648811\",\"name\":\"Stream Deck\",\"size\":{\"columns\":5,\"rows\":3},\"type\":0},{\"id\":\"d70aca9ce06179cbeace9a33b68c67c4\",\"name\":\"Stream Lab\",\"size\":{\"columns\":5,\"rows\":3},\"type\":0}],\"plugin\":{\"uuid\":\"com.elgato.volume-controller\",\"version\":\"2.0.0.25\"}}"
+        }
+      ],
+      "total_python_processes": 8,
+      "total_node_processes": 21,
+      "system_load": [
+        2.998046875,
+        13.55224609375,
+        10.19677734375
+      ]
+    }
+  },
+  "assessment": {
+    "overall_score": 63.3,
+    "production_readiness": "Needs optimization",
+    "critical_issues": [
+      "Frontend not accessible"
+    ],
+    "recommendations": [
+      "Implement comprehensive monitoring",
+      "Add load testing for production capacity",
+      "Configure proper error handling and logging",
+      "Set up database connection pooling",
+      "Implement caching strategies"
+    ],
+    "component_scores": {
+      "frontend": 0,
+      "database": 100,
+      "system": 90
+    }
+  }
+}

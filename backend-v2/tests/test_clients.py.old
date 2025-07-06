@@ -1,0 +1,712 @@
+"""
+Comprehensive tests for client management endpoints
+"""
+
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
+from datetime import datetime, timedelta
+
+from main import app
+from database import Base, get_db
+from models import User, Client, Appointment
+from utils.auth import get_password_hash
+
+# Test database
+SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
+
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+)
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+Base.metadata.create_all(bind=engine)
+
+
+def override_get_db():
+    try:
+        db = TestingSessionLocal()
+        yield db
+    finally:
+        db.close()
+
+
+app.dependency_overrides[get_db] = override_get_db
+
+client = TestClient(app)
+
+# Global variables to store test data
+test_users = {}
+test_tokens = {}
+
+def setup_test_users():
+    """Create all test users at once to avoid rate limiting"""
+    users = [
+        ("client_test_user@example.com", "user"),
+        ("history_test_user@example.com", "user"),
+        ("admin@example.com", "admin"),
+        ("regular@example.com", "user")
+    ]
+    
+    for email, role in users:
+        if email not in test_users:
+            create_test_user(email, role)
+
+
+def create_test_user(email="testuser@example.com", role="user"):
+    """Helper function to create a test user"""
+    # Check if user already exists
+    if email in test_users:
+        return test_users[email]
+    
+    db = TestingSessionLocal()
+    user = User(
+        email=email,
+        name="Test User",
+        hashed_password=get_password_hash("testpass123"),
+        role=role
+    )
+    db.add(user)
+    db.commit()
+    user_id = user.id
+    db.close()
+    
+    test_users[email] = user_id
+    return user_id
+
+
+def get_auth_token(email="testuser@example.com", password="testpass123"):
+    """Helper function to get authentication token"""
+    # Check if we already have a token for this user
+    if email in test_tokens:
+        return test_tokens[email]
+    
+    response = client.post(
+        "/api/v1/auth/login",
+        json={
+            "username": email,
+            "password": password
+        }
+    )
+    
+    if response.status_code != 200:
+        # If login fails, try to create the user first
+        create_test_user(email)
+        response = client.post(
+            "/api/v1/auth/login",
+            json={
+                "username": email,
+                "password": password
+            }
+        )
+    
+    token = response.json()["access_token"]
+    test_tokens[email] = token
+    return token
+
+
+def test_create_client():
+    """Test creating a new client"""
+    # Create user and get token
+    create_test_user("client_test_user@example.com")
+    token = get_auth_token("client_test_user@example.com")
+    
+    # Create client
+    response = client.post(
+        "/api/v1/clients/",
+        json={
+            "first_name": "John",
+            "last_name": "Doe",
+            "email": "john.doe@example.com",
+            "phone": "+1234567890",
+            "date_of_birth": "1990-01-01",
+            "notes": "New client from test",
+            "tags": "vip,regular"
+        },
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert data["first_name"] == "John"
+    assert data["last_name"] == "Doe"
+    assert data["email"] == "john.doe@example.com"
+    assert data["phone"] == "+1234567890"
+    assert data["customer_type"] == "new"  # Default value
+    assert "id" in data
+
+
+def test_create_duplicate_client():
+    """Test creating a client with duplicate email"""
+    # Reuse the same user
+    token = get_auth_token("client_test_user@example.com")
+    
+    # Create first client
+    client.post(
+        "/api/v1/clients/",
+        json={
+            "first_name": "Jane",
+            "last_name": "Smith",
+            "email": "jane.smith@example.com",
+            "phone": "+1234567891"
+        },
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    
+    # Try to create duplicate
+    response = client.post(
+        "/api/v1/clients/",
+        json={
+            "first_name": "Jane",
+            "last_name": "Different",
+            "email": "jane.smith@example.com",
+            "phone": "+9999999999"
+        },
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    
+    assert response.status_code == 400
+    assert "already exists" in response.json()["detail"]
+
+
+def test_list_clients():
+    """Test listing clients with pagination"""
+    # Reuse the same user
+    token = get_auth_token("client_test_user@example.com")
+    
+    # Create multiple clients
+    for i in range(25):
+        client.post(
+            "/api/v1/clients/",
+            json={
+                "first_name": f"Client{i}",
+                "last_name": "Test",
+                "email": f"client{i}@example.com",
+                "phone": f"+123456{i:04d}"
+            },
+            headers={"Authorization": f"Bearer {token}"}
+        )
+    
+    # Get first page
+    response = client.get(
+        "/api/v1/clients/?page=1&page_size=10",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data["clients"]) == 10
+    assert data["total"] >= 25
+    assert data["page"] == 1
+    assert data["page_size"] == 10
+
+
+def test_search_clients():
+    """Test searching clients by name, email, or phone"""
+    # Reuse the same user
+    token = get_auth_token("client_test_user@example.com")
+    
+    # Create test clients
+    test_clients = [
+        {
+            "first_name": "Alice",
+            "last_name": "Anderson",
+            "email": "alice@example.com",
+            "phone": "+1111111111"
+        },
+        {
+            "first_name": "Bob",
+            "last_name": "Brown",
+            "email": "bob@example.com",
+            "phone": "+2222222222"
+        },
+        {
+            "first_name": "Charlie",
+            "last_name": "Davis",
+            "email": "charlie@example.com",
+            "phone": "+3333333333"
+        }
+    ]
+    
+    for client_data in test_clients:
+        client.post(
+            "/api/v1/clients/",
+            json=client_data,
+            headers={"Authorization": f"Bearer {token}"}
+        )
+    
+    # Search by first name
+    response = client.get(
+        "/api/v1/clients/?search=Alice",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert response.status_code == 200
+    assert len(response.json()["clients"]) == 1
+    assert response.json()["clients"][0]["first_name"] == "Alice"
+    
+    # Search by email
+    response = client.get(
+        "/api/v1/clients/?search=bob@",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert response.status_code == 200
+    assert len(response.json()["clients"]) == 1
+    assert response.json()["clients"][0]["email"] == "bob@example.com"
+
+
+def test_filter_by_customer_type():
+    """Test filtering clients by customer type"""
+    # Reuse the same user
+    token = get_auth_token("client_test_user@example.com")
+    
+    # Create clients with different customer types
+    client_id = client.post(
+        "/api/v1/clients/",
+        json={
+            "first_name": "VIP",
+            "last_name": "Customer",
+            "email": "vip@example.com",
+            "phone": "+5555555555"
+        },
+        headers={"Authorization": f"Bearer {token}"}
+    ).json()["id"]
+    
+    # Update customer type to VIP
+    client.put(
+        f"/api/v1/clients/{client_id}/customer-type",
+        params={"customer_type": "vip"},
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    
+    # Filter by VIP customer type
+    response = client.get(
+        "/api/v1/clients/?customer_type=vip",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert all(c["customer_type"] == "vip" for c in data["clients"])
+
+
+def test_get_client_details():
+    """Test getting specific client details"""
+    # Reuse the same user
+    token = get_auth_token("client_test_user@example.com")
+    
+    # Create a client
+    create_response = client.post(
+        "/api/v1/clients/",
+        json={
+            "first_name": "Detail",
+            "last_name": "Test",
+            "email": "detail@example.com",
+            "phone": "+6666666666",
+            "notes": "Test notes",
+            "tags": "test,detail"
+        },
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    client_id = create_response.json()["id"]
+    
+    # Get client details
+    response = client.get(
+        f"/api/v1/clients/{client_id}",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert data["id"] == client_id
+    assert data["first_name"] == "Detail"
+    assert data["notes"] == "Test notes"
+    assert data["tags"] == "test,detail"
+
+
+def test_get_nonexistent_client():
+    """Test getting a client that doesn't exist"""
+    # Reuse the same user
+    token = get_auth_token("client_test_user@example.com")
+    
+    response = client.get(
+        "/api/v1/clients/99999",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    
+    assert response.status_code == 404
+    assert "not found" in response.json()["detail"]
+
+
+def test_update_client():
+    """Test updating client information"""
+    # Reuse the same user
+    token = get_auth_token("client_test_user@example.com")
+    
+    # Create a client
+    create_response = client.post(
+        "/api/v1/clients/",
+        json={
+            "first_name": "Update",
+            "last_name": "Test",
+            "email": "update@example.com",
+            "phone": "+7777777777"
+        },
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    client_id = create_response.json()["id"]
+    
+    # Update client
+    response = client.put(
+        f"/api/v1/clients/{client_id}",
+        json={
+            "first_name": "Updated",
+            "phone": "+8888888888",
+            "notes": "Updated notes"
+        },
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert data["first_name"] == "Updated"
+    assert data["last_name"] == "Test"  # Unchanged
+    assert data["phone"] == "+8888888888"
+    assert data["notes"] == "Updated notes"
+
+
+def test_client_history():
+    """Test getting client appointment history"""
+    # Create a separate user for history test (needs user_id)
+    user_id = create_test_user("history_test_user@example.com")
+    token = get_auth_token("history_test_user@example.com")
+    
+    # Create a client
+    create_response = client.post(
+        "/api/v1/clients/",
+        json={
+            "first_name": "History",
+            "last_name": "Test",
+            "email": "history@example.com",
+            "phone": "+9999999999"
+        },
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    client_id = create_response.json()["id"]
+    
+    # Create appointments for the client
+    db = TestingSessionLocal()
+    appointments = [
+        Appointment(
+            client_id=client_id,
+            user_id=user_id,
+            service_name="Haircut",
+            start_time=datetime.utcnow() - timedelta(days=30),
+            duration_minutes=60,
+            price=50.0,
+            status="completed"
+        ),
+        Appointment(
+            client_id=client_id,
+            user_id=user_id,
+            service_name="Haircut",
+            start_time=datetime.utcnow() - timedelta(days=15),
+            duration_minutes=60,
+            price=50.0,
+            status="completed"
+        ),
+        Appointment(
+            client_id=client_id,
+            user_id=user_id,
+            service_name="Haircut",
+            start_time=datetime.utcnow() - timedelta(days=7),
+            duration_minutes=60,
+            price=50.0,
+            status="no_show"
+        )
+    ]
+    for apt in appointments:
+        db.add(apt)
+    db.commit()
+    db.close()
+    
+    # Get client history
+    response = client.get(
+        f"/api/v1/clients/{client_id}/history",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total_appointments"] == 3
+    assert data["total_spent"] == 100.0  # 2 completed * $50
+    assert data["average_ticket"] == 100.0 / 3
+    assert data["no_shows"] == 1
+    assert data["cancellations"] == 0
+    assert len(data["appointments"]) == 3
+
+
+def test_update_customer_type():
+    """Test updating customer type classification"""
+    # Reuse the same user
+    token = get_auth_token("client_test_user@example.com")
+    
+    # Create a client
+    create_response = client.post(
+        "/api/v1/clients/",
+        json={
+            "first_name": "Type",
+            "last_name": "Test",
+            "email": "type@example.com",
+            "phone": "+1010101010"
+        },
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    client_id = create_response.json()["id"]
+    
+    # Update to VIP
+    response = client.put(
+        f"/api/v1/clients/{client_id}/customer-type",
+        params={"customer_type": "vip"},
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    
+    assert response.status_code == 200
+    assert "updated to vip" in response.json()["message"]
+    
+    # Verify the update
+    get_response = client.get(
+        f"/api/v1/clients/{client_id}",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert get_response.json()["customer_type"] == "vip"
+
+
+def test_invalid_customer_type():
+    """Test updating with invalid customer type"""
+    # Reuse the same user
+    token = get_auth_token("client_test_user@example.com")
+    
+    # Create a client
+    create_response = client.post(
+        "/api/v1/clients/",
+        json={
+            "first_name": "Invalid",
+            "last_name": "Type",
+            "email": "invalid@example.com",
+            "phone": "+1111111111"
+        },
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    client_id = create_response.json()["id"]
+    
+    # Try invalid customer type
+    response = client.put(
+        f"/api/v1/clients/{client_id}/customer-type",
+        params={"customer_type": "super_vip"},
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    
+    assert response.status_code == 400
+    assert "Invalid customer type" in response.json()["detail"]
+
+
+def test_delete_client_as_admin():
+    """Test deleting a client as admin"""
+    # Create admin user
+    create_test_user("admin@example.com", role="admin")
+    token = get_auth_token("admin@example.com")
+    
+    # Create a client
+    create_response = client.post(
+        "/api/v1/clients/",
+        json={
+            "first_name": "Delete",
+            "last_name": "Me",
+            "email": "delete@example.com",
+            "phone": "+1212121212"
+        },
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    client_id = create_response.json()["id"]
+    
+    # Delete the client
+    response = client.delete(
+        f"/api/v1/clients/{client_id}",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    
+    assert response.status_code == 200
+    assert "deleted successfully" in response.json()["message"]
+    
+    # Verify deletion
+    get_response = client.get(
+        f"/api/v1/clients/{client_id}",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert get_response.status_code == 404
+
+
+def test_delete_client_as_non_admin():
+    """Test that non-admin users cannot delete clients"""
+    # Create regular user
+    create_test_user("regular@example.com", role="user")
+    token = get_auth_token("regular@example.com")
+    
+    # Create a client
+    create_response = client.post(
+        "/api/v1/clients/",
+        json={
+            "first_name": "No",
+            "last_name": "Delete",
+            "email": "nodelete@example.com",
+            "phone": "+1313131313"
+        },
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    client_id = create_response.json()["id"]
+    
+    # Try to delete as non-admin
+    response = client.delete(
+        f"/api/v1/clients/{client_id}",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    
+    assert response.status_code == 403
+    assert "Only admins can delete" in response.json()["detail"]
+
+
+def test_quick_search():
+    """Test quick search endpoint for autocomplete"""
+    # Reuse the same user
+    token = get_auth_token("client_test_user@example.com")
+    
+    # Create test clients
+    test_clients = [
+        {
+            "first_name": "Quick",
+            "last_name": "Search",
+            "email": "quick@example.com",
+            "phone": "+1414141414"
+        },
+        {
+            "first_name": "Quick",
+            "last_name": "Find",
+            "email": "find@example.com",
+            "phone": "+1515151515"
+        },
+        {
+            "first_name": "Slow",
+            "last_name": "Search",
+            "email": "slow@example.com",
+            "phone": "+1616161616"
+        }
+    ]
+    
+    for client_data in test_clients:
+        client.post(
+            "/api/v1/clients/",
+            json=client_data,
+            headers={"Authorization": f"Bearer {token}"}
+        )
+    
+    # Search for "Quick"
+    response = client.post(
+        "/api/v1/clients/search",
+        params={"query": "Quick", "limit": 5},
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 2
+    assert all("Quick" in item["name"] for item in data)
+    assert all(key in item for key in ["id", "name", "email", "phone"] for item in data)
+
+
+def test_unauthorized_access():
+    """Test accessing client endpoints without authentication"""
+    # Try to access without token
+    endpoints = [
+        ("GET", "/api/v1/clients/"),
+        ("POST", "/api/v1/clients/"),
+        ("GET", "/api/v1/clients/1"),
+        ("PUT", "/api/v1/clients/1"),
+        ("DELETE", "/api/v1/clients/1"),
+        ("GET", "/api/v1/clients/1/history"),
+        ("PUT", "/api/v1/clients/1/customer-type"),
+        ("POST", "/api/v1/clients/search")
+    ]
+    
+    for method, endpoint in endpoints:
+        if method == "GET":
+            response = client.get(endpoint)
+        elif method == "POST":
+            response = client.post(endpoint, json={})
+        elif method == "PUT":
+            response = client.put(endpoint, json={})
+        elif method == "DELETE":
+            response = client.delete(endpoint)
+        
+        assert response.status_code == 403  # FastAPI returns 403 for missing credentials
+
+
+if __name__ == "__main__":
+    # Setup test users first
+    setup_test_users()
+    print("✓ Test users created")
+    
+    # Run the tests
+    test_create_client()
+    print("✓ Create client test passed")
+    
+    test_create_duplicate_client()
+    print("✓ Duplicate client test passed")
+    
+    test_list_clients()
+    print("✓ List clients test passed")
+    
+    test_search_clients()
+    print("✓ Search clients test passed")
+    
+    test_filter_by_customer_type()
+    print("✓ Filter by customer type test passed")
+    
+    test_get_client_details()
+    print("✓ Get client details test passed")
+    
+    test_get_nonexistent_client()
+    print("✓ Nonexistent client test passed")
+    
+    test_update_client()
+    print("✓ Update client test passed")
+    
+    test_client_history()
+    print("✓ Client history test passed")
+    
+    test_update_customer_type()
+    print("✓ Update customer type test passed")
+    
+    test_invalid_customer_type()
+    print("✓ Invalid customer type test passed")
+    
+    test_delete_client_as_admin()
+    print("✓ Delete client as admin test passed")
+    
+    test_delete_client_as_non_admin()
+    print("✓ Delete client as non-admin test passed")
+    
+    test_quick_search()
+    print("✓ Quick search test passed")
+    
+    test_unauthorized_access()
+    print("✓ Unauthorized access test passed")
+    
+    print("\nAll client tests passed!")

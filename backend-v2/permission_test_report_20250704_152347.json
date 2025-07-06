@@ -1,0 +1,1117 @@
+{
+  "timestamp": "2025-07-04T15:23:47.393665",
+  "summary": {
+    "total": 80,
+    "passed": 28,
+    "failed": 52,
+    "success_rate": "35.0%"
+  },
+  "failed_tests": [
+    {
+      "test": "View billing plans",
+      "endpoint": "GET /billing/plans",
+      "user": "shop_manager",
+      "role": "shop_manager",
+      "expected": "DENIED",
+      "status": 200
+    },
+    {
+      "test": "View billing plans",
+      "endpoint": "GET /billing/plans",
+      "user": "barber",
+      "role": "barber",
+      "expected": "DENIED",
+      "status": 200
+    },
+    {
+      "test": "View billing plans",
+      "endpoint": "GET /billing/plans",
+      "user": "receptionist",
+      "role": "receptionist",
+      "expected": "DENIED",
+      "status": 200
+    },
+    {
+      "test": "View billing plans",
+      "endpoint": "GET /billing/plans",
+      "user": "client",
+      "role": "client",
+      "expected": "DENIED",
+      "status": 200
+    },
+    {
+      "test": "View billing plans",
+      "endpoint": "GET /billing/plans",
+      "user": "viewer",
+      "role": "viewer",
+      "expected": "DENIED",
+      "status": 200
+    },
+    {
+      "test": "Create subscription",
+      "endpoint": "POST /billing/create-subscription",
+      "user": "super_admin",
+      "role": "super_admin",
+      "expected": "DENIED",
+      "status": 422
+    },
+    {
+      "test": "Create subscription",
+      "endpoint": "POST /billing/create-subscription",
+      "user": "platform_admin",
+      "role": "platform_admin",
+      "expected": "DENIED",
+      "status": 422
+    },
+    {
+      "test": "Create subscription",
+      "endpoint": "POST /billing/create-subscription",
+      "user": "shop_manager",
+      "role": "shop_manager",
+      "expected": "DENIED",
+      "status": 422
+    },
+    {
+      "test": "Create subscription",
+      "endpoint": "POST /billing/create-subscription",
+      "user": "barber",
+      "role": "barber",
+      "expected": "DENIED",
+      "status": 422
+    },
+    {
+      "test": "Create subscription",
+      "endpoint": "POST /billing/create-subscription",
+      "user": "receptionist",
+      "role": "receptionist",
+      "expected": "DENIED",
+      "status": 422
+    },
+    {
+      "test": "Create subscription",
+      "endpoint": "POST /billing/create-subscription",
+      "user": "client",
+      "role": "client",
+      "expected": "DENIED",
+      "status": 422
+    },
+    {
+      "test": "Create subscription",
+      "endpoint": "POST /billing/create-subscription",
+      "user": "viewer",
+      "role": "viewer",
+      "expected": "DENIED",
+      "status": 422
+    },
+    {
+      "test": "View revenue analytics",
+      "endpoint": "GET /analytics/revenue",
+      "user": "platform_admin",
+      "role": "platform_admin",
+      "expected": "DENIED",
+      "status": 200
+    },
+    {
+      "test": "View revenue analytics",
+      "endpoint": "GET /analytics/revenue",
+      "user": "shop_manager",
+      "role": "shop_manager",
+      "expected": "ALLOWED",
+      "status": 403
+    },
+    {
+      "test": "View appointment analytics",
+      "endpoint": "GET /analytics/appointments",
+      "user": "receptionist",
+      "role": "receptionist",
+      "expected": "ALLOWED",
+      "status": 403
+    },
+    {
+      "test": "View appointment analytics",
+      "endpoint": "GET /analytics/appointments",
+      "user": "viewer",
+      "role": "viewer",
+      "expected": "ALLOWED",
+      "status": 403
+    },
+    {
+      "test": "Send staff invitation",
+      "endpoint": "POST /invitations/send",
+      "user": "super_admin",
+      "role": "super_admin",
+      "expected": "DENIED",
+      "status": 405
+    },
+    {
+      "test": "Send staff invitation",
+      "endpoint": "POST /invitations/send",
+      "user": "platform_admin",
+      "role": "platform_admin",
+      "expected": "DENIED",
+      "status": 405
+    },
+    {
+      "test": "Send staff invitation",
+      "endpoint": "POST /invitations/send",
+      "user": "enterprise_owner",
+      "role": "enterprise_owner",
+      "expected": "ALLOWED",
+      "status": 405
+    },
+    {
+      "test": "Send staff invitation",
+      "endpoint": "POST /invitations/send",
+      "user": "shop_owner",
+      "role": "shop_owner",
+      "expected": "ALLOWED",
+      "status": 405
+    },
+    {
+      "test": "Send staff invitation",
+      "endpoint": "POST /invitations/send",
+      "user": "individual_barber",
+      "role": "individual_barber",
+      "expected": "DENIED",
+      "status": 405
+    },
+    {
+      "test": "Send staff invitation",
+      "endpoint": "POST /invitations/send",
+      "user": "shop_manager",
+      "role": "shop_manager",
+      "expected": "ALLOWED",
+      "status": 405
+    },
+    {
+      "test": "Send staff invitation",
+      "endpoint": "POST /invitations/send",
+      "user": "barber",
+      "role": "barber",
+      "expected": "DENIED",
+      "status": 405
+    },
+    {
+      "test": "Send staff invitation",
+      "endpoint": "POST /invitations/send",
+      "user": "receptionist",
+      "role": "receptionist",
+      "expected": "DENIED",
+      "status": 405
+    },
+    {
+      "test": "Send staff invitation",
+      "endpoint": "POST /invitations/send",
+      "user": "client",
+      "role": "client",
+      "expected": "DENIED",
+      "status": 405
+    },
+    {
+      "test": "Send staff invitation",
+      "endpoint": "POST /invitations/send",
+      "user": "viewer",
+      "role": "viewer",
+      "expected": "DENIED",
+      "status": 405
+    },
+    {
+      "test": "List invitations",
+      "endpoint": "GET /invitations/",
+      "user": "platform_admin",
+      "role": "platform_admin",
+      "expected": "DENIED",
+      "status": 422
+    },
+    {
+      "test": "List invitations",
+      "endpoint": "GET /invitations/",
+      "user": "individual_barber",
+      "role": "individual_barber",
+      "expected": "DENIED",
+      "status": 422
+    },
+    {
+      "test": "List invitations",
+      "endpoint": "GET /invitations/",
+      "user": "barber",
+      "role": "barber",
+      "expected": "DENIED",
+      "status": 422
+    },
+    {
+      "test": "List invitations",
+      "endpoint": "GET /invitations/",
+      "user": "receptionist",
+      "role": "receptionist",
+      "expected": "DENIED",
+      "status": 422
+    },
+    {
+      "test": "List invitations",
+      "endpoint": "GET /invitations/",
+      "user": "client",
+      "role": "client",
+      "expected": "DENIED",
+      "status": 422
+    },
+    {
+      "test": "List invitations",
+      "endpoint": "GET /invitations/",
+      "user": "viewer",
+      "role": "viewer",
+      "expected": "DENIED",
+      "status": 422
+    },
+    {
+      "test": "Update organization",
+      "endpoint": "PUT /organizations/1",
+      "user": "super_admin",
+      "role": "super_admin",
+      "expected": "ALLOWED",
+      "status": 404
+    },
+    {
+      "test": "Update organization",
+      "endpoint": "PUT /organizations/1",
+      "user": "platform_admin",
+      "role": "platform_admin",
+      "expected": "DENIED",
+      "status": 404
+    },
+    {
+      "test": "Update organization",
+      "endpoint": "PUT /organizations/1",
+      "user": "enterprise_owner",
+      "role": "enterprise_owner",
+      "expected": "ALLOWED",
+      "status": 404
+    },
+    {
+      "test": "Update organization",
+      "endpoint": "PUT /organizations/1",
+      "user": "shop_owner",
+      "role": "shop_owner",
+      "expected": "ALLOWED",
+      "status": 404
+    },
+    {
+      "test": "Update organization",
+      "endpoint": "PUT /organizations/1",
+      "user": "individual_barber",
+      "role": "individual_barber",
+      "expected": "DENIED",
+      "status": 404
+    },
+    {
+      "test": "Update organization",
+      "endpoint": "PUT /organizations/1",
+      "user": "shop_manager",
+      "role": "shop_manager",
+      "expected": "DENIED",
+      "status": 404
+    },
+    {
+      "test": "Update organization",
+      "endpoint": "PUT /organizations/1",
+      "user": "barber",
+      "role": "barber",
+      "expected": "DENIED",
+      "status": 404
+    },
+    {
+      "test": "Update organization",
+      "endpoint": "PUT /organizations/1",
+      "user": "receptionist",
+      "role": "receptionist",
+      "expected": "DENIED",
+      "status": 404
+    },
+    {
+      "test": "Update organization",
+      "endpoint": "PUT /organizations/1",
+      "user": "client",
+      "role": "client",
+      "expected": "DENIED",
+      "status": 404
+    },
+    {
+      "test": "Update organization",
+      "endpoint": "PUT /organizations/1",
+      "user": "viewer",
+      "role": "viewer",
+      "expected": "DENIED",
+      "status": 404
+    },
+    {
+      "test": "Access dashboard stats",
+      "endpoint": "GET /dashboard/stats",
+      "user": "super_admin",
+      "role": "super_admin",
+      "expected": "ALLOWED",
+      "status": 404
+    },
+    {
+      "test": "Access dashboard stats",
+      "endpoint": "GET /dashboard/stats",
+      "user": "platform_admin",
+      "role": "platform_admin",
+      "expected": "ALLOWED",
+      "status": 404
+    },
+    {
+      "test": "Access dashboard stats",
+      "endpoint": "GET /dashboard/stats",
+      "user": "enterprise_owner",
+      "role": "enterprise_owner",
+      "expected": "ALLOWED",
+      "status": 404
+    },
+    {
+      "test": "Access dashboard stats",
+      "endpoint": "GET /dashboard/stats",
+      "user": "shop_owner",
+      "role": "shop_owner",
+      "expected": "ALLOWED",
+      "status": 404
+    },
+    {
+      "test": "Access dashboard stats",
+      "endpoint": "GET /dashboard/stats",
+      "user": "individual_barber",
+      "role": "individual_barber",
+      "expected": "ALLOWED",
+      "status": 404
+    },
+    {
+      "test": "Access dashboard stats",
+      "endpoint": "GET /dashboard/stats",
+      "user": "shop_manager",
+      "role": "shop_manager",
+      "expected": "ALLOWED",
+      "status": 404
+    },
+    {
+      "test": "Access dashboard stats",
+      "endpoint": "GET /dashboard/stats",
+      "user": "barber",
+      "role": "barber",
+      "expected": "ALLOWED",
+      "status": 404
+    },
+    {
+      "test": "Access dashboard stats",
+      "endpoint": "GET /dashboard/stats",
+      "user": "receptionist",
+      "role": "receptionist",
+      "expected": "ALLOWED",
+      "status": 404
+    },
+    {
+      "test": "Access dashboard stats",
+      "endpoint": "GET /dashboard/stats",
+      "user": "client",
+      "role": "client",
+      "expected": "DENIED",
+      "status": 404
+    },
+    {
+      "test": "Access dashboard stats",
+      "endpoint": "GET /dashboard/stats",
+      "user": "viewer",
+      "role": "viewer",
+      "expected": "ALLOWED",
+      "status": 404
+    }
+  ],
+  "detailed_results": [
+    {
+      "test": "View billing plans",
+      "endpoint": "GET /billing/plans",
+      "results": [
+        {
+          "user": "super_admin",
+          "role": "super_admin",
+          "expected_access": true,
+          "actual_result": true,
+          "status_code": 200,
+          "passed": true
+        },
+        {
+          "user": "platform_admin",
+          "role": "platform_admin",
+          "expected_access": true,
+          "actual_result": true,
+          "status_code": 200,
+          "passed": true
+        },
+        {
+          "user": "enterprise_owner",
+          "role": "enterprise_owner",
+          "expected_access": true,
+          "actual_result": true,
+          "status_code": 200,
+          "passed": true
+        },
+        {
+          "user": "shop_owner",
+          "role": "shop_owner",
+          "expected_access": true,
+          "actual_result": true,
+          "status_code": 200,
+          "passed": true
+        },
+        {
+          "user": "individual_barber",
+          "role": "individual_barber",
+          "expected_access": true,
+          "actual_result": true,
+          "status_code": 200,
+          "passed": true
+        },
+        {
+          "user": "shop_manager",
+          "role": "shop_manager",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 200,
+          "passed": false
+        },
+        {
+          "user": "barber",
+          "role": "barber",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 200,
+          "passed": false
+        },
+        {
+          "user": "receptionist",
+          "role": "receptionist",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 200,
+          "passed": false
+        },
+        {
+          "user": "client",
+          "role": "client",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 200,
+          "passed": false
+        },
+        {
+          "user": "viewer",
+          "role": "viewer",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 200,
+          "passed": false
+        }
+      ]
+    },
+    {
+      "test": "Create subscription",
+      "endpoint": "POST /billing/create-subscription",
+      "results": [
+        {
+          "user": "super_admin",
+          "role": "super_admin",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 422,
+          "passed": false
+        },
+        {
+          "user": "platform_admin",
+          "role": "platform_admin",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 422,
+          "passed": false
+        },
+        {
+          "user": "enterprise_owner",
+          "role": "enterprise_owner",
+          "expected_access": true,
+          "actual_result": true,
+          "status_code": 422,
+          "passed": true
+        },
+        {
+          "user": "shop_owner",
+          "role": "shop_owner",
+          "expected_access": true,
+          "actual_result": true,
+          "status_code": 422,
+          "passed": true
+        },
+        {
+          "user": "individual_barber",
+          "role": "individual_barber",
+          "expected_access": true,
+          "actual_result": true,
+          "status_code": 422,
+          "passed": true
+        },
+        {
+          "user": "shop_manager",
+          "role": "shop_manager",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 422,
+          "passed": false
+        },
+        {
+          "user": "barber",
+          "role": "barber",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 422,
+          "passed": false
+        },
+        {
+          "user": "receptionist",
+          "role": "receptionist",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 422,
+          "passed": false
+        },
+        {
+          "user": "client",
+          "role": "client",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 422,
+          "passed": false
+        },
+        {
+          "user": "viewer",
+          "role": "viewer",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 422,
+          "passed": false
+        }
+      ]
+    },
+    {
+      "test": "View revenue analytics",
+      "endpoint": "GET /analytics/revenue",
+      "results": [
+        {
+          "user": "super_admin",
+          "role": "super_admin",
+          "expected_access": true,
+          "actual_result": true,
+          "status_code": 200,
+          "passed": true
+        },
+        {
+          "user": "platform_admin",
+          "role": "platform_admin",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 200,
+          "passed": false
+        },
+        {
+          "user": "enterprise_owner",
+          "role": "enterprise_owner",
+          "expected_access": true,
+          "actual_result": true,
+          "status_code": 200,
+          "passed": true
+        },
+        {
+          "user": "shop_owner",
+          "role": "shop_owner",
+          "expected_access": true,
+          "actual_result": true,
+          "status_code": 200,
+          "passed": true
+        },
+        {
+          "user": "individual_barber",
+          "role": "individual_barber",
+          "expected_access": true,
+          "actual_result": true,
+          "status_code": 200,
+          "passed": true
+        },
+        {
+          "user": "shop_manager",
+          "role": "shop_manager",
+          "expected_access": true,
+          "actual_result": false,
+          "status_code": 403,
+          "passed": false
+        },
+        {
+          "user": "barber",
+          "role": "barber",
+          "expected_access": false,
+          "actual_result": true,
+          "status_code": 403,
+          "passed": true
+        },
+        {
+          "user": "receptionist",
+          "role": "receptionist",
+          "expected_access": false,
+          "actual_result": true,
+          "status_code": 403,
+          "passed": true
+        },
+        {
+          "user": "client",
+          "role": "client",
+          "expected_access": false,
+          "actual_result": true,
+          "status_code": 403,
+          "passed": true
+        },
+        {
+          "user": "viewer",
+          "role": "viewer",
+          "expected_access": false,
+          "actual_result": true,
+          "status_code": 403,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "test": "View appointment analytics",
+      "endpoint": "GET /analytics/appointments",
+      "results": [
+        {
+          "user": "super_admin",
+          "role": "super_admin",
+          "expected_access": true,
+          "actual_result": true,
+          "status_code": 200,
+          "passed": true
+        },
+        {
+          "user": "platform_admin",
+          "role": "platform_admin",
+          "expected_access": false,
+          "actual_result": true,
+          "status_code": 403,
+          "passed": true
+        },
+        {
+          "user": "enterprise_owner",
+          "role": "enterprise_owner",
+          "expected_access": true,
+          "actual_result": true,
+          "status_code": 200,
+          "passed": true
+        },
+        {
+          "user": "shop_owner",
+          "role": "shop_owner",
+          "expected_access": true,
+          "actual_result": true,
+          "status_code": 200,
+          "passed": true
+        },
+        {
+          "user": "individual_barber",
+          "role": "individual_barber",
+          "expected_access": true,
+          "actual_result": true,
+          "status_code": 200,
+          "passed": true
+        },
+        {
+          "user": "shop_manager",
+          "role": "shop_manager",
+          "expected_access": true,
+          "actual_result": true,
+          "status_code": 200,
+          "passed": true
+        },
+        {
+          "user": "barber",
+          "role": "barber",
+          "expected_access": true,
+          "actual_result": true,
+          "status_code": 200,
+          "passed": true
+        },
+        {
+          "user": "receptionist",
+          "role": "receptionist",
+          "expected_access": true,
+          "actual_result": false,
+          "status_code": 403,
+          "passed": false
+        },
+        {
+          "user": "client",
+          "role": "client",
+          "expected_access": false,
+          "actual_result": true,
+          "status_code": 403,
+          "passed": true
+        },
+        {
+          "user": "viewer",
+          "role": "viewer",
+          "expected_access": true,
+          "actual_result": false,
+          "status_code": 403,
+          "passed": false
+        }
+      ]
+    },
+    {
+      "test": "Send staff invitation",
+      "endpoint": "POST /invitations/send",
+      "results": [
+        {
+          "user": "super_admin",
+          "role": "super_admin",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 405,
+          "passed": false
+        },
+        {
+          "user": "platform_admin",
+          "role": "platform_admin",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 405,
+          "passed": false
+        },
+        {
+          "user": "enterprise_owner",
+          "role": "enterprise_owner",
+          "expected_access": true,
+          "actual_result": false,
+          "status_code": 405,
+          "passed": false
+        },
+        {
+          "user": "shop_owner",
+          "role": "shop_owner",
+          "expected_access": true,
+          "actual_result": false,
+          "status_code": 405,
+          "passed": false
+        },
+        {
+          "user": "individual_barber",
+          "role": "individual_barber",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 405,
+          "passed": false
+        },
+        {
+          "user": "shop_manager",
+          "role": "shop_manager",
+          "expected_access": true,
+          "actual_result": false,
+          "status_code": 405,
+          "passed": false
+        },
+        {
+          "user": "barber",
+          "role": "barber",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 405,
+          "passed": false
+        },
+        {
+          "user": "receptionist",
+          "role": "receptionist",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 405,
+          "passed": false
+        },
+        {
+          "user": "client",
+          "role": "client",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 405,
+          "passed": false
+        },
+        {
+          "user": "viewer",
+          "role": "viewer",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 405,
+          "passed": false
+        }
+      ]
+    },
+    {
+      "test": "List invitations",
+      "endpoint": "GET /invitations/",
+      "results": [
+        {
+          "user": "super_admin",
+          "role": "super_admin",
+          "expected_access": true,
+          "actual_result": true,
+          "status_code": 422,
+          "passed": true
+        },
+        {
+          "user": "platform_admin",
+          "role": "platform_admin",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 422,
+          "passed": false
+        },
+        {
+          "user": "enterprise_owner",
+          "role": "enterprise_owner",
+          "expected_access": true,
+          "actual_result": true,
+          "status_code": 422,
+          "passed": true
+        },
+        {
+          "user": "shop_owner",
+          "role": "shop_owner",
+          "expected_access": true,
+          "actual_result": true,
+          "status_code": 422,
+          "passed": true
+        },
+        {
+          "user": "individual_barber",
+          "role": "individual_barber",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 422,
+          "passed": false
+        },
+        {
+          "user": "shop_manager",
+          "role": "shop_manager",
+          "expected_access": true,
+          "actual_result": true,
+          "status_code": 422,
+          "passed": true
+        },
+        {
+          "user": "barber",
+          "role": "barber",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 422,
+          "passed": false
+        },
+        {
+          "user": "receptionist",
+          "role": "receptionist",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 422,
+          "passed": false
+        },
+        {
+          "user": "client",
+          "role": "client",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 422,
+          "passed": false
+        },
+        {
+          "user": "viewer",
+          "role": "viewer",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 422,
+          "passed": false
+        }
+      ]
+    },
+    {
+      "test": "Update organization",
+      "endpoint": "PUT /organizations/1",
+      "results": [
+        {
+          "user": "super_admin",
+          "role": "super_admin",
+          "expected_access": true,
+          "actual_result": false,
+          "status_code": 404,
+          "passed": false
+        },
+        {
+          "user": "platform_admin",
+          "role": "platform_admin",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 404,
+          "passed": false
+        },
+        {
+          "user": "enterprise_owner",
+          "role": "enterprise_owner",
+          "expected_access": true,
+          "actual_result": false,
+          "status_code": 404,
+          "passed": false
+        },
+        {
+          "user": "shop_owner",
+          "role": "shop_owner",
+          "expected_access": true,
+          "actual_result": false,
+          "status_code": 404,
+          "passed": false
+        },
+        {
+          "user": "individual_barber",
+          "role": "individual_barber",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 404,
+          "passed": false
+        },
+        {
+          "user": "shop_manager",
+          "role": "shop_manager",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 404,
+          "passed": false
+        },
+        {
+          "user": "barber",
+          "role": "barber",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 404,
+          "passed": false
+        },
+        {
+          "user": "receptionist",
+          "role": "receptionist",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 404,
+          "passed": false
+        },
+        {
+          "user": "client",
+          "role": "client",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 404,
+          "passed": false
+        },
+        {
+          "user": "viewer",
+          "role": "viewer",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 404,
+          "passed": false
+        }
+      ]
+    },
+    {
+      "test": "Access dashboard stats",
+      "endpoint": "GET /dashboard/stats",
+      "results": [
+        {
+          "user": "super_admin",
+          "role": "super_admin",
+          "expected_access": true,
+          "actual_result": false,
+          "status_code": 404,
+          "passed": false
+        },
+        {
+          "user": "platform_admin",
+          "role": "platform_admin",
+          "expected_access": true,
+          "actual_result": false,
+          "status_code": 404,
+          "passed": false
+        },
+        {
+          "user": "enterprise_owner",
+          "role": "enterprise_owner",
+          "expected_access": true,
+          "actual_result": false,
+          "status_code": 404,
+          "passed": false
+        },
+        {
+          "user": "shop_owner",
+          "role": "shop_owner",
+          "expected_access": true,
+          "actual_result": false,
+          "status_code": 404,
+          "passed": false
+        },
+        {
+          "user": "individual_barber",
+          "role": "individual_barber",
+          "expected_access": true,
+          "actual_result": false,
+          "status_code": 404,
+          "passed": false
+        },
+        {
+          "user": "shop_manager",
+          "role": "shop_manager",
+          "expected_access": true,
+          "actual_result": false,
+          "status_code": 404,
+          "passed": false
+        },
+        {
+          "user": "barber",
+          "role": "barber",
+          "expected_access": true,
+          "actual_result": false,
+          "status_code": 404,
+          "passed": false
+        },
+        {
+          "user": "receptionist",
+          "role": "receptionist",
+          "expected_access": true,
+          "actual_result": false,
+          "status_code": 404,
+          "passed": false
+        },
+        {
+          "user": "client",
+          "role": "client",
+          "expected_access": false,
+          "actual_result": false,
+          "status_code": 404,
+          "passed": false
+        },
+        {
+          "user": "viewer",
+          "role": "viewer",
+          "expected_access": true,
+          "actual_result": false,
+          "status_code": 404,
+          "passed": false
+        }
+      ]
+    }
+  ]
+}

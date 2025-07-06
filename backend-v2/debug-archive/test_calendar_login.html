@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar Test Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+            display: none;
+        }
+        .success {
+            color: green;
+            margin-top: 10px;
+            display: none;
+        }
+        .info {
+            background: #e7f3ff;
+            border: 1px solid #2196F3;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .links {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .links a {
+            color: #007bff;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗓️ Calendar Features Test</h1>
+        
+        <div class="info">
+            <strong>Test Account:</strong><br>
+            Email: test-barber@6fb.com<br>
+            Password: test123
+        </div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" value="test-barber@6fb.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" value="test123" required>
+            </div>
+            
+            <button type="submit">Login</button>
+        </form>
+
+        <div class="error" id="error"></div>
+        <div class="success" id="success"></div>
+
+        <div class="links">
+            <a href="#" onclick="testBackendConnection()">Test Backend</a>
+            <a href="#" onclick="goToFrontend()">Go to Frontend</a>
+        </div>
+    </div>
+
+    <script>
+        const BACKEND_URL = 'http://localhost:8000';
+        const FRONTEND_URL = 'http://localhost:3000';
+
+        // Test backend connection
+        async function testBackendConnection() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/docs`);
+                if (response.ok) {
+                    showSuccess('✅ Backend is running!');
+                } else {
+                    showError('❌ Backend is not responding');
+                }
+            } catch (error) {
+                showError('❌ Cannot connect to backend at ' + BACKEND_URL);
+            }
+        }
+
+        // Go to frontend
+        function goToFrontend() {
+            window.open(FRONTEND_URL, '_blank');
+        }
+
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                // Login to backend
+                const response = await fetch(`${BACKEND_URL}/api/v1/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: email,
+                        password: password
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Store token
+                    localStorage.setItem('access_token', data.access_token);
+                    if (data.refresh_token) {
+                        localStorage.setItem('refresh_token', data.refresh_token);
+                    }
+                    
+                    showSuccess('✅ Login successful! Token saved.');
+                    
+                    // Show next steps
+                    setTimeout(() => {
+                        showSuccess(`
+                            ✅ Login successful!<br><br>
+                            Now you can:<br>
+                            1. <a href="${FRONTEND_URL}/calendar" target="_blank">Open Calendar</a><br>
+                            2. <a href="${FRONTEND_URL}/settings/calendar" target="_blank">Open Calendar Settings</a><br>
+                            3. <a href="#" onclick="createTestAppointment()">Create Test Appointment</a>
+                        `);
+                    }, 1000);
+                    
+                } else {
+                    const error = await response.json();
+                    showError('Login failed: ' + (error.detail || 'Unknown error'));
+                }
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        });
+
+        // Create test appointment
+        async function createTestAppointment() {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                showError('Please login first');
+                return;
+            }
+
+            try {
+                // First get services
+                const servicesResponse = await fetch(`${BACKEND_URL}/api/v1/services`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!servicesResponse.ok) {
+                    throw new Error('Failed to get services');
+                }
+
+                const services = await servicesResponse.json();
+                if (services.length === 0) {
+                    showError('No services available');
+                    return;
+                }
+
+                // Get clients
+                const clientsResponse = await fetch(`${BACKEND_URL}/api/v1/clients`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const clients = await clientsResponse.json();
+                let clientId;
+
+                if (clients.length === 0) {
+                    // Create a client
+                    const newClientResponse = await fetch(`${BACKEND_URL}/api/v1/clients`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: 'Test Client',
+                            email: 'test@example.com',
+                            phone: '+1234567890'
+                        })
+                    });
+
+                    if (!newClientResponse.ok) {
+                        throw new Error('Failed to create client');
+                    }
+
+                    const newClient = await newClientResponse.json();
+                    clientId = newClient.id;
+                } else {
+                    clientId = clients[0].id;
+                }
+
+                // Create appointment for tomorrow at 2 PM
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                tomorrow.setHours(14, 0, 0, 0);
+
+                const appointmentResponse = await fetch(`${BACKEND_URL}/api/v1/appointments`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        service_id: services[0].id,
+                        client_id: clientId,
+                        start_time: tomorrow.toISOString(),
+                        notes: 'Test appointment created from test page'
+                    })
+                });
+
+                if (appointmentResponse.ok) {
+                    const appointment = await appointmentResponse.json();
+                    showSuccess(`
+                        ✅ Appointment created!<br><br>
+                        ID: ${appointment.id}<br>
+                        Time: ${new Date(appointment.start_time).toLocaleString()}<br><br>
+                        <a href="${FRONTEND_URL}/calendar" target="_blank">View in Calendar</a>
+                    `);
+                } else {
+                    const error = await appointmentResponse.json();
+                    showError('Failed to create appointment: ' + JSON.stringify(error));
+                }
+
+            } catch (error) {
+                showError('Error creating appointment: ' + error.message);
+            }
+        }
+
+        // Helper functions
+        function showError(message) {
+            document.getElementById('error').innerHTML = message;
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('success').style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            document.getElementById('success').innerHTML = message;
+            document.getElementById('success').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+        }
+
+        // Test backend on load
+        window.onload = () => {
+            testBackendConnection();
+        };
+    </script>
+</body>
+</html>

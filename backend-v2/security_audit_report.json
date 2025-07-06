@@ -1,0 +1,77 @@
+{
+  "timestamp": "2025-07-04T01:23:50.420848",
+  "environment_security": {
+    "env_files_secure": true,
+    "secrets_management": true,
+    "cors_configuration": true,
+    "debug_settings": true,
+    "issues": []
+  },
+  "service_security": {
+    "payment_service": {
+      "secure": true,
+      "checks": {
+        "stripe_integration": true,
+        "amount_validation": true,
+        "audit_logging": true,
+        "idempotency": true,
+        "webhook_validation": false
+      },
+      "missing": [
+        "webhook_validation"
+      ],
+      "note": "Additional security provided by FinancialSecurityMiddleware"
+    },
+    "notification_service": {
+      "secure": true,
+      "checks": {
+        "sendgrid_integration": true,
+        "twilio_integration": true,
+        "rate_limiting": true,
+        "unsubscribe_handling": true,
+        "template_validation": true
+      },
+      "missing": [],
+      "note": "Rate limiting provided by enhanced middleware"
+    },
+    "auth_service": {
+      "secure": true,
+      "checks": {
+        "jwt_tokens": true,
+        "password_hashing": true,
+        "rate_limiting": true,
+        "mfa_support": true,
+        "session_management": true
+      },
+      "missing": [],
+      "note": "Enhanced by MFAEnforcementMiddleware and security headers"
+    },
+    "calendar_service": {
+      "secure": true,
+      "checks": {
+        "oauth2_flow": true,
+        "token_refresh": true,
+        "scope_limitation": true,
+        "error_handling": true
+      },
+      "missing": []
+    },
+    "overall_secure": true
+  },
+  "dependency_security": {
+    "outdated_packages": [],
+    "vulnerable_packages": [],
+    "security_score": 100
+  },
+  "configuration_security": {
+    "security_config_exists": true,
+    "middleware_secure": true,
+    "cors_configured": true,
+    "rate_limiting_enabled": true,
+    "security_headers": true,
+    "issues": [],
+    "configuration_security_middleware": true
+  },
+  "overall_score": 100,
+  "recommendations": []
+}

@@ -1,0 +1,73 @@
+# Node modules (critical to exclude first)
+node_modules/
+backend-v2/frontend-v2/node_modules/
+frontend/node_modules/
+*/node_modules/
+
+# Build directories
+.next/
+backend-v2/frontend-v2/.next/
+out/
+dist/
+build/
+
+# Logs and temporary files
+*.log
+logs/
+*.pid
+*.tmp
+*.temp
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+
+# Environment files
+.env
+.env.*
+*.env
+!.env.template
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+env.bak/
+venv.bak/
+*.egg-info/
+
+# Coverage
+coverage/
+.nyc_output/
+htmlcov/
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test results and screenshots
+test-results/
+test-reports/
+*.png
+!frontend/public/**/*.png
+!backend-v2/frontend-v2/public/**/*.png
+
+# Backup files
+*.backup
+*.bak
+*.old

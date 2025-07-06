@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Registration Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+        .success {
+            color: green;
+            margin-top: 10px;
+        }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Registration Form</h1>
+    <p>This page simulates the registration form to test the API endpoint directly.</p>
+    
+    <form id="registrationForm">
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="confirmPassword">Confirm Password:</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" required>
+        </div>
+        
+        <div class="form-group">
+            <div class="checkbox-group">
+                <input type="checkbox" id="terms" name="terms" required>
+                <label for="terms">I agree to the Terms of Service *</label>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="privacy" name="privacy" required>
+                <label for="privacy">I agree to the Privacy Policy *</label>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="marketing" name="marketing">
+                <label for="marketing">I would like to receive marketing emails (optional)</label>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="testData" name="testData">
+                <label for="testData">Create sample data to help me learn the platform (optional)</label>
+            </div>
+        </div>
+        
+        <button type="submit" id="submitButton">Create Account</button>
+    </form>
+    
+    <div id="message"></div>
+    <div id="log" class="log"></div>
+    
+    <script>
+        const API_URL = 'http://localhost:8000';
+        const logDiv = document.getElementById('log');
+        const messageDiv = document.getElementById('message');
+        
+        function log(message) {
+            const timestamp = new Date().toISOString();
+            logDiv.textContent += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function showMessage(message, isError = false) {
+            messageDiv.textContent = message;
+            messageDiv.className = isError ? 'error' : 'success';
+        }
+        
+        document.getElementById('registrationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                password: formData.get('password'),
+                create_test_data: formData.get('testData') === 'on'
+            };
+            
+            const confirmPassword = formData.get('confirmPassword');
+            
+            // Client-side validation
+            if (data.password !== confirmPassword) {
+                showMessage('Passwords do not match', true);
+                return;
+            }
+            
+            if (!formData.get('terms') || !formData.get('privacy')) {
+                showMessage('You must agree to the Terms of Service and Privacy Policy', true);
+                return;
+            }
+            
+            // Disable submit button
+            const submitButton = document.getElementById('submitButton');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Creating account...';
+            
+            try {
+                log('Making registration request...');
+                log(`API URL: ${API_URL}`);
+                log(`Request data: ${JSON.stringify(data, null, 2)}`);
+                
+                const response = await fetch(`${API_URL}/api/v1/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': window.location.origin
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                log(`Response status: ${response.status}`);
+                log(`Response headers: ${JSON.stringify(Object.fromEntries(response.headers), null, 2)}`);
+                
+                const responseData = await response.json();
+                log(`Response data: ${JSON.stringify(responseData, null, 2)}`);
+                
+                if (response.ok) {
+                    showMessage('Account created successfully! Please check your email to verify your account.', false);
+                    document.getElementById('registrationForm').reset();
+                } else {
+                    showMessage(`Registration failed: ${responseData.detail || 'Unknown error'}`, true);
+                }
+                
+            } catch (error) {
+                log(`Network error: ${error.message}`);
+                showMessage(`Network error: ${error.message}`, true);
+            } finally {
+                // Re-enable submit button
+                submitButton.disabled = false;
+                submitButton.textContent = 'Create Account';
+            }
+        });
+        
+        // Log page load
+        log('Test registration form loaded');
+        log(`Current origin: ${window.location.origin}`);
+    </script>
+</body>
+</html>

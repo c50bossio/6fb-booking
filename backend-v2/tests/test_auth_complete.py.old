@@ -1,0 +1,491 @@
+"""
+Comprehensive authentication test suite for BookedBarber V2
+Tests all auth endpoints including edge cases and error scenarios
+"""
+
+import pytest
+from httpx import AsyncClient
+from sqlalchemy.orm import Session
+from datetime import datetime, timedelta
+import jwt
+
+from main import app
+from database import get_db
+from models import User, PasswordResetToken
+from utils.auth import create_access_token, create_refresh_token, get_password_hash
+from utils.auth import SECRET_KEY, ALGORITHM
+
+
+# Test data
+TEST_USER_DATA = {
+    "email": "test@example.com",
+    "password": "Test123!",
+    "name": "Test User"
+}
+
+WEAK_PASSWORDS = [
+    "short",  # Too short
+    "alllowercase",  # No uppercase
+    "ALLUPPERCASE",  # No lowercase
+    "NoNumbers!",  # No digits
+    "12345678",  # No letters
+]
+
+
+class TestAuthentication:
+    """Test authentication endpoints"""
+    
+    @pytest.mark.asyncio
+    async def test_register_success(self, async_client: AsyncClient):
+        """Test successful user registration"""
+        response = await async_client.post(
+            "/api/v1/auth/register",
+            json=TEST_USER_DATA
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["message"] == "User successfully registered"
+        assert data["user"]["email"] == TEST_USER_DATA["email"]
+        assert data["user"]["name"] == TEST_USER_DATA["name"]
+        assert "id" in data["user"]
+        assert "created_at" in data["user"]
+    
+    @pytest.mark.asyncio
+    async def test_register_duplicate_email(self, async_client: AsyncClient, test_user):
+        """Test registration with existing email"""
+        response = await async_client.post(
+            "/api/v1/auth/register",
+            json={
+                "email": test_user.email,
+                "password": "Test123!",
+                "name": "Another User"
+            }
+        )
+        assert response.status_code == 400
+        assert "already registered" in response.json()["detail"]
+    
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("password", WEAK_PASSWORDS)
+    async def test_register_weak_password(self, async_client: AsyncClient, password):
+        """Test registration with weak passwords"""
+        response = await async_client.post(
+            "/api/v1/auth/register",
+            json={
+                "email": f"{password}@example.com",
+                "password": password,
+                "name": "Weak Password User"
+            }
+        )
+        assert response.status_code == 422
+        assert "password" in response.json()["detail"][0]["loc"]
+    
+    @pytest.mark.asyncio
+    async def test_login_success(self, async_client: AsyncClient, test_user):
+        """Test successful login"""
+        response = await async_client.post(
+            "/api/v1/auth/login",
+            json={
+                "username": test_user.email,
+                "password": "testpass123"
+            }
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "access_token" in data
+        assert "refresh_token" in data
+        assert data["token_type"] == "bearer"
+        
+        # Verify tokens are valid
+        access_payload = jwt.decode(data["access_token"], SECRET_KEY, algorithms=[ALGORITHM])
+        assert access_payload["sub"] == test_user.email
+        assert access_payload["type"] == "access"
+        
+        refresh_payload = jwt.decode(data["refresh_token"], SECRET_KEY, algorithms=[ALGORITHM])
+        assert refresh_payload["sub"] == test_user.email
+        assert refresh_payload["type"] == "refresh"
+    
+    @pytest.mark.asyncio
+    async def test_login_wrong_password(self, async_client: AsyncClient, test_user):
+        """Test login with wrong password"""
+        response = await async_client.post(
+            "/api/v1/auth/login",
+            json={
+                "username": test_user.email,
+                "password": "wrongpassword"
+            }
+        )
+        assert response.status_code == 401
+        assert "Incorrect username or password" in response.json()["detail"]
+    
+    @pytest.mark.asyncio
+    async def test_login_nonexistent_user(self, async_client: AsyncClient):
+        """Test login with non-existent user"""
+        response = await async_client.post(
+            "/api/v1/auth/login",
+            json={
+                "username": "nonexistent@example.com",
+                "password": "somepassword"
+            }
+        )
+        assert response.status_code == 401
+        assert "Incorrect username or password" in response.json()["detail"]
+    
+    @pytest.mark.asyncio
+    async def test_get_current_user(self, async_client: AsyncClient, test_user, auth_headers):
+        """Test getting current user info"""
+        response = await async_client.get(
+            "/api/v1/auth/me",
+            headers=auth_headers
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["email"] == test_user.email
+        assert data["name"] == test_user.name
+        assert data["id"] == test_user.id
+    
+    @pytest.mark.asyncio
+    async def test_get_current_user_unauthorized(self, async_client: AsyncClient):
+        """Test accessing protected endpoint without token"""
+        response = await async_client.get("/api/v1/auth/me")
+        assert response.status_code == 401
+        assert "Not authenticated" in response.json()["detail"]
+    
+    @pytest.mark.asyncio
+    async def test_get_current_user_invalid_token(self, async_client: AsyncClient):
+        """Test accessing protected endpoint with invalid token"""
+        response = await async_client.get(
+            "/api/v1/auth/me",
+            headers={"Authorization": "Bearer invalid_token"}
+        )
+        assert response.status_code == 401
+        assert "Could not validate credentials" in response.json()["detail"]
+    
+    @pytest.mark.asyncio
+    async def test_refresh_token_success(self, async_client: AsyncClient, test_user):
+        """Test refreshing access token"""
+        # First login to get tokens
+        login_response = await async_client.post(
+            "/api/v1/auth/login",
+            json={
+                "username": test_user.email,
+                "password": "testpass123"
+            }
+        )
+        tokens = login_response.json()
+        
+        # Use refresh token to get new access token
+        response = await async_client.post(
+            "/api/v1/auth/refresh",
+            json={"refresh_token": tokens["refresh_token"]}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "access_token" in data
+        assert "refresh_token" in data
+        assert data["access_token"] != tokens["access_token"]  # New access token
+        assert data["refresh_token"] != tokens["refresh_token"]  # Token rotation
+    
+    @pytest.mark.asyncio
+    async def test_refresh_token_invalid(self, async_client: AsyncClient):
+        """Test refresh with invalid token"""
+        response = await async_client.post(
+            "/api/v1/auth/refresh",
+            json={"refresh_token": "invalid_refresh_token"}
+        )
+        assert response.status_code == 401
+        assert "Invalid refresh token" in response.json()["detail"]
+    
+    @pytest.mark.asyncio
+    async def test_refresh_token_expired(self, async_client: AsyncClient, test_user):
+        """Test refresh with expired token"""
+        # Create expired refresh token
+        expired_token = create_refresh_token({
+            "sub": test_user.email,
+            "exp": datetime.utcnow() - timedelta(days=1)
+        })
+        
+        response = await async_client.post(
+            "/api/v1/auth/refresh",
+            json={"refresh_token": expired_token}
+        )
+        assert response.status_code == 401
+        assert "Token has expired" in response.json()["detail"]
+    
+    @pytest.mark.asyncio
+    async def test_forgot_password_success(self, async_client: AsyncClient, test_user):
+        """Test password reset request"""
+        response = await async_client.post(
+            "/api/v1/auth/forgot-password",
+            json={"email": test_user.email}
+        )
+        assert response.status_code == 200
+        assert "reset link has been sent" in response.json()["message"]
+    
+    @pytest.mark.asyncio
+    async def test_forgot_password_nonexistent_email(self, async_client: AsyncClient):
+        """Test password reset for non-existent email"""
+        response = await async_client.post(
+            "/api/v1/auth/forgot-password",
+            json={"email": "nonexistent@example.com"}
+        )
+        # Should return success for security reasons
+        assert response.status_code == 200
+        assert "reset link has been sent" in response.json()["message"]
+    
+    @pytest.mark.asyncio
+    async def test_reset_password_success(self, async_client: AsyncClient, test_user, db: Session):
+        """Test password reset with valid token"""
+        # Create reset token
+        reset_token = PasswordResetToken(
+            user_id=test_user.id,
+            token="test_reset_token",
+            expires_at=datetime.utcnow() + timedelta(hours=1)
+        )
+        db.add(reset_token)
+        db.commit()
+        
+        # Reset password
+        new_password = "NewPass123!"
+        response = await async_client.post(
+            "/api/v1/auth/reset-password",
+            json={
+                "token": "test_reset_token",
+                "new_password": new_password
+            }
+        )
+        assert response.status_code == 200
+        assert "successfully reset" in response.json()["message"]
+        
+        # Verify can login with new password
+        login_response = await async_client.post(
+            "/api/v1/auth/login",
+            json={
+                "username": test_user.email,
+                "password": new_password
+            }
+        )
+        assert login_response.status_code == 200
+    
+    @pytest.mark.asyncio
+    async def test_reset_password_invalid_token(self, async_client: AsyncClient):
+        """Test password reset with invalid token"""
+        response = await async_client.post(
+            "/api/v1/auth/reset-password",
+            json={
+                "token": "invalid_token",
+                "new_password": "NewPass123!"
+            }
+        )
+        assert response.status_code == 400
+        assert "Invalid or expired reset token" in response.json()["detail"]
+    
+    @pytest.mark.asyncio
+    async def test_reset_password_expired_token(self, async_client: AsyncClient, test_user, db: Session):
+        """Test password reset with expired token"""
+        # Create expired reset token
+        reset_token = PasswordResetToken(
+            user_id=test_user.id,
+            token="expired_reset_token",
+            expires_at=datetime.utcnow() - timedelta(hours=1)
+        )
+        db.add(reset_token)
+        db.commit()
+        
+        response = await async_client.post(
+            "/api/v1/auth/reset-password",
+            json={
+                "token": "expired_reset_token",
+                "new_password": "NewPass123!"
+            }
+        )
+        assert response.status_code == 400
+        assert "Invalid or expired reset token" in response.json()["detail"]
+    
+    @pytest.mark.asyncio
+    async def test_reset_password_used_token(self, async_client: AsyncClient, test_user, db: Session):
+        """Test password reset with already used token"""
+        # Create used reset token
+        reset_token = PasswordResetToken(
+            user_id=test_user.id,
+            token="used_reset_token",
+            expires_at=datetime.utcnow() + timedelta(hours=1),
+            used=True
+        )
+        db.add(reset_token)
+        db.commit()
+        
+        response = await async_client.post(
+            "/api/v1/auth/reset-password",
+            json={
+                "token": "used_reset_token",
+                "new_password": "NewPass123!"
+            }
+        )
+        assert response.status_code == 400
+        assert "Invalid or expired reset token" in response.json()["detail"]
+    
+    @pytest.mark.asyncio
+    async def test_change_password_success(self, async_client: AsyncClient, test_user, auth_headers):
+        """Test changing password for authenticated user"""
+        new_password = "NewPass123!"
+        response = await async_client.post(
+            "/api/v1/auth/change-password",
+            json={
+                "current_password": "testpass123",
+                "new_password": new_password
+            },
+            headers=auth_headers
+        )
+        assert response.status_code == 200
+        assert "successfully changed" in response.json()["message"]
+        
+        # Verify can login with new password
+        login_response = await async_client.post(
+            "/api/v1/auth/login",
+            json={
+                "username": test_user.email,
+                "password": new_password
+            }
+        )
+        assert login_response.status_code == 200
+    
+    @pytest.mark.asyncio
+    async def test_change_password_wrong_current(self, async_client: AsyncClient, auth_headers):
+        """Test changing password with wrong current password"""
+        response = await async_client.post(
+            "/api/v1/auth/change-password",
+            json={
+                "current_password": "wrongpassword",
+                "new_password": "NewPass123!"
+            },
+            headers=auth_headers
+        )
+        assert response.status_code == 400
+        assert "Current password is incorrect" in response.json()["detail"]
+    
+    @pytest.mark.asyncio
+    async def test_change_password_weak_new(self, async_client: AsyncClient, auth_headers):
+        """Test changing to weak password"""
+        response = await async_client.post(
+            "/api/v1/auth/change-password",
+            json={
+                "current_password": "testpass123",
+                "new_password": "weak"
+            },
+            headers=auth_headers
+        )
+        assert response.status_code == 422
+        assert "password" in response.json()["detail"][0]["loc"]
+
+
+class TestRateLimiting:
+    """Test rate limiting on auth endpoints"""
+    
+    @pytest.mark.asyncio
+    async def test_login_rate_limit(self, async_client: AsyncClient):
+        """Test login endpoint rate limiting (5/minute)"""
+        # Make 5 requests (should succeed)
+        for i in range(5):
+            response = await async_client.post(
+                "/api/v1/auth/login",
+                json={
+                    "username": f"test{i}@example.com",
+                    "password": "password"
+                }
+            )
+            assert response.status_code in [401, 200]  # Either auth fails or succeeds
+        
+        # 6th request should be rate limited
+        response = await async_client.post(
+            "/api/v1/auth/login",
+            json={
+                "username": "test6@example.com",
+                "password": "password"
+            }
+        )
+        assert response.status_code == 429
+        assert "Rate limit exceeded" in response.json()["detail"]
+    
+    @pytest.mark.asyncio
+    async def test_register_rate_limit(self, async_client: AsyncClient):
+        """Test register endpoint rate limiting (3/hour)"""
+        # Make 3 requests (should succeed or fail for validation)
+        for i in range(3):
+            response = await async_client.post(
+                "/api/v1/auth/register",
+                json={
+                    "email": f"ratelimit{i}@example.com",
+                    "password": "Test123!",
+                    "name": f"Rate Limit {i}"
+                }
+            )
+            assert response.status_code in [200, 422]
+        
+        # 4th request should be rate limited
+        response = await async_client.post(
+            "/api/v1/auth/register",
+            json={
+                "email": "ratelimit4@example.com",
+                "password": "Test123!",
+                "name": "Rate Limit 4"
+            }
+        )
+        assert response.status_code == 429
+        assert "Rate limit exceeded" in response.json()["detail"]
+    
+    @pytest.mark.asyncio
+    async def test_password_reset_rate_limit(self, async_client: AsyncClient):
+        """Test password reset rate limiting (3/hour)"""
+        # Make 3 requests (should succeed)
+        for i in range(3):
+            response = await async_client.post(
+                "/api/v1/auth/forgot-password",
+                json={"email": f"reset{i}@example.com"}
+            )
+            assert response.status_code == 200
+        
+        # 4th request should be rate limited
+        response = await async_client.post(
+            "/api/v1/auth/forgot-password",
+            json={"email": "reset4@example.com"}
+        )
+        assert response.status_code == 429
+        assert "Rate limit exceeded" in response.json()["detail"]
+
+
+class TestTokenValidation:
+    """Test JWT token validation edge cases"""
+    
+    @pytest.mark.asyncio
+    async def test_malformed_token(self, async_client: AsyncClient):
+        """Test with malformed JWT token"""
+        response = await async_client.get(
+            "/api/v1/auth/me",
+            headers={"Authorization": "Bearer not.a.valid.jwt"}
+        )
+        assert response.status_code == 401
+    
+    @pytest.mark.asyncio
+    async def test_wrong_token_type(self, async_client: AsyncClient, test_user):
+        """Test using refresh token as access token"""
+        refresh_token = create_refresh_token({"sub": test_user.email})
+        response = await async_client.get(
+            "/api/v1/auth/me",
+            headers={"Authorization": f"Bearer {refresh_token}"}
+        )
+        assert response.status_code == 401
+    
+    @pytest.mark.asyncio
+    async def test_expired_access_token(self, async_client: AsyncClient, test_user):
+        """Test with expired access token"""
+        # Create token that expires immediately
+        expired_token = create_access_token(
+            {"sub": test_user.email},
+            expires_delta=timedelta(seconds=-1)
+        )
+        response = await async_client.get(
+            "/api/v1/auth/me",
+            headers={"Authorization": f"Bearer {expired_token}"}
+        )
+        assert response.status_code == 401
+        assert "Token has expired" in response.json()["detail"]

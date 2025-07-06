@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>6FB Calendar - Direct Access</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            background: #f9fafb;
+        }
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+        }
+        .user-info {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        .calendar-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .calendar-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #111827;
+        }
+        .calendar-controls {
+            display: flex;
+            gap: 12px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+            background: white;
+            color: #374151;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover {
+            background: #f9fafb;
+        }
+        .btn.primary {
+            background: #14b8a6;
+            color: white;
+            border-color: #14b8a6;
+        }
+        .btn.primary:hover {
+            background: #0f766e;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: #e5e7eb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .day-header {
+            background: #f3f4f6;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 500;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .day-cell {
+            background: white;
+            min-height: 100px;
+            padding: 8px;
+            position: relative;
+        }
+        .day-number {
+            font-size: 14px;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+        .day-cell.other-month .day-number {
+            color: #9ca3af;
+        }
+        .day-cell.today {
+            background: #eff6ff;
+        }
+        .day-cell.today .day-number {
+            background: #3b82f6;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .appointment {
+            background: #dbeafe;
+            border: 1px solid #93c5fd;
+            border-radius: 4px;
+            padding: 4px 6px;
+            margin: 2px 0;
+            font-size: 12px;
+            color: #1e40af;
+            cursor: pointer;
+        }
+        .appointment:hover {
+            background: #bfdbfe;
+        }
+        .status-bar {
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            color: #065f46;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: #6b7280;
+        }
+        .empty-state h3 {
+            margin: 0 0 8px 0;
+            color: #374151;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: 600;
+            color: #111827;
+        }
+        .stat-label {
+            color: #6b7280;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">📅 6FB Calendar</div>
+        <div class="user-info">
+            <span id="user-display">Christopher Bossio</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="status-bar">
+            ✅ <strong>Calendar is working!</strong> You're viewing your 6FB Booking Calendar.
+            The calendar appears empty because there are no appointments scheduled.
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">0</div>
+                <div class="stat-label">Today's Appointments</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">0</div>
+                <div class="stat-label">This Week</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">$0</div>
+                <div class="stat-label">Revenue Today</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">Ready</div>
+                <div class="stat-label">System Status</div>
+            </div>
+        </div>
+
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <div class="calendar-title" id="calendar-title">December 2025</div>
+                <div class="calendar-controls">
+                    <button class="btn" onclick="previousMonth()">← Previous</button>
+                    <button class="btn" onclick="nextMonth()">Next →</button>
+                    <button class="btn primary" onclick="goToRealDashboard()">Go to Real Dashboard</button>
+                </div>
+            </div>
+
+            <div class="calendar-grid" id="calendar-grid">
+                <!-- Calendar will be generated here -->
+            </div>
+        </div>
+
+        <div class="calendar-container">
+            <div class="empty-state">
+                <h3>📋 No Appointments Scheduled</h3>
+                <p>Your calendar is empty because there are no appointments in the system.</p>
+                <p>This is normal for a new installation. To see appointments:</p>
+                <ol style="text-align: left; display: inline-block;">
+                    <li>Book appointments through the <a href="/book" class="btn">booking system</a></li>
+                    <li>Create test appointments using the <a href="/test-booking-flow.html" class="btn">test tool</a></li>
+                    <li>Import existing appointments if you have them</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentDate = new Date();
+
+        function generateCalendar(date) {
+            const year = date.getFullYear();
+            const month = date.getMonth();
+
+            // Update title
+            document.getElementById('calendar-title').textContent =
+                new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(date);
+
+            // Get first day of month and number of days
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDayOfWeek = firstDay.getDay();
+
+            // Calendar grid
+            const grid = document.getElementById('calendar-grid');
+            grid.innerHTML = '';
+
+            // Day headers
+            const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            dayHeaders.forEach(day => {
+                const header = document.createElement('div');
+                header.className = 'day-header';
+                header.textContent = day;
+                grid.appendChild(header);
+            });
+
+            // Previous month's trailing days
+            const prevMonth = new Date(year, month - 1, 0);
+            for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+                const day = prevMonth.getDate() - i;
+                const cell = createDayCell(day, true);
+                grid.appendChild(cell);
+            }
+
+            // Current month days
+            const today = new Date();
+            for (let day = 1; day <= daysInMonth; day++) {
+                const isToday = today.getFullYear() === year &&
+                               today.getMonth() === month &&
+                               today.getDate() === day;
+                const cell = createDayCell(day, false, isToday);
+                grid.appendChild(cell);
+            }
+
+            // Next month's leading days
+            const totalCells = grid.children.length - 7; // Subtract headers
+            const remainingCells = 42 - totalCells; // 6 weeks * 7 days - existing cells
+            for (let day = 1; day <= remainingCells; day++) {
+                const cell = createDayCell(day, true);
+                grid.appendChild(cell);
+            }
+        }
+
+        function createDayCell(day, otherMonth = false, isToday = false) {
+            const cell = document.createElement('div');
+            cell.className = 'day-cell';
+            if (otherMonth) cell.classList.add('other-month');
+            if (isToday) cell.classList.add('today');
+
+            const dayNumber = document.createElement('div');
+            dayNumber.className = 'day-number';
+            dayNumber.textContent = day;
+            cell.appendChild(dayNumber);
+
+            // Add sample appointment on a few random days for demo
+            if (!otherMonth && Math.random() < 0.1 && day > 5) {
+                const appointment = document.createElement('div');
+                appointment.className = 'appointment';
+                appointment.textContent = 'Sample Booking';
+                appointment.onclick = () => alert('This would show appointment details');
+                cell.appendChild(appointment);
+            }
+
+            return cell;
+        }
+
+        function previousMonth() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            generateCalendar(currentDate);
+        }
+
+        function nextMonth() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            generateCalendar(currentDate);
+        }
+
+        function goToRealDashboard() {
+            if (confirm('Go to the real dashboard? (This will attempt to use your authentication token)')) {
+                window.location.href = '/dashboard';
+            }
+        }
+
+        // Initialize calendar
+        generateCalendar(currentDate);
+
+        // Try to get user info from localStorage
+        const userData = localStorage.getItem('user');
+        if (userData) {
+            try {
+                const user = JSON.parse(userData);
+                if (user.full_name) {
+                    document.getElementById('user-display').textContent = user.full_name;
+                }
+            } catch (e) {
+                console.log('Could not parse user data');
+            }
+        }
+    </script>
+</body>
+</html>

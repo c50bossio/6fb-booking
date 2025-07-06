@@ -1,0 +1,146 @@
+{
+  "test_timestamp": "2025-07-03T01:51:02.601897",
+  "executive_summary": {
+    "overall_api_success_rate": 0,
+    "average_response_time": 0,
+    "database_accessible": false,
+    "frontend_accessible": true,
+    "performance_grade": "C",
+    "critical_issues": [
+      "Database not accessible",
+      "API endpoint /api/v1/health has very low success rate",
+      "API endpoint /api/v1/appointments has very low success rate",
+      "API endpoint /api/v1/users has very low success rate",
+      "API endpoint /api/v1/barbers has very low success rate",
+      "API endpoint /api/v1/services has very low success rate"
+    ]
+  },
+  "detailed_results": {
+    "api_performance": {
+      "/api/v1/health": {
+        "endpoint": "/api/v1/health",
+        "total_requests": 125,
+        "successful_requests": 0,
+        "success_rate": 0,
+        "error": "No successful requests"
+      },
+      "/api/v1/appointments": {
+        "endpoint": "/api/v1/appointments",
+        "total_requests": 125,
+        "successful_requests": 0,
+        "success_rate": 0,
+        "error": "No successful requests"
+      },
+      "/api/v1/users": {
+        "endpoint": "/api/v1/users",
+        "total_requests": 125,
+        "successful_requests": 0,
+        "success_rate": 0,
+        "error": "No successful requests"
+      },
+      "/api/v1/barbers": {
+        "endpoint": "/api/v1/barbers",
+        "total_requests": 125,
+        "successful_requests": 0,
+        "success_rate": 0,
+        "error": "No successful requests"
+      },
+      "/api/v1/services": {
+        "endpoint": "/api/v1/services",
+        "total_requests": 125,
+        "successful_requests": 0,
+        "success_rate": 0,
+        "error": "No successful requests"
+      }
+    },
+    "database_performance": {
+      "query_analysis": {
+        "database_accessible": false,
+        "error": "mean requires at least one data point"
+      },
+      "connection_pooling": {
+        "total_connection_attempts": 100,
+        "successful_connections": 100,
+        "connection_success_rate": 100.0,
+        "total_execution_time": 0.012340068817138672,
+        "connections_per_second": 8103.682522508598
+      }
+    },
+    "frontend_performance": {
+      "frontend_accessible": true,
+      "page_load_time": 0.023147106170654297,
+      "content_size": 61641,
+      "static_assets": [
+        {
+          "url": "http://localhost:3000/favicon.ico",
+          "size": 1359,
+          "content_type": "image/x-icon"
+        }
+      ],
+      "total_static_size": 1359,
+      "performance_score": {
+        "score": 100,
+        "grade": "A",
+        "recommendations": []
+      }
+    },
+    "memory_analysis": {
+      "total_snapshots": 5,
+      "initial_memory": 41058304,
+      "final_memory": 48529408,
+      "total_growth": 688128,
+      "avg_growth_per_snapshot": 172032,
+      "potential_leak": false,
+      "growth_rate": 137625.6
+    },
+    "stress_testing": {
+      "high_concurrency": {
+        "endpoint": "/api/v1/health",
+        "total_requests": 300,
+        "successful_requests": 0,
+        "success_rate": 0,
+        "error": "No successful requests"
+      },
+      "sustained_load": {
+        "endpoint": "/api/v1/appointments",
+        "total_requests": 500,
+        "successful_requests": 0,
+        "success_rate": 0,
+        "error": "No successful requests"
+      }
+    },
+    "system_metrics": {
+      "cpu_avg": 13.48125,
+      "cpu_max": 19.8,
+      "memory_avg": 52.5625,
+      "memory_max": 52.8,
+      "samples": 16
+    }
+  },
+  "bottlenecks_identified": [
+    "API endpoint /api/v1/health has low success rate (0.0%)",
+    "API endpoint /api/v1/appointments has low success rate (0.0%)",
+    "API endpoint /api/v1/users has low success rate (0.0%)",
+    "API endpoint /api/v1/barbers has low success rate (0.0%)",
+    "API endpoint /api/v1/services has low success rate (0.0%)"
+  ],
+  "scaling_recommendations": [
+    "Implement Redis caching layer",
+    "Add comprehensive monitoring with Sentry/DataDog",
+    "Set up auto-scaling with Kubernetes",
+    "Configure database connection pooling",
+    "Implement rate limiting for API endpoints",
+    "Add health checks and circuit breakers",
+    "Set up CDN for global content delivery"
+  ],
+  "production_readiness": {
+    "score": 50,
+    "level": "Major Issues",
+    "issues": [
+      "API success rate below 95%",
+      "Database not accessible"
+    ],
+    "can_handle_10k_users": false,
+    "recommended_concurrent_users": 100
+  }
+}

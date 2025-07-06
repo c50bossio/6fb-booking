@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Authentication Debug</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 40px;
+            background: #f3f4f6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 { color: #111827; margin-bottom: 24px; }
+        .step {
+            margin: 20px 0;
+            padding: 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+        .success { border-color: #10b981; background: #f0fdf4; }
+        .error { border-color: #ef4444; background: #fef2f2; }
+        .warning { border-color: #f59e0b; background: #fffbeb; }
+        pre {
+            background: #f3f4f6;
+            padding: 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+            margin: 8px 0;
+        }
+        button {
+            background: #14b8a6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 4px;
+        }
+        button:hover { background: #0f766e; }
+        .debug-btn { background: #6b7280; }
+        .debug-btn:hover { background: #4b5563; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Authentication Debug Tool</h1>
+
+        <div class="step">
+            <h3>Step 1: Direct Backend Test</h3>
+            <button onclick="testDirectBackend()">Test Backend Directly</button>
+            <div id="backend-result"></div>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Proxy Test</h3>
+            <button onclick="testProxy()">Test Through Proxy</button>
+            <div id="proxy-result"></div>
+        </div>
+
+        <div class="step">
+            <h3>Step 3: Login Test</h3>
+            <input type="email" id="test-email" placeholder="Email" value="bossio@tomb45.com" style="padding: 8px; margin-right: 8px;">
+            <input type="password" id="test-password" placeholder="Password" style="padding: 8px; margin-right: 8px;">
+            <button onclick="testLogin()">Test Login</button>
+            <div id="login-result"></div>
+        </div>
+
+        <div class="step">
+            <h3>Step 4: Token Verification</h3>
+            <button onclick="testTokenVerification()">Test Token Verification</button>
+            <div id="token-result"></div>
+        </div>
+
+        <div class="step">
+            <h3>Quick Actions</h3>
+            <button class="debug-btn" onclick="checkUserExists()">Check if User Exists</button>
+            <button class="debug-btn" onclick="showEnvironment()">Show Environment</button>
+            <button class="debug-btn" onclick="clearEverything()">Clear All Data</button>
+        </div>
+
+        <div id="debug-output"></div>
+    </div>
+
+    <script>
+        function log(elementId, message, className = '') {
+            const element = document.getElementById(elementId);
+            const div = document.createElement('div');
+            div.className = className;
+            div.innerHTML = message;
+            element.appendChild(div);
+        }
+
+        async function testDirectBackend() {
+            const resultDiv = document.getElementById('backend-result');
+            resultDiv.innerHTML = '';
+
+            try {
+                // Test direct backend connection
+                const response = await fetch('http://localhost:8000/api/v1/health');
+                const data = await response.json();
+
+                log('backend-result', `✅ Backend is running: ${data.status}`, 'success');
+                log('backend-result', `<pre>${JSON.stringify(data, null, 2)}</pre>`);
+
+                // Test auth endpoint directly
+                const authTest = await fetch('http://localhost:8000/api/v1/auth/token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'username=test@example.com&password=testpassword123'
+                });
+
+                if (authTest.ok) {
+                    log('backend-result', '✅ Direct backend auth endpoint working', 'success');
+                } else {
+                    const error = await authTest.text();
+                    log('backend-result', `⚠️ Direct auth test: ${authTest.status} - ${error}`, 'warning');
+                }
+
+            } catch (error) {
+                log('backend-result', `❌ Backend connection failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testProxy() {
+            const resultDiv = document.getElementById('proxy-result');
+            resultDiv.innerHTML = '';
+
+            try {
+                // Test proxy health
+                const response = await fetch('/api/proxy/api/v1/health');
+
+                if (response.ok) {
+                    const data = await response.json();
+                    log('proxy-result', `✅ Proxy working: ${data.status}`, 'success');
+                } else {
+                    log('proxy-result', `❌ Proxy failed: ${response.status}`, 'error');
+                }
+
+                // Test proxy auth endpoint
+                const authTest = await fetch('/api/proxy/api/v1/auth/token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'username=test@example.com&password=testpassword123'
+                });
+
+                if (authTest.ok) {
+                    log('proxy-result', '✅ Proxy auth endpoint working', 'success');
+                } else {
+                    const error = await authTest.text();
+                    log('proxy-result', `⚠️ Proxy auth test: ${authTest.status}`, 'warning');
+                    log('proxy-result', `<pre>${error}</pre>`);
+                }
+
+            } catch (error) {
+                log('proxy-result', `❌ Proxy test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testLogin() {
+            const resultDiv = document.getElementById('login-result');
+            resultDiv.innerHTML = '';
+
+            const email = document.getElementById('test-email').value;
+            const password = document.getElementById('test-password').value;
+
+            try {
+                log('login-result', '🔄 Testing login...', 'warning');
+
+                const response = await fetch('/api/proxy/api/v1/auth/token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `username=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
+                });
+
+                const responseText = await response.text();
+
+                log('login-result', `Response Status: ${response.status}`);
+                log('login-result', `Response Headers: ${JSON.stringify(Object.fromEntries(response.headers))}`);
+                log('login-result', `Response Body: <pre>${responseText}</pre>`);
+
+                if (response.ok) {
+                    const data = JSON.parse(responseText);
+                    log('login-result', '✅ Login successful!', 'success');
+
+                    // Store token for further testing
+                    window.testToken = data.access_token;
+                    window.testUser = data.user;
+
+                    log('login-result', `Token: ${data.access_token.substring(0, 20)}...`);
+                    log('login-result', `User: ${data.user.first_name} ${data.user.last_name}`);
+                } else {
+                    log('login-result', '❌ Login failed', 'error');
+                }
+
+            } catch (error) {
+                log('login-result', `❌ Login error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testTokenVerification() {
+            const resultDiv = document.getElementById('token-result');
+            resultDiv.innerHTML = '';
+
+            if (!window.testToken) {
+                log('token-result', '⚠️ No token available. Run login test first.', 'warning');
+                return;
+            }
+
+            try {
+                log('token-result', '🔄 Testing token verification...', 'warning');
+
+                const response = await fetch('/api/proxy/api/v1/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${window.testToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const responseText = await response.text();
+
+                log('token-result', `Verification Status: ${response.status}`);
+                log('token-result', `Response: <pre>${responseText}</pre>`);
+
+                if (response.ok) {
+                    log('token-result', '✅ Token verification successful!', 'success');
+                } else {
+                    log('token-result', '❌ Token verification failed', 'error');
+
+                    // Try different auth methods
+                    log('token-result', '🔄 Trying alternative auth methods...');
+
+                    // Method 1: Cookie-based
+                    const cookieTest = await fetch('/api/proxy/api/v1/auth/me', {
+                        credentials: 'include'
+                    });
+                    log('token-result', `Cookie auth: ${cookieTest.status}`);
+
+                    // Method 2: Different header format
+                    const headerTest = await fetch('/api/proxy/api/v1/auth/me', {
+                        headers: {
+                            'X-Auth-Token': window.testToken
+                        }
+                    });
+                    log('token-result', `X-Auth-Token: ${headerTest.status}`);
+                }
+
+            } catch (error) {
+                log('token-result', `❌ Token verification error: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkUserExists() {
+            const resultDiv = document.getElementById('debug-output');
+
+            try {
+                // Try to check if user exists without authentication
+                const response = await fetch('/api/proxy/api/v1/debug/users');
+
+                if (response.ok) {
+                    const users = await response.json();
+                    log('debug-output', `📋 Users in database: ${users.length}`);
+                    users.forEach(user => {
+                        log('debug-output', `• ${user.email} (${user.first_name} ${user.last_name})`);
+                    });
+                } else {
+                    log('debug-output', '❌ Cannot access user list', 'error');
+                }
+            } catch (error) {
+                log('debug-output', `❌ Error checking users: ${error.message}`, 'error');
+            }
+        }
+
+        function showEnvironment() {
+            const info = {
+                userAgent: navigator.userAgent,
+                url: window.location.href,
+                localStorage: {
+                    hasToken: !!localStorage.getItem('access_token'),
+                    hasUser: !!localStorage.getItem('user')
+                },
+                cookies: document.cookie
+            };
+
+            log('debug-output', `<h4>Environment Info:</h4><pre>${JSON.stringify(info, null, 2)}</pre>`);
+        }
+
+        function clearEverything() {
+            if (confirm('Clear all cached data?')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                document.cookie.split(";").forEach(c => {
+                    const eqPos = c.indexOf("=");
+                    const name = eqPos > -1 ? c.substr(0, eqPos) : c;
+                    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+                });
+                window.testToken = null;
+                window.testUser = null;
+                log('debug-output', '✅ All data cleared');
+            }
+        }
+
+        // Auto-run basic tests
+        window.addEventListener('load', () => {
+            testDirectBackend();
+            testProxy();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Debug Report</title>
+    <style>
+        body {
+            font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        .success {
+            border-left-color: #27ae60;
+            background: #d5f4e6;
+        }
+        .error {
+            border-left-color: #e74c3c;
+            background: #fdf2f2;
+        }
+        .warning {
+            border-left-color: #f39c12;
+            background: #fef9e7;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 10px 10px 0;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .log {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+            font-size: 14px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .status.success { background: #d5f4e6; color: #27ae60; }
+        .status.error { background: #fdf2f2; color: #e74c3c; }
+        .status.warning { background: #fef9e7; color: #f39c12; }
+        .status.info { background: #ebf3fd; color: #3498db; }
+        .code-block {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            border: 1px solid #ddd;
+        }
+        .step {
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+        .step-number {
+            background: #3498db;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Registration Form Debug Report</h1>
+        
+        <div class="test-section">
+            <h2>📋 Test Summary</h2>
+            <p>This comprehensive test will help identify exactly where the registration process is failing.</p>
+            
+            <div class="step">
+                <span class="step-number">1</span>
+                <strong>Backend API Test</strong> - Direct API call to registration endpoint
+            </div>
+            
+            <div class="step">
+                <span class="step-number">2</span>
+                <strong>Frontend API Client Test</strong> - Test the frontend's fetchAPI function
+            </div>
+            
+            <div class="step">
+                <span class="step-number">3</span>
+                <strong>Form Simulation Test</strong> - Simulate the actual form submission
+            </div>
+            
+            <div class="step">
+                <span class="step-number">4</span>
+                <strong>CORS & Network Test</strong> - Check for CORS issues and network connectivity
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🧪 Test Controls</h2>
+            <button onclick="runAllTests()">Run All Tests</button>
+            <button onclick="testBackendAPI()">Test Backend API</button>
+            <button onclick="testFrontendAPI()">Test Frontend API</button>
+            <button onclick="testFormSimulation()">Test Form Simulation</button>
+            <button onclick="testCORS()">Test CORS</button>
+            <button onclick="clearResults()">Clear Results</button>
+        </div>
+
+        <div id="results" class="results">
+            <h2>📊 Test Results</h2>
+            <div id="status-summary"></div>
+            <div id="log" class="log">Click "Run All Tests" to begin testing...\n</div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = {};
+        
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : '📋';
+            logDiv.innerHTML += `${icon} [${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function updateStatus(testName, status, message) {
+            testResults[testName] = { status, message };
+            updateStatusSummary();
+        }
+
+        function updateStatusSummary() {
+            const summaryDiv = document.getElementById('status-summary');
+            summaryDiv.innerHTML = '';
+            
+            Object.entries(testResults).forEach(([testName, result]) => {
+                const statusDiv = document.createElement('div');
+                statusDiv.className = `status ${result.status}`;
+                statusDiv.innerHTML = `<strong>${testName}:</strong> ${result.message}`;
+                summaryDiv.appendChild(statusDiv);
+            });
+        }
+
+        function clearResults() {
+            document.getElementById('log').innerHTML = '';
+            document.getElementById('status-summary').innerHTML = '';
+            testResults = {};
+        }
+
+        // Test 1: Backend API Direct
+        async function testBackendAPI() {
+            log('🧪 Testing Backend API Directly...', 'info');
+            
+            const testData = {
+                email: 'test.backend@example.com',
+                password: 'MyPassword123',
+                name: 'Test Backend User',
+                create_test_data: false
+            };
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                log(`Response Status: ${response.status} ${response.statusText}`, 'info');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`Backend API Success: ${JSON.stringify(data, null, 2)}`, 'success');
+                    updateStatus('Backend API', 'success', 'Backend API is working correctly');
+                    return true;
+                } else {
+                    const errorData = await response.json();
+                    log(`Backend API Error: ${JSON.stringify(errorData, null, 2)}`, 'error');
+                    updateStatus('Backend API', 'error', `Backend returned ${response.status}: ${errorData.detail || 'Unknown error'}`);
+                    return false;
+                }
+            } catch (error) {
+                log(`Backend API Network Error: ${error.message}`, 'error');
+                updateStatus('Backend API', 'error', `Network error: ${error.message}`);
+                return false;
+            }
+        }
+
+        // Test 2: Frontend API Client
+        async function testFrontendAPI() {
+            log('🎯 Testing Frontend API Client...', 'info');
+            
+            // Simulate the frontend fetchAPI function
+            const API_URL = 'http://localhost:8000';
+            
+            // Mock validation function (simplified)
+            function validateAPIRequest(endpoint, data) {
+                log(`Validating request to ${endpoint}`, 'info');
+                log(`Request data: ${JSON.stringify(data, null, 2)}`, 'info');
+                return { isValid: true, errors: [] };
+            }
+            
+            async function fetchAPI(endpoint, options = {}) {
+                const fullUrl = `${API_URL}${endpoint}`;
+                log(`Making request to: ${fullUrl}`, 'info');
+                
+                // Validate request data
+                if (options.body && typeof options.body === 'string') {
+                    try {
+                        const requestData = JSON.parse(options.body);
+                        const validation = validateAPIRequest(endpoint, requestData);
+                        if (!validation.isValid) {
+                            throw new Error(`Request validation failed: ${validation.errors.join(', ')}`);
+                        }
+                    } catch (parseError) {
+                        log(`JSON parse error (continuing): ${parseError.message}`, 'warning');
+                    }
+                }
+                
+                const config = {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers,
+                    },
+                };
+                
+                const response = await fetch(fullUrl, config);
+                log(`Response: ${response.status} ${response.statusText}`, 'info');
+                
+                if (!response.ok) {
+                    let errorData;
+                    try {
+                        errorData = await response.json();
+                    } catch {
+                        throw new Error(`Network error: ${response.status} ${response.statusText}`);
+                    }
+                    
+                    if (response.status === 422) {
+                        if (Array.isArray(errorData.detail)) {
+                            const messages = errorData.detail.map(err => err.msg).join(', ');
+                            throw new Error(messages);
+                        }
+                    }
+                    
+                    throw new Error(errorData.detail || `HTTP Error ${response.status}`);
+                }
+                
+                return response.json();
+            }
+            
+            async function register(email, password, name, createTestData = false) {
+                return fetchAPI('/api/v1/auth/register', {
+                    method: 'POST',
+                    body: JSON.stringify({ email, password, name, create_test_data: createTestData }),
+                });
+            }
+            
+            try {
+                const result = await register('test.frontend@example.com', 'MyPassword123', 'Test Frontend User', false);
+                log(`Frontend API Success: ${JSON.stringify(result, null, 2)}`, 'success');
+                updateStatus('Frontend API', 'success', 'Frontend API client is working correctly');
+                return true;
+            } catch (error) {
+                log(`Frontend API Error: ${error.message}`, 'error');
+                updateStatus('Frontend API', 'error', `Frontend API failed: ${error.message}`);
+                return false;
+            }
+        }
+
+        // Test 3: Form Simulation
+        async function testFormSimulation() {
+            log('📝 Testing Form Simulation...', 'info');
+            
+            try {
+                // This simulates what happens when the form is submitted
+                const formData = {
+                    name: 'Test Form User',
+                    email: 'test.form@example.com',
+                    password: 'MyPassword123',
+                    confirmPassword: 'MyPassword123'
+                };
+                
+                const consent = {
+                    terms: true,
+                    privacy: true,
+                    marketing: false,
+                    testData: false
+                };
+                
+                log(`Form Data: ${JSON.stringify(formData, null, 2)}`, 'info');
+                log(`Consent: ${JSON.stringify(consent, null, 2)}`, 'info');
+                
+                // Validate form data
+                if (formData.password !== formData.confirmPassword) {
+                    throw new Error('Passwords do not match');
+                }
+                
+                if (!consent.terms || !consent.privacy) {
+                    throw new Error('Terms and Privacy must be accepted');
+                }
+                
+                // Make the API call
+                const response = await fetch('http://localhost:8000/api/v1/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: formData.email,
+                        password: formData.password,
+                        name: formData.name,
+                        create_test_data: consent.testData
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`Form Simulation Success: ${JSON.stringify(data, null, 2)}`, 'success');
+                    updateStatus('Form Simulation', 'success', 'Form simulation completed successfully');
+                    return true;
+                } else {
+                    const errorData = await response.json();
+                    log(`Form Simulation Error: ${JSON.stringify(errorData, null, 2)}`, 'error');
+                    updateStatus('Form Simulation', 'error', `Form simulation failed: ${errorData.detail || 'Unknown error'}`);
+                    return false;
+                }
+            } catch (error) {
+                log(`Form Simulation Error: ${error.message}`, 'error');
+                updateStatus('Form Simulation', 'error', `Form simulation failed: ${error.message}`);
+                return false;
+            }
+        }
+
+        // Test 4: CORS Test
+        async function testCORS() {
+            log('🌐 Testing CORS and Network Connectivity...', 'info');
+            
+            try {
+                // Test OPTIONS request
+                const optionsResponse = await fetch('http://localhost:8000/api/v1/auth/register', {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                log(`OPTIONS Response: ${optionsResponse.status}`, 'info');
+                
+                // Test health endpoint
+                const healthResponse = await fetch('http://localhost:8000/api/v1/health');
+                if (healthResponse.ok) {
+                    const healthData = await healthResponse.json();
+                    log(`Health Check Success: ${JSON.stringify(healthData, null, 2)}`, 'success');
+                    updateStatus('CORS & Network', 'success', 'CORS and network connectivity are working');
+                    return true;
+                } else {
+                    log(`Health Check Failed: ${healthResponse.status}`, 'error');
+                    updateStatus('CORS & Network', 'error', `Health check failed: ${healthResponse.status}`);
+                    return false;
+                }
+            } catch (error) {
+                log(`CORS Test Error: ${error.message}`, 'error');
+                updateStatus('CORS & Network', 'error', `CORS/Network error: ${error.message}`);
+                return false;
+            }
+        }
+
+        // Run all tests
+        async function runAllTests() {
+            log('🚀 Starting Comprehensive Registration Test Suite...', 'info');
+            clearResults();
+            
+            const tests = [
+                ['Backend API', testBackendAPI],
+                ['Frontend API', testFrontendAPI],
+                ['Form Simulation', testFormSimulation],
+                ['CORS & Network', testCORS]
+            ];
+            
+            for (const [testName, testFunction] of tests) {
+                log(`\n--- Running ${testName} Test ---`, 'info');
+                try {
+                    await testFunction();
+                } catch (error) {
+                    log(`${testName} Test Failed: ${error.message}`, 'error');
+                    updateStatus(testName, 'error', `Test failed: ${error.message}`);
+                }
+            }
+            
+            log('\n✅ All tests completed!', 'success');
+            log('📊 Check the status summary above for results', 'info');
+        }
+
+        // Initialize
+        log('🔍 Registration Debug Test Suite Ready', 'info');
+        log('Click "Run All Tests" to begin comprehensive testing', 'info');
+    </script>
+</body>
+</html>

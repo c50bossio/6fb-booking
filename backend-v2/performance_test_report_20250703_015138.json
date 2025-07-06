@@ -1,0 +1,156 @@
+{
+  "test_timestamp": "2025-07-03T01:51:38.680044",
+  "executive_summary": {
+    "overall_api_success_rate": 20.0,
+    "average_response_time": 0.00822231330871582,
+    "database_accessible": false,
+    "frontend_accessible": true,
+    "performance_grade": "C",
+    "critical_issues": [
+      "Database not accessible",
+      "API endpoint /api/v1/analytics/dashboard has very low success rate",
+      "API endpoint /api/v1/analytics/appointments has very low success rate",
+      "API endpoint /api/v1/ai-analytics/predictions has very low success rate",
+      "API endpoint /api/v1/analytics/barber-performance has very low success rate"
+    ]
+  },
+  "detailed_results": {
+    "api_performance": {
+      "/": {
+        "endpoint": "/",
+        "total_requests": 125,
+        "successful_requests": 125,
+        "success_rate": 100.0,
+        "avg_response_time": 0.0411115665435791,
+        "min_response_time": 0.00835108757019043,
+        "max_response_time": 0.10306715965270996,
+        "p50_response_time": 0.029755830764770508,
+        "p95_response_time": 0.09837484359741211,
+        "p99_response_time": 0.09986114501953125,
+        "requests_per_second": 1212.8014434587492
+      },
+      "/api/v1/analytics/dashboard": {
+        "endpoint": "/api/v1/analytics/dashboard",
+        "total_requests": 125,
+        "successful_requests": 0,
+        "success_rate": 0,
+        "error": "No successful requests"
+      },
+      "/api/v1/analytics/appointments": {
+        "endpoint": "/api/v1/analytics/appointments",
+        "total_requests": 125,
+        "successful_requests": 0,
+        "success_rate": 0,
+        "error": "No successful requests"
+      },
+      "/api/v1/ai-analytics/predictions": {
+        "endpoint": "/api/v1/ai-analytics/predictions",
+        "total_requests": 125,
+        "successful_requests": 0,
+        "success_rate": 0,
+        "error": "No successful requests"
+      },
+      "/api/v1/analytics/barber-performance": {
+        "endpoint": "/api/v1/analytics/barber-performance",
+        "total_requests": 125,
+        "successful_requests": 0,
+        "success_rate": 0,
+        "error": "No successful requests"
+      }
+    },
+    "database_performance": {
+      "query_analysis": {
+        "database_accessible": false,
+        "error": "mean requires at least one data point"
+      },
+      "connection_pooling": {
+        "total_connection_attempts": 100,
+        "successful_connections": 100,
+        "connection_success_rate": 100.0,
+        "total_execution_time": 0.011925935745239258,
+        "connections_per_second": 8385.086263769217
+      }
+    },
+    "frontend_performance": {
+      "frontend_accessible": true,
+      "page_load_time": 0.021119356155395508,
+      "content_size": 61641,
+      "static_assets": [
+        {
+          "url": "http://localhost:3000/favicon.ico",
+          "size": 1359,
+          "content_type": "image/x-icon"
+        }
+      ],
+      "total_static_size": 1359,
+      "performance_score": {
+        "score": 100,
+        "grade": "A",
+        "recommendations": []
+      }
+    },
+    "memory_analysis": {
+      "total_snapshots": 5,
+      "initial_memory": 41451520,
+      "final_memory": 48070656,
+      "total_growth": 1212416,
+      "avg_growth_per_snapshot": 303104,
+      "potential_leak": false,
+      "growth_rate": 242483.2
+    },
+    "stress_testing": {
+      "high_concurrency": {
+        "endpoint": "/",
+        "total_requests": 300,
+        "successful_requests": 300,
+        "success_rate": 100.0,
+        "avg_response_time": 0.10559365193049113,
+        "min_response_time": 0.020060062408447266,
+        "max_response_time": 0.18416619300842285,
+        "p50_response_time": 0.11710107326507568,
+        "p95_response_time": 0.176832914352417,
+        "p99_response_time": 0.17996001243591309,
+        "requests_per_second": 1628.9634655491818
+      },
+      "sustained_load": {
+        "endpoint": "/api/v1/analytics/appointments",
+        "total_requests": 500,
+        "successful_requests": 0,
+        "success_rate": 0,
+        "error": "No successful requests"
+      }
+    },
+    "system_metrics": {
+      "cpu_avg": 10.269230769230768,
+      "cpu_max": 15.2,
+      "memory_avg": 52.53846153846154,
+      "memory_max": 52.6,
+      "samples": 13
+    }
+  },
+  "bottlenecks_identified": [
+    "API endpoint /api/v1/analytics/dashboard has low success rate (0.0%)",
+    "API endpoint /api/v1/analytics/appointments has low success rate (0.0%)",
+    "API endpoint /api/v1/ai-analytics/predictions has low success rate (0.0%)",
+    "API endpoint /api/v1/analytics/barber-performance has low success rate (0.0%)"
+  ],
+  "scaling_recommendations": [
+    "Implement Redis caching layer",
+    "Add comprehensive monitoring with Sentry/DataDog",
+    "Set up auto-scaling with Kubernetes",
+    "Configure database connection pooling",
+    "Implement rate limiting for API endpoints",
+    "Add health checks and circuit breakers",
+    "Set up CDN for global content delivery"
+  ],
+  "production_readiness": {
+    "score": 50,
+    "level": "Major Issues",
+    "issues": [
+      "API success rate below 95%",
+      "Database not accessible"
+    ],
+    "can_handle_10k_users": false,
+    "recommended_concurrent_users": 500
+  }
+}

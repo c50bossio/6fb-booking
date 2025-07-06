@@ -1,0 +1,538 @@
+import pytest
+from unittest.mock import Mock, patch, MagicMock
+from datetime import datetime, timedelta
+from sqlalchemy.orm import Session
+from fastapi.testclient import TestClient
+import json
+
+from main import app
+from database import get_db, SessionLocal
+from models import (
+    User, NotificationTemplate, NotificationPreference, 
+    NotificationQueue, NotificationStatus, Appointment, Client
+)
+from services.notification_service import NotificationService, notification_service
+from utils.auth import create_access_token
+
+client = TestClient(app)
+
+@pytest.fixture
+def db_session():
+    """Create a test database session"""
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+@pytest.fixture
+def test_user(db_session):
+    """Create a test user"""
+    user = User(
+        email="test@example.com",
+        name="Test User",
+        phone="+15551234567",
+        hashed_password="hashed_password",
+        role="user",
+        is_active=True
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user
+
+@pytest.fixture
+def test_barber(db_session):
+    """Create a test barber user"""
+    barber = User(
+        email="barber@example.com",
+        name="Test Barber",
+        phone="+15551234568",
+        hashed_password="hashed_password",
+        role="barber",
+        is_active=True
+    )
+    db_session.add(barber)
+    db_session.commit()
+    db_session.refresh(barber)
+    return barber
+
+@pytest.fixture
+def test_client_record(db_session, test_barber):
+    """Create a test client record"""
+    client_record = Client(
+        first_name="John",
+        last_name="Doe",
+        email="john.doe@example.com",
+        phone="+15551234569",
+        barber_id=test_barber.id
+    )
+    db_session.add(client_record)
+    db_session.commit()
+    db_session.refresh(client_record)
+    return client_record
+
+@pytest.fixture
+def test_appointment(db_session, test_user, test_barber, test_client_record):
+    """Create a test appointment"""
+    appointment = Appointment(
+        user_id=test_user.id,
+        barber_id=test_barber.id,
+        client_id=test_client_record.id,
+        service_name="Haircut",
+        start_time=datetime.utcnow() + timedelta(days=1),
+        duration_minutes=30,
+        price=50.0,
+        status="confirmed"
+    )
+    db_session.add(appointment)
+    db_session.commit()
+    db_session.refresh(appointment)
+    return appointment
+
+@pytest.fixture
+def notification_templates(db_session):
+    """Create test notification templates"""
+    templates = [
+        NotificationTemplate(
+            name="appointment_confirmation",
+            template_type="email",
+            subject="Appointment Confirmed",
+            body="<p>Your appointment is confirmed for {{ appointment_date }}</p>",
+            variables=["appointment_date", "client_name"],
+            is_active=True
+        ),
+        NotificationTemplate(
+            name="appointment_confirmation",
+            template_type="sms",
+            subject=None,
+            body="Appointment confirmed for {{ appointment_date }}",
+            variables=["appointment_date", "client_name"],
+            is_active=True
+        ),
+        NotificationTemplate(
+            name="appointment_reminder",
+            template_type="email",
+            subject="Appointment Reminder",
+            body="<p>Reminder: Your appointment is tomorrow</p>",
+            variables=["appointment_date", "client_name"],
+            is_active=True
+        )
+    ]
+    
+    for template in templates:
+        db_session.add(template)
+    
+    db_session.commit()
+    return templates
+
+@pytest.fixture
+def auth_headers(test_user):
+    """Create authentication headers"""
+    token = create_access_token(data={"sub": test_user.email})
+    return {"Authorization": f"Bearer {token}"}
+
+class TestNotificationService:
+    """Test the NotificationService class"""
+    
+    def test_notification_service_initialization(self):
+        """Test that notification service initializes correctly"""
+        service = NotificationService()
+        assert service is not None
+        assert hasattr(service, 'stats')
+        assert 'emails_sent' in service.stats
+        assert 'sms_sent' in service.stats
+    
+    def test_format_phone_number(self):
+        """Test phone number formatting"""
+        service = NotificationService()
+        
+        # Test US number without country code
+        assert service._format_phone_number("5551234567") == "+15551234567"
+        
+        # Test US number with country code
+        assert service._format_phone_number("15551234567") == "+15551234567"
+        
+        # Test already formatted number
+        assert service._format_phone_number("+15551234567") == "+15551234567"
+        
+        # Test invalid number
+        assert service._format_phone_number("123") is None
+        assert service._format_phone_number("") is None
+    
+    def test_is_retryable_error(self):
+        """Test error retry detection"""
+        service = NotificationService()
+        
+        # Retryable errors
+        assert service._is_retryable_error("Connection timeout")
+        assert service._is_retryable_error("Service unavailable")
+        assert service._is_retryable_error("Rate limit exceeded")
+        assert service._is_retryable_error("502 Bad Gateway")
+        
+        # Non-retryable errors
+        assert not service._is_retryable_error("Invalid email address")
+        assert not service._is_retryable_error("Authentication failed")
+    
+    def test_is_retryable_twilio_error(self):
+        """Test Twilio error retry detection"""
+        service = NotificationService()
+        
+        # Retryable codes
+        assert service._is_retryable_twilio_error(20429)  # Too Many Requests
+        assert service._is_retryable_twilio_error(30001)  # Queue overflow
+        
+        # Non-retryable codes
+        assert not service._is_retryable_twilio_error(21211)  # Invalid 'To' Phone Number
+        assert not service._is_retryable_twilio_error(21610)  # Unsubscribed recipient
+    
+    @patch('services.notification_service.SendGridAPIClient')
+    def test_send_email_success(self, mock_sendgrid):
+        """Test successful email sending"""
+        # Mock SendGrid response
+        mock_response = Mock()
+        mock_response.status_code = 202
+        mock_sendgrid.return_value.send.return_value = mock_response
+        
+        service = NotificationService()
+        service.sendgrid_client = mock_sendgrid.return_value
+        
+        result = service.send_email(
+            to_email="test@example.com",
+            subject="Test Subject",
+            body="Test Body"
+        )
+        
+        assert result["success"] is True
+        assert result["status_code"] == 202
+        assert service.stats["emails_sent"] == 1
+    
+    @patch('services.notification_service.SendGridAPIClient')
+    def test_send_email_failure(self, mock_sendgrid):
+        """Test email sending failure"""
+        # Mock SendGrid error
+        mock_sendgrid.return_value.send.side_effect = Exception("SendGrid error")
+        
+        service = NotificationService()
+        service.sendgrid_client = mock_sendgrid.return_value
+        
+        result = service.send_email(
+            to_email="test@example.com",
+            subject="Test Subject",
+            body="Test Body"
+        )
+        
+        assert result["success"] is False
+        assert "error" in result
+        assert service.stats["emails_failed"] == 1
+    
+    @patch('services.notification_service.TwilioClient')
+    def test_send_sms_success(self, mock_twilio):
+        """Test successful SMS sending"""
+        # Mock Twilio response
+        mock_message = Mock()
+        mock_message.sid = "test_sid"
+        mock_message.status = "sent"
+        mock_twilio.return_value.messages.create.return_value = mock_message
+        
+        service = NotificationService()
+        service.twilio_client = mock_twilio.return_value
+        
+        result = service.send_sms(
+            to_phone="+15551234567",
+            body="Test SMS"
+        )
+        
+        assert result["success"] is True
+        assert result["message_sid"] == "test_sid"
+        assert service.stats["sms_sent"] == 1
+    
+    def test_queue_notification(self, db_session, test_user, notification_templates):
+        """Test notification queuing"""
+        service = NotificationService()
+        
+        context = {
+            "client_name": "Test User",
+            "appointment_date": "2024-01-01"
+        }
+        
+        notifications = service.queue_notification(
+            db=db_session,
+            user=test_user,
+            template_name="appointment_confirmation",
+            context=context
+        )
+        
+        assert len(notifications) >= 1  # Should create at least one notification
+        
+        # Check that notifications were added to database
+        queued = db_session.query(NotificationQueue).filter(
+            NotificationQueue.user_id == test_user.id
+        ).all()
+        
+        assert len(queued) >= 1
+        assert any(n.template_name == "appointment_confirmation" for n in queued)
+    
+    def test_schedule_appointment_reminders(self, db_session, test_appointment, notification_templates):
+        """Test appointment reminder scheduling"""
+        service = NotificationService()
+        
+        service.schedule_appointment_reminders(db_session, test_appointment)
+        
+        # Check that reminders were scheduled
+        reminders = db_session.query(NotificationQueue).filter(
+            NotificationQueue.appointment_id == test_appointment.id,
+            NotificationQueue.template_name == "appointment_reminder"
+        ).all()
+        
+        assert len(reminders) > 0
+    
+    def test_cancel_appointment_notifications(self, db_session, test_appointment, notification_templates):
+        """Test cancelling appointment notifications"""
+        service = NotificationService()
+        
+        # First, schedule some notifications
+        service.schedule_appointment_reminders(db_session, test_appointment)
+        
+        # Then cancel them
+        cancelled_count = service.cancel_appointment_notifications(
+            db_session, 
+            test_appointment.id
+        )
+        
+        assert cancelled_count > 0
+        
+        # Check that notifications were cancelled
+        cancelled = db_session.query(NotificationQueue).filter(
+            NotificationQueue.appointment_id == test_appointment.id,
+            NotificationQueue.status == NotificationStatus.CANCELLED
+        ).all()
+        
+        assert len(cancelled) == cancelled_count
+
+class TestNotificationAPI:
+    """Test the notification API endpoints"""
+    
+    def test_get_notification_preferences(self, test_user, auth_headers):
+        """Test getting notification preferences"""
+        response = client.get(
+            "/api/v1/notifications/preferences",
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert "email_enabled" in data
+        assert "sms_enabled" in data
+        assert "reminder_hours" in data
+    
+    def test_update_notification_preferences(self, test_user, auth_headers):
+        """Test updating notification preferences"""
+        preferences_data = {
+            "email_enabled": False,
+            "sms_enabled": True,
+            "reminder_hours": [48, 4]
+        }
+        
+        response = client.put(
+            "/api/v1/notifications/preferences",
+            headers=auth_headers,
+            json=preferences_data
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert data["email_enabled"] is False
+        assert data["sms_enabled"] is True
+        assert data["reminder_hours"] == [48, 4]
+    
+    def test_get_notification_templates(self, test_user, auth_headers, notification_templates):
+        """Test getting notification templates"""
+        response = client.get(
+            "/api/v1/notifications/templates",
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) >= 3  # We created 3 templates
+        assert any(t["name"] == "appointment_confirmation" for t in data)
+    
+    def test_get_notification_history(self, test_user, auth_headers):
+        """Test getting notification history"""
+        response = client.get(
+            "/api/v1/notifications/history",
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+    
+    def test_get_notification_stats(self, test_user, auth_headers):
+        """Test getting notification statistics"""
+        response = client.get(
+            "/api/v1/notifications/stats?days=7",
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert "period_days" in data
+        assert "email" in data
+        assert "sms" in data
+        assert data["period_days"] == 7
+    
+    @patch('services.notification_service.notification_service.queue_notification')
+    @patch('services.notification_service.notification_service.process_notification_queue')
+    def test_send_test_email(self, mock_process, mock_queue, test_user, auth_headers):
+        """Test sending test email"""
+        mock_queue.return_value = [Mock()]
+        mock_process.return_value = {"processed": 1, "successful": 1, "failed": 0}
+        
+        response = client.post(
+            "/api/v1/notifications/test-email",
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert "message" in data
+        assert "notifications_queued" in data
+    
+    @patch('services.notification_service.notification_service.queue_notification')
+    @patch('services.notification_service.notification_service.process_notification_queue')
+    def test_send_test_sms(self, mock_process, mock_queue, test_user, auth_headers):
+        """Test sending test SMS"""
+        mock_queue.return_value = [Mock()]
+        mock_process.return_value = {"processed": 1, "successful": 1, "failed": 0}
+        
+        response = client.post(
+            "/api/v1/notifications/test-sms",
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert "message" in data
+        assert "notifications_queued" in data
+
+class TestNotificationIntegration:
+    """Integration tests for notification system"""
+    
+    def test_appointment_confirmation_flow(self, db_session, test_user, test_appointment, notification_templates):
+        """Test complete appointment confirmation notification flow"""
+        service = NotificationService()
+        
+        # Create context for confirmation
+        context = {
+            "client_name": test_user.name,
+            "service_name": test_appointment.service_name,
+            "appointment_date": test_appointment.start_time.strftime("%B %d, %Y"),
+            "appointment_time": test_appointment.start_time.strftime("%I:%M %p"),
+            "duration": test_appointment.duration_minutes,
+            "price": test_appointment.price,
+            "business_name": "Test Business"
+        }
+        
+        # Queue confirmation notifications
+        notifications = service.queue_notification(
+            db=db_session,
+            user=test_user,
+            template_name="appointment_confirmation",
+            context=context,
+            appointment_id=test_appointment.id
+        )
+        
+        assert len(notifications) >= 1
+        
+        # Verify notifications are in database
+        queued = db_session.query(NotificationQueue).filter(
+            NotificationQueue.appointment_id == test_appointment.id,
+            NotificationQueue.template_name == "appointment_confirmation"
+        ).all()
+        
+        assert len(queued) >= 1
+        assert all(n.status == NotificationStatus.PENDING for n in queued)
+    
+    def test_notification_retry_logic(self, db_session, test_user, notification_templates):
+        """Test notification retry logic"""
+        service = NotificationService()
+        
+        # Create a notification that will fail
+        notification = NotificationQueue(
+            user_id=test_user.id,
+            notification_type="email",
+            template_name="appointment_confirmation",
+            recipient="invalid@email",
+            body="Test notification",
+            status=NotificationStatus.PENDING,
+            scheduled_for=datetime.utcnow(),
+            attempts=0
+        )
+        
+        db_session.add(notification)
+        db_session.commit()
+        db_session.refresh(notification)
+        
+        # Mock email sending to fail
+        with patch.object(service, 'send_email') as mock_send:
+            mock_send.return_value = {
+                "success": False,
+                "error": "Connection timeout",
+                "should_retry": True
+            }
+            
+            # Process the queue
+            result = service.process_notification_queue(db_session)
+            
+            # Refresh notification from database
+            db_session.refresh(notification)
+            
+            # Check that retry was scheduled
+            assert notification.attempts == 1
+            assert notification.status == NotificationStatus.PENDING
+            assert notification.scheduled_for > datetime.utcnow()
+
+class TestNotificationTemplates:
+    """Test notification template functionality"""
+    
+    def test_template_rendering(self):
+        """Test template rendering with context"""
+        service = NotificationService()
+        
+        # Create a mock template
+        template = Mock()
+        template.template_type = "email"
+        template.body = "Hello {{ client_name }}, your appointment is on {{ date }}"
+        template.subject = "Appointment for {{ client_name }}"
+        
+        context = {
+            "client_name": "John Doe",
+            "date": "2024-01-01"
+        }
+        
+        rendered = service.render_template(template, context)
+        
+        assert "John Doe" in rendered["body"]
+        assert "2024-01-01" in rendered["body"]
+        assert "John Doe" in rendered["subject"]
+    
+    def test_template_error_handling(self):
+        """Test template rendering error handling"""
+        service = NotificationService()
+        
+        # Create a template with invalid syntax
+        template = Mock()
+        template.template_type = "email"
+        template.body = "Hello {{ client_name"  # Missing closing brace
+        template.subject = "Test"
+        template.name = "test_template"
+        
+        context = {"client_name": "John Doe"}
+        
+        with pytest.raises(Exception):
+            service.render_template(template, context)
+
+if __name__ == "__main__":
+    pytest.main([__file__])

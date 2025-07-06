@@ -1,0 +1,135 @@
+{
+  "api_health": {
+    "root_endpoint": {
+      "test_name": "root_endpoint",
+      "success": true,
+      "timestamp": "2025-07-03T01:07:00.766891",
+      "details": "Status: 200, Message: 6FB Booking API v2",
+      "response_time_ms": 8.97
+    },
+    "health_endpoint": {
+      "test_name": "health_endpoint",
+      "success": false,
+      "timestamp": "2025-07-03T01:07:01.030816",
+      "details": "Expecting value: line 1 column 1 (char 0)"
+    },
+    "openapi_spec": {
+      "test_name": "openapi_spec",
+      "success": true,
+      "timestamp": "2025-07-03T01:07:01.206143",
+      "details": "Total endpoints: 341",
+      "response_time_ms": 172.52
+    }
+  },
+  "database_status": {
+    "table_count": {
+      "test_name": "table_count",
+      "success": true,
+      "timestamp": "2025-07-03T01:07:01.207784",
+      "details": "Found 87 tables"
+    },
+    "table_users_exists": {
+      "test_name": "table_users_exists",
+      "success": true,
+      "timestamp": "2025-07-03T01:07:01.207793",
+      "details": "Table users found"
+    },
+    "table_appointments_exists": {
+      "test_name": "table_appointments_exists",
+      "success": true,
+      "timestamp": "2025-07-03T01:07:01.207796",
+      "details": "Table appointments found"
+    },
+    "table_payments_exists": {
+      "test_name": "table_payments_exists",
+      "success": true,
+      "timestamp": "2025-07-03T01:07:01.207798",
+      "details": "Table payments found"
+    },
+    "table_services_exists": {
+      "test_name": "table_services_exists",
+      "success": true,
+      "timestamp": "2025-07-03T01:07:01.207799",
+      "details": "Table services found"
+    },
+    "table_barbers_exists": {
+      "test_name": "table_barbers_exists",
+      "success": false,
+      "timestamp": "2025-07-03T01:07:01.207801",
+      "details": "Table barbers missing"
+    },
+    "table_users_data": {
+      "test_name": "table_users_data",
+      "success": true,
+      "timestamp": "2025-07-03T01:07:01.207820",
+      "details": "users has 47 records"
+    },
+    "table_appointments_data": {
+      "test_name": "table_appointments_data",
+      "success": true,
+      "timestamp": "2025-07-03T01:07:01.207842",
+      "details": "appointments has 751 records"
+    },
+    "table_payments_data": {
+      "test_name": "table_payments_data",
+      "success": true,
+      "timestamp": "2025-07-03T01:07:01.207858",
+      "details": "payments has 455 records"
+    },
+    "table_services_data": {
+      "test_name": "table_services_data",
+      "success": true,
+      "timestamp": "2025-07-03T01:07:01.207868",
+      "details": "services has 14 records"
+    }
+  },
+  "authentication": {
+    "login_success": {
+      "test_name": "login_success",
+      "success": false,
+      "timestamp": "2025-07-03T01:07:31.210049",
+      "details": "HTTPConnectionPool(host='localhost', port=8000): Read timed out. (read timeout=30)"
+    }
+  },
+  "crud_operations": {
+    "auth_required": {
+      "test_name": "auth_required",
+      "success": false,
+      "timestamp": "2025-07-03T01:07:31.210064",
+      "details": "No authentication token available"
+    }
+  },
+  "integrations": {
+    "auth_required": {
+      "test_name": "auth_required",
+      "success": false,
+      "timestamp": "2025-07-03T01:07:31.210067",
+      "details": "No authentication token available"
+    }
+  },
+  "performance": {
+    "root_avg_response": {
+      "test_name": "root_avg_response",
+      "success": true,
+      "timestamp": "2025-07-03T01:07:33.238710",
+      "details": "Avg: 406ms, Max: 2020ms"
+    },
+    "services_avg_response": {
+      "test_name": "services_avg_response",
+      "success": true,
+      "timestamp": "2025-07-03T01:07:33.316408",
+      "details": "Avg: 16ms, Max: 62ms"
+    },
+    "openapi_avg_response": {
+      "test_name": "openapi_avg_response",
+      "success": true,
+      "timestamp": "2025-07-03T01:07:33.507160",
+      "details": "Avg: 38ms, Max: 171ms"
+    }
+  },
+  "errors": [],
+  "recommendations": [
+    "\u26a0\ufe0f  Database issues detected: 1 table problems",
+    "\ud83d\udd10 Authentication system needs attention"
+  ]
+}

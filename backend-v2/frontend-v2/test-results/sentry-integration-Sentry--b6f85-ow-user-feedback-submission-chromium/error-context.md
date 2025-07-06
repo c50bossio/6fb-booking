@@ -1,0 +1,156 @@
+# Page snapshot
+
+```yaml
+- main:
+  - link "Booked Barber":
+    - /url: /
+    - img "Booked Barber"
+  - navigation "Main navigation":
+    - link "Sign in to your account":
+      - /url: /login
+      - text: Login
+    - link "Start your free trial":
+      - /url: /register
+      - text: Start Free Trial
+  - heading "BOOKEDBARBER" [level=1]
+  - 'heading "The #1 Booking Platform for Six Figure Barbers" [level=2]'
+  - paragraph: Turn your chair into a thriving business with our all-in-one booking and management platform. Built on proven Six Figure Barber methodology.
+  - link "Try Live Demo":
+    - /url: /demo
+    - button "Try Live Demo"
+  - link "Start 14-Day Free Trial":
+    - /url: /register
+    - button "Start 14-Day Free Trial"
+  - paragraph: No credit card required • Setup in 2 minutes • Cancel anytime
+  - heading "Everything You Need to Scale Your Business" [level=2]
+  - paragraph: Powerful features designed specifically for barbers and barbershop owners
+  - heading "Smart Calendar Management" [level=3]
+  - paragraph: Intuitive scheduling with day, week, and month views. Never double-book again.
+  - heading "Automated Client Communications" [level=3]
+  - paragraph: SMS and email reminders that reduce no-shows by up to 80%.
+  - heading "Revenue Analytics & Insights" [level=3]
+  - paragraph: Track your growth with Six Figure Barber methodology metrics.
+  - heading "Recurring Appointments" [level=3]
+  - paragraph: Set it and forget it. Perfect for your regular clients.
+  - heading "Integrated Payment Processing" [level=3]
+  - paragraph: Accept payments and manage payouts with Stripe integration.
+  - heading "Multi-Location Support" [level=3]
+  - paragraph: Manage multiple shops and barbers from one dashboard.
+  - heading "Trusted by Top Barbers Nationwide" [level=2]
+  - paragraph: Join thousands of barbers growing their business with Booked Barber
+  - blockquote: "\"Booked Barber increased my monthly revenue by 40% in just 3 months. The analytics showed me exactly where I was losing money.\""
+  - text: Marcus Johnson Owner, Downtown Barbershop
+  - blockquote: "\"The recurring appointments feature is a game-changer. My regular clients love it and I save hours every week.\""
+  - text: David Chen Master Barber
+  - blockquote: "\"Finally, a booking system that understands barbers. The Six Figure methodology built-in makes all the difference.\""
+  - text: Tyrell Washington Shop Owner 10K+ Active Barbers 500K+ Appointments Booked $5M+ Revenue Processed
+  - heading "Simple, Transparent Pricing" [level=2]
+  - paragraph: Choose the plan that fits your business. Upgrade or downgrade anytime.
+  - heading "Starter" [level=3]
+  - paragraph: Perfect for independent barbers
+  - text: $29 /month
+  - list:
+    - listitem: Up to 100 appointments/month
+    - listitem: Basic calendar management
+    - listitem: Email reminders
+    - listitem: Client management
+    - listitem: Basic analytics
+  - link "Start Free Trial":
+    - /url: /register
+    - button "Start Free Trial"
+  - text: Most Popular
+  - heading "Professional" [level=3]
+  - paragraph: For growing barbershops
+  - text: $59 /month
+  - list:
+    - listitem: Unlimited appointments
+    - listitem: Advanced calendar features
+    - listitem: SMS & email reminders
+    - listitem: Recurring appointments
+    - listitem: Revenue analytics
+    - listitem: Payment processing
+    - listitem: Google Calendar sync
+    - listitem: Priority support
+  - link "Start Free Trial":
+    - /url: /register
+    - button "Start Free Trial"
+  - heading "Enterprise" [level=3]
+  - paragraph: Multi-location businesses
+  - text: Custom
+  - list:
+    - listitem: Everything in Professional
+    - listitem: Multi-location management
+    - listitem: Advanced analytics
+    - listitem: Custom integrations
+    - listitem: Dedicated account manager
+    - listitem: Onboarding & training
+    - listitem: SLA guarantee
+  - link "Start Free Trial":
+    - /url: /register
+    - button "Start Free Trial"
+  - heading "Ready to Grow Your Business?" [level=2]
+  - paragraph: Join thousands of successful barbers using Booked Barber to build their six-figure business.
+  - link "Watch Demo":
+    - /url: /demo
+    - button "Watch Demo"
+  - link "Start Free Trial":
+    - /url: /register
+    - button "Start Free Trial"
+  - link "Booked Barber":
+    - /url: "#"
+    - img "Booked Barber"
+  - paragraph: The command center for barbers who want to own their chair, own their brand.
+  - heading "Product" [level=4]
+  - list:
+    - listitem:
+      - link "Demo":
+        - /url: /demo
+    - listitem:
+      - link "Features":
+        - /url: "#features"
+    - listitem:
+      - link "Pricing":
+        - /url: "#pricing"
+    - listitem:
+      - link "Login":
+        - /url: /login
+  - heading "Support" [level=4]
+  - list:
+    - listitem:
+      - link "Documentation":
+        - /url: "#"
+    - listitem:
+      - link "Contact Us":
+        - /url: "#"
+    - listitem:
+      - link "FAQs":
+        - /url: "#"
+    - listitem:
+      - link "Status":
+        - /url: "#"
+  - heading "Legal" [level=4]
+  - list:
+    - listitem:
+      - link "Privacy Policy":
+        - /url: "#"
+    - listitem:
+      - link "Terms of Service":
+        - /url: "#"
+    - listitem:
+      - link "Cookie Policy":
+        - /url: "#"
+  - paragraph: © 2025 Booked Barber. All rights reserved.
+- region "Notifications (F8)":
+  - list
+- dialog "We value your privacy":
+  - heading "We value your privacy" [level=3]
+  - paragraph:
+    - text: We use cookies to enhance your experience, analyze site usage, and assist in marketing efforts.
+    - button "Learn more"
+  - button "Reject All"
+  - button "Manage Preferences"
+  - button "Accept All"
+- heading "Something went wrong" [level=2]
+- button "Report Issue"
+- alert
+```

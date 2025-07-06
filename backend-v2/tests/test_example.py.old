@@ -1,0 +1,74 @@
+#!/usr/bin/env python3
+"""
+Example test file demonstrating the test template usage.
+This shows a simple test for the auth endpoints.
+"""
+
+import pytest
+from httpx import AsyncClient
+from fastapi import status
+
+from main import app
+from models import User
+from database import Base, engine, SessionLocal
+from utils.auth import create_access_token
+
+
+@pytest.fixture(scope="module")
+def test_db():
+    """Create a test database for the module."""
+    Base.metadata.create_all(bind=engine)
+    yield
+    Base.metadata.drop_all(bind=engine)
+
+
+@pytest.fixture
+def db_session(test_db):
+    """Create a new database session for each test."""
+    session = SessionLocal()
+    try:
+        yield session
+    finally:
+        session.rollback()
+        session.close()
+
+
+@pytest.fixture
+async def async_client():
+    """Create an async test client."""
+    async with AsyncClient(app=app, base_url="http://test") as client:
+        yield client
+
+
+class TestHealthCheck:
+    """Test the health check endpoint."""
+    
+    @pytest.mark.asyncio
+    async def test_health_check(self, async_client):
+        """Test that health check returns success."""
+        response = await async_client.get("/health")
+        
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert data["status"] == "healthy"
+        assert "timestamp" in data
+
+
+class TestAuthentication:
+    """Test authentication endpoints."""
+    
+    @pytest.mark.asyncio
+    async def test_login_invalid_credentials(self, async_client):
+        """Test login with invalid credentials."""
+        login_data = {
+            "username": "nonexistent@example.com",
+            "password": "wrongpassword"
+        }
+        
+        response = await async_client.post(
+            "/auth/login",
+            data=login_data,
+            headers={"Content-Type": "application/x-www-form-urlencoded"}
+        )
+        
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
