@@ -378,7 +378,7 @@ def update_appointment(
         # Convert AppointmentUpdate to format expected by service layer
         update_data = appointment.dict(exclude_unset=True)
         
-        db_appointment = booking_service.update_booking(db, appointment_id, update_data, current_user.id)
+        db_appointment = booking_service.update_booking(db, appointment_id, current_user.id, update_data)
         if not db_appointment:
             raise HTTPException(status_code=404, detail="Appointment not found")
         return db_appointment
