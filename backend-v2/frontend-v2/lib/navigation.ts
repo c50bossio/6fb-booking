@@ -34,6 +34,7 @@ import {
   UserCircleIcon,
   ChartPieIcon,
   CurrencyDollarIcon,
+  BeakerIcon,
   // Solid versions for mobile
   HomeIcon as HomeIconSolid,
   CalendarIcon as CalendarIconSolid,
@@ -363,7 +364,7 @@ export const navigationItems: NavigationItem[] = [
     ]
   },
   
-  // Settings (available to all)
+  // Settings (available to all) - moved to bottom
   {
     name: 'Settings',
     href: '/settings',
@@ -397,9 +398,16 @@ export const navigationItems: NavigationItem[] = [
         icon: ChartBarIcon,
         roles: ['admin', 'super_admin'],
         description: 'Manage conversion tracking pixels'
+      },
+      {
+        name: 'Test Data',
+        href: '/settings/test-data',
+        icon: BeakerIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Manage test data for exploring platform features'
       }
     ]
-  },
+  }
   
 ]
 
