@@ -1,2 +1,0 @@
-{"timestamp": "2025-06-21T01:07:24.901159", "level": "INFO", "logger": "security", "message": "User action: user_login", "module": "logging", "function": "log_user_action", "line": 165, "user_id": 1, "ip_address": "127.0.0.1"}
-{"timestamp": "2025-06-21T01:46:57.158258", "level": "INFO", "logger": "security", "message": "User action: user_login", "module": "logging", "function": "log_user_action", "line": 165, "user_id": 1, "ip_address": "127.0.0.1"}
