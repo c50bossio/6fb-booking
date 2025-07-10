@@ -8,7 +8,7 @@ import {
   Calendar, Download, Filter, ChevronDown
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select } from '@/components/ui/Select'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
@@ -23,6 +23,8 @@ import { useToast } from '@/hooks/use-toast'
 import { fetchAPI } from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
 import { formatters } from '@/lib/formatters'
+import { SkeletonTable, SkeletonStats } from '@/components/ui/skeleton-loader'
+import { EmptyState } from '@/components/ui/empty-state'
 
 interface CommissionData {
   barber_id: number
@@ -159,8 +161,24 @@ export default function CommissionsPage() {
   
   if (loadingCommissions || loadingPayouts) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin" />
+      <div className="container max-w-7xl py-8 space-y-8">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Commissions & Payouts</h1>
+            <p className="text-muted-foreground mt-2">
+              Track barber commissions and manage payouts
+            </p>
+          </div>
+          <Button variant="outline" disabled>
+            <Download className="w-4 h-4 mr-2" />
+            Export
+          </Button>
+        </div>
+        
+        {/* Loading Skeleton */}
+        <SkeletonStats />
+        <SkeletonTable rows={8} columns={7} />
       </div>
     )
   }
@@ -201,16 +219,16 @@ export default function CommissionsPage() {
           <div className="flex flex-wrap gap-4">
             <Select
               value={selectedBarber}
-              onChange={(e) => setSelectedBarber(e.target.value)}
+              onChange={(value) => setSelectedBarber(value as string)}
               className="w-[200px]"
-            >
-              <option value="">All Barbers</option>
-              {barbers?.map((barber: any) => (
-                <option key={barber.id} value={barber.id}>
-                  {barber.name}
-                </option>
-              ))}
-            </Select>
+              options={[
+                { value: '', label: 'All Barbers' },
+                ...(barbers || []).map((barber: any) => ({
+                  value: barber.id.toString(),
+                  label: barber.name
+                }))
+              ]}
+            />
             
             <Input
               type="date"
@@ -379,9 +397,20 @@ export default function CommissionsPage() {
                   </table>
                 </div>
               ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-500">No commission data found for the selected period.</p>
-                </div>
+                <EmptyState
+                  icon={DollarSign}
+                  title="No Commission Data"
+                  description="No commission data found for the selected period. Try adjusting your date range or filters."
+                  action={{
+                    label: "View All Periods",
+                    onClick: () => {
+                      setDateRange({
+                        start: new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
+                        end: new Date().toISOString().split('T')[0]
+                      })
+                    }
+                  }}
+                />
               )}
             </CardContent>
           </Card>
@@ -462,9 +491,15 @@ export default function CommissionsPage() {
                   </table>
                 </div>
               ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-500">No payout history found for the selected period.</p>
-                </div>
+                <EmptyState
+                  icon={Calendar}
+                  title="No Payout History"
+                  description="No payout history found for the selected period. Payouts are processed weekly."
+                  action={{
+                    label: "Process New Payout",
+                    onClick: () => router.push('/payouts/process')
+                  }}
+                />
               )}
             </CardContent>
           </Card>

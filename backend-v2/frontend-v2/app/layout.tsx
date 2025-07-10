@@ -7,6 +7,9 @@ import { Toaster } from '@/components/ui/toaster'
 import { QueryProvider } from '@/components/providers/QueryProvider'
 import CookieConsent from '@/components/CookieConsent'
 import { DevHealthMonitor } from '@/components/DevHealthMonitor'
+import { ToastProvider } from '@/hooks/useToast'
+import { PWAInstallPrompt } from '@/components/PWAInstallPrompt'
+import { ServiceWorkerUpdate } from '@/components/ServiceWorkerUpdate'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -180,14 +183,18 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <QueryProvider>
-          <ErrorBoundary>
-            <AppLayout>
-              {children}
-            </AppLayout>
-            <Toaster />
-            <CookieConsent />
-            <DevHealthMonitor />
-          </ErrorBoundary>
+          <ToastProvider>
+            <ErrorBoundary>
+              <AppLayout>
+                {children}
+              </AppLayout>
+              <Toaster />
+              <CookieConsent />
+              <DevHealthMonitor />
+              <PWAInstallPrompt />
+              <ServiceWorkerUpdate />
+            </ErrorBoundary>
+          </ToastProvider>
         </QueryProvider>
         
         {/* Performance monitoring script */}

@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { getProfile, getDashboardAnalytics, getEnterpriseAnalytics, type User } from '@/lib/api'
 import { AnalyticsLayout } from '@/components/analytics/AnalyticsLayout'
 import { DateRangeSelector, DateRangePreset } from '@/components/analytics/shared/DateRangeSelector'
-import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
+import { SkeletonStats, SkeletonCard } from '@/components/ui/skeleton-loader'
+import { EmptyAnalytics } from '@/components/ui/empty-state'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import AIInsightsPanel from '@/components/ai/AIInsightsPanel'
 
@@ -133,11 +134,35 @@ function UnifiedAnalyticsContent() {
   )
 
   if (loading) {
-    return <PageLoading message="Loading analytics..." />
+    return (
+      <div className="p-6 space-y-6">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold mb-2">Analytics</h1>
+          <p className="text-gray-600">Loading your business insights...</p>
+        </div>
+        <SkeletonStats />
+        <div className="grid md:grid-cols-2 gap-6">
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+      </div>
+    )
   }
 
   if (error) {
-    return <ErrorDisplay error={error} onRetry={() => window.location.reload()} />
+    return (
+      <div className="p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 text-center">
+          <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    )
   }
 
   if (!user || !analyticsData) {

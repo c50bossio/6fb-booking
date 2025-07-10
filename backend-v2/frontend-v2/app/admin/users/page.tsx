@@ -3,10 +3,11 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { getAllUsers, updateUserRole, getProfile, type User } from '@/lib/api'
+import AccessControl from '@/components/auth/AccessControl'
 import { LoadingButton, ErrorDisplay } from '@/components/LoadingStates'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select } from '@/components/ui/Select'
 import { Badge } from '@/components/ui/Badge'
 import { toastSuccess, toastError } from '@/hooks/use-toast'
@@ -25,7 +26,7 @@ const ROLE_OPTIONS = [
   { value: 'super_admin', label: 'Super Admin', icon: ShieldCheckIcon, color: 'bg-red-100 text-red-800' }
 ]
 
-export default function AdminUsersPage() {
+function AdminUsersPageContent() {
   const router = useRouter()
   const [users, setUsers] = useState<User[]>([])
   const [filteredUsers, setFilteredUsers] = useState<User[]>([])
@@ -325,5 +326,13 @@ export default function AdminUsersPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function AdminUsersPage() {
+  return (
+    <AccessControl requiredRoles={['super_admin', 'platform_admin']}>
+      <AdminUsersPageContent />
+    </AccessControl>
   )
 }

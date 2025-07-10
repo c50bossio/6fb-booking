@@ -3,20 +3,20 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getProfile, getEnterpriseAnalytics, type User, type EnterpriseAnalytics } from '@/lib/api'
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/Card'
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/Button'
 import { Select } from '@/components/ui/Select'
 import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
 import { usePermissions } from '@/components/ProtectedRoute'
 
 // Icon Components
-const TrendingUpIcon = () => (
+const ArrowTrendingUpIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
   </svg>
 )
 
-const TrendingDownIcon = () => (
+const ArrowTrendingDownIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6" />
   </svg>
@@ -233,12 +233,12 @@ export default function EnterpriseDashboardPage() {
                 </div>
                 {revenueChangePositive ? (
                   <span className="text-success-600 dark:text-success-400 text-sm font-medium flex items-center">
-                    <TrendingUpIcon />
+                    <ArrowTrendingUpIcon />
                     {formatPercentage(metrics.revenue_growth)}
                   </span>
                 ) : (
                   <span className="text-error-600 dark:text-error-400 text-sm font-medium flex items-center">
-                    <TrendingDownIcon />
+                    <ArrowTrendingDownIcon />
                     {formatPercentage(Math.abs(metrics.revenue_growth))}
                   </span>
                 )}
@@ -403,7 +403,7 @@ export default function EnterpriseDashboardPage() {
                               : 'text-error-600 dark:text-error-400'
                           }`}
                         >
-                          {location.growth_percentage > 0 ? <TrendingUpIcon /> : <TrendingDownIcon />}
+                          {location.growth_percentage > 0 ? <ArrowTrendingUpIcon /> : <ArrowTrendingDownIcon />}
                           <span className="ml-1">{formatPercentage(Math.abs(location.growth_percentage))}</span>
                         </span>
                       </td>

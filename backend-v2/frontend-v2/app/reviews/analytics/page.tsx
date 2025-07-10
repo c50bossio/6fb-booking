@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Select } from '@/components/ui/Select'
@@ -12,8 +12,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { 
   ChartBarIcon,
   StarIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
   ChatBubbleLeftRightIcon,
   ClockIcon,
   ExclamationTriangleIcon,
@@ -52,9 +52,9 @@ function MetricCard({ title, value, change, changeType, icon, description }: Met
   const getChangeIcon = () => {
     switch (changeType) {
       case 'increase':
-        return <TrendingUpIcon className="w-4 h-4" />
+        return <ArrowTrendingUpIcon className="w-4 h-4" />
       case 'decrease':
-        return <TrendingDownIcon className="w-4 h-4" />
+        return <ArrowTrendingDownIcon className="w-4 h-4" />
       default:
         return null
     }
@@ -532,7 +532,7 @@ export default function ReviewAnalyticsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <TrendingUpIcon className="w-5 h-5 mr-2" />
+                  <ArrowTrendingUpIcon className="w-5 h-5 mr-2" />
                   Monthly Trend
                 </CardTitle>
               </CardHeader>

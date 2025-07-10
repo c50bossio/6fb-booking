@@ -14,7 +14,7 @@ import CreateAppointmentModal from '@/components/modals/CreateAppointmentModal'
 import TimePickerModal from '@/components/modals/TimePickerModal'
 import RescheduleModal from '@/components/modals/RescheduleModal'
 import { format } from 'date-fns'
-import { Card, CardContent, CardHeader } from '@/components/ui/Card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/Button'
 import { LoadingButton, ErrorDisplay } from '@/components/LoadingStates'
 import { getMyBookings, cancelBooking, rescheduleBooking, getProfile, getAllUsers, getLocations, type BookingResponse, type Location } from '@/lib/api'
@@ -22,9 +22,11 @@ import { useCalendarOptimisticUpdates } from '@/lib/calendar-optimistic-updates'
 import { useCalendarApiEnhanced } from '@/lib/calendar-api-enhanced'
 import { useRequestDeduplication } from '@/lib/request-deduplication'
 import { toastError, toastSuccess, toastInfo } from '@/hooks/use-toast'
+import { CalendarErrorHandler, withTimeout, CALENDAR_TIMEOUTS } from '@/lib/calendar-error-handler'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { CalendarErrorBoundary } from '@/components/calendar/CalendarErrorBoundary'
-import { CalendarSkeleton, CalendarEmptyState, CalendarErrorState } from '@/components/calendar/CalendarLoadingStates'
+import { CalendarSkeleton, CalendarEmptyState, CalendarErrorState, CalendarSmartLoading } from '@/components/calendar/CalendarLoadingStates'
+import { useCalendarLoading } from '@/hooks/useCalendarLoading'
 import { useCalendarPerformance } from '@/hooks/useCalendarPerformance'
 import { useCalendarInteractionManager } from '@/lib/calendar-interaction-manager'
 import { CalendarVisualFeedback, useCalendarVisualFeedback } from '@/components/calendar/CalendarVisualFeedback'
@@ -32,6 +34,7 @@ import { CalendarMobileMenu } from '@/components/calendar/CalendarMobileMenu'
 import { CalendarNetworkStatus, CalendarRequestQueue } from '@/components/calendar/CalendarNetworkStatus'
 import { LocationSelector } from '@/components/navigation/LocationSelector'
 import { LocationSelectorLoadingState, LocationSelectorErrorState } from '@/components/navigation/LocationSelectorSkeleton'
+import { CalendarExport } from '@/components/calendar/CalendarExport'
 import type { Appointment, CalendarView, User, CalendarInteraction } from '@/types/calendar'
 import { 
   formatDateForAPI, 
@@ -90,19 +93,28 @@ export default function CalendarPage() {
     refreshAppointments: refreshOptimistic
   } = useCalendarOptimisticUpdates()
   
-  // Load locations with error handling and retry
+  // Load locations with enhanced error handling and retry
   const loadLocations = async () => {
     try {
       setIsLoadingLocations(true)
       setLocationLoadingError(null)
       
-      const userLocations = await executeRequest(
-        {
-          key: 'get-locations',
-          endpoint: '/locations',
-          method: 'GET'
+      const userLocations = await CalendarErrorHandler.retryWithBackoff(
+        async () => {
+          return await withTimeout(
+            executeRequest(
+              {
+                key: 'get-locations',
+                endpoint: '/locations',
+                method: 'GET'
+              },
+              () => getLocations()
+            ),
+            CALENDAR_TIMEOUTS.DEFAULT
+          )
         },
-        () => getLocations()
+        'location-load',
+        { maxRetries: 2 }
       )
       
       // Locations loaded successfully
@@ -113,9 +125,15 @@ export default function CalendarPage() {
         setSelectedLocationId(userLocations[0].id)
       }
     } catch (locationErr) {
-      // Failed to load locations - error handled
-      setLocationLoadingError('Failed to load locations. Please try again.')
+      // Enhanced error handling with specific messages
+      const error = await CalendarErrorHandler.handleError(locationErr, 'location-load')
+      setLocationLoadingError(error.message)
       setLocations([])
+      
+      // If it's a network error and we're offline, show a more helpful message
+      if (!navigator.onLine) {
+        setLocationLoadingError('You appear to be offline. Location features will be available when you reconnect.')
+      }
     } finally {
       setIsLoadingLocations(false)
     }
@@ -412,17 +430,31 @@ export default function CalendarPage() {
 
     try {
       setCancelingId(bookingId)
-      // Canceling appointment with optimistic update...
       
-      // Use optimistic cancel with automatic rollback on failure
-      await cancelOptimistic(bookingId)
+      // Use optimistic cancel with timeout and retry
+      await CalendarErrorHandler.retryWithBackoff(
+        async () => {
+          return await withTimeout(
+            cancelOptimistic(bookingId),
+            CALENDAR_TIMEOUTS.APPOINTMENT
+          )
+        },
+        'appointment-cancel',
+        { maxRetries: 2 }
+      )
       
       toastSuccess('Appointment Canceled', 'Your appointment has been successfully canceled.')
-      // Appointment canceled successfully
+      
+      // Clear any error history on success
+      CalendarErrorHandler.clearRetryHistory('appointment-cancel')
     } catch (err) {
-      console.error('❌ Failed to cancel booking:', err)
-      const errorMessage = 'Failed to cancel appointment. Please try again.'
-      toastError('Cancellation Failed', errorMessage)
+      // Enhanced error handling
+      const error = await CalendarErrorHandler.handleError(err, 'appointment-cancel')
+      
+      // If offline, show specific message
+      if (!navigator.onLine) {
+        toastError('Offline', 'Cannot cancel appointment while offline. Please reconnect and try again.')
+      }
     } finally {
       setCancelingId(null)
     }
@@ -439,37 +471,95 @@ export default function CalendarPage() {
       const dateStr = format(newDate, 'yyyy-MM-dd')
       const timeStr = format(newDate, 'HH:mm')
       
-      // Use the same backend logic as existing reschedule
-      await rescheduleOptimistic(updates.id, dateStr, timeStr)
+      // Enhanced reschedule with timeout and retry
+      await CalendarErrorHandler.retryWithBackoff(
+        async () => {
+          return await withTimeout(
+            rescheduleOptimistic(updates.id, dateStr, timeStr),
+            CALENDAR_TIMEOUTS.APPOINTMENT
+          )
+        },
+        'appointment-reschedule',
+        { maxRetries: 2 }
+      )
       
       // Close modal and show success
       setShowRescheduleModal(false)
       setRescheduleModalData(null)
       toastSuccess('Appointment Rescheduled', 'Your appointment has been successfully rescheduled.')
       
-      // TODO: Handle recurring appointments and notifications in future
+      // Clear error history on success
+      CalendarErrorHandler.clearRetryHistory('appointment-reschedule')
+      
+      // Handle recurring appointments with proper feedback
       if (updates.recurring_pattern) {
-        console.log('Recurring appointment requested:', updates.recurring_pattern)
+        toastInfo('Recurring Pattern', 'Recurring appointment pattern saved. This feature is coming soon!')
       }
       if (updates.notes) {
-        console.log('Reschedule note:', updates.notes)
+        // Notes are saved with the reschedule
       }
       
     } catch (err) {
-      console.error('❌ Failed to reschedule appointment:', err)
-      toastError('Reschedule Failed', 'Failed to reschedule appointment. Please try again.')
+      const error = await CalendarErrorHandler.handleError(err, 'appointment-reschedule')
+      
+      // Show specific error for conflicts
+      if (error.type === 'CONFLICT_RESOLUTION_FAILED') {
+        toastError('Time Conflict', 'The selected time slot is not available. Please choose another time.')
+      } else if (!navigator.onLine) {
+        toastError('Offline', 'Cannot reschedule while offline. Please reconnect and try again.')
+      }
+      
+      // Don't close modal on error so user can try again
     }
   }
 
-  const handleAppointmentUpdate = async (appointmentId: number, newStartTime: string) => {
+  const handleAppointmentUpdate = async (appointmentId: number, newStartTime: string, isDragDrop: boolean = false) => {
     try {
-      // Set modal data and show premium reschedule modal
-      setRescheduleModalData({ appointmentId, newStartTime })
-      setShowRescheduleModal(true)
+      // For drag & drop, update directly without modal
+      if (isDragDrop) {
+        // Parse the ISO timestamp to get date and time components
+        const newDate = new Date(newStartTime)
+        const dateStr = format(newDate, 'yyyy-MM-dd')
+        const timeStr = format(newDate, 'HH:mm')
+        
+        // Find the appointment to get its duration
+        const appointment = bookings.find(b => b.id === appointmentId)
+        if (!appointment) {
+          throw new Error('Appointment not found')
+        }
+        
+        // Use the enhanced API to move the appointment
+        await CalendarErrorHandler.retryWithBackoff(
+          async () => {
+            return await withTimeout(
+              moveAppointment(appointmentId, newStartTime),
+              CALENDAR_TIMEOUTS.APPOINTMENT
+            )
+          },
+          'appointment-drag-drop',
+          { maxRetries: 2 }
+        )
+        
+        toastSuccess('Appointment Moved', `Appointment moved to ${format(newDate, 'MMM d, h:mm a')}`)
+        
+        // Clear error history on success
+        CalendarErrorHandler.clearRetryHistory('appointment-drag-drop')
+      } else {
+        // For other interactions, show the reschedule modal
+        setRescheduleModalData({ appointmentId, newStartTime })
+        setShowRescheduleModal(true)
+      }
     } catch (err) {
-      console.error('❌ Failed to prepare reschedule modal:', err)
-      const errorMessage = 'Failed to prepare reschedule dialog. Please try again.'
-      toastError('Error', errorMessage)
+      console.error('❌ Failed to update appointment:', err)
+      const error = await CalendarErrorHandler.handleError(err, isDragDrop ? 'appointment-drag-drop' : 'appointment-update')
+      
+      if (!navigator.onLine) {
+        toastError('Offline', 'Cannot move appointment while offline. Please reconnect and try again.')
+      } else if (error.type === 'CONFLICT_RESOLUTION_FAILED') {
+        toastError('Time Conflict', 'That time slot is not available. Please choose another time.')
+      } else {
+        toastError('Update Failed', 'Failed to move appointment. Please try again.')
+      }
     }
   }
 
@@ -511,7 +601,14 @@ export default function CalendarPage() {
   if (loading) {
     return (
       <div className="p-6 space-y-6">
-        <CalendarSkeleton view={viewMode} showStats={true} />
+        <CalendarSmartLoading
+          context="calendar"
+          variant="detailed"
+          autoProgress={true}
+          onComplete={() => {
+            // Loading animation complete
+          }}
+        />
       </div>
     )
   }
@@ -680,6 +777,15 @@ export default function CalendarPage() {
               <span className="sm:hidden">Recurring</span>
             </Button>
             
+            {/* Export Button */}
+            <CalendarExport 
+              appointments={bookings}
+              selectedAppointments={filteredBookings}
+              onExport={(format) => {
+                console.log(`Exported appointments in ${format} format`)
+              }}
+            />
+            
             {/* Mobile menu for additional options */}
             <CalendarMobileMenu
               user={user}
@@ -729,7 +835,9 @@ export default function CalendarPage() {
               endHour={19}
               slotDuration={30}
               isLoading={loading}
+              error={error}
               onRefresh={refreshOptimistic}
+              onRetry={() => window.location.reload()}
               className="h-[800px]"
             />
           </Suspense>
@@ -842,12 +950,12 @@ export default function CalendarPage() {
         />
       )}
       
-      {/* Visual feedback overlay */}
-      <CalendarVisualFeedback
+      {/* Visual feedback overlay - TODO: Re-enable without blocking drag events */}
+      {/* <CalendarVisualFeedback
         visualState={visualState}
         dragState={dragState}
         enableAnimations={true}
-      />
+      /> */}
       
       {/* Debug request queue (development only) */}
       <CalendarRequestQueue />

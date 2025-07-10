@@ -6,6 +6,9 @@ import { getMyBookings, cancelBooking, updateBooking, rescheduleBooking, appoint
 import { format } from 'date-fns'
 import { Calendar, Clock, DollarSign, MapPin, User, XCircle, CheckCircle, AlertCircle, Edit2 } from 'lucide-react'
 import VirtualList from '@/components/VirtualList'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { CancelConfirmationDialog } from '@/components/ui/ConfirmationDialog'
+import { LoadingSpinner, ErrorDisplay } from '@/components/LoadingStates'
 
 export default function MyBookingsPage() {
   const router = useRouter()
@@ -45,17 +48,26 @@ export default function MyBookingsPage() {
     }
   }
 
-  const handleCancelBooking = async (bookingId: number) => {
-    if (!confirm('Are you sure you want to cancel this booking?')) {
-      return
-    }
+  const [cancelConfirmation, setCancelConfirmation] = useState<{ isOpen: boolean; bookingId: number | null }>({
+    isOpen: false,
+    bookingId: null
+  })
 
-    setCancellingId(bookingId)
+  const handleCancelBooking = async (bookingId: number) => {
+    setCancelConfirmation({ isOpen: true, bookingId })
+  }
+
+  const confirmCancelBooking = async () => {
+    if (!cancelConfirmation.bookingId) return
+    
+    setCancellingId(cancelConfirmation.bookingId)
     try {
-      await cancelBooking(bookingId)
+      await cancelBooking(cancelConfirmation.bookingId)
+      setCancelConfirmation({ isOpen: false, bookingId: null })
       // Reload bookings after successful cancellation
       await loadBookings()
     } catch (err: any) {
+      // TODO: Show error in toast instead of alert
       alert(err.message || 'Failed to cancel booking')
     } finally {
       setCancellingId(null)
@@ -159,7 +171,7 @@ export default function MyBookingsPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-500">Loading your bookings...</div>
+        <LoadingSpinner size="lg" className="text-primary-600" />
       </div>
     )
   }
@@ -167,7 +179,12 @@ export default function MyBookingsPage() {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-red-500">{error}</div>
+        <div className="max-w-md w-full">
+          <ErrorDisplay 
+            error={error} 
+            onRetry={() => loadBookings()} 
+          />
+        </div>
       </div>
     )
   }
@@ -317,18 +334,14 @@ export default function MyBookingsPage() {
       </div>
 
       {bookings.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-8 text-center">
-          <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No bookings yet</h3>
-          <p className="text-gray-600 mb-6">
-            You haven't made any bookings yet. Book your first appointment now!
-          </p>
-          <button
-            onClick={() => router.push('/book')}
-            className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-          >
-            Book Now
-          </button>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+          <EmptyState
+            type="bookings"
+            action={{
+              label: 'Book Now',
+              onClick: () => router.push('/book')
+            }}
+          />
         </div>
       ) : (
         <>
@@ -596,6 +609,14 @@ export default function MyBookingsPage() {
           </div>
         </div>
       )}
+      
+      {/* Cancel Confirmation Dialog */}
+      <CancelConfirmationDialog
+        isOpen={cancelConfirmation.isOpen}
+        onClose={() => setCancelConfirmation({ isOpen: false, bookingId: null })}
+        onConfirm={confirmCancelBooking}
+        loading={cancellingId !== null}
+      />
     </div>
   )
 }

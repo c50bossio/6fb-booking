@@ -7,7 +7,7 @@ import { resendVerification } from '@/lib/api'
 import { useAsyncOperation } from '@/lib/useAsyncOperation'
 import { LoadingButton, ErrorDisplay, SuccessMessage } from '@/components/LoadingStates'
 import { Button } from '@/components/ui/Button'
-import { Card, CardContent } from '@/components/ui/Card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Logo } from '@/components/ui/Logo'
 import { Mail, CheckCircle, Clock, ArrowRight } from 'lucide-react'
 

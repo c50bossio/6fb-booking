@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/Button'
 import { getDashboardAnalytics, getEnterpriseAnalytics, getLocationAnalytics, getProfile, type DashboardAnalytics, type LocationPerformance, type EnterpriseAnalytics, type LocationAnalytics, type User } from '@/lib/api'
 import { 
@@ -10,8 +10,8 @@ import {
   ChartBarIcon, 
   UserGroupIcon, 
   BanknotesIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
+  ArrowArrowTrendingUpIcon,
+  ArrowArrowTrendingDownIcon,
   ChevronRightIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,

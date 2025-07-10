@@ -42,6 +42,12 @@ const settingsCards: SettingCard[] = [
     icon: '🔗'
   },
   {
+    title: 'Landing Page',
+    description: 'Customize your organization\'s landing page and booking experience',
+    href: '/settings/landing-page',
+    icon: '🎨'
+  },
+  {
     title: 'Billing',
     description: 'View billing information and manage payment methods',
     href: '/settings/billing',

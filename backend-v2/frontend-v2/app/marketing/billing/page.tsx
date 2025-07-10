@@ -1,12 +1,12 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/Button'
 import { 
   CreditCardIcon,
   ChartBarIcon,
-  ArrowTrendingUpIcon,
+  ArrowArrowTrendingUpIcon,
   ClockIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
@@ -448,7 +448,7 @@ export default function MarketingBillingPage() {
                   Get more for less
                 </p>
                 <Button size="sm" variant="outline" className="w-full" onClick={() => setShowUpgradeModal(true)}>
-                  <ArrowTrendingUpIcon className="w-4 h-4 mr-1" />
+                  <ArrowArrowTrendingUpIcon className="w-4 h-4 mr-1" />
                   View Plans
                 </Button>
               </CardContent>

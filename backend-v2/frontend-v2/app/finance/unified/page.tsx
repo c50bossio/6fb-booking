@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { getProfile, fetchAPI, type User } from '@/lib/api'
 import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/Button'
 import { DateRangeSelector, DateRangePreset } from '@/components/analytics/shared/DateRangeSelector'
 import { 
@@ -16,7 +16,7 @@ import {
   GiftIcon,
   ArrowDownTrayIcon,
   ChartBarIcon,
-  ArrowTrendingUpIcon
+  ArrowArrowTrendingUpIcon
 } from '@heroicons/react/24/outline'
 
 // Lazy load financial sections
@@ -312,7 +312,7 @@ function FinancialOverview({ summary, userRole }: { summary: any; userRole?: str
             <div className="flex items-center justify-between mb-2">
               <CurrencyDollarIcon className="w-5 h-5 text-green-600" />
               <span className="text-sm font-medium text-green-600 flex items-center">
-                <ArrowTrendingUpIcon className="w-4 h-4 mr-1" />
+                <ArrowArrowTrendingUpIcon className="w-4 h-4 mr-1" />
                 {summary.monthlyGrowth}%
               </span>
             </div>

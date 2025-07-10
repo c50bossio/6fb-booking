@@ -8,16 +8,22 @@ import { getDefaultDashboard } from '@/lib/routeGuards'
 import { useAsyncOperation } from '@/lib/useAsyncOperation'
 import { LoadingButton, ErrorDisplay, SuccessMessage } from '@/components/LoadingStates'
 import { Button } from '@/components/ui/Button'
-import { Card, CardContent } from '@/components/ui/Card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Logo } from '@/components/ui/Logo'
 import { useFormValidation, validators } from '@/hooks/useFormValidation'
 import { ValidatedInput, PasswordStrengthIndicator } from '@/components/forms/ValidatedInput'
 import { Form, FormField, FormActions, FormError } from '@/components/forms/Form'
 import { Mail, Lock } from 'lucide-react'
+import { RateLimitIndicator, useRateLimit } from '@/components/auth/RateLimitIndicator'
+import { EnhancedRememberMe } from '@/components/auth/RememberMe'
+import { trustDevice, generateDeviceFingerprint } from '@/lib/device-fingerprint'
+import { SocialLoginGroup } from '@/components/auth/SocialLoginButton'
+import { useToast } from '@/hooks/use-toast'
 
 function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { toast } = useToast()
   const [rememberMe, setRememberMe] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [verificationError, setVerificationError] = useState(false)
@@ -25,6 +31,7 @@ function LoginContent() {
   
   const [loginState, loginActions] = useAsyncOperation()
   const [resendState, resendActions] = useAsyncOperation()
+  const rateLimit = useRateLimit('login-rate-limit')
 
   // Initialize form validation
   const {
@@ -65,6 +72,11 @@ function LoginContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // Check if rate limited
+    if (rateLimit.isLocked) {
+      return
+    }
+
     // Validate form before submission
     const isValid = await validateForm()
     if (!isValid) {
@@ -80,6 +92,19 @@ function LoginContent() {
       if (response.access_token) {
         console.log('Token received, fetching profile...')
         // Token is already stored in the login function
+        
+        // Handle device trust if remember me is checked
+        if (rememberMe && response.user_id) {
+          try {
+            const deviceId = await generateDeviceFingerprint()
+            await trustDevice(deviceId, response.user_id, 30) // Trust for 30 days
+            console.log('✅ Device trusted successfully')
+          } catch (error) {
+            console.error('Failed to trust device:', error)
+            // Continue with login even if device trust fails
+          }
+        }
+        
         // Fetch user profile to determine role
         console.log('✅ Login successful, starting redirect process...')
         
@@ -121,10 +146,16 @@ function LoginContent() {
           console.log('🎯 Redirecting to dashboard despite profile error...')
           window.location.href = '/dashboard'
         }
+        
+        // Reset rate limit on successful login
+        rateLimit.resetAttempts()
       } else {
         console.log('No access token in response')
       }
     } catch (err: any) {
+      // Increment rate limit attempts on failed login
+      rateLimit.incrementAttempts()
+      
       // Check if this is a verification error (403 status)
       if (err.message && err.message.includes('Email address not verified')) {
         setVerificationError(true)
@@ -214,6 +245,17 @@ function LoginContent() {
                 <FormError error={resendState.error} />
               )}
 
+              {/* Rate Limiting Indicator */}
+              {(rateLimit.attempts > 0 || rateLimit.isLocked) && (
+                <RateLimitIndicator
+                  attempts={rateLimit.attempts}
+                  maxAttempts={rateLimit.maxAttempts}
+                  lockedUntil={rateLimit.lockedUntil}
+                  variant="embedded"
+                  showWarning={true}
+                />
+              )}
+
               <FormField>
                 <ValidatedInput
                   id="email"
@@ -240,16 +282,12 @@ function LoginContent() {
               </FormField>
 
               <div className="flex items-center justify-between">
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                  />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Remember me</span>
-                </label>
-                <Link href="/forgot-password" className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+                <EnhancedRememberMe
+                  value={rememberMe}
+                  onChange={setRememberMe}
+                  className="flex-1"
+                />
+                <Link href="/forgot-password" className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 ml-4">
                   Forgot password?
                 </Link>
               </div>
@@ -262,9 +300,9 @@ function LoginContent() {
                   variant="primary"
                   fullWidth
                   size="lg"
-                  disabled={!isFormValid || loginState.loading}
+                  disabled={!isFormValid || loginState.loading || rateLimit.isLocked}
                 >
-                  Sign in
+                  {rateLimit.isLocked ? 'Account Locked' : 'Sign in'}
                 </Button>
               </FormActions>
 
@@ -279,6 +317,16 @@ function LoginContent() {
                   Back to home
                 </Link>
               </div>
+
+              <SocialLoginGroup 
+                onError={(error) => {
+                  toast({
+                    variant: 'destructive',
+                    title: 'Social login error',
+                    description: error.message
+                  })
+                }}
+              />
             </Form>
           </CardContent>
         </Card>

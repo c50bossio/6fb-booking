@@ -5,10 +5,13 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { getClients, deleteClient, updateCustomerType, searchClients, type Client } from '@/lib/api'
 import { Button } from '@/components/ui/Button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import VirtualList from '@/components/VirtualList'
+import { EmptyClients } from '@/components/ui/empty-state'
+import { ConfirmDialog, useConfirmDialog } from '@/components/ui/confirm-dialog'
+import { SkeletonTable } from '@/components/ui/skeleton-loader'
 
 export default function ClientsPage() {
   const router = useRouter()
@@ -66,17 +69,28 @@ export default function ClientsPage() {
     }
   }
 
+  const { confirm, ConfirmDialog } = useConfirmDialog()
+
   const handleDeleteClient = async (clientId: number) => {
-    if (!confirm('Are you sure you want to delete this client?')) return
+    const clientName = clients.find(c => c.id === clientId)?.first_name || 'this client'
     
-    try {
-      await deleteClient(clientId)
-      loadClients()
-    } catch (err: any) {
-      if (err.message.includes('403')) {
-        setError('Only admins can delete clients')
-      } else {
-        setError('Failed to delete client')
+    const confirmed = await confirm({
+      title: 'Delete Client',
+      description: `Are you sure you want to delete ${clientName}? This will remove all their appointment history and cannot be undone.`,
+      confirmText: 'Delete Client',
+      variant: 'danger'
+    })
+
+    if (confirmed) {
+      try {
+        await deleteClient(clientId)
+        loadClients()
+      } catch (err: any) {
+        if (err.message.includes('403')) {
+          setError('Only admins can delete clients')
+        } else {
+          setError('Failed to delete client')
+        }
       }
     }
   }
@@ -212,19 +226,20 @@ export default function ClientsPage() {
 
         {/* Clients Table */}
         {loading ? (
-          <div className="bg-white rounded-lg shadow p-8 text-center">
-            <p className="text-gray-500">Loading clients...</p>
-          </div>
+          <SkeletonTable rows={5} columns={6} />
+        ) : error ? (
+          <Card className="p-8">
+            <div className="text-center">
+              <p className="text-red-600 mb-4">{error}</p>
+              <Button onClick={() => loadClients()} variant="outline">
+                Try Again
+              </Button>
+            </div>
+          </Card>
         ) : clients.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-8 text-center">
-            <p className="text-gray-500">No clients found</p>
-            <Link
-              href="/clients/new"
-              className="mt-4 inline-block text-blue-600 hover:text-blue-500"
-            >
-              Add your first client
-            </Link>
-          </div>
+          <Card className="p-8">
+            <EmptyClients onAddClient={() => router.push('/clients/new')} />
+          </Card>
         ) : (
           <>
             <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -348,6 +363,9 @@ export default function ClientsPage() {
           </>
         )}
       </div>
+      
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog />
     </main>
   )
 }

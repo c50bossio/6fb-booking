@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { ArrowLeft, TrendingUp, TrendingDown, DollarSign, MessageSquare, Users, Bot } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
+import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/Badge'
 import { Select } from '@/components/ui/Select'
 import { AgentAnalytics } from '@/components/agents/AgentAnalytics'

@@ -6,14 +6,14 @@ import { getProfile, type User } from '@/lib/api'
 import { AnalyticsLayout, AnalyticsSectionLayout } from '@/components/analytics/AnalyticsLayout'
 import { AnalyticsCardGrid } from '@/components/analytics/shared/AnalyticsCard'
 import { DateRangeSelector, DateRangePreset } from '@/components/analytics/shared/DateRangeSelector'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/Button'
 import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
 import { 
   StarIcon,
   ChatBubbleLeftEllipsisIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
   CheckCircleIcon,
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline'
@@ -334,7 +334,7 @@ export default function ReviewsAnalyticsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <TrendingUpIcon className="w-5 h-5 text-green-600" />
+                  <ArrowTrendingUpIcon className="w-5 h-5 text-green-600" />
                   <span>Top Positive Keywords</span>
                 </CardTitle>
               </CardHeader>
@@ -364,7 +364,7 @@ export default function ReviewsAnalyticsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <TrendingDownIcon className="w-5 h-5 text-red-600" />
+                  <ArrowTrendingDownIcon className="w-5 h-5 text-red-600" />
                   <span>Areas for Improvement</span>
                 </CardTitle>
               </CardHeader>

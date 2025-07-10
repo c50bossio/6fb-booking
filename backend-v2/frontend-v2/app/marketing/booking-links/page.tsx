@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { getProfile } from '@/lib/api'
 import { toast } from '@/hooks/use-toast'
+import { generateOrganizationBookingURL } from '@/lib/booking-link-generator'
 import { 
   LinkIcon, 
   QrCodeIcon,
@@ -56,6 +57,7 @@ export default function BookingLinksPage() {
   const [services, setServices] = useState<any[]>([])
   const [barbers, setBarbers] = useState<any[]>([])
   const [locations, setLocations] = useState<any[]>([])
+  const [organizationSlug, setOrganizationSlug] = useState<string>('')
   const [formData, setFormData] = useState<BookingLinkForm>({
     title: ''
   })
@@ -66,12 +68,18 @@ export default function BookingLinksPage() {
 
   const loadData = async () => {
     try {
+      // Get user profile to get organization slug
+      const profile = await getProfile()
+      if (profile?.organization?.slug) {
+        setOrganizationSlug(profile.organization.slug)
+      }
+      
       // In a real implementation, these would be actual API calls
       setShortUrls([
         {
           id: '1',
           short_code: 'summer2025',
-          target_url: '/book?promo=SUMMER25',
+          target_url: `/${organizationSlug || 'demo-shop'}?promo=SUMMER25`,
           title: 'Summer 2025 Special',
           description: '25% off all services',
           clicks: 234,
@@ -90,7 +98,7 @@ export default function BookingLinksPage() {
         {
           id: '2',
           short_code: 'vip-john',
-          target_url: '/book?barber=john&service=executive',
+          target_url: `/${organizationSlug || 'demo-shop'}?barber=john&service=executive`,
           title: 'VIP Booking - John',
           description: 'Direct booking link for John\'s VIP clients',
           clicks: 156,
@@ -108,7 +116,7 @@ export default function BookingLinksPage() {
         {
           id: '3',
           short_code: 'gift100',
-          target_url: '/payments/gift-certificates?amount=100',
+          target_url: `/${organizationSlug || 'demo-shop'}/payments/gift-certificates?amount=100`,
           title: '$100 Gift Certificate',
           clicks: 78,
           unique_visitors: 72,
@@ -201,6 +209,9 @@ export default function BookingLinksPage() {
   }
 
   const getFullUrl = (shortCode: string) => {
+    if (organizationSlug) {
+      return `${window.location.origin}/${organizationSlug}`
+    }
     return `${window.location.origin}/book/${shortCode}`
   }
 

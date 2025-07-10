@@ -7,7 +7,7 @@ import { Plus, Search, Package, DollarSign, Archive, Edit, Trash2, Upload } from
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/hooks/use-toast'
@@ -32,7 +32,7 @@ export default function ProductsPage() {
   // Check user permissions
   useEffect(() => {
     getProfile().then(profile => {
-      if (!['admin', 'super_admin', 'manager'].includes(profile.role || '')) {
+      if (!['admin', 'super_admin', 'shop_manager', 'enterprise_owner', 'shop_owner'].includes(profile.role || '')) {
         router.push('/dashboard')
         toast({
           title: 'Access Denied',

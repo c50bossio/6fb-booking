@@ -4,12 +4,16 @@ import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { MultiStepRegistration, RegistrationData } from '@/components/registration'
 import { registerComplete, CompleteRegistrationData } from '@/lib/api'
+import { applyServiceTemplate } from '@/lib/api/service-templates'
 import Link from 'next/link'
 import { LogoFull } from '@/components/ui/Logo'
 import { ArrowLeftIcon, SparklesIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
+import { SocialLoginGroup } from '@/components/auth/SocialLoginButton'
+import { useToast } from '@/hooks/use-toast'
 
 export default function RegisterPage() {
   const router = useRouter()
+  const { toast } = useToast()
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   
@@ -60,6 +64,32 @@ export default function RegisterPage() {
 
       // Call the complete registration API
       await registerComplete(registrationPayload)
+
+      // Apply service templates if any were selected
+      if (data.serviceTemplates && data.serviceTemplates.length > 0) {
+        try {
+          console.log('[RegisterPage] Applying service templates:', data.serviceTemplates)
+          
+          // Apply each template
+          for (const template of data.serviceTemplates) {
+            await applyServiceTemplate({
+              template_id: template.id,
+              customizations: {
+                // Use suggested pricing as default
+                price: template.suggested_base_price,
+                duration: template.estimated_duration,
+                description: template.description || ''
+              }
+            })
+          }
+          
+          console.log('[RegisterPage] Service templates applied successfully')
+        } catch (templateError) {
+          console.error('[RegisterPage] Error applying service templates:', templateError)
+          // Don't fail registration if template application fails
+          // Templates can be applied later from the dashboard
+        }
+      }
 
       // Redirect to check-email page
       router.push(`/check-email?email=${encodeURIComponent(data.accountInfo.email)}`)
@@ -204,6 +234,19 @@ export default function RegisterPage() {
 
       {/* Registration Form Container */}
       <div className="relative z-10">
+        {/* Social Login Options */}
+        <div className="max-w-md mx-auto px-4 pb-8">
+          <SocialLoginGroup 
+            onError={(error) => {
+              toast({
+                variant: 'destructive',
+                title: 'Social login error',
+                description: error.message
+              })
+            }}
+          />
+        </div>
+
         <MultiStepRegistration
           onComplete={handleComplete}
           onCancel={handleCancel}
