@@ -22,11 +22,19 @@ class SecurityConfig:
     def get_environment_specific_config(environment: str) -> Dict:
         """Stub method for getting security config"""
         return {
-            'rate_limits': {'default': 100},
-            'security_headers': {},
-            'cors_origins': ['*'],
-            'allowed_ips': [],
-            'blocked_ips': []
+            'RATE_LIMITS': {'default': 100},
+            'SECURITY_HEADERS': {
+                'X-Content-Type-Options': 'nosniff',
+                'X-Frame-Options': 'DENY',
+                'X-XSS-Protection': '1; mode=block'
+            },
+            'CORS_ORIGINS': ['*'],
+            'ALLOWED_IPS': [],
+            'BLOCKED_IPS': [],
+            'WEBHOOK_SECURITY': {
+                'max_payload_size': 1024 * 1024,
+                'allowed_content_types': ['application/json']
+            }
         }
 
 logger = logging.getLogger(__name__)
