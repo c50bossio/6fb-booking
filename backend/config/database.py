@@ -187,21 +187,31 @@ def get_db() -> Generator[Session, None, None]:
 def get_db_session():
     """
     Context manager for database sessions outside of FastAPI
+    Enhanced with proper error handling and connection tracking
     """
     db = SessionLocal()
     connection_monitor.connection_created()
 
     try:
         yield db
+        # Only commit if no exception occurred
         db.commit()
     except Exception as e:
         logger.error(f"Database session error: {str(e)}")
         connection_monitor.connection_error()
-        db.rollback()
+        try:
+            db.rollback()
+        except Exception as rollback_error:
+            logger.error(f"Database rollback error: {str(rollback_error)}")
         raise
     finally:
-        db.close()
-        connection_monitor.connection_closed()
+        # Ensure connection is always closed even if commit/rollback fails
+        try:
+            db.close()
+        except Exception as close_error:
+            logger.error(f"Database close error: {str(close_error)}")
+        finally:
+            connection_monitor.connection_closed()
 
 
 # Bulk operations for better performance
