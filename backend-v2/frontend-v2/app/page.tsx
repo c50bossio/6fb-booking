@@ -262,9 +262,9 @@ export default function LandingPage() {
             {Object.entries(plans).map(([key, plan]) => (
               <div 
                 key={key}
-                className={`bg-white rounded-xl p-8 ${plan.popular ? 'ring-2 ring-yellow-400 relative' : 'border border-gray-200'}`}
+                className={`bg-white rounded-xl p-8 ${('popular' in plan && plan.popular) ? 'ring-2 ring-yellow-400 relative' : 'border border-gray-200'}`}
               >
-                {plan.popular && (
+                {('popular' in plan && plan.popular) && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                     <span className="bg-yellow-400 text-black px-4 py-2 rounded-full text-sm font-medium">
                       Most Popular
@@ -297,7 +297,7 @@ export default function LandingPage() {
                 </ul>
 
                 <AccessibleButton
-                  variant={plan.popular ? "primary" : "secondary"}
+                  variant={('popular' in plan && plan.popular) ? "primary" : "secondary"}
                   className="w-full"
                 >
                   Get Started
