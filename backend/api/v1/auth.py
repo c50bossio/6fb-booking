@@ -139,11 +139,20 @@ class UserResponse(BaseModel):
 
 # Helper functions
 def verify_password(plain_password, hashed_password):
-    """Verify password using bcrypt only - consistent with registration hashing"""
+    """Verify password using bcrypt only - consistent with registration hashing
+    Enhanced with timing attack protection"""
     try:
+        # SECURITY FIX: Always perform verification to prevent timing attacks
+        # even if the hashed_password is None or empty
+        if not hashed_password:
+            # Still perform a dummy bcrypt operation to maintain consistent timing
+            dummy_hash = "$2b$12$dummy.hash.to.prevent.timing.attacks.abcdefghijklmnopqrstuvwxyz"
+            pwd_context.verify(plain_password, dummy_hash)
+            return False
+        
         # Only use bcrypt for consistency with registration
         is_valid = pwd_context.verify(plain_password, hashed_password)
-        logger.debug(f"Password verification result: {is_valid}")
+        logger.debug(f"Password verification completed")
         return is_valid
     except Exception as e:
         logger.error(f"Password verification error: {str(e)}")
@@ -687,7 +696,14 @@ async def login_with_mfa(
     )
     user = user_query.first()
 
-    if not user or not verify_password(credentials.password, user.hashed_password):
+    # SECURITY FIX: Always verify password even if user doesn't exist
+    # to prevent timing attacks and user enumeration
+    password_valid = verify_password(
+        credentials.password, 
+        user.hashed_password if user else None
+    )
+
+    if not user or not password_valid:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",

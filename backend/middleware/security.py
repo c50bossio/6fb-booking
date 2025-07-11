@@ -130,20 +130,19 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if request.method == "OPTIONS":
             return await call_next(request)
 
-        # In production, apply rate limiting to docs endpoints
+        # SECURITY FIX: Only allow rate limiting bypass for specific safe endpoints
+        # and only in development environment with explicit configuration
+        safe_endpoints = ["/", "/health", "/api/v1/health"]
+        
         if (
-            settings.ENVIRONMENT == "production"
-            and hasattr(settings, "RATE_LIMIT_STRICT_MODE")
-            and settings.RATE_LIMIT_STRICT_MODE
+            settings.ENVIRONMENT == "development" 
+            and hasattr(settings, "DISABLE_RATE_LIMITING") 
+            and settings.DISABLE_RATE_LIMITING
+            and request.url.path in safe_endpoints
         ):
-            # Only skip rate limiting for root endpoint
-            if request.url.path == "/":
-                return await call_next(request)
-        else:
-            # In development, skip rate limiting for docs
-            if request.url.path in ["/docs", "/redoc", "/openapi.json", "/"]:
-                return await call_next(request)
+            return await call_next(request)
 
+        # Apply rate limiting to all other endpoints, including docs in production
         # Get client identifier and endpoint type
         client_ip = get_client_ip(request)
         endpoint_type = self._get_endpoint_type(request.url.path)
