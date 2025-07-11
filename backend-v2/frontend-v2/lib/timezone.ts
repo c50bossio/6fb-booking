@@ -19,6 +19,16 @@ export const getTimezoneDisplayName = (): string => {
   return Intl.DateTimeFormat().resolvedOptions().timeZone;
 };
 
+export const getTimezoneAbbreviation = (): string => {
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const shortName = new Intl.DateTimeFormat('en', {
+    timeZoneName: 'short',
+    timeZone: timezone,
+  }).formatToParts().find(part => part.type === 'timeZoneName')?.value;
+  
+  return shortName || timezone.split('/').pop() || 'UTC';
+};
+
 export const getFriendlyDateLabel = (date: Date): string => {
   const today = new Date();
   const tomorrow = new Date(today);

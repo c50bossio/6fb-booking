@@ -3,7 +3,7 @@
 import React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
-import { ButtonLoading } from './LoadingStates'
+import { LoadingSpinner } from '../LoadingStates'
 
 const buttonVariants = cva(
   // Enhanced base styles with performance optimizations
@@ -167,14 +167,14 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       }
     }
 
-    const getLoadingSize = () => {
+    const getLoadingSize = (): 'sm' | 'md' | 'lg' => {
       switch (effectiveSize) {
-        case 'xs': return 'xs'
-        case 'sm': case 'icon-sm': return 'xs'
-        case 'md': case 'icon': return 'sm'
-        case 'lg': case 'icon-lg': return 'sm'
-        case 'xl': return 'md'
-        default: return 'sm'
+        case 'xs': return 'sm'
+        case 'sm': case 'icon-sm': return 'sm'
+        case 'md': case 'icon': return 'md'
+        case 'lg': case 'icon-lg': return 'md'
+        case 'xl': return 'lg'
+        default: return 'md'
       }
     }
 
@@ -188,7 +188,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {/* Loading state */}
         {loading && (
           <span className="absolute inset-0 flex items-center justify-center">
-            <ButtonLoading size={getLoadingSize()} />
+            <LoadingSpinner size={getLoadingSize()} />
           </span>
         )}
         

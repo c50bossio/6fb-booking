@@ -3,6 +3,7 @@
 export interface TimeSlot {
   time: string;
   available: boolean;
+  is_next_available?: boolean;
 }
 
 export interface SlotsResponse {
@@ -117,4 +118,33 @@ export const createGuestQuickBooking = async (data: GuestQuickBookingCreate): Pr
     time: '09:00',
     status: 'confirmed'
   };
+};
+
+// Payment API functions
+export interface PaymentIntentRequest {
+  booking_id: number;
+}
+
+export interface PaymentIntentResponse {
+  client_secret?: string;
+  payment_intent_id?: string;
+}
+
+export interface ConfirmPaymentRequest {
+  payment_intent_id: string;
+  booking_id: number;
+}
+
+export const createPaymentIntent = async (data: PaymentIntentRequest): Promise<PaymentIntentResponse> => {
+  // Mock payment intent for demo
+  return {
+    client_secret: 'pi_test_' + Math.random().toString(36).substr(2, 9),
+    payment_intent_id: 'pi_' + Math.random().toString(36).substr(2, 9)
+  };
+};
+
+export const confirmPayment = async (data: ConfirmPaymentRequest): Promise<void> => {
+  // Mock payment confirmation for demo
+  console.log('Payment confirmed:', data);
+  return;
 };
