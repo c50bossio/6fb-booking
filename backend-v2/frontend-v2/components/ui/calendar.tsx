@@ -269,7 +269,9 @@ function AccessibleCalendar({
               type="button"
               onClick={() => navigateMonth('prev')}
               className={cn(
-                'p-2 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500',
+                'p-3 sm:p-2 min-h-[44px] min-w-[44px] rounded-lg transition-all duration-200',
+                'touch-manipulation select-none active:scale-95',
+                'focus:outline-none focus:ring-2 focus:ring-primary-500',
                 isHighContrast 
                   ? 'border-2 border-gray-800 hover:bg-gray-100' 
                   : 'hover:bg-gray-100',
@@ -296,7 +298,9 @@ function AccessibleCalendar({
               type="button"
               onClick={() => navigateMonth('next')}
               className={cn(
-                'p-2 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500',
+                'p-3 sm:p-2 min-h-[44px] min-w-[44px] rounded-lg transition-all duration-200',
+                'touch-manipulation select-none active:scale-95',
+                'focus:outline-none focus:ring-2 focus:ring-primary-500',
                 isHighContrast 
                   ? 'border-2 border-gray-800 hover:bg-gray-100' 
                   : 'hover:bg-gray-100',
@@ -398,7 +402,8 @@ function AccessibleCalendar({
                         aria-current={isToday ? 'date' : undefined}
                         aria-disabled={isDisabled}
                         className={cn(
-                          'relative w-full h-full rounded-lg font-medium text-sm transition-all',
+                          'relative w-full h-full min-h-[44px] rounded-lg font-medium text-sm transition-all',
+                          'touch-manipulation select-none active:scale-95',
                           prefersReducedMotion ? 'duration-0' : 'duration-200',
                           'focus:outline-none focus:ring-2 focus:ring-offset-2',
                           isHighContrast 
@@ -447,7 +452,7 @@ function AccessibleCalendar({
       ref={calendarRef}
       id={id}
       className={cn(
-        'p-4 bg-white rounded-lg border border-gray-200 shadow-sm',
+        'p-3 sm:p-4 bg-white rounded-lg border border-gray-200 shadow-sm',
         isHighContrast ? 'border-4 border-gray-900' : '',
         className
       )}

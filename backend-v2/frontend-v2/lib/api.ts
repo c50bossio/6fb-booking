@@ -916,9 +916,20 @@ export async function getMyBookings(): Promise<BookingListResponse> {
 }
 
 export async function cancelBooking(bookingId: number): Promise<BookingResponse> {
-  const appointment = await fetchAPI(`/api/v1/appointments/${bookingId}/cancel`, {
-    method: 'PUT',
-  })
+  const appointment = await retryOperation(
+    () => fetchAPI(`/api/v1/appointments/${bookingId}/cancel`, {
+      method: 'PUT',
+    }),
+    defaultRetryConfigs.critical, // Critical retry config for cancellations
+    (error) => {
+      // Don't retry if appointment not found (404) or already canceled
+      const shouldRetry = !error.message?.includes('404') && 
+                         !error.message?.includes('already') &&
+                         !error.message?.includes('canceled')
+      console.log(`Cancel booking error retry decision: ${shouldRetry}`, error.message)
+      return shouldRetry
+    }
+  )
   return normalizeAppointmentData(appointment)
 }
 
@@ -936,10 +947,21 @@ export async function updateBooking(bookingId: number, data: {
 }
 
 export async function rescheduleBooking(bookingId: number, date: string, time: string): Promise<BookingResponse> {
-  const appointment = await fetchAPI(`/api/v1/appointments/${bookingId}/reschedule`, {
-    method: 'POST',
-    body: JSON.stringify({ date, time }),
-  })
+  const appointment = await retryOperation(
+    () => fetchAPI(`/api/v1/appointments/${bookingId}/reschedule`, {
+      method: 'POST',
+      body: JSON.stringify({ date, time }),
+    }),
+    defaultRetryConfigs.critical, // Critical retry config for rescheduling
+    (error) => {
+      // Don't retry validation errors (422) or appointment not found (404)
+      const shouldRetry = !error.message?.includes('422') && 
+                         !error.message?.includes('404') &&
+                         !error.message?.includes('unavailable')
+      console.log(`Reschedule booking error retry decision: ${shouldRetry}`, error.message)
+      return shouldRetry
+    }
+  )
   return normalizeAppointmentData(appointment)
 }
 
@@ -5808,68 +5830,46 @@ export interface GuestBookingResponse {
 
 // Create a booking for a guest user (no authentication required)
 export async function createGuestBooking(bookingData: GuestBookingCreate): Promise<GuestBookingResponse> {
-  // Don't include Authorization header for guest bookings
-  const response = await fetch(`${API_URL}/api/v1/appointments/guest`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(bookingData),
-  })
+  // Use retryOperation with fetchAPI for consistent error handling and retry logic
+  const result = await retryOperation(
+    () => fetchAPI('/api/v1/appointments/guest', {
+      method: 'POST',
+      body: JSON.stringify(bookingData),
+    }),
+    defaultRetryConfigs.normal, // Normal retry config for guest bookings
+    (error) => {
+      // Don't retry validation errors (422) or auth errors (401/403)
+      const shouldRetry = !error.message?.includes('422') && 
+                         !error.message?.includes('401') && 
+                         !error.message?.includes('403')
+      console.log(`Guest booking error retry decision: ${shouldRetry}`, error.message)
+      return shouldRetry
+    }
+  )
   
-  if (!response.ok) {
-    let errorData: APIError
-    try {
-      errorData = await response.json()
-    } catch {
-      throw new Error(`Network error: ${response.status} ${response.statusText}`)
-    }
-    
-    // Handle specific error types
-    if (response.status === 422) {
-      if (Array.isArray(errorData.detail)) {
-        const messages = errorData.detail.map((err: ValidationError) => err.msg).join(', ')
-        throw new Error(messages)
-      }
-    }
-    
-    const message = typeof errorData.detail === 'string' 
-      ? errorData.detail 
-      : errorData.message || `API Error: ${response.status}`
-    
-    throw new Error(message)
-  }
-
-  return response.json()
+  return result
 }
 
 // Create a quick booking for guest user (next available slot)
 export async function createGuestQuickBooking(bookingData: GuestQuickBookingCreate): Promise<GuestBookingResponse> {
-  // Don't include Authorization header for guest bookings
-  const response = await fetch(`${API_URL}/api/v1/appointments/guest/quick`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(bookingData),
-  })
-  
-  if (!response.ok) {
-    let errorData: APIError
-    try {
-      errorData = await response.json()
-    } catch {
-      throw new Error(`Network error: ${response.status} ${response.statusText}`)
+  // Use retryOperation with fetchAPI for consistent error handling and retry logic
+  const result = await retryOperation(
+    () => fetchAPI('/api/v1/appointments/guest/quick', {
+      method: 'POST',
+      body: JSON.stringify(bookingData),
+    }),
+    defaultRetryConfigs.critical, // Critical retry config for quick bookings
+    (error) => {
+      // Don't retry validation errors (422) or auth errors (401/403)
+      const shouldRetry = !error.message?.includes('422') && 
+                         !error.message?.includes('401') && 
+                         !error.message?.includes('403')
+      console.log(`Guest quick booking error retry decision: ${shouldRetry}`, error.message)
+      return shouldRetry
     }
-    
-    const message = typeof errorData.detail === 'string' 
-      ? errorData.detail 
-      : errorData.message || `API Error: ${response.status}`
-    
-    throw new Error(message)
-  }
-
-  return response.json()
+  )
+  
+  return result
 }
 
 // ============================================================================

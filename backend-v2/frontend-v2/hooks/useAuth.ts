@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { getProfile, logout as apiLogout, type User } from '@/lib/api'
+import { useState, useEffect } from 'react'
+import { logout as apiLogout, type User } from '@/lib/api'
 
 export interface AuthState {
   user: User | null
@@ -10,146 +10,97 @@ export interface AuthState {
   error: string | null
 }
 
-// Global auth state to prevent multiple simultaneous checks
-let globalAuthState = {
-  user: null as User | null,
-  isLoading: true,
-  error: null as string | null,
-  isChecking: false,
-  hasChecked: false
-}
-
-let authStateListeners: Array<(state: typeof globalAuthState) => void> = []
-
 /**
- * Simple authentication hook with singleton pattern to prevent loops
- * Checks authentication state and provides logout functionality
+ * Simplified authentication hook without complex global state
+ * Checks authentication state efficiently and provides logout functionality
  */
 export function useAuth(): AuthState & { logout: () => Promise<void>, refreshToken: () => Promise<void>, setAuthTokens: (accessToken: string, refreshToken: string) => void } {
-  const [localState, setLocalState] = useState(globalAuthState)
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Subscribe to global auth state changes
-    const updateLocalState = (newState: typeof globalAuthState) => {
-      setLocalState({ ...newState })
-    }
-    
-    authStateListeners.push(updateLocalState)
-    
-    // If we haven't checked auth yet and we're not already checking, do it now
-    if (!globalAuthState.hasChecked && !globalAuthState.isChecking) {
-      checkAuthState()
-    }
-    
-    return () => {
-      authStateListeners = authStateListeners.filter(listener => listener !== updateLocalState)
-    }
-  }, [])
-
-  const updateGlobalState = useCallback((updates: Partial<typeof globalAuthState>) => {
-    globalAuthState = { ...globalAuthState, ...updates }
-    authStateListeners.forEach(listener => listener(globalAuthState))
+    checkAuthState()
   }, [])
 
   const checkAuthState = async () => {
-    if (globalAuthState.isChecking) {
-      console.log('🔍 checkAuthState: Already checking, skipping')
+    // Quick check - if already loading or no window, skip
+    if (typeof window === 'undefined') {
+      console.log('🔍 useAuth: Server-side rendering, skipping auth check')
       return
     }
     
-    console.log('🔍 checkAuthState: Starting enhanced authentication check')
-    
-    updateGlobalState({ isChecking: true, isLoading: true, error: null })
-    
-    // Add timeout to prevent infinite loading
-    const timeoutId = setTimeout(() => {
-      console.warn('🔍 checkAuthState: Auth check timeout after 5s')
-      updateGlobalState({ user: null, isLoading: false, isChecking: false, hasChecked: true })
-    }, 5000)
+    console.log('🔍 useAuth: ============ STARTING AUTH CHECK ============')
+    console.log('🔍 useAuth: Current state - user:', !!user, 'loading:', isLoading, 'error:', error)
+    setIsLoading(true)
+    setError(null)
     
     try {
-      
       // Check if we have a token first
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
-      console.log('🔍 checkAuthState: Token present:', !!token)
+      const token = localStorage.getItem('token')
+      console.log('🔍 useAuth: Token present:', !!token)
       
       if (!token) {
-        console.log('🔍 checkAuthState: No token, ensuring clean state')
-        // Also clear any stale cookies
-        if (typeof window !== 'undefined') {
-          document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
-        }
-        updateGlobalState({ user: null, isLoading: false, isChecking: false, hasChecked: true })
-        clearTimeout(timeoutId)
+        console.log('🔍 useAuth: ❌ No token found, user not authenticated')
+        console.log('🔍 useAuth: Setting state - user: null, loading: false, error: null')
+        setUser(null)
+        setIsLoading(false)
+        console.log('🔍 useAuth: ============ AUTH CHECK COMPLETE (NO TOKEN) ============')
         return
       }
 
-      console.log('🔍 checkAuthState: Token found, validating with API')
+      console.log('🔍 useAuth: Token found, validating with API')
       
-      // Make a direct API call to validate the token
+      // Make API call to validate token - with reasonable timeout
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      let response;
+      
       try {
-        response = await fetch(`${API_URL}/api/v1/auth/me`, {
+        const response = await fetch(`${API_URL}/api/v1/auth/me`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
-          // Add timeout to prevent hanging
-          signal: AbortSignal.timeout(3000)
+          signal: AbortSignal.timeout(2000) // 2 second timeout
         })
-      } catch (fetchError) {
-        console.error('🔍 checkAuthState: Network error:', fetchError)
-        // Backend not available - don't clear tokens
-        updateGlobalState({ 
-          user: null, 
-          isLoading: false, 
-          isChecking: false, 
-          hasChecked: true,
-          error: 'backend_unavailable'
-        })
-        clearTimeout(timeoutId)
-        return
-      }
 
-      if (response.ok) {
-        const userData = await response.json()
-        console.log('🔍 checkAuthState: Token valid, user authenticated:', userData)
-        // Ensure cookie is set for middleware
-        if (typeof window !== 'undefined') {
-          document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
-        }
-        updateGlobalState({ user: userData, isLoading: false, isChecking: false, hasChecked: true })
-      } else if (response.status === 401 || response.status === 403) {
-        console.log('🔍 checkAuthState: Token invalid/expired, clearing all auth storage')
-        // Clear all token storage locations
-        if (typeof window !== 'undefined') {
+        if (response.ok) {
+          const userData = await response.json()
+          console.log('🔍 useAuth: ✅ Token valid, user authenticated:', userData.email || userData.id)
+          console.log('🔍 useAuth: Setting state - user: authenticated, loading: false, error: null')
+          setUser(userData)
+          setError(null)
+        } else if (response.status === 401 || response.status === 403) {
+          console.log('🔍 useAuth: ❌ Token invalid/expired (status:', response.status, '), clearing storage')
+          // Clear invalid tokens
           localStorage.removeItem('token')
           localStorage.removeItem('refresh_token')
           localStorage.removeItem('user')
-          // Clear cookie as well
           document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
+          console.log('🔍 useAuth: Setting state - user: null, loading: false, error: null')
+          setUser(null)
+          setError(null)
+        } else {
+          console.warn('🔍 useAuth: ⚠️ API error (status:', response.status, '), keeping tokens')
+          console.log('🔍 useAuth: Setting state - user: null, loading: false, error: api_error')
+          // Don't clear tokens for server errors, just set user to null
+          setUser(null)
+          setError('api_error')
         }
-        updateGlobalState({ user: null, isLoading: false, isChecking: false, hasChecked: true })
-      } else {
-        console.warn('🔍 checkAuthState: API call failed with status:', response.status)
-        // Don't clear tokens for server errors, just set user to null
-        updateGlobalState({ user: null, isLoading: false, isChecking: false, hasChecked: true })
+      } catch (fetchError) {
+        console.warn('🔍 useAuth: 🌐 Network error:', fetchError)
+        console.log('🔍 useAuth: Setting state - user: null, loading: false, error: network_error')
+        // For network errors, don't clear tokens but set user to null
+        setUser(null)
+        setError('network_error')
       }
     } catch (error) {
-      console.warn('🔍 checkAuthState: Auth check failed:', error)
-      
-      // Don't clear tokens on general errors - might be temporary
-      updateGlobalState({ 
-        user: null, 
-        isLoading: false, 
-        isChecking: false, 
-        hasChecked: true,
-        error: error instanceof Error ? error.message : 'unknown_error'
-      })
+      console.warn('🔍 useAuth: 💥 Auth check failed:', error)
+      console.log('🔍 useAuth: Setting state - user: null, loading: false, error:', error instanceof Error ? error.message : 'unknown_error')
+      setUser(null)
+      setError(error instanceof Error ? error.message : 'unknown_error')
     } finally {
-      clearTimeout(timeoutId)
-      console.log('🔍 checkAuthState: Auth check complete, loading finished')
+      setIsLoading(false)
+      console.log('🔍 useAuth: ============ AUTH CHECK COMPLETE ============')
     }
   }
 
@@ -157,7 +108,8 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
     try {
       console.log('🔓 logout: Starting logout process')
       await apiLogout()
-      updateGlobalState({ user: null, error: null })
+      setUser(null)
+      setError(null)
       
       // Ensure complete cleanup of all auth storage
       if (typeof window !== 'undefined') {
@@ -178,7 +130,7 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
       }
     } catch (error) {
       console.error('Logout failed:', error)
-      updateGlobalState({ error: 'Logout failed' })
+      setError('Logout failed')
       
       // Even if API logout fails, clear local storage
       if (typeof window !== 'undefined') {
@@ -253,10 +205,10 @@ export function useAuth(): AuthState & { logout: () => Promise<void>, refreshTok
   }
 
   return {
-    user: localState.user,
-    isAuthenticated: !!localState.user,
-    isLoading: localState.isLoading,
-    error: localState.error,
+    user,
+    isAuthenticated: !!user,
+    isLoading,
+    error,
     logout,
     refreshToken,
     setAuthTokens

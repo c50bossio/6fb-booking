@@ -1,0 +1,201 @@
+# BookedBarber V2 SuperClaude Context Detection & Auto-Command Selection
+# This configuration enables automatic command selection based on file context, keywords, and project patterns
+
+## File Type Triggers
+file_patterns:
+  frontend:
+    patterns: ["*.tsx", "*.jsx", "*.ts", "*.js", "*.css", "*.scss"]
+    directories: ["frontend-v2/", "components/", "app/", "ui/"]
+    default_persona: "--persona-frontend"
+    priority_commands:
+      - "/build --react --magic --persona-frontend"
+      - "/analyze --code --persona-frontend"
+      - "/review --files --persona-frontend"
+    mcp_servers: ["magic-mcp", "context7"]
+    
+  backend:
+    patterns: ["*.py"]
+    directories: ["routers/", "models/", "services/", "api/"]
+    default_persona: "--persona-backend"
+    priority_commands:
+      - "/analyze --code --persona-backend"
+      - "/review --files --persona-backend"
+      - "/troubleshoot --api --persona-backend"
+    mcp_servers: ["context7", "sequential-thinking"]
+    
+  security:
+    patterns: ["*auth*", "*security*", "*payment*", "*stripe*"]
+    keywords: ["password", "token", "jwt", "auth", "security", "payment", "stripe", "authentication", "authorization"]
+    default_persona: "--persona-security"
+    priority_commands:
+      - "/scan --security --persona-security"
+      - "/analyze --security --persona-security"
+      - "/review --security --persona-security"
+    mcp_servers: ["context7", "sequential-thinking"]
+    
+  testing:
+    patterns: ["*test*", "*spec*", "*.test.py", "*.test.ts", "*.test.tsx"]
+    directories: ["tests/", "__tests__/"]
+    default_persona: "--persona-qa"
+    priority_commands:
+      - "/test --comprehensive --persona-qa"
+      - "/analyze --testing --persona-qa"
+      - "/build --test --persona-qa"
+    mcp_servers: ["puppeteer", "context7"]
+
+## Keyword Triggers
+keyword_patterns:
+  performance:
+    keywords: ["slow", "performance", "optimize", "speed", "lag", "loading", "response time", "query", "database", "cache", "memory"]
+    default_persona: "--persona-performance"
+    priority_commands:
+      - "/analyze --performance --persona-performance"
+      - "/troubleshoot --performance --persona-performance"
+      - "/improve --performance --persona-performance"
+    mcp_servers: ["puppeteer", "sequential-thinking"]
+    
+  bugs:
+    keywords: ["bug", "error", "issue", "problem", "fail", "broken", "exception", "fix", "debug", "troubleshoot"]
+    default_persona: "--persona-analyzer"
+    priority_commands:
+      - "/troubleshoot --analyze --persona-analyzer"
+      - "/analyze --debug --persona-analyzer"
+      - "/review --issues --persona-analyzer"
+    mcp_servers: ["sequential-thinking", "context7"]
+    
+  refactoring:
+    keywords: ["refactor", "clean", "improve", "optimize", "restructure"]
+    default_persona: "--persona-refactorer"
+    priority_commands:
+      - "/improve --refactor --persona-refactorer"
+      - "/analyze --code-quality --persona-refactorer"
+      - "/review --refactor --persona-refactorer"
+    mcp_servers: ["context7", "sequential-thinking"]
+    
+  architecture:
+    keywords: ["architecture", "design", "structure", "pattern", "system"]
+    default_persona: "--persona-architect"
+    priority_commands:
+      - "/design --architecture --persona-architect"
+      - "/analyze --architecture --persona-architect"
+      - "/review --architecture --persona-architect"
+    mcp_servers: ["sequential-thinking", "context7"]
+
+## BookedBarber V2 Specific Patterns
+project_patterns:
+  booking_system:
+    patterns: ["*booking*", "*appointment*", "*schedule*", "*calendar*"]
+    context: "Six Figure Barber booking system implementation"
+    default_persona: "--persona-backend"
+    priority_commands:
+      - "/analyze --booking-logic --persona-backend --c7"
+      - "/review --business-logic --persona-backend"
+      - "/troubleshoot --booking-flow --persona-backend"
+    mcp_servers: ["context7", "sequential-thinking"]
+    
+  payment_system:
+    patterns: ["*payment*", "*stripe*", "*transaction*", "*payout*"]
+    context: "Stripe Connect payment processing and payouts"
+    default_persona: "--persona-security"
+    priority_commands:
+      - "/scan --payment-security --persona-security"
+      - "/analyze --payment-flow --persona-backend --c7"
+      - "/review --payment-security --persona-security"
+    mcp_servers: ["context7", "sequential-thinking"]
+    
+  ui_components:
+    patterns: ["*component*", "*ui*", "*dashboard*", "*page*"]
+    directories: ["app/", "components/", "ui/"]
+    context: "Next.js 14 + shadcn/ui components"
+    default_persona: "--persona-frontend"
+    priority_commands:
+      - "/build --react --magic --persona-frontend"
+      - "/analyze --ui --persona-frontend --magic"
+      - "/review --components --persona-frontend"
+    mcp_servers: ["magic-mcp", "context7"]
+    
+  marketing_integrations:
+    patterns: ["*marketing*", "*gmb*", "*tracking*", "*analytics*"]
+    context: "Google My Business and marketing integrations"
+    default_persona: "--persona-backend"
+    priority_commands:
+      - "/analyze --integration --persona-backend --c7"
+      - "/review --api-integration --persona-backend"
+      - "/troubleshoot --integration --persona-backend"
+    mcp_servers: ["context7", "sequential-thinking"]
+
+## Task Complexity Analysis
+complexity_routing:
+  simple:
+    threshold: 1
+    patterns: ["single file edit", "small bug fix", "simple component"]
+    commands: ["/analyze --quick", "/review --simple"]
+    mcp_usage: "minimal"
+    
+  medium:
+    threshold: 3
+    patterns: ["multi-file changes", "feature implementation", "integration work"]
+    commands: ["/build --comprehensive", "/analyze --detailed", "/review --thorough"]
+    mcp_usage: "moderate"
+    
+  complex:
+    threshold: 5
+    patterns: ["system design", "architecture changes", "major refactoring"]
+    commands: ["/design --architecture --seq", "/analyze --comprehensive --seq", "/spawn --expert"]
+    mcp_usage: "extensive"
+
+## Automatic MCP Server Selection
+mcp_routing:
+  documentation_needed:
+    triggers: ["unknown library", "new framework", "API integration"]
+    primary_server: "context7"
+    fallback: ["sequential-thinking"]
+    
+  complex_analysis:
+    triggers: ["multi-step problem", "architecture question", "system design"]
+    primary_server: "sequential-thinking"
+    fallback: ["context7"]
+    
+  ui_generation:
+    triggers: ["component creation", "UI design", "frontend development"]
+    primary_server: "magic-mcp"
+    fallback: ["context7"]
+    
+  testing_automation:
+    triggers: ["E2E testing", "browser automation", "testing workflows"]
+    primary_server: "puppeteer"
+    fallback: ["context7"]
+
+## Smart Command Selection Logic
+selection_algorithm:
+  priority_order:
+    1. "Security patterns (highest priority)"
+    2. "File type patterns"
+    3. "Keyword patterns"
+    4. "Project-specific patterns"
+    5. "Default fallback"
+    
+  decision_matrix:
+    file_type_weight: 0.3
+    keyword_weight: 0.5
+    project_pattern_weight: 0.15
+    complexity_weight: 0.05
+    
+  confidence_threshold: 0.3
+  fallback_command: "/analyze --code --persona-architect"
+
+## Performance Optimization
+optimization:
+  cache_results: true
+  cache_duration: "30 minutes"
+  batch_similar_operations: true
+  progressive_mcp_loading: true
+  token_budget_tracking: true
+  
+## Monitoring and Learning
+monitoring:
+  track_command_success: true
+  track_persona_effectiveness: true
+  track_mcp_performance: true
+  auto_adjust_weights: true
+  log_decision_process: true

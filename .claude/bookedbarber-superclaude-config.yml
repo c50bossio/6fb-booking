@@ -1,0 +1,246 @@
+# BookedBarber V2 SuperClaude Configuration
+# Six Figure Barber methodology-aligned SuperClaude commands and workflows
+
+## Project Overview
+project:
+  name: "BookedBarber V2"
+  methodology: "Six Figure Barber"
+  stack: "FastAPI + Next.js 14 + PostgreSQL + Stripe Connect"
+  architecture: "Monorepo with V2-only active development"
+
+## Six Figure Barber Methodology Integration
+methodology_alignment:
+  core_principles:
+    - "Revenue Optimization"
+    - "Client Value Creation" 
+    - "Business Efficiency"
+    - "Professional Growth"
+    - "Scalability"
+  
+  feature_priorities:
+    high: ["booking_system", "payment_processing", "client_management", "analytics"]
+    medium: ["marketing_integrations", "calendar_sync", "notifications"]
+    low: ["documentation", "testing", "optimization"]
+
+## SuperClaude Command Mappings for 6FB Features
+
+### Booking System (Core 6FB Revenue)
+booking_system:
+  description: "Smart scheduling to maximize revenue per time slot"
+  patterns: ["*booking*", "*appointment*", "*schedule*", "*availability*"]
+  commands:
+    analysis: "/analyze --booking-logic --persona-backend --c7 --seq"
+    design: "/design --booking-architecture --persona-architect --seq"
+    security: "/scan --booking-security --persona-security --c7"
+    performance: "/analyze --booking-performance --persona-performance --pup"
+    review: "/review --booking-workflow --persona-backend --c7"
+  mcp_priority: ["context7", "sequential-thinking"]
+  business_context: "Revenue optimization through intelligent scheduling"
+
+### Payment Processing (6FB Revenue Engine)
+payment_processing:
+  description: "Stripe Connect for automated payments and barber payouts"
+  patterns: ["*payment*", "*stripe*", "*transaction*", "*payout*", "*commission*"]
+  commands:
+    analysis: "/analyze --payment-security --persona-security --c7 --seq"
+    design: "/design --payment-architecture --persona-architect --seq"
+    security: "/scan --payment-security --persona-security --c7"
+    integration: "/analyze --stripe-integration --persona-backend --c7"
+    review: "/review --payment-compliance --persona-security --c7"
+  mcp_priority: ["context7", "sequential-thinking"]
+  business_context: "Secure revenue processing following 6FB methodology"
+
+### Client Management (6FB Relationships)
+client_management:
+  description: "Building stronger client relationships for retention"
+  patterns: ["*client*", "*customer*", "*profile*", "*history*", "*loyalty*"]
+  commands:
+    analysis: "/analyze --client-experience --persona-frontend --c7"
+    design: "/design --client-journey --persona-frontend --magic"
+    ui: "/build --client-dashboard --persona-frontend --magic"
+    review: "/review --client-features --persona-frontend --c7"
+    data: "/analyze --client-data --persona-backend --seq"
+  mcp_priority: ["magic-mcp", "context7"]
+  business_context: "Enhanced client relationships per 6FB methodology"
+
+### Analytics Dashboard (6FB Intelligence)
+analytics_dashboard:
+  description: "Business intelligence following 6FB success metrics"
+  patterns: ["*analytics*", "*dashboard*", "*metrics*", "*reporting*", "*insights*"]
+  commands:
+    analysis: "/analyze --analytics-architecture --persona-backend --seq"
+    design: "/design --dashboard-ui --persona-frontend --magic"
+    performance: "/analyze --dashboard-performance --persona-performance --pup"
+    data: "/analyze --metrics-accuracy --persona-backend --c7"
+    review: "/review --analytics-logic --persona-backend --seq"
+  mcp_priority: ["sequential-thinking", "magic-mcp"]
+  business_context: "Track 6FB methodology success metrics"
+
+### Marketing Integrations (6FB Growth)
+marketing_integrations:
+  description: "Google My Business and automated marketing per 6FB"
+  patterns: ["*marketing*", "*gmb*", "*google*", "*review*", "*seo*", "*tracking*"]
+  commands:
+    analysis: "/analyze --marketing-integration --persona-backend --c7"
+    design: "/design --marketing-automation --persona-backend --seq"
+    api: "/analyze --gmb-api --persona-backend --c7"
+    review: "/review --marketing-compliance --persona-security --c7"
+    performance: "/analyze --marketing-roi --persona-performance --seq"
+  mcp_priority: ["context7", "sequential-thinking"]
+  business_context: "Automated marketing following 6FB brand principles"
+
+## Workflow Automation Rules
+
+### Development Workflow Triggers
+development_triggers:
+  new_feature_request:
+    trigger: "User requests new feature implementation"
+    auto_command: "/design --feature-architecture --persona-architect --seq"
+    follow_up: "/analyze --6fb-alignment --persona-architect --c7"
+    
+  bug_report:
+    trigger: "Bug or issue reported"
+    auto_command: "/troubleshoot --analyze --persona-analyzer --seq"
+    follow_up: "/scan --security --persona-security --c7"
+    
+  performance_issue:
+    trigger: "Performance or optimization needed"
+    auto_command: "/analyze --performance --persona-performance --pup"
+    follow_up: "/improve --performance --persona-performance --seq"
+    
+  security_concern:
+    trigger: "Security-related modification"
+    auto_command: "/scan --security --persona-security --c7"
+    follow_up: "/review --security-compliance --persona-security --seq"
+    
+  ui_development:
+    trigger: "Frontend/UI development"
+    auto_command: "/build --react --persona-frontend --magic"
+    follow_up: "/review --ui-compliance --persona-frontend --c7"
+
+### Quality Gates Integration
+quality_gates:
+  before_deployment:
+    commands:
+      - "/scan --security --persona-security --c7"
+      - "/analyze --performance --persona-performance --pup" 
+      - "/review --code-quality --persona-refactorer --c7"
+      - "/test --comprehensive --persona-qa --pup"
+    
+  after_feature_completion:
+    commands:
+      - "/analyze --6fb-alignment --persona-architect --c7"
+      - "/review --business-logic --persona-backend --seq"
+      - "/test --integration --persona-qa --pup"
+    
+  security_checkpoints:
+    commands:
+      - "/scan --payment-security --persona-security --c7"
+      - "/analyze --auth-security --persona-security --seq"
+      - "/review --data-privacy --persona-security --c7"
+
+## Context-Aware Command Selection
+
+### File Pattern Mappings
+file_patterns:
+  backend_api:
+    patterns: ["backend-v2/routers/*.py", "backend-v2/api/**/*.py"]
+    default_command: "/analyze --api --persona-backend --c7"
+    
+  frontend_components:
+    patterns: ["frontend-v2/components/**/*.tsx", "frontend-v2/app/**/*.tsx"]
+    default_command: "/build --react --persona-frontend --magic"
+    
+  database_models:
+    patterns: ["backend-v2/models/*.py"]
+    default_command: "/analyze --database --persona-backend --seq"
+    
+  business_services:
+    patterns: ["backend-v2/services/*.py"]
+    default_command: "/analyze --business-logic --persona-architect --seq"
+    
+  authentication:
+    patterns: ["*auth*", "*security*", "*login*"]
+    default_command: "/scan --security --persona-security --c7"
+    
+  payment_system:
+    patterns: ["*payment*", "*stripe*", "*billing*"]
+    default_command: "/analyze --payment-security --persona-security --c7"
+
+### Business Context Integration
+business_context:
+  revenue_impact:
+    high: ["booking_system", "payment_processing", "pricing"]
+    medium: ["client_management", "analytics", "marketing"]
+    low: ["documentation", "logging", "testing"]
+    
+  6fb_methodology_scores:
+    booking_optimization: 10
+    client_relationships: 9
+    revenue_tracking: 9
+    business_efficiency: 8
+    professional_growth: 7
+
+## Performance Optimization
+
+### Token Usage Optimization
+token_optimization:
+  ultra_compressed_mode: true
+  context_caching: true
+  progressive_mcp_loading: true
+  intelligent_escalation: true
+  
+### MCP Server Priority Routing
+mcp_routing:
+  primary_servers: ["context7", "sequential-thinking"]
+  ui_specific: ["magic-mcp"]
+  testing_specific: ["puppeteer"]
+  fallback_order: ["context7", "sequential-thinking", "native"]
+
+## Monitoring and Analytics
+
+### Usage Tracking
+tracking:
+  command_effectiveness: true
+  persona_performance: true
+  mcp_server_metrics: true
+  business_impact_correlation: true
+  
+### Success Metrics
+success_metrics:
+  development_velocity: "Commands that reduce development time"
+  code_quality: "Commands that improve code standards"
+  security_compliance: "Commands that enhance security"
+  6fb_alignment: "Commands that support 6FB methodology"
+
+## Emergency Procedures
+
+### Fallback Commands
+fallback:
+  general_analysis: "/analyze --comprehensive --persona-architect --c7"
+  security_scan: "/scan --security --persona-security --c7"
+  performance_check: "/analyze --performance --persona-performance --pup"
+  ui_review: "/review --ui --persona-frontend --magic"
+
+### Override Mechanisms
+overrides:
+  manual_command_selection: true
+  emergency_bypass: "SUPERCLAUDE_BYPASS=true"
+  confidence_threshold_override: "SUPERCLAUDE_CONFIDENCE=0.3"
+
+## Integration Points
+
+### Claude Code Hooks Integration
+hooks_integration:
+  pre_tool_use: "Command suggestion based on context"
+  post_tool_use: "Automatic analysis of changes"
+  security_triggers: "Auto-scan for sensitive files"
+  performance_monitoring: "Auto-analysis for performance impact"
+
+### BookedBarber V2 Specific Features
+v2_features:
+  staging_environment: "Parallel development support"
+  marketing_suite: "Google My Business integration"
+  payment_system: "Stripe Connect automation"
+  analytics_dashboard: "6FB methodology metrics"
+  client_journey: "Enhanced booking experience"

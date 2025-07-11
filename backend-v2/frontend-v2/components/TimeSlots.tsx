@@ -123,12 +123,12 @@ const TimeSlots = React.memo(function TimeSlots({
         aria-live="polite"
         aria-label="Loading time slots"
       >
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
           <div className="animate-pulse" aria-hidden="true">
             <div className="h-4 bg-gray-200 rounded w-1/3 mb-4"></div>
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-2">
               {Array.from({ length: 12 }).map((_, i) => (
-                <div key={i} className="h-10 bg-gray-200 rounded"></div>
+                <div key={i} className="min-h-[44px] bg-gray-200 rounded-lg"></div>
               ))}
             </div>
           </div>
@@ -210,7 +210,7 @@ const TimeSlots = React.memo(function TimeSlots({
           {title}
         </h3>
         <div 
-          className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2"
+          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-2"
           role="grid"
           aria-labelledby={`${groupId}-heading`}
         >
@@ -237,15 +237,16 @@ const TimeSlots = React.memo(function TimeSlots({
                   aria-disabled={!slot.available}
                   aria-describedby={isNextAvailable ? `${groupId}-next-available` : undefined}
                   className={`
-                    w-full px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 relative
+                    w-full min-h-[44px] px-3 py-3 sm:py-2 rounded-lg text-sm font-medium transition-all duration-200 relative
+                    touch-manipulation select-none active:scale-95
                     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500
                     ${!slot.available 
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
                       : isSelected
-                        ? 'bg-primary-600 text-white'
+                        ? 'bg-primary-600 text-white shadow-md'
                         : isNextAvailable
-                          ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg ring-2 ring-primary-300 hover:from-primary-600 hover:to-primary-700'
-                          : 'bg-white border border-gray-300 text-gray-700 hover:border-primary-400 hover:bg-primary-50'
+                          ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg ring-2 ring-primary-300 hover:from-primary-600 hover:to-primary-700 active:shadow-xl'
+                          : 'bg-white border border-gray-300 text-gray-700 hover:border-primary-400 hover:bg-primary-50 active:bg-primary-100'
                     }
                   `}
                 >
@@ -280,7 +281,7 @@ const TimeSlots = React.memo(function TimeSlots({
       <div 
         ref={containerRef}
         id={id}
-        className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+        className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6"
         role="region"
         aria-label={ariaLabel}
         aria-describedby={ariaDescribedBy}

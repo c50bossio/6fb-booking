@@ -357,6 +357,76 @@
       "message": "🚫 Linting cannot be disabled. Use proper debugging approaches instead."
     },
     {
+      "name": "superclaude_command_suggestion",
+      "description": "Suggest optimal SuperClaude commands based on context",
+      "event": "PreToolUse",
+      "matchers": [
+        "Edit(file_path:*)",
+        "Write(file_path:*)",
+        "MultiEdit(file_path:*)"
+      ],
+      "command": "/Users/bossio/6fb-booking/.claude/hooks/superclaude-suggest.sh",
+      "blocking": false,
+      "message": "🚀 Analyzing context for optimal SuperClaude command..."
+    },
+    {
+      "name": "superclaude_auto_analysis",
+      "description": "Auto-run SuperClaude analysis for complex changes",
+      "event": "PostToolUse",
+      "matchers": [
+        "Edit(file_path:*/backend-v2/routers/*)",
+        "Edit(file_path:*/backend-v2/models/*)",
+        "Edit(file_path:*/backend-v2/services/*)",
+        "Write(file_path:*/backend-v2/routers/*)",
+        "Write(file_path:*/backend-v2/models/*)",
+        "Write(file_path:*/backend-v2/services/*)",
+        "MultiEdit(file_path:*/backend-v2/routers/*)",
+        "MultiEdit(file_path:*/backend-v2/models/*)",
+        "MultiEdit(file_path:*/backend-v2/services/*)"
+      ],
+      "command": "/Users/bossio/6fb-booking/.claude/hooks/superclaude-auto-analysis.sh",
+      "blocking": false,
+      "message": "🔍 Running automatic SuperClaude analysis..."
+    },
+    {
+      "name": "superclaude_security_scan",
+      "description": "Auto-trigger security analysis for sensitive files",
+      "event": "PostToolUse",
+      "matchers": [
+        "Edit(file_path:*auth*)",
+        "Edit(file_path:*payment*)",
+        "Edit(file_path:*security*)",
+        "Edit(file_path:*stripe*)",
+        "Write(file_path:*auth*)",
+        "Write(file_path:*payment*)",
+        "Write(file_path:*security*)",
+        "Write(file_path:*stripe*)",
+        "MultiEdit(file_path:*auth*)",
+        "MultiEdit(file_path:*payment*)",
+        "MultiEdit(file_path:*security*)",
+        "MultiEdit(file_path:*stripe*)"
+      ],
+      "command": "/Users/bossio/6fb-booking/.claude/hooks/superclaude-security.sh",
+      "blocking": false,
+      "message": "🛡️ Running SuperClaude security analysis..."
+    },
+    {
+      "name": "superclaude_ui_review",
+      "description": "Auto-trigger UI review for frontend changes",
+      "event": "PostToolUse",
+      "matchers": [
+        "Edit(file_path:*/frontend-v2/components/*)",
+        "Edit(file_path:*/frontend-v2/app/*)",
+        "Write(file_path:*/frontend-v2/components/*)",
+        "Write(file_path:*/frontend-v2/app/*)",
+        "MultiEdit(file_path:*/frontend-v2/components/*)",
+        "MultiEdit(file_path:*/frontend-v2/app/*)"
+      ],
+      "command": "/Users/bossio/6fb-booking/.claude/hooks/superclaude-ui-review.sh",
+      "blocking": false,
+      "message": "🎨 Running SuperClaude UI review..."
+    },
+    {
       "name": "notification_summary",
       "description": "Provide development summary and next steps",
       "event": "Stop",
