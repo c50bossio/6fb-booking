@@ -23,7 +23,16 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
 from jose import jwt, JWTError
 
-from config.sentry import add_user_context, add_business_context
+# from config.sentry import add_user_context, add_business_context  # Commented out - config.sentry module missing
+
+# Stub functions to replace missing sentry config functions
+def add_user_context(user_data: Dict[str, Any]) -> None:
+    """Stub function for adding user context to Sentry"""
+    pass
+
+def add_business_context(business_data: Dict[str, Any]) -> None:
+    """Stub function for adding business context to Sentry"""
+    pass
 
 logger = logging.getLogger(__name__)
 
