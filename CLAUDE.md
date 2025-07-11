@@ -42,6 +42,90 @@ BookedBarber is a comprehensive booking and business management platform for bar
 - **Deployment**: Render (primary), supports Railway, Vercel, Docker
 - **Monitoring**: Sentry, custom health checks, performance tracking
 
+## 💰 Six Figure Barber Program Integration
+
+### 🎯 Core Methodology Application
+**ALL development decisions must align with Six Figure Barber Program principles.**
+
+The BookedBarber platform is built specifically to implement and support the Six Figure Barber methodology. Every feature, UX decision, and technical implementation should be evaluated through the lens of:
+
+1. **Revenue Optimization**: Does this help barbers increase their income?
+2. **Client Value Creation**: Does this enhance the client experience and relationship?
+3. **Business Efficiency**: Does this improve time and resource utilization?
+4. **Professional Growth**: Does this support the barber's brand and business development?
+5. **Scalability**: Does this enable business expansion and growth?
+
+### 📚 Methodology Documentation
+**Primary Reference**: `/Users/bossio/6fb-booking/SIX_FIGURE_BARBER_METHODOLOGY.md`
+
+This comprehensive guide contains:
+- Complete methodology principles and philosophies
+- Business model components and revenue strategies
+- Technology integration guidelines
+- Implementation priorities and best practices
+- Success metrics and KPIs aligned with 6FB goals
+
+### 🛠 Development Decision Framework
+**Before implementing ANY feature, Claude Code must:**
+
+#### 1. **Methodology Validation**
+- Review relevant sections of `SIX_FIGURE_BARBER_METHODOLOGY.md`
+- Ensure alignment with 6FB principles
+- Validate business value and revenue impact
+
+#### 2. **Priority Assessment**
+- **High Priority**: Direct revenue impact or client relationship enhancement
+- **Medium Priority**: Operational efficiency or business intelligence
+- **Low Priority**: Nice-to-have features that don't conflict with methodology
+
+#### 3. **Implementation Guidelines**
+- Prioritize premium positioning and value creation
+- Design for client relationship building and retention
+- Support revenue tracking and business growth analytics
+- Enable scalable business models and expansion
+
+### 🎯 Feature Alignment Examples
+
+#### **Booking System (Core 6FB)**
+- **Smart Scheduling**: Maximize revenue per time slot
+- **Premium Services**: Support value-based pricing
+- **Client Preferences**: Build stronger relationships
+- **Upselling Integration**: Automatic revenue optimization
+
+#### **Analytics Dashboard (6FB Intelligence)**
+- **Revenue per Client**: Track 6FB success metrics
+- **Client Retention**: Monitor relationship building success
+- **Service Profitability**: Optimize service mix for revenue
+- **Growth Tracking**: Measure progress toward six-figure goals
+
+#### **Client Management (6FB Relationships)**
+- **Comprehensive Profiles**: Support personalized service
+- **Communication Tools**: Strengthen client relationships
+- **Loyalty Systems**: Encourage retention and referrals
+- **Feedback Integration**: Continuous service improvement
+
+### 🚨 Anti-Pattern Prevention
+**Never implement features that:**
+- Compete on price rather than value
+- Commoditize barbering services
+- Reduce client relationship quality
+- Compromise premium positioning
+- Conflict with 6FB business model principles
+
+### 📊 Success Metrics Integration
+All platform analytics should track 6FB methodology success:
+- Average revenue per client progression
+- Client lifetime value growth
+- Service mix optimization toward premium offerings
+- Time utilization efficiency improvements
+- Business growth trajectory alignment with 6FB goals
+
+### 🔄 Continuous Methodology Alignment
+- Regular review of `SIX_FIGURE_BARBER_METHODOLOGY.md` for updates
+- Validation of new features against methodology principles
+- Refinement of platform features based on 6FB program evolution
+- Integration of new methodology insights into platform development
+
 ## 🛡️ CRITICAL SAFETY PROTOCOLS
 
 ### 🚨 MANDATORY PAGE VERIFICATION PROTOCOL
@@ -149,8 +233,8 @@ BookedBarber-V2/
 │       ├── components/     # React components
 │       ├── lib/            # Utilities and API clients
 │       └── public/         # Static assets
-├── backend/                # V1 Backend - DEPRECATED (DO NOT MODIFY)
-├── frontend/               # V1 Frontend - DEPRECATED (DO NOT MODIFY)
+├── backend-v2/                # V1 Backend - DEPRECATED (DO NOT MODIFY)
+├── backend-v2/frontend-v2/               # V1 Frontend - DEPRECATED (DO NOT MODIFY)
 ├── docs/                   # Documentation
 ├── scripts/                # Automation scripts
 └── monitoring/             # Monitoring configuration
@@ -158,7 +242,7 @@ BookedBarber-V2/
 
 ### ⚠️ IMPORTANT: V2 ONLY
 - **ONLY** modify files in `/backend-v2/` and `/backend-v2/frontend-v2/`
-- **NEVER** touch V1 directories (`/backend/` and `/frontend/`)
+- **NEVER** touch V1 directories (`/backend-v2/` and `/backend-v2/frontend-v2/`)
 - All new features must be implemented in V2
 
 ## 🚀 Quick Start

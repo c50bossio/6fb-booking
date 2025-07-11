@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { Modal, ModalBody } from '../ui/Modal'
-import { Card } from '../ui/Card'
+import { Card } from '@/components/ui/Card'
 import LinkCustomizer from './LinkCustomizer'
 import {
   LinkIcon,

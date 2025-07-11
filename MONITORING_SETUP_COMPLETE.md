@@ -126,8 +126,8 @@ Built-in performance tracking:
 After setup, bookmark these URLs:
 
 ### Sentry Dashboards
-- **Backend Errors**: `https://sentry.io/organizations/your-org/projects/6fb-booking-backend/`
-- **Frontend Errors**: `https://sentry.io/organizations/your-org/projects/6fb-booking-frontend/`
+- **Backend Errors**: `https://sentry.io/organizations/your-org/projects/6fb-booking-backend-v2/`
+- **Frontend Errors**: `https://sentry.io/organizations/your-org/projects/6fb-booking-backend-v2/frontend-v2/`
 - **Performance**: `https://sentry.io/organizations/your-org/performance/`
 
 ### Google Analytics Dashboard

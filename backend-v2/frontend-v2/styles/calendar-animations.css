@@ -1026,6 +1026,33 @@
   }
 }
 
+/* Mobile swipe hint animations */
+@keyframes bounce-left {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-8px);
+  }
+}
+
+@keyframes bounce-right {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(8px);
+  }
+}
+
+.animate-bounce-left {
+  animation: bounce-left 2s ease-in-out infinite;
+}
+
+.animate-bounce-right {
+  animation: bounce-right 2s ease-in-out infinite;
+}
+
 .month-fade-in {
   animation: monthFadeIn 0.3s ease-out;
 }
@@ -1168,4 +1195,43 @@
 
 .animate-slide-up {
   animation: slide-up 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Premium appointment styling */
+.premium-appointment {
+  position: relative;
+  border: 2px solid var(--service-premium, #8b5cf6);
+  background: linear-gradient(135deg, 
+    rgba(139, 92, 246, 0.05) 0%, 
+    rgba(139, 92, 246, 0.1) 100%
+  );
+}
+
+.premium-appointment::before {
+  content: '⭐';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* Ensure draggable appointments can be interacted with */
+.unified-calendar-appointment[draggable="true"] {
+  cursor: move !important;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  touch-action: none;
+}
+
+.unified-calendar-appointment[draggable="true"]:active {
+  cursor: grabbing !important;
+}
+
+/* Fix for drag ghost image */
+.unified-calendar-appointment.dragging {
+  opacity: 0.5 !important;
+  cursor: grabbing !important;
 }

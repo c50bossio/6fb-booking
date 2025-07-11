@@ -38,9 +38,17 @@ export const useCookieConsent = () => {
   
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  // Mount effect to prevent hydration issues
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Load preferences from localStorage on mount
   useEffect(() => {
+    if (!mounted) return
+    
     const loadPreferences = () => {
       try {
         const stored = localStorage.getItem(STORAGE_KEY)
@@ -64,7 +72,7 @@ export const useCookieConsent = () => {
     }
 
     loadPreferences()
-  }, [])
+  }, [mounted])
 
   // Save preferences to localStorage and API
   const savePreferences = useCallback(async (newPreferences: ConsentPreferences) => {

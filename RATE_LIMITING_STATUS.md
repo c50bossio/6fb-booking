@@ -100,7 +100,7 @@ x-ratelimit-window: 60
 curl -I http://localhost:8000/health
 
 # Monitor rate limit violations in logs
-tail -f /Users/bossio/6fb-booking/backend/server.log | grep "Rate limit exceeded"
+tail -f /Users/bossio/6fb-booking/backend-v2/server.log | grep "Rate limit exceeded"
 
 # Test different endpoint types
 curl -I http://localhost:8000/api/v1/auth/login    # login (5/5min)

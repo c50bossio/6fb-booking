@@ -11,7 +11,7 @@ def setup_sample_data():
     """Add sample services directly to SQLite database"""
 
     # Connect to the database
-    db_path = "/Users/bossio/6fb-booking/backend/6fb_booking.db"
+    db_path = "/Users/bossio/6fb-booking/backend-v2/6fb_booking.db"
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 

@@ -117,15 +117,17 @@ class ConversionTrackingService:
                 referrer=event_data.referrer
             )
             
-            # Assign attribution
-            attribution_path = await self._assign_attribution(db, user_id, event)
-            if attribution_path:
-                event.attribution_path_id = attribution_path.id
-            
-            # Save event to database
+            # Save event to database first to get created_at timestamp
             db.add(event)
             db.commit()
             db.refresh(event)
+            
+            # Assign attribution after event is saved
+            attribution_path = await self._assign_attribution(db, user_id, event)
+            if attribution_path:
+                event.attribution_path_id = attribution_path.id
+                db.commit()
+                db.refresh(event)
             
             # Send to external platforms asynchronously
             await self._send_to_platforms(db, event, user_id)
@@ -139,7 +141,8 @@ class ConversionTrackingService:
         except HTTPException:
             raise
         except Exception as e:
-            logger.error(f"Error tracking conversion event: {str(e)}")
+            import traceback
+            logger.error(f"Error tracking conversion event: {str(e)}\n{traceback.format_exc()}")
             db.rollback()
             raise HTTPException(
                 status_code=500,
@@ -166,13 +169,20 @@ class ConversionTrackingService:
                 return True
         
         # Check by event characteristics
-        existing = db.query(ConversionEvent).filter(
+        query = db.query(ConversionEvent).filter(
             ConversionEvent.user_id == user_id,
             ConversionEvent.event_name == event_data.event_name,
             ConversionEvent.event_type == event_data.event_type,
-            ConversionEvent.event_value == event_data.event_value,
             ConversionEvent.created_at >= window_start
-        ).first()
+        )
+        
+        # Handle event_value comparison (can be None)
+        if event_data.event_value is not None:
+            query = query.filter(ConversionEvent.event_value == event_data.event_value)
+        else:
+            query = query.filter(ConversionEvent.event_value.is_(None))
+        
+        existing = query.first()
         
         return existing is not None
     

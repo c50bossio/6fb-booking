@@ -52,7 +52,7 @@ This guide provides comprehensive security hardening steps for your production d
 
 1. **Enforce Strong Passwords**:
    ```python
-   # In backend/utils/security.py
+   # In backend-v2/utils/security.py
    PASSWORD_REQUIREMENTS = {
        "min_length": 12,
        "require_uppercase": True,
@@ -115,7 +115,7 @@ This guide provides comprehensive security hardening steps for your production d
 ### CORS Configuration
 
 ```python
-# In backend/main.py - Production only
+# In backend-v2/main.py - Production only
 ALLOWED_ORIGINS = [
     "https://your-frontend-domain.com",
     "https://www.your-frontend-domain.com"

@@ -1,16 +1,8 @@
-"""
-Appointment router - Standardized appointment endpoints using consistent terminology.
-
-This router provides the same functionality as the bookings router but uses 
-standardized "appointment" terminology that matches the database model.
-Designed to replace the mixed booking/appointment terminology over time.
-"""
-
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from decimal import Decimal
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Path, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date, datetime, time, timedelta
-import time as time_module
 import logging
 import uuid
 import schemas
@@ -18,6 +10,17 @@ import models
 from database import get_db
 from routers.auth import get_current_user
 from utils.auth import require_admin_role, get_current_user_optional
+from utils.input_validation import validate_datetime, ValidationError as InputValidationError
+from schemas_new.validation import AppointmentCreateRequest
+import time as time_module
+
+"""
+Appointment router - Standardized appointment endpoints using consistent terminology.
+
+This router provides the same functionality as the bookings router but uses 
+standardized "appointment" terminology that matches the database model.
+Designed to replace the mixed booking/appointment terminology over time.
+"""
 
 def require_admin_or_enterprise_owner(current_user: schemas.User = Depends(get_current_user)) -> schemas.User:
     """Allow admin or enterprise owner access"""
@@ -31,6 +34,7 @@ def require_admin_or_enterprise_owner(current_user: schemas.User = Depends(get_c
     )
 from services import booking_service
 from services.appointment_enhancement import enhance_appointments_list
+from services.cache_invalidation import cache_invalidator
 from utils.rate_limit import (
     booking_create_rate_limit,
     guest_booking_rate_limit,
@@ -48,43 +52,6 @@ router = APIRouter(
     prefix="/appointments",
     tags=["appointments"]
 )
-
-# DEBUG: Minimal test endpoint to isolate the hang issue
-@router.post("/debug-test")
-def debug_test_endpoint():
-    """Minimal test endpoint with no dependencies"""
-    logger.info("DEBUG: Minimal endpoint called successfully")
-    return {"status": "ok", "message": "minimal endpoint works"}
-
-@router.post("/debug-test-auth")
-def debug_test_auth_endpoint(current_user: schemas.User = Depends(get_current_user)):
-    """Test endpoint with only auth dependency"""
-    logger.info(f"DEBUG: Auth test endpoint called for user {current_user.id}")
-    return {"status": "ok", "message": "auth endpoint works", "user_id": current_user.id}
-
-@router.post("/debug-test-db")
-def debug_test_db_endpoint(db: Session = Depends(get_db)):
-    """Test endpoint with only database dependency"""
-    logger.info("DEBUG: DB test endpoint called")
-    return {"status": "ok", "message": "db endpoint works"}
-
-@router.post("/debug-test-combined")
-def debug_test_combined_endpoint(
-    appointment: schemas.AppointmentCreate,
-    current_user: schemas.User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Test endpoint with ALL appointment creation dependencies"""
-    logger.info(f"DEBUG: Combined test endpoint called for user {current_user.id}")
-    logger.info(f"DEBUG: Appointment data - Date: {appointment.date}, Time: {appointment.time}, Service: {appointment.service}")
-    return {
-        "status": "ok", 
-        "message": "combined endpoint works",
-        "user_id": current_user.id,
-        "appointment_date": appointment.date.isoformat(),
-        "appointment_time": appointment.time,
-        "service": appointment.service
-    }
 
 @router.get("/slots", response_model=schemas.SlotsResponse)
 @booking_slots_rate_limit
@@ -267,6 +234,15 @@ def create_appointment(
         signal.alarm(0)
         signal.signal(signal.SIGALRM, old_handler)
         
+        # Invalidate related cache after successful creation
+        if db_appointment:
+            cache_invalidator.invalidate_appointment_data(
+                appointment_id=db_appointment.id,
+                user_id=current_user.id,
+                barber_id=db_appointment.barber_id,
+                date=db_appointment.start_time.date()
+            )
+        
         return db_appointment
         
     except HTTPException as http_exc:
@@ -351,7 +327,7 @@ def get_user_appointments(
 
 @router.get("/{appointment_id}", response_model=schemas.AppointmentResponse)
 def get_appointment(
-    appointment_id: int,
+    appointment_id: int = Path(..., gt=0),
     current_user: schemas.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -368,8 +344,8 @@ def get_appointment(
 
 @router.put("/{appointment_id}", response_model=schemas.AppointmentResponse)
 def update_appointment(
-    appointment_id: int,
     appointment: schemas.AppointmentUpdate,
+    appointment_id: int = Path(..., gt=0),
     current_user: schemas.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -381,6 +357,15 @@ def update_appointment(
         db_appointment = booking_service.update_booking(db, appointment_id, current_user.id, update_data)
         if not db_appointment:
             raise HTTPException(status_code=404, detail="Appointment not found")
+        
+        # Invalidate related cache after successful update
+        cache_invalidator.invalidate_appointment_data(
+            appointment_id=db_appointment.id,
+            user_id=current_user.id,
+            barber_id=db_appointment.barber_id,
+            date=db_appointment.start_time.date()
+        )
+        
         return db_appointment
     except HTTPException:
         raise
@@ -391,8 +376,8 @@ def update_appointment(
 @booking_reschedule_rate_limit
 def reschedule_appointment(
     request: Request,
-    appointment_id: int,
     reschedule_data: schemas.AppointmentReschedule,
+    appointment_id: int = Path(..., gt=0),
     current_user: schemas.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -410,6 +395,12 @@ def reschedule_appointment(
         new_time = reschedule_data.time
         timezone = reschedule_data.timezone if hasattr(reschedule_data, 'timezone') else None
         
+        # Store the old date before rescheduling for cache invalidation
+        old_appointment = db.query(models.Appointment).filter(
+            models.Appointment.id == appointment_id
+        ).first()
+        old_date = old_appointment.start_time.date() if old_appointment else None
+        
         db_appointment = booking_service.reschedule_booking(
             db=db,
             booking_id=appointment_id,
@@ -420,6 +411,23 @@ def reschedule_appointment(
         )
         if not db_appointment:
             raise HTTPException(status_code=404, detail="Appointment not found")
+        
+        # Invalidate cache for both old and new dates
+        if old_date:
+            cache_invalidator.invalidate_appointment_data(
+                appointment_id=db_appointment.id,
+                user_id=current_user.id,
+                barber_id=db_appointment.barber_id,
+                date=old_date
+            )
+        
+        cache_invalidator.invalidate_appointment_data(
+            appointment_id=db_appointment.id,
+            user_id=current_user.id,
+            barber_id=db_appointment.barber_id,
+            date=db_appointment.start_time.date()
+        )
+        
         return db_appointment
     except HTTPException:
         raise
@@ -430,15 +438,30 @@ def reschedule_appointment(
 @booking_cancel_rate_limit
 def cancel_appointment(
     request: Request,
-    appointment_id: int,
+    appointment_id: int = Path(..., gt=0),
     current_user: schemas.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Cancel an appointment."""
     try:
+        # Get appointment details before cancellation for cache invalidation
+        appointment = db.query(models.Appointment).filter(
+            models.Appointment.id == appointment_id
+        ).first()
+        
         success = booking_service.cancel_booking(db, appointment_id, current_user.id)
         if not success:
             raise HTTPException(status_code=404, detail="Appointment not found")
+        
+        # Invalidate cache after successful cancellation
+        if appointment:
+            cache_invalidator.invalidate_appointment_data(
+                appointment_id=appointment_id,
+                user_id=current_user.id,
+                barber_id=appointment.barber_id,
+                date=appointment.start_time.date()
+            )
+        
         return {"message": "Appointment cancelled successfully"}
     except HTTPException:
         raise
@@ -549,7 +572,6 @@ def validate_appointment(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-
 # Missing endpoints migrated from bookings router
 
 @router.get("/slots/next-available", response_model=schemas.NextAvailableSlot)
@@ -574,7 +596,6 @@ def get_next_available_appointment_slot(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.get("/settings", response_model=schemas.BookingSettingsResponse)
 def get_appointment_settings(
     current_user: schemas.User = Depends(get_current_user),
@@ -583,7 +604,6 @@ def get_appointment_settings(
     """Get appointment booking settings."""
     settings = booking_service.get_booking_settings(db)
     return settings
-
 
 @router.put("/settings", response_model=schemas.BookingSettingsResponse) 
 def update_appointment_settings(
@@ -596,12 +616,11 @@ def update_appointment_settings(
     settings = booking_service.update_booking_settings(db, updates)
     return settings
 
-
 @router.put("/{appointment_id}/cancel", response_model=schemas.AppointmentResponse)
 @booking_cancel_rate_limit
 def cancel_appointment_alt(
     request: Request,
-    appointment_id: int,
+    appointment_id: int = Path(..., gt=0),
     current_user: schemas.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -624,8 +643,15 @@ def cancel_appointment_alt(
     db.commit()
     db.refresh(appointment)
     
+    # Invalidate cache after successful cancellation
+    cache_invalidator.invalidate_appointment_data(
+        appointment_id=appointment_id,
+        user_id=current_user.id,
+        barber_id=appointment.barber_id,
+        date=appointment.start_time.date()
+    )
+    
     return appointment
-
 
 @router.post("/guest", response_model=schemas.GuestBookingResponse)
 @guest_booking_rate_limit
@@ -721,7 +747,6 @@ async def create_guest_appointment(
             error_detail += ". CAPTCHA verification will be required for your next attempt."
         
         raise HTTPException(status_code=400, detail=error_detail)
-
 
 @router.post("/guest/quick", response_model=schemas.GuestBookingResponse) 
 @guest_booking_rate_limit

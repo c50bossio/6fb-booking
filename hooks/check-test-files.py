@@ -33,7 +33,7 @@ def main():
     if errors:
         print("\n❌ ERROR: Test files detected in root directory!")
         print("\nTest files should be placed in appropriate directories:")
-        print("  - Python tests: backend/tests/")
+        print("  - Python tests: backend-v2/tests/")
         print(
             "  - JavaScript/TypeScript tests: frontend/src/__tests__/ or frontend/tests/"
         )

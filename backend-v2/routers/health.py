@@ -10,9 +10,17 @@ import psutil
 import time
 from datetime import datetime
 
-from database import get_db
+from database import get_db, engine
 from services.redis_service import cache_service
 from config import settings
+
+# Import pool monitor if available
+try:
+    from database import pool_monitor
+    POOL_MONITOR_AVAILABLE = True
+except ImportError:
+    pool_monitor = None
+    POOL_MONITOR_AVAILABLE = False
 
 router = APIRouter(
     prefix="/api/v1/health",
@@ -124,6 +132,37 @@ async def detailed_health_check(db: Session = Depends(get_db)):
         health_status["checks"]["process"] = {
             "status": "unhealthy",
             "error": str(e)
+        }
+    
+    # Connection pool info
+    if POOL_MONITOR_AVAILABLE and pool_monitor:
+        try:
+            pool_status = pool_monitor.get_pool_status()
+            pool_health = pool_monitor.check_pool_health()
+            
+            health_status["checks"]["connection_pool"] = {
+                "status": "healthy" if pool_health["healthy"] else "warning",
+                "pool_type": pool_status.get("pool_type", "unknown"),
+                "pool_size": pool_status.get("pool_size", "N/A"),
+                "checked_out": pool_status.get("checked_out_connections", "N/A"),
+                "overflow": pool_status.get("overflow", "N/A"),
+                "warnings": pool_health.get("warnings", []),
+                "recommendations": pool_health.get("recommendations", [])
+            }
+            
+            # Add database metrics if available
+            if "database_metrics" in pool_status:
+                health_status["checks"]["connection_pool"]["database_metrics"] = pool_status["database_metrics"]
+                
+        except Exception as e:
+            health_status["checks"]["connection_pool"] = {
+                "status": "error",
+                "error": str(e)
+            }
+    else:
+        health_status["checks"]["connection_pool"] = {
+            "status": "not_available",
+            "message": "Connection pool monitoring not configured"
         }
     
     return health_status

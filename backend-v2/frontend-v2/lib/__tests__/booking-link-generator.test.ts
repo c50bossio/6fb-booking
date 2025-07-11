@@ -86,12 +86,12 @@ describe('BookingLinkGenerator', () => {
   describe('generateURL', () => {
     it('should generate basic booking URL', () => {
       const url = generator.generateURL({})
-      expect(url).toBe('https://app.bookedbarber.com/book')
+      expect(url).toBe('https://bookedbarber.com/{slug}')
     })
 
     it('should generate URL with service parameter', () => {
       const url = generator.generateURL({ service: 'haircut' })
-      expect(url).toBe('https://app.bookedbarber.com/book?service=haircut')
+      expect(url).toBe('https://bookedbarber.com/{slug}?service=haircut')
     })
 
     it('should generate URL with multiple parameters', () => {
@@ -125,7 +125,7 @@ describe('BookingLinkGenerator', () => {
         date: undefined,
       }
       const url = generator.generateURL(params)
-      expect(url).toBe('https://app.bookedbarber.com/book?service=haircut')
+      expect(url).toBe('https://bookedbarber.com/{slug}?service=haircut')
     })
 
     it('should include empty parameters when requested', () => {
@@ -173,15 +173,15 @@ describe('BookingLinkGenerator', () => {
 
   describe('parseURL', () => {
     it('should parse basic URL', () => {
-      const url = 'https://app.bookedbarber.com/book'
+      const url = 'https://bookedbarber.com/{slug}'
       const parsed = generator.parseURL(url)
-      expect(parsed.baseUrl).toBe('https://app.bookedbarber.com/book')
+      expect(parsed.baseUrl).toBe('https://bookedbarber.com/{slug}')
       expect(parsed.params).toEqual({})
       expect(parsed.isValid).toBe(true)
     })
 
     it('should parse URL with parameters', () => {
-      const url = 'https://app.bookedbarber.com/book?service=haircut&barber=john-doe&date=2025-07-01&time=10:00'
+      const url = 'https://bookedbarber.com/{slug}?service=haircut&barber=john-doe&date=2025-07-01&time=10:00'
       const parsed = generator.parseURL(url)
       expect(parsed.params.service).toBe('haircut')
       expect(parsed.params.barber).toBe('john-doe')
@@ -190,13 +190,13 @@ describe('BookingLinkGenerator', () => {
     })
 
     it('should parse array parameters', () => {
-      const url = 'https://app.bookedbarber.com/book?service=haircut%2Cshave'
+      const url = 'https://bookedbarber.com/{slug}?service=haircut%2Cshave'
       const parsed = generator.parseURL(url)
       expect(parsed.params.service).toEqual(['haircut', 'shave'])
     })
 
     it('should handle URL with hash', () => {
-      const url = 'https://app.bookedbarber.com/book?service=haircut#step2'
+      const url = 'https://bookedbarber.com/{slug}?service=haircut#step2'
       const parsed = generator.parseURL(url)
       expect(parsed.params.service).toBe('haircut')
       expect(parsed.hash).toBe('step2')
@@ -210,7 +210,7 @@ describe('BookingLinkGenerator', () => {
     })
 
     it('should parse numeric parameters', () => {
-      const url = 'https://app.bookedbarber.com/book?serviceId=1&duration=30&leadTime=24'
+      const url = 'https://bookedbarber.com/{slug}?serviceId=1&duration=30&leadTime=24'
       const parsed = generator.parseURL(url)
       expect(parsed.params.serviceId).toBe(1)
       expect(parsed.params.duration).toBe(30)
@@ -218,7 +218,7 @@ describe('BookingLinkGenerator', () => {
     })
 
     it('should parse boolean parameters', () => {
-      const url = 'https://app.bookedbarber.com/book?recurring=true&quickBook=false'
+      const url = 'https://bookedbarber.com/{slug}?recurring=true&quickBook=false'
       const parsed = generator.parseURL(url)
       expect(parsed.params.recurring).toBe(true)
       expect(parsed.params.quickBook).toBe(false)
@@ -374,7 +374,7 @@ describe('BookingLinkGenerator', () => {
   describe('generateCommonLinks', () => {
     it('should generate common link variations', () => {
       const links = generator.generateCommonLinks()
-      expect(links.basic).toBe('https://app.bookedbarber.com/book')
+      expect(links.basic).toBe('https://bookedbarber.com/{slug}')
       expect(links.quickBook).toContain('quickBook=true')
       expect(links.service_haircut).toContain('service=haircut')
       expect(links['barber_john-doe']).toContain('barber=john-doe')
@@ -432,7 +432,7 @@ describe('Utility Functions', () => {
   describe('generateBookingURL', () => {
     it('should generate URL with default base URL', () => {
       const url = generateBookingURL({ service: 'haircut' })
-      expect(url).toBe('https://app.bookedbarber.com/book?service=haircut')
+      expect(url).toBe('https://bookedbarber.com/{slug}?service=haircut')
     })
 
     it('should generate URL with custom base URL', () => {
@@ -446,7 +446,7 @@ describe('Utility Functions', () => {
 
   describe('parseBookingURL', () => {
     it('should parse URL and return parameters', () => {
-      const url = 'https://app.bookedbarber.com/book?service=haircut&barber=john-doe'
+      const url = 'https://bookedbarber.com/{slug}?service=haircut&barber=john-doe'
       const parsed = parseBookingURL(url)
       expect(parsed.params.service).toBe('haircut')
       expect(parsed.params.barber).toBe('john-doe')
@@ -471,7 +471,7 @@ describe('Utility Functions', () => {
   describe('generateCommonBookingLinks', () => {
     it('should generate common links', () => {
       const links = generateCommonBookingLinks()
-      expect(links.basic).toBe('https://app.bookedbarber.com/book')
+      expect(links.basic).toBe('https://bookedbarber.com/{slug}')
       expect(links.quickBook).toContain('quickBook=true')
     })
   })
@@ -560,13 +560,13 @@ describe('SimpleURLShortener', () => {
 
   describe('shorten', () => {
     it('should generate short URL', async () => {
-      const longUrl = 'https://app.bookedbarber.com/book?service=haircut&barber=john-doe&date=2025-07-01'
+      const longUrl = 'https://bookedbarber.com/{slug}?service=haircut&barber=john-doe&date=2025-07-01'
       const shortUrl = await shortener.shorten(longUrl)
       expect(shortUrl).toMatch(/^https:\/\/short\.6fb\.app\/[a-z0-9]+$/)
     })
 
     it('should use custom slug when provided', async () => {
-      const longUrl = 'https://app.bookedbarber.com/book?service=haircut'
+      const longUrl = 'https://bookedbarber.com/{slug}?service=haircut'
       const shortUrl = await shortener.shorten(longUrl, { customSlug: 'haircut-promo' })
       expect(shortUrl).toBe('https://short.6fb.app/haircut-promo')
     })

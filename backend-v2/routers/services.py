@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from decimal import Decimal
+from fastapi import APIRouter, Depends, HTTPException, Query, Path
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 from datetime import datetime, date, time, timezone
@@ -9,6 +10,9 @@ from models import Service, ServiceCategoryEnum, ServicePricingRule, ServiceBook
 from schemas import ServiceCreate, ServiceUpdate, ServiceResponse, ServicePricingRuleCreate, ServiceBookingRuleCreate
 from utils.auth import get_current_user, verify_admin_or_barber
 from dependencies import get_current_active_user
+from utils.input_validation import validate_string, validate_integer, ValidationError as InputValidationError
+from schemas_new.validation import ServiceCreateRequest, ListFilterRequest
+from services.cache_invalidation import cache_invalidator
 
 router = APIRouter(
     prefix="/services",
@@ -119,7 +123,7 @@ async def get_services(
 
 @router.get("/{service_id}", response_model=ServiceResponse)
 async def get_service(
-    service_id: int,
+    service_id: int = Path(..., gt=0),
     barber_id: Optional[int] = Query(None),
     db: Session = Depends(get_db)
 ):
@@ -173,13 +177,19 @@ async def create_service(
     db.commit()
     db.refresh(db_service)
     
+    # Invalidate cache after creating service
+    cache_invalidator.invalidate_service_data(
+        service_id=db_service.id,
+        user_id=current_user.id
+    )
+    
     return db_service
 
 
 @router.put("/{service_id}", response_model=ServiceResponse)
 async def update_service(
-    service_id: int,
     service: ServiceUpdate,
+    service_id: int = Path(..., gt=0),
     current_user = Depends(verify_admin_or_barber),
     db: Session = Depends(get_db)
 ):
@@ -221,12 +231,18 @@ async def update_service(
     db.commit()
     db.refresh(db_service)
     
+    # Invalidate cache after updating service
+    cache_invalidator.invalidate_service_data(
+        service_id=db_service.id,
+        user_id=current_user.id
+    )
+    
     return db_service
 
 
 @router.delete("/{service_id}")
 async def delete_service(
-    service_id: int,
+    service_id: int = Path(..., gt=0),
     current_user = Depends(verify_admin_or_barber),
     db: Session = Depends(get_db)
 ):
@@ -248,7 +264,20 @@ async def delete_service(
         # Soft delete instead of hard delete
         db_service.is_active = False
         db.commit()
+        
+        # Invalidate cache after soft delete
+        cache_invalidator.invalidate_service_data(
+            service_id=service_id,
+            user_id=current_user.id
+        )
+        
         return {"message": f"Service deactivated (used in {appointment_count} appointments)"}
+    
+    # Invalidate cache before hard delete
+    cache_invalidator.invalidate_service_data(
+        service_id=service_id,
+        user_id=current_user.id
+    )
     
     db.delete(db_service)
     db.commit()
@@ -260,8 +289,8 @@ async def delete_service(
 
 @router.post("/{service_id}/pricing-rules", response_model=dict)
 async def create_pricing_rule(
-    service_id: int,
     rule: ServicePricingRuleCreate,
+    service_id: int = Path(..., gt=0),
     current_user = Depends(verify_admin_or_barber),
     db: Session = Depends(get_db)
 ):
@@ -285,7 +314,7 @@ async def create_pricing_rule(
 
 @router.get("/{service_id}/pricing-rules")
 async def get_pricing_rules(
-    service_id: int,
+    service_id: int = Path(..., gt=0),
     db: Session = Depends(get_db)
 ):
     """Get all pricing rules for a service"""
@@ -303,8 +332,8 @@ async def get_pricing_rules(
 
 @router.delete("/{service_id}/pricing-rules/{rule_id}")
 async def delete_pricing_rule(
-    service_id: int,
     rule_id: int,
+    service_id: int = Path(..., gt=0),
     current_user = Depends(verify_admin_or_barber),
     db: Session = Depends(get_db)
 ):
@@ -327,8 +356,8 @@ async def delete_pricing_rule(
 
 @router.post("/{service_id}/booking-rules", response_model=dict)
 async def create_booking_rule(
-    service_id: int,
     rule: ServiceBookingRuleCreate,
+    service_id: int = Path(..., gt=0),
     current_user = Depends(verify_admin_or_barber),
     db: Session = Depends(get_db)
 ):
@@ -352,7 +381,7 @@ async def create_booking_rule(
 
 @router.get("/{service_id}/booking-rules")
 async def get_booking_rules(
-    service_id: int,
+    service_id: int = Path(..., gt=0),
     db: Session = Depends(get_db)
 ):
     """Get all booking rules for a service"""
@@ -370,8 +399,8 @@ async def get_booking_rules(
 
 @router.delete("/{service_id}/booking-rules/{rule_id}")
 async def delete_booking_rule(
-    service_id: int,
     rule_id: int,
+    service_id: int = Path(..., gt=0),
     current_user = Depends(verify_admin_or_barber),
     db: Session = Depends(get_db)
 ):
@@ -394,8 +423,8 @@ async def delete_booking_rule(
 
 @router.post("/{service_id}/barbers/{barber_id}")
 async def assign_service_to_barber(
-    service_id: int,
-    barber_id: int,
+    service_id: int = Path(..., gt=0),
+    barber_id: int = Path(..., gt=0),
     custom_price: Optional[float] = None,
     custom_duration: Optional[int] = None,
     current_user = Depends(verify_admin_or_barber),
@@ -459,8 +488,8 @@ async def assign_service_to_barber(
 
 @router.delete("/{service_id}/barbers/{barber_id}")
 async def remove_service_from_barber(
-    service_id: int,
-    barber_id: int,
+    service_id: int = Path(..., gt=0),
+    barber_id: int = Path(..., gt=0),
     current_user = Depends(verify_admin_or_barber),
     db: Session = Depends(get_db)
 ):
@@ -486,7 +515,7 @@ async def remove_service_from_barber(
 
 @router.get("/barbers/{barber_id}")
 async def get_barber_services(
-    barber_id: int,
+    barber_id: int = Path(..., gt=0),
     is_available: Optional[bool] = Query(True),
     db: Session = Depends(get_db)
 ):
@@ -543,7 +572,7 @@ async def get_barber_services(
 
 @router.get("/{service_id}/calculate-price")
 async def calculate_service_price(
-    service_id: int,
+    service_id: int = Path(..., gt=0),
     barber_id: Optional[int] = Query(None),
     booking_date: Optional[date] = Query(None),
     booking_time: Optional[time] = Query(None),

@@ -1,7 +1,24 @@
 {
-  "email": "uniqueuser123@example.com",
-  "name": "Test User",
-  "password": "TestPassword123!",
-  "user_type": "client",
-  "create_test_data": false
+  "firstName": "Test",
+  "lastName": "User", 
+  "email": "test@example.com",
+  "password": "TestPass@2024!",
+  "user_type": "barbershop",
+  "businessName": "Test Barbershop",
+  "businessType": "individual",
+  "address": {
+    "street": "123 Test St",
+    "city": "Test City",
+    "state": "CA",
+    "zipCode": "12345"
+  },
+  "phone": "555-1234",
+  "chairCount": 1,
+  "barberCount": 1,
+  "consent": {
+    "terms": true,
+    "privacy": true,
+    "marketing": false,
+    "testData": true
+  }
 }

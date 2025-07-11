@@ -54,7 +54,7 @@ This guide provides step-by-step instructions for deploying the 6FB Booking fron
 
 1. **Update the render.yaml file** in your repository:
    - The main `render.yaml` at the root already includes frontend configuration
-   - Or use `frontend/render-frontend.yaml` for frontend-only deployment
+   - Or use `backend-v2/frontend-v2/render-frontend.yaml` for frontend-only deployment
 
 2. **Create Blueprint in Render**
    - Go to https://dashboard.render.com/blueprints
@@ -76,7 +76,7 @@ This guide provides step-by-step instructions for deploying the 6FB Booking fron
 Ensure your backend allows requests from your frontend URL:
 
 ```python
-# In backend/config/settings.py
+# In backend-v2/config/settings.py
 ALLOWED_ORIGINS = [
     "https://6fb-booking-frontend.onrender.com",
     "https://your-custom-domain.com"  # If using custom domain

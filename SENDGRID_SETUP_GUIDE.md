@@ -84,7 +84,7 @@ SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 ## Step 6: Test Your Configuration
 
-### Create test script: `backend/test_sendgrid.py`
+### Create test script: `backend-v2/test_sendgrid.py`
 
 ```python
 import os
@@ -245,7 +245,7 @@ cd backend
 python -c "from core.config import settings; print(f'Email enabled: {settings.email_enabled}')"
 
 # View logs
-tail -f backend/logs/app.log | grep -i email
+tail -f backend-v2/logs/app.log | grep -i email
 ```
 
 ## Production Best Practices

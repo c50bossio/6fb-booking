@@ -35,6 +35,13 @@ import {
   ChartPieIcon,
   CurrencyDollarIcon,
   BeakerIcon,
+  AcademicCapIcon,
+  UsersIcon,
+  StarIcon,
+  LinkIcon,
+  RectangleStackIcon,
+  DevicePhoneMobileIcon,
+  ShoppingBagIcon,
   // Solid versions for mobile
   HomeIcon as HomeIconSolid,
   CalendarIcon as CalendarIconSolid,
@@ -170,7 +177,7 @@ export const navigationItems: NavigationItem[] = [
       },
       {
         name: 'Availability',
-        href: '/barber-availability',
+        href: '/barber/availability',
         icon: ClockIcon,
         roles: ['barber', 'admin', 'super_admin'],
         description: 'Manage working hours'
@@ -192,6 +199,15 @@ export const navigationItems: NavigationItem[] = [
     icon: UserGroupIcon,
     roles: ['barber', 'admin', 'super_admin'],
     description: 'Manage client information'
+  },
+  
+  // Customer Management Hub
+  {
+    name: 'Customer Management',
+    href: '/customers',
+    icon: UsersIcon,
+    roles: ['admin', 'super_admin'],
+    description: 'Comprehensive customer management and segmentation'
   },
   
   // Communication
@@ -246,17 +262,24 @@ export const navigationItems: NavigationItem[] = [
         icon: CurrencyDollarIcon,
         roles: ['admin', 'super_admin'],
         description: 'Credits and usage tracking'
+      },
+      {
+        name: 'Booking Links',
+        href: '/marketing/booking-links',
+        icon: LinkIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Trackable booking URLs and QR codes'
       }
     ]
   },
   
-  // Payments & Earnings section
+  // Finance Hub - Comprehensive financial management
   {
-    name: 'Payments & Earnings',
-    href: '/payments',
-    icon: CreditCardIcon,
+    name: 'Finance Hub',
+    href: '/finance',
+    icon: BanknotesIcon,
     roles: ['admin', 'barber', 'super_admin'],
-    description: 'Payment and earnings management',
+    description: 'Comprehensive financial management',
     children: [
       {
         name: 'Payment Overview',
@@ -276,6 +299,41 @@ export const navigationItems: NavigationItem[] = [
         href: '/payments/gift-certificates',
         icon: GiftIcon,
         roles: ['admin', 'super_admin']
+      },
+      {
+        name: 'Commissions',
+        href: '/commissions',
+        icon: CurrencyDollarIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Manage commission structures'
+      },
+      {
+        name: 'Payouts',
+        href: '/payouts',
+        icon: BanknotesIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Manage barber payouts'
+      },
+      {
+        name: 'Financial Analytics',
+        href: '/finance/analytics',
+        icon: ChartBarIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Revenue and financial insights'
+      },
+      {
+        name: 'Transactions',
+        href: '/finance/transactions',
+        icon: RectangleStackIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Transaction history and details'
+      },
+      {
+        name: 'Unified View',
+        href: '/finance/unified',
+        icon: ChartPieIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Unified financial dashboard'
       }
     ]
   },
@@ -286,7 +344,104 @@ export const navigationItems: NavigationItem[] = [
     href: '/analytics',
     icon: ChartBarIcon,
     roles: ['barber', 'admin', 'super_admin'],
-    description: 'Business performance insights'
+    description: 'Business performance insights',
+    children: [
+      {
+        name: 'Overview',
+        href: '/analytics/overview',
+        icon: PresentationChartLineIcon,
+        roles: ['barber', 'admin', 'super_admin'],
+        description: 'Analytics overview dashboard'
+      },
+      {
+        name: 'Revenue Analytics',
+        href: '/analytics/revenue',
+        icon: CurrencyDollarIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Revenue performance and trends'
+      },
+      {
+        name: 'Marketing Analytics',
+        href: '/analytics/marketing',
+        icon: ChartPieIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Marketing campaign performance'
+      },
+      {
+        name: 'Review Analytics',
+        href: '/analytics/reviews',
+        icon: StarIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Customer review insights'
+      }
+    ]
+  },
+  
+  // Review Management
+  {
+    name: 'Reviews',
+    href: '/reviews',
+    icon: StarIcon,
+    roles: ['admin', 'super_admin'],
+    description: 'Manage customer reviews and responses',
+    children: [
+      {
+        name: 'All Reviews',
+        href: '/reviews',
+        icon: StarIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'View and manage all reviews'
+      },
+      {
+        name: 'Review Analytics',
+        href: '/reviews/analytics',
+        icon: ChartBarIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Review performance insights'
+      },
+      {
+        name: 'Response Templates',
+        href: '/reviews/templates',
+        icon: DocumentArrowDownIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Manage review response templates'
+      }
+    ]
+  },
+  
+  // Product Management
+  {
+    name: 'Products',
+    href: '/products',
+    icon: ShoppingBagIcon,
+    roles: ['admin', 'super_admin'],
+    description: 'Manage products and inventory',
+    children: [
+      {
+        name: 'All Products',
+        href: '/products',
+        icon: ShoppingBagIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'View all products'
+      },
+      {
+        name: 'Add Product',
+        href: '/products/new',
+        icon: UserPlusIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Create new product'
+      }
+    ]
+  },
+  
+  // Six Figure Barber Compliance
+  {
+    name: '6FB Compliance',
+    href: '/compliance',
+    icon: AcademicCapIcon,
+    roles: ['barber', 'admin', 'super_admin'],
+    description: 'Track Six Figure Barber methodology alignment',
+    isNew: true
   },
   
   // Enterprise section (super_admin only)
@@ -320,6 +475,21 @@ export const navigationItems: NavigationItem[] = [
         roles: ['admin', 'super_admin']
       },
       {
+        name: 'User Management',
+        href: '/admin/users',
+        icon: UsersIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Manage platform users and permissions'
+      },
+      {
+        name: 'Service Dashboard',
+        href: '/services/dashboard',
+        icon: ChartBarIcon,
+        roles: ['admin', 'super_admin', 'barber'],
+        description: 'Service management and analytics',
+        isNew: true
+      },
+      {
         name: 'Staff Invitations',
         href: '/dashboard/staff/invitations',
         icon: UserPlusIcon,
@@ -331,35 +501,45 @@ export const navigationItems: NavigationItem[] = [
         href: '/admin/booking-rules',
         icon: ClipboardDocumentListIcon,
         roles: ['admin', 'super_admin']
+      }
+    ]
+  },
+  
+  // Business Tools
+  {
+    name: 'Business Tools',
+    href: '/tools',
+    icon: CubeIcon,
+    roles: ['admin', 'super_admin'],
+    description: 'Advanced business management tools',
+    children: [
+      {
+        name: 'Data Import',
+        href: '/import',
+        icon: DocumentArrowUpIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Import client and service data'
+      },
+      {
+        name: 'Data Export',
+        href: '/export',
+        icon: DocumentArrowDownIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Export business data'
       },
       {
         name: 'Webhooks',
         href: '/admin/webhooks',
         icon: CloudIcon,
-        roles: ['admin', 'super_admin']
-      }
-    ]
-  },
-  
-  // Data Management
-  {
-    name: 'Data Management',
-    href: '/data',
-    icon: CubeIcon,
-    roles: ['admin', 'super_admin'],
-    description: 'Import and export data',
-    children: [
-      {
-        name: 'Import',
-        href: '/import',
-        icon: DocumentArrowUpIcon,
-        roles: ['admin', 'super_admin']
+        roles: ['admin', 'super_admin'],
+        description: 'Configure API webhooks'
       },
       {
-        name: 'Export',
-        href: '/export',
-        icon: DocumentArrowDownIcon,
-        roles: ['admin', 'super_admin']
+        name: 'Product Catalog',
+        href: '/products',
+        icon: TagIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Manage retail products'
       }
     ]
   },
@@ -387,6 +567,12 @@ export const navigationItems: NavigationItem[] = [
         icon: BellIcon
       },
       {
+        name: 'Security',
+        href: '/settings/security',
+        icon: ShieldCheckIcon,
+        description: 'Manage security settings and trusted devices'
+      },
+      {
         name: 'Integrations',
         href: '/settings/integrations',
         icon: CloudIcon,
@@ -405,6 +591,27 @@ export const navigationItems: NavigationItem[] = [
         icon: BeakerIcon,
         roles: ['admin', 'super_admin'],
         description: 'Manage test data for exploring platform features'
+      },
+      {
+        name: 'Landing Page',
+        href: '/settings/landing-page',
+        icon: RectangleStackIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Configure landing page settings'
+      },
+      {
+        name: 'Privacy Settings',
+        href: '/settings/privacy',
+        icon: ShieldCheckIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Privacy and data protection settings'
+      },
+      {
+        name: 'PWA Settings',
+        href: '/settings/pwa',
+        icon: DevicePhoneMobileIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Progressive Web App configuration'
       }
     ]
   }
@@ -518,6 +725,13 @@ export const quickActions: QuickAction[] = [
     description: 'Add or edit services',
     roles: ['admin', 'super_admin'],
     color: 'primary'
+  },
+  {
+    name: 'Service Dashboard',
+    href: '/services/dashboard',
+    icon: ChartBarIcon,
+    description: 'Comprehensive service analytics',
+    roles: ['admin', 'super_admin', 'barber']
   },
   {
     name: 'Send Notification',

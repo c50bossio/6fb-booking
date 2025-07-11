@@ -51,7 +51,7 @@ chmod +x scripts/digitalocean-deploy.sh
 3. **Deploy Frontend**:
    - Create new Static Site
    - Build Command: `cd frontend && npm install && npm run build`
-   - Publish Directory: `frontend/out`
+   - Publish Directory: `backend-v2/frontend-v2/out`
 
 ### Option 3: Vercel + Railway (Modern Stack)
 **Cost**: ~$20-40/month | **Setup Time**: 20 minutes | **Difficulty**: Easy

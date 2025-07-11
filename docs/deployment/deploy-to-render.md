@@ -40,7 +40,7 @@ FROM_EMAIL=noreply@yourapp.com
 3. Use these settings:
    - **Name**: 6fb-booking-frontend
    - **Build Command**: `cd frontend && npm install && npm run build`
-   - **Publish Directory**: `frontend/out`
+   - **Publish Directory**: `backend-v2/frontend-v2/out`
 
 4. Add Environment Variables:
 ```

@@ -111,11 +111,11 @@ Once deployed successfully:
 ## Files Changed
 
 1. **Modified**:
-   - `frontend/src/app/enhanced-calendar-demo/page.tsx` - Fixed imports
+   - `backend-v2/frontend-v2/src/app/enhanced-calendar-demo/page.tsx` - Fixed imports
 
 2. **Created**:
-   - `frontend/src/app/deployment-marker.txt` - Forces rebuild
-   - `frontend/src/app/api/verify-pages/route.ts` - Verification endpoint
+   - `backend-v2/frontend-v2/src/app/deployment-marker.txt` - Forces rebuild
+   - `backend-v2/frontend-v2/src/app/api/verify-pages/route.ts` - Verification endpoint
    - `scripts/verify-calendar-pages.sh` - Test script
    - `scripts/fix-railway-deployment.sh` - Deployment helper
 

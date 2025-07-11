@@ -11,6 +11,7 @@ from datetime import datetime
 from database import get_db
 from dependencies import get_current_user
 from models import User
+from utils.error_handling import AppError, ValidationError, AuthenticationError, AuthorizationError, NotFoundError, ConflictError, PaymentError, IntegrationError, safe_endpoint
 from models.integration import IntegrationType as IntegrationTypeModel, IntegrationStatus
 from schemas_new.integration import (
     IntegrationCreate,
@@ -85,16 +86,11 @@ async def initiate_oauth_connection(
         }
         
     except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid integration type: {str(e)}"
-        )
+        logger.error(f"ValueError in {__name__}: {e}", exc_info=True)
+        raise ValidationError("Request validation failed")
     except Exception as e:
         logger.error(f"Error initiating OAuth flow: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to initiate OAuth flow: {str(e)}"
-        )
+        raise AppError("An error occurred", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @router.get("/callback", response_model=OAuthCallbackResponse)
@@ -266,10 +262,7 @@ async def update_integration(
     except Exception as e:
         db.rollback()
         logger.error(f"Error updating integration {integration_id}: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update integration: {str(e)}"
-        )
+        raise AppError("An error occurred", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @router.delete("/{integration_id}", response_model=IntegrationDisconnectResponse)
@@ -307,10 +300,7 @@ async def disconnect_integration(
     except Exception as e:
         db.rollback()
         logger.error(f"Error deleting integration {integration_id}: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete integration: {str(e)}"
-        )
+        raise AppError("An error occurred", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @router.get("/health/all", response_model=IntegrationHealthSummary)
@@ -495,6 +485,104 @@ async def refresh_integration_token(
             success=False,
             message=f"Failed to refresh token: {str(e)}"
         )
+
+
+@router.post("/sync", response_model=dict)
+async def sync_integration_data(
+    integration_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Sync data from an integration.
+    Forces a data synchronization from the third-party service.
+    """
+    from models.integration import Integration
+    integration = db.query(Integration).filter(
+        Integration.id == integration_id,
+        Integration.user_id == current_user.id
+    ).first()
+    
+    if not integration:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Integration not found"
+        )
+    
+    if not integration.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Integration is not active"
+        )
+    
+    try:
+        # Get the appropriate service for this integration type
+        specific_service = IntegrationServiceFactory.create(integration.integration_type, db)
+        
+        # Perform data sync
+        sync_result = await specific_service.sync_data(integration)
+        
+        return {
+            "success": True,
+            "message": "Data sync completed successfully",
+            "integration_id": integration.id,
+            "synced_records": sync_result.get("records_synced", 0),
+            "last_sync": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Data sync failed for integration {integration_id}: {str(e)}")
+        return {
+            "success": False,
+            "message": f"Data sync failed: {str(e)}",
+            "integration_id": integration.id
+        }
+
+
+@router.post("/{integration_id}/test", response_model=dict)
+async def test_integration_connection(
+    integration_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Test the connection to an integration.
+    Verifies that the integration is properly configured and accessible.
+    """
+    from models.integration import Integration
+    integration = db.query(Integration).filter(
+        Integration.id == integration_id,
+        Integration.user_id == current_user.id
+    ).first()
+    
+    if not integration:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Integration not found"
+        )
+    
+    try:
+        # Get the appropriate service for this integration type
+        specific_service = IntegrationServiceFactory.create(integration.integration_type, db)
+        
+        # Test the connection
+        test_result = await specific_service.test_connection(integration)
+        
+        return {
+            "success": test_result.get("success", False),
+            "message": test_result.get("message", "Connection test completed"),
+            "integration_id": integration.id,
+            "response_time_ms": test_result.get("response_time_ms"),
+            "details": test_result.get("details", {})
+        }
+        
+    except Exception as e:
+        logger.error(f"Connection test failed for integration {integration_id}: {str(e)}")
+        return {
+            "success": False,
+            "message": f"Connection test failed: {str(e)}",
+            "integration_id": integration.id
+        }
 
 
 # Admin-only endpoints

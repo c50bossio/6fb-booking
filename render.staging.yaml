@@ -1,0 +1,163 @@
+# Render.com staging deployment configuration for 6FB Booking Platform
+# This file configures staging environment services
+# Deploy from staging branch to keep separate from production
+
+services:
+  # Backend V2 API Service - Staging
+  - type: web
+    name: sixfb-backend-v2-staging
+    env: python
+    region: oregon
+    plan: starter # Using starter for staging to save costs
+    buildCommand: cd backend-v2 && pip install -r requirements.txt
+    startCommand: cd backend-v2 && uvicorn main:app --host 0.0.0.0 --port $PORT --log-level debug
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.10"
+      - key: ENVIRONMENT
+        value: staging
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: sixfb-frontend-v2-staging
+          property: host
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sixfb-db-staging
+          property: connectionString
+      # Staging uses test Stripe keys
+      - key: STRIPE_SECRET_KEY
+        sync: false  # Set test key in Render dashboard
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false  # Set test key in Render dashboard
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false  # Set test webhook secret
+      - key: STRIPE_CONNECT_CLIENT_ID
+        sync: false  # Set test client ID
+      # Email service (can use same or test account)
+      - key: SENDGRID_API_KEY
+        sync: false  # Set in Render dashboard
+      - key: FROM_EMAIL
+        value: staging@bookedbarber.com
+      # Google services (staging OAuth app)
+      - key: GOOGLE_CLIENT_ID
+        sync: false  # Set staging OAuth client
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false  # Set staging OAuth secret
+      - key: GOOGLE_CALENDAR_API_KEY
+        sync: false  # Can use same API key
+      - key: ENCRYPTION_KEY
+        generateValue: true
+      # Increased logging for staging
+      - key: LOG_LEVEL
+        value: debug
+      - key: DEBUG
+        value: "true"
+      # CORS for staging domains
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://sixfb-frontend-v2-staging.onrender.com,https://staging.bookedbarber.com,http://localhost:3000,http://localhost:3001
+      # Reduced resources for staging
+      - key: MAX_WORKERS
+        value: "1"
+      - key: WEB_CONCURRENCY
+        value: "1"
+      # Performance settings (reduced for staging)
+      - key: POOL_SIZE
+        value: "5"
+      - key: MAX_OVERFLOW
+        value: "10"
+      - key: POOL_PRE_PING
+        value: "true"
+      - key: POOL_RECYCLE
+        value: "3600"
+      # Security settings (relaxed for staging)
+      - key: SECURE_COOKIES
+        value: "false"  # Allow non-HTTPS in staging
+      - key: SESSION_COOKIE_SECURE
+        value: "false"
+      - key: SESSION_COOKIE_HTTPONLY
+        value: "true"
+      - key: SESSION_COOKIE_SAMESITE
+        value: "lax"
+      # Staging-specific settings
+      - key: ALLOW_TEST_ENDPOINTS
+        value: "true"
+      - key: ENABLE_SWAGGER_UI
+        value: "true"
+      - key: SENTRY_ENVIRONMENT
+        value: staging
+    healthCheckPath: /health
+    autoDeploy: false  # Manual deploy for staging
+    branch: staging  # Deploy from staging branch
+    numInstances: 1
+    
+  # Frontend V2 Next.js Application - Staging
+  - type: web
+    name: sixfb-frontend-v2-staging
+    env: node
+    region: oregon
+    plan: starter
+    buildCommand: |
+      cd backend-v2/frontend-v2 && \
+      npm ci && \
+      npm run build
+    startCommand: cd backend-v2/frontend-v2 && npm run start
+    envVars:
+      - key: NODE_ENV
+        value: staging
+      - key: NEXT_PUBLIC_ENVIRONMENT
+        value: staging
+      - key: NEXT_PUBLIC_API_URL
+        value: https://sixfb-backend-v2-staging.onrender.com
+      # Test Stripe publishable key
+      - key: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+        sync: false  # Set test key in Render dashboard
+      # Disable GA for staging
+      - key: NEXT_PUBLIC_GA_TRACKING_ID
+        value: ""  # Empty to disable tracking
+      - key: PORT
+        value: 3000
+      # Next.js settings
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+      - key: NEXT_PUBLIC_DISABLE_SPEEDY
+        value: "false"
+      # Staging feature flags
+      - key: NEXT_PUBLIC_ENABLE_DEBUG_PANEL
+        value: "true"
+      - key: NEXT_PUBLIC_SHOW_TEST_DATA
+        value: "true"
+    healthCheckPath: /
+    autoDeploy: false  # Manual deploy for staging
+    branch: staging  # Deploy from staging branch
+    numInstances: 1
+
+# Database - Staging Instance
+databases:
+  - name: sixfb-db-staging
+    databaseName: sixfb_staging
+    user: sixfb_staging
+    region: oregon
+    plan: starter  # $7/month for staging
+    ipAllowList: []  # Allow connections from all Render services
+    postgresMajorVersion: 15
+    # Staging-specific database settings
+    databaseOptions:
+      - key: log_statement
+        value: "all"  # Log all queries in staging
+      - key: log_duration
+        value: "on"  # Log query duration
+
+# Optional: Redis for staging (commented out to save costs)
+# Uncomment if you need Redis in staging
+# services:
+#   - type: redis
+#     name: sixfb-redis-staging
+#     region: oregon
+#     plan: starter  # $7/month
+#     maxmemoryPolicy: allkeys-lru
+#     ipAllowList: []

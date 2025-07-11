@@ -344,7 +344,7 @@ Business Metrics:
 
 #### Health Check Endpoints
 ```python
-# /backend/api/v1/health.py
+# /backend-v2/api/v1/health.py
 @router.get("/health")
 async def health_check():
     checks = {

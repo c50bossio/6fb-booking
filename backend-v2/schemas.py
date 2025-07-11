@@ -6,6 +6,14 @@ from datetime import date as Date, time as Time
 from enum import Enum
 import pytz
 
+# Base Response Schema
+class BaseResponse(BaseModel):
+    """Standard API response format"""
+    success: bool
+    message: str
+    data: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None
+
 # User Type Enum for 14-day trial system
 class UserType(str, Enum):
     CLIENT = "client"
@@ -104,8 +112,80 @@ class ChangePasswordRequest(BaseModel):
             raise ValueError('Password must contain at least one digit')
         return v
 
+# Test Data Customization schemas
+class ServiceConfig(BaseModel):
+    """Configuration for individual services in test data"""
+    name: str = Field(..., min_length=1, max_length=100)
+    duration_minutes: int = Field(15, ge=5, le=300)
+    base_price: float = Field(20.0, ge=0, le=1000)
+    description: Optional[str] = None
+    category: str = "haircut"  # Will be validated against ServiceCategoryEnum
+
+class TestDataCustomization(BaseModel):
+    """Customization options for test data creation"""
+    # Data volume controls
+    client_count: int = Field(20, ge=5, le=100, description="Number of test clients to create")
+    appointment_count: int = Field(50, ge=10, le=200, description="Number of test appointments to create")
+    payment_count: int = Field(30, ge=5, le=100, description="Number of test payments to create")
+    
+    # Date range controls
+    start_date_days_ago: int = Field(90, ge=1, le=365, description="How many days in the past to start creating appointments")
+    end_date_days_ahead: int = Field(30, ge=1, le=180, description="How many days in the future to create appointments")
+    
+    # Service customization
+    services: Optional[List[ServiceConfig]] = Field(None, description="Custom services to create (if not provided, uses defaults)")
+    
+    # Enterprise/multi-location options
+    include_enterprise: bool = Field(False, description="Include multi-location enterprise test data")
+    location_count: int = Field(3, ge=1, le=10, description="Number of locations to create for enterprise data")
+    
+    # Client distribution options
+    vip_client_percentage: int = Field(20, ge=0, le=100, description="Percentage of clients that should be VIP")
+    new_client_percentage: int = Field(25, ge=0, le=100, description="Percentage of clients that should be new")
+    
+    @validator('vip_client_percentage', 'new_client_percentage')
+    def validate_percentages(cls, v, values):
+        if v < 0 or v > 100:
+            raise ValueError('Percentages must be between 0 and 100')
+        return v
+
+class TestDataCreationRequest(BaseModel):
+    """Request schema for creating test data with customization"""
+    customization: Optional[TestDataCustomization] = Field(None, description="Customization options (uses defaults if not provided)")
+
+class TestDataCreationResponse(BaseModel):
+    """Response schema for test data creation"""
+    success: bool
+    message: str
+    created: Dict[str, int]  # Counts of created items
+    customization_applied: Optional[TestDataCustomization] = None
+
 class ChangePasswordResponse(BaseModel):
     message: str
+
+# Client Registration schemas
+class ClientRegistrationData(BaseModel):
+    """Simple registration data for clients booking appointments"""
+    first_name: str = Field(..., min_length=1, max_length=100)
+    last_name: str = Field(..., min_length=1, max_length=100)
+    email: EmailStr
+    password: str = Field(..., min_length=8)
+    phone: Optional[str] = None
+    marketing_consent: bool = False
+    
+    @validator('password')
+    def validate_password(cls, v):
+        if len(v) < 8:
+            raise ValueError('Password must be at least 8 characters')
+        return v
+
+class ClientRegistrationResponse(BaseModel):
+    """Response from client registration with auto-login tokens"""
+    message: str
+    user: 'User'
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
 
 # Email verification schemas
 class EmailVerificationRequest(BaseModel):
@@ -739,6 +819,175 @@ class ServiceBookingRuleResponse(ServiceBookingRuleBase):
     
     class Config:
         from_attributes = True
+
+
+# Service Template Schemas - 6FB Preset System
+class ServiceTemplateBase(BaseModel):
+    """Base schema for Six Figure Barber service templates"""
+    name: str = Field(..., min_length=1, max_length=100, description="Template internal name")
+    display_name: str = Field(..., min_length=1, max_length=100, description="User-friendly display name")
+    description: Optional[str] = Field(None, max_length=1000, description="Template description")
+    category: ServiceCategoryEnum = Field(..., description="Service category")
+    
+    # 6FB Methodology Alignment
+    six_fb_tier: str = Field(..., description="6FB tier: starter, professional, premium, luxury")
+    methodology_score: float = Field(0.0, ge=0, le=100, description="0-100 alignment with 6FB principles")
+    revenue_impact: str = Field(..., description="Revenue impact: high, medium, low")
+    client_relationship_impact: str = Field(..., description="Client relationship impact: high, medium, low")
+    
+    # Preset Configuration
+    suggested_base_price: float = Field(..., ge=0, description="Suggested base price")
+    suggested_min_price: Optional[float] = Field(None, ge=0, description="Suggested minimum price")
+    suggested_max_price: Optional[float] = Field(None, ge=0, description="Suggested maximum price")
+    duration_minutes: int = Field(30, ge=5, le=480, description="Service duration in minutes")
+    buffer_time_minutes: int = Field(5, ge=0, le=60, description="Buffer time between appointments")
+    
+    # 6FB Business Logic
+    requires_consultation: bool = Field(False, description="Whether service requires consultation")
+    upsell_opportunities: List[int] = Field(default_factory=list, description="Related service template IDs for upselling")
+    client_value_tier: str = Field("standard", description="Client value tier: standard, premium, luxury")
+    profit_margin_target: Optional[float] = Field(None, ge=0, le=100, description="Target profit margin percentage")
+    
+    # Template Metadata
+    template_type: str = Field("preset", description="Template type: preset, user_created, community")
+    is_six_fb_certified: bool = Field(True, description="6FB methodology certified")
+    target_market: Optional[str] = Field(None, description="Target market: urban, suburban, rural, luxury")
+    recommended_for: List[str] = Field(default_factory=list, description="Recommended user types")
+    
+    @validator('six_fb_tier')
+    def validate_six_fb_tier(cls, v):
+        valid_tiers = ['starter', 'professional', 'premium', 'luxury']
+        if v not in valid_tiers:
+            raise ValueError(f'6FB tier must be one of: {", ".join(valid_tiers)}')
+        return v
+    
+    @validator('revenue_impact', 'client_relationship_impact')
+    def validate_impact_level(cls, v):
+        valid_levels = ['high', 'medium', 'low']
+        if v not in valid_levels:
+            raise ValueError(f'Impact level must be one of: {", ".join(valid_levels)}')
+        return v
+    
+    @validator('client_value_tier')
+    def validate_client_value_tier(cls, v):
+        valid_tiers = ['standard', 'premium', 'luxury']
+        if v not in valid_tiers:
+            raise ValueError(f'Client value tier must be one of: {", ".join(valid_tiers)}')
+        return v
+
+
+class ServiceTemplateCreate(ServiceTemplateBase):
+    """Create a new service template"""
+    service_details: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Detailed service configuration")
+    pricing_strategy: Optional[Dict[str, Any]] = Field(default_factory=dict, description="6FB pricing methodology")
+    business_rules: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Booking rules and restrictions")
+    template_image_url: Optional[str] = Field(None, description="Template image URL")
+    demo_images: List[str] = Field(default_factory=list, description="Demo image URLs")
+
+
+class ServiceTemplateUpdate(BaseModel):
+    """Update existing service template"""
+    display_name: Optional[str] = Field(None, min_length=1, max_length=100)
+    description: Optional[str] = Field(None, max_length=1000)
+    suggested_base_price: Optional[float] = Field(None, ge=0)
+    suggested_min_price: Optional[float] = Field(None, ge=0)
+    suggested_max_price: Optional[float] = Field(None, ge=0)
+    duration_minutes: Optional[int] = Field(None, ge=5, le=480)
+    buffer_time_minutes: Optional[int] = Field(None, ge=0, le=60)
+    requires_consultation: Optional[bool] = None
+    client_value_tier: Optional[str] = None
+    profit_margin_target: Optional[float] = Field(None, ge=0, le=100)
+    template_image_url: Optional[str] = None
+    is_active: Optional[bool] = None
+    is_featured: Optional[bool] = None
+
+
+class ServiceTemplateResponse(ServiceTemplateBase):
+    """Service template response with metadata"""
+    id: int
+    popularity_score: float = Field(0.0, description="Usage/adoption score")
+    success_rate: float = Field(0.0, description="Business success rate using template")
+    usage_count: int = Field(0, description="Number of times template has been used")
+    is_active: bool = Field(True, description="Whether template is active")
+    is_featured: bool = Field(False, description="Whether template is featured")
+    created_at: datetime
+    updated_at: datetime
+    created_by_id: Optional[int] = None
+    
+    # Computed properties
+    pricing_range_display: str = Field(..., description="Display-friendly pricing range")
+    is_six_figure_aligned: bool = Field(..., description="Meets 6FB methodology standards")
+    
+    class Config:
+        from_attributes = True
+
+
+class ServiceTemplateListResponse(BaseModel):
+    """List of service templates with pagination"""
+    templates: List[ServiceTemplateResponse]
+    total: int
+    page: int = 1
+    page_size: int = 50
+    has_next: bool = False
+    has_previous: bool = False
+
+
+class ServiceTemplateApplyRequest(BaseModel):
+    """Request to apply a service template to user's services"""
+    template_id: int = Field(..., description="Service template ID to apply")
+    custom_price: Optional[float] = Field(None, ge=0, description="Custom price (overrides template price)")
+    custom_name: Optional[str] = Field(None, min_length=1, max_length=100, description="Custom service name")
+    custom_description: Optional[str] = Field(None, max_length=500, description="Custom service description")
+    apply_business_rules: bool = Field(True, description="Apply template's business rules")
+    apply_pricing_rules: bool = Field(True, description="Apply template's pricing rules")
+
+
+class ServiceTemplateApplyResponse(BaseModel):
+    """Response after applying a service template"""
+    service_id: int = Field(..., description="ID of created service")
+    template_id: int = Field(..., description="Applied template ID")
+    applied_price: float = Field(..., description="Final applied price")
+    customizations_applied: Dict[str, Any] = Field(default_factory=dict, description="Applied customizations")
+    business_rules_created: List[int] = Field(default_factory=list, description="Created business rule IDs")
+    message: str = Field(..., description="Success message")
+
+
+class ServiceTemplateCategoryBase(BaseModel):
+    """Base schema for service template categories"""
+    name: str = Field(..., min_length=1, max_length=50, description="Category internal name")
+    display_name: str = Field(..., min_length=1, max_length=100, description="Category display name")
+    description: Optional[str] = Field(None, max_length=500, description="Category description")
+    six_fb_pathway: Optional[str] = Field(None, description="6FB pathway: beginner, intermediate, advanced, master")
+    business_impact: str = Field(..., description="Business impact: foundation, growth, optimization, mastery")
+    icon_name: Optional[str] = Field(None, description="Icon name for UI")
+    color_theme: Optional[str] = Field(None, description="Color theme for UI")
+    display_order: int = Field(0, description="Display order")
+
+
+class ServiceTemplateCategoryResponse(ServiceTemplateCategoryBase):
+    """Service template category response"""
+    id: int
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+
+class ServiceTemplateFilterRequest(BaseModel):
+    """Request filters for service template search"""
+    category: Optional[ServiceCategoryEnum] = None
+    six_fb_tier: Optional[str] = None
+    revenue_impact: Optional[str] = None
+    client_relationship_impact: Optional[str] = None
+    min_price: Optional[float] = Field(None, ge=0)
+    max_price: Optional[float] = Field(None, ge=0)
+    requires_consultation: Optional[bool] = None
+    target_market: Optional[str] = None
+    is_six_fb_certified: Optional[bool] = None
+    is_featured: Optional[bool] = None
+    search_query: Optional[str] = Field(None, max_length=100, description="Search in name and description")
 
 
 # Barber Availability Schemas
@@ -2776,6 +3025,88 @@ class TrialStatusResponse(BaseModel):
             days_remaining = (values['trial_end_date'] - datetime.utcnow()).days
             return max(0, days_remaining)
         return v
+
+# ============= Location Schemas (Using Organization Model) =============
+
+class LocationResponse(BaseModel):
+    """Response model for location (organization) data"""
+    id: int
+    name: str
+    slug: str
+    street_address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    zip_code: Optional[str] = None
+    country: str = 'US'
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    timezone: str = 'UTC'
+    business_hours: Optional[dict] = None
+    chairs_count: int = 1
+    organization_type: str
+    parent_organization_id: Optional[int] = None
+    is_active: bool = True
+    
+    # Computed fields
+    full_address: Optional[str] = None
+    
+    class Config:
+        from_attributes = True
+        
+    @validator('full_address', always=True)
+    def compute_full_address(cls, v, values):
+        """Compute full address from components"""
+        parts = []
+        if values.get('street_address'):
+            parts.append(values['street_address'])
+        if values.get('city'):
+            parts.append(values['city'])
+        if values.get('state') and values.get('zip_code'):
+            parts.append(f"{values['state']} {values['zip_code']}")
+        elif values.get('state'):
+            parts.append(values['state'])
+        elif values.get('zip_code'):
+            parts.append(values['zip_code'])
+        if values.get('country') and values['country'] != 'US':
+            parts.append(values['country'])
+        return ', '.join(parts) if parts else None
+
+class LocationListResponse(BaseModel):
+    """Response for location list with metadata"""
+    locations: List[LocationResponse]
+    total: int
+    has_multiple_locations: bool
+    headquarters: Optional[LocationResponse] = None
+
+class LocationCreate(BaseModel):
+    """Schema for creating a location (simplified organization)"""
+    name: str
+    street_address: str
+    city: str
+    state: str
+    zip_code: str
+    country: str = 'US'
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    timezone: str = 'America/New_York'
+    business_hours: Optional[dict] = None
+    chairs_count: int = Field(1, ge=1)
+    parent_organization_id: Optional[int] = None
+
+class LocationUpdate(BaseModel):
+    """Schema for updating a location"""
+    name: Optional[str] = None
+    street_address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    zip_code: Optional[str] = None
+    country: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    timezone: Optional[str] = None
+    business_hours: Optional[dict] = None
+    chairs_count: Optional[int] = Field(None, ge=1)
+    is_active: Optional[bool] = None
 
 # Model rebuilds to resolve forward references
 SMSConversationResponse.model_rebuild()

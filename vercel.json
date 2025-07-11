@@ -3,7 +3,7 @@
   "name": "6fb-booking-frontend",
   "builds": [
     {
-      "src": "frontend/package.json",
+      "src": "backend-v2/frontend-v2/package.json",
       "use": "@vercel/next",
       "config": {
         "projectSettings": {
@@ -15,7 +15,7 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "frontend/$1"
+      "dest": "backend-v2/frontend-v2/$1"
     }
   ],
   "env": {
@@ -30,7 +30,7 @@
     }
   },
   "functions": {
-    "frontend/src/app/api/**/*.ts": {
+    "backend-v2/frontend-v2/app/api/**/*.ts": {
       "runtime": "nodejs18.x"
     }
   },

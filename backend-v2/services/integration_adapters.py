@@ -18,7 +18,6 @@ from schemas_new.integration import IntegrationHealthCheck
 
 logger = logging.getLogger(__name__)
 
-
 class GMBServiceAdapter(BaseIntegrationService):
     """Adapter for Google My Business service"""
     
@@ -106,7 +105,6 @@ class GMBServiceAdapter(BaseIntegrationService):
                 last_check=datetime.now(timezone.utc).isoformat(),
                 error=str(e)
             )
-
 
 class GoogleCalendarServiceAdapter(BaseIntegrationService):
     """Adapter for Google Calendar service"""
@@ -202,7 +200,6 @@ class GoogleCalendarServiceAdapter(BaseIntegrationService):
                 error=str(e)
             )
 
-
 class StripeServiceAdapter(BaseIntegrationService):
     """Adapter for Stripe service"""
     
@@ -285,7 +282,6 @@ class StripeServiceAdapter(BaseIntegrationService):
                 error=str(e)
             )
 
-
 # Additional adapters for other integration types
 class SendGridServiceAdapter(BaseIntegrationService):
     """Adapter for SendGrid email service"""
@@ -346,7 +342,6 @@ class SendGridServiceAdapter(BaseIntegrationService):
             last_check=datetime.now(timezone.utc).isoformat(),
             details={"has_api_key": bool(integration.api_key)}
         )
-
 
 class TwilioServiceAdapter(BaseIntegrationService):
     """Adapter for Twilio SMS service"""

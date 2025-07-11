@@ -313,7 +313,7 @@ Features:
 ## 🔍 **MANUAL TESTING GUIDE**
 
 For comprehensive testing, use the provided test interface:
-**File:** `/Users/bossio/6fb-booking/frontend/test_client_ui.html`
+**File:** `/Users/bossio/6fb-booking/backend-v2/frontend-v2/test_client_ui.html`
 
 This interactive checklist covers:
 - ✅ 35 comprehensive test scenarios

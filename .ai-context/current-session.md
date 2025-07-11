@@ -32,8 +32,8 @@
   4. Verify Trafft webhook security
 
 ### Files Recently Modified
-- `/backend/api/v1/endpoints/sync_status.py`
-- `/backend/api/v1/endpoints/dashboard.py`
+- `/backend-v2/api/v1/endpoints/sync_status.py`
+- `/backend-v2/api/v1/endpoints/dashboard.py`
 
 ### Security Concerns Identified
 - ⚠️ No rate limiting on API endpoints

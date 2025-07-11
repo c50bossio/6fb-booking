@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { ArrowLeft, TrendingUp, TrendingDown, DollarSign, MessageSquare, Users, Bot } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/card'
+import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Select } from '@/components/ui/Select'
 import { AgentAnalytics } from '@/components/agents/AgentAnalytics'
@@ -94,7 +94,23 @@ export default function AgentAnalyticsPage() {
         end_date: endDate.toISOString()
       })
       
-      setAnalytics(analytics)
+      // Transform AgentAnalytics to AnalyticsData format
+      const transformedAnalytics: AnalyticsData = {
+        total_revenue: analytics.total_revenue_generated || 0,
+        total_conversations: analytics.total_conversations || 0,
+        success_rate: analytics.success_rate || 0,
+        avg_response_time: 2.5, // Default value since not provided by API
+        roi: analytics.roi || 0,
+        top_performing_agents: analytics.top_performing_agents?.map(agent => ({
+          name: agent.name,
+          revenue: agent.revenue_generated,
+          conversion_rate: agent.success_rate
+        })) || [],
+        conversation_trends: [], // Default empty array since not provided by API
+        revenue_by_agent_type: {} // Default empty object since not provided by API
+      }
+      
+      setAnalytics(transformedAnalytics)
     } catch (error) {
       console.error('Failed to load analytics:', error)
     } finally {
@@ -150,11 +166,15 @@ export default function AgentAnalyticsPage() {
         </div>
 
         <div className="flex items-center space-x-3">
-          <Select value={dateRange} onValueChange={setDateRange}>
-            <option value="7d">Last 7 days</option>
-            <option value="30d">Last 30 days</option>
-            <option value="90d">Last 90 days</option>
-          </Select>
+          <Select 
+            value={dateRange} 
+            onChange={(value) => setDateRange(value as string)}
+            options={[
+              { value: "7d", label: "Last 7 days" },
+              { value: "30d", label: "Last 30 days" },
+              { value: "90d", label: "Last 90 days" }
+            ]}
+          />
         </div>
       </div>
 

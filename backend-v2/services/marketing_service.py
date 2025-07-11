@@ -21,7 +21,6 @@ from services.notification_service import NotificationService
 
 logger = logging.getLogger(__name__)
 
-
 class MarketingService:
     def __init__(self):
         self.notification_service = NotificationService()

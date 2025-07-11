@@ -78,6 +78,53 @@ git status                               # Clean working directory
 - [ ] Performance tests passing
 - [ ] Security tests passing
 - [ ] Documentation updated
+- [ ] **All linting passes** (ESLint + TypeScript)
+
+## 🚨 FRONTEND LINTING REQUIREMENTS
+
+### Mandatory Commands (Never Skip Linting)
+```bash
+# Frontend Development (Required)
+cd backend-v2/frontend-v2
+npm run dev                    # Development with linting
+npm run build                  # Production build with linting
+npm run lint                   # ESLint check
+npm run lint:fix               # Auto-fix linting issues
+
+# TypeScript Checking (Debugging)
+npx tsc --noEmit              # TypeScript-only compilation
+npx tsc --noEmit --skipLibCheck # Skip library checks for debugging
+```
+
+### ❌ FORBIDDEN Frontend Commands
+```bash
+# NEVER use these commands
+npm run build --skip-lint
+npx next build --no-lint
+ESLINT=false npm run build
+NODE_ENV=production npm run build:no-lint
+```
+
+### Frontend Debugging Without Disabling Linting
+1. **TypeScript errors**: Use `npx tsc --noEmit` to isolate compilation issues
+2. **Import/dependency errors**: Fix missing files, don't skip linting
+3. **Build cache issues**: Clear `.next` and `node_modules/.cache`, keep linting enabled
+4. **Performance issues**: Use `npm run lint:fix` to auto-correct
+
+### Frontend-Specific Linting Rules
+- **React Hooks**: ESLint enforces hooks rules (dependencies, conditionals)
+- **Accessibility**: Enforces WCAG standards and aria-label requirements
+- **Performance**: Warns about inefficient patterns (unused imports, large bundles)
+- **Security**: Catches XSS vulnerabilities and unsafe DOM manipulation
+- **Next.js**: Enforces Next.js best practices (Image optimization, routing)
+
+### Emergency Exception Process (Frontend)
+Only disable frontend linting for:
+1. **Production hotfix** (document in commit: "EMERGENCY: disable linting for hotfix #123")
+2. **Third-party component integration** (use targeted disable on specific lines)
+3. **Build system failure** (ESLint itself is broken)
+
+**Remember: Frontend linting catches 80% of runtime errors before they reach users.**
 
 ## 📂 V2 Project Structure
 

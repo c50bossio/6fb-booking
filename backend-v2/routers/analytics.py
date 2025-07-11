@@ -14,9 +14,11 @@ from datetime import datetime, timedelta, date
 from typing import Dict, List, Optional, Any
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+import logging
 
 from database import get_db
 from dependencies import get_current_user
+from utils.error_handling import AppError, ValidationError, AuthenticationError, AuthorizationError, NotFoundError, ConflictError, PaymentError, IntegrationError, safe_endpoint
 from models import User
 from schemas import DateRange
 from services.analytics_service import AnalyticsService
@@ -27,7 +29,7 @@ from utils.role_permissions import (
 )
 
 router = APIRouter(prefix="/analytics", tags=["analytics"])
-
+logger = logging.getLogger(__name__)
 
 def get_organization_user_ids(user: User, db: Session) -> List[int]:
     """
@@ -35,17 +37,16 @@ def get_organization_user_ids(user: User, db: Session) -> List[int]:
     This is used for organization-based data filtering.
     """
     # If user has no organization, return only their own ID
-    if not user.primary_organization_id:
+    if not user.primary_organization:
         return [user.id]
     
     # Get all users in the same organization
     from models.organization import UserOrganization
     user_orgs = db.query(UserOrganization).filter(
-        UserOrganization.organization_id == user.primary_organization_id
+        UserOrganization.organization_id == user.primary_organization.id
     ).all()
     
     return [uo.user_id for uo in user_orgs]
-
 
 @router.get("/dashboard")
 async def get_dashboard_analytics(
@@ -92,7 +93,6 @@ async def get_dashboard_analytics(
         # Show organization-wide analytics
         return analytics_service.get_advanced_dashboard_summary(user_ids=org_user_ids, date_range=date_range)
 
-
 @router.get("/dashboard/{user_id}")
 async def get_dashboard_analytics_by_user(
     user_id: int,
@@ -129,7 +129,6 @@ async def get_dashboard_analytics_by_user(
     
     analytics_service = AnalyticsService(db)
     return analytics_service.get_advanced_dashboard_summary(user_id=user_id, date_range=date_range)
-
 
 @router.get("/revenue")
 async def get_revenue_analytics(
@@ -182,7 +181,6 @@ async def get_revenue_analytics(
         # Show organization-wide analytics
         return analytics_service.get_revenue_analytics(user_ids=org_user_ids, date_range=date_range, group_by=group_by)
 
-
 @router.get("/appointments")
 async def get_appointment_analytics(
     user_id: Optional[int] = Query(None, description="User ID to filter analytics (admin only)"),
@@ -227,7 +225,6 @@ async def get_appointment_analytics(
         # Show organization-wide analytics
         return analytics_service.get_appointment_analytics(user_ids=org_user_ids, date_range=date_range)
 
-
 @router.get("/appointment-patterns")
 async def get_appointment_patterns(
     user_id: Optional[int] = Query(None, description="User ID to filter analytics (admin only)"),
@@ -264,7 +261,6 @@ async def get_appointment_patterns(
     
     analytics_service = AnalyticsService(db)
     return analytics_service.get_appointment_patterns_analytics(target_user_id, date_range)
-
 
 @router.get("/client-retention")
 async def get_client_retention_analytics(
@@ -303,7 +299,6 @@ async def get_client_retention_analytics(
     analytics_service = AnalyticsService(db)
     return analytics_service.get_client_retention_metrics(target_user_id, date_range)
 
-
 @router.get("/client-lifetime-value")
 async def get_client_lifetime_value_analytics(
     user_id: Optional[int] = Query(None, description="User ID to filter analytics (admin only)"),
@@ -341,7 +336,6 @@ async def get_client_lifetime_value_analytics(
     analytics_service = AnalyticsService(db)
     return analytics_service.get_client_lifetime_value_analytics(target_user_id, date_range)
 
-
 @router.get("/barber-performance")
 async def get_barber_performance_metrics(
     user_id: Optional[int] = Query(None, description="User ID to analyze (defaults to current user)"),
@@ -373,7 +367,6 @@ async def get_barber_performance_metrics(
     
     analytics_service = AnalyticsService(db)
     return analytics_service.get_barber_performance_metrics(target_user_id, date_range)
-
 
 @router.get("/six-figure-barber")
 async def get_six_figure_barber_metrics(
@@ -475,7 +468,6 @@ async def get_six_figure_barber_metrics(
             "message": "Six Figure Barber analytics are temporarily disabled due to performance issues"
         }
 
-
 @router.get("/comparative")
 async def get_comparative_analytics(
     comparison_period: str = Query("previous_month", description="Comparison period: previous_month, previous_quarter, previous_year"),
@@ -508,6 +500,43 @@ async def get_comparative_analytics(
     analytics_service = AnalyticsService(db)
     return analytics_service.get_comparative_analytics(target_user_id, comparison_period)
 
+@router.get("/revenue-breakdown")
+async def get_revenue_breakdown(
+    start_date: Optional[date] = Query(None, description="Start date for analytics range"),
+    end_date: Optional[date] = Query(None, description="End date for analytics range"),
+    breakdown_by: str = Query("all", description="Breakdown type: all, service, time, client_type, premium"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    """
+    Get detailed revenue breakdown aligned with Six Figure Barber methodology
+    
+    Returns:
+    - Revenue by service category
+    - Revenue by time of day/week
+    - Revenue by client type (new vs returning)
+    - Premium service adoption rates
+    - Average ticket analysis
+    - Upsell/cross-sell performance
+    """
+    # Permission check
+    checker = PermissionChecker(current_user, db)
+    if not checker.has_permission(Permission.VIEW_FINANCIAL_ANALYTICS):
+        raise HTTPException(status_code=403, detail="You don't have permission to view revenue analytics")
+    
+    # Get organization user IDs for filtering
+    org_user_ids = get_organization_user_ids(current_user, db)
+    
+    # Create date range if provided
+    date_range = None
+    if start_date and end_date:
+        date_range = DateRange(
+            start_date=datetime.combine(start_date, datetime.min.time()),
+            end_date=datetime.combine(end_date, datetime.max.time())
+        )
+    
+    analytics_service = AnalyticsService(db)
+    return analytics_service.get_detailed_revenue_breakdown(user_ids=org_user_ids, date_range=date_range, breakdown_by=breakdown_by)
 
 @router.get("/export")
 async def export_analytics_data(
@@ -588,7 +617,6 @@ async def export_analytics_data(
     
     return export_data
 
-
 @router.get("/insights")
 async def get_business_insights(
     user_id: Optional[int] = Query(None, description="User ID to filter analytics (admin only)"),
@@ -643,7 +671,6 @@ async def get_business_insights(
         "benchmarks": _get_industry_benchmarks(),
         "generated_at": datetime.utcnow().isoformat()
     }
-
 
 def _calculate_performance_score(dashboard_data: Dict[str, Any]) -> Dict[str, Any]:
     """Calculate overall performance score based on key metrics"""
@@ -745,7 +772,6 @@ def _calculate_performance_score(dashboard_data: Dict[str, Any]) -> Dict[str, An
         "factors": factors
     }
 
-
 def _generate_detailed_recommendations(dashboard_data: Dict[str, Any]) -> List[Dict[str, Any]]:
     """Generate detailed business recommendations"""
     recommendations = []
@@ -791,7 +817,6 @@ def _generate_detailed_recommendations(dashboard_data: Dict[str, Any]) -> List[D
     
     return recommendations
 
-
 def _get_industry_benchmarks() -> Dict[str, Any]:
     """Get industry benchmark data for comparison"""
     return {
@@ -826,3 +851,277 @@ def _get_industry_benchmarks() -> Dict[str, Any]:
             "poor": 0
         }
     }
+
+@router.get("/commissions")
+@safe_endpoint
+async def get_commission_analytics(
+    start_date: Optional[date] = Query(None, description="Start date for analytics"),
+    end_date: Optional[date] = Query(None, description="End date for analytics"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    permission_checker: PermissionChecker = Depends(get_permission_checker)
+):
+    """Get comprehensive commission analytics for barbers"""
+    permission_checker.check_permission(Permission.VIEW_OWN_ANALYTICS)
+    
+    # Set default date range if not provided
+    if not end_date:
+        end_date = date.today()
+    if not start_date:
+        start_date = end_date - timedelta(days=30)
+    
+    # Check authorization
+    if current_user.role == "barber":
+        barber_id = current_user.id
+    elif permission_checker.has_permission(Permission.VIEW_ALL_ANALYTICS):
+        barber_id = None  # Show all barbers
+    else:
+        raise HTTPException(status_code=403, detail="Not authorized to view commission analytics")
+    
+    analytics_service = AnalyticsService(db)
+    
+    try:
+        # Get commission breakdown by type
+        commission_by_type = {}
+        total_commissions = 0
+        
+        # Service commissions
+        from models import Payment
+        service_query = db.query(Payment).filter(
+            Payment.status == "completed",
+            Payment.created_at >= datetime.combine(start_date, datetime.min.time()),
+            Payment.created_at <= datetime.combine(end_date, datetime.max.time())
+        )
+        if barber_id:
+            service_query = service_query.filter(Payment.barber_id == barber_id)
+        
+        service_payments = service_query.all()
+        service_commission = sum(p.barber_amount or 0 for p in service_payments)
+        service_count = len(service_payments)
+        
+        commission_by_type["service"] = {
+            "amount": float(service_commission),
+            "count": service_count,
+            "average": float(service_commission / service_count) if service_count > 0 else 0
+        }
+        total_commissions += service_commission
+        
+        # Retail commissions (if available)
+        retail_commission = 0
+        retail_count = 0
+        try:
+            from services.commission_service import CommissionService
+            commission_service = CommissionService(db)
+            
+            if barber_id:
+                retail_data = commission_service.get_barber_retail_commissions(
+                    barber_id, 
+                    start_date=datetime.combine(start_date, datetime.min.time()),
+                    end_date=datetime.combine(end_date, datetime.max.time())
+                )
+                retail_commission = float(retail_data["total_retail_commission"])
+                retail_count = retail_data["order_items_count"] + retail_data["pos_transactions_count"]
+            else:
+                # For all barbers, aggregate retail commissions
+                from models.product import OrderItem, POSTransaction
+                order_items = db.query(OrderItem).join(OrderItem.order).filter(
+                    OrderItem.order.has(financial_status="paid"),
+                    OrderItem.order.has(processed_at >= datetime.combine(start_date, datetime.min.time())),
+                    OrderItem.order.has(processed_at <= datetime.combine(end_date, datetime.max.time()))
+                ).all()
+                
+                pos_transactions = db.query(POSTransaction).filter(
+                    POSTransaction.transacted_at >= datetime.combine(start_date, datetime.min.time()),
+                    POSTransaction.transacted_at <= datetime.combine(end_date, datetime.max.time())
+                ).all()
+                
+                retail_commission = sum(item.commission_amount for item in order_items) + sum(trans.commission_amount for trans in pos_transactions)
+                retail_count = len(order_items) + len(pos_transactions)
+                
+        except ImportError:
+            pass  # Commission service not available
+        
+        commission_by_type["retail"] = {
+            "amount": float(retail_commission),
+            "count": retail_count,
+            "average": float(retail_commission / retail_count) if retail_count > 0 else 0
+        }
+        total_commissions += retail_commission
+        
+        # Commission trends over time
+        trends = []
+        current = start_date
+        while current <= end_date:
+            period_end = min(current + timedelta(days=6), end_date)  # Weekly periods
+            
+            # Get service commissions for period
+            period_service = db.query(Payment).filter(
+                Payment.status == "completed",
+                Payment.created_at >= datetime.combine(current, datetime.min.time()),
+                Payment.created_at <= datetime.combine(period_end, datetime.max.time())
+            )
+            if barber_id:
+                period_service = period_service.filter(Payment.barber_id == barber_id)
+            
+            period_service_amount = sum(p.barber_amount or 0 for p in period_service.all())
+            
+            trends.append({
+                "period_start": current.isoformat(),
+                "period_end": period_end.isoformat(),
+                "service_commission": float(period_service_amount),
+                "retail_commission": 0,  # Would need period calculation for retail
+                "total": float(period_service_amount)
+            })
+            
+            current = period_end + timedelta(days=1)
+        
+        # Calculate growth metrics
+        if len(trends) >= 2:
+            first_period = trends[0]["total"]
+            last_period = trends[-1]["total"]
+            growth_amount = last_period - first_period
+            growth_rate = (growth_amount / first_period * 100) if first_period > 0 else 0
+        else:
+            growth_amount = 0
+            growth_rate = 0
+        
+        # Get top services by commission
+        top_services = []
+        if barber_id:
+            from models import Appointment
+            service_stats = db.query(
+                Appointment.service_name,
+                db.func.count(Payment.id).label('count'),
+                db.func.sum(Payment.barber_amount).label('total_commission')
+            ).join(
+                Payment, Payment.appointment_id == Appointment.id
+            ).filter(
+                Payment.barber_id == barber_id,
+                Payment.status == "completed",
+                Payment.created_at >= datetime.combine(start_date, datetime.min.time()),
+                Payment.created_at <= datetime.combine(end_date, datetime.max.time())
+            ).group_by(Appointment.service_name).order_by(db.desc('total_commission')).limit(5).all()
+            
+            for service in service_stats:
+                top_services.append({
+                    "service_name": service.service_name,
+                    "count": service.count,
+                    "total_commission": float(service.total_commission or 0),
+                    "average_commission": float(service.total_commission / service.count) if service.count > 0 else 0
+                })
+        
+        return {
+            "summary": {
+                "total_commissions": float(total_commissions),
+                "date_range": {
+                    "start": start_date.isoformat(),
+                    "end": end_date.isoformat()
+                },
+                "barber_id": barber_id
+            },
+            "commission_by_type": commission_by_type,
+            "trends": trends,
+            "growth": {
+                "amount": float(growth_amount),
+                "rate": float(growth_rate)
+            },
+            "top_services": top_services,
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generating commission analytics: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error generating commission analytics")
+
+@router.get("/commissions/trends")
+@safe_endpoint
+async def get_commission_trends(
+    period: str = Query("week", description="Period grouping: day, week, month"),
+    start_date: Optional[date] = Query(None, description="Start date for trends"),
+    end_date: Optional[date] = Query(None, description="End date for trends"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    permission_checker: PermissionChecker = Depends(get_permission_checker)
+):
+    """Get commission trends over time with configurable period grouping"""
+    permission_checker.check_permission(Permission.VIEW_OWN_ANALYTICS)
+    
+    # Set default date range
+    if not end_date:
+        end_date = date.today()
+    if not start_date:
+        if period == "day":
+            start_date = end_date - timedelta(days=30)
+        elif period == "week":
+            start_date = end_date - timedelta(days=90)
+        else:  # month
+            start_date = end_date - timedelta(days=365)
+    
+    # Check authorization
+    if current_user.role == "barber":
+        barber_id = current_user.id
+    elif permission_checker.has_permission(Permission.VIEW_ALL_ANALYTICS):
+        barber_id = None
+    else:
+        raise HTTPException(status_code=403, detail="Not authorized to view commission trends")
+    
+    try:
+        trends = []
+        
+        # Generate period ranges
+        current = start_date
+        while current <= end_date:
+            if period == "day":
+                period_end = current
+            elif period == "week":
+                period_end = min(current + timedelta(days=6), end_date)
+            else:  # month
+                # Get last day of month
+                if current.month == 12:
+                    period_end = date(current.year + 1, 1, 1) - timedelta(days=1)
+                else:
+                    period_end = date(current.year, current.month + 1, 1) - timedelta(days=1)
+                period_end = min(period_end, end_date)
+            
+            # Get commissions for period
+            from models import Payment
+            period_query = db.query(Payment).filter(
+                Payment.status == "completed",
+                Payment.created_at >= datetime.combine(current, datetime.min.time()),
+                Payment.created_at <= datetime.combine(period_end, datetime.max.time())
+            )
+            if barber_id:
+                period_query = period_query.filter(Payment.barber_id == barber_id)
+            
+            payments = period_query.all()
+            
+            trends.append({
+                "period_start": current.isoformat(),
+                "period_end": period_end.isoformat(),
+                "service_commission": float(sum(p.barber_amount or 0 for p in payments)),
+                "payment_count": len(payments),
+                "average_commission": float(sum(p.barber_amount or 0 for p in payments) / len(payments)) if len(payments) > 0 else 0
+            })
+            
+            # Move to next period
+            if period == "day":
+                current = current + timedelta(days=1)
+            elif period == "week":
+                current = period_end + timedelta(days=1)
+            else:  # month
+                current = period_end + timedelta(days=1)
+        
+        return {
+            "period_type": period,
+            "date_range": {
+                "start": start_date.isoformat(),
+                "end": end_date.isoformat()
+            },
+            "trends": trends,
+            "barber_id": barber_id,
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generating commission trends: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error generating commission trends")

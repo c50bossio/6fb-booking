@@ -73,7 +73,7 @@ This report identifies features that are either disconnected (exist on only one 
 - Field name mismatch needs resolution
 
 **Required Actions**:
-1. Standardize field names between frontend/backend
+1. Standardize field names between backend-v2/frontend-v2/backend
 2. Create PricingRuleEditor component
 3. Add to service management page
 

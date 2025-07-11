@@ -27,6 +27,7 @@ from schemas_new.privacy import (
     PrivacySettings, ConsentAuditEntry, ConsentAuditLog,
     DataProcessingActivity, ConsentType, ConsentStatus, ExportStatus
 )
+from utils.error_handling import AppError, ValidationError, AuthenticationError, AuthorizationError, NotFoundError, ConflictError, PaymentError, IntegrationError, safe_endpoint
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,6 @@ router = APIRouter(
     prefix="/api/v1/privacy",
     tags=["privacy", "gdpr"],
 )
-
 
 def log_consent_audit(
     db: Session,
@@ -63,7 +63,6 @@ def log_consent_audit(
     db.add(audit)
     db.commit()
 
-
 def log_data_processing(
     db: Session,
     user_id: int,
@@ -88,7 +87,6 @@ def log_data_processing(
     )
     db.add(log)
     db.commit()
-
 
 @router.post("/cookie-consent", response_model=CookieConsentResponse)
 async def save_cookie_preferences(
@@ -184,11 +182,7 @@ async def save_cookie_preferences(
         
     except Exception as e:
         logger.error(f"Error saving cookie preferences: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to save cookie preferences: {str(e)}"
-        )
-
+        raise AppError("An error occurred", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @router.get("/cookie-consent", response_model=Optional[CookieConsentResponse])
 async def get_cookie_preferences(
@@ -237,11 +231,7 @@ async def get_cookie_preferences(
         
     except Exception as e:
         logger.error(f"Error retrieving cookie preferences: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to retrieve cookie preferences: {str(e)}"
-        )
-
+        raise AppError("An error occurred", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @router.post("/consent/terms", response_model=ConsentResponse, dependencies=[Depends(get_current_user)])
 async def accept_terms_and_privacy(
@@ -343,11 +333,7 @@ async def accept_terms_and_privacy(
         
     except Exception as e:
         logger.error(f"Error updating consent: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update consent: {str(e)}"
-        )
-
+        raise AppError("An error occurred", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @router.post("/consent/bulk", response_model=List[ConsentResponse], dependencies=[Depends(get_current_user)])
 async def update_bulk_consents(
@@ -383,11 +369,7 @@ async def update_bulk_consents(
         
     except Exception as e:
         logger.error(f"Error updating bulk consents: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update bulk consents: {str(e)}"
-        )
-
+        raise AppError("An error occurred", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @router.get("/export", response_model=DataExportResponse, dependencies=[Depends(get_current_user)])
 async def request_data_export(
@@ -468,11 +450,7 @@ async def request_data_export(
         raise
     except Exception as e:
         logger.error(f"Error requesting data export: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to request data export: {str(e)}"
-        )
-
+        raise AppError("An error occurred", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @router.get("/export/{request_id}", response_model=DataExportStatusResponse, dependencies=[Depends(get_current_user)])
 async def check_export_status(
@@ -516,11 +494,7 @@ async def check_export_status(
         raise
     except Exception as e:
         logger.error(f"Error checking export status: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to check export status: {str(e)}"
-        )
-
+        raise AppError("An error occurred", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @router.delete("/account", response_model=AccountDeletionResponse, dependencies=[Depends(get_current_user)])
 async def request_account_deletion(
@@ -582,11 +556,7 @@ async def request_account_deletion(
         
     except Exception as e:
         logger.error(f"Error requesting account deletion: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to request account deletion: {str(e)}"
-        )
-
+        raise AppError("An error occurred", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @router.get("/status", response_model=PrivacySettings, dependencies=[Depends(get_current_user)])
 async def get_privacy_status(
@@ -658,11 +628,7 @@ async def get_privacy_status(
         
     except Exception as e:
         logger.error(f"Error getting privacy status: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get privacy status: {str(e)}"
-        )
-
+        raise AppError("An error occurred", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @router.get("/audit-log", response_model=ConsentAuditLog, dependencies=[Depends(get_current_user)])
 async def get_consent_audit_log(
@@ -716,7 +682,4 @@ async def get_consent_audit_log(
         
     except Exception as e:
         logger.error(f"Error getting audit log: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get audit log: {str(e)}"
-        )
+        raise AppError("An error occurred", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)

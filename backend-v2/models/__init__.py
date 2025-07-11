@@ -29,6 +29,9 @@ BookingSettings = models_file.BookingSettings
 ServiceCategoryEnum = models_file.ServiceCategoryEnum
 ServicePricingRule = models_file.ServicePricingRule
 ServiceBookingRule = models_file.ServiceBookingRule
+ServiceTemplate = models_file.ServiceTemplate
+ServiceTemplateCategory = models_file.ServiceTemplateCategory
+UserServiceTemplate = models_file.UserServiceTemplate
 NotificationTemplate = models_file.NotificationTemplate
 NotificationPreference = models_file.NotificationPreference
 NotificationStatus = models_file.NotificationStatus
@@ -112,12 +115,22 @@ from .organization import (
 from .invitation import (
     StaffInvitation, InvitationStatus, InvitationRole
 )
+# Six Figure Barber Compliance Models
+from .six_fb_compliance import (
+    SixFBComplianceScore, SixFBComplianceCheck, SixFBImprovementTask,
+    SixFBBenchmark, SixFBComplianceHistory
+)
+# Guest Booking Models
+from .guest_booking import (
+    GuestBooking, GuestBookingNotification
+)
 
 __all__ = [
     # Main models from parent models.py
     'UnifiedUserRole', 'User', 'Appointment', 'Payment', 'Service', 'BarberAvailability',
     'PasswordResetToken', 'Payout', 'GiftCertificate', 'Client', 'Refund',
     'BookingSettings', 'ServiceCategoryEnum', 'ServicePricingRule', 'ServiceBookingRule',
+    'ServiceTemplate', 'ServiceTemplateCategory', 'UserServiceTemplate',
     'NotificationTemplate', 'NotificationPreference', 'NotificationStatus', 'NotificationQueue',
     'SMSConversation', 'SMSMessage', 'SMSMessageDirection', 'SMSMessageStatus',
     'BarberTimeOff', 'BarberSpecialAvailability', 'RecurringAppointmentPattern', 'BookingRule',
@@ -154,5 +167,10 @@ __all__ = [
     # Organization Models
     'Organization', 'UserOrganization', 'BillingPlan', 'UserRole', 'OrganizationType',
     # Invitation Models
-    'StaffInvitation', 'InvitationStatus', 'InvitationRole'
+    'StaffInvitation', 'InvitationStatus', 'InvitationRole',
+    # Six Figure Barber Compliance Models
+    'SixFBComplianceScore', 'SixFBComplianceCheck', 'SixFBImprovementTask',
+    'SixFBBenchmark', 'SixFBComplianceHistory',
+    # Guest Booking Models
+    'GuestBooking', 'GuestBookingNotification'
 ]

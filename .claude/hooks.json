@@ -341,6 +341,22 @@
       "message": "🧹 Cleaning up development session..."
     },
     {
+      "name": "linting_enforcement",
+      "description": "Prevent disabling of linting in build/test commands",
+      "event": "PreToolUse",
+      "matchers": [
+        "Bash(command:*--no-lint*)",
+        "Bash(command:*--skip-lint*)",
+        "Bash(command:*ESLINT=false*)",
+        "Bash(command:*NODE_ENV=production npm run build:no-lint*)",
+        "Bash(command:*build --no-lint*)",
+        "Bash(command:*build:skip-lint*)"
+      ],
+      "command": "/Users/bossio/6fb-booking/.claude/scripts/enforce-linting.sh",
+      "blocking": true,
+      "message": "🚫 Linting cannot be disabled. Use proper debugging approaches instead."
+    },
+    {
       "name": "notification_summary",
       "description": "Provide development summary and next steps",
       "event": "Stop",

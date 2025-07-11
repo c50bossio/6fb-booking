@@ -1,0 +1,285 @@
+{
+  "timestamp": "2025-07-07T08:42:41.287176",
+  "api_endpoints": [
+    {
+      "endpoint": "/api/v1/auth/me",
+      "name": "User Profile",
+      "method": "GET",
+      "status": 200,
+      "working": true,
+      "response_sample": "{'email': 'admin.test@bookedbarber.com', 'name': 'Test Admin User', 'id': 1, 'created_at': '2025-07-..."
+    },
+    {
+      "endpoint": "/api/v1/appointments",
+      "name": "Appointments List",
+      "method": "GET",
+      "status": 200,
+      "working": true,
+      "response_sample": "{'appointments': [{'id': 240, 'user_id': 1, 'barber_id': 6, 'client_id': None, 'service_id': None, '..."
+    },
+    {
+      "endpoint": "/api/v1/services",
+      "name": "Services",
+      "method": "GET",
+      "status": 200,
+      "working": true,
+      "response_sample": "[{'name': 'Beard Trim', 'description': 'Professional beard trim service', 'category': 'beard', 'sku'..."
+    },
+    {
+      "endpoint": "/api/v1/clients",
+      "name": "Clients List",
+      "method": "GET",
+      "status": 200,
+      "working": true,
+      "response_sample": "{'clients': [{'first_name': 'Robert', 'last_name': 'Johnson', 'email': 'robert.j@testdata.com', 'pho..."
+    },
+    {
+      "endpoint": "/api/v1/notifications/stats",
+      "name": "Notification Stats",
+      "method": "GET",
+      "status": 200,
+      "working": true,
+      "response_sample": "{'period_days': 7, 'since_date': '2025-06-30T14:42:41.740731', 'email': {'sent': 0, 'failed': 0, 'pe..."
+    },
+    {
+      "endpoint": "/api/v1/barbers",
+      "name": "Barbers List",
+      "method": "GET",
+      "status": 200,
+      "working": true,
+      "response_sample": "[{'id': 1, 'name': 'Test Admin User', 'email': 'admin.test@bookedbarber.com', 'role': 'admin', 'crea..."
+    },
+    {
+      "endpoint": "/api/v1/reviews",
+      "name": "Reviews",
+      "method": "GET",
+      "status": 200,
+      "working": true,
+      "response_sample": "{'reviews': [], 'total': 0, 'skip': 0, 'limit': 50, 'has_more': False}"
+    },
+    {
+      "endpoint": "/api/v1/marketing/campaigns",
+      "name": "Marketing Campaigns",
+      "method": "GET",
+      "status": 200,
+      "working": true,
+      "response_sample": "{'campaigns': [], 'total': 0, 'skip': 0, 'limit': 20}"
+    },
+    {
+      "endpoint": "/api/v1/analytics/dashboard",
+      "name": "Analytics Dashboard",
+      "method": "GET",
+      "status": 500,
+      "working": false,
+      "response_sample": "Internal Server Error"
+    },
+    {
+      "endpoint": "/api/v1/analytics/appointments",
+      "name": "Appointment Analytics",
+      "method": "GET",
+      "status": 500,
+      "working": false,
+      "response_sample": "Internal Server Error"
+    },
+    {
+      "endpoint": "/api/v1/analytics/revenue",
+      "name": "Revenue Analytics",
+      "method": "GET",
+      "status": 500,
+      "working": false,
+      "response_sample": "Internal Server Error"
+    },
+    {
+      "endpoint": "/api/v1/payments/history",
+      "name": "Payment History",
+      "method": "GET",
+      "status": 500,
+      "working": false,
+      "response_sample": "Internal Server Error"
+    },
+    {
+      "endpoint": "/api/v1/bookings/my",
+      "name": "My Bookings",
+      "method": "GET",
+      "status": 200,
+      "working": true,
+      "response_sample": "{'appointments': [{'id': 240, 'user_id': 1, 'barber_id': 6, 'client_id': None, 'service_id': None, '..."
+    },
+    {
+      "endpoint": "/available",
+      "name": "Available Integrations",
+      "method": "GET",
+      "status": 404,
+      "working": false,
+      "response_sample": "{'detail': 'Not Found'}"
+    },
+    {
+      "endpoint": "/status",
+      "name": "Integration Status",
+      "method": "GET",
+      "status": 404,
+      "working": false,
+      "response_sample": "{'detail': 'Not Found'}"
+    },
+    {
+      "endpoint": "/health/all",
+      "name": "Integration Health",
+      "method": "GET",
+      "status": 404,
+      "working": false,
+      "response_sample": "{'detail': 'Not Found'}"
+    },
+    {
+      "endpoint": "/api/v1/dashboard",
+      "name": "Dashboard Data",
+      "method": "GET",
+      "status": 404,
+      "working": false,
+      "response_sample": "{'detail': 'Not Found'}"
+    },
+    {
+      "endpoint": "/api/v1/calendar/events",
+      "name": "Calendar Events",
+      "method": "GET",
+      "status": 404,
+      "working": false,
+      "response_sample": "{'detail': 'Not Found'}"
+    },
+    {
+      "endpoint": "/api/v1/barber-availability",
+      "name": "Barber Availability",
+      "method": "GET",
+      "status": 404,
+      "working": false,
+      "response_sample": "{'detail': 'Not Found'}"
+    },
+    {
+      "endpoint": "/api/v1/booking-rules",
+      "name": "Booking Rules",
+      "method": "GET",
+      "status": 200,
+      "working": true,
+      "response_sample": "[]"
+    },
+    {
+      "endpoint": "/api/v1/recurring",
+      "name": "Recurring Appointments",
+      "method": "GET",
+      "status": 404,
+      "working": false,
+      "response_sample": "{'detail': 'Not Found'}"
+    },
+    {
+      "endpoint": "/api/v1/imports",
+      "name": "Import Data",
+      "method": "GET",
+      "status": 404,
+      "working": false,
+      "response_sample": "{'detail': 'Not Found'}"
+    },
+    {
+      "endpoint": "/api/v1/exports",
+      "name": "Export Data",
+      "method": "GET",
+      "status": 404,
+      "working": false,
+      "response_sample": "{'detail': 'Not Found'}"
+    },
+    {
+      "endpoint": "/api/v1/admin/services",
+      "name": "Admin Services",
+      "method": "GET",
+      "status": 404,
+      "working": false,
+      "response_sample": "{'detail': 'Not Found'}"
+    },
+    {
+      "endpoint": "/api/v1/admin/webhooks",
+      "name": "Admin Webhooks",
+      "method": "GET",
+      "status": 404,
+      "working": false,
+      "response_sample": "{'detail': 'Not Found'}"
+    },
+    {
+      "endpoint": "/api/v1/organizations",
+      "name": "Organizations",
+      "method": "GET",
+      "status": 200,
+      "working": true,
+      "response_sample": "[]"
+    },
+    {
+      "endpoint": "/api/v1/trial-monitoring",
+      "name": "Trial Monitoring",
+      "method": "GET",
+      "status": 404,
+      "working": false,
+      "response_sample": "{'detail': 'Not Found'}"
+    },
+    {
+      "endpoint": "/api/v1/ai-analytics/insights",
+      "name": "AI Analytics",
+      "method": "GET",
+      "status": 404,
+      "working": false,
+      "response_sample": "{'detail': 'Not Found'}"
+    },
+    {
+      "endpoint": "/api/v1/mfa/status",
+      "name": "MFA Status",
+      "method": "GET",
+      "status": 200,
+      "working": true,
+      "response_sample": "{'enabled': False, 'method': None, 'backup_codes_remaining': None, 'trusted_devices_count': 0, 'last..."
+    },
+    {
+      "endpoint": "/api/v1/tracking/pixels",
+      "name": "Tracking Pixels",
+      "method": "GET",
+      "status": 404,
+      "working": false,
+      "response_sample": "{'detail': 'Not Found'}"
+    }
+  ],
+  "broken_features": [
+    "API: Analytics Dashboard - Status 500",
+    "API: Appointment Analytics - Status 500",
+    "API: Revenue Analytics - Status 500",
+    "API: Payment History - Status 500",
+    "API: Available Integrations - Status 404",
+    "API: Integration Status - Status 404",
+    "API: Integration Health - Status 404",
+    "API: Dashboard Data - Status 404",
+    "API: Calendar Events - Status 404",
+    "API: Barber Availability - Status 404",
+    "API: Recurring Appointments - Status 404",
+    "API: Import Data - Status 404",
+    "API: Export Data - Status 404",
+    "API: Admin Services - Status 404",
+    "API: Admin Webhooks - Status 404",
+    "API: Trial Monitoring - Status 404",
+    "API: AI Analytics - Status 404",
+    "API: Tracking Pixels - Status 404"
+  ],
+  "working_features": [
+    "API: User Profile",
+    "API: Appointments List",
+    "API: Services",
+    "API: Clients List",
+    "API: Notification Stats",
+    "API: Barbers List",
+    "API: Reviews",
+    "API: Marketing Campaigns",
+    "API: My Bookings",
+    "API: Booking Rules",
+    "API: Organizations",
+    "API: MFA Status"
+  ],
+  "summary": {
+    "total_tested": 30,
+    "working": 12,
+    "broken": 18,
+    "success_rate": "40.0%"
+  }
+}

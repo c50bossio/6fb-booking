@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from decimal import Decimal
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Path
 from sqlalchemy.orm import Session
 from datetime import timedelta
 import logging
@@ -28,12 +29,14 @@ from utils.email_verification import (
 )
 from services.mfa_service import MFAService
 from services.suspicious_login_detection import get_suspicious_login_detector
-from services.password_security import validate_password_strength
+from services.password_security import validate_password_strength, password_security_service
 from models.mfa import UserMFASecret, MFADeviceTrust
 from utils.logging_config import get_audit_logger
 import schemas
 import models
 from schemas import UserType
+from utils.input_validation import validate_string, validate_email_address, validate_phone_number, validate_slug, ValidationError as InputValidationError
+from schemas_new.validation import BusinessRegistrationRequest
 
 logger = logging.getLogger(__name__)
 audit_logger = get_audit_logger()
@@ -399,7 +402,7 @@ async def register(
         )
     
     # Validate user type - clients cannot register through dashboard
-    if user_data.role == "client":
+    if user_data.user_type == "client":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Client registration is not allowed. Clients should book appointments through your barbershop's booking page. Please select 'Barber' or 'Barbershop Owner' to register for dashboard access."
@@ -438,7 +441,7 @@ async def register(
         email=user_data.email,
         name=user_data.name,
         hashed_password=hashed_password,
-        role=user_data.role,
+        user_type=user_data.user_type,
         trial_started_at=trial_start,
         trial_expires_at=trial_end,
         trial_active=True,
@@ -841,6 +844,106 @@ async def change_password(
     
     return {"message": "Password successfully changed"}
 
+@router.post("/register-client", response_model=schemas.ClientRegistrationResponse)
+@register_rate_limit
+async def register_client(
+    request: Request,
+    client_data: schemas.ClientRegistrationData,
+    db: Session = Depends(get_db)
+):
+    """Register a new client account for booking appointments."""
+    client_ip = request.client.host if request.client else "unknown"
+    
+    # Check if user already exists
+    existing_user = db.query(models.User).filter(models.User.email == client_data.email).first()
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
+    
+    # Validate password strength
+    password_validation = validate_password_strength(
+        client_data.password,
+        user_data={
+            "email": client_data.email,
+            "name": f"{client_data.first_name} {client_data.last_name}"
+        }
+    )
+    
+    if not password_validation.is_valid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "message": "Password does not meet security requirements",
+                "errors": password_validation.errors,
+                "warnings": password_validation.warnings,
+                "recommendations": password_validation.recommendations,
+                "strength_score": password_validation.strength_score,
+                "strength_level": password_validation.strength_level
+            }
+        )
+    
+    # Create new client user
+    from datetime import datetime, timezone
+    
+    hashed_password = get_password_hash(client_data.password)
+    new_user = models.User(
+        email=client_data.email,
+        name=f"{client_data.first_name} {client_data.last_name}",
+        hashed_password=hashed_password,
+        user_type="client",
+        unified_role="client",
+        email_verified=True,  # For clients, we trust email immediately for better UX
+        verified_at=datetime.now(timezone.utc).replace(tzinfo=None)
+    )
+    
+    # Store phone number if provided
+    if client_data.phone:
+        new_user.phone = client_data.phone
+    
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    
+    # Send welcome email (not verification email)
+    try:
+        from utils.email_service import send_welcome_email
+        send_welcome_email(new_user.email, new_user.name)
+        logger.info(f"Welcome email sent to {new_user.email}")
+    except Exception as e:
+        logger.error(f"Failed to send welcome email to {new_user.email}: {str(e)}")
+        # Continue with registration even if email fails
+    
+    # Log successful registration
+    audit_logger.log_auth_event(
+        "client_registration_success",
+        user_id=new_user.id,
+        ip_address=client_ip,
+        details={
+            "marketing_consent": client_data.marketing_consent,
+            "phone_provided": bool(client_data.phone)
+        }
+    )
+    
+    # Generate tokens for auto-login
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": new_user.email, "role": "client"},
+        expires_delta=access_token_expires
+    )
+    refresh_token = create_refresh_token(
+        data={"sub": new_user.email}
+    )
+    
+    return {
+        "message": "Welcome to BookedBarber! Your account has been created.",
+        "user": new_user,
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer"
+    }
+
 @router.put("/timezone", response_model=schemas.User)
 async def update_user_timezone(
     timezone_update: schemas.TimezoneUpdateRequest,
@@ -921,8 +1024,6 @@ async def get_verification_status(
 @router.get("/password-policy")
 async def get_password_policy():
     """Get current password policy requirements."""
-    from services.password_security import password_security_service
-    
     policy = password_security_service.get_password_policy()
     return {
         "policy": policy,

@@ -16,7 +16,7 @@ def test_stripe_config():
     print("=" * 50)
 
     # Load environment variables
-    load_dotenv("/Users/bossio/6fb-booking/backend/.env")
+    load_dotenv("/Users/bossio/6fb-booking/backend-v2/.env")
 
     # Get Stripe keys
     secret_key = os.getenv("STRIPE_SECRET_KEY")

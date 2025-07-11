@@ -34,8 +34,8 @@ The staging environment is a production-like environment used for testing featur
 
 2. **Configure environment variables:**
    ```bash
-   cp backend/.env.staging backend/.env.staging.local
-   cp frontend/.env.staging frontend/.env.staging.local
+   cp backend-v2/.env.staging backend-v2/.env.staging.local
+   cp backend-v2/frontend-v2/.env.staging backend-v2/frontend-v2/.env.staging.local
    # Edit the .local files with your specific values
    ```
 
@@ -134,13 +134,13 @@ graph TD
 ### Key Configuration Files
 
 1. **Backend Configuration**
-   - `backend/.env.staging` - Main backend environment
-   - `backend/Dockerfile.staging` - Staging-specific Docker build
-   - `backend/docker-entrypoint.staging.sh` - Startup script
+   - `backend-v2/.env.staging` - Main backend environment
+   - `backend-v2/Dockerfile.staging` - Staging-specific Docker build
+   - `backend-v2/docker-entrypoint.staging.sh` - Startup script
 
 2. **Frontend Configuration**
-   - `frontend/.env.staging` - Frontend environment variables
-   - `frontend/Dockerfile.staging` - Staging Docker build
+   - `backend-v2/frontend-v2/.env.staging` - Frontend environment variables
+   - `backend-v2/frontend-v2/Dockerfile.staging` - Staging Docker build
 
 3. **Infrastructure Configuration**
    - `docker-compose.staging.yml` - Service orchestration

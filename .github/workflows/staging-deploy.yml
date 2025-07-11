@@ -1,0 +1,130 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches:
+      - staging
+  workflow_dispatch:
+    inputs:
+      deploy_backend:
+        description: 'Deploy backend service'
+        required: false
+        default: 'true'
+        type: boolean
+      deploy_frontend:
+        description: 'Deploy frontend service'
+        required: false
+        default: 'true'
+        type: boolean
+
+env:
+  RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+    environment: staging
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: staging
+
+    - name: Install Render CLI
+      run: |
+        curl -sSL https://render.com/install.sh | bash
+        echo "$HOME/.render/bin" >> $GITHUB_PATH
+
+    - name: Deploy Backend to Staging
+      if: github.event.inputs.deploy_backend != 'false'
+      run: |
+        echo "Deploying backend to staging..."
+        # Using Render API to trigger deployment
+        curl -X POST \
+          -H "Authorization: Bearer $RENDER_API_KEY" \
+          -H "Content-Type: application/json" \
+          -d '{"clearCache": true}' \
+          "https://api.render.com/v1/services/sixfb-backend-v2-staging/deploys"
+      env:
+        RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+
+    - name: Deploy Frontend to Staging
+      if: github.event.inputs.deploy_frontend != 'false'
+      run: |
+        echo "Deploying frontend to staging..."
+        # Using Render API to trigger deployment
+        curl -X POST \
+          -H "Authorization: Bearer $RENDER_API_KEY" \
+          -H "Content-Type: application/json" \
+          -d '{"clearCache": true}' \
+          "https://api.render.com/v1/services/sixfb-frontend-v2-staging/deploys"
+      env:
+        RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+
+    - name: Wait for Deployments
+      run: |
+        echo "Waiting for deployments to complete..."
+        sleep 30
+
+    - name: Check Deployment Status
+      run: |
+        # Check backend health
+        echo "Checking backend health..."
+        BACKEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://sixfb-backend-v2-staging.onrender.com/health || echo "000")
+        if [ "$BACKEND_STATUS" = "200" ]; then
+          echo "✅ Backend is healthy"
+        else
+          echo "⚠️ Backend returned status: $BACKEND_STATUS"
+        fi
+        
+        # Check frontend health
+        echo "Checking frontend health..."
+        FRONTEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://sixfb-frontend-v2-staging.onrender.com || echo "000")
+        if [ "$FRONTEND_STATUS" = "200" ]; then
+          echo "✅ Frontend is healthy"
+        else
+          echo "⚠️ Frontend returned status: $FRONTEND_STATUS"
+        fi
+
+    - name: Run Smoke Tests
+      continue-on-error: true
+      run: |
+        echo "Running basic smoke tests..."
+        
+        # Test API endpoints
+        echo "Testing API endpoints..."
+        curl -s https://sixfb-backend-v2-staging.onrender.com/api/v1/health | jq '.' || echo "API health check failed"
+        
+        # Test frontend pages
+        echo "Testing frontend pages..."
+        curl -s https://sixfb-frontend-v2-staging.onrender.com | grep -q "</html>" && echo "✅ Homepage loads" || echo "❌ Homepage failed"
+
+    - name: Notify Deployment Status
+      if: always()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const status = '${{ job.status }}';
+          const emoji = status === 'success' ? '✅' : '❌';
+          const message = `${emoji} Staging deployment ${status}`;
+          
+          // Create deployment status
+          github.rest.repos.createDeploymentStatus({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            deployment_id: context.payload.deployment?.id || 1,
+            state: status === 'success' ? 'success' : 'failure',
+            description: message,
+            environment_url: 'https://staging.bookedbarber.com'
+          });
+
+    - name: Summary
+      if: always()
+      run: |
+        echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Branch**: staging" >> $GITHUB_STEP_SUMMARY
+        echo "- **Backend URL**: https://sixfb-backend-v2-staging.onrender.com" >> $GITHUB_STEP_SUMMARY
+        echo "- **Frontend URL**: https://sixfb-frontend-v2-staging.onrender.com" >> $GITHUB_STEP_SUMMARY
+        echo "- **Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY

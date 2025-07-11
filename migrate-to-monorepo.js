@@ -271,7 +271,7 @@ export * from './components';
     ];
 
     for (const file of apiFiles) {
-      const sourcePath = path.join(this.sourcePath, 'frontend/src', file);
+      const sourcePath = path.join(this.sourcePath, 'backend-v2/frontend-v2/src', file);
       const targetPath = path.join(apiClientTarget, 'src', path.basename(file));
 
       if (fs.existsSync(sourcePath)) {
@@ -306,7 +306,7 @@ export * from './components';
     // Move shared utilities
     const utilFiles = this.analysis?.shared?.utilities || [];
     for (const util of utilFiles) {
-      const sourcePath = path.join(this.sourcePath, util.source === 'backend' ? 'backend' : 'frontend/src', util.file);
+      const sourcePath = path.join(this.sourcePath, util.source === 'backend' ? 'backend' : 'backend-v2/frontend-v2/src', util.file);
       const targetPath = path.join(utilsTarget, 'src', path.basename(util.file));
 
       if (fs.existsSync(sourcePath)) {
@@ -406,7 +406,7 @@ export * from './components';
         baseUrl: '.',
         paths: {
           '@6fb/backend/*': ['apps/backend/*'],
-          '@6fb/frontend/*': ['apps/frontend/src/*'],
+          '@6fb/backend-v2/frontend-v2/*': ['apps/backend-v2/frontend-v2/src/*'],
           '@6fb/ui-components': ['packages/ui-components/src'],
           '@6fb/api-client': ['packages/api-client/src'],
           '@6fb/utils': ['packages/utils/src']

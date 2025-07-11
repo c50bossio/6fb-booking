@@ -10,11 +10,16 @@ import { Suspense, lazy } from 'react'
 import UnifiedCalendar from '@/components/UnifiedCalendar'
 const CalendarSync = lazy(() => import('@/components/CalendarSync'))
 const CalendarConflictResolver = lazy(() => import('@/components/CalendarConflictResolver'))
+const AvailabilityHeatmap = lazy(() => import('@/components/calendar/AvailabilityHeatmap'))
+const EnhancedRevenueDisplay = lazy(() => import('@/components/calendar/EnhancedRevenueDisplay'))
+const QuickBookingPanel = lazy(() => import('@/components/calendar/QuickBookingPanel'))
+const QuickBookingFAB = lazy(() => import('@/components/calendar/QuickBookingFAB'))
+const CalendarAnalyticsSidebar = lazy(() => import('@/components/calendar/CalendarAnalyticsSidebar'))
 import CreateAppointmentModal from '@/components/modals/CreateAppointmentModal'
 import TimePickerModal from '@/components/modals/TimePickerModal'
 import RescheduleModal from '@/components/modals/RescheduleModal'
 import { format } from 'date-fns'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { LoadingButton, ErrorDisplay } from '@/components/LoadingStates'
 import { getMyBookings, cancelBooking, rescheduleBooking, getProfile, getAllUsers, getLocations, type BookingResponse, type Location } from '@/lib/api'
@@ -83,6 +88,9 @@ export default function CalendarPage() {
   const [rescheduleModalData, setRescheduleModalData] = useState<{ appointmentId: number; newStartTime: string } | null>(null)
   const [todayRevenue, setTodayRevenue] = useState(0)
   const [todayAppointmentCount, setTodayAppointmentCount] = useState(0)
+  const [showHeatmap, setShowHeatmap] = useState(false)
+  const [revenueCollapsed, setRevenueCollapsed] = useState(false)
+  const [showAnalytics, setShowAnalytics] = useState(false)
 
   // Enhanced API integration with optimistic updates
   const {
@@ -152,6 +160,30 @@ export default function CalendarPage() {
 
   // Performance optimizations
   const { measureRender, optimizedAppointmentFilter } = useCalendarPerformance()
+
+  // Keyboard shortcuts for quick booking
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Cmd+B or Ctrl+B for quick booking
+      if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
+        e.preventDefault()
+        
+        if (e.shiftKey) {
+          // Cmd+Shift+B for custom booking
+          router.push('/book')
+        } else {
+          // Cmd+B for quick booking (open quick booking panel/modal)
+          const quickBookButton = document.querySelector('[data-quick-book-trigger]')
+          if (quickBookButton instanceof HTMLElement) {
+            quickBookButton.click()
+          }
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [router])
   
   // Visual feedback system
   const { 
@@ -667,25 +699,21 @@ export default function CalendarPage() {
           )}
         </div>
         
-        {/* Today's Stats - Responsive */}
-        <div className="calendar-stats order-3 lg:order-2 flex flex-row lg:flex-row items-center justify-center lg:justify-start gap-4 lg:gap-6">
-          <div className="calendar-stat-item text-center p-3 lg:p-0 bg-gray-50 dark:bg-gray-800 lg:bg-transparent rounded-lg lg:rounded-none flex-1 lg:flex-initial">
-            <div className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
-              {todayAppointmentCount}
+        {/* Enhanced Revenue Display - Desktop */}
+        <div className="calendar-stats order-3 lg:order-2 hidden lg:block">
+          <Suspense fallback={
+            <div className="animate-pulse">
+              <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
             </div>
-            <div className="text-xs lg:text-sm text-gray-500 dark:text-gray-400">Today's Appointments</div>
-          </div>
-          <div className="calendar-stat-item text-center p-3 lg:p-0 bg-gray-50 dark:bg-gray-800 lg:bg-transparent rounded-lg lg:rounded-none flex-1 lg:flex-initial">
-            <div className="text-xl lg:text-2xl font-bold text-green-600 dark:text-green-400">
-              ${todayRevenue.toFixed(2)}
-            </div>
-            <div className="text-xs lg:text-sm text-gray-500 dark:text-gray-400">Today's Revenue</div>
-          </div>
-          
-          {/* Network Status Indicator */}
-          <div className="hidden lg:block">
-            <CalendarNetworkStatus />
-          </div>
+          }>
+            <EnhancedRevenueDisplay
+              appointments={bookings}
+              todayRevenue={todayRevenue}
+              todayCount={todayAppointmentCount}
+              selectedDate={selectedDate || new Date()}
+              collapsed={false}
+            />
+          </Suspense>
         </div>
         
         <div className="order-2 lg:order-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
@@ -777,6 +805,56 @@ export default function CalendarPage() {
               <span className="sm:hidden">Recurring</span>
             </Button>
             
+            {/* Heatmap Toggle Button */}
+            <Button 
+              variant="outline"
+              onClick={() => setShowHeatmap(!showHeatmap)}
+              className="calendar-action-button flex items-center justify-center gap-2 min-h-[44px] w-full sm:w-auto"
+              title={showHeatmap ? "Hide availability heatmap" : "Show availability heatmap"}
+            >
+              <svg 
+                className="w-4 h-4" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" 
+                />
+              </svg>
+              <span className="hidden sm:inline">Heatmap</span>
+              <span className="sm:hidden">Heat</span>
+            </Button>
+            
+            {/* Analytics Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAnalytics(!showAnalytics)}
+              className="calendar-action-button flex items-center justify-center gap-2 min-h-[44px] w-full sm:w-auto"
+              title="View Analytics"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4v16"
+                />
+              </svg>
+              <span className="hidden sm:inline">Analytics</span>
+              <span className="sm:hidden">Stats</span>
+            </Button>
+            
             {/* Export Button */}
             <CalendarExport 
               appointments={bookings}
@@ -796,52 +874,108 @@ export default function CalendarPage() {
         </div>
       </div>
 
+      {/* Enhanced Revenue Display - Mobile (Collapsible) */}
+      <div className="lg:hidden mb-4">
+        <Suspense fallback={
+          <div className="animate-pulse">
+            <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+          </div>
+        }>
+          <EnhancedRevenueDisplay
+            appointments={bookings}
+            todayRevenue={todayRevenue}
+            todayCount={todayAppointmentCount}
+            selectedDate={selectedDate || new Date()}
+            collapsed={revenueCollapsed}
+            onToggleCollapse={() => setRevenueCollapsed(!revenueCollapsed)}
+          />
+        </Suspense>
+      </div>
+
       <CalendarErrorBoundary context={`calendar-${viewMode}-view`}>
-        <Card variant="glass" padding="none" className="col-span-full">
-          <Suspense fallback={<CalendarSkeleton view={viewMode} showStats={false} />}>
-            <UnifiedCalendar
-              view={viewMode}
-              onViewChange={setViewMode}
-              currentDate={selectedDate || new Date()}
-              onDateChange={setSelectedDate}
-              appointments={bookings}
-              barbers={filteredBarbers}
-              selectedBarberId={selectedBarberId}
-              onBarberSelect={setSelectedBarberId}
-              onAppointmentClick={(appointment) => {
-                // Set selected date to appointment date
-                const appointmentDate = new Date(appointment.start_time)
-                setSelectedDate(appointmentDate)
-              }}
-              onTimeSlotClick={(date) => {
-                // Open modal with pre-selected date/time
-                setSelectedDate(date)
-                setPreselectedTime(format(date, 'HH:mm'))
-                setShowCreateModal(true)
-              }}
-              onAppointmentUpdate={handleAppointmentUpdate}
-              onDayClick={(date) => {
-                // Single click to set selected date for time picker
-                setPendingDate(date)
-                setShowTimePickerModal(true)
-              }}
-              onDayDoubleClick={(date) => {
-                // Double-click creates appointment with default time
-                setSelectedDate(date)
-                setPreselectedTime('09:00')
-                setShowCreateModal(true)
-              }}
-              startHour={8}
-              endHour={19}
-              slotDuration={30}
-              isLoading={loading}
-              error={error}
-              onRefresh={refreshOptimistic}
-              onRetry={() => window.location.reload()}
-              className="h-[800px]"
-            />
-          </Suspense>
-        </Card>
+        <div className="relative">
+          <Card variant="glass" padding="none" className="col-span-full">
+            <Suspense fallback={<CalendarSkeleton view={viewMode} showStats={false} />}>
+              <UnifiedCalendar
+                view={viewMode}
+                onViewChange={setViewMode}
+                currentDate={selectedDate || new Date()}
+                onDateChange={setSelectedDate}
+                appointments={bookings}
+                barbers={filteredBarbers}
+                selectedBarberId={selectedBarberId}
+                onBarberSelect={setSelectedBarberId}
+                onAppointmentClick={(appointment) => {
+                  // Set selected date to appointment date
+                  const appointmentDate = new Date(appointment.start_time)
+                  setSelectedDate(appointmentDate)
+                }}
+                onTimeSlotClick={(date) => {
+                  // Open modal with pre-selected date/time
+                  setSelectedDate(date)
+                  setPreselectedTime(format(date, 'HH:mm'))
+                  setShowCreateModal(true)
+                }}
+                onAppointmentUpdate={handleAppointmentUpdate}
+                onDayClick={(date) => {
+                  // Single click to set selected date for time picker
+                  setPendingDate(date)
+                  setShowTimePickerModal(true)
+                }}
+                onDayDoubleClick={(date) => {
+                  // Double-click creates appointment with default time
+                  setSelectedDate(date)
+                  setPreselectedTime('09:00')
+                  setShowCreateModal(true)
+                }}
+                startHour={8}
+                endHour={19}
+                slotDuration={30}
+                isLoading={loading}
+                error={error}
+                onRefresh={refreshOptimistic}
+                onRetry={() => window.location.reload()}
+                className="h-[800px]"
+              />
+            </Suspense>
+          </Card>
+
+          {/* Availability Heatmap Overlay */}
+          {showHeatmap && (
+            <div className="absolute inset-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm z-10 overflow-auto">
+              <div className="p-4 sm:p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Availability Heatmap
+                  </h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowHeatmap(false)}
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </Button>
+                </div>
+                <Suspense fallback={<div className="animate-pulse bg-gray-200 h-96 rounded-lg"></div>}>
+                  <AvailabilityHeatmap
+                    appointments={bookings}
+                    currentDate={selectedDate || new Date()}
+                    viewType={viewMode}
+                    onTimeSlotClick={(date) => {
+                      setShowHeatmap(false)
+                      setSelectedDate(date)
+                      setPreselectedTime(format(date, 'HH:mm'))
+                      setShowCreateModal(true)
+                    }}
+                  />
+                </Suspense>
+              </div>
+            </div>
+          )}
+        </div>
       </CalendarErrorBoundary>
 
       {/* Google Calendar Sync Panel */}
@@ -861,6 +995,23 @@ export default function CalendarPage() {
           </Suspense>
         </div>
       )}
+
+      {/* Quick Booking Panel - Desktop Only */}
+      <div className="hidden lg:block">
+        <Suspense fallback={<div className="animate-pulse bg-gray-200 h-40 rounded-lg"></div>}>
+          <QuickBookingPanel
+            onBookingComplete={async () => {
+              // Refresh appointments after quick booking
+              try {
+                await refreshOptimistic()
+                toastSuccess('Calendar Updated', 'Your new appointment has been added.')
+              } catch (error) {
+                console.error('Failed to refresh calendar:', error)
+              }
+            }}
+          />
+        </Suspense>
+      </div>
 
       {/* Calendar Integration Status */}
       {user?.role === 'barber' && !showSyncPanel && (
@@ -959,6 +1110,33 @@ export default function CalendarPage() {
       
       {/* Debug request queue (development only) */}
       <CalendarRequestQueue />
+      
+      {/* Quick Booking FAB - Mobile Only */}
+      <Suspense fallback={null}>
+        <QuickBookingFAB
+          onBookingComplete={async () => {
+            // Refresh appointments after quick booking
+            try {
+              await refreshOptimistic()
+              toastSuccess('Calendar Updated', 'Your new appointment has been added.')
+            } catch (error) {
+              console.error('Failed to refresh calendar:', error)
+            }
+          }}
+        />
+      </Suspense>
+      
+      {/* Calendar Analytics Sidebar */}
+      <Suspense fallback={null}>
+        <CalendarAnalyticsSidebar
+          appointments={bookings}
+          selectedDate={selectedDate || new Date()}
+          userId={user?.id}
+          isOpen={showAnalytics}
+          onToggle={() => setShowAnalytics(!showAnalytics)}
+          position="right"
+        />
+      </Suspense>
       
       </div>
     </ErrorBoundary>

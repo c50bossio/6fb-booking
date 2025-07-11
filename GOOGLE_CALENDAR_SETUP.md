@@ -249,7 +249,7 @@ export default function Dashboard() {
 Test the Google Calendar service:
 
 ```python
-# backend/tests/test_google_calendar_service.py
+# backend-v2/tests/test_google_calendar_service.py
 import pytest
 from services.google_calendar_service import GoogleCalendarService
 from models.appointment import Appointment
@@ -264,7 +264,7 @@ def test_google_calendar_service():
 Test the API endpoints:
 
 ```python
-# backend/tests/test_google_calendar_api.py
+# backend-v2/tests/test_google_calendar_api.py
 import pytest
 from fastapi.testclient import TestClient
 from main import app
@@ -281,7 +281,7 @@ def test_calendar_status_endpoint():
 Test the React components:
 
 ```tsx
-// frontend/src/components/settings/__tests__/GoogleCalendarSettings.test.tsx
+// backend-v2/frontend-v2/src/components/settings/__tests__/GoogleCalendarSettings.test.tsx
 import { render, screen } from '@testing-library/react';
 import GoogleCalendarSettings from '../GoogleCalendarSettings';
 

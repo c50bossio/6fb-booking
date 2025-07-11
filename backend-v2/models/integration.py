@@ -60,7 +60,7 @@ class Integration(Base):
     # Primary fields
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    integration_type = Column(SQLEnum(IntegrationType), nullable=False)
+    integration_type = Column(SQLEnum(IntegrationType, values_callable=lambda obj: [e.value for e in obj]), nullable=False)
     name = Column(String(255), nullable=False)  # User-friendly name
     
     # OAuth and authentication
@@ -79,7 +79,7 @@ class Integration(Base):
     webhook_url = Column(String(500), nullable=True)  # Our webhook endpoint for this integration
     
     # Status and health
-    status = Column(SQLEnum(IntegrationStatus), default=IntegrationStatus.PENDING)
+    status = Column(SQLEnum(IntegrationStatus, values_callable=lambda obj: [e.value for e in obj]), default=IntegrationStatus.PENDING)
     last_sync_at = Column(DateTime, nullable=True)
     last_error = Column(Text, nullable=True)
     error_count = Column(Integer, default=0)

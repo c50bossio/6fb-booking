@@ -6,7 +6,7 @@ import { getProfile, type User } from '@/lib/api'
 import { AnalyticsLayout, AnalyticsSectionLayout } from '@/components/analytics/AnalyticsLayout'
 import { AnalyticsCardGrid } from '@/components/analytics/shared/AnalyticsCard'
 import { DateRangeSelector, DateRangePreset } from '@/components/analytics/shared/DateRangeSelector'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
 import { 
@@ -182,14 +182,14 @@ export default function ReviewsAnalyticsPage() {
       title: 'Average Rating',
       value: analyticsData.summary.averageRating.toFixed(1),
       icon: <StarIcon className="w-5 h-5 text-yellow-600" />,
-      trend: ratingTrend ? 'up' : 'down',
+      trend: (ratingTrend ? 'up' : 'down') as 'up' | 'down',
       change: ratingTrend ? 2.1 : -1.5
     },
     {
       title: 'Total Reviews',
       value: analyticsData.summary.totalReviews,
       icon: <ChatBubbleLeftEllipsisIcon className="w-5 h-5 text-blue-600" />,
-      trend: 'up',
+      trend: 'up' as 'up',
       change: 15.3,
       changeLabel: 'vs last period'
     },
@@ -197,13 +197,13 @@ export default function ReviewsAnalyticsPage() {
       title: 'Response Rate',
       value: `${analyticsData.summary.responseRate}%`,
       icon: <CheckCircleIcon className="w-5 h-5 text-green-600" />,
-      trend: analyticsData.summary.responseRate > 80 ? 'up' : 'down'
+      trend: (analyticsData.summary.responseRate > 80 ? 'up' : 'down') as 'up' | 'down'
     },
     {
       title: 'Response Time',
       value: analyticsData.summary.averageResponseTime,
       icon: <ExclamationCircleIcon className="w-5 h-5 text-orange-600" />,
-      trend: 'neutral'
+      trend: 'neutral' as 'neutral'
     }
   ]
 

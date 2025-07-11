@@ -1,0 +1,174 @@
+{
+  "timestamp": "2025-07-08T07:30:25.803174",
+  "chrome_test": {
+    "chrome_available": true,
+    "error": null
+  },
+  "api_tests": [
+    {
+      "endpoint": "/",
+      "status_code": 200,
+      "success": true,
+      "response_time": 0.005565,
+      "requires_auth": false,
+      "not_found": false,
+      "error": null
+    },
+    {
+      "endpoint": "/health",
+      "status_code": 200,
+      "success": true,
+      "response_time": 0.000683,
+      "requires_auth": false,
+      "not_found": false,
+      "error": null
+    },
+    {
+      "endpoint": "/api/v1/health",
+      "status_code": 200,
+      "success": true,
+      "response_time": 0.00057,
+      "requires_auth": false,
+      "not_found": false,
+      "error": null
+    },
+    {
+      "endpoint": "/api/v1/analytics/dashboard",
+      "status_code": 403,
+      "success": false,
+      "response_time": 0.000728,
+      "requires_auth": true,
+      "not_found": false,
+      "error": "{\"detail\":\"Not authenticated\"}"
+    },
+    {
+      "endpoint": "/api/v1/analytics/revenue",
+      "status_code": 403,
+      "success": false,
+      "response_time": 0.000815,
+      "requires_auth": true,
+      "not_found": false,
+      "error": "{\"detail\":\"Not authenticated\"}"
+    },
+    {
+      "endpoint": "/api/v1/analytics/appointments",
+      "status_code": 403,
+      "success": false,
+      "response_time": 0.000822,
+      "requires_auth": true,
+      "not_found": false,
+      "error": "{\"detail\":\"Not authenticated\"}"
+    },
+    {
+      "endpoint": "/api/v1/users/me",
+      "status_code": 403,
+      "success": false,
+      "response_time": 0.000543,
+      "requires_auth": true,
+      "not_found": false,
+      "error": "{\"detail\":\"Not authenticated\"}"
+    },
+    {
+      "endpoint": "/api/v1/appointments",
+      "status_code": 403,
+      "success": false,
+      "response_time": 0.00072,
+      "requires_auth": true,
+      "not_found": false,
+      "error": "{\"detail\":\"Not authenticated\"}"
+    },
+    {
+      "endpoint": "/api/v1/commissions",
+      "status_code": 403,
+      "success": false,
+      "response_time": 0.000961,
+      "requires_auth": true,
+      "not_found": false,
+      "error": "{\"detail\":\"Not authenticated\"}"
+    },
+    {
+      "endpoint": "/api/v1/clients",
+      "status_code": 403,
+      "success": false,
+      "response_time": 0.001063,
+      "requires_auth": true,
+      "not_found": false,
+      "error": "{\"detail\":\"Not authenticated\"}"
+    }
+  ],
+  "frontend_tests": [
+    {
+      "page": "/",
+      "status_code": 200,
+      "success": true,
+      "response_time": 0.061295,
+      "size_kb": 62.0380859375,
+      "has_react": true,
+      "error": null
+    },
+    {
+      "page": "/dashboard",
+      "status_code": 200,
+      "success": true,
+      "response_time": 0.031447,
+      "size_kb": 31.177734375,
+      "has_react": true,
+      "error": null
+    },
+    {
+      "page": "/finance/analytics",
+      "status_code": 200,
+      "success": true,
+      "response_time": 0.044811,
+      "size_kb": 26.568359375,
+      "has_react": true,
+      "error": null
+    },
+    {
+      "page": "/commissions",
+      "status_code": 200,
+      "success": true,
+      "response_time": 0.029723,
+      "size_kb": 26.0634765625,
+      "has_react": true,
+      "error": null
+    },
+    {
+      "page": "/clients",
+      "status_code": 200,
+      "success": true,
+      "response_time": 0.031425,
+      "size_kb": 31.171875,
+      "has_react": true,
+      "error": null
+    },
+    {
+      "page": "/calendar",
+      "status_code": 200,
+      "success": true,
+      "response_time": 0.03057,
+      "size_kb": 31.1748046875,
+      "has_react": true,
+      "error": null
+    },
+    {
+      "page": "/settings",
+      "status_code": 200,
+      "success": true,
+      "response_time": 0.027443,
+      "size_kb": 31.1748046875,
+      "has_react": true,
+      "error": null
+    }
+  ],
+  "summary": {
+    "chrome_available": true,
+    "api_success_rate": 100.0,
+    "frontend_success_rate": 100.0,
+    "overall_score": 100.0,
+    "api_working": 10,
+    "api_total": 10,
+    "frontend_working": 7,
+    "frontend_total": 7
+  }
+}

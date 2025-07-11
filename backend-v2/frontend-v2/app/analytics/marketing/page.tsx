@@ -7,7 +7,7 @@ import { AnalyticsLayout, AnalyticsSectionLayout } from '@/components/analytics/
 import { AnalyticsCardGrid } from '@/components/analytics/shared/AnalyticsCard'
 import { AnalyticsFilters, FilterOption } from '@/components/analytics/shared/AnalyticsFilters'
 import { DateRangeSelector, DateRangePreset } from '@/components/analytics/shared/DateRangeSelector'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
 import UsageChart from '@/components/marketing/UsageChart'
@@ -144,30 +144,34 @@ export default function MarketingAnalyticsPage() {
     return null
   }
 
+  const openRateTrend: 'up' | 'down' = analyticsData.engagement.averageOpenRate > 70 ? 'up' : 'down'
+  const clickRateTrend: 'up' | 'down' = analyticsData.engagement.averageClickRate > 20 ? 'up' : 'down'
+
   const metrics = [
     {
       title: 'Campaign Revenue',
       value: `$${analyticsData.performance.revenue.toLocaleString()}`,
       icon: <CurrencyDollarIcon className="w-5 h-5 text-green-600" />,
-      trend: 'up',
+      trend: 'up' as const,
       change: 18.5
     },
     {
       title: 'Open Rate',
       value: `${analyticsData.engagement.averageOpenRate}%`,
       icon: <EnvelopeOpenIcon className="w-5 h-5 text-blue-600" />,
-      trend: analyticsData.engagement.averageOpenRate > 70 ? 'up' : 'down'
+      trend: openRateTrend
     },
     {
       title: 'Click Rate',
       value: `${analyticsData.engagement.averageClickRate}%`,
       icon: <CursorArrowRaysIcon className="w-5 h-5 text-purple-600" />,
-      trend: analyticsData.engagement.averageClickRate > 20 ? 'up' : 'down'
+      trend: clickRateTrend
     },
     {
       title: 'Conversions',
       value: analyticsData.performance.conversions,
       icon: <ArrowTrendingUpIcon className="w-5 h-5 text-orange-600" />,
+      trend: 'neutral' as const,
       change: analyticsData.engagement.averageConversionRate,
       changeLabel: 'rate'
     }

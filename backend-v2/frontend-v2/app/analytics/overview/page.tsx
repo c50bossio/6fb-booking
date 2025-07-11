@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { getProfile, type User } from '@/lib/api'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import SixFigureAnalyticsDashboard from '@/components/analytics/SixFigureAnalyticsDashboard'
 import { 
@@ -124,7 +124,7 @@ export default function OverviewPage({}: OverviewPageProps) {
   if (error) {
     return (
       <div className="space-y-6">
-        <Card variant="error">
+        <Card variant="outlined">
           <CardContent className="p-6">
             <div className="flex items-center space-x-3">
               <ExclamationTriangleIcon className="w-6 h-6 text-error-600 dark:text-error-400" />

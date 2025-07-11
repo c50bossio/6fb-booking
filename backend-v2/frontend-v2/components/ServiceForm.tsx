@@ -9,6 +9,14 @@ import {
   type ServiceUpdate, 
   type ServiceCategory 
 } from '../lib/api'
+import PricingValidationWidget from './PricingValidationWidget'
+import { 
+  ServiceCategoryEnum, 
+  PricingValidationResult, 
+  PricingRecommendation,
+  SixFBTier,
+  MarketType
+} from '../lib/pricing-validation'
 
 interface ServiceFormProps {
   service?: Service | null
@@ -50,6 +58,12 @@ export default function ServiceForm({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showAdvanced, setShowAdvanced] = useState(false)
+  
+  // Pricing validation state
+  const [showPricingValidation, setShowPricingValidation] = useState(true)
+  const [pricingValidation, setPricingValidation] = useState<PricingValidationResult | null>(null)
+  const [selectedTier, setSelectedTier] = useState<SixFBTier>(SixFBTier.PROFESSIONAL)
+  const [selectedMarketType, setSelectedMarketType] = useState<MarketType>(MarketType.URBAN)
 
   useEffect(() => {
     if (service) {
@@ -95,6 +109,37 @@ export default function ServiceForm({
         ? prev.package_item_ids.filter(id => id !== itemId)
         : [...prev.package_item_ids, itemId]
     }))
+  }
+
+  // Pricing validation handlers
+  const handlePricingValidation = (validation: PricingValidationResult) => {
+    setPricingValidation(validation)
+  }
+
+  const handleRecommendationApply = (recommendation: PricingRecommendation) => {
+    // Apply the recommended price
+    setFormData(prev => ({
+      ...prev,
+      base_price: recommendation.recommendedPrice
+    }))
+    
+    // Show success message
+    setError('')
+    // Could show a temporary success message here
+  }
+
+  const mapCategoryToEnum = (category: string): ServiceCategoryEnum => {
+    // Map API category strings to enum values
+    switch (category.toLowerCase()) {
+      case 'haircut': return ServiceCategoryEnum.HAIRCUT;
+      case 'beard': return ServiceCategoryEnum.BEARD;
+      case 'shave': return ServiceCategoryEnum.SHAVE;
+      case 'hair_treatment': return ServiceCategoryEnum.HAIR_TREATMENT;
+      case 'styling': return ServiceCategoryEnum.STYLING;
+      case 'color': return ServiceCategoryEnum.COLOR;
+      case 'package': return ServiceCategoryEnum.PACKAGE;
+      default: return ServiceCategoryEnum.OTHER;
+    }
   }
 
   const validateForm = (): string | null => {
@@ -296,6 +341,97 @@ export default function ServiceForm({
             />
           </div>
         </div>
+
+        {/* 6FB Pricing Validation */}
+        {showPricingValidation && formData.name && formData.category && formData.base_price > 0 && formData.duration_minutes > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-medium text-gray-900">6FB Pricing Validation</h3>
+              <button
+                type="button"
+                onClick={() => setShowPricingValidation(!showPricingValidation)}
+                className="text-sm text-blue-600 hover:text-blue-500"
+              >
+                {showPricingValidation ? 'Hide' : 'Show'} Validation
+              </button>
+            </div>
+
+            {/* Tier and Market Selection */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Target 6FB Tier
+                </label>
+                <select
+                  value={selectedTier}
+                  onChange={(e) => setSelectedTier(e.target.value as SixFBTier)}
+                  className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value={SixFBTier.STARTER}>Starter - Foundation Services</option>
+                  <option value={SixFBTier.PROFESSIONAL}>Professional - Enhanced Services</option>
+                  <option value={SixFBTier.PREMIUM}>Premium - Luxury Services</option>
+                  <option value={SixFBTier.LUXURY}>Luxury - Ultimate Services</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Market Type
+                </label>
+                <select
+                  value={selectedMarketType}
+                  onChange={(e) => setSelectedMarketType(e.target.value as MarketType)}
+                  className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value={MarketType.URBAN}>Urban - City Market</option>
+                  <option value={MarketType.SUBURBAN}>Suburban - Neighborhood Market</option>
+                  <option value={MarketType.LUXURY}>Luxury - High-End Market</option>
+                  <option value={MarketType.ECONOMY}>Economy - Budget Market</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Pricing Validation Widget */}
+            <PricingValidationWidget
+              serviceName={formData.name}
+              category={mapCategoryToEnum(formData.category)}
+              basePrice={formData.base_price}
+              duration={formData.duration_minutes}
+              minPrice={formData.min_price}
+              maxPrice={formData.max_price}
+              isPackage={formData.is_package}
+              marketType={selectedMarketType}
+              targetTier={selectedTier}
+              onChange={handlePricingValidation}
+              onRecommendationApply={handleRecommendationApply}
+              showRecommendations={true}
+              showBenchmarks={true}
+              showEducational={true}
+              compact={false}
+            />
+
+            {/* Validation Summary */}
+            {pricingValidation && (
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+                <h4 className="font-medium text-blue-900 mb-2">Validation Summary</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-blue-700">6FB Alignment:</span>
+                    <span className="ml-2 font-semibold text-blue-900">
+                      {pricingValidation.methodologyAlignment}%
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-blue-700">Revenue Optimization:</span>
+                    <span className="ml-2 font-semibold text-blue-900">
+                      {pricingValidation.revenueOptimization}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Status Toggles */}
         <div className="space-y-4">

@@ -100,7 +100,7 @@ Once everything is working:
 Test the deployment:
 ```bash
 # From local machine
-python backend/scripts/monitor-health.py
+python backend-v2/scripts/monitor-health.py
 ```
 
 ## Performance Recommendations
@@ -134,7 +134,7 @@ python backend/scripts/monitor-health.py
 1. Check Render logs for both services
 2. Verify all environment variables are set
 3. Check database connectivity
-4. Run `python backend/scripts/monitor-health.py` locally
+4. Run `python backend-v2/scripts/monitor-health.py` locally
 
 ### If builds fail:
 1. Check build logs in Render dashboard

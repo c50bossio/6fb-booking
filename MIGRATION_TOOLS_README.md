@@ -76,8 +76,8 @@ The migration creates the following structure:
 ```
 6fb-platform/
 ├── apps/
-│   ├── backend/          # FastAPI backend
-│   ├── frontend/         # Next.js frontend
+│   ├── backend-v2/          # FastAPI backend
+│   ├── backend-v2/frontend-v2/         # Next.js frontend
 │   └── dashboard/        # Analytics dashboard
 ├── packages/
 │   ├── shared/           # Shared types/schemas

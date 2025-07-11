@@ -68,7 +68,7 @@ Try logging in at: https://sixfb-backend.onrender.com/docs
    - Settings:
      - **Name**: `6fb-booking-frontend`
      - **Build Command**: `cd frontend && npm install && npm run build`
-     - **Publish Directory**: `frontend/out`
+     - **Publish Directory**: `backend-v2/frontend-v2/out`
 
 2. **Add Environment Variable**:
    ```

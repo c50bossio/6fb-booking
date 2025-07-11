@@ -7,10 +7,13 @@ import UnifiedCalendar from '@/components/UnifiedCalendar'
 import TimeSlots from '@/components/TimeSlots'
 import PaymentForm from '@/components/PaymentForm'
 import TimezoneTooltip from '@/components/TimezoneTooltip'
+import AITimeSuggestions from '@/components/booking/AITimeSuggestions'
 import { Button } from '@/components/ui/Button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/Card'
 import { LoadingButton, TimeSlotsLoadingSkeleton, ErrorDisplay } from '@/components/LoadingStates'
-import { appointmentsAPI, getMyBookings, getProfile, getNextAvailableSlot, quickBooking as quickBookingAPI, type SlotsResponse, type TimeSlot, type NextAvailableSlot, createGuestBooking, createGuestQuickBooking, type GuestInformation, type GuestBookingCreate, type GuestQuickBookingCreate, type GuestBookingResponse, type AppointmentCreate } from '@/lib/api'
+import { appointmentsAPI, getMyBookings, getProfile, getNextAvailableSlot, quickBooking as quickBookingAPI, type SlotsResponse, type TimeSlot, type NextAvailableSlot, createGuestBooking, createGuestQuickBooking, type GuestInformation, type GuestBookingCreate, type GuestQuickBookingCreate, type GuestBookingResponse, type AppointmentCreate, type BookingResponse } from '@/lib/api'
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 import { toastError, toastSuccess } from '@/hooks/use-toast'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { 
@@ -107,9 +110,31 @@ export default function BookPage() {
           return bookingDate
         })
         setBookingDates(dates)
-      } catch (err) {
-        console.log('User not authenticated - guest booking mode')
-        setIsAuthenticated(false)
+        
+        // Check if returning from login with booking in progress
+        const bookingInProgress = sessionStorage.getItem('bookingInProgress')
+        if (bookingInProgress) {
+          const booking = JSON.parse(bookingInProgress)
+          setSelectedService(booking.service)
+          setSelectedDate(booking.date ? new Date(booking.date) : null)
+          setSelectedTime(booking.time)
+          setStep(booking.step || 3)
+          sessionStorage.removeItem('bookingInProgress')
+        }
+      } catch (err: any) {
+        // Better error handling for 403 vs other errors
+        if (err.status === 403 || err.message?.includes('Access denied')) {
+          console.log('User not authenticated - guest booking mode')
+          setIsAuthenticated(false)
+        } else if (err.message?.includes('Network error') || err.message?.includes('Failed to connect')) {
+          // Network errors - don't set an error state, just proceed as guest
+          console.log('Network issue checking auth - proceeding as guest')
+          setIsAuthenticated(false)
+        } else {
+          // Unexpected errors
+          console.error('Error checking authentication:', err)
+          setIsAuthenticated(false)
+        }
         // Don't redirect - allow guest booking
       }
     }
@@ -133,8 +158,11 @@ export default function BookPage() {
       setLoadingNextAvailable(true)
       const next = await getNextAvailableSlot()
       setNextAvailable(next)
-    } catch (err) {
-      console.error('Failed to fetch next available slot:', err)
+    } catch (err: any) {
+      // Don't log 403 errors as they're expected for unauthenticated users
+      if (err.status !== 403 && !err.message?.includes('Access denied')) {
+        console.error('Failed to fetch next available slot:', err)
+      }
       // Don't show error for this, it's not critical for guest booking
       setNextAvailable(null)
     } finally {
@@ -150,7 +178,11 @@ export default function BookPage() {
     
     try {
       const dateStr = formatDateForAPI(date)
+      console.log('📅 Fetching time slots for date:', dateStr)
+      console.log('🔗 API URL:', `${API_URL}/api/v1/appointments/slots?appointment_date=${dateStr}`)
+      
       const response: SlotsResponse = await appointmentsAPI.getAvailableSlots(dateStr)
+      console.log('✅ Time slots response:', response)
       setTimeSlots(response.slots || [])
       
       // If no slots available for selected date, show helpful message
@@ -212,9 +244,27 @@ export default function BookPage() {
         // If there are available slots, clear nextAvailable to prevent showing stale data
         setNextAvailable(null)
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to fetch slots:', err)
-      setError('Failed to load available time slots. Please try again or contact support.')
+      console.error('Error details:', {
+        message: err.message,
+        status: err.status,
+        response: err.response,
+        date: dateStr,
+        apiUrl: '/api/v1/appointments/slots'
+      })
+      
+      // Provide more specific error messages
+      let errorMessage = 'Failed to load available time slots. Please try again or contact support.'
+      if (err.status === 404) {
+        errorMessage = 'Time slot service not available. Please contact support.'
+      } else if (err.status === 401) {
+        errorMessage = 'Authentication required. Please sign in to continue.'
+      } else if (err.message?.includes('Network')) {
+        errorMessage = 'Connection error. Please check your internet connection and try again.'
+      }
+      
+      setError(errorMessage)
       setTimeSlots([])
     } finally {
       setLoadingSlots(false)
@@ -464,6 +514,63 @@ export default function BookPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
+        {/* Header with Login/Create Account */}
+        {!isAuthenticated && (
+          <div className="mb-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Book Your Appointment</h1>
+                <p className="text-sm text-gray-600 mt-1">Quick and easy online booking</p>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => {
+                    // Save current booking state
+                    sessionStorage.setItem('bookingInProgress', JSON.stringify({
+                      service: selectedService,
+                      date: selectedDate?.toISOString(),
+                      time: selectedTime,
+                      step: step
+                    }))
+                    router.push('/login?returnUrl=/book')
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 sm:flex-initial"
+                >
+                  Sign In
+                </Button>
+                <Button
+                  onClick={() => {
+                    // Save current booking state
+                    sessionStorage.setItem('bookingInProgress', JSON.stringify({
+                      service: selectedService,
+                      date: selectedDate?.toISOString(),
+                      time: selectedTime,
+                      step: step
+                    }))
+                    router.push('/register/client?returnUrl=/book')
+                  }}
+                  variant="primary"
+                  size="sm"
+                  className="flex-1 sm:flex-initial"
+                >
+                  Create Account
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Welcome message for authenticated users */}
+        {isAuthenticated === true && (
+          <div className="mb-6 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-4">
+            <p className="text-sm text-primary-900 dark:text-primary-100">
+              Welcome back! You're signed in and can manage your bookings from your dashboard.
+            </p>
+          </div>
+        )}
+
         {/* Timezone indicator */}
         {userTimezone && (
           <div className="text-center mb-4">
@@ -650,32 +757,57 @@ export default function BookPage() {
 
             {!useCalendarView ? (
               // Classic view with separate calendar and time slots
-              <div className="grid md:grid-cols-2 gap-8">
+              <div className="grid md:grid-cols-2 gap-6 items-start">
                 <div>
-                  <h2 className="text-lg font-semibold mb-4">Choose a Date</h2>
+                  <h2 className="text-lg font-semibold mb-4 h-7">Choose a Date</h2>
                   <Calendar
-                    selectedDate={selectedDate}
-                    onDateSelect={handleDateSelect}
-                    bookingDates={bookingDates}
+                    selected={selectedDate}
+                    onSelect={(date) => date && handleDateSelect(date)}
+                    minDate={(() => {
+                      const today = new Date()
+                      today.setHours(0, 0, 0, 0)
+                      return today
+                    })()}
+                    maxDate={(() => {
+                      const maxDate = new Date()
+                      maxDate.setDate(maxDate.getDate() + 90) // Allow booking up to 90 days in advance
+                      return maxDate
+                    })()}
+                    disabled={(date) => false}
                   />
                 </div>
 
                 <div>
-                  <h2 className="text-lg font-semibold mb-4">
+                  <h2 className="text-lg font-semibold mb-4 h-7">
                     {selectedDate ? formatDate(selectedDate) : 'Select a date first'}
                   </h2>
                   {selectedDate && (
                     <>
+                      {/* AI Time Suggestions */}
+                      {selectedService && (
+                        <AITimeSuggestions
+                          selectedDate={selectedDate}
+                          selectedService={selectedService}
+                          existingAppointments={[]} // Could pass actual appointments if available
+                          onTimeSelect={handleTimeSelect}
+                          isLoading={loadingSlots}
+                        />
+                      )}
+                      
+                      {/* Available Time Slots */}
                       {loadingSlots ? (
                         <TimeSlotsLoadingSkeleton />
                       ) : (
-                        <TimeSlots
-                          slots={timeSlots}
-                          selectedTime={selectedTime}
-                          onTimeSelect={handleTimeSelect}
-                          loading={false}
-                          showNextAvailableBadge={true}
-                        />
+                        <>
+                          <h3 className="text-md font-medium mb-3 text-gray-700">All Available Times</h3>
+                          <TimeSlots
+                            slots={timeSlots}
+                            selectedTime={selectedTime}
+                            onTimeSelect={handleTimeSelect}
+                            loading={false}
+                            showNextAvailableBadge={true}
+                          />
+                        </>
                       )}
                     </>
                   )}
@@ -709,6 +841,17 @@ export default function BookPage() {
                     </Button>
                   </div>
                 </div>
+
+                {/* AI Time Suggestions in Calendar View */}
+                {selectedService && selectedDate && !loadingSlots && (
+                  <AITimeSuggestions
+                    selectedDate={selectedDate}
+                    selectedService={selectedService}
+                    existingAppointments={[]} // Could pass actual appointments if available
+                    onTimeSelect={handleTimeSelect}
+                    isLoading={loadingSlots}
+                  />
+                )}
                 
                 {loadingSlots ? (
                   <div className="h-[600px] flex items-center justify-center bg-white rounded-lg border border-gray-200">
@@ -995,6 +1138,26 @@ export default function BookPage() {
                 </div>
               </div>
 
+              {/* Create account option */}
+              <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                <label className="flex items-start space-x-3">
+                  <input
+                    type="checkbox"
+                    className="mt-1 h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                    onChange={(e) => {
+                      // Store preference to create account after booking
+                      sessionStorage.setItem('createAccountAfterBooking', e.target.checked ? 'true' : 'false')
+                    }}
+                  />
+                  <div className="flex-1">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Create an account</span>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Save time on future bookings, view your appointment history, and manage your preferences
+                    </p>
+                  </div>
+                </label>
+              </div>
+
               {error && (
                 <div className="mt-4">
                   <div className="text-red-600 text-sm">{error}</div>
@@ -1110,16 +1273,34 @@ export default function BookPage() {
               </div>
             </div>
 
-            <div className="space-y-3">
+            {/* Create account CTA */}
+            <div className="bg-primary-50 dark:bg-primary-900/20 rounded-lg p-6 mb-4">
+              <h3 className="text-lg font-semibold text-primary-900 dark:text-primary-100 mb-2">
+                Create Your Account
+              </h3>
+              <p className="text-sm text-primary-700 dark:text-primary-300 mb-4">
+                Save time on future bookings, view your appointment history, and manage your preferences
+              </p>
               <Button
-                onClick={() => router.push('/register?email=' + encodeURIComponent(guestBookingResponse.guest_email))}
+                onClick={() => {
+                  // Pass guest info to registration page
+                  sessionStorage.setItem('guestRegistration', JSON.stringify({
+                    email: guestBookingResponse.guest_email,
+                    first_name: guestInfo.first_name,
+                    last_name: guestInfo.last_name,
+                    phone: guestInfo.phone
+                  }))
+                  router.push('/register/client?source=booking&email=' + encodeURIComponent(guestBookingResponse.guest_email))
+                }}
                 variant="primary"
                 size="lg"
                 fullWidth
               >
-                Create Account to Manage Bookings
+                Create Account
               </Button>
-              
+            </div>
+
+            <div className="space-y-3">
               <Button
                 onClick={() => router.push('/book')}
                 variant="outline"
@@ -1127,6 +1308,15 @@ export default function BookPage() {
                 fullWidth
               >
                 Book Another Appointment
+              </Button>
+              
+              <Button
+                onClick={() => router.push('/')}
+                variant="ghost"
+                size="lg"
+                fullWidth
+              >
+                Return Home
               </Button>
             </div>
           </div>

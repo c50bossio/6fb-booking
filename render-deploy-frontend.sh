@@ -15,8 +15,8 @@ NC='\033[0m' # No Color
 # Configuration
 SERVICE_NAME="sixfb-frontend"
 SERVICE_TYPE="web"
-BUILD_COMMAND="cd frontend && npm install && npm run build"
-START_COMMAND="cd frontend && npm start"
+BUILD_COMMAND="cd backend-v2/frontend-v2 && npm install && npm run build"
+START_COMMAND="cd backend-v2/frontend-v2 && npm start"
 HEALTH_CHECK_PATH="/"
 REGION="oregon" # or "ohio", "frankfurt", "singapore"
 
@@ -196,7 +196,7 @@ set_env_variables() {
     print_status "Setting environment variables for service '$SERVICE_ID'..."
 
     # Read environment variables from .env.production
-    ENV_FILE="frontend/.env.production"
+    ENV_FILE="backend-v2/frontend-v2/.env.production"
     if [ ! -f "$ENV_FILE" ]; then
         print_warning "No .env.production file found at $ENV_FILE"
         print_status "Creating from template..."
@@ -383,7 +383,7 @@ if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
     echo "This script will:"
     echo "  1. Check if the frontend service exists on Render"
     echo "  2. Create the service if it doesn't exist"
-    echo "  3. Set up environment variables from frontend/.env.production"
+    echo "  3. Set up environment variables from backend-v2/frontend-v2/.env.production"
     echo "  4. Trigger a deployment"
     echo "  5. Monitor deployment status"
     echo ""

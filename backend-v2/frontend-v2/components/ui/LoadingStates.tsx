@@ -385,6 +385,19 @@ export {
   dotsVariants,
 }
 
+// Export LoadingStates as a compound component
+export const LoadingStates = {
+  Loading,
+  LoadingSpinner,
+  LoadingDots,
+  LoadingPulse,
+  LoadingBar,
+  PageLoading,
+  ButtonLoading,
+  InlineLoading,
+  CardLoading
+}
+
 // CSS for indeterminate animation (add to globals.css)
 const indeterminateCSS = `
 @keyframes indeterminate {

@@ -16,23 +16,33 @@ router = APIRouter(
     tags=["test-data"]
 )
 
-@router.post("/create", response_model=Dict[str, Any])
+@router.post("/create", response_model=schemas.TestDataCreationResponse)
 def create_test_data(
-    include_enterprise: bool = False,
+    request: schemas.TestDataCreationRequest,
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Create test data for the current user
+    """Create test data for the current user with customization options
     
     Args:
-        include_enterprise: If True, creates multi-location enterprise test data
+        request: Test data creation request with optional customization
     """
-    result = test_data_service.create_test_data_for_user(db, current_user.id, include_enterprise=include_enterprise)
+    customization = request.customization
+    result = test_data_service.create_test_data_for_user(
+        db, 
+        current_user.id, 
+        customization=customization
+    )
     
     if not result["success"]:
         raise HTTPException(status_code=400, detail=result["message"])
         
-    return result
+    return schemas.TestDataCreationResponse(
+        success=result["success"],
+        message=result["message"],
+        created=result.get("created", {}),
+        customization_applied=customization
+    )
 
 @router.delete("", response_model=Dict[str, Any])
 def delete_test_data(
@@ -49,22 +59,28 @@ def delete_test_data(
 
 @router.post("/refresh", response_model=Dict[str, Any])
 def refresh_test_data(
-    include_enterprise: bool = False,
+    request: schemas.TestDataCreationRequest,
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Delete and recreate test data (reset to default state)
     
     Args:
-        include_enterprise: If True, creates multi-location enterprise test data
+        request: Test data creation request with optional customization
     """
+    customization = request.customization
+    
     # First delete existing test data
     delete_result = test_data_service.delete_test_data_for_user(db, current_user.id)
     if not delete_result["success"]:
         raise HTTPException(status_code=400, detail=delete_result["message"])
     
     # Then create new test data
-    create_result = test_data_service.create_test_data_for_user(db, current_user.id, include_enterprise=include_enterprise)
+    create_result = test_data_service.create_test_data_for_user(
+        db, 
+        current_user.id, 
+        customization=customization
+    )
     if not create_result["success"]:
         raise HTTPException(status_code=400, detail=create_result["message"])
         
@@ -72,6 +88,7 @@ def refresh_test_data(
         "success": True,
         "deleted": delete_result["deleted"],
         "created": create_result["created"],
+        "customization_applied": customization,
         "message": "Test data refreshed successfully"
     }
 

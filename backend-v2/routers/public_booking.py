@@ -5,15 +5,36 @@ This module provides public endpoints for fetching organization booking data
 without authentication, used by the conversion-optimized booking funnel.
 """
 
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Request
 from sqlalchemy.orm import Session
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from pydantic import BaseModel
+from datetime import datetime, date
 
 from database import get_db
 from models.organization import Organization
-from models import User
+from models import User, Service
+from models.guest_booking import GuestBooking
 from schemas_new.tracking import PublicTrackingPixels
+from schemas_new.guest_booking import (
+    GuestBookingCreate,
+    GuestBookingResponse,
+    GuestBookingLookup,
+    PublicAvailabilityResponse,
+    PublicServiceInfo,
+    PublicBarberInfo
+)
+from services.guest_booking_service import guestBookingService
+from services.landing_page_service import landing_page_service
+from schemas_new.landing_page import (
+    LandingPageResponse,
+    LandingPageTrackingEvent,
+    LandingPagePresets
+)
+from utils.rate_limit import guest_booking_rate_limit
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/v1/public/booking",
@@ -159,10 +180,14 @@ async def get_booking_page_settings(
     )
 
 
-@router.get("/organization/{slug}/availability")
+@router.get("/organization/{slug}/availability", response_model=PublicAvailabilityResponse)
+@guest_booking_rate_limit
 async def get_organization_availability(
+    request: Request,
     slug: str,
     date: Optional[str] = None,
+    service_id: Optional[int] = None,
+    barber_id: Optional[int] = None,
     db: Session = Depends(get_db)
 ):
     """
@@ -182,39 +207,36 @@ async def get_organization_availability(
             detail=f"Organization with slug '{slug}' not found"
         )
     
-    # TODO: Implement actual availability checking
-    # For now, return mock availability data
-    from datetime import datetime, timedelta
+    # Parse date or use today
+    if date:
+        try:
+            target_date = datetime.strptime(date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid date format. Use YYYY-MM-DD"
+            )
+    else:
+        target_date = datetime.now().date()
     
-    if not date:
-        date = datetime.now().strftime("%Y-%m-%d")
+    # Get availability using service
+    availability = guestBookingService.get_organization_availability(
+        db=db,
+        organization=organization,
+        target_date=target_date,
+        service_id=service_id,
+        barber_id=barber_id
+    )
     
-    # Generate mock time slots
-    mock_slots = []
-    start_hour = 9  # 9 AM
-    end_hour = 18   # 6 PM
-    
-    for hour in range(start_hour, end_hour):
-        for minute in [0, 30]:  # 30-minute intervals
-            time_str = f"{hour:02d}:{minute:02d}"
-            mock_slots.append({
-                "time": time_str,
-                "available": True,
-                "duration": 30
-            })
-    
-    return {
-        "date": date,
-        "organization_id": organization.id,
-        "slots": mock_slots,
-        "timezone": organization.timezone
-    }
+    return availability
 
 
-@router.post("/organization/{slug}/book")
+@router.post("/organization/{slug}/book", response_model=GuestBookingResponse)
+@guest_booking_rate_limit
 async def create_public_booking(
+    request: Request,
     slug: str,
-    booking_data: dict,
+    booking_data: GuestBookingCreate,
     db: Session = Depends(get_db)
 ):
     """
@@ -234,13 +256,326 @@ async def create_public_booking(
             detail=f"Organization with slug '{slug}' not found"
         )
     
-    # TODO: Implement actual booking creation
-    # This should integrate with the existing booking system
-    # but allow for guest bookings
+    # Extract user agent and IP for tracking
+    user_agent = request.headers.get("User-Agent")
+    # Get real IP, accounting for proxies
+    forwarded_for = request.headers.get("X-Forwarded-For")
+    if forwarded_for:
+        ip_address = forwarded_for.split(",")[0].strip()
+    else:
+        ip_address = request.client.host if request.client else None
     
-    return {
-        "booking_id": 12345,  # Mock booking ID
-        "status": "confirmed",
-        "message": "Booking created successfully",
-        "organization_id": organization.id
-    }
+    try:
+        # Create guest booking
+        guest_booking = guestBookingService.create_guest_booking(
+            db=db,
+            organization=organization,
+            booking_data=booking_data,
+            user_agent=user_agent,
+            ip_address=ip_address
+        )
+        
+        # Build response
+        service = db.query(Service).filter(Service.id == guest_booking.service_id).first()
+        barber = db.query(User).filter(User.id == guest_booking.barber_id).first() if guest_booking.barber_id else None
+        
+        return GuestBookingResponse(
+            id=guest_booking.id,
+            confirmation_code=guest_booking.confirmation_code,
+            guest_name=guest_booking.guest_name,
+            guest_email=guest_booking.guest_email,
+            guest_phone=guest_booking.guest_phone,
+            organization_id=organization.id,
+            organization_name=organization.name,
+            barber_id=guest_booking.barber_id,
+            barber_name=barber.name if barber else None,
+            service_id=guest_booking.service_id,
+            service_name=service.name if service else "Service",
+            appointment_datetime=guest_booking.appointment_datetime,
+            appointment_timezone=guest_booking.appointment_timezone,
+            duration_minutes=guest_booking.duration_minutes,
+            service_price=guest_booking.service_price,
+            deposit_amount=guest_booking.deposit_amount,
+            status=guest_booking.status,
+            payment_status=guest_booking.payment_status,
+            notes=guest_booking.notes,
+            marketing_consent=guest_booking.marketing_consent,
+            reminder_preference=guest_booking.reminder_preference,
+            created_at=guest_booking.created_at
+        )
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        logger.error(f"Failed to create guest booking: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create booking. Please try again."
+        )
+
+
+@router.get("/organization/{slug}/services", response_model=List[PublicServiceInfo])
+@guest_booking_rate_limit
+async def get_organization_services(
+    request: Request,
+    slug: str,
+    active_only: bool = True,
+    db: Session = Depends(get_db)
+):
+    """
+    Get services offered by an organization.
+    
+    Returns a list of services available for booking.
+    """
+    organization = db.query(Organization).filter(
+        Organization.slug == slug,
+        Organization.is_active == True
+    ).first()
+    
+    if not organization:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Organization with slug '{slug}' not found"
+        )
+    
+    services = guestBookingService.get_organization_services(
+        db=db,
+        organization=organization,
+        active_only=active_only
+    )
+    
+    return services
+
+
+@router.get("/organization/{slug}/barbers", response_model=List[PublicBarberInfo])
+@guest_booking_rate_limit
+async def get_organization_barbers(
+    request: Request,
+    slug: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Get barbers in an organization.
+    
+    Returns a list of barbers available for booking.
+    """
+    organization = db.query(Organization).filter(
+        Organization.slug == slug,
+        Organization.is_active == True
+    ).first()
+    
+    if not organization:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Organization with slug '{slug}' not found"
+        )
+    
+    barbers = guestBookingService.get_organization_barbers(
+        db=db,
+        organization=organization
+    )
+    
+    return barbers
+
+
+@router.post("/booking/lookup", response_model=GuestBookingResponse)
+@guest_booking_rate_limit
+async def lookup_booking(
+    request: Request,
+    lookup_data: GuestBookingLookup,
+    db: Session = Depends(get_db)
+):
+    """
+    Look up a guest booking by confirmation code and email/phone.
+    
+    Allows guests to check their booking status without an account.
+    """
+    guest_booking = guestBookingService.lookup_guest_booking(
+        db=db,
+        confirmation_code=lookup_data.confirmation_code,
+        email_or_phone=lookup_data.email_or_phone
+    )
+    
+    if not guest_booking:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Booking not found. Please check your confirmation code and email/phone."
+        )
+    
+    # Build response
+    service = db.query(Service).filter(Service.id == guest_booking.service_id).first()
+    barber = db.query(User).filter(User.id == guest_booking.barber_id).first() if guest_booking.barber_id else None
+    organization = guest_booking.organization
+    
+    return GuestBookingResponse(
+        id=guest_booking.id,
+        confirmation_code=guest_booking.confirmation_code,
+        guest_name=guest_booking.guest_name,
+        guest_email=guest_booking.guest_email,
+        guest_phone=guest_booking.guest_phone,
+        organization_id=organization.id,
+        organization_name=organization.name,
+        barber_id=guest_booking.barber_id,
+        barber_name=barber.name if barber else None,
+        service_id=guest_booking.service_id,
+        service_name=service.name if service else "Service",
+        appointment_datetime=guest_booking.appointment_datetime,
+        appointment_timezone=guest_booking.appointment_timezone,
+        duration_minutes=guest_booking.duration_minutes,
+        service_price=guest_booking.service_price,
+        deposit_amount=guest_booking.deposit_amount,
+        status=guest_booking.status,
+        payment_status=guest_booking.payment_status,
+        notes=guest_booking.notes,
+        marketing_consent=guest_booking.marketing_consent,
+        reminder_preference=guest_booking.reminder_preference,
+        created_at=guest_booking.created_at
+    )
+
+
+@router.post("/booking/{confirmation_code}/cancel")
+@guest_booking_rate_limit
+async def cancel_booking(
+    request: Request,
+    confirmation_code: str,
+    email_or_phone: str,
+    reason: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Cancel a guest booking.
+    
+    Requires confirmation code and email/phone for security.
+    """
+    guest_booking = guestBookingService.lookup_guest_booking(
+        db=db,
+        confirmation_code=confirmation_code,
+        email_or_phone=email_or_phone
+    )
+    
+    if not guest_booking:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Booking not found. Please check your confirmation code and email/phone."
+        )
+    
+    try:
+        cancelled_booking = guestBookingService.cancel_guest_booking(
+            db=db,
+            guest_booking=guest_booking,
+            reason=reason
+        )
+        
+        return {
+            "status": "cancelled",
+            "message": "Your booking has been cancelled.",
+            "confirmation_code": cancelled_booking.confirmation_code
+        }
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
+
+# Landing Page Endpoints
+
+@router.get("/landing/{slug}", response_model=LandingPageResponse)
+@guest_booking_rate_limit
+async def get_landing_page(
+    request: Request,
+    slug: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Get landing page data for an organization.
+    
+    Returns complete landing page data including testimonials,
+    services, and configuration for the marketing funnel.
+    """
+    try:
+        landing_page = await landing_page_service.get_landing_page_data(
+            db=db,
+            organization_slug=slug
+        )
+        
+        if not landing_page:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Landing page not found for organization '{slug}' or landing page is disabled"
+            )
+        
+        return landing_page
+        
+    except Exception as e:
+        logger.error(f"Failed to fetch landing page for {slug}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to load landing page"
+        )
+
+
+@router.post("/landing/{slug}/track")
+@guest_booking_rate_limit
+async def track_landing_page_event(
+    request: Request,
+    slug: str,
+    event: LandingPageTrackingEvent,
+    db: Session = Depends(get_db)
+):
+    """
+    Track landing page events for analytics.
+    
+    Tracks events like page views, CTA clicks, and conversions
+    for landing page optimization.
+    """
+    try:
+        # Ensure slug matches the event data
+        event.organization_slug = slug
+        
+        # Extract additional tracking data from request
+        if not event.user_agent:
+            event.user_agent = request.headers.get("User-Agent")
+        
+        if not event.ip_address:
+            forwarded_for = request.headers.get("X-Forwarded-For")
+            if forwarded_for:
+                event.ip_address = forwarded_for.split(",")[0].strip()
+            else:
+                event.ip_address = request.client.host if request.client else None
+        
+        if not event.referrer:
+            event.referrer = request.headers.get("Referer")
+        
+        # Track the event
+        success = landing_page_service.track_landing_page_event(db=db, event=event)
+        
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Failed to track event"
+            )
+        
+        return {"status": "tracked", "event_type": event.event_type}
+        
+    except Exception as e:
+        logger.error(f"Failed to track landing page event: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to track event"
+        )
+
+
+@router.get("/landing/presets", response_model=LandingPagePresets)
+async def get_landing_page_presets():
+    """
+    Get available landing page presets.
+    
+    Returns background presets, color schemes, and testimonial templates
+    for landing page customization.
+    """
+    return landing_page_service.get_available_presets()

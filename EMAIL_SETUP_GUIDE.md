@@ -253,7 +253,7 @@ LOG_LEVEL=DEBUG
 
 Check logs at:
 ```bash
-tail -f backend/logs/app.log
+tail -f backend-v2/logs/app.log
 ```
 
 ## Next Steps

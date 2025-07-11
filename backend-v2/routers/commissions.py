@@ -1,3 +1,7 @@
+
+import logging
+logger = logging.getLogger(__name__)
+
 """
 Commission management endpoints.
 """
@@ -23,6 +27,7 @@ from schemas_new.commission import (
     filter_commission_response
 )
 from utils.logging_config import get_audit_logger
+from utils.error_handling import AppError, ValidationError, AuthenticationError, AuthorizationError, NotFoundError, ConflictError, PaymentError, IntegrationError, safe_endpoint
 
 router = APIRouter(
     prefix="/commissions",
@@ -30,7 +35,6 @@ router = APIRouter(
 )
 
 commission_audit_logger = get_audit_logger()
-
 
 @router.get("")
 @commission_report_rate_limit
@@ -145,7 +149,6 @@ def get_commissions(
         
         return summaries
 
-
 @router.get("/{barber_id}")
 @commission_report_rate_limit
 def get_barber_commission_details(
@@ -242,7 +245,6 @@ def get_barber_commission_details(
     
     return filtered_report
 
-
 @router.get("/preview/payout")
 @commission_report_rate_limit
 def preview_payout(
@@ -303,7 +305,6 @@ def preview_payout(
         )
     
     return preview
-
 
 @router.get("/export")
 @commission_report_rate_limit
@@ -387,7 +388,6 @@ def export_commissions(
             detail="Invalid format. Use 'csv' or 'pdf'"
         )
 
-
 @router.get("/rates/{barber_id}")
 @commission_report_rate_limit
 def get_barber_commission_rates(
@@ -421,16 +421,11 @@ def get_barber_commission_rates(
         return commission_summary
         
     except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
-        )
+        logger.error(f"ValueError in {__name__}: {e}", exc_info=True)
+        raise NotFoundError()
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error retrieving commission rates: {str(e)}"
-        )
-
+        logger.error(f"Exception in {__name__}: {e}", exc_info=True)
+        raise AppError("An error occurred", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @router.put("/rates/{barber_id}")
 @commission_report_rate_limit
@@ -502,16 +497,11 @@ def update_barber_commission_rate(
             )
             
     except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+        logger.error(f"ValueError in {__name__}: {e}", exc_info=True)
+        raise ValidationError("Request validation failed")
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error updating commission rate: {str(e)}"
-        )
-
+        logger.error(f"Exception in {__name__}: {e}", exc_info=True)
+        raise AppError("An error occurred", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @router.post("/calculate")
 @commission_report_rate_limit
@@ -588,16 +578,11 @@ def calculate_commission_preview(
         }
         
     except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+        logger.error(f"ValueError in {__name__}: {e}", exc_info=True)
+        raise ValidationError("Request validation failed")
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error calculating commission: {str(e)}"
-        )
-
+        logger.error(f"Exception in {__name__}: {e}", exc_info=True)
+        raise AppError("An error occurred", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @router.get("/optimize/{barber_id}")
 @commission_report_rate_limit
@@ -632,12 +617,8 @@ def get_commission_optimization(
         return optimization
         
     except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
-        )
+        logger.error(f"ValueError in {__name__}: {e}", exc_info=True)
+        raise NotFoundError()
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error generating optimization recommendations: {str(e)}"
-        )
+        logger.error(f"Exception in {__name__}: {e}", exc_info=True)
+        raise AppError("An error occurred", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)

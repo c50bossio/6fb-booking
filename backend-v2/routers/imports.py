@@ -1,3 +1,4 @@
+from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, BackgroundTasks, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
@@ -15,6 +16,8 @@ from routers.auth import get_current_user
 from utils.auth import require_admin_role
 from services.import_service import ImportService
 from services import client_service
+from utils.input_validation import validate_file_upload, ValidationError as InputValidationError
+from schemas_new.validation import FileUploadRequest
 
 router = APIRouter(
     prefix="/imports",
@@ -55,9 +58,11 @@ async def upload_import_file(
     
     Returns an import_id for tracking progress.
     """
-    # Validate file type and size
-    if file.size > 50 * 1024 * 1024:  # 50MB limit
-        raise HTTPException(status_code=413, detail="File too large. Maximum size is 50MB")
+    # Validate file upload
+    try:
+        await validate_file_upload(file, max_size=50 * 1024 * 1024)  # 50MB limit
+    except InputValidationError as e:
+        raise HTTPException(status_code=413, detail=str(e))
     
     allowed_extensions = {".csv", ".json", ".xlsx", ".xls"}
     file_extension = "." + file.filename.split(".")[-1].lower() if "." in file.filename else ""

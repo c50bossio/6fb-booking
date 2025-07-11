@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Label } from '@/components/ui/Label'
 import { Switch } from '@/components/ui/Switch'
 import { Button } from '@/components/ui/Button'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
@@ -41,13 +41,15 @@ export default function NotificationsSettingsPage() {
       setUser(profile)
       
       // Load notification preferences from user profile
-      if (profile.notification_preferences) {
+      // Note: notification_preferences might not exist yet in the User interface
+      const notificationPrefs = (profile as any).notification_preferences
+      if (notificationPrefs) {
         setSettings({
-          emailNotifications: profile.notification_preferences.email_enabled ?? true,
-          smsNotifications: profile.notification_preferences.sms_enabled ?? true,
-          appointmentReminders: profile.notification_preferences.appointment_reminders ?? true,
-          marketingEmails: profile.notification_preferences.marketing_emails ?? false,
-          reminderTiming: profile.notification_preferences.reminder_timing ?? '24'
+          emailNotifications: notificationPrefs.email_enabled ?? true,
+          smsNotifications: notificationPrefs.sms_enabled ?? true,
+          appointmentReminders: notificationPrefs.appointment_reminders ?? true,
+          marketingEmails: notificationPrefs.marketing_emails ?? false,
+          reminderTiming: notificationPrefs.reminder_timing ?? '24'
         })
       }
     } catch (error) {
@@ -68,9 +70,10 @@ export default function NotificationsSettingsPage() {
       await updateNotificationPreferences({
         email_enabled: settings.emailNotifications,
         sms_enabled: settings.smsNotifications,
-        appointment_reminders: settings.appointmentReminders,
-        marketing_emails: settings.marketingEmails,
-        reminder_timing: settings.reminderTiming
+        email_appointment_reminder: settings.appointmentReminders,
+        sms_appointment_reminder: settings.appointmentReminders,
+        // Note: marketing_emails and reminder_timing not in current API interface
+        // Will need to be added to backend API
       })
       
       toast({

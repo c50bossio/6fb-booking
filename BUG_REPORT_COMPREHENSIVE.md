@@ -16,7 +16,7 @@
   - All user emails encrypted but unable to decrypt
   - Authentication failures due to email lookup problems
 - **Error Message:** `"Either DATA_ENCRYPTION_KEY or MASTER_PASSWORD must be set"`
-- **Files Affected:** `backend/utils/encryption.py`, `backend/models/user.py`
+- **Files Affected:** `backend-v2/utils/encryption.py`, `backend-v2/models/user.py`
 - **Fix Required:** Configure encryption keys in environment variables
 
 ### 🔴 **CRIT-002: Frontend Server Instability**

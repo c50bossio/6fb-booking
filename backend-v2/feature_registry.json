@@ -71,6 +71,12 @@
       "migrated_to": "routers/appointments.py",
       "timestamp": "2025-06-29",
       "description": "Consolidated duplicate booking and appointment endpoints into standardized /appointments router. Deprecated /bookings router with migration plan."
+    },
+    "public_booking": {
+      "migrated_from": "original",
+      "migrated_to": "routers/public_booking.py",
+      "timestamp": "2025-07-09",
+      "description": "Guest booking functionality for public booking pages without authentication"
     }
   },
   "models": {

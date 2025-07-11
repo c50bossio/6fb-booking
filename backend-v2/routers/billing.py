@@ -28,6 +28,7 @@ from services.stripe_service import StripeSubscriptionService
 import stripe
 from fastapi import Request, Response
 import json
+from utils.error_handling import AppError, ValidationError, AuthenticationError, AuthorizationError, NotFoundError, ConflictError, PaymentError, IntegrationError, safe_endpoint
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +36,6 @@ router = APIRouter(
     prefix="/billing",
     tags=["billing"]
 )
-
 
 # Pydantic Schemas
 class BillingPlanTier(BaseModel):
@@ -47,7 +47,6 @@ class BillingPlanTier(BaseModel):
     description: str
     features: List[str]
 
-
 class BillingPlan(BaseModel):
     """Available billing plan"""
     id: str
@@ -57,7 +56,6 @@ class BillingPlan(BaseModel):
     tiers: List[BillingPlanTier]
     features: Dict[str, bool]
     recommended_for: str
-
 
 class CurrentSubscription(BaseModel):
     """User's current subscription details"""
@@ -75,7 +73,6 @@ class CurrentSubscription(BaseModel):
     stripe_subscription_id: Optional[str]
     features: Dict[str, bool]
 
-
 class PriceCalculationRequest(BaseModel):
     """Request to calculate price based on chairs"""
     chairs_count: int = Field(..., ge=1, le=100, description="Number of chairs (1-100)")
@@ -87,14 +84,12 @@ class PriceCalculationRequest(BaseModel):
             raise ValueError("Chairs count must be between 1 and 100")
         return v
 
-
 class PricingBreakdown(BaseModel):
     """Breakdown of pricing by bracket"""
     bracket: str
     chairs: int
     price_per_chair: float
     subtotal: float
-
 
 class PriceCalculationResponse(BaseModel):
     """Response with calculated pricing"""
@@ -106,14 +101,12 @@ class PriceCalculationResponse(BaseModel):
     tier_name: str
     breakdown: List[PricingBreakdown]
 
-
 class CreateSubscriptionRequest(BaseModel):
     """Request to create a new subscription"""
     organization_id: int
     chairs_count: int = Field(..., ge=1, le=100)
     annual_billing: bool = False
     payment_method_id: Optional[str] = Field(None, description="Stripe payment method ID")
-
 
 class CreateSubscriptionResponse(BaseModel):
     """Response after creating subscription"""
@@ -126,12 +119,10 @@ class CreateSubscriptionResponse(BaseModel):
     stripe_subscription_id: Optional[str]
     message: str
 
-
 class UpdateSubscriptionRequest(BaseModel):
     """Request to update subscription (change chairs)"""
     chairs_count: int = Field(..., ge=1, le=100)
     effective_immediately: bool = Field(True, description="Apply change now or at next billing cycle")
-
 
 class UpdateSubscriptionResponse(BaseModel):
     """Response after updating subscription"""
@@ -144,12 +135,10 @@ class UpdateSubscriptionResponse(BaseModel):
     prorated_amount: Optional[float]
     message: str
 
-
 class CancelSubscriptionRequest(BaseModel):
     """Request to cancel subscription"""
     reason: Optional[str] = Field(None, description="Cancellation reason")
     cancel_immediately: bool = Field(False, description="Cancel now or at end of billing period")
-
 
 class CancelSubscriptionResponse(BaseModel):
     """Response after cancelling subscription"""
@@ -159,11 +148,9 @@ class CancelSubscriptionResponse(BaseModel):
     refund_amount: Optional[float]
     message: str
 
-
 class SetupIntentRequest(BaseModel):
     """Request to create a setup intent for payment method collection"""
     organization_id: int
-
 
 class SetupIntentResponse(BaseModel):
     """Response with setup intent details"""
@@ -171,13 +158,11 @@ class SetupIntentResponse(BaseModel):
     setup_intent_id: str
     customer_id: str
 
-
 class AttachPaymentMethodRequest(BaseModel):
     """Request to attach payment method to customer"""
     organization_id: int
     payment_method_id: str
     set_as_default: bool = True
-
 
 class AttachPaymentMethodResponse(BaseModel):
     """Response after attaching payment method"""
@@ -185,7 +170,6 @@ class AttachPaymentMethodResponse(BaseModel):
     customer_id: str
     payment_method_id: str
     message: str
-
 
 # Progressive Pricing Configuration
 # Each chair is priced based on its bracket (marginal pricing)
@@ -230,8 +214,6 @@ FEATURE_TIERS = [
     }
 ]
 
-
-
 def get_user_organization(user: User, db: Session) -> Optional[Organization]:
     """Get user's primary organization"""
     user_org = db.query(UserOrganization).filter(
@@ -250,7 +232,6 @@ def get_user_organization(user: User, db: Session) -> Optional[Organization]:
         status_code=status.HTTP_404_NOT_FOUND,
         detail="No organization found for user"
     )
-
 
 @router.get("/plans", response_model=List[BillingPlan])
 async def get_billing_plans(
@@ -327,7 +308,6 @@ async def get_billing_plans(
     # Return progressive plan first, then feature tiers
     return [progressive_plan] + feature_plans
 
-
 @router.get("/current-subscription", response_model=Optional[CurrentSubscription])
 async def get_current_subscription(
     current_user: User = Depends(get_current_user),
@@ -385,7 +365,6 @@ async def get_current_subscription(
         features=org.features_enabled or {}
     )
 
-
 @router.post("/calculate-price", response_model=PriceCalculationResponse)
 async def calculate_price(
     request: PriceCalculationRequest,
@@ -438,7 +417,6 @@ async def calculate_price(
     
     return response
 
-
 @router.post("/setup-intent", response_model=SetupIntentResponse)
 async def create_setup_intent(
     request: SetupIntentRequest,
@@ -482,7 +460,6 @@ async def create_setup_intent(
         setup_intent_id=setup_intent.id,
         customer_id=customer.id
     )
-
 
 @router.post("/attach-payment-method", response_model=AttachPaymentMethodResponse)
 async def attach_payment_method(
@@ -538,11 +515,7 @@ async def attach_payment_method(
         )
     except Exception as e:
         logger.error(f"Failed to attach payment method: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to attach payment method: {str(e)}"
-        )
-
+        raise ValidationError("Request validation failed")
 
 @router.post("/create-subscription", response_model=CreateSubscriptionResponse)
 async def create_subscription(
@@ -625,11 +598,7 @@ async def create_subscription(
         
     except Exception as e:
         logger.error(f"Failed to create subscription: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to create subscription: {str(e)}"
-        )
-
+        raise ValidationError("Request validation failed")
 
 @router.put("/update-subscription", response_model=UpdateSubscriptionResponse)
 async def update_subscription(
@@ -721,11 +690,7 @@ async def update_subscription(
         
     except Exception as e:
         logger.error(f"Failed to update subscription: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to update subscription: {str(e)}"
-        )
-
+        raise ValidationError("Request validation failed")
 
 @router.post("/cancel-subscription", response_model=CancelSubscriptionResponse)
 async def cancel_subscription(
@@ -805,11 +770,7 @@ async def cancel_subscription(
         
     except Exception as e:
         logger.error(f"Failed to cancel subscription: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to cancel subscription: {str(e)}"
-        )
-
+        raise ValidationError("Request validation failed")
 
 class PaymentFailureNotification(BaseModel):
     """Notification for payment failures"""
@@ -820,7 +781,6 @@ class PaymentFailureNotification(BaseModel):
     next_retry_at: Optional[datetime]
     retry_count: int
     requires_action: bool
-
 
 @router.post("/webhook/stripe")
 async def handle_stripe_webhook(
@@ -955,7 +915,6 @@ async def handle_stripe_webhook(
                 logger.info(f"Payment method successfully added for organization {org.id}")
     
     return Response(status_code=200)
-
 
 @router.get("/payment-status/{organization_id}", response_model=dict)
 async def get_payment_status(

@@ -12,8 +12,8 @@
 ## ✅ CORRECT FILE LOCATIONS
 
 ### Test Files
-- Backend tests: `/tests/backend/`
-- Frontend tests: `/tests/frontend/`
+- Backend tests: `/tests/backend-v2/`
+- Frontend tests: `/tests/backend-v2/frontend-v2/`
 - Integration tests: `/tests/integration/`
 - E2E tests: `/tests/e2e/`
 

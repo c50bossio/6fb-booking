@@ -100,10 +100,10 @@ bash dev-restart.sh all         # Restart both (default)
 ├── dev-status.sh           # Quick status check
 ├── dev-stop.sh             # Clean shutdown
 ├── dev-restart.sh          # Selective restart
-├── backend/
+├── backend-v2/
 │   ├── dev_watcher.py      # Python auto-restart script
 │   └── main.py             # FastAPI app
-├── frontend/
+├── backend-v2/frontend-v2/
 │   ├── package.json        # Updated with nodemon script
 │   └── src/                # Watched directory
 └── logs/                   # Server logs

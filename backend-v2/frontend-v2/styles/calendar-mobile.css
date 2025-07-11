@@ -1,250 +1,260 @@
-/* Mobile Calendar Enhancements */
+/**
+ * Mobile-specific calendar styles
+ * Enhances touch interactions and responsiveness
+ */
 
-/* Smooth scrolling for mobile */
-.calendar-scroll-container {
+/* Base mobile optimizations */
+.calendar-mobile {
+  /* Smooth scrolling on iOS */
   -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
+  
+  /* Prevent zoom on double tap */
+  touch-action: manipulation;
+  
+  /* Optimize rendering performance */
+  will-change: transform;
+  
+  /* Prevent text selection during swipe */
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-/* Larger touch targets for mobile */
-@media (max-width: 768px) {
-  /* Minimum touch target size (44x44px) */
-  .calendar-touch-target {
-    min-height: 44px;
-    min-width: 44px;
-  }
-
-  /* Appointment cards on mobile */
-  .calendar-appointment {
-    min-height: 48px;
-    padding: 0.75rem;
-    font-size: 0.875rem;
-  }
-
-  /* Time slot buttons */
-  .calendar-time-slot {
-    min-height: 56px;
-    padding: 0.5rem;
-  }
-
-  /* Day cells in month view */
-  .calendar-day-cell {
-    min-height: 80px;
-    padding: 0.25rem;
-  }
-
-  /* Reduce font sizes for better mobile fit */
-  .calendar-month-view .calendar-day-number {
-    font-size: 0.875rem;
-  }
-
-  .calendar-month-view .calendar-appointment {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.5rem;
-  }
-
-  /* Week view adjustments */
-  .calendar-week-view .calendar-hour-label {
-    font-size: 0.75rem;
-    width: 3rem;
-  }
-
-  .calendar-week-view .calendar-day-header {
-    font-size: 0.875rem;
-    padding: 0.5rem 0.25rem;
-  }
-}
-
-/* Swipe gestures visual feedback */
-.calendar-swipeable {
-  transition: transform 0.3s ease-out;
-}
-
-.calendar-swiping-left {
-  transform: translateX(-10px);
-}
-
-.calendar-swiping-right {
-  transform: translateX(10px);
-}
-
-/* Pull to refresh indicator */
-.calendar-pull-refresh {
-  position: absolute;
-  top: -60px;
-  left: 50%;
-  transform: translateX(-50%);
-  transition: top 0.3s ease-out;
-}
-
-.calendar-pull-refresh.active {
-  top: 10px;
-}
-
-/* Mobile loading states */
-.calendar-skeleton-mobile {
-  animation: shimmer 2s infinite;
-  background: linear-gradient(
-    90deg,
-    rgba(0, 0, 0, 0.05) 25%,
-    rgba(0, 0, 0, 0.1) 50%,
-    rgba(0, 0, 0, 0.05) 75%
-  );
-  background-size: 200% 100%;
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-/* Floating action button */
-.calendar-fab {
-  position: fixed;
-  bottom: 5rem;
-  right: 1rem;
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: 50%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 30;
-  transition: all 0.3s ease;
-}
-
-.calendar-fab:active {
-  transform: scale(0.95);
-}
-
-/* Mobile modal adjustments */
-@media (max-width: 768px) {
-  .calendar-modal {
-    position: fixed;
-    top: auto;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    max-height: 90vh;
-    border-radius: 1rem 1rem 0 0;
-    animation: slideUp 0.3s ease-out;
-  }
-
-  @keyframes slideUp {
-    from {
-      transform: translateY(100%);
-    }
-    to {
-      transform: translateY(0);
-    }
-  }
-}
-
-/* Haptic feedback simulation */
-.calendar-haptic {
-  transition: transform 0.1s ease;
-}
-
-.calendar-haptic:active {
-  transform: scale(0.98);
-}
-
-/* Mobile drag indicators */
-.calendar-draggable-mobile {
+/* Enhanced touch targets */
+.calendar-mobile button,
+.calendar-mobile a,
+.calendar-mobile [role="button"],
+.calendar-mobile .clickable {
+  min-height: 44px;
+  min-width: 44px;
   position: relative;
 }
 
-.calendar-draggable-mobile::before {
-  content: '⋮⋮';
+/* Invisible touch target expansion */
+.calendar-mobile .touch-target::before {
+  content: '';
   position: absolute;
-  left: 0.5rem;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.75rem;
-  color: rgba(0, 0, 0, 0.3);
-  letter-spacing: -2px;
+  top: -8px;
+  right: -8px;
+  bottom: -8px;
+  left: -8px;
+  z-index: 1;
 }
 
-/* Responsive grid adjustments */
+/* Improved tap highlight */
+.calendar-mobile * {
+  -webkit-tap-highlight-color: rgba(59, 130, 246, 0.1);
+}
+
+/* Active states for better feedback */
+.calendar-mobile button:active,
+.calendar-mobile a:active,
+.calendar-mobile .clickable:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease-out;
+}
+
+/* Mobile appointment cards */
+.calendar-mobile .appointment-card {
+  min-height: 56px;
+  padding: 12px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease-out;
+}
+
+.calendar-mobile .appointment-card:active {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Swipeable elements */
+.calendar-mobile .swipeable {
+  position: relative;
+  overflow: hidden;
+}
+
+.calendar-mobile .swipe-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: stretch;
+  transform: translateX(100%);
+  transition: transform 0.3s ease-out;
+}
+
+.calendar-mobile .swipeable.swiped-left .swipe-actions {
+  transform: translateX(0);
+}
+
+/* Mobile time slots */
+.calendar-mobile .time-slot {
+  min-height: 48px;
+  border: 2px solid transparent;
+  transition: all 0.2s ease-out;
+}
+
+.calendar-mobile .time-slot:active {
+  border-color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.calendar-mobile .time-slot.selected {
+  border-color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+/* Mobile-optimized drag indicator */
+.calendar-mobile .drag-handle {
+  width: 32px;
+  height: 4px;
+  background-color: #e5e7eb;
+  border-radius: 2px;
+  margin: 8px auto;
+}
+
+/* Floating action button */
+.calendar-mobile .fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 28px;
+  background-color: #3b82f6;
+  color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+  transition: all 0.2s ease-out;
+}
+
+.calendar-mobile .fab:active {
+  transform: scale(0.9);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+}
+
+/* Mobile modal optimizations */
+.calendar-mobile-modal {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  max-height: 90vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Safe area padding for notched devices */
+.calendar-mobile-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-left: env(safe-area-inset-left, 0);
+  padding-right: env(safe-area-inset-right, 0);
+}
+
+/* Mobile week view optimizations */
 @media (max-width: 640px) {
-  .calendar-week-view {
-    font-size: 0.75rem;
+  .calendar-mobile .week-view {
+    font-size: 12px;
   }
-
-  .calendar-week-view .calendar-appointment {
-    padding: 0.25rem;
-    font-size: 0.7rem;
+  
+  .calendar-mobile .week-view .time-label {
+    width: 48px;
+    font-size: 10px;
   }
-
-  /* Stack view mode buttons vertically on very small screens */
-  .calendar-view-switcher {
-    flex-direction: column;
-    gap: 0.5rem;
+  
+  .calendar-mobile .week-view .day-column {
+    min-width: 60px;
   }
-
-  .calendar-view-switcher button {
-    width: 100%;
+  
+  .calendar-mobile .appointment-card {
+    padding: 8px;
+    font-size: 11px;
   }
 }
 
-/* Landscape mode optimizations */
-@media (max-width: 768px) and (orientation: landscape) {
-  .calendar-header {
-    padding: 0.5rem 1rem;
-  }
-
-  .calendar-day-view .calendar-time-slot {
-    min-height: 48px;
-  }
-
-  .calendar-month-view .calendar-day-cell {
+/* Mobile month view optimizations */
+@media (max-width: 640px) {
+  .calendar-mobile .month-view .day-cell {
     min-height: 60px;
+    padding: 4px;
+    font-size: 12px;
+  }
+  
+  .calendar-mobile .month-view .appointment-dot {
+    width: 6px;
+    height: 6px;
+    margin: 1px;
   }
 }
 
-/* Dark mode adjustments for mobile */
-@media (max-width: 768px) {
-  .dark .calendar-appointment {
-    border-width: 1px;
-  }
-
-  .dark .calendar-day-cell {
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .dark .calendar-time-slot:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-  }
+/* Haptic feedback animation */
+@keyframes haptic-feedback {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.97); }
+  100% { transform: scale(1); }
 }
 
-/* Accessibility improvements for mobile */
-@media (max-width: 768px) {
-  /* Focus indicators */
-  .calendar-touch-target:focus {
-    outline: 3px solid currentColor;
-    outline-offset: 2px;
-  }
+.calendar-mobile .haptic-feedback {
+  animation: haptic-feedback 0.1s ease-out;
+}
 
-  /* High contrast mode support */
-  @media (prefers-contrast: high) {
-    .calendar-appointment {
-      border-width: 2px;
-    }
+/* Loading states */
+.calendar-mobile .skeleton {
+  background: linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 50%, #f3f4f6 100%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+}
 
-    .calendar-day-cell {
-      border-width: 2px;
-    }
-  }
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
 
-  /* Reduced motion support */
-  @media (prefers-reduced-motion: reduce) {
-    .calendar-swipeable,
-    .calendar-modal,
-    .calendar-fab {
-      animation: none;
-      transition: none;
-    }
+/* Gesture hints */
+.calendar-mobile .gesture-hint {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 40;
+  animation: fade-in-out 3s ease-in-out;
+}
+
+@keyframes fade-in-out {
+  0%, 100% { opacity: 0; }
+  20%, 80% { opacity: 1; }
+}
+
+/* Performance optimizations */
+.calendar-mobile .will-change-transform {
+  will-change: transform;
+}
+
+.calendar-mobile .gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .calendar-mobile * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

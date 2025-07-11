@@ -24,9 +24,9 @@ Multiple payment implementations were emerging:
 
 We will implement a single, unified payment service using the adapter pattern:
 
-1. **Single Payment Service**: `backend/services/payment_service.py` handles all payment operations
-2. **Adapter Pattern**: Stripe-specific logic isolated in `backend/services/payment_adapters/stripe_adapter.py`
-3. **Consistent Models**: Unified payment models in `backend/models/payment.py`
+1. **Single Payment Service**: `backend-v2/services/payment_service.py` handles all payment operations
+2. **Adapter Pattern**: Stripe-specific logic isolated in `backend-v2/services/payment_adapters/stripe_adapter.py`
+3. **Consistent Models**: Unified payment models in `backend-v2/models/payment.py`
 4. **Centralized Webhook Handling**: Single webhook processor with event routing
 
 Architecture:

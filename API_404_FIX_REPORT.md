@@ -13,7 +13,7 @@ The investigation revealed that multiple API endpoints were returning 404 errors
 ## Root Causes Identified
 
 ### 1. Module Import Issue
-The `backend/api/v1/__init__.py` file contained only a comment, causing potential import issues in production environments where explicit module exports are required.
+The `backend-v2/api/v1/__init__.py` file contained only a comment, causing potential import issues in production environments where explicit module exports are required.
 
 ### 2. Endpoint Naming Mismatches
 Several endpoints existed but under different paths than documented:
@@ -32,7 +32,7 @@ The following documented endpoints were completely missing:
 ## Fixes Applied
 
 ### 1. Fixed Module Exports
-Updated `backend/api/v1/__init__.py` to explicitly import and export all router modules:
+Updated `backend-v2/api/v1/__init__.py` to explicitly import and export all router modules:
 
 ```python
 from . import (
@@ -71,7 +71,7 @@ __all__ = [
 ```
 
 ### 2. Added Missing Auth Endpoints
-Updated `backend/api/v1/auth.py` to include:
+Updated `backend-v2/api/v1/auth.py` to include:
 - `/api/v1/auth/login` - Login endpoint (alias to existing `/token`)
 - `/api/v1/auth/refresh` - Token refresh endpoint
 
@@ -111,7 +111,7 @@ The following endpoints still need to be addressed:
 
 ## Test Script
 
-Use the included `backend/test_all_endpoints.py` script to verify endpoints:
+Use the included `backend-v2/test_all_endpoints.py` script to verify endpoints:
 
 ```bash
 cd backend

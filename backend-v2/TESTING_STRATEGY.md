@@ -40,10 +40,10 @@ Testing is not an afterthought - it's an integral part of our development proces
 
 ### ✅ ALWAYS Test:
 1. **After implementing a new feature** - Write tests immediately
-2. **Before marking a task complete** - Tests must pass
+2. **Before marking a task complete** - Tests AND linting must pass
 3. **Before building dependent features** - Ensure foundation is solid
 4. **After fixing bugs** - Prevent regression
-5. **Before deploying** - All tests must pass
+5. **Before deploying** - All tests AND linting must pass
 
 ### 🚫 NEVER:
 1. Skip tests to "save time" - Technical debt compounds
@@ -228,12 +228,19 @@ Before marking any feature complete:
 
 - [ ] Unit tests written and passing
 - [ ] Integration tests written and passing
+- [ ] **All linting passes** (ESLint + TypeScript)
 - [ ] Edge cases covered
 - [ ] Error scenarios tested
 - [ ] Performance acceptable
 - [ ] Documentation updated
 - [ ] Manual testing completed
 - [ ] Code coverage meets requirements
+
+### Linting Requirements
+- [ ] `npm run lint` passes with no errors
+- [ ] `npx tsc --noEmit` passes (TypeScript compilation)
+- [ ] No ESLint disable comments without justification
+- [ ] All imports properly organized and used
 
 ## Common Testing Patterns
 

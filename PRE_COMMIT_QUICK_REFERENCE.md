@@ -15,7 +15,7 @@
 
 1. **Test files in root directory**
    - ❌ `/test_auth.py`
-   - ✅ `/backend/tests/test_auth.py`
+   - ✅ `/backend-v2/tests/test_auth.py`
 
 2. **Files with bad prefixes**
    - ❌ `test-booking.js`, `demo-calendar.tsx`, `temporary-fix.py`
@@ -70,17 +70,17 @@ git commit --no-verify
 git reset HEAD <file>
 
 # Commit in batches
-git add backend/models/
+git add backend-v2/models/
 git commit -m "feat: add new models"
-git add backend/tests/
+git add backend-v2/tests/
 git commit -m "test: add model tests"
 ```
 
 ### "Test file in root directory"
 ```bash
 # Move to proper location
-mv test_booking.py backend/tests/
-git add backend/tests/test_booking.py
+mv test_booking.py backend-v2/tests/
+git add backend-v2/tests/test_booking.py
 ```
 
 ### "Duplicate component detected"
@@ -89,7 +89,7 @@ git add backend/tests/test_booking.py
 find . -name "*Calendar*.tsx" -type f
 
 # Remove duplicates, keep best one
-rm frontend/src/components/old/Calendar.tsx
+rm backend-v2/frontend-v2/src/components/old/Calendar.tsx
 ```
 
 ### "Database file detected"

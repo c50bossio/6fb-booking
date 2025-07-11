@@ -26,7 +26,7 @@ cd 6fb-booking
 git checkout -b feature/your-first-feature
 
 # Make changes in backend-v2/ or backend-v2/frontend-v2/
-# (Never modify backend/ or frontend/ - those are V1!)
+# (Never modify backend-v2/ or backend-v2/frontend-v2/ - those are V1!)
 
 # Commit with conventional format
 git add .
@@ -62,8 +62,8 @@ backend-v2/services/new_feature.py
 backend-v2/frontend-v2/components/NewComponent.tsx
 
 # ❌ Bad paths (will be blocked)
-backend/services/old_feature.py
-frontend/components/OldComponent.tsx
+backend-v2/services/old_feature.py
+backend-v2/frontend-v2/components/OldComponent.tsx
 ```
 
 #### 2. **Branch Protection**
@@ -325,7 +325,7 @@ If using Claude Code, hooks provide real-time feedback:
 **A**: Check the list in the error message or see: auth, booking, payment, calendar, analytics, integration, review, marketing
 
 ### Q: What's the difference between V1 and V2?
-**A**: V2 is our new architecture. All new development happens in `backend-v2/` and `backend-v2/frontend-v2/`. V1 (`backend/` and `frontend/`) is deprecated.
+**A**: V2 is our new architecture. All new development happens in `backend-v2/` and `backend-v2/frontend-v2/`. V1 (`backend-v2/` and `backend-v2/frontend-v2/`) is deprecated.
 
 ## 🆘 Getting Help
 

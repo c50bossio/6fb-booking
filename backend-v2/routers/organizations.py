@@ -16,11 +16,13 @@ from datetime import datetime, timedelta
 from database import get_db
 from models import User, Organization, UserOrganization
 from models.organization import BillingPlan, UserRole, OrganizationType
+from utils.error_handling import AppError, ValidationError, AuthenticationError, AuthorizationError, NotFoundError, ConflictError, PaymentError, IntegrationError, safe_endpoint
 from schemas import (
     OrganizationCreate, OrganizationUpdate, OrganizationResponse, OrganizationWithUsers,
     UserOrganizationCreate, UserOrganizationUpdate, UserOrganizationResponse,
     UserWithOrganizations, OrganizationStatsResponse, BillingPlanFeatures
 )
+from schemas_new.landing_page import LandingPageConfig
 from routers.auth import get_current_user
 from utils.permissions import require_organization_permission, require_role
 
@@ -443,6 +445,109 @@ def remove_user_from_organization(
     
     db.delete(user_org)
     db.commit()
+
+
+# Landing Page Settings Endpoints
+
+@router.get("/current/landing-page-settings", response_model=LandingPageConfig)
+def get_current_organization_landing_settings(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get landing page settings for current user's organization.
+    """
+    # Get user's primary organization
+    user_org = db.query(UserOrganization).filter(
+        UserOrganization.user_id == current_user.id
+    ).first()
+    
+    if not user_org:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not associated with any organization"
+        )
+    
+    organization = db.query(Organization).filter(
+        Organization.id == user_org.organization_id
+    ).first()
+    
+    if not organization:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Organization not found"
+        )
+    
+    # Get landing page config from organization
+    config_data = organization.landing_page_config or {}
+    
+    # Set defaults if not configured
+    defaults = {
+        "enabled": False,
+        "logo_url": None,
+        "primary_color": "#000000",
+        "accent_color": "#FFD700",
+        "background_preset": "professional_dark",
+        "custom_headline": None,
+        "show_testimonials": True,
+        "testimonial_source": "gmb_auto",
+        "custom_testimonials": None
+    }
+    
+    # Merge with defaults
+    for key, default_value in defaults.items():
+        if key not in config_data:
+            config_data[key] = default_value
+    
+    return LandingPageConfig(**config_data)
+
+
+@router.put("/current/landing-page-settings", response_model=LandingPageConfig)
+def update_current_organization_landing_settings(
+    settings: LandingPageConfig,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Update landing page settings for current user's organization.
+    """
+    # Get user's primary organization
+    user_org = db.query(UserOrganization).filter(
+        UserOrganization.user_id == current_user.id
+    ).first()
+    
+    if not user_org:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not associated with any organization"
+        )
+    
+    organization = db.query(Organization).filter(
+        Organization.id == user_org.organization_id
+    ).first()
+    
+    if not organization:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Organization not found"
+        )
+    
+    # Check permissions (owner, manager, or can manage settings)
+    if (user_org.role not in [UserRole.OWNER.value, UserRole.MANAGER.value] and 
+        not getattr(user_org, 'can_manage_settings', False)):
+        if current_user.role != "admin":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient permissions to update landing page settings"
+            )
+    
+    # Update landing page config
+    organization.landing_page_config = settings.dict()
+    organization.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(organization)
+    
+    return settings
 
 
 # Organization Statistics and Analytics

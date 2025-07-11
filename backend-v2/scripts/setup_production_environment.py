@@ -37,7 +37,7 @@ class ProductionEnvironmentSetup:
             if src.exists():
                 dst = backup_dir / f"backend_{file}"
                 dst.write_text(src.read_text())
-                print(f"   ✅ Backed up: backend/{file}")
+                print(f"   ✅ Backed up: backend-v2/{file}")
         
         # Frontend files to backup
         frontend_files = [".env.local", ".env.production"]

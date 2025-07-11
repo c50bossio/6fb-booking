@@ -175,14 +175,14 @@ The following files are configured for Railway deployment:
 
 ### Backend Configuration
 - `/railway.toml` - Main backend Railway config
-- `/backend/Procfile` - Process definitions
-- `/backend/requirements.txt` - Python dependencies
-- `/backend/main.py` - Updated for Railway port handling
+- `/backend-v2/Procfile` - Process definitions
+- `/backend-v2/requirements.txt` - Python dependencies
+- `/backend-v2/main.py` - Updated for Railway port handling
 
 ### Frontend Configuration
-- `/frontend/railway.toml` - Frontend Railway config
-- `/frontend/package.json` - Updated start scripts
-- `/frontend/next.config.js` - Railway-optimized Next.js config
+- `/backend-v2/frontend-v2/railway.toml` - Frontend Railway config
+- `/backend-v2/frontend-v2/package.json` - Updated start scripts
+- `/backend-v2/frontend-v2/next.config.js` - Railway-optimized Next.js config
 
 ## 🚨 Troubleshooting
 

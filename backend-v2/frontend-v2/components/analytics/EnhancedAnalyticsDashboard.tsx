@@ -3,20 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-} from 'chart.js'
-import { Line, Bar, Doughnut } from 'react-chartjs-2'
+import { LineChart, BarChart, DoughnutChart } from '@/components/analytics/ChartComponents'
 import { 
   ArrowTrendingUpIcon, 
   ArrowTrendingDownIcon,
@@ -36,19 +23,7 @@ import {
 import AIInsightsPanel from '@/components/ai/AIInsightsPanel'
 import BenchmarkWidget from '@/components/ai/BenchmarkWidget'
 
-// Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-)
+// No registration needed for lightweight chart components
 
 interface EnhancedAnalyticsDashboardProps {
   userId: number
@@ -503,7 +478,7 @@ export default function EnhancedAnalyticsDashboard({ userId, timeRange }: Enhanc
             <CardContent>
               <div className="h-80">
                 {revenueChartData && (
-                  <Line data={revenueChartData} options={chartOptions} />
+                  <LineChart data={revenueChartData} height={300} className="w-full" />
                 )}
               </div>
             </CardContent>
@@ -516,7 +491,7 @@ export default function EnhancedAnalyticsDashboard({ userId, timeRange }: Enhanc
             </CardHeader>
             <CardContent>
               <div className="h-80">
-                <Doughnut data={clientSegmentChartData} options={doughnutOptions} />
+                <DoughnutChart data={clientSegmentChartData} height={300} className="w-full" />
               </div>
             </CardContent>
           </Card>
@@ -533,21 +508,7 @@ export default function EnhancedAnalyticsDashboard({ userId, timeRange }: Enhanc
             <CardContent>
               <div className="h-80">
                 {performanceChartData && (
-                  <Bar data={performanceChartData} options={{
-                    ...chartOptions,
-                    scales: {
-                      ...chartOptions.scales,
-                      y: {
-                        ...chartOptions.scales.y,
-                        max: 100,
-                        ticks: {
-                          callback: function(value: any) {
-                            return value + '%'
-                          }
-                        }
-                      }
-                    }
-                  }} />
+                  <BarChart data={performanceChartData} height={300} className="w-full" />
                 )}
               </div>
             </CardContent>

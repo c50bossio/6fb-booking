@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { webhooksAPI, WebhookEndpoint, WebhookEvent } from '../lib/api'
-import { Card, CardHeader, CardTitle, CardContent } from './ui/Card'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 
 interface WebhookConfigurationProps {
   onWebhookSelect?: (id: string | null) => void

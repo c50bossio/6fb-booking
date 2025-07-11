@@ -1,0 +1,156 @@
+{
+  "timestamp": "2025-07-08T07:28:50.941312",
+  "api_tests": [
+    {
+      "endpoint": "/",
+      "status_code": 200,
+      "success": true,
+      "response_time": 0.268944,
+      "error": null
+    },
+    {
+      "endpoint": "/api/v1/health",
+      "status_code": 200,
+      "success": true,
+      "response_time": 0.000572,
+      "error": null
+    },
+    {
+      "endpoint": "/api/v1/auth/check",
+      "status_code": 404,
+      "success": false,
+      "response_time": 0.001126,
+      "error": "{\"detail\":\"Not Found\"}"
+    },
+    {
+      "endpoint": "/api/v1/analytics/dashboard-stats",
+      "status_code": 404,
+      "success": false,
+      "response_time": 0.001479,
+      "error": "{\"detail\":\"Not Found\"}"
+    },
+    {
+      "endpoint": "/api/v1/analytics/revenue",
+      "status_code": 403,
+      "success": false,
+      "response_time": 0.001142,
+      "error": "{\"detail\":\"Not authenticated\"}"
+    },
+    {
+      "endpoint": "/api/v1/analytics/bookings",
+      "status_code": 404,
+      "success": false,
+      "response_time": 0.001145,
+      "error": "{\"detail\":\"Not Found\"}"
+    },
+    {
+      "endpoint": "/api/v1/analytics/client-stats",
+      "status_code": 404,
+      "success": false,
+      "response_time": 0.001076,
+      "error": "{\"detail\":\"Not Found\"}"
+    },
+    {
+      "endpoint": "/api/v1/analytics/financial",
+      "status_code": 404,
+      "success": false,
+      "response_time": 0.001856,
+      "error": "{\"detail\":\"Not Found\"}"
+    },
+    {
+      "endpoint": "/api/v1/analytics/commission-summary",
+      "status_code": 404,
+      "success": false,
+      "response_time": 0.001168,
+      "error": "{\"detail\":\"Not Found\"}"
+    },
+    {
+      "endpoint": "/api/v1/users/me",
+      "status_code": 403,
+      "success": false,
+      "response_time": 0.001237,
+      "error": "{\"detail\":\"Not authenticated\"}"
+    },
+    {
+      "endpoint": "/api/v1/appointments",
+      "status_code": 403,
+      "success": false,
+      "response_time": 0.000425,
+      "error": "{\"detail\":\"Not authenticated\"}"
+    },
+    {
+      "endpoint": "/api/v1/commissions",
+      "status_code": 403,
+      "success": false,
+      "response_time": 0.000858,
+      "error": "{\"detail\":\"Not authenticated\"}"
+    },
+    {
+      "endpoint": "/api/v1/clients",
+      "status_code": 403,
+      "success": false,
+      "response_time": 0.000786,
+      "error": "{\"detail\":\"Not authenticated\"}"
+    }
+  ],
+  "frontend_tests": [
+    {
+      "page": "/",
+      "status_code": 200,
+      "success": true,
+      "response_time": 0.053838,
+      "error": null
+    },
+    {
+      "page": "/dashboard",
+      "status_code": 200,
+      "success": true,
+      "response_time": 0.184123,
+      "error": null
+    },
+    {
+      "page": "/finance/analytics",
+      "status_code": 200,
+      "success": true,
+      "response_time": 0.618175,
+      "error": null
+    },
+    {
+      "page": "/commissions",
+      "status_code": 200,
+      "success": true,
+      "response_time": 0.323116,
+      "error": null
+    },
+    {
+      "page": "/clients",
+      "status_code": 200,
+      "success": true,
+      "response_time": 0.043591,
+      "error": null
+    },
+    {
+      "page": "/calendar",
+      "status_code": 200,
+      "success": true,
+      "response_time": 0.026798,
+      "error": null
+    },
+    {
+      "page": "/settings",
+      "status_code": 200,
+      "success": true,
+      "response_time": 0.026129,
+      "error": null
+    }
+  ],
+  "overall_health": {
+    "api_success_rate": 15.384615384615385,
+    "frontend_success_rate": 100.0,
+    "overall_score": 57.69230769230769,
+    "critical_issues": [
+      "Failed API endpoints: 11"
+    ],
+    "recommendations": []
+  }
+}

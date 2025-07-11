@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { Modal, ModalBody } from '../ui/Modal'
 import { Button } from '../ui/Button'
-import { Card } from '../ui/Card'
+import { Card } from '@/components/ui/Card'
 import { Input } from '../ui/Input'
 import { Select } from '../ui/Select'
 import {

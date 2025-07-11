@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { enhancedAuthMiddleware } from './lib/auth-middleware'
 
 /**
  * Enhanced Next.js Middleware with Homepage Consolidation Enforcement
@@ -28,6 +29,9 @@ const publicRoutes = [
   '/terms',
   '/privacy', 
   '/cookies',
+  '/offline',
+  '/service-worker.js',
+  '/manifest.json',
 ]
 
 // List of routes that require admin role
@@ -89,8 +93,15 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url, 301)
   }
   
-  // ==================== AUTHENTICATION HANDLING ====================
+  // ==================== ENHANCED AUTHENTICATION HANDLING ====================
   
+  // Try enhanced auth middleware first (role-based access control)
+  const enhancedResponse = enhancedAuthMiddleware(request)
+  if (enhancedResponse) {
+    return enhancedResponse
+  }
+  
+  // Fallback to basic authentication handling
   // Check localStorage token via custom header or cookie
   // Since middleware runs on server, we check for token in different ways
   const tokenFromCookie = request.cookies.get('token')?.value
@@ -134,6 +145,17 @@ export function middleware(request: NextRequest) {
   // ==================== SECURITY HEADERS ====================
   
   const response = NextResponse.next()
+  
+  // Add service worker headers for proper caching
+  if (path === '/service-worker.js') {
+    response.headers.set('Service-Worker-Allowed', '/')
+    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
+  }
+  
+  // Add PWA headers for manifest
+  if (path === '/manifest.json') {
+    response.headers.set('Content-Type', 'application/manifest+json')
+  }
   
   // Add security headers
   response.headers.set('X-Frame-Options', 'DENY')

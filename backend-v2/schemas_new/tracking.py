@@ -67,7 +67,7 @@ class ConversionEventResponse(BaseModel):
     google_ads_synced: bool
     
     # Attribution
-    attribution_path_id: Optional[int]
+    attribution_path_id: Optional[int] = None
     
     class Config:
         from_attributes = True

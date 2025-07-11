@@ -1,0 +1,80 @@
+{
+  "timestamp": "2025-07-07T14:43:21.468Z",
+  "pages": [
+    {
+      "name": "Home",
+      "url": "http://localhost:3000/",
+      "error": "page.waitForTimeout is not a function",
+      "working": false
+    },
+    {
+      "name": "Login",
+      "url": "http://localhost:3000/login",
+      "error": "page.waitForTimeout is not a function",
+      "working": false
+    },
+    {
+      "name": "Register",
+      "url": "http://localhost:3000/register",
+      "error": "page.waitForTimeout is not a function",
+      "working": false
+    },
+    {
+      "name": "Dashboard (should redirect)",
+      "url": "http://localhost:3000/dashboard",
+      "error": "page.waitForTimeout is not a function",
+      "working": false
+    },
+    {
+      "name": "Calendar (should redirect)",
+      "url": "http://localhost:3000/calendar",
+      "error": "page.waitForTimeout is not a function",
+      "working": false
+    },
+    {
+      "name": "Bookings",
+      "url": "http://localhost:3000/bookings",
+      "error": "page.waitForTimeout is not a function",
+      "working": false
+    },
+    {
+      "name": "Payments",
+      "url": "http://localhost:3000/payments",
+      "error": "page.waitForTimeout is not a function",
+      "working": false
+    },
+    {
+      "name": "Notifications",
+      "url": "http://localhost:3000/notifications",
+      "error": "page.waitForTimeout is not a function",
+      "working": false
+    },
+    {
+      "name": "Analytics (should redirect)",
+      "url": "http://localhost:3000/analytics",
+      "error": "page.waitForTimeout is not a function",
+      "working": false
+    },
+    {
+      "name": "Settings (should redirect)",
+      "url": "http://localhost:3000/settings",
+      "error": "page.waitForTimeout is not a function",
+      "working": false
+    }
+  ],
+  "errors": [],
+  "working_pages": [],
+  "broken_pages": [
+    "Home",
+    "Login",
+    "Register",
+    "Dashboard (should redirect)",
+    "Calendar (should redirect)",
+    "Bookings",
+    "Payments",
+    "Notifications",
+    "Analytics (should redirect)",
+    "Settings (should redirect)",
+    "Login Flow"
+  ]
+}

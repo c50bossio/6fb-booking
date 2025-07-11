@@ -23,7 +23,6 @@ from utils.timezone import convert_to_user_timezone, get_business_timezone
 
 logger = logging.getLogger(__name__)
 
-
 class AgentOrchestrationService:
     """Manages the lifecycle and execution of AI agents"""
     
@@ -481,7 +480,6 @@ class AgentOrchestrationService:
             ],
             "conversation_trends": []  # TODO: Add daily trends
         }
-
 
 # Global instance
 agent_orchestration_service = AgentOrchestrationService()

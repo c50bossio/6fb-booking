@@ -8,7 +8,7 @@ Successfully implemented comprehensive Google Calendar integration for the 6FB B
 
 ### 1. Backend Google Calendar API Integration
 
-#### Core Service (`/backend/services/google_calendar_service.py`)
+#### Core Service (`/backend-v2/services/google_calendar_service.py`)
 - ✅ **OAuth 2.0 Authentication Flow**: Secure Google Calendar connection
 - ✅ **Calendar Event Management**: Create, update, delete events
 - ✅ **Credential Management**: Secure storage and refresh handling
@@ -16,7 +16,7 @@ Successfully implemented comprehensive Google Calendar integration for the 6FB B
 - ✅ **Error Handling**: Comprehensive logging and retry logic
 - ✅ **Multi-timezone Support**: Proper timezone handling for events
 
-#### Enhanced Sync Service (`/backend/services/appointment_sync_service.py`)
+#### Enhanced Sync Service (`/backend-v2/services/appointment_sync_service.py`)
 - ✅ **Automatic Sync Hooks**: Real-time syncing on appointment changes
 - ✅ **Conditional Sync Logic**: Configurable sync filters and preferences
 - ✅ **Bulk Sync Operations**: Manual sync for existing appointments
@@ -43,7 +43,7 @@ Successfully implemented comprehensive Google Calendar integration for the 6FB B
 - ✅ **Appointment Model**: Added `google_calendar_event_id` field for sync tracking
 - ✅ **Barber Model**: Added relationship to Google Calendar settings
 
-### 3. API Endpoints (`/backend/api/v1/endpoints/google_calendar.py`)
+### 3. API Endpoints (`/backend-v2/api/v1/endpoints/google_calendar.py`)
 
 #### Authentication Endpoints
 - ✅ **`GET /api/v1/google-calendar/connect`**: Initiate OAuth flow
@@ -62,26 +62,26 @@ Successfully implemented comprehensive Google Calendar integration for the 6FB B
 
 ### 4. Frontend Integration
 
-#### Settings Component (`/frontend/src/components/settings/GoogleCalendarSettings.tsx`)
+#### Settings Component (`/backend-v2/frontend-v2/src/components/settings/GoogleCalendarSettings.tsx`)
 - ✅ **Connection Management**: Connect/disconnect Google Calendar
 - ✅ **Status Display**: Real-time connection and sync status
 - ✅ **Preference Configuration**: Comprehensive sync settings
 - ✅ **Manual Sync**: Trigger bulk sync operations
 - ✅ **Error Handling**: User-friendly error messages
 
-#### Calendar Sync Components (`/frontend/src/components/calendar/GoogleCalendarSync.tsx`)
+#### Calendar Sync Components (`/backend-v2/frontend-v2/src/components/calendar/GoogleCalendarSync.tsx`)
 - ✅ **Sync Status Indicators**: Visual sync status for appointments
 - ✅ **Quick Sync Actions**: Add/update calendar events
 - ✅ **Status Badges**: Show sync status in appointment lists
 - ✅ **Quick Status Overview**: Dashboard sync status display
 
-#### Custom Hook (`/frontend/src/hooks/useGoogleCalendar.ts`)
+#### Custom Hook (`/backend-v2/frontend-v2/src/hooks/useGoogleCalendar.ts`)
 - ✅ **State Management**: React hook for Google Calendar integration
 - ✅ **API Interaction**: Simplified API calls with error handling
 - ✅ **OAuth Flow Handling**: Automatic callback processing
 - ✅ **Real-time Updates**: Live status and settings updates
 
-#### Settings Page (`/frontend/src/app/settings/google-calendar/page.tsx`)
+#### Settings Page (`/backend-v2/frontend-v2/src/app/settings/google-calendar/page.tsx`)
 - ✅ **Dedicated Settings Page**: Comprehensive configuration interface
 - ✅ **Help Documentation**: Built-in user guidance
 - ✅ **Benefits Overview**: Clear value proposition
@@ -95,7 +95,7 @@ Successfully implemented comprehensive Google Calendar integration for the 6FB B
 - ✅ **Troubleshooting Guide**: Common issues and solutions
 - ✅ **Production Deployment**: Production-ready configuration
 
-#### Test Suite (`/backend/scripts/test_google_calendar_integration.py`)
+#### Test Suite (`/backend-v2/scripts/test_google_calendar_integration.py`)
 - ✅ **Environment Validation**: Check configuration completeness
 - ✅ **Database Testing**: Verify table creation and access
 - ✅ **Service Testing**: Test core functionality

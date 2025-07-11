@@ -20,7 +20,7 @@ The calendar has been successfully integrated with the existing booking system, 
 - ✅ Payment status tracking through existing payment system
 
 ### 2. **API Integration Layer**
-- ✅ Created `/frontend/src/lib/api/calendar-booking-integration.ts`
+- ✅ Created `/backend-v2/frontend-v2/src/lib/api/calendar-booking-integration.ts`
 - ✅ Enhanced backend with new endpoints:
   - `/api/v1/appointments/multi-barber-availability`
   - `/api/v1/appointments/check-conflicts`
@@ -40,7 +40,7 @@ The calendar has been successfully integrated with the existing booking system, 
 - ✅ **Alternative Suggestions** - Automatically suggests available slots
 
 ### 5. **Calendar UI Enhancements**
-- ✅ Updated `/frontend/src/app/dashboard/calendar/page.tsx` to use integration layer
+- ✅ Updated `/backend-v2/frontend-v2/src/app/dashboard/calendar/page.tsx` to use integration layer
 - ✅ Enhanced error handling with conflict suggestions
 - ✅ Real-time appointment status updates with color coding
 - ✅ Drag-and-drop rescheduling with validation
@@ -207,12 +207,12 @@ export class CalendarBookingIntegration {
 ## 📋 File Summary
 
 ### New Files Created
-- `/frontend/src/lib/api/calendar-booking-integration.ts` - Main integration layer
-- `/frontend/test-calendar-integration.js` - Comprehensive integration tests
-- `/backend/api/v1/appointments.py` - Enhanced with new endpoints
+- `/backend-v2/frontend-v2/src/lib/api/calendar-booking-integration.ts` - Main integration layer
+- `/backend-v2/frontend-v2/test-calendar-integration.js` - Comprehensive integration tests
+- `/backend-v2/api/v1/appointments.py` - Enhanced with new endpoints
 
 ### Files Modified
-- `/frontend/src/app/dashboard/calendar/page.tsx` - Updated to use integration layer
+- `/backend-v2/frontend-v2/src/app/dashboard/calendar/page.tsx` - Updated to use integration layer
 - Existing appointment and booking APIs remain unchanged (backward compatible)
 
 ## ✅ Conclusion

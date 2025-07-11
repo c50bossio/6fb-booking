@@ -10,8 +10,8 @@
 
 Environment files containing production credentials were accidentally committed to version control:
 - `.env.production` 
-- `backend/.env.production`
-- `backend/.env.staging`
+- `backend-v2/.env.production`
+- `backend-v2/.env.staging`
 
 ## EXPOSED CREDENTIALS (NOW ROTATED)
 

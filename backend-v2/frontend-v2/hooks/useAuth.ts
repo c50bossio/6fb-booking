@@ -25,7 +25,7 @@ let authStateListeners: Array<(state: typeof globalAuthState) => void> = []
  * Simple authentication hook with singleton pattern to prevent loops
  * Checks authentication state and provides logout functionality
  */
-export function useAuth(): AuthState & { logout: () => Promise<void> } {
+export function useAuth(): AuthState & { logout: () => Promise<void>, refreshToken: () => Promise<void>, setAuthTokens: (accessToken: string, refreshToken: string) => void } {
   const [localState, setLocalState] = useState(globalAuthState)
 
   useEffect(() => {
@@ -88,12 +88,29 @@ export function useAuth(): AuthState & { logout: () => Promise<void> } {
       
       // Make a direct API call to validate the token
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      const response = await fetch(`${API_URL}/api/v1/auth/me`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      })
+      let response;
+      try {
+        response = await fetch(`${API_URL}/api/v1/auth/me`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          // Add timeout to prevent hanging
+          signal: AbortSignal.timeout(3000)
+        })
+      } catch (fetchError) {
+        console.error('🔍 checkAuthState: Network error:', fetchError)
+        // Backend not available - don't clear tokens
+        updateGlobalState({ 
+          user: null, 
+          isLoading: false, 
+          isChecking: false, 
+          hasChecked: true,
+          error: 'backend_unavailable'
+        })
+        clearTimeout(timeoutId)
+        return
+      }
 
       if (response.ok) {
         const userData = await response.json()
@@ -122,14 +139,14 @@ export function useAuth(): AuthState & { logout: () => Promise<void> } {
     } catch (error) {
       console.warn('🔍 checkAuthState: Auth check failed:', error)
       
-      // Clear tokens on network/auth errors
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token')
-        localStorage.removeItem('refresh_token')
-        localStorage.removeItem('user')
-        document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
-      }
-      updateGlobalState({ user: null, isLoading: false, isChecking: false, hasChecked: true })
+      // Don't clear tokens on general errors - might be temporary
+      updateGlobalState({ 
+        user: null, 
+        isLoading: false, 
+        isChecking: false, 
+        hasChecked: true,
+        error: error instanceof Error ? error.message : 'unknown_error'
+      })
     } finally {
       clearTimeout(timeoutId)
       console.log('🔍 checkAuthState: Auth check complete, loading finished')
@@ -174,12 +191,75 @@ export function useAuth(): AuthState & { logout: () => Promise<void> } {
     }
   }
 
+  const refreshToken = async () => {
+    try {
+      console.log('🔄 refreshToken: Starting token refresh')
+      
+      const refreshTokenValue = typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null
+      if (!refreshTokenValue) {
+        throw new Error('No refresh token available')
+      }
+
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const response = await fetch(`${API_URL}/api/v1/auth/refresh`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refresh_token: refreshTokenValue })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        console.log('🔄 refreshToken: Token refreshed successfully')
+        
+        // Update stored tokens
+        if (typeof window !== 'undefined' && data.access_token) {
+          localStorage.setItem('token', data.access_token)
+          if (data.refresh_token) {
+            localStorage.setItem('refresh_token', data.refresh_token)
+          }
+          // Update cookie as well
+          document.cookie = `token=${data.access_token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+        }
+        
+        // Re-check auth state to update user
+        await checkAuthState()
+      } else {
+        throw new Error(`Token refresh failed: ${response.status}`)
+      }
+    } catch (error) {
+      console.error('🔄 refreshToken: Refresh failed:', error)
+      // If refresh fails, logout user
+      await logout()
+      throw error
+    }
+  }
+
+  const setAuthTokens = (accessToken: string, refreshToken: string) => {
+    console.log('🔐 setAuthTokens: Storing new auth tokens')
+    
+    if (typeof window !== 'undefined') {
+      // Store tokens in localStorage
+      localStorage.setItem('token', accessToken)
+      localStorage.setItem('refresh_token', refreshToken)
+      
+      // Also set the auth cookie for middleware
+      document.cookie = `token=${accessToken}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+      
+      // Trigger auth state check to update user profile
+      checkAuthState()
+    }
+  }
+
   return {
     user: localState.user,
     isAuthenticated: !!localState.user,
     isLoading: localState.isLoading,
     error: localState.error,
-    logout
+    logout,
+    refreshToken,
+    setAuthTokens
   }
 }
 

@@ -468,7 +468,7 @@ The platform adapts to various barbershop compensation structures, with analytic
 - **Demo Flow**: See [`DEMO_FLOW_SPECIFICATION.md`](./DEMO_FLOW_SPECIFICATION.md) for demo mode implementation details
 - **API Documentation**: See [`docs/API_DOCUMENTATION.md`](./docs/API_DOCUMENTATION.md) for detailed API specifications
 - **Trafft Integration**: See [`TRAFFT_INTEGRATION_DOCUMENTATION.md`](./TRAFFT_INTEGRATION_DOCUMENTATION.md) for integration details
-- **Payout System**: See [`backend/PAYOUT_API_DOCUMENTATION.md`](./backend/PAYOUT_API_DOCUMENTATION.md) for payout implementation
+- **Payout System**: See [`backend-v2/PAYOUT_API_DOCUMENTATION.md`](./backend-v2/PAYOUT_API_DOCUMENTATION.md) for payout implementation
 
 ### Project Management
 - **Current Status**: See [`backend-v2/PROJECT_STATUS.md`](./backend-v2/PROJECT_STATUS.md) for real-time development status

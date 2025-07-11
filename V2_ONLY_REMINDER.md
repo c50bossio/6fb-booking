@@ -7,8 +7,8 @@
 - **Frontend**: `/Users/bossio/6fb-booking/backend-v2/frontend-v2/`
 
 ### V1 (DEPRECATED - DO NOT USE):
-- ❌ `/Users/bossio/6fb-booking/backend/`
-- ❌ `/Users/bossio/6fb-booking/frontend/`
+- ❌ `/Users/bossio/6fb-booking/backend-v2/`
+- ❌ `/Users/bossio/6fb-booking/backend-v2/frontend-v2/`
 
 ### Key Differences:
 - **V1**: Shows "6FB Platform" branding (old)

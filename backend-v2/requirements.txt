@@ -14,6 +14,7 @@ stripe==7.12.0
 slowapi==0.1.9
 pytz==2024.1
 bleach==6.1.0
+psutil==5.9.8
 
 # Google Calendar Integration
 google-api-python-client==2.114.0
@@ -43,6 +44,9 @@ sentry-sdk[fastapi]==1.40.6
 # Multi-Factor Authentication
 pyotp==2.9.0
 qrcode==7.4.2
+
+# File validation and MIME type detection
+python-magic==0.4.27
 
 # AI Provider Dependencies
 anthropic>=0.8.0

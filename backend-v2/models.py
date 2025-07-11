@@ -285,7 +285,7 @@ class Appointment(Base):
     barber_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # The assigned barber
     client_id = Column(Integer, ForeignKey("clients.id"), nullable=True)
     service_id = Column(Integer, ForeignKey("services.id"), nullable=True)  # Link to new Service model
-    location_id = Column(Integer, ForeignKey("barbershop_locations.id"), nullable=True)  # Location where service performed
+    organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=True)  # Organization/location where service performed
     service_name = Column(String)  # Keep for backwards compatibility
     start_time = Column(DateTime)
     duration_minutes = Column(Integer)
@@ -324,6 +324,7 @@ class Appointment(Base):
     barber = relationship("User", foreign_keys=[barber_id])
     client = relationship("Client", back_populates="appointments", foreign_keys=[client_id])
     service = relationship("Service", backref="appointments")
+    organization = relationship("Organization", backref="appointments")
     payment = relationship("Payment", back_populates="appointment", uselist=False)
     recurring_pattern = relationship("RecurringAppointmentPattern", backref="appointments")
     recurring_series = relationship("RecurringAppointmentSeries", back_populates="appointments")
@@ -335,7 +336,7 @@ class Payment(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     appointment_id = Column(Integer, ForeignKey("appointments.id"))
     barber_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    location_id = Column(Integer, ForeignKey("barbershop_locations.id"), nullable=True)  # Location where payment made
+    organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=True)  # Organization/location where payment made
     amount = Column(Float)
     status = Column(String, default="pending")  # pending, completed, failed, refunded, partially_refunded
     stripe_payment_id = Column(String, nullable=True)
@@ -362,6 +363,7 @@ class Payment(Base):
     # Relationships
     user = relationship("User", back_populates="payments", foreign_keys=[user_id])
     barber = relationship("User", foreign_keys=[barber_id], overlaps="user,payments")
+    organization = relationship("Organization", backref="payments")
     appointment = relationship("Appointment", back_populates="payment")
     refunds = relationship("Refund", back_populates="payment")
     gift_certificate = relationship("GiftCertificate", back_populates="payments_used")
@@ -850,6 +852,139 @@ class NotificationTemplate(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+
+
+class ServiceTemplate(Base):
+    """
+    Six Figure Barber service templates for quick onboarding.
+    
+    These are pre-configured service structures that align with 6FB methodology,
+    allowing new barbers to get started with proven business models quickly.
+    """
+    __tablename__ = "service_templates"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Template Information
+    name = Column(String, nullable=False, index=True)
+    display_name = Column(String, nullable=False)  # User-friendly name
+    description = Column(Text, nullable=True)
+    category = Column(Enum(ServiceCategoryEnum), nullable=False, index=True)
+    
+    # 6FB Methodology Alignment
+    six_fb_tier = Column(String, nullable=False, index=True)  # starter, professional, premium, luxury
+    methodology_score = Column(Float, default=0.0)  # 0-100 alignment with 6FB principles
+    revenue_impact = Column(String, nullable=False)  # high, medium, low
+    client_relationship_impact = Column(String, nullable=False)  # high, medium, low
+    
+    # Preset Configuration
+    suggested_base_price = Column(Float, nullable=False)
+    suggested_min_price = Column(Float, nullable=True)
+    suggested_max_price = Column(Float, nullable=True)
+    duration_minutes = Column(Integer, nullable=False, default=30)
+    buffer_time_minutes = Column(Integer, default=5)
+    
+    # 6FB Business Logic
+    requires_consultation = Column(Boolean, default=False)
+    upsell_opportunities = Column(JSON, default=list)  # List of related service template IDs
+    client_value_tier = Column(String, default="standard")  # standard, premium, luxury
+    profit_margin_target = Column(Float, nullable=True)  # Target profit margin %
+    
+    # Template Metadata
+    template_type = Column(String, default="preset")  # preset, user_created, community
+    is_six_fb_certified = Column(Boolean, default=True)  # 6FB methodology certified
+    popularity_score = Column(Float, default=0.0)  # Usage/adoption score
+    success_rate = Column(Float, default=0.0)  # Business success rate using this template
+    
+    # Market Positioning
+    target_market = Column(String, nullable=True)  # urban, suburban, rural, luxury
+    recommended_for = Column(JSON, default=list)  # ["new_barbers", "6fb_practitioners", "premium_shops"]
+    
+    # Template Content
+    service_details = Column(JSON, default=dict)  # Detailed service configuration
+    pricing_strategy = Column(JSON, default=dict)  # 6FB pricing methodology
+    business_rules = Column(JSON, default=dict)  # Booking rules, restrictions
+    
+    # Images and Assets
+    template_image_url = Column(String, nullable=True)
+    demo_images = Column(JSON, default=list)  # List of demo image URLs
+    
+    # Usage Tracking
+    usage_count = Column(Integer, default=0)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    is_active = Column(Boolean, default=True)
+    is_featured = Column(Boolean, default=False)
+    
+    # Timestamps
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+    
+    # Relationships
+    created_by = relationship("User", foreign_keys=[created_by_id])
+    
+    @property
+    def is_six_figure_aligned(self) -> bool:
+        """Check if template meets 6FB methodology standards"""
+        return self.methodology_score >= 80.0 and self.is_six_fb_certified
+    
+    @property
+    def pricing_range_display(self) -> str:
+        """Display pricing range for UI"""
+        if self.suggested_min_price and self.suggested_max_price:
+            return f"${self.suggested_min_price:.0f} - ${self.suggested_max_price:.0f}"
+        return f"${self.suggested_base_price:.0f}"
+
+
+class ServiceTemplateCategory(Base):
+    """Categories for organizing service templates"""
+    __tablename__ = "service_template_categories"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False, unique=True, index=True)
+    display_name = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    
+    # 6FB Organization
+    six_fb_pathway = Column(String, nullable=True)  # beginner, intermediate, advanced, master
+    business_impact = Column(String, nullable=False)  # foundation, growth, optimization, mastery
+    
+    # Display Options
+    icon_name = Column(String, nullable=True)  # Icon for UI display
+    color_theme = Column(String, nullable=True)  # Color theme for categorization
+    display_order = Column(Integer, default=0)
+    
+    # Metadata
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+
+
+class UserServiceTemplate(Base):
+    """Track which service templates a user has applied"""
+    __tablename__ = "user_service_templates"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    service_template_id = Column(Integer, ForeignKey("service_templates.id"), nullable=False)
+    service_id = Column(Integer, ForeignKey("services.id"), nullable=True)  # Created service
+    
+    # Customization Tracking
+    applied_price = Column(Float, nullable=True)  # Price user set when applying template
+    customizations = Column(JSON, default=dict)  # User modifications to template
+    
+    # Success Metrics
+    revenue_generated = Column(Float, default=0.0)
+    bookings_count = Column(Integer, default=0)
+    client_satisfaction_avg = Column(Float, nullable=True)
+    
+    # Timestamps
+    applied_at = Column(DateTime, default=utcnow)
+    last_used_at = Column(DateTime, nullable=True)
+    
+    # Relationships
+    user = relationship("User")
+    service_template = relationship("ServiceTemplate")
+    service = relationship("Service")
 
 
 class NotificationPreference(Base):

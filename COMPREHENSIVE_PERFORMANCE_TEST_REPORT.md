@@ -106,7 +106,7 @@ This comprehensive performance testing validates the 6FB Booking Platform's data
 ### Configuration Validation ✅
 - **Environment Variables:** All required variables configured
 - **Database Schema:** All 54 required tables present
-- **File Structure:** Complete backend/frontend structure
+- **File Structure:** Complete backend-v2/frontend structure
 - **Dependencies:** All packages installed
 
 ### Production Checklist
@@ -314,11 +314,11 @@ The core authentication and barber listing work, but the complete booking workfl
 - **Testing Tools:** Custom Python test suites with concurrent load testing
 
 ### Files Generated
-- `/backend/basic_performance_report.json` - Database performance data
-- `/backend/api_performance_report.json` - API testing results
-- `/backend/BASIC_PERFORMANCE_REPORT.md` - Database performance report
-- `/backend/scripts/basic_performance_test.py` - Database test suite
-- `/backend/scripts/api_performance_test.py` - API test suite
+- `/backend-v2/basic_performance_report.json` - Database performance data
+- `/backend-v2/api_performance_report.json` - API testing results
+- `/backend-v2/BASIC_PERFORMANCE_REPORT.md` - Database performance report
+- `/backend-v2/scripts/basic_performance_test.py` - Database test suite
+- `/backend-v2/scripts/api_performance_test.py` - API test suite
 
 ### Performance Test Scripts
 1. **Database Testing:** Validates query performance, index usage, optimization

@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AnalyticsCard, AnalyticsCardGrid } from '@/components/analytics/shared/AnalyticsCard'
 import { 
-  TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
   CurrencyDollarIcon,
   UsersIcon,
   EyeIcon,
@@ -354,7 +354,7 @@ export default function TrackingAnalyticsDashboard({
     {
       title: 'Avg. Booking Value',
       value: formatCurrency(analytics.overview.average_booking_value),
-      icon: <TrendingUpIcon className="w-6 h-6 text-orange-600" />
+      icon: <ArrowTrendingUpIcon className="w-6 h-6 text-orange-600" />
     }
   ]
 
@@ -520,9 +520,9 @@ export default function TrackingAnalyticsDashboard({
                           platform.last_24h.change_percent < 0 ? 'text-red-600' : 'text-gray-500'
                         }`}>
                           {platform.last_24h.change_percent > 0 ? (
-                            <TrendingUpIcon className="w-3 h-3 mr-1" />
+                            <ArrowTrendingUpIcon className="w-3 h-3 mr-1" />
                           ) : platform.last_24h.change_percent < 0 ? (
-                            <TrendingDownIcon className="w-3 h-3 mr-1" />
+                            <ArrowTrendingDownIcon className="w-3 h-3 mr-1" />
                           ) : null}
                           {Math.abs(platform.last_24h.change_percent).toFixed(1)}%
                         </div>
@@ -543,9 +543,9 @@ export default function TrackingAnalyticsDashboard({
                           platform.last_7d.change_percent < 0 ? 'text-red-600' : 'text-gray-500'
                         }`}>
                           {platform.last_7d.change_percent > 0 ? (
-                            <TrendingUpIcon className="w-3 h-3 mr-1" />
+                            <ArrowTrendingUpIcon className="w-3 h-3 mr-1" />
                           ) : platform.last_7d.change_percent < 0 ? (
-                            <TrendingDownIcon className="w-3 h-3 mr-1" />
+                            <ArrowTrendingDownIcon className="w-3 h-3 mr-1" />
                           ) : null}
                           {Math.abs(platform.last_7d.change_percent).toFixed(1)}%
                         </div>

@@ -14,9 +14,11 @@ import {
   PlayIcon,
   StarIcon
 } from '@heroicons/react/24/outline'
-import { useState } from 'react'
-import { FooterCTAs, CTADebugPanel } from '@/components/ui/CTASystem'
-import { AuthHeaderCTAs, AuthHeroCTAs } from '@/components/ui/AuthCTAs'
+import { useState, lazy, Suspense } from 'react'
+
+// Lazy load heavy components for better initial page load
+const AuthHeaderCTAs = lazy(() => import('@/components/ui/AuthCTAs').then(mod => ({ default: mod.AuthHeaderCTAs })))
+const AuthHeroCTAs = lazy(() => import('@/components/ui/AuthCTAs').then(mod => ({ default: mod.AuthHeroCTAs })))
 
 export default function LandingPage() {
   const [selectedPlan, setSelectedPlan] = useState<'starter' | 'professional' | 'enterprise'>('professional')
@@ -140,7 +142,9 @@ export default function LandingPage() {
                 Testimonials
               </Link>
             </nav>
-            <AuthHeaderCTAs />
+            <Suspense fallback={<div className="h-10 w-32 bg-gray-200 animate-pulse rounded"></div>}>
+              <AuthHeaderCTAs />
+            </Suspense>
           </div>
         </div>
       </header>
@@ -167,7 +171,9 @@ export default function LandingPage() {
             </p>
 
             <div className="pt-8">
-              <AuthHeroCTAs />
+              <Suspense fallback={<div className="h-12 w-48 bg-gray-200 animate-pulse rounded-md"></div>}>
+                <AuthHeroCTAs />
+              </Suspense>
             </div>
 
             <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -360,7 +366,9 @@ export default function LandingPage() {
           <p className="text-xl text-primary-100 mb-8">
             Join thousands of successful barbers using Booked Barber to build their six-figure business.
           </p>
-          <AuthHeroCTAs />
+          <Suspense fallback={<div className="h-12 w-48 bg-gray-200 animate-pulse rounded-md mx-auto"></div>}>
+            <AuthHeroCTAs />
+          </Suspense>
         </div>
       </section>
 

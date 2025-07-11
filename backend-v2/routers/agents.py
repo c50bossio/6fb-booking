@@ -11,6 +11,7 @@ import logging
 from database import get_db
 from routers.auth import get_current_user
 from utils.auth import require_admin_role
+from utils.error_handling import AppError, ValidationError, AuthenticationError, AuthorizationError, NotFoundError, ConflictError, PaymentError, IntegrationError, safe_endpoint
 from schemas_new.agent import (
     AgentCreate, AgentResponse, AgentInstanceCreate, AgentInstanceUpdate,
     AgentInstanceResponse, ConversationResponse, AgentAnalytics,
@@ -138,7 +139,8 @@ async def create_agent_instance(
         return db_instance
         
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"ValueError in {__name__}: {e}", exc_info=True)
+        raise HTTPException(status_code=400, detail="An error occurred")
     except Exception as e:
         logger.error(f"Error creating agent instance: {e}")
         raise HTTPException(status_code=500, detail="Failed to create agent instance")
@@ -222,7 +224,8 @@ async def activate_agent_instance(
         return instance
         
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"ValueError in {__name__}: {e}", exc_info=True)
+        raise HTTPException(status_code=400, detail="An error occurred")
     except Exception as e:
         logger.error(f"Error activating agent: {e}")
         raise HTTPException(status_code=500, detail="Failed to activate agent")
@@ -240,7 +243,8 @@ async def pause_agent_instance(
         return instance
         
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"ValueError in {__name__}: {e}", exc_info=True)
+        raise HTTPException(status_code=400, detail="An error occurred")
     except Exception as e:
         logger.error(f"Error pausing agent: {e}")
         raise HTTPException(status_code=500, detail="Failed to pause agent")

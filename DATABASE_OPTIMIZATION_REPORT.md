@@ -38,7 +38,7 @@ Successfully completed a comprehensive database performance optimization sprint 
 
 ### 1. N+1 Query Elimination
 
-#### Appointments Endpoints (`/backend/api/v1/appointments.py`)
+#### Appointments Endpoints (`/backend-v2/api/v1/appointments.py`)
 ```python
 # BEFORE: N+1 queries - 1 + N barber queries + N client queries
 appointments = query.all()
@@ -53,7 +53,7 @@ appointments = query.options(
 ).all()
 ```
 
-#### Analytics Endpoints (`/backend/api/v1/analytics.py`)
+#### Analytics Endpoints (`/backend-v2/api/v1/analytics.py`)
 ```python
 # BEFORE: Multiple separate queries
 barber = db.query(Barber).filter(Barber.id == barber_id).first()
@@ -67,7 +67,7 @@ barber = db.query(Barber).options(
 ).filter(Barber.id == barber_id).first()
 ```
 
-#### Clients Endpoints (`/backend/api/v1/endpoints/clients.py`)
+#### Clients Endpoints (`/backend-v2/api/v1/endpoints/clients.py`)
 ```python
 # BEFORE: N+1 for client appointments and services
 clients = query.all()
@@ -83,7 +83,7 @@ query = db.query(Client).options(
 
 ### 2. Database Indexes Added
 
-#### Strategic Indexes (`/backend/alembic/versions/add_performance_indexes.py`)
+#### Strategic Indexes (`/backend-v2/alembic/versions/add_performance_indexes.py`)
 ```sql
 -- Appointments table indexes (most critical)
 CREATE INDEX idx_appointments_barber_date ON appointments (barber_id, appointment_date);
@@ -103,7 +103,7 @@ CREATE INDEX idx_barbers_is_active ON barbers (is_active);
 
 ### 3. Query Optimization Service
 
-#### Performance Monitoring (`/backend/services/query_optimization_service.py`)
+#### Performance Monitoring (`/backend-v2/services/query_optimization_service.py`)
 - **Real-time Query Tracking**: Monitors query execution times
 - **N+1 Detection**: Automatically detects N+1 query patterns
 - **Slow Query Logging**: Logs queries exceeding 1.0s threshold
@@ -119,7 +119,7 @@ def receive_after_cursor_execute(conn, cursor, statement, parameters, context, e
 
 ### 4. Optimized Analytics Service
 
-#### Consolidated Queries (`/backend/services/optimized_analytics_service.py`)
+#### Consolidated Queries (`/backend-v2/services/optimized_analytics_service.py`)
 ```python
 # BEFORE: 10+ separate queries for dashboard
 revenue_query = db.query(func.sum(Appointment.service_revenue))...
@@ -137,7 +137,7 @@ metrics = db.query(
 
 ### 5. Performance Monitoring Endpoints
 
-#### New Endpoints (`/backend/api/v1/endpoints/performance.py`)
+#### New Endpoints (`/backend-v2/api/v1/endpoints/performance.py`)
 - `GET /performance/query-performance` - Real-time query metrics
 - `GET /performance/table-stats/{table}` - Table statistics and usage
 - `GET /performance/index-suggestions` - Missing index recommendations
@@ -163,15 +163,15 @@ metrics = db.query(
 ### Files Created/Modified
 
 #### New Files
-1. `/backend/services/query_optimization_service.py` - Query monitoring and N+1 detection
-2. `/backend/services/optimized_analytics_service.py` - Optimized analytics queries
-3. `/backend/api/v1/endpoints/performance.py` - Performance monitoring endpoints
-4. `/backend/alembic/versions/add_performance_indexes.py` - Database indexes
+1. `/backend-v2/services/query_optimization_service.py` - Query monitoring and N+1 detection
+2. `/backend-v2/services/optimized_analytics_service.py` - Optimized analytics queries
+3. `/backend-v2/api/v1/endpoints/performance.py` - Performance monitoring endpoints
+4. `/backend-v2/alembic/versions/add_performance_indexes.py` - Database indexes
 
 #### Modified Files
-1. `/backend/api/v1/appointments.py` - Added eager loading to all endpoints
-2. `/backend/api/v1/analytics.py` - Optimized analytics queries
-3. `/backend/api/v1/endpoints/clients.py` - Client relationship eager loading
+1. `/backend-v2/api/v1/appointments.py` - Added eager loading to all endpoints
+2. `/backend-v2/api/v1/analytics.py` - Optimized analytics queries
+3. `/backend-v2/api/v1/endpoints/clients.py` - Client relationship eager loading
 
 ### Key Techniques Used
 

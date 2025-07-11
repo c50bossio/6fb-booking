@@ -150,7 +150,7 @@ git checkout -b hotfix/payment-processing-error
 **Purpose**: Ensures all development happens in V2 directories
 
 **Protection**:
-- Blocks modifications to `/backend/` and `/frontend/` (V1)
+- Blocks modifications to `/backend-v2/` and `/backend-v2/frontend-v2/` (V1)
 - Enforces `/backend-v2/` and `/backend-v2/frontend-v2/` usage
 - Allows documentation and script updates
 
@@ -159,7 +159,7 @@ git checkout -b hotfix/payment-processing-error
 ❌ V2-ONLY POLICY VIOLATION DETECTED!
 
 You are attempting to modify deprecated V1 files:
-  backend/api/endpoints/test.py
+  backend-v2/api/endpoints/test.py
 
 All development must happen in V2 directories:
   ✅ backend-v2/

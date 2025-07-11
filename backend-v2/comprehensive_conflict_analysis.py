@@ -171,7 +171,7 @@ class ComprehensiveAnalyzer:
         
         # Check for suspicious duplicates
         for name, files in function_names.items():
-            if len(files) > 2 and any("backend-v2" in f for f in files) and any("backend/" in f for f in files):
+            if len(files) > 2 and any("backend-v2" in f for f in files) and any("backend-v2/" in f for f in files):
                 self.conflicts.append(ConflictItem(
                     name=f"Function: {name}",
                     type="conflict",

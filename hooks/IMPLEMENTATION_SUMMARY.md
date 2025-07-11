@@ -54,7 +54,7 @@ Successfully implemented 4 critical Git hooks for Phase 1 Core Development Workf
 
 #### V2-Only Architecture (`pre-commit-v2-only`)
 - **Allowed Paths**: `backend-v2/`, `backend-v2/frontend-v2/`, `scripts/`, `docs/`, `monitoring/`, `hooks/`
-- **Blocked Paths**: `backend/`, `frontend/` (V1 directories)
+- **Blocked Paths**: `backend-v2/`, `backend-v2/frontend-v2/` (V1 directories)
 - **Global Files**: Root-level configs allowed (`README.md`, `.gitignore`, etc.)
 
 #### Dependency Security (`pre-commit-security`)
@@ -86,7 +86,7 @@ git commit --allow-empty -m "invalid format"  # Should fail
 git commit --allow-empty -m "test: valid format"  # Should pass
 
 # Test V2-only protection
-touch backend/test.py && git add backend/test.py && git commit -m "test: v1 block"  # Should fail
+touch backend-v2/test.py && git add backend-v2/test.py && git commit -m "test: v1 block"  # Should fail
 
 # Test branch protection
 git push origin main  # Should fail if not on main

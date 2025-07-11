@@ -24,10 +24,10 @@ This fragmentation led to:
 
 We will use a single, JWT-based authentication system throughout the entire application:
 
-1. **Single Auth Service**: All authentication logic is centralized in `backend/services/auth_service.py`
-2. **Consistent Token Validation**: One validation mechanism in `backend/middleware/auth.py`
+1. **Single Auth Service**: All authentication logic is centralized in `backend-v2/services/auth_service.py`
+2. **Consistent Token Validation**: One validation mechanism in `backend-v2/middleware/auth.py`
 3. **No Demo Mode**: Demo/test users use the same auth flow with test credentials
-4. **Unified Frontend Auth**: Single auth context and hooks in `frontend/src/lib/auth/`
+4. **Unified Frontend Auth**: Single auth context and hooks in `backend-v2/frontend-v2/src/lib/auth/`
 
 ## Consequences
 

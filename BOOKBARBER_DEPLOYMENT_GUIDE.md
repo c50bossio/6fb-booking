@@ -13,7 +13,7 @@ This guide will help you deploy the BookBarber platform to your custom domain `b
 - ✅ **Image Optimization**: Domain allowlist updated
 
 ### Backend Configuration
-- ✅ **Deployment Script**: Complete production deployment script (`backend/deploy.sh`)
+- ✅ **Deployment Script**: Complete production deployment script (`backend-v2/deploy.sh`)
 - ✅ **Environment Template**: Ready for production configuration
 - ✅ **Database Setup**: Automated migration and setup
 - ✅ **SSL Ready**: Nginx and SSL certificate automation
@@ -51,7 +51,7 @@ This guide will help you deploy the BookBarber platform to your custom domain `b
 1. **Connect GitHub to Render**
 2. **Create Static Site**:
    - Build Command: `cd frontend && npm install && npm run build`
-   - Publish Directory: `frontend/out` or `frontend/.next`
+   - Publish Directory: `backend-v2/frontend-v2/out` or `backend-v2/frontend-v2/.next`
    - Custom Domain: `bookbarber.com`
 
 #### Backend Deployment:

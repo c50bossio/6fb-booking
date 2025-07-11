@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BookedBarber V2 - Manual Page Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .page-link { display: block; margin: 10px 0; padding: 10px; background: #f5f5f5; text-decoration: none; color: #333; }
+        .page-link:hover { background: #e0e0e0; }
+        .status { font-weight: bold; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        #console { margin-top: 20px; padding: 10px; background: #f0f0f0; border: 1px solid #ccc; }
+        .log-entry { margin: 5px 0; padding: 5px; background: white; border-left: 3px solid #ccc; }
+        .log-error { border-left-color: red; }
+        .log-warning { border-left-color: orange; }
+    </style>
+</head>
+<body>
+    <h1>BookedBarber V2 - Manual Page Test</h1>
+    <p>Click on each link to test the page. Check the console for errors.</p>
+    
+    <div id="results"></div>
+    
+    <div id="console">
+        <h3>Console Output</h3>
+        <div id="console-output"></div>
+    </div>
+
+    <script>
+        const pages = [
+            { name: 'Dashboard', path: '/dashboard' },
+            { name: 'Calendar', path: '/calendar' },
+            { name: 'My Bookings', path: '/bookings' },
+            { name: 'Availability', path: '/barber/availability' },
+            { name: 'Recurring', path: '/recurring' },
+            { name: 'Clients', path: '/clients' },
+            { name: 'Communication', path: '/notifications' },
+            { name: 'Marketing Campaigns', path: '/marketing/campaigns' },
+            { name: 'Marketing Templates', path: '/marketing/templates' },
+            { name: 'Marketing Contacts', path: '/marketing/contacts' },
+            { name: 'Marketing Analytics', path: '/marketing/analytics' },
+            { name: 'Marketing Billing', path: '/marketing/billing' },
+            { name: 'Payment Overview', path: '/payments' },
+            { name: 'Earnings', path: '/barber/earnings' },
+            { name: 'Gift Certificates', path: '/payments/gift-certificates' },
+            { name: 'Commissions', path: '/commissions' },
+            { name: 'Payouts', path: '/payouts' },
+            { name: 'Financial Analytics', path: '/finance/analytics' },
+            { name: 'Analytics', path: '/analytics' },
+            { name: 'Enterprise', path: '/enterprise/dashboard' },
+            { name: 'Admin Overview', path: '/admin' },
+            { name: 'Services', path: '/admin/services' },
+            { name: 'Staff Invitations', path: '/dashboard/staff/invitations' },
+            { name: 'Booking Rules', path: '/admin/booking-rules' },
+            { name: 'Data Import', path: '/import' },
+            { name: 'Data Export', path: '/export' },
+            { name: 'Webhooks', path: '/admin/webhooks' },
+            { name: 'Product Catalog', path: '/products' },
+            { name: 'Profile Settings', path: '/settings/profile' },
+            { name: 'Calendar Sync', path: '/settings/calendar' },
+            { name: 'Notification Settings', path: '/settings/notifications' },
+            { name: 'Integrations', path: '/settings/integrations' },
+            { name: 'Tracking Pixels', path: '/settings/tracking-pixels' },
+            { name: 'Test Data', path: '/settings/test-data' },
+            { name: 'Support', path: '/support' },
+            { name: 'Sign Out', path: '/logout' }
+        ];
+
+        const resultsDiv = document.getElementById('results');
+        const consoleOutput = document.getElementById('console-output');
+        
+        // Override console methods to capture output
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        function addToConsole(message, type = 'log') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            consoleOutput.appendChild(entry);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+        
+        console.log = function(message) {
+            originalLog(message);
+            addToConsole(message, 'log');
+        };
+        
+        console.error = function(message) {
+            originalError(message);
+            addToConsole(message, 'error');
+        };
+        
+        console.warn = function(message) {
+            originalWarn(message);
+            addToConsole(message, 'warning');
+        };
+        
+        // Generate links
+        pages.forEach(page => {
+            const link = document.createElement('a');
+            link.href = page.path;
+            link.className = 'page-link';
+            link.textContent = `${page.name} (${page.path})`;
+            link.onclick = function(e) {
+                e.preventDefault();
+                testPage(page.name, page.path);
+            };
+            resultsDiv.appendChild(link);
+        });
+        
+        function testPage(name, path) {
+            console.log(`Testing ${name} at ${path}`);
+            
+            // Try to fetch the page
+            fetch(path)
+                .then(response => {
+                    if (response.ok) {
+                        console.log(`✅ ${name} - Status: ${response.status}`);
+                        window.open(path, '_blank');
+                    } else {
+                        console.error(`❌ ${name} - Status: ${response.status} ${response.statusText}`);
+                    }
+                })
+                .catch(error => {
+                    console.error(`❌ ${name} - Error: ${error.message}`);
+                });
+        }
+        
+        // Listen for global errors
+        window.addEventListener('error', function(e) {
+            console.error(`Global error: ${e.message} at ${e.filename}:${e.lineno}`);
+        });
+        
+        // Listen for unhandled promise rejections
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error(`Unhandled promise rejection: ${e.reason}`);
+        });
+        
+        console.log('Manual test page loaded. Click on links to test individual pages.');
+    </script>
+</body>
+</html>

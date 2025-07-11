@@ -147,7 +147,7 @@ Fill out the client information:
 ## ⚙️ **Step 5: Configure 6FB Backend**
 
 ### **5.1 Update Environment Variables**
-Add these to your `/Users/bossio/6fb-booking/backend/.env` file:
+Add these to your `/Users/bossio/6fb-booking/backend-v2/.env` file:
 
 ```env
 # Google Calendar API Configuration

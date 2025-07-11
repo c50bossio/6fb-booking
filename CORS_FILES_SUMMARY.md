@@ -13,8 +13,8 @@
 6. **`cors_test.html`** - Browser-based interactive testing
 
 ### 🔧 Code Solutions
-7. **`frontend/src/app/api/proxy/[...path]/route.ts`** - Emergency API proxy
-8. **`frontend/src/lib/api/corsHelper.ts`** - Smart CORS detection utility
+7. **`backend-v2/frontend-v2/src/app/api/proxy/[...path]/route.ts`** - Emergency API proxy
+8. **`backend-v2/frontend-v2/src/lib/api/corsHelper.ts`** - Smart CORS detection utility
 
 ## Quick Start Guide
 
@@ -64,12 +64,12 @@ git add . && git commit -m "Enable CORS proxy" && git push
 - **Usage**: Open in browser, click test buttons
 - **Benefits**: Visual interface, runs from browser context
 
-### `frontend/src/app/api/proxy/[...path]/route.ts`
+### `backend-v2/frontend-v2/src/app/api/proxy/[...path]/route.ts`
 - **Purpose**: Emergency proxy to bypass CORS issues
 - **How**: Routes frontend requests through Next.js API
 - **Activation**: Set `NEXT_PUBLIC_USE_CORS_PROXY=true`
 
-### `frontend/src/lib/api/corsHelper.ts`
+### `backend-v2/frontend-v2/src/lib/api/corsHelper.ts`
 - **Purpose**: Smart CORS detection and automatic fallback
 - **Features**: Auto-detects CORS status, switches modes automatically
 - **Integration**: Can be imported into existing API client

@@ -49,7 +49,7 @@ python seed_client_data.py
 
 ### **Step 3:** Test the frontend
 1. Open: http://localhost:3002/dashboard/clients
-2. Use the test checklist: `/Users/bossio/6fb-booking/frontend/test_client_ui.html`
+2. Use the test checklist: `/Users/bossio/6fb-booking/backend-v2/frontend-v2/test_client_ui.html`
 
 ---
 

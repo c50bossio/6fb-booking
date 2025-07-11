@@ -1,0 +1,175 @@
+/* Marketing Analytics Mobile Optimizations */
+
+/* Mobile-first approach for better touch experience */
+@media (max-width: 768px) {
+  /* Increase touch targets to minimum 44px */
+  .marketing-analytics button,
+  .marketing-analytics select,
+  .marketing-analytics a {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 12px 16px;
+  }
+
+  /* Improve card spacing on mobile */
+  .marketing-analytics .card {
+    margin-bottom: 16px;
+  }
+
+  /* Stack header elements on mobile */
+  .marketing-analytics-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* Optimize metric cards for mobile */
+  .metric-card {
+    padding: 16px;
+    min-height: 120px;
+  }
+
+  /* Larger text for better readability */
+  .metric-value {
+    font-size: 1.5rem;
+  }
+
+  .metric-label {
+    font-size: 0.875rem;
+  }
+
+  /* Better spacing for integration status */
+  .integration-status {
+    padding: 16px;
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+
+  /* Active campaign indicator optimization */
+  .campaign-indicator {
+    padding: 12px 16px;
+  }
+
+  /* Recent activity list optimization */
+  .activity-item {
+    padding: 12px;
+    font-size: 0.875rem;
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* 3-column grid on tablets */
+  .metrics-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* Adjust header layout */
+  .marketing-analytics-header {
+    flex-wrap: wrap;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .metric-card {
+    border: 2px solid currentColor;
+  }
+
+  .status-indicator {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .animate-spin {
+    animation: none;
+  }
+
+  .animate-pulse {
+    animation: none;
+  }
+
+  /* Show static loading indicator */
+  .loading-spinner::after {
+    content: "Loading...";
+    animation: none;
+  }
+}
+
+/* Dark mode optimizations */
+@media (prefers-color-scheme: dark) {
+  .marketing-analytics {
+    background-color: #1f2937;
+  }
+
+  .metric-card {
+    background-color: #374151;
+    color: #f3f4f6;
+  }
+
+  .integration-status {
+    background-color: #374151;
+  }
+}
+
+/* Focus indicators for accessibility */
+.marketing-analytics :focus {
+  outline: 3px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Skip to content link */
+.skip-to-content {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #000;
+  color: #fff;
+  padding: 8px;
+  z-index: 100;
+  text-decoration: none;
+}
+
+.skip-to-content:focus {
+  top: 0;
+}
+
+/* Screen reader only text */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Ensure proper color contrast */
+.text-gray-600 {
+  color: #4b5563; /* WCAG AA compliant */
+}
+
+.text-gray-500 {
+  color: #6b7280; /* WCAG AA compliant */
+}
+
+/* Loading state improvements */
+.loading-skeleton {
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

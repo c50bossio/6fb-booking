@@ -24,7 +24,7 @@ BookedBarber V2 has achieved **95%+ production readiness** with comprehensive st
 
 ### Legacy V1 Systems
 - **Status**: 🚫 DEPRECATED 
-- **Location**: `backend/` and `frontend/`
+- **Location**: `backend-v2/` and `backend-v2/frontend-v2/`
 - **Action**: Do not modify - V2 supersedes all V1 functionality
 
 ## 🌍 Environment Management

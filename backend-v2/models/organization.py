@@ -114,6 +114,9 @@ class Organization(Base):
     custom_tracking_code = Column(Text, nullable=True, comment='Custom HTML/JS tracking code')
     tracking_settings = Column(JSON, nullable=True, comment='JSON object with advanced tracking settings')
     
+    # Landing page configuration
+    landing_page_config = Column(JSON, nullable=True, comment='JSON object with landing page configuration')
+    
     # Organization hierarchy support
     parent_organization_id = Column(Integer, ForeignKey('organizations.id'), nullable=True, comment='Parent organization for multi-location enterprises')
     organization_type = Column(String(20), default=OrganizationType.INDEPENDENT.value, comment='Type: headquarters, location, franchise, independent')
@@ -132,6 +135,9 @@ class Organization(Base):
     
     # Staff invitations
     invitations = relationship("StaffInvitation", back_populates="organization", cascade="all, delete-orphan")
+    
+    # Guest bookings
+    guest_bookings = relationship("GuestBooking", back_populates="organization", cascade="all, delete-orphan")
     
     # Computed properties
     @property

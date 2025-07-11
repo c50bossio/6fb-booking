@@ -1,0 +1,334 @@
+{
+  "timestamp": "2025-07-07T08:38:03.532223",
+  "public_pages": [
+    {
+      "path": "/",
+      "name": "Home",
+      "status": 200,
+      "working": true
+    },
+    {
+      "path": "/login",
+      "name": "Login",
+      "status": 200,
+      "working": true
+    },
+    {
+      "path": "/register",
+      "name": "Register",
+      "status": 200,
+      "working": true
+    },
+    {
+      "path": "/forgot-password",
+      "name": "Forgot Password",
+      "status": 200,
+      "working": true
+    },
+    {
+      "path": "/terms",
+      "name": "Terms",
+      "status": 200,
+      "working": true
+    },
+    {
+      "path": "/privacy",
+      "name": "Privacy",
+      "status": 200,
+      "working": true
+    },
+    {
+      "path": "/cookies",
+      "name": "Cookies",
+      "status": 200,
+      "working": true
+    }
+  ],
+  "protected_pages": [
+    {
+      "path": "/dashboard",
+      "name": "Dashboard",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/calendar",
+      "name": "Calendar View",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/bookings",
+      "name": "My Bookings",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/barber-availability",
+      "name": "Availability",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/recurring",
+      "name": "Recurring Appointments",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/clients",
+      "name": "Clients",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/notifications",
+      "name": "Communication",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/marketing",
+      "name": "Marketing Suite",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/marketing/campaigns",
+      "name": "Campaigns",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/marketing/templates",
+      "name": "Templates",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/marketing/contacts",
+      "name": "Contacts",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/marketing/analytics",
+      "name": "Marketing Analytics",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/marketing/billing",
+      "name": "Usage & Billing",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/payments",
+      "name": "Payment Overview",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/barber/earnings",
+      "name": "Earnings",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/payments/gift-certificates",
+      "name": "Gift Certificates",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/analytics",
+      "name": "Analytics",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/enterprise/dashboard",
+      "name": "Enterprise Dashboard",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/admin",
+      "name": "Admin Overview",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/admin/services",
+      "name": "Services",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/dashboard/staff/invitations",
+      "name": "Staff Invitations",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/admin/booking-rules",
+      "name": "Booking Rules",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/admin/webhooks",
+      "name": "Webhooks",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/import",
+      "name": "Import Data",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/export",
+      "name": "Export Data",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/settings",
+      "name": "Settings",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/settings/profile",
+      "name": "Profile Settings",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/settings/calendar",
+      "name": "Calendar Sync",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/settings/notifications",
+      "name": "Notification Settings",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/settings/integrations",
+      "name": "Integrations",
+      "note": "Frontend route - requires browser testing"
+    },
+    {
+      "path": "/settings/tracking-pixels",
+      "name": "Tracking Pixels",
+      "note": "Frontend route - requires browser testing"
+    }
+  ],
+  "api_endpoints": [
+    {
+      "endpoint": "/api/v1/auth/me",
+      "name": "User Profile",
+      "method": "GET",
+      "status": 200,
+      "working": true,
+      "response_sample": "{'email': 'admin.test@bookedbarber.com', 'name': 'Test Admin User', 'id': 1, 'created_at': '2025-07-..."
+    },
+    {
+      "endpoint": "/api/v1/appointments",
+      "name": "Appointments List",
+      "method": "GET",
+      "status": 200,
+      "working": true,
+      "response_sample": "{'appointments': [{'id': 240, 'user_id': 1, 'barber_id': 6, 'client_id': None, 'service_id': None, '..."
+    },
+    {
+      "endpoint": "/api/v1/services",
+      "name": "Services",
+      "method": "GET",
+      "status": 200,
+      "working": true,
+      "response_sample": "[{'name': 'Beard Trim', 'description': 'Professional beard trim service', 'category': 'beard', 'sku'..."
+    },
+    {
+      "endpoint": "/api/v1/analytics/overview",
+      "name": "Analytics Overview",
+      "method": "GET",
+      "status": 404,
+      "working": false,
+      "response_sample": "{'detail': 'Not Found'}"
+    },
+    {
+      "endpoint": "/api/v1/analytics/appointments",
+      "name": "Appointment Analytics",
+      "method": "GET",
+      "status": 500,
+      "working": false,
+      "response_sample": "Internal Server Error"
+    },
+    {
+      "endpoint": "/api/v1/payments/history",
+      "name": "Payment History",
+      "method": "GET",
+      "status": 500,
+      "working": false,
+      "response_sample": "Internal Server Error"
+    },
+    {
+      "endpoint": "/api/v1/clients",
+      "name": "Clients List",
+      "method": "GET",
+      "status": 200,
+      "working": true,
+      "response_sample": "{'clients': [{'first_name': 'Robert', 'last_name': 'Johnson', 'email': 'robert.j@testdata.com', 'pho..."
+    },
+    {
+      "endpoint": "/api/v1/notifications/stats",
+      "name": "Notification Stats",
+      "method": "GET",
+      "status": 200,
+      "working": true,
+      "response_sample": "{'period_days': 7, 'since_date': '2025-06-30T14:38:04.052062', 'email': {'sent': 0, 'failed': 0, 'pe..."
+    },
+    {
+      "endpoint": "/api/v1/barbers",
+      "name": "Barbers List",
+      "method": "GET",
+      "status": 200,
+      "working": true,
+      "response_sample": "[{'id': 1, 'name': 'Test Admin User', 'email': 'admin.test@bookedbarber.com', 'role': 'admin', 'crea..."
+    },
+    {
+      "endpoint": "/api/v1/bookings/my-bookings",
+      "name": "My Bookings",
+      "method": "GET",
+      "status": 422,
+      "working": false,
+      "response_sample": "{'detail': [{'type': 'int_parsing', 'loc': ['path', 'booking_id'], 'msg': 'Input should be a valid i..."
+    },
+    {
+      "endpoint": "/api/v1/integrations",
+      "name": "Integrations",
+      "method": "GET",
+      "status": 404,
+      "working": false,
+      "response_sample": "{'detail': 'Not Found'}"
+    },
+    {
+      "endpoint": "/api/v1/reviews",
+      "name": "Reviews",
+      "method": "GET",
+      "status": 200,
+      "working": true,
+      "response_sample": "{'reviews': [], 'total': 0, 'skip': 0, 'limit': 50, 'has_more': False}"
+    },
+    {
+      "endpoint": "/api/v1/marketing/campaigns",
+      "name": "Marketing Campaigns",
+      "method": "GET",
+      "status": 200,
+      "working": true,
+      "response_sample": "{'campaigns': [], 'total': 0, 'skip': 0, 'limit': 20}"
+    }
+  ],
+  "broken_features": [
+    "API: Analytics Overview - Status 404",
+    "API: Appointment Analytics - Status 500",
+    "API: Payment History - Status 500",
+    "API: My Bookings - Status 422",
+    "API: Integrations - Status 404"
+  ],
+  "working_features": [
+    "Public page: Home",
+    "Public page: Login",
+    "Public page: Register",
+    "Public page: Forgot Password",
+    "Public page: Terms",
+    "Public page: Privacy",
+    "Public page: Cookies",
+    "API: User Profile",
+    "API: Appointments List",
+    "API: Services",
+    "API: Clients List",
+    "API: Notification Stats",
+    "API: Barbers List",
+    "API: Reviews",
+    "API: Marketing Campaigns"
+  ]
+}

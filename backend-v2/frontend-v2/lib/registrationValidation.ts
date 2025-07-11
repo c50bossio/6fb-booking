@@ -7,6 +7,7 @@
 import { BusinessType } from '@/components/registration/BusinessTypeSelection'
 import { AccountInfo } from '@/components/registration/AccountSetup'
 import { BusinessInfo } from '@/components/registration/BusinessInformation'
+import { ServiceTemplate } from '@/lib/types/service-templates'
 
 export interface ValidationError {
   field: string
@@ -244,7 +245,16 @@ export function validateBusinessInfo(businessInfo: BusinessInfo, businessType: B
   }
 }
 
-// Step 4: Pricing Confirmation Validation
+// Step 4: Service Template Selection Validation (Optional)
+export function validateServiceTemplates(serviceTemplates: ServiceTemplate[]): ValidationResult {
+  // Service template selection is optional, so always valid
+  return {
+    isValid: true,
+    errors: []
+  }
+}
+
+// Step 5: Pricing Confirmation Validation
 export function validatePricingInfo(pricingInfo: { chairs: number; monthlyTotal: number; tier: string } | null): ValidationResult {
   const errors: ValidationError[] = []
 
@@ -282,7 +292,7 @@ export function validatePricingInfo(pricingInfo: { chairs: number; monthlyTotal:
   }
 }
 
-// Step 5: Payment Setup Validation
+// Step 6: Payment Setup Validation
 export function validatePaymentInfo(paymentInfo: { trialStarted: boolean; paymentMethodAdded: boolean } | null): ValidationResult {
   const errors: ValidationError[] = []
 
@@ -316,8 +326,10 @@ export function validateStep(step: number, data: any): ValidationResult {
     case 3:
       return validateBusinessInfo(data.businessInfo, data.businessType)
     case 4:
-      return validatePricingInfo(data.pricingInfo)
+      return validateServiceTemplates(data.serviceTemplates || [])
     case 5:
+      return validatePricingInfo(data.pricingInfo)
+    case 6:
       return validatePaymentInfo(data.paymentInfo)
     default:
       return { isValid: true, errors: [] }
@@ -338,11 +350,14 @@ export function validateRegistrationData(data: any): ValidationResult {
   const step3 = validateBusinessInfo(data.businessInfo, data.businessType)
   if (!step3.isValid) allErrors.push(...step3.errors)
 
-  const step4 = validatePricingInfo(data.pricingInfo)
+  const step4 = validateServiceTemplates(data.serviceTemplates || [])
   if (!step4.isValid) allErrors.push(...step4.errors)
 
-  const step5 = validatePaymentInfo(data.paymentInfo)
+  const step5 = validatePricingInfo(data.pricingInfo)
   if (!step5.isValid) allErrors.push(...step5.errors)
+
+  const step6 = validatePaymentInfo(data.paymentInfo)
+  if (!step6.isValid) allErrors.push(...step6.errors)
 
   return {
     isValid: allErrors.length === 0,

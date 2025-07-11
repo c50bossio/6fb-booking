@@ -68,7 +68,7 @@ def financial_rate_limit(
     """
     def decorator(func):
         @wraps(func)
-        async def wrapper(request: Request, *args, **kwargs):
+        def wrapper(request: Request, *args, **kwargs):
             # Get rate limit
             limit = FINANCIAL_RATE_LIMITS.get(limit_key, "60/minute")
             
@@ -91,7 +91,7 @@ def financial_rate_limit(
                 )
                 
                 # Execute function
-                result = await limited_func(request, *args, **kwargs)
+                result = limited_func(request, *args, **kwargs)
                 
                 # Log success
                 logger.info(

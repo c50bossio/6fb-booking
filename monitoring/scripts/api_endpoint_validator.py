@@ -519,9 +519,9 @@ Example fixes:
 - Route conflicts: Check for overlapping route patterns
 
 🔍 Files to check:
-- backend/main.py
-- backend/api/v1/*.py
-- backend/api/v1/endpoints/*.py
+- backend-v2/main.py
+- backend-v2/api/v1/*.py
+- backend-v2/api/v1/endpoints/*.py
 """
 
         return report

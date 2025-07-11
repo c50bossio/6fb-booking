@@ -8,8 +8,8 @@ The platform now includes an enhanced database connection module that automatica
 
 ### Option 1: Use Enhanced Database Module (Recommended)
 
-1. **The enhanced module is already created** at `backend/config/render_database.py`
-2. **Use the automatic switcher** at `backend/config/database_enhanced.py`
+1. **The enhanced module is already created** at `backend-v2/config/render_database.py`
+2. **Use the automatic switcher** at `backend-v2/config/database_enhanced.py`
 3. **No code changes needed** - it automatically detects Render environment
 
 ### Option 2: Install Required Drivers
@@ -22,7 +22,7 @@ pip install psycopg2-binary pg8000 asyncpg
 
 ### Option 3: Update requirements.txt
 
-Add these lines to your `backend/requirements.txt`:
+Add these lines to your `backend-v2/requirements.txt`:
 
 ```txt
 # PostgreSQL drivers with fallbacks

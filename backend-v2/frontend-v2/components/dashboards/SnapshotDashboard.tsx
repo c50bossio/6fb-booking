@@ -83,7 +83,7 @@ export function SnapshotDashboard({
   return (
     <div className="space-y-6">
       {/* KPI Cards - Compact metrics overview */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Today's Bookings Card */}
         <Card 
           variant="default" 
@@ -91,14 +91,14 @@ export function SnapshotDashboard({
           className="cursor-pointer hover:scale-[1.02] transition-transform" 
           onClick={handleNavigateToBookings}
         >
-          <CardContent className="flex items-center justify-between p-4">
-            <div>
-              <p className="text-sm text-gray-700 dark:text-zinc-300">Today's Bookings</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+          <CardContent className="flex items-center justify-between p-3 sm:p-4">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm text-gray-700 dark:text-zinc-300 truncate">Today's Bookings</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                 {todayStats.appointments}
               </p>
             </div>
-            <CalendarIcon className="w-8 h-8 text-primary-500 opacity-50" />
+            <CalendarIcon className="w-6 h-6 sm:w-8 sm:h-8 text-primary-500 opacity-50 flex-shrink-0 ml-2" />
           </CardContent>
         </Card>
 
@@ -109,14 +109,14 @@ export function SnapshotDashboard({
           className="cursor-pointer hover:scale-[1.02] transition-transform" 
           onClick={handleNavigateToRevenue}
         >
-          <CardContent className="flex items-center justify-between p-4">
-            <div>
-              <p className="text-sm text-gray-700 dark:text-zinc-300">Today's Revenue</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+          <CardContent className="flex items-center justify-between p-3 sm:p-4">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm text-gray-700 dark:text-zinc-300 truncate">Today's Revenue</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                 ${todayStats.revenue}
               </p>
             </div>
-            <BanknotesIcon className="w-8 h-8 text-green-500 opacity-50" />
+            <BanknotesIcon className="w-6 h-6 sm:w-8 sm:h-8 text-green-500 opacity-50 flex-shrink-0 ml-2" />
           </CardContent>
         </Card>
 
@@ -127,14 +127,14 @@ export function SnapshotDashboard({
           className="cursor-pointer hover:scale-[1.02] transition-transform" 
           onClick={handleNavigateToClients}
         >
-          <CardContent className="flex items-center justify-between p-4">
-            <div>
-              <p className="text-sm text-gray-700 dark:text-zinc-300">New Clients</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+          <CardContent className="flex items-center justify-between p-3 sm:p-4">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm text-gray-700 dark:text-zinc-300 truncate">New Clients</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                 {todayStats.newClients}
               </p>
             </div>
-            <UserGroupIcon className="w-8 h-8 text-purple-500 opacity-50" />
+            <UserGroupIcon className="w-6 h-6 sm:w-8 sm:h-8 text-purple-500 opacity-50 flex-shrink-0 ml-2" />
           </CardContent>
         </Card>
 
@@ -145,16 +145,16 @@ export function SnapshotDashboard({
           className="cursor-pointer hover:scale-[1.02] transition-transform"
           onClick={handleNavigateToPerformance}
         >
-          <CardContent className="flex items-center justify-between p-4">
-            <div>
-              <p className="text-sm text-gray-700 dark:text-zinc-300">Completion Rate</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+          <CardContent className="flex items-center justify-between p-3 sm:p-4">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm text-gray-700 dark:text-zinc-300 truncate">Completion Rate</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                 {todayStats.completionRate}%
               </p>
             </div>
-            <div className="w-8 h-8 rounded-full bg-primary-500/20 flex items-center justify-center">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary-500/20 flex items-center justify-center flex-shrink-0 ml-2">
               <div 
-                className="w-6 h-6 rounded-full bg-primary-500" 
+                className="w-4 h-4 sm:w-6 sm:h-6 rounded-full bg-primary-500" 
                 style={{ 
                   background: `conic-gradient(#06b6d4 ${todayStats.completionRate * 3.6}deg, #e5e7eb ${todayStats.completionRate * 3.6}deg)` 
                 }} 

@@ -268,38 +268,38 @@ module.exports = {
         'ios-xl': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
         'ios-2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
         
-        // Glow effects
-        'glow-primary': '0 0 20px rgba(20, 184, 166, 0.5)',
-        'glow-primary-subtle': '0 0 10px rgba(20, 184, 166, 0.3)',
-        'glow-primary-strong': '0 0 30px rgba(20, 184, 166, 0.7)',
-        'glow-accent': '0 0 20px rgba(30, 41, 59, 0.5)',
-        'glow-success': '0 0 20px rgba(5, 150, 105, 0.5)',
-        'glow-warning': '0 0 20px rgba(245, 158, 11, 0.5)',
-        'glow-error': '0 0 20px rgba(239, 68, 68, 0.5)',
+        // Glow effects (more subtle)
+        'glow-primary': '0 0 12px rgba(20, 184, 166, 0.25)',
+        'glow-primary-subtle': '0 0 6px rgba(20, 184, 166, 0.15)',
+        'glow-primary-strong': '0 0 16px rgba(20, 184, 166, 0.35)',
+        'glow-accent': '0 0 12px rgba(30, 41, 59, 0.25)',
+        'glow-success': '0 0 12px rgba(5, 150, 105, 0.25)',
+        'glow-warning': '0 0 12px rgba(245, 158, 11, 0.25)',
+        'glow-error': '0 0 12px rgba(239, 68, 68, 0.25)',
         
-        // Glass morphism shadows
-        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
-        'glass-dark': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
-        'glass-light': '0 8px 32px 0 rgba(255, 255, 255, 0.1)',
-        'glass-subtle': '0 4px 16px 0 rgba(31, 38, 135, 0.2)',
+        // Glass morphism shadows (more subtle)
+        'glass': '0 4px 12px 0 rgba(31, 38, 135, 0.1)',
+        'glass-dark': '0 4px 12px 0 rgba(0, 0, 0, 0.1)',
+        'glass-light': '0 4px 12px 0 rgba(255, 255, 255, 0.05)',
+        'glass-subtle': '0 2px 8px 0 rgba(31, 38, 135, 0.08)',
         
         // Dynamic Island style
         'island': '0 8px 30px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.05)',
         'island-hover': '0 12px 40px rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(255, 255, 255, 0.08)',
         
-        // Premium shadows
-        'premium': '0 20px 40px -12px rgba(0, 0, 0, 0.25), 0 8px 16px -8px rgba(0, 0, 0, 0.1)',
-        'premium-colored': '0 20px 40px -12px rgba(20, 184, 166, 0.4)',
-        'premium-soft': '0 10px 30px -10px rgba(0, 0, 0, 0.15)',
+        // Premium shadows (toned down for subtlety)
+        'premium': '0 8px 16px -4px rgba(0, 0, 0, 0.08), 0 4px 8px -4px rgba(0, 0, 0, 0.04)',
+        'premium-colored': '0 8px 16px -4px rgba(20, 184, 166, 0.15)',
+        'premium-soft': '0 6px 12px -6px rgba(0, 0, 0, 0.08)',
         
-        // Component-specific shadows
-        'button': '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06)',
-        'button-hover': '0 4px 8px -2px rgba(0, 0, 0, 0.15), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
-        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-        'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-        'modal': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-        'dropdown': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-        'toast': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+        // Component-specific shadows (more subtle)
+        'button': '0 1px 3px -1px rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.04)',
+        'button-hover': '0 3px 6px -2px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05)',
+        'card': '0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04)',
+        'card-hover': '0 4px 8px -2px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04)',
+        'modal': '0 12px 24px -6px rgba(0, 0, 0, 0.12)',
+        'dropdown': '0 4px 8px -2px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04)',
+        'toast': '0 4px 8px -2px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04)',
       },
       
       // Enhanced blur values for glass morphism and iOS effects

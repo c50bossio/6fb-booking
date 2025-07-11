@@ -95,7 +95,7 @@ If CORS updates take too long, create a temporary proxy:
 
 1. **Create proxy endpoint in your Vercel app**:
    ```javascript
-   // File: frontend/src/app/api/proxy/[...path]/route.ts
+   // File: backend-v2/frontend-v2/src/app/api/proxy/[...path]/route.ts
    import { NextRequest, NextResponse } from 'next/server';
 
    export async function GET(

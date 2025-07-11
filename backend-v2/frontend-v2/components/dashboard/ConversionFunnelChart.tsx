@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Progress } from '@/components/ui/progress'
 import { 
@@ -11,8 +11,8 @@ import {
   LightBulbIcon,
   ArrowRightIcon,
   ChartBarIcon,
-  TrendingDownIcon,
-  TrendingUpIcon,
+  ArrowTrendingDownIcon,
+  ArrowTrendingUpIcon,
   EyeIcon,
   CursorArrowRaysIcon,
   CreditCardIcon,
@@ -142,7 +142,7 @@ export default function ConversionFunnelChart({
     switch (type) {
       case 'bottleneck': return <ExclamationTriangleIcon className="w-4 h-4 text-red-500" />
       case 'opportunity': return <LightBulbIcon className="w-4 h-4 text-yellow-500" />
-      case 'success': return <TrendingUpIcon className="w-4 h-4 text-green-500" />
+      case 'success': return <ArrowTrendingUpIcon className="w-4 h-4 text-green-500" />
     }
   }
 
@@ -320,7 +320,7 @@ export default function ConversionFunnelChart({
                   {!isLast && (
                     <div className="flex items-center justify-center">
                       <div className="flex items-center space-x-2 text-sm text-gray-500">
-                        <TrendingDownIcon className="w-4 h-4" />
+                        <ArrowTrendingDownIcon className="w-4 h-4" />
                         <span>
                           {formatNumber(funnel[index].visitors - funnel[index + 1].visitors)} visitors lost
                         </span>

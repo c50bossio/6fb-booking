@@ -52,7 +52,7 @@ The new monorepo structure enforces clean architecture principles:
 ### Phase 2: Core Package Migration (Day 2-3)
 
 1. **Migrate shared types**
-   - Move from `backend/models/*.py` → `packages/core/src/types/`
+   - Move from `backend-v2/models/*.py` → `packages/core/src/types/`
    - Convert Python types to TypeScript
    - Example mapping:
      ```python
@@ -82,7 +82,7 @@ The new monorepo structure enforces clean architecture principles:
 ### Phase 3: API Package Migration (Day 4-6)
 
 1. **Migrate FastAPI backend**
-   - Copy `backend/` → `packages/api/src/`
+   - Copy `backend-v2/` → `packages/api/src/`
    - Update imports to use `@6fb/core`
    - Remove duplicate type definitions
 
@@ -103,7 +103,7 @@ The new monorepo structure enforces clean architecture principles:
 ### Phase 4: UI Package Migration (Day 7-8)
 
 1. **Extract shared components**
-   - Move from `frontend/src/components/ui/` → `packages/ui/src/components/`
+   - Move from `backend-v2/frontend-v2/src/components/ui/` → `packages/ui/src/components/`
    - Remove business logic from UI components
    - Add Storybook stories for each component
 
@@ -119,7 +119,7 @@ The new monorepo structure enforces clean architecture principles:
 ### Phase 5: Web Package Migration (Day 9-11)
 
 1. **Migrate Next.js app**
-   - Copy `frontend/` → `packages/web/`
+   - Copy `backend-v2/frontend-v2/` → `packages/web/`
    - Update imports:
      - `import { Button } from '../components/ui'` → `import { Button } from '@6fb/ui'`
      - `import { User } from '../types'` → `import { User } from '@6fb/core'`

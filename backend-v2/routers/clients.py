@@ -9,6 +9,7 @@ from models import Client, User, Appointment
 from schemas import ClientCreate, ClientUpdate, Client as ClientSchema, ClientList, ClientHistory
 from utils.auth import get_current_user
 from services import client_service
+from services.cache_invalidation import cache_invalidator
 
 router = APIRouter(prefix="/clients", tags=["clients"])
 
@@ -34,6 +35,13 @@ async def create_client(
             client_data=client_data.model_dump(),
             created_by_id=current_user.id
         )
+        
+        # Invalidate cache after creating client
+        cache_invalidator.invalidate_client_data(
+            client_id=new_client.id,
+            user_id=current_user.id
+        )
+        
         return new_client
     except Exception as e:
         raise HTTPException(
@@ -130,6 +138,12 @@ async def update_client(
     db.commit()
     db.refresh(client)
     
+    # Invalidate cache after updating client
+    cache_invalidator.invalidate_client_data(
+        client_id=client_id,
+        user_id=current_user.id
+    )
+    
     return client
 
 
@@ -152,6 +166,12 @@ async def delete_client(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Client not found"
         )
+    
+    # Invalidate cache before deleting client
+    cache_invalidator.invalidate_client_data(
+        client_id=client_id,
+        user_id=current_user.id
+    )
     
     db.delete(client)
     db.commit()

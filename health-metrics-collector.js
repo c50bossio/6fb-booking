@@ -107,7 +107,7 @@ class HealthMetricsCollector {
       }
     };
 
-    await findComponents(path.join(this.config.projectRoot, 'frontend/src'));
+    await findComponents(path.join(this.config.projectRoot, 'backend-v2/frontend-v2/src'));
 
     // Find duplicates by content hash
     const hashMap = {};
@@ -156,7 +156,7 @@ class HealthMetricsCollector {
 
     try {
       // Check if Next.js build output exists
-      const buildManifest = path.join(this.config.projectRoot, 'frontend/.next/build-manifest.json');
+      const buildManifest = path.join(this.config.projectRoot, 'backend-v2/frontend-v2/.next/build-manifest.json');
       if (await this.fileExists(buildManifest)) {
         const manifest = JSON.parse(await fs.readFile(buildManifest, 'utf8'));
 
@@ -165,7 +165,7 @@ class HealthMetricsCollector {
         for (const [page, assets] of Object.entries(manifest.pages || {})) {
           let totalSize = 0;
           for (const asset of assets) {
-            const assetPath = path.join(this.config.projectRoot, 'frontend/.next', asset);
+            const assetPath = path.join(this.config.projectRoot, 'backend-v2/frontend-v2/.next', asset);
             try {
               const stats = await fs.stat(assetPath);
               totalSize += stats.size;
@@ -389,7 +389,7 @@ class HealthMetricsCollector {
 
     // Check for frontend coverage
     try {
-      const frontendCoveragePath = path.join(this.config.projectRoot, 'frontend/coverage/coverage-summary.json');
+      const frontendCoveragePath = path.join(this.config.projectRoot, 'backend-v2/frontend-v2/coverage/coverage-summary.json');
       if (await this.fileExists(frontendCoveragePath)) {
         const coverageData = JSON.parse(await fs.readFile(frontendCoveragePath, 'utf8'));
         coverage.frontend = {
@@ -468,7 +468,7 @@ class HealthMetricsCollector {
     // Check for performance logs or metrics
     try {
       // Look for frontend performance metrics
-      const perfLogPath = path.join(this.config.projectRoot, 'frontend/performance.log');
+      const perfLogPath = path.join(this.config.projectRoot, 'backend-v2/frontend-v2/performance.log');
       if (await this.fileExists(perfLogPath)) {
         const perfData = await fs.readFile(perfLogPath, 'utf8');
         // Parse performance data (format depends on your logging)

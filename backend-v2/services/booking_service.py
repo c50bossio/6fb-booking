@@ -263,7 +263,6 @@ def get_next_available_slot(db: Session, start_date: date, user_timezone: Option
     
     return None
 
-
 def get_available_slots_with_barber_availability(
     db: Session, 
     target_date: date, 
@@ -410,7 +409,6 @@ def get_available_slots_with_barber_availability(
             "slot_duration_minutes": settings.slot_duration_minutes
         }
 
-
 def _generate_slots_for_period(
     target_date: date,
     start_time: time,
@@ -458,7 +456,6 @@ def _generate_slots_for_period(
         current_time += timedelta(minutes=settings.slot_duration_minutes)
     
     return slots
-
 
 def _filter_slots_by_appointments(
     db: Session,
@@ -546,37 +543,23 @@ def create_booking(
     Returns:
         Created appointment object
     """
-    import time as time_module
     
     # Start timing the entire function
-    function_start_time = time_module.time()
-    logger.info(f"BOOKING_DEBUG: Starting create_booking function for user_id={user_id}, date={booking_date}, time={booking_time}, service={service}")
     
     # Get booking settings
-    step_start_time = time_module.time()
-    logger.info(f"BOOKING_DEBUG: Getting booking settings...")
     settings = get_booking_settings(db)
-    logger.info(f"BOOKING_DEBUG: Completed getting booking settings in {time_module.time() - step_start_time:.3f}s")
     
     # Set up timezones
-    step_start_time = time_module.time()
-    logger.info(f"BOOKING_DEBUG: Setting up timezones...")
     business_tz = pytz.timezone(settings.business_timezone)
     user_tz = pytz.timezone(user_timezone) if user_timezone else business_tz
-    logger.info(f"BOOKING_DEBUG: Completed timezone setup in {time_module.time() - step_start_time:.3f}s")
     
     logger.info(f"Creating booking: Business TZ={settings.business_timezone}, User TZ={user_timezone or settings.business_timezone}")
     
     # Validate service
-    step_start_time = time_module.time()
-    logger.info(f"BOOKING_DEBUG: Validating service '{service}'...")
     if service not in SERVICES:
         raise ValueError(f"Invalid service. Available services: {', '.join(SERVICES.keys())}")
-    logger.info(f"BOOKING_DEBUG: Completed service validation in {time_module.time() - step_start_time:.3f}s")
     
     # Parse time and create timezone-aware datetime in business timezone
-    step_start_time = time_module.time()
-    logger.info(f"BOOKING_DEBUG: Parsing time and creating timezone-aware datetime...")
     # Note: We treat the time as being in business timezone by default
     # This is the expected behavior for most booking systems
     hour, minute = map(int, booking_time.split(":"))
@@ -587,13 +570,10 @@ def create_booking(
     
     # Convert to UTC for storage
     start_time_utc = start_time_business.astimezone(pytz.UTC)
-    logger.info(f"BOOKING_DEBUG: Completed time parsing and conversion in {time_module.time() - step_start_time:.3f}s")
     
     logger.debug(f"Booking time conversion: User TZ={start_time_user}, Business TZ={start_time_business}, UTC={start_time_utc}")
     
     # Validate booking time constraints
-    step_start_time = time_module.time()
-    logger.info(f"BOOKING_DEBUG: Validating booking time constraints...")
     # Get current time in business timezone for validation
     now_business = datetime.now(business_tz)
     min_booking_time = now_business + timedelta(minutes=settings.min_lead_time_minutes)
@@ -604,26 +584,20 @@ def create_booking(
     
     if start_time_business > max_booking_time:
         raise ValueError(f"Booking cannot be more than {settings.max_advance_days} days in advance")
-    logger.info(f"BOOKING_DEBUG: Completed booking time constraints validation in {time_module.time() - step_start_time:.3f}s")
     
     # If barber_id is specified, validate barber availability
-    step_start_time = time_module.time()
-    logger.info(f"BOOKING_DEBUG: Validating barber availability (barber_id={barber_id})...")
     if barber_id:
         # Verify barber exists and is active
-        barber_query_start = time_module.time()
         barber = db.query(models.User).filter(
             models.User.id == barber_id,
             models.User.role.in_(["barber", "admin", "super_admin"]),
             models.User.is_active == True
         ).first()
-        logger.info(f"BOOKING_DEBUG: Barber query completed in {time_module.time() - barber_query_start:.3f}s")
         
         if not barber:
             raise ValueError(f"Barber with ID {barber_id} not found or not active")
         
         # Check if barber is available at this time
-        availability_check_start = time_module.time()
         end_time_business = start_time_business + timedelta(minutes=SERVICES[service]["duration"])
         is_available = barber_availability_service.is_barber_available(
             db=db,
@@ -632,20 +606,17 @@ def create_booking(
             start_time=start_time_business.time(),
             end_time=end_time_business.time()
         )
-        logger.info(f"BOOKING_DEBUG: Barber availability check completed in {time_module.time() - availability_check_start:.3f}s")
         
         if not is_available:
             raise ValueError(f"Barber is not available at {booking_time} on {booking_date}")
     else:
         # If no barber specified, find an available barber
-        available_barbers_start = time_module.time()
         available_barbers = barber_availability_service.get_available_barbers_for_slot(
             db=db,
             check_date=booking_date,
             start_time=start_time_business.time(),
             end_time=(start_time_business + timedelta(minutes=SERVICES[service]["duration"])).time()
         )
-        logger.info(f"BOOKING_DEBUG: Available barbers search completed in {time_module.time() - available_barbers_start:.3f}s")
         
         if not available_barbers:
             raise ValueError(f"No barbers available at {booking_time} on {booking_date}")
@@ -654,22 +625,16 @@ def create_booking(
         barber = available_barbers[0]
         barber_id = barber.id
         logger.info(f"Auto-assigned barber {barber.name} (ID: {barber_id}) for booking")
-    logger.info(f"BOOKING_DEBUG: Completed barber availability validation in {time_module.time() - step_start_time:.3f}s")
     
     # Check if booking is within business hours (using business timezone)
-    step_start_time = time_module.time()
-    logger.info(f"BOOKING_DEBUG: Checking business hours...")
     booking_time_obj = start_time_business.time()
     if booking_time_obj < settings.business_start_time or booking_time_obj >= settings.business_end_time:
         # Format times in user's timezone for error message
         business_start_user = business_tz.localize(datetime.combine(booking_date, settings.business_start_time)).astimezone(user_tz)
         business_end_user = business_tz.localize(datetime.combine(booking_date, settings.business_end_time)).astimezone(user_tz)
         raise ValueError(f"Booking must be within business hours: {business_start_user.strftime('%H:%M')} - {business_end_user.strftime('%H:%M')} (your time)")
-    logger.info(f"BOOKING_DEBUG: Completed business hours check in {time_module.time() - step_start_time:.3f}s")
     
     # Validate booking against business rules
-    step_start_time = time_module.time()
-    logger.info(f"BOOKING_DEBUG: Validating business rules...")
     from services import booking_rules_service
     from utils.database_timeout import timeout_query
     
@@ -685,8 +650,6 @@ def create_booking(
             duration_minutes=SERVICES[service]["duration"],
             client_id=client_id
         )
-    
-    rules_validation_start = time_module.time()
     try:
         is_valid, rule_violations = _validate_business_rules()
     except Exception as e:
@@ -694,20 +657,14 @@ def create_booking(
         # Fallback: allow booking if business rules check fails
         is_valid, rule_violations = True, []
     
-    logger.info(f"BOOKING_DEBUG: Business rules validation completed in {time_module.time() - rules_validation_start:.3f}s")
-    
     if not is_valid:
         raise ValueError(f"Booking violates business rules: {'; '.join(rule_violations)}")
-    logger.info(f"BOOKING_DEBUG: Completed business rules validation in {time_module.time() - step_start_time:.3f}s")
     
     # Check if slot is available for the specific barber
-    step_start_time = time_module.time()
-    logger.info(f"BOOKING_DEBUG: Checking for appointment conflicts...")
     service_duration = SERVICES[service]["duration"]
     end_time_utc = start_time_utc + timedelta(minutes=service_duration)
     
     # Check for conflicts - get appointments for the assigned barber only
-    conflicts_query_start = time_module.time()
     
     # OPTIMIZED: Use exists() query for faster conflict detection
     # Instead of loading all appointments, check if any conflicts exist
@@ -749,12 +706,9 @@ def create_booking(
         # Fallback: assume no conflict if check fails
         has_conflict = False
     
-    logger.info(f"BOOKING_DEBUG: Optimized conflicts query completed in {time_module.time() - conflicts_query_start:.3f}s, conflict detected: {has_conflict}")
-    
     # If conflict detected, get the specific appointment for error message
     existing = None
     if has_conflict:
-        conflicts_detail_start = time_module.time()
         potential_conflicts = db.query(models.Appointment).filter(
             and_(
                 models.Appointment.barber_id == barber_id,
@@ -764,12 +718,10 @@ def create_booking(
                 models.Appointment.start_time <= start_time_utc + timedelta(minutes=30)
             )
         ).limit(5).all()  # Limit to first 5 conflicts for performance
-        logger.info(f"BOOKING_DEBUG: Conflict details query completed in {time_module.time() - conflicts_detail_start:.3f}s, found {len(potential_conflicts)} conflicts")
     else:
         potential_conflicts = []
     
     # Check for actual conflicts by calculating end times with buffer consideration
-    conflicts_processing_start = time_module.time()
     existing = None
     for appointment in potential_conflicts:
         # Ensure appointment times are timezone-aware
@@ -792,18 +744,14 @@ def create_booking(
         if not (end_time_utc <= appointment_start_with_buffer or start_time_utc >= appointment_end_with_buffer):
             existing = appointment
             break
-    logger.info(f"BOOKING_DEBUG: Conflicts processing completed in {time_module.time() - conflicts_processing_start:.3f}s")
     
     if existing:
         # Provide more helpful error message with barber context
         existing_start_user = pytz.UTC.localize(existing.start_time) if existing.start_time.tzinfo is None else existing.start_time
         existing_start_user = existing_start_user.astimezone(user_tz)
         raise ValueError(f"This barber already has an appointment at {existing_start_user.strftime('%H:%M')} on {booking_date.strftime('%Y-%m-%d')}")
-    logger.info(f"BOOKING_DEBUG: Completed conflict checking in {time_module.time() - step_start_time:.3f}s")
     
     # Create appointment with UTC time
-    step_start_time = time_module.time()
-    logger.info(f"BOOKING_DEBUG: Creating appointment record...")
     appointment = models.Appointment(
         user_id=user_id,
         barber_id=barber_id,
@@ -817,60 +765,38 @@ def create_booking(
         buffer_time_before=buffer_time_before,
         buffer_time_after=buffer_time_after
     )
-    logger.info(f"BOOKING_DEBUG: Completed appointment object creation in {time_module.time() - step_start_time:.3f}s")
     
     logger.info(f"Created appointment at {start_time_utc} UTC (user time: {start_time_user})")
     
     # Database operations
-    step_start_time = time_module.time()
-    logger.info(f"BOOKING_DEBUG: Saving appointment to database...")
     db.add(appointment)
-    db_commit_start = time_module.time()
     db.commit()
-    logger.info(f"BOOKING_DEBUG: Database commit completed in {time_module.time() - db_commit_start:.3f}s")
-    
-    db_refresh_start = time_module.time()
     db.refresh(appointment)
-    logger.info(f"BOOKING_DEBUG: Database refresh completed in {time_module.time() - db_refresh_start:.3f}s")
-    logger.info(f"BOOKING_DEBUG: Completed database operations in {time_module.time() - step_start_time:.3f}s")
     
     # If this appointment has a client_id, update client metrics
     if client_id:
-        step_start_time = time_module.time()
-        logger.info(f"BOOKING_DEBUG: Updating client metrics for client_id={client_id}...")
         try:
             from services import client_service
             client_service.update_client_metrics(db, client_id)
-            logger.info(f"BOOKING_DEBUG: Completed client metrics update in {time_module.time() - step_start_time:.3f}s")
         except Exception as e:
             logger.warning(f"Failed to update client metrics for client {client_id}: {e}")
-            logger.info(f"BOOKING_DEBUG: Client metrics update failed in {time_module.time() - step_start_time:.3f}s")
     
     # Send appointment confirmation notifications
-    step_start_time = time_module.time()
-    logger.info(f"BOOKING_DEBUG: Processing appointment notifications...")
     try:
         notification_service = get_notification_service()
         if notification_service:
             # Get client information for notifications
-            client_fetch_start = time_module.time()
             client = None
             if client_id:
                 client = db.query(models.Client).filter(models.Client.id == client_id).first()
-            logger.info(f"BOOKING_DEBUG: Client fetch completed in {time_module.time() - client_fetch_start:.3f}s")
             
             # Get barber information
-            barber_fetch_start = time_module.time()
             barber = db.query(models.User).filter(models.User.id == barber_id).first()
-            logger.info(f"BOOKING_DEBUG: Barber fetch completed in {time_module.time() - barber_fetch_start:.3f}s")
             
             # Get booking settings for business information
-            booking_settings_start = time_module.time()
             booking_settings = get_booking_settings(db)
-            logger.info(f"BOOKING_DEBUG: Booking settings fetch completed in {time_module.time() - booking_settings_start:.3f}s")
             
             # Create notification context
-            context_creation_start = time_module.time()
             context = {
                 "client_name": f"{client.first_name} {client.last_name}" if client else appointment.user.name,
                 "service_name": service,
@@ -885,10 +811,8 @@ def create_booking(
                 "current_year": datetime.now().year,
                 "appointment_id": appointment.id
             }
-            logger.info(f"BOOKING_DEBUG: Notification context creation completed in {time_module.time() - context_creation_start:.3f}s")
             
             # Queue confirmation notification
-            queue_notification_start = time_module.time()
             notification_service.queue_notification(
                 db=db,
                 user=appointment.user,
@@ -896,12 +820,9 @@ def create_booking(
                 context=context,
                 appointment_id=appointment.id
             )
-            logger.info(f"BOOKING_DEBUG: Confirmation notification queued in {time_module.time() - queue_notification_start:.3f}s")
             
             # Schedule reminder notifications
-            schedule_reminders_start = time_module.time()
             notification_service.schedule_appointment_reminders(db, appointment)
-            logger.info(f"BOOKING_DEBUG: Reminder notifications scheduled in {time_module.time() - schedule_reminders_start:.3f}s")
             
             logger.info(f"Queued confirmation and reminder notifications for appointment {appointment.id}")
         else:
@@ -910,38 +831,25 @@ def create_booking(
     except Exception as e:
         logger.error(f"Failed to queue appointment notifications: {e}")
         # Don't fail the booking if notification fails
-    logger.info(f"BOOKING_DEBUG: Completed notification processing in {time_module.time() - step_start_time:.3f}s")
     
     # Refresh and load relationships
-    step_start_time = time_module.time()
-    logger.info(f"BOOKING_DEBUG: Loading appointment relationships...")
-    refresh_start = time_module.time()
     db.refresh(appointment)
-    logger.info(f"BOOKING_DEBUG: Final refresh completed in {time_module.time() - refresh_start:.3f}s")
     
     # Explicitly load client relationship if exists
     if appointment.client_id:
-        client_load_start = time_module.time()
         appointment.client = db.query(models.Client).filter(
             models.Client.id == appointment.client_id
         ).first()
-        logger.info(f"BOOKING_DEBUG: Client relationship loaded in {time_module.time() - client_load_start:.3f}s")
     
     # Explicitly load barber relationship if exists  
     if appointment.barber_id:
-        barber_load_start = time_module.time()
         appointment.barber = db.query(models.User).filter(
             models.User.id == appointment.barber_id
         ).first()
-        logger.info(f"BOOKING_DEBUG: Barber relationship loaded in {time_module.time() - barber_load_start:.3f}s")
-    
-    logger.info(f"BOOKING_DEBUG: Completed relationship loading in {time_module.time() - step_start_time:.3f}s")
     
     total_time = time_module.time() - function_start_time
-    logger.info(f"BOOKING_DEBUG: create_booking function completed in {total_time:.3f}s")
     
     return appointment
-
 
 def create_guest_booking(
     db: Session,
@@ -1111,7 +1019,6 @@ def create_guest_booking(
         "created_at": appointment.created_at,
         "confirmation_code": confirmation_code
     }
-
 
 def find_or_create_client_for_user(db: Session, user_id: int) -> Optional[int]:
     """Find existing client record for a user or create one if needed."""
@@ -1316,7 +1223,6 @@ def cancel_booking(
         
         return booking
 
-
 def update_booking(
     db: Session,
     booking_id: int,
@@ -1490,7 +1396,6 @@ def update_booking(
     
     return booking
 
-
 def reschedule_booking(
     db: Session,
     booking_id: int,
@@ -1520,7 +1425,6 @@ def reschedule_booking(
     }
     
     return update_booking(db, booking_id, user_id, update_data)
-
 
 def get_all_bookings(
     db: Session, 
@@ -1589,7 +1493,6 @@ def get_all_bookings(
                 appointment.barber_name = barber.name or barber.email
     
     return appointments
-
 
 def count_all_bookings(
     db: Session,

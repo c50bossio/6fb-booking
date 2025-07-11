@@ -7,6 +7,7 @@ import { AnalyticsLayout } from '@/components/analytics/AnalyticsLayout'
 import { DateRangeSelector, DateRangePreset } from '@/components/analytics/shared/DateRangeSelector'
 import { SkeletonStats, SkeletonCard } from '@/components/ui/skeleton-loader'
 import { EmptyAnalytics } from '@/components/ui/empty-state'
+import { PageLoading } from '@/components/LoadingStates'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import AIInsightsPanel from '@/components/ai/AIInsightsPanel'
 
@@ -259,7 +260,7 @@ function UnifiedAnalyticsContent() {
       </div>
 
       {/* Tabbed Analytics Content */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="overview" className="space-y-6">
         <TabsList className="grid grid-cols-auto gap-2 w-full max-w-4xl mx-auto">
           {availableTabs.map(tab => (
             <TabsTrigger 

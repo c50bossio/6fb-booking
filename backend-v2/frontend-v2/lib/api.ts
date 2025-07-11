@@ -3,6 +3,19 @@ import { toast } from '@/hooks/use-toast'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
+// Service categories for pricing validation
+export enum ServiceCategoryEnum {
+  HAIRCUT = 'haircut',
+  BEARD = 'beard',
+  HAIRCUT_BEARD = 'haircut_beard',
+  STYLING = 'styling',
+  WASH = 'wash',
+  TREATMENT = 'treatment',
+  CONSULTATION = 'consultation',
+  PACKAGE = 'package',
+  ADDON = 'addon'
+}
+
 // Webhook types
 export interface WebhookEndpoint {
   id: string
@@ -194,7 +207,9 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
     
     if (response.status === 403) {
       const message = 'Access denied. You do not have permission to perform this action.'
-      throw new Error(message)
+      const error = new Error(message)
+      ;(error as any).status = 403
+      throw error
     }
     
     if (response.status >= 500) {
@@ -315,6 +330,36 @@ export interface CompleteRegistrationData {
 
 export async function registerComplete(registrationData: CompleteRegistrationData) {
   return fetchAPI('/api/v1/auth/register-complete', {
+    method: 'POST',
+    body: JSON.stringify(registrationData),
+  })
+}
+
+export interface ClientRegistrationData {
+  first_name: string
+  last_name: string
+  email: string
+  password: string
+  phone?: string
+  marketing_consent: boolean
+}
+
+export interface ClientRegistrationResponse {
+  message: string
+  user: {
+    id: number
+    email: string
+    name: string
+    unified_role: string
+    created_at: string
+  }
+  access_token: string
+  refresh_token: string
+  token_type: string
+}
+
+export async function registerClient(registrationData: ClientRegistrationData): Promise<ClientRegistrationResponse> {
+  return fetchAPI('/api/v1/auth/register-client', {
     method: 'POST',
     body: JSON.stringify(registrationData),
   })
@@ -1495,6 +1540,48 @@ export interface BarberPerformanceMetrics {
 }
 
 /**
+ * Service Analytics Interface
+ */
+export interface ServiceAnalytics {
+  totalRevenue: number
+  totalBookings: number
+  serviceMetrics: Array<{
+    service_id: number
+    service_name: string
+    bookings: number
+    revenue: number
+    average_rating: number
+    utilization_rate: number
+  }>
+  categoryBreakdown: Array<{
+    category: string
+    services_count: number
+    total_bookings: number
+    total_revenue: number
+    percentage_of_total: number
+  }>
+  performanceTrends: Array<{
+    date: string
+    revenue: number
+    bookings: number
+  }>
+}
+
+/**
+ * Service Metrics Interface
+ */
+export interface ServiceMetrics {
+  service_id: number
+  bookings_count: number
+  revenue_total: number
+  average_duration: number
+  completion_rate: number
+  client_satisfaction: number
+  rebooking_rate: number
+  revenue_per_hour: number
+}
+
+/**
  * Comparative Analytics Interface
  */
 export interface ComparativeAnalytics {
@@ -1870,6 +1957,112 @@ export async function getRevenueAnalytics(
   return fetchAPI(`/api/v1/analytics/revenue?${params.toString()}`)
 }
 
+export interface RevenueBreakdown {
+  summary: {
+    total_revenue: number
+    transaction_count: number
+    average_transaction: number
+    highest_transaction: number
+    lowest_transaction: number
+  }
+  by_service?: {
+    [category: string]: {
+      total: number
+      count: number
+      services: {
+        [serviceName: string]: {
+          revenue: number
+          count: number
+          average: number
+        }
+      }
+    }
+  }
+  by_time?: {
+    by_hour: { [hour: string]: { revenue: number; count: number } }
+    by_day_of_week: { [day: string]: { revenue: number; count: number } }
+    by_month: { [month: string]: { revenue: number; count: number } }
+    peak_hours: Array<{ hour: string; revenue: number }>
+    peak_days: Array<{ day: string; revenue: number }>
+  }
+  by_client_type?: {
+    new_clients: { revenue: number; count: number }
+    returning_clients: { revenue: number; count: number }
+    client_segments: {
+      [segment: string]: {
+        revenue: number
+        count: number
+        average: number
+      }
+    }
+  }
+  premium_analysis?: {
+    premium_revenue: number
+    standard_revenue: number
+    premium_count: number
+    standard_count: number
+    premium_percentage: number
+    premium_services: Array<{
+      name: string
+      revenue: number
+      count: number
+      base_price: number
+    }>
+    upsell_opportunities: Array<{
+      opportunity: string
+      recommendation: string
+      potential_impact: string
+    }>
+  }
+  six_figure_metrics: {
+    financial_metrics: {
+      current_annual_run_rate: number
+      progress_to_six_figures: number
+      daily_revenue_gap: number
+      current_daily_average: number
+      required_daily_average: number
+      current_average_ticket: number
+      additional_daily_clients_needed?: number
+      recommended_price_increase_percentage?: number
+    }
+    milestones: {
+      reached_50k: boolean
+      reached_75k: boolean
+      reached_100k: boolean
+      reached_150k: boolean
+      next_milestone: {
+        target: number
+        remaining: number
+        percentage_complete: number
+      }
+    }
+    recommendations: Array<{
+      priority: string
+      category: string
+      title: string
+      description: string
+      action: string
+    }>
+  }
+  date_range: {
+    start: string | null
+    end: string | null
+  }
+}
+
+export async function getRevenueBreakdown(
+  startDate?: string,
+  endDate?: string,
+  breakdownBy: string = 'all'
+): Promise<RevenueBreakdown> {
+  const params = new URLSearchParams()
+  if (startDate) params.append('start_date', startDate)
+  if (endDate) params.append('end_date', endDate)
+  params.append('breakdown_by', breakdownBy)
+  
+  return fetchAPI(`/api/v1/analytics/revenue-breakdown?${params.toString()}`)
+}
+
 // Location-specific analytics
 export interface LocationAnalytics extends DashboardAnalytics {
   location_id: number
@@ -2141,6 +2334,37 @@ export async function calculateServicePrice(
   
   const query = params.toString()
   return fetchAPI(`/api/v1/services/${serviceId}/calculate-price${query ? '?' + query : ''}`)
+}
+
+// Service Analytics functions
+export async function getServiceAnalytics(params?: {
+  dateRange?: string
+  startDate?: string
+  endDate?: string
+  barberId?: number
+}): Promise<ServiceAnalytics> {
+  const queryParams = new URLSearchParams()
+  if (params?.dateRange) queryParams.append('date_range', params.dateRange)
+  if (params?.startDate) queryParams.append('start_date', params.startDate)
+  if (params?.endDate) queryParams.append('end_date', params.endDate)
+  if (params?.barberId) queryParams.append('barber_id', params.barberId.toString())
+  
+  const query = queryParams.toString()
+  return fetchAPI(`/api/v1/analytics/services${query ? '?' + query : ''}`)
+}
+
+export async function getServiceMetrics(serviceId: number, params?: {
+  dateRange?: string
+  startDate?: string
+  endDate?: string
+}): Promise<ServiceMetrics> {
+  const queryParams = new URLSearchParams()
+  if (params?.dateRange) queryParams.append('date_range', params.dateRange)
+  if (params?.startDate) queryParams.append('start_date', params.startDate)
+  if (params?.endDate) queryParams.append('end_date', params.endDate)
+  
+  const query = queryParams.toString()
+  return fetchAPI(`/api/v1/analytics/services/${serviceId}/metrics${query ? '?' + query : ''}`)
 }
 
 // ============================================================================
@@ -2825,6 +3049,11 @@ export interface Service {
   package_items?: Service[]
   pricing_rules?: ServicePricingRule[]
   booking_rules?: ServiceBookingRule[]
+  // Analytics fields
+  booking_count?: number
+  average_rating?: number
+  growth_percentage?: number
+  is_featured?: boolean
 }
 
 export interface ServiceCreate {
@@ -2875,6 +3104,15 @@ export interface ServiceCategory {
   value: string
   name: string
   label: string
+}
+
+export enum ServiceCategoryEnum {
+  HAIRCUT = 'haircut',
+  BEARD = 'beard',
+  STYLING = 'styling',
+  TREATMENT = 'treatment',
+  PACKAGE = 'package',
+  ADDON = 'addon'
 }
 
 export interface ServicePricingRule {
@@ -6214,6 +6452,50 @@ export async function getPixelInstructions(pixelType: 'gtm' | 'ga4' | 'meta' | '
 // Public endpoint - Get tracking pixels for a booking page (no auth required)
 export async function getPublicTrackingPixels(organizationSlug: string): Promise<TrackingPixel> {
   return fetchAPI(`/api/v1/customer-pixels/public/${organizationSlug}`, {}, false)
+}
+
+// Export API client objects for backwards compatibility
+export const api = {
+  login,
+  logout,
+  registerComplete,
+  registerClient,
+  getTrialStatus,
+  forgotPassword,
+  resetPassword,
+  changePassword,
+  verifyEmail,
+  resendVerification,
+  getVerificationStatus,
+  refreshToken,
+  getProfile,
+  getAppointments,
+  createAppointment,
+  getAvailableSlots,
+  getNextAvailableSlot,
+  getBookingSettings,
+  updateBookingSettings,
+  createBooking
+}
+
+export const apiClient = {
+  // Core API functions
+  fetchAPI,
+  login,
+  logout,
+  getProfile,
+  getAppointments,
+  createAppointment,
+  // Booking functions
+  getAvailableSlots,
+  getBookingSettings,
+  updateBookingSettings,
+  createBooking,
+  // Auth functions
+  forgotPassword,
+  resetPassword,
+  verifyEmail,
+  refreshToken
 }
 
 

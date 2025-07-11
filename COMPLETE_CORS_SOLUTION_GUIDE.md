@@ -56,7 +56,7 @@ git commit -m "Add CORS proxy support"
 git push origin main
 ```
 
-The proxy is already created at `/frontend/src/app/api/proxy/[...path]/route.ts`
+The proxy is already created at `/backend-v2/frontend-v2/src/app/api/proxy/[...path]/route.ts`
 
 ## ✅ SOLUTION 3: Test Everything
 
@@ -159,8 +159,8 @@ curl -v -H "Origin: https://bookbarber-fz9nh51da-6fb.vercel.app" \
 
 1. **`/test_cors.sh`** - Command line CORS testing script
 2. **`/cors_test.html`** - Browser-based CORS testing page
-3. **`/frontend/src/app/api/proxy/[...path]/route.ts`** - Emergency proxy
-4. **`/frontend/src/lib/api/corsHelper.ts`** - Smart CORS detection
+3. **`/backend-v2/frontend-v2/src/app/api/proxy/[...path]/route.ts`** - Emergency proxy
+4. **`/backend-v2/frontend-v2/src/lib/api/corsHelper.ts`** - Smart CORS detection
 5. **`/RENDER_CORS_FIX_STEPS.md`** - Step-by-step Render fix guide
 
 ## ⏱️ Time Estimates

@@ -47,7 +47,7 @@ git checkout main
 git merge emergency-restore-$(date +%Y%m%d)
 
 # Option 3: Restore specific file
-git checkout v1.0-perfect-landing-page -- frontend/src/app/page.tsx
+git checkout v1.0-perfect-landing-page -- backend-v2/frontend-v2/src/app/page.tsx
 ```
 
 ## 📋 Key Technical Details

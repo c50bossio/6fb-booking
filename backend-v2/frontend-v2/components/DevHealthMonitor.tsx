@@ -30,6 +30,11 @@ export function DevHealthMonitor() {
   const [resources, setResources] = useState<SystemResources | null>(null);
   const [lastCheck, setLastCheck] = useState<Date>(new Date());
   const [isVisible, setIsVisible] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     // Only show in development
@@ -201,7 +206,7 @@ export function DevHealthMonitor() {
 
           {/* Last Check */}
           <div className="text-xs text-gray-500 text-center pt-2 border-t">
-            Last check: {lastCheck.toLocaleTimeString()}
+            Last check: {mounted ? lastCheck.toLocaleTimeString() : 'Loading...'}
           </div>
 
           {/* Alert if services are down */}

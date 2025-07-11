@@ -1,0 +1,110 @@
+{
+  "extraction_result": {
+    "timestamp": "2025-07-08T07:43:26.309910",
+    "sections": [
+      {
+        "title": "Core 6FB Philosophy",
+        "content": "[Content to be extracted from Notion]",
+        "subsections": [],
+        "methodology_type": "philosophy",
+        "priority": "high"
+      },
+      {
+        "title": "Revenue Optimization Strategies",
+        "content": "[Content to be extracted from Notion]",
+        "subsections": [],
+        "methodology_type": "business_model",
+        "priority": "high"
+      },
+      {
+        "title": "Client Relationship Building",
+        "content": "[Content to be extracted from Notion]",
+        "subsections": [],
+        "methodology_type": "implementation",
+        "priority": "high"
+      },
+      {
+        "title": "Service Delivery Standards",
+        "content": "[Content to be extracted from Notion]",
+        "subsections": [],
+        "methodology_type": "implementation",
+        "priority": "medium"
+      },
+      {
+        "title": "Professional Development Framework",
+        "content": "[Content to be extracted from Notion]",
+        "subsections": [],
+        "methodology_type": "professional_growth",
+        "priority": "medium"
+      }
+    ],
+    "total_sections": 5,
+    "success_rate": 100.0,
+    "raw_content_length": 0
+  },
+  "organized_content": {
+    "SIX_FIGURE_BARBER_METHODOLOGY.md": [
+      {
+        "title": "Core 6FB Philosophy",
+        "content": "[Content to be extracted from Notion]",
+        "subsections": [],
+        "methodology_type": "philosophy",
+        "priority": "high"
+      },
+      {
+        "title": "Revenue Optimization Strategies",
+        "content": "[Content to be extracted from Notion]",
+        "subsections": [],
+        "methodology_type": "business_model",
+        "priority": "high"
+      },
+      {
+        "title": "Client Relationship Building",
+        "content": "[Content to be extracted from Notion]",
+        "subsections": [],
+        "methodology_type": "implementation",
+        "priority": "high"
+      },
+      {
+        "title": "Service Delivery Standards",
+        "content": "[Content to be extracted from Notion]",
+        "subsections": [],
+        "methodology_type": "implementation",
+        "priority": "medium"
+      }
+    ],
+    "6FB_BUSINESS_RULES.md": [
+      {
+        "title": "Revenue Optimization Strategies",
+        "content": "[Content to be extracted from Notion]",
+        "subsections": [],
+        "methodology_type": "business_model",
+        "priority": "high"
+      }
+    ],
+    "6FB_FEATURE_ALIGNMENT.md": [
+      {
+        "title": "Client Relationship Building",
+        "content": "[Content to be extracted from Notion]",
+        "subsections": [],
+        "methodology_type": "implementation",
+        "priority": "high"
+      },
+      {
+        "title": "Service Delivery Standards",
+        "content": "[Content to be extracted from Notion]",
+        "subsections": [],
+        "methodology_type": "implementation",
+        "priority": "medium"
+      }
+    ],
+    "6FB_METRICS_FRAMEWORK.md": []
+  },
+  "integration_plan": {
+    "methodology_updates": "Update 5 sections in methodology docs",
+    "business_rules": "Enhance business rules with extracted constraints and requirements",
+    "feature_alignment": "Update feature alignment matrix with 6FB priorities",
+    "metrics_framework": "Populate metrics with actual 6FB KPIs and benchmarks",
+    "priority": "Focus on high-priority sections first for immediate Claude Code integration"
+  }
+}

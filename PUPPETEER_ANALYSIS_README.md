@@ -48,7 +48,7 @@ node analyze-pages-puppeteer.js
 2. **Page Discovery**
    - Crawls all accessible pages starting from the homepage
    - Follows internal links recursively
-   - Scans public HTML files in the frontend/public directory
+   - Scans public HTML files in the backend-v2/frontend-v2/public directory
 
 3. **Authentication Testing**
    - Attempts to find and use login forms

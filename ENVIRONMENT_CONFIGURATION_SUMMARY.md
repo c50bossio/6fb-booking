@@ -13,14 +13,14 @@ This document summarizes the comprehensive environment and configuration setup c
 - **Service Integration**: Support for Stripe, SendGrid, Sentry, Redis, and more
 - **Feature Flags**: Configurable feature toggles for gradual rollout
 
-### 2. **Production-Ready Settings** (`backend/config/settings.py`)
+### 2. **Production-Ready Settings** (`backend-v2/config/settings.py`)
 - **Pydantic Validation**: Comprehensive input validation with custom validators
 - **Environment-Specific Logic**: Automatic configuration based on environment
 - **Security Validation**: Mandatory secure key validation prevents weak credentials
 - **Service Detection**: Automatic detection of configured services
 - **Error Prevention**: Prevents common misconfigurations in production
 
-### 3. **Environment-Specific Configuration** (`backend/config/environment.py`)
+### 3. **Environment-Specific Configuration** (`backend-v2/config/environment.py`)
 - **Dynamic Configuration**: Environment-aware settings for dev/staging/production
 - **Performance Tuning**: Optimized settings per environment
 - **Security Profiles**: Different security configurations per environment
@@ -142,7 +142,7 @@ python3 -c 'import secrets; print("SECRET_KEY=" + secrets.token_urlsafe(64))'
 python3 -c 'import secrets; print("JWT_SECRET_KEY=" + secrets.token_urlsafe(64))'
 
 # Validate configuration
-python backend/scripts/validate-environment.py
+python backend-v2/scripts/validate-environment.py
 
 # Start development server
 cd backend && uvicorn main:app --reload
@@ -155,7 +155,7 @@ cp .env.template .env.production
 # Edit .env.production with production values
 
 # Validate production configuration
-ENVIRONMENT=production python backend/scripts/validate-environment.py
+ENVIRONMENT=production python backend-v2/scripts/validate-environment.py
 
 # Deploy with Docker Compose
 docker-compose -f docker-compose.production.yml up -d
@@ -169,7 +169,7 @@ curl https://yourdomain.com/api/v1/health
 ### Configuration Validation
 ```bash
 # Validate all settings
-python backend/scripts/validate-environment.py
+python backend-v2/scripts/validate-environment.py
 
 # Test specific configuration
 python -c "from backend.config.settings import settings; print(settings.payment_enabled)"
@@ -275,7 +275,7 @@ With the environment and configuration setup complete, the platform is ready for
 
 ### Documentation References
 - `/PRODUCTION_DEPLOYMENT_GUIDE.md` - Complete deployment instructions
-- `/backend/scripts/validate-environment.py` - Configuration validation tool
+- `/backend-v2/scripts/validate-environment.py` - Configuration validation tool
 - `/docker-compose.production.yml` - Production deployment stack
 - `/.env.template` - Environment configuration template
 

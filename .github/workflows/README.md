@@ -33,7 +33,7 @@ Our CI/CD system provides:
 **Trigger**: Pushes to main branch
 
 **Pipeline Stages**:
-- **Change Detection**: Smart detection of backend/frontend changes
+- **Change Detection**: Smart detection of backend-v2/frontend changes
 - **Image Building**: Docker images with caching optimization
 - **Database Migration**: Automated schema updates
 - **Deployment**: Rolling update deployment to staging

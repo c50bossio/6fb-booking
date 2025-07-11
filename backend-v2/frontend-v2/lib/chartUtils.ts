@@ -1,43 +1,32 @@
-// Optimized Chart.js utilities with dynamic imports
-// Only load chart components when needed
+// Lightweight Chart utilities without external dependencies
+// Provides simple chart components for performance
 
 import { lazy } from 'react'
 
-// Dynamic imports for Chart.js components
-export const Line = lazy(() => import('react-chartjs-2').then(module => ({ default: module.Line })))
-export const Bar = lazy(() => import('react-chartjs-2').then(module => ({ default: module.Bar })))
-export const Pie = lazy(() => import('react-chartjs-2').then(module => ({ default: module.Pie })))
-export const Doughnut = lazy(() => import('react-chartjs-2').then(module => ({ default: module.Doughnut })))
+// Dynamic imports for our lightweight chart components
+export const Line = lazy(() => import('@/components/analytics/ChartComponents').then(module => ({ default: module.LineChart })))
+export const Bar = lazy(() => import('@/components/analytics/ChartComponents').then(module => ({ default: module.BarChart })))
+export const Pie = lazy(() => import('@/components/analytics/ChartComponents').then(module => ({ default: module.PieChart })))
+export const Doughnut = lazy(() => import('@/components/analytics/ChartComponents').then(module => ({ default: module.DoughnutChart })))
 
-// Chart.js registration - only register what's needed
+// Re-export chart components directly (no registration needed)
+export { 
+  LineChart as LineChartDirect, 
+  BarChart as BarChartDirect, 
+  PieChart as PieChartDirect, 
+  DoughnutChart as DoughnutChartDirect,
+  GaugeChart,
+  chartUtils
+} from '@/components/analytics/ChartComponents'
+
+// No-op registration function for compatibility
 export const registerChartComponents = async () => {
-  const { Chart, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend } = await import('chart.js')
-  
-  Chart.register(
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    BarElement,
-    ArcElement,
-    Title,
-    Tooltip,
-    Legend
-  )
+  // No registration needed for lightweight components
+  return Promise.resolve()
 }
 
-// Default chart options for consistent styling
+// Default chart options for consistent styling (simplified)
 export const defaultChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: 'top' as const,
-    },
-  },
-  scales: {
-    y: {
-      beginAtZero: true,
-    },
-  },
 }

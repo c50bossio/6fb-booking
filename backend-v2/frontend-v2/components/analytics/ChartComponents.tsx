@@ -1,10 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import { Chart, ChartConfiguration, registerables } from 'chart.js'
-
-// Register Chart.js components
-Chart.register(...registerables)
+import { useMemo } from 'react'
 
 interface BaseChartProps {
   data: any
@@ -13,228 +9,243 @@ interface BaseChartProps {
   height?: number
 }
 
+interface SimpleDataPoint {
+  label: string
+  value: number
+  color?: string
+}
+
+// Simple Line Chart using SVG
 export function LineChart({ data, options = {}, className = '', height = 300 }: BaseChartProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const chartRef = useRef<Chart | null>(null)
+  const chartData = useMemo(() => {
+    if (!data?.datasets?.[0]?.data || !data?.labels) return { points: [], maxValue: 0 }
+    
+    const values = data.datasets[0].data as number[]
+    const maxValue = Math.max(...values)
+    const minValue = Math.min(...values)
+    const range = maxValue - minValue || 1
+    
+    const points = values.map((value, index) => ({
+      x: (index / (values.length - 1)) * 100,
+      y: 100 - ((value - minValue) / range) * 100,
+      value
+    }))
+    
+    return { points, maxValue, minValue, labels: data.labels }
+  }, [data])
 
-  useEffect(() => {
-    if (!canvasRef.current) return
-
-    // Destroy existing chart
-    if (chartRef.current) {
-      chartRef.current.destroy()
-    }
-
-    const ctx = canvasRef.current.getContext('2d')
-    if (!ctx) return
-
-    const config: ChartConfiguration = {
-      type: 'line',
-      data,
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'top',
-          },
-          tooltip: {
-            mode: 'index',
-            intersect: false,
-          },
-        },
-        scales: {
-          x: {
-            display: true,
-            grid: {
-              display: false,
-            },
-          },
-          y: {
-            display: true,
-            beginAtZero: true,
-            grid: {
-              color: 'rgba(0, 0, 0, 0.1)',
-            },
-          },
-        },
-        interaction: {
-          mode: 'nearest',
-          axis: 'x',
-          intersect: false,
-        },
-        ...options,
-      },
-    }
-
-    chartRef.current = new Chart(ctx, config)
-
-    return () => {
-      if (chartRef.current) {
-        chartRef.current.destroy()
-        chartRef.current = null
-      }
-    }
-  }, [data, options])
+  const pathData = chartData.points
+    .map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`)
+    .join(' ')
 
   return (
     <div className={`relative ${className}`} style={{ height }}>
-      <canvas ref={canvasRef} />
+      <div className="w-full h-full bg-white rounded-lg border p-4">
+        <div className="text-sm font-medium text-gray-700 mb-2">
+          {data?.datasets?.[0]?.label || 'Chart'}
+        </div>
+        <div className="relative w-full" style={{ height: height - 60 }}>
+          <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+            {/* Grid lines */}
+            {[0, 25, 50, 75, 100].map(y => (
+              <line
+                key={y}
+                x1="0"
+                y1={y}
+                x2="100"
+                y2={y}
+                stroke="#f3f4f6"
+                strokeWidth="0.5"
+              />
+            ))}
+            
+            {/* Chart line */}
+            <path
+              d={pathData}
+              fill="none"
+              stroke="#3b82f6"
+              strokeWidth="2"
+              vectorEffect="non-scaling-stroke"
+            />
+            
+            {/* Area fill */}
+            <path
+              d={`${pathData} L 100 100 L 0 100 Z`}
+              fill="rgba(59, 130, 246, 0.1)"
+            />
+            
+            {/* Data points */}
+            {chartData.points.map((point, index) => (
+              <circle
+                key={index}
+                cx={point.x}
+                cy={point.y}
+                r="1"
+                fill="#3b82f6"
+                vectorEffect="non-scaling-stroke"
+              />
+            ))}
+          </svg>
+          
+          {/* Value labels */}
+          <div className="absolute inset-0 pointer-events-none">
+            {chartData.points.map((point, index) => (
+              <div
+                key={index}
+                className="absolute text-xs text-gray-600 transform -translate-x-1/2 -translate-y-6"
+                style={{
+                  left: `${point.x}%`,
+                  top: `${point.y}%`
+                }}
+                title={`${chartData.labels?.[index] || index}: ${point.value}`}
+              >
+                ${point.value.toLocaleString()}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
 
+// Simple Bar Chart using CSS
 export function BarChart({ data, options = {}, className = '', height = 300 }: BaseChartProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const chartRef = useRef<Chart | null>(null)
-
-  useEffect(() => {
-    if (!canvasRef.current) return
-
-    if (chartRef.current) {
-      chartRef.current.destroy()
-    }
-
-    const ctx = canvasRef.current.getContext('2d')
-    if (!ctx) return
-
-    const config: ChartConfiguration = {
-      type: 'bar',
-      data,
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'top',
-          },
-        },
-        scales: {
-          x: {
-            grid: {
-              display: false,
-            },
-          },
-          y: {
-            beginAtZero: true,
-            grid: {
-              color: 'rgba(0, 0, 0, 0.1)',
-            },
-          },
-        },
-        ...options,
-      },
-    }
-
-    chartRef.current = new Chart(ctx, config)
-
-    return () => {
-      if (chartRef.current) {
-        chartRef.current.destroy()
-        chartRef.current = null
-      }
-    }
-  }, [data, options])
+  const chartData = useMemo(() => {
+    if (!data?.datasets?.[0]?.data || !data?.labels) return []
+    
+    const values = data.datasets[0].data as number[]
+    const maxValue = Math.max(...values)
+    
+    return values.map((value, index) => ({
+      label: data.labels[index],
+      value,
+      percentage: (value / maxValue) * 100,
+      color: data.datasets[0].backgroundColor || '#3b82f6'
+    }))
+  }, [data])
 
   return (
     <div className={`relative ${className}`} style={{ height }}>
-      <canvas ref={canvasRef} />
+      <div className="w-full h-full bg-white rounded-lg border p-4">
+        <div className="text-sm font-medium text-gray-700 mb-4">
+          {data?.datasets?.[0]?.label || 'Chart'}
+        </div>
+        <div className="space-y-3" style={{ height: height - 80 }}>
+          {chartData.map((item, index) => (
+            <div key={index} className="flex items-center space-x-3">
+              <div className="w-16 text-xs text-gray-600 truncate" title={item.label}>
+                {item.label}
+              </div>
+              <div className="flex-1 bg-gray-200 rounded-full h-6 relative">
+                <div
+                  className="h-6 rounded-full transition-all duration-500 ease-out flex items-center justify-end pr-2"
+                  style={{
+                    width: `${item.percentage}%`,
+                    backgroundColor: typeof item.color === 'string' ? item.color : '#3b82f6'
+                  }}
+                >
+                  <span className="text-xs text-white font-medium">
+                    {item.value}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
 
+// Simple Doughnut Chart using CSS
 export function DoughnutChart({ data, options = {}, className = '', height = 300 }: BaseChartProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const chartRef = useRef<Chart | null>(null)
-
-  useEffect(() => {
-    if (!canvasRef.current) return
-
-    if (chartRef.current) {
-      chartRef.current.destroy()
-    }
-
-    const ctx = canvasRef.current.getContext('2d')
-    if (!ctx) return
-
-    const config: ChartConfiguration = {
-      type: 'doughnut',
-      data,
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'bottom',
-          },
-        },
-        ...options,
-      },
-    }
-
-    chartRef.current = new Chart(ctx, config)
-
-    return () => {
-      if (chartRef.current) {
-        chartRef.current.destroy()
-        chartRef.current = null
+  const chartData = useMemo(() => {
+    if (!data?.datasets?.[0]?.data || !data?.labels) return []
+    
+    const values = data.datasets[0].data as number[]
+    const total = values.reduce((sum, value) => sum + value, 0)
+    
+    let cumulativePercentage = 0
+    
+    return values.map((value, index) => {
+      const percentage = (value / total) * 100
+      const startAngle = cumulativePercentage * 3.6 // Convert to degrees
+      cumulativePercentage += percentage
+      
+      return {
+        label: data.labels[index],
+        value,
+        percentage,
+        startAngle,
+        color: data.datasets[0].backgroundColor?.[index] || `hsl(${index * 60}, 70%, 50%)`
       }
-    }
-  }, [data, options])
+    })
+  }, [data])
 
   return (
     <div className={`relative ${className}`} style={{ height }}>
-      <canvas ref={canvasRef} />
+      <div className="w-full h-full bg-white rounded-lg border p-4">
+        <div className="text-sm font-medium text-gray-700 mb-4">
+          {data?.datasets?.[0]?.label || 'Chart'}
+        </div>
+        <div className="flex items-center justify-center" style={{ height: height - 100 }}>
+          <div className="relative w-32 h-32">
+            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+              <circle
+                cx="18"
+                cy="18"
+                r="15.915"
+                fill="transparent"
+                stroke="#f3f4f6"
+                strokeWidth="3"
+              />
+              {chartData.map((segment, index) => {
+                const strokeDasharray = `${segment.percentage} ${100 - segment.percentage}`
+                const strokeDashoffset = 100 - chartData.slice(0, index).reduce((sum, s) => sum + s.percentage, 0)
+                
+                return (
+                  <circle
+                    key={index}
+                    cx="18"
+                    cy="18"
+                    r="15.915"
+                    fill="transparent"
+                    stroke={segment.color}
+                    strokeWidth="3"
+                    strokeDasharray={strokeDasharray}
+                    strokeDashoffset={strokeDashoffset}
+                    className="transition-all duration-300"
+                  />
+                )
+              })}
+            </svg>
+          </div>
+          
+          {/* Legend */}
+          <div className="ml-6 space-y-2">
+            {chartData.map((segment, index) => (
+              <div key={index} className="flex items-center space-x-2">
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: segment.color }}
+                />
+                <span className="text-xs text-gray-600">
+                  {segment.label}: {segment.percentage.toFixed(1)}%
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
 
-export function PieChart({ data, options = {}, className = '', height = 300 }: BaseChartProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const chartRef = useRef<Chart | null>(null)
+// Simple Pie Chart (alias for Doughnut)
+export const PieChart = DoughnutChart
 
-  useEffect(() => {
-    if (!canvasRef.current) return
-
-    if (chartRef.current) {
-      chartRef.current.destroy()
-    }
-
-    const ctx = canvasRef.current.getContext('2d')
-    if (!ctx) return
-
-    const config: ChartConfiguration = {
-      type: 'pie',
-      data,
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'bottom',
-          },
-        },
-        ...options,
-      },
-    }
-
-    chartRef.current = new Chart(ctx, config)
-
-    return () => {
-      if (chartRef.current) {
-        chartRef.current.destroy()
-        chartRef.current = null
-      }
-    }
-  }, [data, options])
-
-  return (
-    <div className={`relative ${className}`} style={{ height }}>
-      <canvas ref={canvasRef} />
-    </div>
-  )
-}
-
+// Simple Gauge Chart
 export function GaugeChart({ 
   value, 
   max = 100, 
@@ -258,94 +269,62 @@ export function GaugeChart({
     danger: string
   }
 }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const chartRef = useRef<Chart | null>(null)
+  const percentage = (value / max) * 100
+  let color = colors.danger
+  if (percentage >= 80) color = colors.good
+  else if (percentage >= 60) color = colors.warning
 
-  useEffect(() => {
-    if (!canvasRef.current) return
-
-    if (chartRef.current) {
-      chartRef.current.destroy()
-    }
-
-    const ctx = canvasRef.current.getContext('2d')
-    if (!ctx) return
-
-    const percentage = (value / max) * 100
-    let color = colors.danger
-    if (percentage >= 80) color = colors.good
-    else if (percentage >= 60) color = colors.warning
-
-    const data = {
-      datasets: [{
-        data: [value, max - value],
-        backgroundColor: [color, '#E5E7EB'],
-        borderWidth: 0,
-        cutout: '75%',
-      }]
-    }
-
-    const config: ChartConfiguration = {
-      type: 'doughnut',
-      data,
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false,
-          },
-          tooltip: {
-            enabled: false,
-          },
-        },
-      },
-      plugins: [{
-        id: 'gaugeText',
-        beforeDraw: function(chart) {
-          const ctx = chart.ctx
-          const centerX = chart.chartArea.left + (chart.chartArea.right - chart.chartArea.left) / 2
-          const centerY = chart.chartArea.top + (chart.chartArea.bottom - chart.chartArea.top) / 2
-
-          ctx.save()
-          ctx.textAlign = 'center'
-          ctx.textBaseline = 'middle'
-          
-          // Value text
-          ctx.font = 'bold 24px sans-serif'
-          ctx.fillStyle = '#1F2937'
-          ctx.fillText(`${value.toFixed(1)}%`, centerX, centerY - 10)
-          
-          // Title text
-          if (title) {
-            ctx.font = '14px sans-serif'
-            ctx.fillStyle = '#6B7280'
-            ctx.fillText(title, centerX, centerY + 15)
-          }
-          
-          ctx.restore()
-        }
-      }]
-    }
-
-    chartRef.current = new Chart(ctx, config)
-
-    return () => {
-      if (chartRef.current) {
-        chartRef.current.destroy()
-        chartRef.current = null
-      }
-    }
-  }, [value, max, title, colors])
+  const circumference = 2 * Math.PI * 45
+  const strokeDasharray = circumference
+  const strokeDashoffset = circumference - (percentage / 100) * circumference
 
   return (
     <div className={`relative ${className}`} style={{ height }}>
-      <canvas ref={canvasRef} />
+      <div className="w-full h-full bg-white rounded-lg border p-4 flex flex-col items-center justify-center">
+        <div className="relative">
+          <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 100 100">
+            {/* Background circle */}
+            <circle
+              cx="50"
+              cy="50"
+              r="45"
+              fill="transparent"
+              stroke="#e5e7eb"
+              strokeWidth="8"
+            />
+            {/* Progress circle */}
+            <circle
+              cx="50"
+              cy="50"
+              r="45"
+              fill="transparent"
+              stroke={color}
+              strokeWidth="8"
+              strokeLinecap="round"
+              strokeDasharray={strokeDasharray}
+              strokeDashoffset={strokeDashoffset}
+              className="transition-all duration-500 ease-out"
+            />
+          </svg>
+          
+          {/* Center text */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="text-2xl font-bold text-gray-900">
+              {value.toFixed(1)}%
+            </span>
+            {title && (
+              <span className="text-sm text-gray-600 mt-1">
+                {title}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
 
-// Chart data transformation utilities
+// Chart data transformation utilities (simplified)
 export const chartUtils = {
   // Transform revenue data for line chart
   transformRevenueData: (data: Array<{period: string, revenue: number}>) => ({
@@ -353,10 +332,6 @@ export const chartUtils = {
     datasets: [{
       label: 'Revenue',
       data: data.map(d => d.revenue),
-      borderColor: '#3B82F6',
-      backgroundColor: 'rgba(59, 130, 246, 0.1)',
-      fill: true,
-      tension: 0.4,
     }]
   }),
 
@@ -368,8 +343,6 @@ export const chartUtils = {
       backgroundColor: [
         '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'
       ],
-      borderWidth: 2,
-      borderColor: '#FFFFFF',
     }]
   }),
 
@@ -380,8 +353,6 @@ export const chartUtils = {
       label: 'Appointments',
       data: data.map(d => d.appointments),
       backgroundColor: '#10B981',
-      borderColor: '#059669',
-      borderWidth: 1,
     }]
   }),
 
@@ -397,48 +368,9 @@ export const chartUtils = {
     indigo: '#6366F1',
   },
 
-  // Common chart options
+  // Common chart options (simplified)
   defaultOptions: {
-    revenue: {
-      scales: {
-        y: {
-          ticks: {
-            callback: function(value: any) {
-              return '$' + value.toLocaleString()
-            }
-          }
-        }
-      },
-      plugins: {
-        tooltip: {
-          callbacks: {
-            label: function(context: any) {
-              return context.dataset.label + ': $' + context.parsed.y.toLocaleString()
-            }
-          }
-        }
-      }
-    },
-    percentage: {
-      scales: {
-        y: {
-          max: 100,
-          ticks: {
-            callback: function(value: any) {
-              return value + '%'
-            }
-          }
-        }
-      },
-      plugins: {
-        tooltip: {
-          callbacks: {
-            label: function(context: any) {
-              return context.dataset.label + ': ' + context.parsed.y + '%'
-            }
-          }
-        }
-      }
-    }
+    revenue: {},
+    percentage: {}
   }
 }

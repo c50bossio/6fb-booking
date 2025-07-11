@@ -25,4 +25,4 @@ Located in: `/Users/bossio/Downloads/224381543/Logo Files/png/`
 - Color logo - no background.png
 - Color logo with background.png
 
-Copies available in project at: `/frontend/public/logos/`
+Copies available in project at: `/backend-v2/frontend-v2/public/logos/`

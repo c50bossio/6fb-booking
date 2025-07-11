@@ -8,12 +8,12 @@ We've updated the backend configuration to allow Railway URLs. Now you need to d
 
 ## Changes Made
 
-### 1. Updated `backend/config/settings.py`
+### 1. Updated `backend-v2/config/settings.py`
 - Added Railway URL patterns to the `is_allowed_origin` method
 - Added specific Railway URLs to the default origins list
 - Now accepts any URL ending with `.railway.app`
 
-### 2. Updated `backend/.env` (local)
+### 2. Updated `backend-v2/.env` (local)
 - Added Railway URL to `ALLOWED_ORIGINS` environment variable
 
 ## Deployment Steps
@@ -37,7 +37,7 @@ http://localhost:3000,http://localhost:3001,https://bookbarber-6fb.vercel.app,ht
 If your Render service is connected to GitHub:
 1. Commit the changes:
    ```bash
-   git add backend/config/settings.py
+   git add backend-v2/config/settings.py
    git commit -m "fix: Add Railway URL to CORS allowed origins"
    git push origin main
    ```
@@ -91,7 +91,7 @@ The frontend already has a CORS proxy at `/api/proxy/*` that can bypass CORS:
 If the dynamic CORS middleware isn't working, you can temporarily switch to standard CORS middleware:
 
 ```python
-# In backend/main.py, replace DynamicCORSMiddleware with:
+# In backend-v2/main.py, replace DynamicCORSMiddleware with:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://web-production-92a6c.up.railway.app", "*"],  # Add specific URLs

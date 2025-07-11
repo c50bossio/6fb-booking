@@ -56,6 +56,7 @@ class ConversionEvent(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=True, index=True)
     
     # Event identification
     event_id = Column(String(255), unique=True, index=True)  # For deduplication

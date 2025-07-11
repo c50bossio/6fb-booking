@@ -170,7 +170,7 @@ stripe logs tail
 stripe trigger payment_intent.succeeded --override payment_intent:metadata.user_id=1
 
 # Check backend logs
-tail -f backend/logs/app.log
+tail -f backend-v2/logs/app.log
 
 # Check frontend console
 # Open browser developer tools (F12)

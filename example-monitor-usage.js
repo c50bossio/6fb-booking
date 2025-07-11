@@ -90,7 +90,7 @@ async function monitorSpecificPaths() {
 
   // Custom config for specific monitoring
   const customConfig = {
-    projectRoot: './frontend/src/components',
+    projectRoot: './backend-v2/frontend-v2/src/components',
     thresholds: {
       complexity: {
         maxCyclomaticComplexity: 10

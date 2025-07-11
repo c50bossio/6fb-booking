@@ -208,7 +208,7 @@ Before going live:
 Enable Stripe debug logging:
 
 ```python
-# backend/services/stripe_service.py
+# backend-v2/services/stripe_service.py
 stripe.log = 'debug'
 ```
 

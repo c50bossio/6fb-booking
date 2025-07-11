@@ -28,7 +28,7 @@ from services.conversion_tracking_service import ConversionTrackingService
 from utils.rate_limiter import RateLimiter
 
 # Import Meta tracking endpoints
-from api.v1.endpoints.meta_tracking import router as meta_tracking_router
+from routers.meta_tracking import router as meta_tracking_router
 
 
 router = APIRouter(

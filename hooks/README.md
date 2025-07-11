@@ -114,8 +114,8 @@ chmod +x .git/hooks/*
 - ✅ **ALLOWED**: `docs/` (Documentation)
 - ✅ **ALLOWED**: `monitoring/` (Monitoring config)
 - ✅ **ALLOWED**: `hooks/` (Git hooks)
-- ❌ **BLOCKED**: `backend/` (V1 Backend - DEPRECATED)
-- ❌ **BLOCKED**: `frontend/` (V1 Frontend - DEPRECATED)
+- ❌ **BLOCKED**: `backend-v2/` (V1 Backend - DEPRECATED)
+- ❌ **BLOCKED**: `backend-v2/frontend-v2/` (V1 Frontend - DEPRECATED)
 
 **Why This Matters**:
 - V1 codebase is deprecated and unmaintained
@@ -125,8 +125,8 @@ chmod +x .git/hooks/*
 
 **Migration Guide**:
 ```
-V1 backend/   → V2 backend-v2/
-V1 frontend/  → V2 backend-v2/frontend-v2/
+V1 backend-v2/   → V2 backend-v2/
+V1 backend-v2/frontend-v2/  → V2 backend-v2/frontend-v2/
 ```
 
 **Bypass**: `git commit --no-verify` (discuss with team first)
@@ -215,8 +215,8 @@ git commit --allow-empty -m "invalid format"  # Should fail
 git commit --allow-empty -m "test: valid format"  # Should pass
 
 # Test V2-only architecture
-touch backend/test.py
-git add backend/test.py
+touch backend-v2/test.py
+git add backend-v2/test.py
 git commit -m "test: should fail"  # Should fail
 
 # Test branch protection  

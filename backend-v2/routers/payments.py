@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
+from decimal import Decimal
+import logging
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request, Path
 from sqlalchemy.orm import Session
 from typing import Dict, List, Optional
 from datetime import datetime
@@ -10,6 +12,10 @@ from utils.financial_rate_limit import (
     stripe_connect_limit, payment_history_limit, payment_report_limit,
     financial_rate_limit, financial_endpoint_security
 )
+from utils.input_validation import validate_decimal, ValidationError as InputValidationError
+from schemas_new.validation import PaymentIntentRequest
+
+logger = logging.getLogger(__name__)
 from utils.idempotency import idempotent_operation, get_current_user_id
 from schemas import (
     PaymentIntentCreate, PaymentIntentResponse, PaymentConfirm, PaymentResponse,
@@ -19,8 +25,9 @@ from schemas import (
     StripeConnectStatusResponse
 )
 from dependencies import get_current_user
-from models import User
+from models import User, Payment, Payout
 from utils.logging_config import get_audit_logger
+from services.cache_invalidation import cache_invalidator
 
 router = APIRouter(
     prefix="/payments",
@@ -97,16 +104,11 @@ def create_payment_intent(
         
         return result
         
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Payment processing error: {str(e)}"
-        )
+        logger.error(f"Exception in {__name__}: {e}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred")
 
 @router.post("/confirm")
 @payment_confirm_rate_limit
@@ -163,6 +165,13 @@ def confirm_payment(
             }
         )
         
+        # Invalidate cache after successful payment
+        cache_invalidator.invalidate_payment_data(
+            payment_id=result["payment_id"],
+            user_id=current_user.id,
+            appointment_id=result["appointment_id"]
+        )
+        
         return {
             "message": "Payment confirmed successfully",
             "booking_id": result["appointment_id"],
@@ -171,16 +180,11 @@ def confirm_payment(
             "gift_certificate_used": result["gift_certificate_used"]
         }
         
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Payment confirmation error: {str(e)}"
-        )
+        logger.error(f"Exception in {__name__}: {e}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred")
 
 @router.post("/refund", response_model=RefundResponse)
 @refund_rate_limit
@@ -231,18 +235,19 @@ def create_refund(
             }
         )
         
+        # Invalidate cache after successful refund
+        cache_invalidator.invalidate_payment_data(
+            payment_id=refund_data.payment_id,
+            user_id=current_user.id
+        )
+        
         return result
         
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Refund processing error: {str(e)}"
-        )
+        logger.error(f"Exception in {__name__}: {e}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred")
 
 @router.post("/gift-certificates", response_model=GiftCertificateResponse)
 @gift_certificate_create_limit
@@ -274,10 +279,8 @@ def create_gift_certificate(
         return result
         
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Gift certificate creation error: {str(e)}"
-        )
+        logger.error(f"Exception in {__name__}: {e}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred")
 
 @router.post("/gift-certificates/validate")
 @gift_certificate_validate_limit
@@ -306,10 +309,8 @@ def validate_gift_certificate(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Gift certificate validation error: {str(e)}"
-        )
+        logger.error(f"Exception in {__name__}: {e}", exc_info=True)
+        raise AppError("An error occurred", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @router.get("/history", response_model=PaymentHistoryResponse)
 @payment_history_limit
@@ -353,10 +354,8 @@ def get_payment_history(
         return result
         
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error retrieving payment history: {str(e)}"
-        )
+        logger.error(f"Exception in {__name__}: {e}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred")
 
 @router.post("/reports", response_model=PaymentReportResponse)
 @payment_report_limit
@@ -388,10 +387,8 @@ def generate_payment_report(
         return result
         
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error generating payment report: {str(e)}"
-        )
+        logger.error(f"Exception in {__name__}: {e}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred")
 
 @router.post("/payouts", response_model=PayoutResponse)
 @payout_rate_limit
@@ -446,16 +443,11 @@ def process_payout(
         
         return result
         
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Payout processing error: {str(e)}"
-        )
+        logger.error(f"Exception in {__name__}: {e}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred")
 
 @router.post("/payouts/enhanced")
 @payout_rate_limit
@@ -490,19 +482,14 @@ def process_enhanced_payout(
         
         return result
         
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Enhanced payout processing error: {str(e)}"
-        )
+        logger.error(f"Exception in {__name__}: {e}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred")
 
 @router.get("/gift-certificates", response_model=List[GiftCertificateResponse])
-@financial_rate_limit("payment_history")
+@payment_history_limit
 def list_gift_certificates(
     request: Request,
     current_user: User = Depends(get_current_user),
@@ -521,10 +508,8 @@ def list_gift_certificates(
         return gift_certs
         
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error retrieving gift certificates: {str(e)}"
-        )
+        logger.error(f"Exception in {__name__}: {e}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred")
 
 @router.post("/stripe-connect/onboard", response_model=StripeConnectOnboardingResponse)
 @stripe_connect_limit
@@ -544,19 +529,14 @@ def create_stripe_connect_account(
         result = PaymentService.create_stripe_connect_account(current_user, db)
         return result
         
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error creating Stripe Connect account: {str(e)}"
-        )
+        logger.error(f"Exception in {__name__}: {e}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred")
 
 @router.get("/stripe-connect/status", response_model=StripeConnectStatusResponse)
-@financial_rate_limit("payment_history", error_message="Too many status checks. Please wait before checking again.")
+@payment_history_limit
 def get_stripe_connect_status(
     request: Request,
     current_user: User = Depends(get_current_user)
@@ -567,7 +547,202 @@ def get_stripe_connect_status(
         return result
         
     except Exception as e:
+        logger.error(f"Exception in {__name__}: {e}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred")
+
+@router.get("/payouts/summary")
+@payment_history_limit
+def get_payout_summary(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get payout summary showing pending amounts from all sources"""
+    # Check authorization - barbers can see their own, admins can see any
+    if current_user.role not in ["barber", "admin", "super_admin"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to view payout summary"
+        )
+    
+    barber_id = current_user.id if current_user.role == "barber" else None
+    
+    try:
+        # Get service payment summary
+        service_payments = db.query(Payment).filter(
+            Payment.status == "completed"
+        )
+        if barber_id:
+            service_payments = service_payments.filter(Payment.barber_id == barber_id)
+        
+        # Get unpaid service payments
+        unpaid_service_payments = service_payments.filter(
+            ~Payment.id.in_(
+                db.query(Payment.id).join(Payout, Payment.created_at.between(
+                    Payout.period_start, Payout.period_end
+                )).filter(Payout.barber_id == Payment.barber_id)
+            )
+        ).all()
+        
+        service_amount = sum(p.barber_amount or 0 for p in unpaid_service_payments)
+        
+        # Get retail commission summary
+        retail_amount = 0
+        retail_breakdown = None
+        try:
+            from services.commission_service import CommissionService
+            commission_service = CommissionService(db)
+            if barber_id:
+                retail_breakdown = commission_service.get_barber_retail_commissions(
+                    barber_id, unpaid_only=True
+                )
+                retail_amount = float(retail_breakdown["total_retail_commission"])
+        except ImportError:
+            logger.warning("CommissionService not available")
+        
+        # Get last payout info
+        last_payout = None
+        if barber_id:
+            last_payout_record = db.query(Payout).filter(
+                Payout.barber_id == barber_id,
+                Payout.status == "completed"
+            ).order_by(Payout.processed_at.desc()).first()
+            
+            if last_payout_record:
+                last_payout = {
+                    "id": last_payout_record.id,
+                    "amount": float(last_payout_record.amount),
+                    "date": last_payout_record.processed_at.isoformat(),
+                    "payment_count": last_payout_record.payment_count
+                }
+        
+        # Calculate total pending
+        total_pending = service_amount + retail_amount
+        
+        # Get barber info if specific barber
+        barber_info = None
+        if barber_id:
+            barber = db.query(User).filter(User.id == barber_id).first()
+            if barber:
+                barber_info = {
+                    "id": barber.id,
+                    "name": barber.name,
+                    "email": barber.email,
+                    "commission_rate": barber.commission_rate
+                }
+        
+        return {
+            "barber": barber_info,
+            "pending_amounts": {
+                "service_payments": float(service_amount),
+                "retail_commissions": float(retail_amount),
+                "total": float(total_pending)
+            },
+            "pending_counts": {
+                "service_payments": len(unpaid_service_payments),
+                "retail_items": retail_breakdown["order_items_count"] if retail_breakdown else 0,
+                "pos_transactions": retail_breakdown["pos_transactions_count"] if retail_breakdown else 0
+            },
+            "last_payout": last_payout,
+            "retail_breakdown": retail_breakdown,
+            "can_process_payout": total_pending > 0,
+            "minimum_payout_amount": 10.00,  # Could be configurable
+            "meets_minimum": total_pending >= 10.00
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting payout summary: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error retrieving Stripe Connect status: {str(e)}"
+            detail="An error occurred while calculating payout summary"
+        )
+
+@router.get("/payouts/history")
+@payment_history_limit
+def get_payout_history(
+    request: Request,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=100),
+    start_date: Optional[datetime] = Query(None),
+    end_date: Optional[datetime] = Query(None),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get payout history with optional date filtering"""
+    # Check authorization
+    if current_user.role == "barber":
+        barber_id = current_user.id
+    elif current_user.role in ["admin", "super_admin"]:
+        barber_id = None  # Admins can see all
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to view payout history"
+        )
+    
+    try:
+        # Build query
+        query = db.query(Payout)
+        
+        if barber_id:
+            query = query.filter(Payout.barber_id == barber_id)
+        if start_date:
+            query = query.filter(Payout.created_at >= start_date)
+        if end_date:
+            query = query.filter(Payout.created_at <= end_date)
+        
+        # Get total count
+        total = query.count()
+        
+        # Apply pagination
+        offset = (page - 1) * page_size
+        payouts = query.order_by(Payout.created_at.desc()).offset(offset).limit(page_size).all()
+        
+        # Format response
+        payout_list = []
+        for payout in payouts:
+            # Get barber info
+            barber = db.query(User).filter(User.id == payout.barber_id).first()
+            
+            # Try to get breakdown if available (for newer payouts)
+            service_amount = payout.amount  # Default to total
+            retail_amount = 0
+            
+            # Check if this was an enhanced payout by looking at Stripe metadata
+            # (This would require storing metadata in payout record)
+            
+            payout_list.append({
+                "id": payout.id,
+                "barber": {
+                    "id": barber.id,
+                    "name": barber.name,
+                    "email": barber.email
+                } if barber else None,
+                "amount": float(payout.amount),
+                "service_amount": float(service_amount),
+                "retail_amount": float(retail_amount),
+                "status": payout.status,
+                "period_start": payout.period_start.isoformat(),
+                "period_end": payout.period_end.isoformat(),
+                "payment_count": payout.payment_count,
+                "stripe_transfer_id": payout.stripe_transfer_id,
+                "created_at": payout.created_at.isoformat(),
+                "processed_at": payout.processed_at.isoformat() if payout.processed_at else None
+            })
+        
+        return {
+            "payouts": payout_list,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": (total + page_size - 1) // page_size,
+            "has_next": page * page_size < total,
+            "has_previous": page > 1
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting payout history: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while retrieving payout history"
         )

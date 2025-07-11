@@ -43,8 +43,8 @@ This report documents the migration of the 6FB Booking platform from a tradition
 ```
 6fb-platform/
 ├── apps/
-│   ├── backend/          # FastAPI backend application
-│   ├── frontend/         # Next.js frontend application
+│   ├── backend-v2/          # FastAPI backend application
+│   ├── backend-v2/frontend-v2/         # Next.js frontend application
 │   └── dashboard/        # Analytics dashboard
 ├── packages/
 │   ├── shared/           # Shared types and schemas

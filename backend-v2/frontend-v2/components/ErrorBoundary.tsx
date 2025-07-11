@@ -4,7 +4,7 @@ import React, { Component, ReactNode, ErrorInfo } from 'react'
 import { AlertTriangle, RefreshCw, Home, MessageSquare } from 'lucide-react'
 import { Button } from './ui/Button'
 import { Alert, AlertDescription, AlertTitle } from './ui/alert'
-import * as Sentry from '@sentry/nextjs'
+import { Sentry } from '../lib/sentry'
 import { reportApiError, captureUserFeedback, addUserActionBreadcrumb } from '../lib/sentry'
 
 interface Props {

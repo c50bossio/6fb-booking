@@ -10,7 +10,7 @@
 2. **Python version specification**:
    - Created `runtime.txt` with `python-3.11.10`
    - Created `.python-version` with `3.11.10`
-   - Created `backend/runtime.txt` and `backend/.python-version`
+   - Created `backend-v2/runtime.txt` and `backend-v2/.python-version`
    - Updated `render.yaml` to use `runtime: python-3.11`
 
 3. **Dependency versions fixed**:

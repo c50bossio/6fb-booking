@@ -7,7 +7,7 @@ import WebhookConfiguration from '../../../components/WebhookConfiguration'
 import WebhookLogs from '../../../components/WebhookLogs'
 import WebhookTester from '../../../components/WebhookTester'
 import WebhookDocumentation from '../../../components/WebhookDocumentation'
-import { Card, CardHeader, CardTitle, CardContent } from '../../../components/ui/Card'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 
 type TabType = 'configuration' | 'logs' | 'testing' | 'documentation'
 

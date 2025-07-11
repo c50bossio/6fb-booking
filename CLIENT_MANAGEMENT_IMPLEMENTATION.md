@@ -136,7 +136,7 @@ class Client(BaseModel):
 
 ### Backend Files
 ```
-backend/
+backend-v2/
 ├── api/v1/endpoints/clients.py          # Main API endpoints
 ├── models/client.py                     # Client database model
 ├── services/email_service.py            # Email functionality
@@ -147,7 +147,7 @@ backend/
 
 ### Frontend Files
 ```
-frontend/src/
+backend-v2/frontend-v2/src/
 ├── app/clients/page.tsx                 # Main client list page
 ├── app/clients/[id]/page.tsx            # Client profile page
 ├── components/modals/

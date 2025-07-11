@@ -2,13 +2,13 @@
 
 import { useState, useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Progress } from '@/components/ui/progress'
 import { 
   ArrowUpIcon,
   ArrowDownIcon,
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   CurrencyDollarIcon,
   ChartBarIcon,
   EyeIcon,
@@ -62,7 +62,7 @@ const metricConfigs = {
   },
   conversion_rate: {
     label: 'Conversion Rate',
-    icon: <TrendingUpIcon className="w-4 h-4" />,
+    icon: <ArrowTrendingUpIcon className="w-4 h-4" />,
     formatter: (value: number) => `${value.toFixed(2)}%`,
     color: 'bg-purple-500',
     description: 'Percentage of visitors who complete a booking'

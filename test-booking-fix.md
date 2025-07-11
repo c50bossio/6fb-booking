@@ -32,7 +32,7 @@
 
 ## Files Modified
 
-1. **`/Users/bossio/6fb-booking/frontend/src/app/book/[shopId]/booking/page.tsx`**:
+1. **`/Users/bossio/6fb-booking/backend-v2/frontend-v2/src/app/book/[shopId]/booking/page.tsx`**:
    - Added `createdAppointment` state variable
    - Added `createAppointmentForPayment()` async function
    - Modified `handleNext()` to be async and create appointment before payment step
@@ -40,7 +40,7 @@
    - Enhanced error handling with specific error messages
    - Updated confirm step messaging and final submission logic
 
-2. **`/Users/bossio/6fb-booking/frontend/src/lib/api/bookings.ts`**:
+2. **`/Users/bossio/6fb-booking/backend-v2/frontend-v2/src/lib/api/bookings.ts`**:
    - Updated `BookingRequest` interface to support nullable `barber_id`
    - Added `any_professional` and `location_id` optional fields
 

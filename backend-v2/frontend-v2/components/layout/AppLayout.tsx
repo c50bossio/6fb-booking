@@ -12,6 +12,8 @@ import Footer from './Footer'
 import { useResponsive } from '@/hooks/useResponsive'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { TestDataIndicator } from '@/components/TestDataIndicator'
+import { navigationItems } from '@/lib/navigation'
+import { SessionTimeoutWarning } from '@/components/auth/SessionTimeoutWarning'
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -23,8 +25,8 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { isMobile } = useResponsive()
 
   // Define public routes that don't require authentication
-  const publicRoutes = ['/', '/login', '/register', '/check-email', '/verify-email', '/forgot-password', '/reset-password', '/terms', '/privacy', '/cookies', '/agents']
-  const isPublicRoute = publicRoutes.includes(pathname) || pathname.startsWith('/reset-password/') || pathname.startsWith('/agents/') || pathname.startsWith('/verify-email/')
+  const publicRoutes = ['/', '/login', '/register', '/check-email', '/verify-email', '/forgot-password', '/reset-password', '/terms', '/privacy', '/cookies', '/agents', '/book']
+  const isPublicRoute = publicRoutes.includes(pathname) || pathname.startsWith('/reset-password/') || pathname.startsWith('/agents/') || pathname.startsWith('/verify-email/') || pathname.startsWith('/book/')
 
   const [user, setUser] = useState<User | null>(null)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -84,10 +86,47 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
   }, [mounted, isMobile])
 
-  // Simple breadcrumb function
+  // Generate breadcrumbs based on current path
   const getBreadcrumbs = () => {
-    // Return empty array for now - breadcrumbs are optional
-    return []
+    if (!pathname || pathname === '/' || pathname === '/dashboard' || pathname.includes('/login')) {
+      return []
+    }
+
+    const paths = pathname.split('/').filter(Boolean)
+    const breadcrumbs = [{ label: 'Dashboard', href: '/dashboard' }]
+
+    
+    // Find matching navigation items for better labels
+    const findNavItem = (href: string) => {
+      for (const item of navigationItems) {
+        if (item.href === href) return item
+        if (item.children) {
+          for (const child of item.children) {
+            if (child.href === href) return child
+          }
+        }
+      }
+      return null
+    }
+
+    let currentPath = ''
+    paths.forEach((path, index) => {
+      currentPath += `/${path}`
+      const navItem = findNavItem(currentPath)
+      
+      let label = navItem?.name || path
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ')
+
+      breadcrumbs.push({
+        label,
+        href: currentPath,
+        isLast: index === paths.length - 1
+      })
+    })
+
+    return breadcrumbs
   }
 
   // Prevent hydration issues by not rendering anything until mounted
@@ -286,6 +325,15 @@ export function AppLayout({ children }: AppLayoutProps) {
         
         {/* Test Data Indicator - Shows when test data is active */}
         {!isPublicRoute && user && <TestDataIndicator />}
+        
+        {/* Session Timeout Warning - Shows warning before session expires */}
+        {!isPublicRoute && user && (
+          <SessionTimeoutWarning 
+            sessionDurationMinutes={30}
+            warningMinutesBeforeTimeout={5}
+            enabled={true}
+          />
+        )}
       </div>
     </ThemeProvider>
   )

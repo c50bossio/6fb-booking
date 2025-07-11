@@ -234,7 +234,7 @@ Tracks:
 
 2. **Guides:**
    - [Pre-Commit Quick Reference](PRE_COMMIT_QUICK_REFERENCE.md)
-   - [Build Validation Guide](frontend/BUILD_VALIDATION.md)
+   - [Build Validation Guide](backend-v2/frontend-v2/BUILD_VALIDATION.md)
    - [Migration Guide](MIGRATION_TOOLS_README.md)
 
 ## ✅ Developer Checklist

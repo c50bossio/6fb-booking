@@ -3,11 +3,12 @@ Test Data Service - Creates realistic test data for new accounts
 """
 from sqlalchemy.orm import Session
 from datetime import datetime, date, time, timedelta
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import random
 from decimal import Decimal
 
 import models
+import schemas
 from models import (
     Payment, Payout, SMSConversation, SMSMessage, SMSMessageDirection, SMSMessageStatus,
     NotificationQueue, NotificationStatus,  # Added notification imports
@@ -183,11 +184,14 @@ def create_test_barbers(db: Session, user_id: int) -> List[models.User]:
             
     return created_barbers
 
-def create_test_clients(db: Session, user_id: int) -> List[models.Client]:
+def create_test_clients(db: Session, user_id: int, count: int = 20) -> List[models.Client]:
     """Create diverse test clients"""
     created_clients = []
     
-    for idx, client_data in enumerate(TEST_CLIENTS):
+    # Take only the requested number of clients
+    clients_to_create = TEST_CLIENTS[:count]
+    
+    for idx, client_data in enumerate(clients_to_create):
         # Create client
         client = models.Client(
             first_name=client_data["first_name"],
@@ -256,6 +260,45 @@ def create_test_services(db: Session) -> List[models.Service]:
         
         if not existing:
             service = models.Service(**service_data)
+            db.add(service)
+            created_services.append(service)
+        else:
+            created_services.append(existing)
+            
+    return created_services
+
+def create_custom_services(db: Session, service_configs: List[schemas.ServiceConfig]) -> List[models.Service]:
+    """Create custom services based on provided configuration"""
+    from models import ServiceCategoryEnum
+    
+    created_services = []
+    for config in service_configs:
+        existing = db.query(models.Service).filter(
+            models.Service.name == config.name
+        ).first()
+        
+        if not existing:
+            # Map category string to enum
+            category_mapping = {
+                "haircut": ServiceCategoryEnum.HAIRCUT,
+                "beard": ServiceCategoryEnum.BEARD,
+                "package": ServiceCategoryEnum.PACKAGE,
+                "shampoo": ServiceCategoryEnum.SHAMPOO,
+                "styling": ServiceCategoryEnum.STYLING,
+                "coloring": ServiceCategoryEnum.COLORING,
+                "treatment": ServiceCategoryEnum.TREATMENT,
+                "other": ServiceCategoryEnum.OTHER
+            }
+            
+            category = category_mapping.get(config.category.lower(), ServiceCategoryEnum.HAIRCUT)
+            
+            service = models.Service(
+                name=config.name,
+                duration_minutes=config.duration_minutes,
+                base_price=config.base_price,
+                description=config.description,
+                category=category
+            )
             db.add(service)
             created_services.append(service)
         else:
@@ -944,17 +987,30 @@ def create_test_appointments(
     user_id: int,
     barbers: List[models.User],
     clients: List[models.Client],
-    services: List[models.Service]
+    services: List[models.Service],
+    count: int = 50,
+    start_days_ago: int = 90,
+    end_days_ahead: int = 30
 ) -> List[models.Appointment]:
     """Create realistic appointment history and future bookings"""
     created_appointments = []
     
-    # Historical appointments (last 30 days)
-    for days_ago in range(30, 0, -1):
-        appointment_date = date.today() - timedelta(days=days_ago)
+    # Calculate historical date range
+    start_date = date.today() - timedelta(days=start_days_ago)
+    end_date = date.today() + timedelta(days=end_days_ahead)
+    
+    # Track how many appointments we've created
+    appointments_created = 0
+    max_appointments = count
+    
+    # Historical appointments
+    current_date = start_date
+    while current_date <= date.today() and appointments_created < max_appointments:
+        appointment_date = current_date
         
         # Skip Sundays
         if appointment_date.weekday() == 6:
+            current_date += timedelta(days=1)
             continue
             
         # Create appointments with realistic patterns
@@ -969,6 +1025,9 @@ def create_test_appointments(
             num_appointments = random.randint(4, 7)
         
         for _ in range(num_appointments):
+            if appointments_created >= max_appointments:
+                break
+                
             # Random client and service
             client = random.choice(clients)
             service = random.choice(services)
@@ -1009,42 +1068,55 @@ def create_test_appointments(
             )
             db.add(appointment)
             created_appointments.append(appointment)
-    
-    # Today's appointments
-    today = date.today()
-    today_times = [
-        (9, 0), (9, 30), (10, 15), (11, 0), (11, 45),
-        (14, 0), (14, 45), (15, 30), (16, 15), (17, 0)
-    ]
-    
-    for idx, (hour, minute) in enumerate(today_times[:6]):  # Create 6 appointments for today
-        client = clients[idx % len(clients)]
-        service = services[idx % len(services)]
-        barber = barbers[idx % len(barbers)]
+            appointments_created += 1
+            appointments_created += 1
         
-        start_time = datetime.combine(today, time(hour, minute))
-        
-        # First few are completed, last few are scheduled
-        status = "completed" if idx < 3 else "scheduled"
-        
-        appointment = models.Appointment(
-            user_id=user_id,
-            barber_id=barber.id,
-            client_id=client.id,
-            service_id=service.id,
-            service_name=service.name,
-            start_time=start_time,
-            duration_minutes=service.duration_minutes,
-            price=float(service.base_price),
-            status=status,
-            is_test_data=True
-        )
-        db.add(appointment)
-        created_appointments.append(appointment)
+        current_date += timedelta(days=1)
     
-    # Future appointments (next 14 days)
-    for days_ahead in range(1, 15):
-        future_date = today + timedelta(days=days_ahead)
+    # Today's appointments (if we still have room)
+    if appointments_created < max_appointments:
+        today = date.today()
+        today_times = [
+            (9, 0), (9, 30), (10, 15), (11, 0), (11, 45),
+            (14, 0), (14, 45), (15, 30), (16, 15), (17, 0)
+        ]
+        
+        for idx, (hour, minute) in enumerate(today_times[:6]):  # Create 6 appointments for today
+            if appointments_created >= max_appointments:
+                break
+                
+            client = clients[idx % len(clients)]
+            service = services[idx % len(services)]
+            barber = barbers[idx % len(barbers)]
+            
+            start_time = datetime.combine(today, time(hour, minute))
+            
+            # First few are completed, last few are scheduled
+            status = "completed" if idx < 3 else "scheduled"
+            
+            appointment = models.Appointment(
+                user_id=user_id,
+                barber_id=barber.id,
+                client_id=client.id,
+                service_id=service.id,
+                service_name=service.name,
+                start_time=start_time,
+                duration_minutes=service.duration_minutes,
+                price=float(service.base_price),
+                status=status,
+                is_test_data=True
+            )
+            db.add(appointment)
+            created_appointments.append(appointment)
+            appointments_created += 1
+            appointments_created += 1
+    
+    # Future appointments (up to end date)
+    for days_ahead in range(1, end_days_ahead + 1):
+        if appointments_created >= max_appointments:
+            break
+            
+        future_date = date.today() + timedelta(days=days_ahead)
         
         # Skip Sundays
         if future_date.weekday() == 6:
@@ -1061,6 +1133,9 @@ def create_test_appointments(
             num_appointments = random.randint(3, 7)
             
         for _ in range(num_appointments):
+            if appointments_created >= max_appointments:
+                break
+                
             client = random.choice(clients)
             service = random.choice(services)
             barber = random.choice(barbers)
@@ -1088,6 +1163,7 @@ def create_test_appointments(
             )
             db.add(appointment)
             created_appointments.append(appointment)
+            appointments_created += 1
     
     logger.info(f"Created {len(created_appointments)} test appointments")
     return created_appointments
@@ -1974,7 +2050,8 @@ def create_short_urls_data(db: Session, user_id: int, barbers: List[models.User]
     return created_data
 
 def create_enterprise_data(db: Session, user_id: int, barbers: List[models.User] = None, 
-                         clients: List[models.Client] = None, services: List[models.Service] = None) -> Dict[str, Any]:
+                         clients: List[models.Client] = None, services: List[models.Service] = None,
+                         location_count: int = 3) -> Dict[str, Any]:
     """Create multi-location enterprise test data"""
     created_data = {
         "locations": [],
@@ -1986,8 +2063,8 @@ def create_enterprise_data(db: Session, user_id: int, barbers: List[models.User]
     }
     
     try:
-        # Create 3 barbershop locations
-        locations_data = [
+        # Create barbershop locations (default templates)
+        location_templates = [
             {
                 "name": "Downtown Flagship",
                 "code": "DTF",
@@ -2001,8 +2078,6 @@ def create_enterprise_data(db: Session, user_id: int, barbers: List[models.User]
                 "compensation_model": CompensationModel.COMMISSION,
                 "total_chairs": 8,
                 "active_chairs": 7,
-                "manager_id": user_id,
-                "owner_id": user_id,
                 "business_hours": {
                     "monday": {"open": "09:00", "close": "20:00"},
                     "tuesday": {"open": "09:00", "close": "20:00"},
@@ -2031,8 +2106,6 @@ def create_enterprise_data(db: Session, user_id: int, barbers: List[models.User]
                 "compensation_model": CompensationModel.BOOTH_RENTAL,
                 "total_chairs": 6,
                 "active_chairs": 5,
-                "manager_id": user_id,
-                "owner_id": user_id,
                 "business_hours": {
                     "monday": {"open": "10:00", "close": "19:00"},
                     "tuesday": {"open": "10:00", "close": "19:00"},
@@ -2061,8 +2134,6 @@ def create_enterprise_data(db: Session, user_id: int, barbers: List[models.User]
                 "compensation_model": CompensationModel.HYBRID,
                 "total_chairs": 4,
                 "active_chairs": 4,
-                "manager_id": user_id,
-                "owner_id": user_id,
                 "business_hours": {
                     "monday": {"open": "06:00", "close": "22:00"},
                     "tuesday": {"open": "06:00", "close": "22:00"},
@@ -2079,6 +2150,25 @@ def create_enterprise_data(db: Session, user_id: int, barbers: List[models.User]
                 }
             }
         ]
+        
+        # Create the requested number of locations
+        locations_data = []
+        for i in range(location_count):
+            template = location_templates[i % len(location_templates)]
+            loc_data = template.copy()
+            
+            # Customize for unique location
+            if i > 0:
+                loc_data["name"] = f"{template['name']} {i+1}"
+                loc_data["code"] = f"{template['code']}{i+1}"
+                loc_data["email"] = template["email"].replace("@", f"{i+1}@")
+                loc_data["phone"] = template["phone"][:-3] + f"{i+1:03d}"
+            
+            # Add common fields
+            loc_data["manager_id"] = user_id
+            loc_data["owner_id"] = user_id
+            
+            locations_data.append(loc_data)
         
         # Create locations
         for loc_data in locations_data:
@@ -2262,28 +2352,40 @@ def create_enterprise_data(db: Session, user_id: int, barbers: List[models.User]
     
     return created_data
 
-def create_test_data_for_user(db: Session, user_id: int, include_enterprise: bool = False) -> Dict[str, Any]:
+def create_test_data_for_user(db: Session, user_id: int, customization: Optional[schemas.TestDataCustomization] = None) -> Dict[str, Any]:
     """Create complete test data ecosystem for a user
     
     Args:
         db: Database session
         user_id: User ID to create test data for
-        include_enterprise: If True, also creates multi-location enterprise data
+        customization: Optional customization settings for test data creation
     """
+    # Use defaults if no customization provided
+    if customization is None:
+        customization = schemas.TestDataCustomization()
+    
     try:
-        logger.info(f"Creating test data for user {user_id} (enterprise={include_enterprise})")
+        logger.info(f"Creating test data for user {user_id} with customization: {customization.dict()}")
         
         # Create test barbers (or use existing)
         barbers = create_test_barbers(db, user_id)
         
-        # Create test services
-        services = create_test_services(db)
+        # Create test services (custom or default)
+        if customization.services:
+            services = create_custom_services(db, customization.services)
+        else:
+            services = create_test_services(db)
         
-        # Create test clients
-        clients = create_test_clients(db, user_id)
+        # Create test clients (with custom count)
+        clients = create_test_clients(db, user_id, count=customization.client_count)
         
-        # Create test appointments
-        appointments = create_test_appointments(db, user_id, barbers, clients, services)
+        # Create test appointments (with custom parameters)
+        appointments = create_test_appointments(
+            db, user_id, barbers, clients, services,
+            count=customization.appointment_count,
+            start_days_ago=customization.start_date_days_ago,
+            end_days_ahead=customization.end_date_days_ahead
+        )
         
         # Flush to get appointment IDs before creating payments
         db.flush()
@@ -2311,11 +2413,14 @@ def create_test_data_for_user(db: Session, user_id: int, include_enterprise: boo
         
         # Create enterprise data if requested
         enterprise_data = {}
-        if include_enterprise:
-            enterprise_data = create_enterprise_data(db, user_id, barbers, clients, services)
+        if customization.include_enterprise:
+            enterprise_data = create_enterprise_data(
+                db, user_id, barbers, clients, services,
+                location_count=customization.location_count
+            )
         
         # Create short URLs and QR codes for marketing
-        locations = enterprise_data.get("locations", []) if include_enterprise else None
+        locations = enterprise_data.get("locations", []) if customization.include_enterprise else None
         short_urls_data = create_short_urls_data(db, user_id, barbers, services, locations)
         
         # Commit all changes

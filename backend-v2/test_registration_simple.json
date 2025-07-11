@@ -1,0 +1,22 @@
+{
+  "firstName": "Test",
+  "lastName": "User", 
+  "email": "test@example.com",
+  "password": "TestPass123A",
+  "user_type": "barber",
+  "businessName": "Test Barbershop",
+  "businessType": "individual",
+  "address": {
+    "street": "123 Main St",
+    "city": "Anytown", 
+    "state": "CA",
+    "zipCode": "12345"
+  },
+  "chairCount": 2,
+  "barberCount": 1,
+  "consent": {
+    "terms": true,
+    "privacy": true
+  }
+}
+EOF < /dev/null

@@ -35,17 +35,18 @@ const defaultOptions: UseResponsiveOptions = {
  */
 export function useResponsive(options: UseResponsiveOptions = {}): ResponsiveState {
   const { debounceMs, enableTouch, enableOrientation } = { ...defaultOptions, ...options }
+  const [mounted, setMounted] = useState(false)
   
   const getInitialState = useCallback((): ResponsiveState => {
-    if (typeof window === 'undefined') {
+    if (typeof window === 'undefined' || !mounted) {
       return {
-        width: 0,
-        height: 0,
+        width: 1200, // Default desktop width to prevent layout shifts
+        height: 800,
         isMobile: false,
         isTablet: false,
         isDesktop: true,
         isWide: false,
-        currentBreakpoint: null,
+        currentBreakpoint: 'lg',
         orientation: 'landscape',
         isTouch: false,
         isMobileDevice: false,
@@ -87,11 +88,18 @@ export function useResponsive(options: UseResponsiveOptions = {}): ResponsiveSta
       isMobileDevice,
       pixelRatio,
     }
-  }, [enableTouch])
+  }, [enableTouch, mounted])
 
   const [state, setState] = useState<ResponsiveState>(getInitialState)
 
+  // Mount effect to prevent hydration mismatches
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
+    
     let timeoutId: NodeJS.Timeout
 
     const handleResize = () => {
@@ -108,7 +116,7 @@ export function useResponsive(options: UseResponsiveOptions = {}): ResponsiveSta
       }, 100)
     }
 
-    // Initial state update
+    // Initial state update after mounting
     setState(getInitialState())
 
     // Add event listeners
@@ -128,7 +136,7 @@ export function useResponsive(options: UseResponsiveOptions = {}): ResponsiveSta
         window.removeEventListener('resize', handleOrientationChange)
       }
     }
-  }, [getInitialState, debounceMs, enableOrientation])
+  }, [getInitialState, debounceMs, enableOrientation, mounted])
 
   return state
 }

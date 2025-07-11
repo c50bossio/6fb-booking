@@ -3,33 +3,8 @@
 import { useState, useEffect } from 'react';
 import { fetchAPI } from '@/lib/api';
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths } from 'date-fns';
-import { ArrowLeft, Download, TrendingUp, TrendingDown, DollarSign, CreditCard, Gift, Users, FileText, PieChart } from 'lucide-react';
-import { Line, Bar, Pie } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js';
-
-// Register ChartJS components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend
-);
+import { ArrowLeft, Download, TrendingUp, TrendingDown, DollarSign, CreditCard, Gift, Users, FileText, PieChart as PieChartIcon } from 'lucide-react';
+import { LineChart, BarChart, PieChart } from '@/components/analytics/ChartComponents';
 
 interface PaymentReportsProps {
   onBack: () => void;
@@ -401,80 +376,31 @@ export default function PaymentReports({ onBack }: PaymentReportsProps) {
           {/* Revenue Trend */}
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Revenue Trend</h3>
-            <Line
+            <LineChart
               data={revenueChartData}
-              options={{
-                responsive: true,
-                plugins: {
-                  legend: {
-                    display: false,
-                  },
-                  tooltip: {
-                    callbacks: {
-                      label: (context) => `$${context.parsed.y.toFixed(2)}`,
-                    },
-                  },
-                },
-                scales: {
-                  y: {
-                    beginAtZero: true,
-                    ticks: {
-                      callback: (value) => `$${value}`,
-                    },
-                  },
-                },
-              }}
+              height={300}
+              className="w-full"
             />
           </div>
           
           {/* Payment Methods */}
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Methods</h3>
-            <div className="h-64 flex items-center justify-center">
-              <Pie
-                data={paymentMethodData}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: {
-                      position: 'bottom',
-                    },
-                    tooltip: {
-                      callbacks: {
-                        label: (context) => {
-                          const label = context.label || '';
-                          const value = context.parsed || 0;
-                          const percentage = ((value / reportData.revenue.total) * 100).toFixed(1);
-                          return `${label}: $${value.toFixed(2)} (${percentage}%)`;
-                        },
-                      },
-                    },
-                  },
-                }}
-              />
-            </div>
+            <PieChart
+              data={paymentMethodData}
+              height={250}
+              className="w-full"
+            />
           </div>
         </div>
 
         {/* Transaction Status */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Transaction Status Breakdown</h3>
-          <Bar
+          <BarChart
             data={transactionStatusData}
-            options={{
-              responsive: true,
-              plugins: {
-                legend: {
-                  display: false,
-                },
-              },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                },
-              },
-            }}
+            height={300}
+            className="w-full"
           />
         </div>
 
@@ -522,7 +448,7 @@ export default function PaymentReports({ onBack }: PaymentReportsProps) {
         {/* Tax Notice */}
         <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex">
-            <PieChart className="h-5 w-5 text-blue-400 flex-shrink-0 mt-0.5" />
+            <PieChartIcon className="h-5 w-5 text-blue-400 flex-shrink-0 mt-0.5" />
             <div className="ml-3">
               <h3 className="text-sm font-medium text-blue-800">Tax Information</h3>
               <div className="mt-1 text-sm text-blue-700">

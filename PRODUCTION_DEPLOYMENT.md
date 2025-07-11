@@ -42,10 +42,10 @@ Copy and customize the production environment files:
 
 ```bash
 # Backend environment
-cp backend/.env.production backend/.env.production.local
+cp backend-v2/.env.production backend-v2/.env.production.local
 
 # Frontend environment
-cp frontend/.env.production frontend/.env.production.local
+cp backend-v2/frontend-v2/.env.production backend-v2/frontend-v2/.env.production.local
 ```
 
 **CRITICAL: Update all placeholder values in the environment files:**

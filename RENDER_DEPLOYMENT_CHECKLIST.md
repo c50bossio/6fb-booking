@@ -25,8 +25,8 @@
 - [ ] Push latest changes to GitHub/GitLab
 - [ ] Verify render.yaml is in the root directory
 - [ ] Confirm Python version files are present:
-  - [ ] `/backend/.python-version` (3.11.9)
-  - [ ] `/backend/runtime.txt` (python-3.11.9)
+  - [ ] `/backend-v2/.python-version` (3.11.9)
+  - [ ] `/backend-v2/runtime.txt` (python-3.11.9)
 
 ### 3. Database Preparation
 - [ ] Test database migrations locally
@@ -105,15 +105,15 @@ If issues occur:
 ## Files Created/Modified for Render Deployment
 
 1. **render.yaml** - Main deployment configuration
-2. **backend/.python-version** - Python version specification
-3. **backend/runtime.txt** - Render Python runtime
-4. **backend/build.sh** - Build script
-5. **backend/render-build.sh** - Render-specific build script
-6. **backend/Procfile** - Process configuration
-7. **backend/pyproject.toml** - Python project configuration
-8. **backend/scripts/pre-deploy.sh** - Pre-deployment checks
-9. **backend/scripts/deployment-health-check.py** - Health validation
-10. **Updated backend/requirements.txt** - Added production dependencies
+2. **backend-v2/.python-version** - Python version specification
+3. **backend-v2/runtime.txt** - Render Python runtime
+4. **backend-v2/build.sh** - Build script
+5. **backend-v2/render-build.sh** - Render-specific build script
+6. **backend-v2/Procfile** - Process configuration
+7. **backend-v2/pyproject.toml** - Python project configuration
+8. **backend-v2/scripts/pre-deploy.sh** - Pre-deployment checks
+9. **backend-v2/scripts/deployment-health-check.py** - Health validation
+10. **Updated backend-v2/requirements.txt** - Added production dependencies
 
 ## Next Steps
 

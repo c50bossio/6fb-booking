@@ -5,15 +5,15 @@
 ### 1. **CRITICAL: Exposed .env Files in Git**
 The following files are tracked in version control and contain sensitive credentials:
 - `.env.production` - Contains hardcoded SECRET_KEY and JWT_SECRET_KEY
-- `backend/.env.production`
-- `backend/.env.staging`
+- `backend-v2/.env.production`
+- `backend-v2/.env.staging`
 
 **Immediate Action Required:**
 ```bash
 # Remove these files from git immediately
 git rm --cached .env.production
-git rm --cached backend/.env.production
-git rm --cached backend/.env.staging
+git rm --cached backend-v2/.env.production
+git rm --cached backend-v2/.env.staging
 git commit -m "security: remove exposed .env files from version control"
 
 # Add to .gitignore if not already present

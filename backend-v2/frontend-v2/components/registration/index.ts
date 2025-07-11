@@ -2,6 +2,7 @@ export { MultiStepRegistration } from './MultiStepRegistration'
 export { BusinessTypeSelection } from './BusinessTypeSelection'
 export { AccountSetup } from './AccountSetup'
 export { BusinessInformation } from './BusinessInformation'
+export { ServiceTemplateSelection } from './ServiceTemplateSelection'
 export { PricingConfirmation } from './PricingConfirmation'
 export { PaymentSetup } from './PaymentSetup'
 

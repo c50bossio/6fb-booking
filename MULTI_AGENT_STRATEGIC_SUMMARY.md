@@ -248,7 +248,7 @@ The multi-agent team has successfully delivered a comprehensive full-stack optim
 
 ### Performance & Optimization
 - **Bundle Analysis:** Frontend bundle size tracking
-- **Responsive Design:** `/Users/bossio/6fb-booking/frontend/responsive-fixes-summary.md`
+- **Responsive Design:** `/Users/bossio/6fb-booking/backend-v2/frontend-v2/responsive-fixes-summary.md`
 - **Performance Metrics:** Real-time monitoring active
 
 ### Development & Deployment

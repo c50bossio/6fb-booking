@@ -11,17 +11,11 @@ import { ToastProvider } from '@/hooks/useToast'
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt'
 import { ServiceWorkerUpdate } from '@/components/ServiceWorkerUpdate'
 
+// Optimized Inter configuration for better performance
 const inter = Inter({ 
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-inter',
-})
-
-// Enhanced Inter configuration for iOS-style typography
-const interDisplay = Inter({ 
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-inter-display',
   weight: ['400', '500', '600', '700'],
 })
 
@@ -90,7 +84,7 @@ export default function RootLayout({
   return (
     <html 
       lang="en" 
-      className={`${inter.variable} ${interDisplay.variable}`}
+      className={`${inter.variable}`}
       suppressHydrationWarning
     >
       <head>

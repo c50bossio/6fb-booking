@@ -72,7 +72,7 @@ server {
     limit_req zone=app burst=50 nodelay;
 
     # Root directory for static files
-    root /var/www/bookbarber/frontend/dist;
+    root /var/www/bookbarber/backend-v2/frontend-v2/dist;
     index index.html;
 
     # Security headers specific to frontend

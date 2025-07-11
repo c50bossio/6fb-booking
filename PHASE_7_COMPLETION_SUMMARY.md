@@ -152,10 +152,10 @@ Phase 7 of the 6FB Platform development has been successfully completed. This ph
 ## Files Created
 
 ### Docker Files
-- `/backend/Dockerfile` - Production backend container
-- `/backend/Dockerfile.dev` - Development backend container
-- `/frontend/Dockerfile` - Production frontend container
-- `/frontend/Dockerfile.dev` - Development frontend container
+- `/backend-v2/Dockerfile` - Production backend container
+- `/backend-v2/Dockerfile.dev` - Development backend container
+- `/backend-v2/frontend-v2/Dockerfile` - Production frontend container
+- `/backend-v2/frontend-v2/Dockerfile.dev` - Development frontend container
 - `/.dockerignore` files - Build optimization
 
 ### Docker Compose
@@ -170,7 +170,7 @@ Phase 7 of the 6FB Platform development has been successfully completed. This ph
 ### Monitoring
 - `/monitoring/prometheus.yml` - Metrics configuration
 - `/monitoring/alerts/application.yml` - Alert rules
-- `/backend/api/metrics.py` - Metrics endpoint
+- `/backend-v2/api/metrics.py` - Metrics endpoint
 
 ### Nginx
 - `/nginx/nginx.conf` - Reverse proxy configuration

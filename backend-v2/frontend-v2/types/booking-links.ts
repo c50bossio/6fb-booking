@@ -274,7 +274,7 @@ export const PARAMETER_FORMATS = {
 
 // Default booking link configuration
 export const DEFAULT_BOOKING_CONFIG = {
-  baseUrl: 'https://app.bookedbarber.com/book',
+  baseUrl: 'https://bookedbarber.com/{slug}', // V2 organization slug-based URLs
   encoding: {
     arrayFormat: 'comma' as const,
     encodeValues: true,

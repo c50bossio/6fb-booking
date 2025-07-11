@@ -9,8 +9,8 @@ This document summarizes the comprehensive container orchestration setup created
 ### 1. Production Docker Images
 
 #### Multi-stage Docker Builds
-- **Backend (`docker/backend/Dockerfile.prod`)**: FastAPI application with security hardening
-- **Frontend (`docker/frontend/Dockerfile.prod`)**: Next.js application with optimized builds
+- **Backend (`docker/backend-v2/Dockerfile.prod`)**: FastAPI application with security hardening
+- **Frontend (`docker/backend-v2/frontend-v2/Dockerfile.prod`)**: Next.js application with optimized builds
 - **Worker (`docker/worker/Dockerfile`)**: Celery worker processes
 - **Nginx (`docker/nginx/Dockerfile`)**: Reverse proxy with security headers
 

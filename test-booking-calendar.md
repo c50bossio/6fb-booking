@@ -3,7 +3,7 @@
 ## What was updated:
 
 1. **BookingCalendar Component Integration**
-   - Updated `/frontend/src/app/book/[shopId]/booking/page.tsx` to use the new BookingCalendar component
+   - Updated `/backend-v2/frontend-v2/src/app/book/[shopId]/booking/page.tsx` to use the new BookingCalendar component
    - Replaced the basic HTML date input with the calendar component
 
 2. **Layout Improvements**

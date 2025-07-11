@@ -7,7 +7,7 @@ The 6FB Platform now supports real-time notifications using WebSocket technology
 
 ### Backend Components
 
-#### 1. WebSocket Connection Manager (`/backend/websocket/connection_manager.py`)
+#### 1. WebSocket Connection Manager (`/backend-v2/websocket/connection_manager.py`)
 - Manages active WebSocket connections
 - Tracks connections by user ID and location ID
 - Handles connection lifecycle (connect, disconnect, reconnect)
@@ -17,13 +17,13 @@ The 6FB Platform now supports real-time notifications using WebSocket technology
   - `broadcast()` - Send to all connected users
   - `send_notification()` - Send typed notifications
 
-#### 2. WebSocket Endpoint (`/backend/api/v1/websocket.py`)
+#### 2. WebSocket Endpoint (`/backend-v2/api/v1/websocket.py`)
 - Main WebSocket endpoint at `/api/v1/ws`
 - JWT authentication via query parameter
 - Handles incoming messages and maintains connection
 - Provides connection status endpoint
 
-#### 3. Notification Service (`/backend/services/notification_service.py`)
+#### 3. Notification Service (`/backend-v2/services/notification_service.py`)
 - High-level service for sending notifications
 - Notification types:
   - Appointment notifications (booking, cancellation, reminder)
@@ -34,13 +34,13 @@ The 6FB Platform now supports real-time notifications using WebSocket technology
 - Stores notifications in database for persistence
 - Sends real-time updates via WebSocket
 
-#### 4. Notification Model (`/backend/models/notification.py`)
+#### 4. Notification Model (`/backend-v2/models/notification.py`)
 - Database model for persistent notifications
 - Fields: type, priority, title, message, data, read status
 - Supports expiring notifications
 - Tracks read timestamps
 
-#### 5. Notification API (`/backend/api/v1/notifications.py`)
+#### 5. Notification API (`/backend-v2/api/v1/notifications.py`)
 - RESTful endpoints for notification management
 - Get all notifications (with pagination)
 - Get unread notifications
@@ -50,7 +50,7 @@ The 6FB Platform now supports real-time notifications using WebSocket technology
 
 ### Frontend Components
 
-#### 1. WebSocket Hook (`/frontend/src/hooks/useWebSocket.ts`)
+#### 1. WebSocket Hook (`/backend-v2/frontend-v2/src/hooks/useWebSocket.ts`)
 - React hook for WebSocket connection management
 - Features:
   - Auto-connect on mount
@@ -60,7 +60,7 @@ The 6FB Platform now supports real-time notifications using WebSocket technology
   - Heartbeat/ping to maintain connection
   - Browser notification integration
 
-#### 2. Notification Center (`/frontend/src/components/NotificationCenter.tsx`)
+#### 2. Notification Center (`/backend-v2/frontend-v2/src/components/NotificationCenter.tsx`)
 - UI component for displaying notifications
 - Features:
   - Real-time notification display
@@ -71,7 +71,7 @@ The 6FB Platform now supports real-time notifications using WebSocket technology
   - Icon-based notification types
   - Sound alerts
 
-#### 3. Notification API Service (`/frontend/src/lib/api/notifications.ts`)
+#### 3. Notification API Service (`/backend-v2/frontend-v2/src/lib/api/notifications.ts`)
 - TypeScript API client for notification endpoints
 - Type-safe notification interfaces
 - Methods for all notification operations

@@ -100,6 +100,29 @@ export class BookingLinkGenerator {
   }
 
   /**
+   * Generate a booking URL for a specific organization
+   */
+  generateOrganizationURL(
+    organizationSlug: string,
+    params: BookingLinkParams,
+    options: URLGenerationOptions = {}
+  ): string {
+    // Replace {slug} placeholder with actual organization slug
+    const orgUrl = this.baseUrl.replace('{slug}', organizationSlug)
+    
+    // Temporarily override baseUrl for this generation
+    const originalBaseUrl = this.baseUrl
+    this.baseUrl = orgUrl
+    
+    const url = this.generateURL(params, options)
+    
+    // Restore original baseUrl
+    this.baseUrl = originalBaseUrl
+    
+    return url
+  }
+
+  /**
    * Generate a complete booking link with metadata
    */
   async generateLink(
@@ -609,6 +632,18 @@ export function generateBookingURL(
 ): string {
   const generator = new BookingLinkGenerator(baseUrl)
   return generator.generateURL(params)
+}
+
+/**
+ * Generate booking URL for a specific organization
+ */
+export function generateOrganizationBookingURL(
+  organizationSlug: string,
+  params: BookingLinkParams,
+  baseUrl: string = DEFAULT_BOOKING_CONFIG.baseUrl
+): string {
+  const generator = new BookingLinkGenerator(baseUrl)
+  return generator.generateOrganizationURL(organizationSlug, params)
 }
 
 /**

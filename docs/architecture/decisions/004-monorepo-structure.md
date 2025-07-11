@@ -26,8 +26,8 @@ We chose an Nx-based monorepo structure:
 
 ```
 6fb-booking/
-├── backend/          # FastAPI application
-├── frontend/         # Next.js application
+├── backend-v2/          # FastAPI application
+├── backend-v2/frontend-v2/         # Next.js application
 ├── scripts/          # Shared scripts and tooling
 ├── docs/             # Documentation
 ├── .github/          # CI/CD workflows
@@ -37,7 +37,7 @@ We chose an Nx-based monorepo structure:
 
 Key principles:
 1. **Shared Tooling**: Common linting, formatting, and testing setup
-2. **Atomic Commits**: Related changes across frontend/backend in single commit
+2. **Atomic Commits**: Related changes across backend-v2/frontend-v2/backend in single commit
 3. **Unified CI/CD**: Single pipeline for entire system
 4. **Cross-Project Scripts**: Scripts that coordinate both services
 

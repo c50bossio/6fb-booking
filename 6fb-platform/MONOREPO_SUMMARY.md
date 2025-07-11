@@ -49,7 +49,7 @@ packages/
 
 4. **Typed API Contracts**
    - All API endpoints must use types from Core
-   - Ensures frontend/backend consistency
+   - Ensures backend-v2/frontend-v2/backend consistency
 
 ## Custom Tooling
 

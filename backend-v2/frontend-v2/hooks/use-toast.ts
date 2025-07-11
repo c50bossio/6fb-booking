@@ -213,4 +213,13 @@ export function toastInfo(message: string, description?: string) {
   })
 }
 
+export function toastWarning(message: string, description?: string) {
+  return toast({
+    variant: "default",
+    title: message,
+    description,
+    className: "border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20",
+  })
+}
+
 export { useToast, toast }

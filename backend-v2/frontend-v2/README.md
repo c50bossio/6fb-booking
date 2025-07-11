@@ -81,11 +81,22 @@ npm run kill:staging # Stop staging processes
 ## 📝 Available Scripts
 
 ### Development Scripts
-- `npm run dev` - Start development server (port 3000)
-- `npm run build` - Build for production
+- `npm run dev` - Start development server (port 3000) **with linting**
+- `npm run build` - Build for production **with linting enabled**
 - `npm run start` - Start production server
-- `npm run lint` - Run ESLint
-- `npm run test` - Run test suite
+- `npm run lint` - Run ESLint check
+- `npm run lint:fix` - Auto-fix linting issues
+- `npm run test` - Run test suite **with linting checks**
+
+### TypeScript Commands (Debugging Only)
+- `npx tsc --noEmit` - TypeScript compilation check only
+- `npx tsc --noEmit --skipLibCheck` - Skip library type checking
+
+### ❌ FORBIDDEN Commands
+**NEVER use these commands - they bypass code quality checks:**
+- `npm run build --skip-lint`
+- `npx next build --no-lint`
+- `ESLINT=false npm run build`
 
 ### Staging Scripts  
 - `npm run staging` - Start staging server (port 3001)

@@ -16,22 +16,22 @@ After comprehensive investigation, the CORS login issue was caused by:
 - **After**: `NEXT_PUBLIC_API_URL: "https://sixfb-backend.onrender.com/api/v1"`
 - **Removed**: Redundant CORS headers (backend handles CORS)
 
-### 2. Updated Service Worker (`frontend/public/sw.js`)
+### 2. Updated Service Worker (`backend-v2/frontend-v2/public/sw.js`)
 - **Added**: Explicit skipping of external API requests
 - **Added**: Skip Render.com and backend domains to prevent interference
 - **Added**: Enhanced logging for debugging
 
-### 3. Enhanced Auth Service (`frontend/src/lib/api/auth.ts`)
+### 3. Enhanced Auth Service (`backend-v2/frontend-v2/src/lib/api/auth.ts`)
 - **Added**: CORS proxy fallback mechanism
 - **Added**: Automatic retry with `/api/proxy/` when CORS fails
 - **Added**: Better error detection for CORS issues
 
-### 4. Improved API Client (`frontend/src/lib/api/client.ts`)
+### 4. Improved API Client (`backend-v2/frontend-v2/src/lib/api/client.ts`)
 - **Added**: Smart environment detection with fallbacks
 - **Added**: Enhanced CORS error analysis and logging
 - **Added**: Production URL fallback when environment variables missing
 
-### 5. Created CORS Proxy (`frontend/src/app/api/proxy/[...path]/route.ts`)
+### 5. Created CORS Proxy (`backend-v2/frontend-v2/src/app/api/proxy/[...path]/route.ts`)
 - **Purpose**: Bypass CORS restrictions by proxying requests server-side
 - **Function**: Routes `/api/proxy/*` to backend with proper CORS headers
 - **Benefit**: Works even when backend doesn't allow frontend origin
