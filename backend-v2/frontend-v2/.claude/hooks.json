@@ -1,0 +1,33 @@
+{
+  "description": "Essential Claude Code hooks for 6FB development",
+  "hooks": {
+    "tool_use:Edit": {
+      "command": ".claude/scripts/verify-frontend.sh",
+      "description": "Verify frontend changes after editing files",
+      "enabled": true,
+      "blocking": false
+    },
+    "tool_use:MultiEdit": {
+      "command": ".claude/scripts/verify-frontend.sh", 
+      "description": "Verify frontend changes after multi-edit",
+      "enabled": true,
+      "blocking": false
+    },
+    "session_start": {
+      "command": ".claude/scripts/cleanup-all-servers.sh",
+      "description": "Clean up any running servers before starting",
+      "enabled": true,
+      "blocking": false
+    },
+    "session_end": {
+      "command": ".claude/scripts/cleanup-all-servers.sh",
+      "description": "Clean up servers when session ends",
+      "enabled": true,
+      "blocking": false
+    }
+  },
+  "version": "1.0.0",
+  "simplified": true,
+  "note": "Simplified from SuperClaude V2 system - keeping only essential verification and cleanup"
+}
+EOF < /dev/null
