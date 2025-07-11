@@ -4,8 +4,8 @@ import React, { Component, ReactNode, ErrorInfo } from 'react'
 import { AlertTriangle, RefreshCw, Home, MessageSquare } from 'lucide-react'
 import { Button } from './ui/Button'
 // import { Alert, AlertDescription, AlertTitle } from './ui/alert' // Temporarily removed
-import * as Sentry from '@sentry/nextjs'
-import { reportApiError, captureUserFeedback, addUserActionBreadcrumb } from '../lib/sentry'
+// import * as Sentry from '@sentry/nextjs'
+// import { reportApiError, captureUserFeedback, addUserActionBreadcrumb } from '../lib/sentry'
 
 interface Props {
   children: ReactNode
@@ -56,34 +56,8 @@ export class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo)
     
-    // Capture the error with Sentry and get the event ID
-    const sentryEventId = Sentry.withScope((scope) => {
-      // Add context about the error boundary
-      scope.setTag('errorBoundary', true)
-      scope.setTag('errorBoundary.feature', this.props.feature || 'unknown')
-      
-      // Add component stack and additional context
-      scope.setContext('errorBoundary', {
-        componentStack: errorInfo.componentStack,
-        feature: this.props.feature,
-        userId: this.props.userId,
-        errorCount: this.state.errorCount + 1,
-        timestamp: new Date().toISOString(),
-      })
-      
-      // Add breadcrumb for the error
-      addUserActionBreadcrumb(
-        'Error caught by boundary',
-        'interaction',
-        {
-          feature: this.props.feature,
-          errorMessage: error.message,
-          errorStack: error.stack?.substring(0, 1000), // First 1000 chars
-        }
-      )
-      
-      return Sentry.captureException(error)
-    })
+    // Capture the error with Sentry and get the event ID (temporarily disabled)
+    const sentryEventId = `error-${Date.now()}`
     
     this.setState((prev) => ({ 
       errorInfo,
@@ -108,16 +82,12 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   resetErrorBoundary = () => {
-    // Add breadcrumb for error boundary reset
-    addUserActionBreadcrumb(
-      'Error boundary reset',
-      'interaction',
-      {
-        feature: this.props.feature,
-        errorCount: this.state.errorCount,
-        sentryEventId: this.state.sentryEventId,
-      }
-    )
+    // Add breadcrumb for error boundary reset (temporarily disabled)
+    console.log('Error boundary reset', {
+      feature: this.props.feature,
+      errorCount: this.state.errorCount,
+      sentryEventId: this.state.sentryEventId,
+    })
     
     this.setState({ 
       hasError: false, 
@@ -137,17 +107,13 @@ export class ErrorBoundary extends Component<Props, State> {
     const { feedbackData, sentryEventId } = this.state
     
     if (feedbackData.name && feedbackData.email && feedbackData.comments) {
-      captureUserFeedback(feedbackData, sentryEventId)
+      // captureUserFeedback(feedbackData, sentryEventId) // temporarily disabled
       
-      addUserActionBreadcrumb(
-        'User feedback submitted',
-        'interaction',
-        {
-          feature: this.props.feature,
-          sentryEventId,
-          feedbackLength: feedbackData.comments.length,
-        }
-      )
+      console.log('User feedback submitted', {
+        feature: this.props.feature,
+        sentryEventId,
+        feedbackLength: feedbackData.comments.length,
+      })
       
       this.setState({ showFeedbackForm: false })
     }
@@ -215,11 +181,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <div className="flex gap-2 justify-center flex-wrap">
               <Button 
                 onClick={() => {
-                  addUserActionBreadcrumb(
-                    isChunkLoadError ? 'Page reload clicked' : 'Try again clicked',
-                    'interaction',
-                    { feature: this.props.feature }
-                  )
+                  console.log(isChunkLoadError ? 'Page reload clicked' : 'Try again clicked', { feature: this.props.feature })
                   
                   if (isChunkLoadError) {
                     window.location.reload()
@@ -235,11 +197,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </Button>
               <Button
                 onClick={() => {
-                  addUserActionBreadcrumb(
-                    'Go home clicked',
-                    'navigation',
-                    { feature: this.props.feature }
-                  )
+                  console.log('Go home clicked', { feature: this.props.feature })
                   window.location.href = '/'
                 }}
                 variant="outline"
@@ -251,11 +209,7 @@ export class ErrorBoundary extends Component<Props, State> {
               {this.state.sentryEventId && !this.state.showFeedbackForm && (
                 <Button
                   onClick={() => {
-                    addUserActionBreadcrumb(
-                      'Feedback form opened',
-                      'interaction',
-                      { feature: this.props.feature, sentryEventId: this.state.sentryEventId }
-                    )
+                    console.log('Feedback form opened', { feature: this.props.feature, sentryEventId: this.state.sentryEventId })
                     this.setState({ showFeedbackForm: true })
                   }}
                   variant="outline"
