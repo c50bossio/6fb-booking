@@ -11,6 +11,8 @@
   "dependencies": {
     "@headlessui/react": "^1.7.0",
     "@heroicons/react": "^2.0.0",
+    "@stripe/react-stripe-js": "^2.1.0",
+    "@stripe/stripe-js": "^1.54.0",
     "@types/node": "^20",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",
