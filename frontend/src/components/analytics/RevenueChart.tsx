@@ -67,13 +67,19 @@ export function RevenueChart({ data, dateRange }: RevenueChartProps) {
 
   const formatXAxis = (tickItem: string) => {
     try {
+      const date = new Date(tickItem)
+      // Validate the date is valid
+      if (isNaN(date.getTime())) {
+        return tickItem.slice(0, 10) // Return first 10 chars as fallback
+      }
+      
       const days = Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24))
-      if (days <= 7) return format(new Date(tickItem), 'EEE')
-      if (days <= 31) return format(new Date(tickItem), 'dd')
-      return format(new Date(tickItem), 'MMM dd')
+      if (days <= 7) return format(date, 'EEE')
+      if (days <= 31) return format(date, 'dd')
+      return format(date, 'MMM dd')
     } catch (error) {
-      console.error('Error formatting date:', error)
-      return tickItem
+      // Silently handle error and return a safe fallback
+      return tickItem.length > 10 ? tickItem.slice(0, 10) : tickItem || 'N/A'
     }
   }
 
