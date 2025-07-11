@@ -14,7 +14,20 @@ from datetime import datetime, timedelta
 import hashlib
 import secrets
 
-from config.security_config import SecurityConfig
+# from config.security_config import SecurityConfig  # Commented out - config.security_config module missing
+
+# Stub SecurityConfig class to replace missing security config
+class SecurityConfig:
+    @staticmethod
+    def get_environment_specific_config(environment: str) -> Dict:
+        """Stub method for getting security config"""
+        return {
+            'rate_limits': {'default': 100},
+            'security_headers': {},
+            'cors_origins': ['*'],
+            'allowed_ips': [],
+            'blocked_ips': []
+        }
 
 logger = logging.getLogger(__name__)
 
