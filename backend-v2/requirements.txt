@@ -29,7 +29,7 @@ redis==5.0.1
 celery==5.3.4
 
 # Export dependencies
-pandas==2.2.0
+# pandas==2.2.0  # Removed due to Python 3.13 compatibility issues
 openpyxl==3.1.2
 reportlab==4.0.9
 
