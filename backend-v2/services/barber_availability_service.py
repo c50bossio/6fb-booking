@@ -320,7 +320,7 @@ def is_barber_available(
                         # Requested time starts during existing appointment (with buffer)
                         and_(
                             models.Appointment.start_time <= check_start_datetime,
-                            models.Appointment.start_time + timedelta(minutes=models.Appointment.duration_minutes) > check_start_datetime
+                            models.Appointment.start_time + models.Appointment.duration_minutes * timedelta(minutes=1) > check_start_datetime
                         ),
                         # Existing appointment starts during requested time
                         and_(
