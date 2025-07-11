@@ -1,4 +1,4 @@
-#\!/bin/bash
+#!/bin/bash
 # Essential server cleanup script
 # Simplified from SuperClaude V2 system
 
@@ -31,4 +31,3 @@ if [ -d "backend-v2/frontend-v2/.next" ]; then
 fi
 
 echo "✅ Server cleanup complete"
-EOF < /dev/null

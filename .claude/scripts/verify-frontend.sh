@@ -1,11 +1,11 @@
-#\!/bin/bash
+#!/bin/bash
 # Essential frontend verification after file changes
 # Simplified from SuperClaude V2 system
 
 echo "🔍 Verifying frontend changes..."
 
 # Check if we're in the project root
-if [ \! -f "backend-v2/frontend-v2/package.json" ]; then
+if [ ! -f "backend-v2/frontend-v2/package.json" ]; then
     echo "ℹ️  Not in 6FB project root, skipping verification"
     exit 0
 fi
@@ -21,4 +21,3 @@ else
 fi
 
 echo "✅ Frontend verification complete"
-EOF < /dev/null

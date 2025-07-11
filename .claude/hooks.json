@@ -30,4 +30,3 @@
   "simplified": true,
   "note": "Simplified from SuperClaude V2 system - keeping only essential verification and cleanup"
 }
-EOF < /dev/null

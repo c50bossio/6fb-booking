@@ -1,0 +1,19 @@
+{
+  "project_name": "BookedBarber V2",
+  "project_type": "fullstack_web_app",
+  "tech_stack": {
+    "backend": "FastAPI (Python)",
+    "frontend": "Next.js 14 (TypeScript)",
+    "database": "PostgreSQL",
+    "payment": "Stripe Connect"
+  },
+  "development": {
+    "backend_port": 8000,
+    "frontend_port": 3000,
+    "backend_path": "backend-v2",
+    "frontend_path": "backend-v2/frontend-v2"
+  },
+  "methodology": "Six Figure Barber (6FB)",
+  "simplified_from": "SuperClaude V2 system",
+  "version": "2.0.0-simplified"
+}
