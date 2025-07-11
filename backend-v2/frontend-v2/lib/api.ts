@@ -1,0 +1,120 @@
+// Basic API types and functions for booking system
+
+export interface TimeSlot {
+  time: string;
+  available: boolean;
+}
+
+export interface SlotsResponse {
+  slots: TimeSlot[];
+  next_available?: NextAvailableSlot;
+}
+
+export interface NextAvailableSlot {
+  date: string;
+  time: string;
+}
+
+export interface GuestInformation {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+}
+
+export interface GuestBookingCreate {
+  service: string;
+  date: string;
+  time: string;
+  guest_info: GuestInformation;
+}
+
+export interface GuestQuickBookingCreate {
+  service: string;
+  guest_info: GuestInformation;
+}
+
+export interface GuestBookingResponse {
+  id: number;
+  service: string;
+  date: string;
+  time: string;
+  status: string;
+}
+
+export interface AppointmentCreate {
+  service: string;
+  date: string;
+  time: string;
+}
+
+export interface BookingResponse {
+  id: number;
+  service: string;
+  date: string;
+  time: string;
+  status: string;
+  client_name?: string;
+}
+
+// Mock API functions
+export const appointmentsAPI = {
+  getSlots: async (date: string, service: string): Promise<SlotsResponse> => {
+    // Mock slots for demo
+    return {
+      slots: [
+        { time: '09:00', available: true },
+        { time: '09:30', available: true },
+        { time: '10:00', available: false },
+        { time: '10:30', available: true },
+        { time: '11:00', available: true },
+        { time: '14:00', available: true },
+        { time: '14:30', available: true },
+      ]
+    };
+  }
+};
+
+export const getMyBookings = async (): Promise<BookingResponse[]> => {
+  return [];
+};
+
+export const getProfile = async () => {
+  throw new Error('Not authenticated');
+};
+
+export const getNextAvailableSlot = async (service: string): Promise<NextAvailableSlot> => {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  return {
+    date: tomorrow.toISOString().split('T')[0],
+    time: '09:00'
+  };
+};
+
+export const quickBooking = async (data: any) => {
+  return { id: 1, ...data };
+};
+
+export const createGuestBooking = async (data: GuestBookingCreate): Promise<GuestBookingResponse> => {
+  return {
+    id: Math.floor(Math.random() * 1000),
+    service: data.service,
+    date: data.date,
+    time: data.time,
+    status: 'confirmed'
+  };
+};
+
+export const createGuestQuickBooking = async (data: GuestQuickBookingCreate): Promise<GuestBookingResponse> => {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  
+  return {
+    id: Math.floor(Math.random() * 1000),
+    service: data.service,
+    date: tomorrow.toISOString().split('T')[0],
+    time: '09:00',
+    status: 'confirmed'
+  };
+};

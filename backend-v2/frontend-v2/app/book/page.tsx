@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { 
   BookingSkipNavigation, 
   MainContent, 
@@ -19,10 +19,22 @@ import {
   useScreenReader,
   generateId 
 } from '@/lib/accessibility-helpers';
-import { BookingProgressIndicator, ProgressBar } from '@/components/ui/ProgressIndicator';
+import { BookingProgressIndicator } from '@/components/ui/ProgressIndicator';
 import { CalendarA11yProvider } from '@/components/calendar/CalendarAccessibility';
 
-export default function AccessibilityDemoPage() {
+const SERVICES = [
+  { id: 'haircut', name: 'Classic Haircut', price: '$35', duration: '30 min' },
+  { id: 'beard', name: 'Beard Trim', price: '$25', duration: '20 min' },
+  { id: 'combo', name: 'Haircut + Beard', price: '$55', duration: '45 min' },
+  { id: 'wash', name: 'Wash & Style', price: '$30', duration: '25 min' }
+];
+
+const TIME_SLOTS = [
+  '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM', 
+  '11:00 AM', '11:30 AM', '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM'
+];
+
+export default function BookPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -34,26 +46,11 @@ export default function AccessibilityDemoPage() {
 
   const { announce, LiveRegion } = useScreenReader();
 
-  const services = [
-    { id: 'haircut', name: 'Classic Haircut', price: '$35', duration: '30 min' },
-    { id: 'beard', name: 'Beard Trim', price: '$25', duration: '20 min' },
-    { id: 'combo', name: 'Haircut + Beard', price: '$55', duration: '45 min' },
-    { id: 'wash', name: 'Wash & Style', price: '$30', duration: '25 min' }
-  ];
-
-  const timeSlots = [
-    '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM', 
-    '11:00 AM', '11:30 AM', '2:00 PM', '2:30 PM'
-  ];
-
   const handleServiceSelect = (serviceId: string) => {
     setSelectedService(serviceId);
-    const service = services.find(s => s.id === serviceId);
+    const service = SERVICES.find(s => s.id === serviceId);
     announce(`Selected service: ${service?.name}`);
-    
-    setTimeout(() => {
-      setCurrentStep(2);
-    }, 500);
+    setTimeout(() => setCurrentStep(2), 500);
   };
 
   const handleServiceKeyDown = (e: React.KeyboardEvent, index: number, serviceId: string) => {
@@ -61,27 +58,27 @@ export default function AccessibilityDemoPage() {
       case 'ArrowDown':
       case 'ArrowRight':
         e.preventDefault();
-        const nextIndex = (index + 1) % services.length;
+        const nextIndex = (index + 1) % SERVICES.length;
         setFocusedServiceIndex(nextIndex);
-        document.getElementById(`service-${services[nextIndex].id}`)?.focus();
+        document.getElementById(`service-${SERVICES[nextIndex].id}`)?.focus();
         break;
       case 'ArrowUp':
       case 'ArrowLeft':
         e.preventDefault();
-        const prevIndex = (index - 1 + services.length) % services.length;
+        const prevIndex = (index - 1 + SERVICES.length) % SERVICES.length;
         setFocusedServiceIndex(prevIndex);
-        document.getElementById(`service-${services[prevIndex].id}`)?.focus();
+        document.getElementById(`service-${SERVICES[prevIndex].id}`)?.focus();
         break;
       case 'Home':
         e.preventDefault();
         setFocusedServiceIndex(0);
-        document.getElementById(`service-${services[0].id}`)?.focus();
+        document.getElementById(`service-${SERVICES[0].id}`)?.focus();
         break;
       case 'End':
         e.preventDefault();
-        const lastIndex = services.length - 1;
+        const lastIndex = SERVICES.length - 1;
         setFocusedServiceIndex(lastIndex);
-        document.getElementById(`service-${services[lastIndex].id}`)?.focus();
+        document.getElementById(`service-${SERVICES[lastIndex].id}`)?.focus();
         break;
       case 'Enter':
       case ' ':
@@ -98,19 +95,13 @@ export default function AccessibilityDemoPage() {
       month: 'long', 
       day: 'numeric' 
     })}`);
-    
-    setTimeout(() => {
-      setCurrentStep(3);
-    }, 500);
+    setTimeout(() => setCurrentStep(3), 500);
   };
 
   const handleTimeSelect = (time: string) => {
     setSelectedTime(time);
     announce(`Selected time: ${time}`);
-    
-    setTimeout(() => {
-      setCurrentStep(4);
-    }, 500);
+    setTimeout(() => setCurrentStep(4), 500);
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -130,6 +121,17 @@ export default function AccessibilityDemoPage() {
     }
   };
 
+  const generateCalendarDates = () => {
+    const dates = [];
+    const today = new Date();
+    for (let i = 1; i <= 30; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      dates.push(date);
+    }
+    return dates;
+  };
+
   return (
     <CalendarA11yProvider>
       <div className="min-h-screen bg-gray-50">
@@ -143,10 +145,10 @@ export default function AccessibilityDemoPage() {
           {/* Header */}
           <header className="text-center mb-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              BookedBarber V2 - Accessibility Demo
+              Book Your Appointment
             </h1>
             <p className="text-lg text-gray-600">
-              Experience our fully accessible booking system
+              Own the Chair. Own the Brand.
             </p>
           </header>
 
@@ -175,13 +177,13 @@ export default function AccessibilityDemoPage() {
                       Use arrow keys to navigate between services. Press Enter or Space to select.
                     </div>
                     
-                    {services.map((service, index) => (
+                    {SERVICES.map((service, index) => (
                       <Card
                         key={service.id}
                         id={`service-${service.id}`}
                         interactive
                         selected={selectedService === service.id}
-                        className="p-4 cursor-pointer transition-all duration-200"
+                        className="p-4 cursor-pointer transition-all duration-200 hover:shadow-lg focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                         onClick={() => handleServiceSelect(service.id)}
                         onKeyDown={(e) => handleServiceKeyDown(e, index, service.id)}
                         tabIndex={index === focusedServiceIndex ? 0 : -1}
@@ -189,7 +191,7 @@ export default function AccessibilityDemoPage() {
                         aria-pressed={selectedService === service.id}
                         aria-label={`${service.name}, ${service.price}, ${service.duration}`}
                       >
-                        <div className="text-center">
+                        <CardContent className="text-center p-0">
                           <h3 className="text-lg font-medium text-gray-900 mb-2">
                             {service.name}
                           </h3>
@@ -199,7 +201,7 @@ export default function AccessibilityDemoPage() {
                           <p className="text-sm text-gray-500">
                             {service.duration}
                           </p>
-                        </div>
+                        </CardContent>
                       </Card>
                     ))}
                   </div>
@@ -207,7 +209,7 @@ export default function AccessibilityDemoPage() {
               </ServiceSelection>
             )}
 
-            {/* Step 2: Calendar (Simplified Demo) */}
+            {/* Step 2: Date Selection */}
             {currentStep >= 2 && (
               <CalendarSection className="mb-8">
                 <div className="bg-white rounded-lg shadow-md p-6">
@@ -215,33 +217,26 @@ export default function AccessibilityDemoPage() {
                     Select Your Date
                   </h2>
                   
-                  <div className="grid grid-cols-7 gap-2 max-w-md mx-auto">
-                    {Array.from({ length: 14 }, (_, i) => {
-                      const date = new Date();
-                      date.setDate(date.getDate() + i + 1);
+                  <div className="grid grid-cols-7 gap-2 max-w-2xl mx-auto">
+                    {generateCalendarDates().slice(0, 21).map((date, index) => {
                       const isSelected = selectedDate?.toDateString() === date.toDateString();
                       
                       return (
-                        <button
-                          key={i}
+                        <AccessibleButton
+                          key={index}
+                          variant={isSelected ? 'primary' : 'secondary'}
+                          size="sm"
                           onClick={() => handleDateSelect(date)}
-                          className={`
-                            p-3 text-sm rounded-lg border transition-all duration-200
-                            focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
-                            ${isSelected 
-                              ? 'bg-primary-600 text-white border-primary-600' 
-                              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                            }
-                          `}
+                          className="aspect-square p-2 text-sm"
+                          aria-pressed={isSelected}
                           aria-label={`${date.toLocaleDateString('en-US', { 
                             weekday: 'long', 
                             month: 'long', 
                             day: 'numeric' 
                           })}${isSelected ? ', selected' : ', available'}`}
-                          aria-pressed={isSelected}
                         >
                           {date.getDate()}
-                        </button>
+                        </AccessibleButton>
                       );
                     })}
                   </div>
@@ -249,7 +244,7 @@ export default function AccessibilityDemoPage() {
               </CalendarSection>
             )}
 
-            {/* Step 3: Time Slots */}
+            {/* Step 3: Time Selection */}
             {currentStep >= 3 && (
               <TimeSlots className="mb-8">
                 <div className="bg-white rounded-lg shadow-md p-6">
@@ -262,7 +257,7 @@ export default function AccessibilityDemoPage() {
                     role="group"
                     aria-labelledby="time-slots-heading"
                   >
-                    {timeSlots.map((time) => {
+                    {TIME_SLOTS.map((time) => {
                       const isSelected = selectedTime === time;
                       
                       return (
@@ -346,7 +341,7 @@ export default function AccessibilityDemoPage() {
                     <div className="border-b pb-4">
                       <h3 className="font-medium text-gray-900">Service</h3>
                       <p className="text-gray-600">
-                        {services.find(s => s.id === selectedService)?.name}
+                        {SERVICES.find(s => s.id === selectedService)?.name} - {SERVICES.find(s => s.id === selectedService)?.price}
                       </p>
                     </div>
                     
@@ -373,7 +368,7 @@ export default function AccessibilityDemoPage() {
                         variant="primary"
                         className="w-full py-3"
                         onClick={() => {
-                          screenReaderHelpers.announce('Booking confirmed successfully!', 'assertive');
+                          screenReaderHelpers.announce('Booking confirmed successfully! You will receive a confirmation email shortly.', 'assertive');
                         }}
                       >
                         Confirm Booking
@@ -383,60 +378,6 @@ export default function AccessibilityDemoPage() {
                 </div>
               </BookingSummary>
             )}
-
-            {/* Demo Controls */}
-            <div className="bg-blue-50 rounded-lg p-6 mt-8">
-              <h3 className="text-lg font-semibold text-blue-900 mb-4">
-                🎯 Accessibility Demo Controls
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <h4 className="font-medium text-blue-800 mb-2">Keyboard Navigation</h4>
-                  <ul className="text-sm text-blue-700 space-y-1">
-                    <li>• Tab/Shift+Tab: Navigate between elements</li>
-                    <li>• Arrow keys: Navigate service cards</li>
-                    <li>• Enter/Space: Select items</li>
-                    <li>• Home/End: Jump to first/last item</li>
-                  </ul>
-                </div>
-                
-                <div>
-                  <h4 className="font-medium text-blue-800 mb-2">Skip Links</h4>
-                  <ul className="text-sm text-blue-700 space-y-1">
-                    <li>• Press Tab to see skip links</li>
-                    <li>• Alt+1-6: Quick navigation shortcuts</li>
-                    <li>• Click sections in progress indicator</li>
-                  </ul>
-                </div>
-              </div>
-              
-              <div className="flex flex-wrap gap-3">
-                <AccessibleButton
-                  variant="secondary"
-                  onClick={() => {
-                    announce('Screen reader test: This announcement demonstrates live region functionality');
-                  }}
-                >
-                  Test Screen Reader
-                </AccessibleButton>
-                
-                <AccessibleButton
-                  variant="secondary"
-                  onClick={() => setCurrentStep(1)}
-                >
-                  Reset Demo
-                </AccessibleButton>
-              </div>
-              
-              <ProgressBar
-                current={currentStep}
-                total={5}
-                label="Demo Progress"
-                showPercentage
-                className="mt-4"
-              />
-            </div>
           </MainContent>
         </div>
       </div>
