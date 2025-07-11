@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
-import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Switch } from '@/components/ui/Switch';
-import { Label } from '@/components/ui/Label';
-import { Calendar } from '@/components/ui/Calendar';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Calendar } from '@/components/ui/calendar';
 import { Clock, CalendarOff, CalendarCheck } from 'lucide-react';
 import { format } from 'date-fns';
 

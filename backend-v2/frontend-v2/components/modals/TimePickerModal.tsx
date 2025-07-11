@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Modal } from '@/components/ui/Modal'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { ClockIcon } from '@heroicons/react/24/outline'
 
 interface TimePickerModalProps {

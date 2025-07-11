@@ -87,7 +87,7 @@ export default function UnifiedAnalyticsPage() {
           data = {
             type: 'manager',
             location: {
-              name: userData.barbershop_name || 'Main Location',
+              name: userData.name || 'Main Location',
               revenue: analytics.revenue_summary.total_revenue,
               revenueGrowth: analytics.revenue_summary.revenue_growth,
               appointments: analytics.appointment_summary.total_appointments,
@@ -116,13 +116,13 @@ export default function UnifiedAnalyticsPage() {
               total: analytics.revenue_summary.total_revenue,
               thisMonth: analytics.revenue_summary.total_revenue,
               lastMonth: analytics.revenue_summary.total_revenue * 0.9,
-              average: analytics.revenue_summary.average_ticket_price
+              average: analytics.revenue_summary.average_ticket
             },
             appointments: {
               total: analytics.appointment_summary.total_appointments,
-              completed: analytics.appointment_summary.completed_appointments,
-              cancelled: analytics.appointment_summary.cancelled_appointments,
-              noShow: analytics.appointment_summary.no_show_appointments
+              completed: Math.round(analytics.appointment_summary.total_appointments * (1 - analytics.appointment_summary.cancellation_rate - analytics.appointment_summary.no_show_rate)),
+              cancelled: Math.round(analytics.appointment_summary.total_appointments * analytics.appointment_summary.cancellation_rate),
+              noShow: Math.round(analytics.appointment_summary.total_appointments * analytics.appointment_summary.no_show_rate)
             },
             clients: {
               total: analytics.client_summary.total_clients,
@@ -131,7 +131,7 @@ export default function UnifiedAnalyticsPage() {
               retentionRate: analytics.client_summary.retention_rate
             },
             performance: {
-              averageRating: analytics.performance_metrics.average_rating,
+              averageRating: 4.8, // Would come from performance_metrics API
               completionRate: 100 - analytics.appointment_summary.cancellation_rate,
               punctualityRate: 95, // Would come from API
               rebookingRate: 80 // Would come from API

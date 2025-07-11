@@ -13,7 +13,7 @@ import {
   Download,
   Wrench
 } from 'lucide-react'
-import { Button } from './ui/Button'
+import { Button } from './ui/button'
 
 export function AccessibilityMonitor() {
   const [isOpen, setIsOpen] = React.useState(false)

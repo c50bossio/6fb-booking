@@ -9,7 +9,7 @@ import {
   CardDescription, 
   CardContent, 
   CardFooter 
-} from '@/components/ui/Card'
+} from '@/components/ui/card'
 
 describe('Card Components', () => {
   describe('Card', () => {

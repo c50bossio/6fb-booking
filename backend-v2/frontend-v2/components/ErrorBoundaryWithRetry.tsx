@@ -2,7 +2,7 @@
 
 import React, { Component, ReactNode, useState, useEffect } from 'react'
 import { AlertTriangle, RefreshCw, Home, WifiOff, ArrowLeft, Shield } from 'lucide-react'
-import { Button } from './ui/Button'
+import { Button } from './ui/button'
 import { Alert, AlertDescription, AlertTitle } from './ui/alert'
 import { useRouter } from 'next/navigation'
 import { isOnline, useNetworkStatus } from '@/lib/RetryManager'

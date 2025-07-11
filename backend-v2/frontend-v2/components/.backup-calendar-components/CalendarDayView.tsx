@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { format, addHours, addMinutes, isSameDay, startOfDay, addDays, subDays } from 'date-fns'
 import { ChevronLeftIcon, ChevronRightIcon, PlusIcon, ArrowPathIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
-import { Button } from './ui/Button'
+import { Button } from '../ui/button'
 import { parseAPIDate } from '@/lib/timezone'
 import Image from 'next/image'
 import ClientDetailModal from './modals/ClientDetailModal'

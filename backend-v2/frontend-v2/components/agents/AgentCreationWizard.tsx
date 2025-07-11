@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect } from 'react'
 import { X, ChevronLeft, ChevronRight, Check, Bot, Sparkles } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Label } from '@/components/ui/Label'
-import { Select } from '@/components/ui/Select'
-import { Card } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
-import { Switch } from '@/components/ui/Switch'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select } from '@/components/ui/select'
+import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Switch } from '@/components/ui/switch'
 import { Modal } from '@/components/ui/Modal'
 import { 
   getAgentTemplates, 

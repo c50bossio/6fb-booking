@@ -1,7 +1,7 @@
 'use client'
 
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { DocumentArrowUpIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 

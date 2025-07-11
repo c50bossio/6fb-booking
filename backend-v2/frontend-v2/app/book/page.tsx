@@ -2,20 +2,21 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Calendar } from '@/components/ui/Calendar'
+import { Calendar } from '@/components/ui/calendar'
 import UnifiedCalendar from '@/components/UnifiedCalendar'
 import TimeSlots from '@/components/TimeSlots'
 import PaymentForm from '@/components/PaymentForm'
 import TimezoneTooltip from '@/components/TimezoneTooltip'
 import AITimeSuggestions from '@/components/booking/AITimeSuggestions'
-import { Button } from '@/components/ui/Button'
-import { Card, CardContent } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { LoadingButton, TimeSlotsLoadingSkeleton, ErrorDisplay } from '@/components/LoadingStates'
 import { appointmentsAPI, getMyBookings, getProfile, getNextAvailableSlot, quickBooking as quickBookingAPI, type SlotsResponse, type TimeSlot, type NextAvailableSlot, createGuestBooking, createGuestQuickBooking, type GuestInformation, type GuestBookingCreate, type GuestQuickBookingCreate, type GuestBookingResponse, type AppointmentCreate, type BookingResponse } from '@/lib/api'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 import { toastError, toastSuccess } from '@/hooks/use-toast'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { BookingErrorBoundary, PaymentErrorBoundary } from '@/components/error-boundaries'
 import { 
   formatDateForAPI, 
   parseAPIDate, 
@@ -250,7 +251,7 @@ export default function BookPage() {
         message: err.message,
         status: err.status,
         response: err.response,
-        date: dateStr,
+        date: formatDateForAPI(date),
         apiUrl: '/api/v1/appointments/slots'
       })
       
@@ -467,6 +468,7 @@ export default function BookPage() {
         
         return {
           id: -1000 - index, // Negative IDs to distinguish from real appointments
+          user_id: 0, // Dummy user ID for available slots
           start_time: startTime.toISOString(),
           end_time: endTime.toISOString(),
           service_name: 'Available Slot',
@@ -474,6 +476,7 @@ export default function BookPage() {
           status: 'available',
           duration_minutes: 30,
           price: SERVICES.find(s => s.id === selectedService)?.amount || 0,
+          created_at: new Date().toISOString(),
           // Custom properties
           isAvailableSlot: true,
           originalTime: slot.time,
@@ -496,12 +499,15 @@ export default function BookPage() {
         
         return {
           id: -2000 - index,
+          user_id: 0, // Dummy user ID for booked slots
           start_time: startTime.toISOString(),
           end_time: endTime.toISOString(),
           service_name: 'Booked',
           client_name: 'Not Available',
           status: 'confirmed',
           duration_minutes: 30,
+          price: 0, // No price for unavailable slots
+          created_at: new Date().toISOString(),
           barber_id: 1,
           barber_name: 'Booked',
           isAvailableSlot: false
@@ -511,9 +517,19 @@ export default function BookPage() {
     return [...availableSlots, ...bookedSlots]
   }
 
+  const getBookingContextInfo = () => ({
+    bookingStep: step,
+    selectedService: selectedService || undefined,
+    selectedDate: selectedDate?.toISOString().split('T')[0],
+    selectedTime: selectedTime || undefined,
+    userId: isAuthenticated ? 'authenticated' : undefined,
+    isGuestBooking: !isAuthenticated
+  })
+
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-4xl">
+    <BookingErrorBoundary contextInfo={getBookingContextInfo()}>
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="container mx-auto px-4 max-w-4xl">
         {/* Header with Login/Create Account */}
         {!isAuthenticated && (
           <div className="mb-6">
@@ -690,7 +706,6 @@ export default function BookPage() {
                 <Card
                   key={service.id}
                   variant="default"
-                  interactive
                   onClick={() => handleServiceSelect(service.id)}
                   className="cursor-pointer hover:border-primary-400"
                 >
@@ -1191,16 +1206,27 @@ export default function BookPage() {
 
         {/* Step 4: Payment */}
         {step === 4 && bookingId && (
-          <div className="max-w-md mx-auto">
-            <h1 className="text-2xl font-bold text-center mb-8">Complete Payment</h1>
-            
-            <PaymentForm
-              bookingId={bookingId}
-              amount={SERVICES.find(s => s.id === selectedService)?.amount || 0}
-              onSuccess={handlePaymentSuccess}
-              onError={handlePaymentError}
-            />
-          </div>
+          <PaymentErrorBoundary 
+            contextInfo={{
+              bookingId,
+              amount: SERVICES.find(s => s.id === selectedService)?.amount || 0,
+              paymentStep: 'payment-form',
+              userId: isAuthenticated ? 'authenticated' : undefined,
+              isGuestPayment: !isAuthenticated,
+              paymentMethod: 'stripe'
+            }}
+          >
+            <div className="max-w-md mx-auto">
+              <h1 className="text-2xl font-bold text-center mb-8">Complete Payment</h1>
+              
+              <PaymentForm
+                bookingId={bookingId}
+                amount={SERVICES.find(s => s.id === selectedService)?.amount || 0}
+                onSuccess={handlePaymentSuccess}
+                onError={handlePaymentError}
+              />
+            </div>
+          </PaymentErrorBoundary>
         )}
 
         {/* Step 5: Success (for guest users) */}
@@ -1321,7 +1347,8 @@ export default function BookPage() {
             </div>
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </BookingErrorBoundary>
   )
 }

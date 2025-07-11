@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useMemo } from 'react'
-import { Card } from '@/components/ui/Card'
+import { Card } from '@/components/ui/card'
 import { TrendingUp, TrendingDown, DollarSign, Calendar, ChevronUp, ChevronDown } from 'lucide-react'
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns'
 import type { BookingResponse } from '@/lib/api'

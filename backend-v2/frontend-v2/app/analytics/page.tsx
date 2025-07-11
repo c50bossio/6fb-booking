@@ -10,6 +10,7 @@ import { EmptyAnalytics } from '@/components/ui/empty-state'
 import { PageLoading } from '@/components/LoadingStates'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import AIInsightsPanel from '@/components/ai/AIInsightsPanel'
+import { AnalyticsErrorBoundary } from '@/components/error-boundaries'
 
 // Role-based view components
 import { BarberAnalyticsView } from '@/components/analytics/views/BarberAnalyticsView'
@@ -171,66 +172,94 @@ function UnifiedAnalyticsContent() {
   }
 
   const renderTabContent = () => {
+    const contextInfo = {
+      analyticsType: activeTab,
+      dateRange: { startDate, endDate },
+      userId: user?.id?.toString()
+    }
+
     switch (activeTab) {
       case 'overview':
         // Role-based overview
         switch (analyticsData.type) {
           case 'enterprise':
-            return <EnterpriseAnalyticsView data={analyticsData} />
+            return (
+              <AnalyticsErrorBoundary contextInfo={{ ...contextInfo, analyticsType: 'enterprise' }}>
+                <EnterpriseAnalyticsView data={analyticsData} />
+              </AnalyticsErrorBoundary>
+            )
           case 'manager':
-            return <ManagerAnalyticsView data={analyticsData} />
+            return (
+              <AnalyticsErrorBoundary contextInfo={{ ...contextInfo, analyticsType: 'manager' }}>
+                <ManagerAnalyticsView data={analyticsData} />
+              </AnalyticsErrorBoundary>
+            )
           case 'barber':
-            return <BarberAnalyticsView data={analyticsData} />
+            return (
+              <AnalyticsErrorBoundary contextInfo={{ ...contextInfo, analyticsType: 'barber' }}>
+                <BarberAnalyticsView data={analyticsData} />
+              </AnalyticsErrorBoundary>
+            )
           default:
             return <div>Unknown analytics view type</div>
         }
       case 'revenue':
         return (
-          <Suspense fallback={<PageLoading message="Loading revenue analytics..." />}>
-            <RevenueAnalyticsSection 
-              data={analyticsData.raw} 
-              userRole={user.role} 
-              dateRange={{ startDate, endDate }}
-            />
-          </Suspense>
+          <AnalyticsErrorBoundary contextInfo={{ ...contextInfo, analyticsType: 'revenue' }}>
+            <Suspense fallback={<PageLoading message="Loading revenue analytics..." />}>
+              <RevenueAnalyticsSection 
+                data={analyticsData.raw} 
+                userRole={user.role} 
+                dateRange={{ startDate, endDate }}
+              />
+            </Suspense>
+          </AnalyticsErrorBoundary>
         )
       case 'clients':
         return (
-          <Suspense fallback={<PageLoading message="Loading client analytics..." />}>
-            <ClientAnalyticsSection 
-              data={analyticsData.raw} 
-              userRole={user.role}
-              dateRange={{ startDate, endDate }}
-            />
-          </Suspense>
+          <AnalyticsErrorBoundary contextInfo={{ ...contextInfo, analyticsType: 'clients' }}>
+            <Suspense fallback={<PageLoading message="Loading client analytics..." />}>
+              <ClientAnalyticsSection 
+                data={analyticsData.raw} 
+                userRole={user.role}
+                dateRange={{ startDate, endDate }}
+              />
+            </Suspense>
+          </AnalyticsErrorBoundary>
         )
       case 'marketing':
         return (
-          <Suspense fallback={<PageLoading message="Loading marketing analytics..." />}>
-            <MarketingAnalyticsSection 
-              userRole={user.role}
-              dateRange={{ startDate, endDate }}
-            />
-          </Suspense>
+          <AnalyticsErrorBoundary contextInfo={{ ...contextInfo, analyticsType: 'marketing' }}>
+            <Suspense fallback={<PageLoading message="Loading marketing analytics..." />}>
+              <MarketingAnalyticsSection 
+                userRole={user.role}
+                dateRange={{ startDate, endDate }}
+              />
+            </Suspense>
+          </AnalyticsErrorBoundary>
         )
       case 'reviews':
         return (
-          <Suspense fallback={<PageLoading message="Loading review analytics..." />}>
-            <ReviewsAnalyticsSection 
-              userRole={user.role}
-              dateRange={{ startDate, endDate }}
-            />
-          </Suspense>
+          <AnalyticsErrorBoundary contextInfo={{ ...contextInfo, analyticsType: 'reviews' }}>
+            <Suspense fallback={<PageLoading message="Loading review analytics..." />}>
+              <ReviewsAnalyticsSection 
+                userRole={user.role}
+                dateRange={{ startDate, endDate }}
+              />
+            </Suspense>
+          </AnalyticsErrorBoundary>
         )
       case 'productivity':
         return (
-          <Suspense fallback={<PageLoading message="Loading productivity analytics..." />}>
-            <ProductivityAnalyticsSection 
-              data={analyticsData.raw}
-              userRole={user.role}
-              dateRange={{ startDate, endDate }}
-            />
-          </Suspense>
+          <AnalyticsErrorBoundary contextInfo={{ ...contextInfo, analyticsType: 'productivity' }}>
+            <Suspense fallback={<PageLoading message="Loading productivity analytics..." />}>
+              <ProductivityAnalyticsSection 
+                data={analyticsData.raw}
+                userRole={user.role}
+                dateRange={{ startDate, endDate }}
+              />
+            </Suspense>
+          </AnalyticsErrorBoundary>
         )
       default:
         return <div>Invalid tab selected</div>
@@ -256,7 +285,9 @@ function UnifiedAnalyticsContent() {
     >
       {/* AI Insights Panel - Always visible at top */}
       <div className="mb-6">
-        <AIInsightsPanel userId={user.id} />
+        <AnalyticsErrorBoundary contextInfo={{ analyticsType: 'ai-insights', userId: user.id?.toString() }}>
+          <AIInsightsPanel userId={user.id} />
+        </AnalyticsErrorBoundary>
       </div>
 
       {/* Tabbed Analytics Content */}

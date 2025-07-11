@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { fetchAPI } from '@/lib/api'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { 
   ReceiptPercentIcon,
   UserGroupIcon,

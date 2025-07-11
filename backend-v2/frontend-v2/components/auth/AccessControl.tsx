@@ -6,8 +6,8 @@ import { useAuth } from '@/hooks/useAuth'
 import { checkRouteAccess, getRoleDisplayName } from '@/lib/access-control'
 import { UserRole } from '@/lib/navigation'
 import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { 
   ExclamationTriangleIcon,

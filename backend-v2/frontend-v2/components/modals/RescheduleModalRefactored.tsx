@@ -14,8 +14,8 @@ import { DateTimePicker } from '@/components/calendar/shared/DateTimePicker'
 import { RecurringOptions } from '@/components/calendar/shared/RecurringOptions'
 import { NotificationPreferences } from '@/components/calendar/shared/NotificationPreferences'
 import { ErrorDisplay } from '@/components/ui/ErrorStates'
-import { Textarea } from '@/components/ui/Input'
-import { Button } from '@/components/ui/Button'
+import { Textarea } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { ButtonLoading } from '@/components/ui/LoadingStates'
 import { 
   SERVICE_STYLES, 

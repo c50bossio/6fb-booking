@@ -10,8 +10,8 @@ import {
   ArrowTrendingUpIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 
 interface ManagerAnalyticsViewProps {
   data: {

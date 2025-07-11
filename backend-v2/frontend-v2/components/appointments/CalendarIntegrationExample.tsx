@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { QuickBookingFlow, QuickReschedule } from '@/components/appointments'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/Modal'
 import { format } from 'date-fns'
 import { 

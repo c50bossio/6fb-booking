@@ -2,8 +2,10 @@
 
 import React, { useEffect, useState } from 'react'
 import { getProfile, type User } from '@/lib/api'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { AnalyticsErrorBoundary } from '@/components/error-boundaries'
+import { AnalyticsLoading, LoadingStates } from '@/components/ui/LoadingStates'
 import { 
   CurrencyDollarIcon,
   ArrowPathIcon,
@@ -182,12 +184,7 @@ export default function RevenuePage({}: RevenuePageProps) {
   if (loading && !user) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-center py-12">
-          <div className="flex flex-col items-center space-y-4">
-            <div className="w-8 h-8 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin" />
-            <p className="text-gray-600 dark:text-gray-400">Loading revenue analytics...</p>
-          </div>
-        </div>
+        <AnalyticsLoading type="revenue" />
       </div>
     )
   }
@@ -231,245 +228,263 @@ export default function RevenuePage({}: RevenuePageProps) {
   const thisMonthVsLast = ((revenueStats.thisMonth - revenueStats.lastMonth) / revenueStats.lastMonth * 100).toFixed(1)
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Revenue Analytics
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Detailed revenue analysis, trends, and service performance breakdown
-          </p>
-        </div>
-        
-        <div className="flex items-center space-x-3">
-          {/* Time Range Selector */}
-          <select
-            value={timeRange}
-            onChange={(e) => setTimeRange(e.target.value)}
-            className="px-3 py-2 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-          >
-            {timeRangeOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+    <AnalyticsErrorBoundary 
+      contextInfo={{ 
+        analyticsType: 'revenue-page', 
+        userId: user?.id?.toString(),
+        dateRange: { startDate: timeRange, endDate: timeRange }
+      }}
+    >
+      <div className="space-y-6">
+        {/* Page Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Revenue Analytics
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              Detailed revenue analysis, trends, and service performance breakdown
+            </p>
+          </div>
           
-          {/* Refresh Button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={loading}
-          >
-            <ArrowPathIcon className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
+          <div className="flex items-center space-x-3">
+            {/* Time Range Selector */}
+            <select
+              value={timeRange}
+              onChange={(e) => setTimeRange(e.target.value)}
+              className="px-3 py-2 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+            >
+              {timeRangeOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            
+            {/* Refresh Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={loading}
+            >
+              {loading ? (
+                <LoadingStates.LoadingSpinner size="xs" className="mr-2" />
+              ) : (
+                <ArrowPathIcon className="w-4 h-4 mr-2" />
+              )}
+              {loading ? 'Refreshing...' : 'Refresh'}
+            </Button>
+          </div>
         </div>
-      </div>
 
-      {/* Revenue Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Today's Revenue</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  ${revenueStats.today.toLocaleString()}
-                </p>
-              </div>
-              <CurrencyDollarIcon className="w-8 h-8 text-green-500" />
-            </div>
-            <p className={`text-xs mt-2 ${parseFloat(todayVsYesterday) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-              {parseFloat(todayVsYesterday) >= 0 ? '+' : ''}{todayVsYesterday}% vs yesterday
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">This Week</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  ${revenueStats.thisWeek.toLocaleString()}
-                </p>
-              </div>
-              <CalendarDaysIcon className="w-8 h-8 text-blue-500" />
-            </div>
-            <p className={`text-xs mt-2 ${parseFloat(thisWeekVsLast) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-              {parseFloat(thisWeekVsLast) >= 0 ? '+' : ''}{thisWeekVsLast}% vs last week
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">This Month</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  ${revenueStats.thisMonth.toLocaleString()}
-                </p>
-              </div>
-              <ChartBarIcon className="w-8 h-8 text-purple-500" />
-            </div>
-            <p className={`text-xs mt-2 ${parseFloat(thisMonthVsLast) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-              {parseFloat(thisMonthVsLast) >= 0 ? '+' : ''}{thisMonthVsLast}% vs last month
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Avg Per Appointment</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  ${revenueStats.averagePerAppointment}
-                </p>
-              </div>
-              <BanknotesIcon className="w-8 h-8 text-orange-500" />
-            </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              Based on {timeRange}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Revenue Breakdown */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <ChartBarIcon className="w-5 h-5" />
-            <span>Revenue by Service</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {revenueBreakdown.map((item, index) => (
-              <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div className="flex items-center space-x-4">
-                  <div className="w-3 h-3 bg-primary-500 rounded-full"></div>
+        {/* Revenue Overview Cards */}
+        <AnalyticsErrorBoundary contextInfo={{ analyticsType: 'revenue-overview', userId: user?.id?.toString() }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white">{item.service}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{item.percentage}% of total revenue</p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Today's Revenue</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      ${revenueStats.today.toLocaleString()}
+                    </p>
                   </div>
+                  <CurrencyDollarIcon className="w-8 h-8 text-green-500" />
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-gray-900 dark:text-white">
-                    ${item.revenue.toLocaleString()}
-                  </p>
-                  <div className={`flex items-center space-x-1 text-xs ${getTrendColor(item.trend)}`}>
-                    {getTrendIcon(item.trend, item.trendValue)}
-                    <span>
-                      {item.trend === 'up' ? '+' : item.trend === 'down' ? '-' : ''}
-                      {Math.abs(item.trendValue)}%
+                <p className={`text-xs mt-2 ${parseFloat(todayVsYesterday) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  {parseFloat(todayVsYesterday) >= 0 ? '+' : ''}{todayVsYesterday}% vs yesterday
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">This Week</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      ${revenueStats.thisWeek.toLocaleString()}
+                    </p>
+                  </div>
+                  <CalendarDaysIcon className="w-8 h-8 text-blue-500" />
+                </div>
+                <p className={`text-xs mt-2 ${parseFloat(thisWeekVsLast) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  {parseFloat(thisWeekVsLast) >= 0 ? '+' : ''}{thisWeekVsLast}% vs last week
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">This Month</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      ${revenueStats.thisMonth.toLocaleString()}
+                    </p>
+                  </div>
+                  <ChartBarIcon className="w-8 h-8 text-purple-500" />
+                </div>
+                <p className={`text-xs mt-2 ${parseFloat(thisMonthVsLast) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  {parseFloat(thisMonthVsLast) >= 0 ? '+' : ''}{thisMonthVsLast}% vs last month
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Avg Per Appointment</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      ${revenueStats.averagePerAppointment}
+                    </p>
+                  </div>
+                  <BanknotesIcon className="w-8 h-8 text-orange-500" />
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  Based on {timeRange}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </AnalyticsErrorBoundary>
+
+        {/* Revenue Breakdown */}
+        <AnalyticsErrorBoundary contextInfo={{ analyticsType: 'revenue-breakdown', userId: user?.id?.toString() }}>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <ChartBarIcon className="w-5 h-5" />
+                <span>Revenue by Service</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {revenueBreakdown.map((item, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-3 h-3 bg-primary-500 rounded-full"></div>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">{item.service}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{item.percentage}% of total revenue</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-gray-900 dark:text-white">
+                        ${item.revenue.toLocaleString()}
+                      </p>
+                      <div className={`flex items-center space-x-1 text-xs ${getTrendColor(item.trend)}`}>
+                        {getTrendIcon(item.trend, item.trendValue)}
+                        <span>
+                          {item.trend === 'up' ? '+' : item.trend === 'down' ? '-' : ''}
+                          {Math.abs(item.trendValue)}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </AnalyticsErrorBoundary>
+
+        {/* Performance Metrics */}
+        <AnalyticsErrorBoundary contextInfo={{ analyticsType: 'revenue-insights', userId: user?.id?.toString() }}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Revenue Insights</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <ArrowTrendingUpIcon className="w-5 h-5 text-green-600 dark:text-green-400" />
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                        Best Performing Service
+                      </span>
+                    </div>
+                    <span className="text-sm font-bold text-green-600 dark:text-green-400">
+                      {revenueStats.topServiceName}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <CalendarDaysIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                        Daily Average
+                      </span>
+                    </div>
+                    <span className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                      ${revenueStats.averagePerDay.toLocaleString()}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <ChartBarIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                        Year-to-Date
+                      </span>
+                    </div>
+                    <span className="text-sm font-bold text-purple-600 dark:text-purple-400">
+                      ${revenueStats.thisYear.toLocaleString()}
                     </span>
                   </div>
                 </div>
-              </div>
-            ))}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Six Figure Goals</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">Monthly Goal Progress</span>
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        ${revenueStats.thisMonth.toLocaleString()} / $15,000
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                      <div 
+                        className="bg-primary-500 h-2 rounded-full" 
+                        style={{ width: `${Math.min((revenueStats.thisMonth / 15000) * 100, 100)}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {Math.round((revenueStats.thisMonth / 15000) * 100)}% of monthly goal
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">Annual Goal Progress</span>
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        ${revenueStats.thisYear.toLocaleString()} / $180,000
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                      <div 
+                        className="bg-green-500 h-2 rounded-full" 
+                        style={{ width: `${Math.min((revenueStats.thisYear / 180000) * 100, 100)}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {Math.round((revenueStats.thisYear / 180000) * 100)}% of Six Figure Goal
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Performance Metrics */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Revenue Insights</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <ArrowTrendingUpIcon className="w-5 h-5 text-green-600 dark:text-green-400" />
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">
-                    Best Performing Service
-                  </span>
-                </div>
-                <span className="text-sm font-bold text-green-600 dark:text-green-400">
-                  {revenueStats.topServiceName}
-                </span>
-              </div>
-              
-              <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <CalendarDaysIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">
-                    Daily Average
-                  </span>
-                </div>
-                <span className="text-sm font-bold text-blue-600 dark:text-blue-400">
-                  ${revenueStats.averagePerDay.toLocaleString()}
-                </span>
-              </div>
-              
-              <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <ChartBarIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">
-                    Year-to-Date
-                  </span>
-                </div>
-                <span className="text-sm font-bold text-purple-600 dark:text-purple-400">
-                  ${revenueStats.thisYear.toLocaleString()}
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Six Figure Goals</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Monthly Goal Progress</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    ${revenueStats.thisMonth.toLocaleString()} / $15,000
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div 
-                    className="bg-primary-500 h-2 rounded-full" 
-                    style={{ width: `${Math.min((revenueStats.thisMonth / 15000) * 100, 100)}%` }}
-                  ></div>
-                </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {Math.round((revenueStats.thisMonth / 15000) * 100)}% of monthly goal
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Annual Goal Progress</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    ${revenueStats.thisYear.toLocaleString()} / $180,000
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div 
-                    className="bg-green-500 h-2 rounded-full" 
-                    style={{ width: `${Math.min((revenueStats.thisYear / 180000) * 100, 100)}%` }}
-                  ></div>
-                </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {Math.round((revenueStats.thisYear / 180000) * 100)}% of Six Figure Goal
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        </AnalyticsErrorBoundary>
       </div>
-    </div>
+    </AnalyticsErrorBoundary>
   )
 }

@@ -3,7 +3,7 @@
 import React from 'react'
 import { format, startOfWeek, endOfWeek } from 'date-fns'
 import { ChevronLeftIcon, ChevronRightIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
-import { Button } from '../ui/Button'
+import { Button } from '../ui/button'
 import { useResponsive } from '@/hooks/useResponsive'
 import { getMobileTouchClass } from '@/lib/mobile-touch-enhancements'
 import type { CalendarView } from '../UnifiedCalendar'

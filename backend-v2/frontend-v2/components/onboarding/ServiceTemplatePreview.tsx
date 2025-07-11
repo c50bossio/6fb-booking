@@ -17,11 +17,11 @@ import {
   ArrowRight,
   Info
 } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Modal } from '@/components/ui/Modal'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ServiceTemplate, ServiceTemplatePreviewProps } from '@/lib/types/service-templates'
 import { formatTemplatePrice, getTierColor, getTierIcon, getMethodologyScoreColor } from '@/lib/api/service-templates'
 

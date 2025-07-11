@@ -4,8 +4,8 @@ import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Eye, EyeOff, ArrowLeft, Check, AlertCircle } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import { Card, CardContent } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import { registerClient } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
@@ -77,7 +77,7 @@ export default function ClientRegistrationPage() {
       toast({
         title: 'Welcome to BookedBarber!',
         description: 'Your account has been created successfully.',
-        variant: 'success'
+        variant: 'default'
       })
       
       // Check if user was booking an appointment

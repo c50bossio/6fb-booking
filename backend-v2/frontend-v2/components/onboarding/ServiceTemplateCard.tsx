@@ -2,9 +2,9 @@
 
 import React from 'react'
 import { Check, Eye, Star, TrendingUp, Clock, Users, DollarSign } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { ServiceTemplate, ServiceTemplateCardProps } from '@/lib/types/service-templates'
 import { formatTemplatePrice, getTierColor, getTierIcon, getMethodologyScoreColor } from '@/lib/api/service-templates'
 

@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { 
   CreditCardIcon,
   ChartBarIcon,
@@ -207,7 +207,7 @@ export default function MarketingBillingPage() {
 
       {/* Current Plan Info */}
       {usageStats && (
-        <Card variant="accent">
+        <Card variant="elevated">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -477,7 +477,7 @@ export default function MarketingBillingPage() {
                 {pricingPlans.map(plan => (
                   <Card 
                     key={plan.id} 
-                    variant={plan.isPopular ? 'accent' : 'outlined'}
+                    variant={plan.isPopular ? 'elevated' : 'outlined'}
                     className="relative"
                   >
                     {plan.isPopular && (

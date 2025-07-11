@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { BulkSelectableAppointmentList } from '@/components/appointments/BulkSelectableAppointmentList'
 import { EnhancedCalendarExport } from '@/components/calendar/EnhancedCalendarExport'
 import { Appointment } from '@/types/appointment'

@@ -14,13 +14,13 @@ import {
   Plus,
   X
 } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
-import { Input } from '@/components/ui/Input'
-import { Select } from '@/components/ui/Select'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
 import { LoadingStates } from '@/components/ui/LoadingStates'
-import { EmptyState } from '@/components/ui/EmptyState'
+import { EmptyState } from '@/components/ui/empty-state'
 import ServiceTemplateCard from './ServiceTemplateCard'
 import ServiceTemplatePreview from './ServiceTemplatePreview'
 import { 

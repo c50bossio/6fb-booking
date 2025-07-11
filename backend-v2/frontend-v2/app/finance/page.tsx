@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { getProfile, type User } from '@/lib/api'
 import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { 
   CurrencyDollarIcon,
   CreditCardIcon,

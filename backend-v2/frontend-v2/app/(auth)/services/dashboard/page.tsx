@@ -22,10 +22,10 @@ import {
   Brain,
   Zap
 } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Badge } from '@/components/ui/Badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import ServiceOverviewGrid from '@/components/services/ServiceOverviewGrid'
 import ServiceAnalyticsPanel from '@/components/services/ServiceAnalyticsPanel'
@@ -44,7 +44,7 @@ import {
   type User
 } from '@/lib/api'
 import { LoadingSpinner } from '@/components/ui/LoadingStates'
-import { EmptyState } from '@/components/ui/EmptyState'
+import { EmptyState } from '@/components/ui/empty-state'
 
 interface ServiceMetrics {
   totalServices: number
@@ -206,7 +206,7 @@ export default function ServiceDashboardPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <EmptyState
-          icon={<AlertCircle className="w-12 h-12" />}
+          icon={AlertCircle}
           title="Error Loading Dashboard"
           description={error}
           action={{

@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react'
 import { format, isSameDay, parseISO } from 'date-fns'
 import { ClockIcon, UserIcon } from '@heroicons/react/24/outline'
-import { Button } from '../ui/Button'
+import { Button } from '../ui/button'
 import { useRouter } from 'next/navigation'
 
 interface Appointment {

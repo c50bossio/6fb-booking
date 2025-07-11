@@ -26,3 +26,17 @@ export const Bar = ({ ...props }: any) => null;
 export const Cell = ({ ...props }: any) => null;
 export const ResponsiveContainer = ({ children, ...props }: any) => 
   <div className="w-full h-full">{children}</div>;
+
+// Additional chart components for compliance dashboard
+export const RadarChart = ({ children, ...props }: any) => 
+  <div className="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+    Radar chart would render here
+  </div>;
+
+export const Radar = ({ ...props }: any) => null;
+export const PolarGrid = ({ ...props }: any) => null;
+export const PolarAngleAxis = ({ ...props }: any) => null;
+export const PolarRadiusAxis = ({ ...props }: any) => null;
+
+// For service analytics
+export const Pie = ({ ...props }: any) => null;

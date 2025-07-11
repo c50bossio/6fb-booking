@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/Button'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { getProfile } from '@/lib/api'
 import { toast } from '@/hooks/use-toast'
 import { generateOrganizationBookingURL } from '@/lib/booking-link-generator'
@@ -70,8 +70,10 @@ export default function BookingLinksPage() {
     try {
       // Get user profile to get organization slug
       const profile = await getProfile()
-      if (profile?.organization?.slug) {
-        setOrganizationSlug(profile.organization.slug)
+      if (profile?.primary_organization?.name) {
+        // Generate slug from organization name
+        const slug = profile.primary_organization.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+        setOrganizationSlug(slug)
       }
       
       // In a real implementation, these would be actual API calls

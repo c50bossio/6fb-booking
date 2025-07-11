@@ -13,7 +13,7 @@ const ConversionOptimizedBooking = dynamic(
     loading: () => (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="text-center space-y-4">
-          <LoadingButton />
+          <LoadingButton loading={true}>Loading...</LoadingButton>
           <p className="text-gray-600">Loading booking system...</p>
         </div>
       </div>
@@ -142,7 +142,7 @@ export default function OrganizationBookingPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="text-center space-y-4">
-          <LoadingButton />
+          <LoadingButton loading={true}>Loading...</LoadingButton>
           <p className="text-gray-600">Loading booking page...</p>
         </div>
       </div>

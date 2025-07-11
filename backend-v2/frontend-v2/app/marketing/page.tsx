@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { 
   EnvelopeIcon,
@@ -161,7 +161,7 @@ export default function MarketingDashboard() {
   return (
     <div className="space-y-8">
       {/* Welcome Section */}
-      <Card variant="accent" className="text-center">
+      <Card variant="elevated" className="text-center">
         <CardContent className="p-8">
           <div className="flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mx-auto mb-4">
             <EnvelopeIcon className="w-8 h-8 text-primary-700 dark:text-primary-300" />

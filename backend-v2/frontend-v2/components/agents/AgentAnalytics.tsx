@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { TrendingUp, TrendingDown, BarChart3, PieChart, Activity } from 'lucide-react'
-import { Card } from '@/components/ui/Card'
+import { Card } from '@/components/ui/card'
 
 interface AnalyticsData {
   total_revenue: number

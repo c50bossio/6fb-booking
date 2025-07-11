@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { 
   PlusIcon,
   DocumentTextIcon,
@@ -233,7 +233,7 @@ export default function TemplatesPage() {
           return (
             <Card 
               key={category}
-              variant={filterCategory === category ? 'accent' : 'default'}
+              variant={filterCategory === category ? 'elevated' : 'default'}
               className="cursor-pointer hover:shadow-lg transition-all"
               onClick={() => setFilterCategory(filterCategory === category ? 'all' : category)}
             >

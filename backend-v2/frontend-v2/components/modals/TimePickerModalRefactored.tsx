@@ -3,7 +3,7 @@
 import { useState, memo } from 'react'
 import { ClockIcon } from '@heroicons/react/24/outline'
 import { ModalLayout } from '@/components/calendar/shared/ModalLayout'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 interface TimePickerModalProps {

@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { getDashboardAnalytics, getEnterpriseAnalytics, getLocationAnalytics, getProfile, type DashboardAnalytics, type LocationPerformance, type EnterpriseAnalytics, type LocationAnalytics, type User } from '@/lib/api'
 import { 
   BuildingStorefrontIcon, 
@@ -235,7 +235,7 @@ export default function BarbershopDashboardPage() {
 
         {/* Location Alerts */}
         {location.chair_occupancy < 70 && (
-          <Card variant="warning" className="mb-6" animated>
+          <Card variant="outlined" className="mb-6 border-warning-200 bg-warning-50" animated>
             <CardContent className="flex items-center space-x-3">
               <ExclamationTriangleIcon className="w-6 h-6 text-warning-600 flex-shrink-0" />
               <div>
@@ -260,7 +260,7 @@ export default function BarbershopDashboardPage() {
         {/* Chair Inventory Visualization */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle as="h2">Chair Inventory Status</CardTitle>
+            <CardTitle>Chair Inventory Status</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -312,7 +312,7 @@ export default function BarbershopDashboardPage() {
         <Card className="mb-8">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle as="h2">Barber Performance</CardTitle>
+              <CardTitle>Barber Performance</CardTitle>
               <Button 
                 onClick={() => router.push(`/barbershop/${locationId}/barbers`)}
                 variant="ghost"
@@ -393,7 +393,7 @@ export default function BarbershopDashboardPage() {
         {/* Compensation Models Summary */}
         <Card>
           <CardHeader>
-            <CardTitle as="h2">Compensation Model Distribution</CardTitle>
+            <CardTitle>Compensation Model Distribution</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

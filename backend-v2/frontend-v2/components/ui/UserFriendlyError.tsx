@@ -15,7 +15,7 @@ import {
   Clock,
   AlertTriangle
 } from 'lucide-react'
-import { Button } from './Button'
+import { Button } from './button'
 import { Alert, AlertDescription, AlertTitle } from './alert'
 import { retryWithBackoff } from '@/lib/RetryManager'
 

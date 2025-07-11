@@ -7,8 +7,8 @@ import { login, getProfile, resendVerification } from '@/lib/api'
 import { getDefaultDashboard } from '@/lib/routeGuards'
 import { useAsyncOperation } from '@/lib/useAsyncOperation'
 import { LoadingButton, ErrorDisplay, SuccessMessage } from '@/components/LoadingStates'
-import { Button } from '@/components/ui/Button'
-import { Card, CardContent } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { Logo } from '@/components/ui/Logo'
 import { useFormValidation, validators } from '@/hooks/useFormValidation'
 import { ValidatedInput, PasswordStrengthIndicator } from '@/components/forms/ValidatedInput'
@@ -19,6 +19,7 @@ import { EnhancedRememberMe } from '@/components/auth/RememberMe'
 import { trustDevice, generateDeviceFingerprint } from '@/lib/device-fingerprint'
 import { SocialLoginGroup } from '@/components/auth/SocialLoginButton'
 import { useToast } from '@/hooks/use-toast'
+import { getBusinessContextError, formatErrorForToast } from '@/lib/error-messages'
 
 function LoginContent() {
   const router = useRouter()
@@ -156,14 +157,31 @@ function LoginContent() {
       // Increment rate limit attempts on failed login
       rateLimit.incrementAttempts()
       
-      // Check if this is a verification error (403 status)
-      if (err.message && err.message.includes('Email address not verified')) {
+      // Generate enhanced error message
+      const enhancedError = getBusinessContextError('login', err, {
+        userType: 'client', // Most common case
+        feature: 'authentication'
+      })
+      
+      // Handle specific error cases with enhanced messaging
+      if (err.status === 403 || err.message?.includes('Email address not verified') || err.message?.includes('not verified')) {
         setVerificationError(true)
         setShowResendButton(true)
+        
+        // Show user-friendly verification error
+        toast({
+          title: 'Email Verification Required',
+          description: 'Please check your email and click the verification link to activate your account.',
+          variant: 'destructive'
+        })
       } else {
         setVerificationError(false)
         setShowResendButton(false)
+        
+        // Show enhanced error message via toast (API layer already shows toast, but we can provide additional context)
+        console.error('Enhanced login error:', enhancedError)
       }
+      
       console.error('Login failed:', err)
     } finally {
       setIsSubmitting(false)
@@ -181,18 +199,27 @@ function LoginContent() {
       setVerificationError(false)
       setShowResendButton(false)
     } catch (error: any) {
+      // Generate enhanced error message for resend verification
+      const enhancedError = getBusinessContextError('resend_verification', error, {
+        userType: 'client',
+        feature: 'email_verification'
+      })
+      
+      // Show enhanced error message
+      toast(formatErrorForToast(enhancedError))
+      
       console.error('Resend verification failed:', error)
-      // Error will be shown by the useAsyncOperation
+      console.error('Enhanced resend error:', enhancedError)
     }
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8">
+    <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center space-y-4">
           <Logo variant="mono" size="lg" className="mx-auto" href="#" />
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome Back</h2>
-          <p className="mt-2 text-gray-700 dark:text-gray-300">
+          <h1 className="text-ios-largeTitle font-bold text-accent-900 dark:text-white tracking-tight">Welcome Back</h1>
+          <p className="mt-2 text-accent-600 dark:text-gray-300">
             Sign in to manage your barbershop
           </p>
         </div>
@@ -320,11 +347,14 @@ function LoginContent() {
 
               <SocialLoginGroup 
                 onError={(error) => {
-                  toast({
-                    variant: 'destructive',
-                    title: 'Social login error',
-                    description: error.message
+                  // Generate enhanced error message for social login
+                  const enhancedError = getBusinessContextError('social_login', error, {
+                    userType: 'client',
+                    feature: 'social_authentication'
                   })
+                  
+                  // Show enhanced error message
+                  toast(formatErrorForToast(enhancedError))
                 }}
               />
             </Form>

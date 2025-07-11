@@ -5,8 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { getProfile, fetchAPI, type User } from '@/lib/api'
 import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { DateRangeSelector, DateRangePreset } from '@/components/analytics/shared/DateRangeSelector'
 import { 
   CurrencyDollarIcon,
@@ -278,7 +278,7 @@ function UnifiedFinanceContent() {
         </div>
 
         {/* Tabbed Financial Content */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue={activeTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-auto gap-2">
             {availableTabs.map(tab => (
               <TabsTrigger 

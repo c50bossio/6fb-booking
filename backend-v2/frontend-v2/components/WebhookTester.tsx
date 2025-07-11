@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from './ui/Button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Button } from './ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface WebhookTesterProps {
   selectedWebhookId: string | null

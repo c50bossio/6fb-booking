@@ -6,8 +6,8 @@ import { getMyBookings, cancelBooking, updateBooking, rescheduleBooking, appoint
 import { format } from 'date-fns'
 import { Calendar, Clock, DollarSign, MapPin, User, XCircle, CheckCircle, AlertCircle, Edit2 } from 'lucide-react'
 import VirtualList from '@/components/VirtualList'
-import { EmptyState } from '@/components/ui/EmptyState'
-import { CancelConfirmationDialog } from '@/components/ui/ConfirmationDialog'
+import { EmptyState } from '@/components/ui/empty-state'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { LoadingSpinner, ErrorDisplay } from '@/components/LoadingStates'
 
 export default function MyBookingsPage() {
@@ -336,7 +336,8 @@ export default function MyBookingsPage() {
       {bookings.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
           <EmptyState
-            type="bookings"
+            title="No bookings yet"
+            description="You haven't made any bookings. Book your first appointment to get started."
             action={{
               label: 'Book Now',
               onClick: () => router.push('/book')
@@ -611,10 +612,15 @@ export default function MyBookingsPage() {
       )}
       
       {/* Cancel Confirmation Dialog */}
-      <CancelConfirmationDialog
-        isOpen={cancelConfirmation.isOpen}
-        onClose={() => setCancelConfirmation({ isOpen: false, bookingId: null })}
+      <ConfirmDialog
+        open={cancelConfirmation.isOpen}
+        onOpenChange={(open) => !open && setCancelConfirmation({ isOpen: false, bookingId: null })}
         onConfirm={confirmCancelBooking}
+        title="Cancel Booking"
+        description="Are you sure you want to cancel this booking? This action cannot be undone."
+        confirmText="Cancel Booking"
+        cancelText="Keep Booking"
+        variant="danger"
         loading={cancellingId !== null}
       />
     </div>

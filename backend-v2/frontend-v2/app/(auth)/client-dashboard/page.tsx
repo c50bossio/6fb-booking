@@ -16,9 +16,9 @@ import {
   Star,
   Settings
 } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { LoadingSpinner } from '@/components/LoadingStates'
 import { ErrorDisplay } from '@/components/LoadingStates'
 import { useAuth } from '@/hooks/useAuth'
@@ -236,7 +236,7 @@ export default function ClientDashboard() {
                             <h3 className="font-semibold text-lg">
                               {booking.service_name || 'Service'}
                             </h3>
-                            <Badge variant="primary">Confirmed</Badge>
+                            <Badge variant="default">Confirmed</Badge>
                           </div>
                           
                           <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
@@ -255,12 +255,12 @@ export default function ClientDashboard() {
                                 {booking.barber_name}
                               </div>
                             )}
-                            {booking.location_name && (
+                            {/* {booking.location_name && (
                               <div className="flex items-center gap-2">
                                 <MapPin className="w-4 h-4" />
                                 {booking.location_name}
                               </div>
-                            )}
+                            )} */}
                           </div>
                         </div>
 

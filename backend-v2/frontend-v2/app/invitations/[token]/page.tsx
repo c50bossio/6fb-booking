@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/Label"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useToast } from "@/components/ui/use-toast"
 import { Building2, CheckCircle, XCircle, Clock, AlertCircle } from "lucide-react"
-import { api } from "@/lib/api"
+import { fetchAPI } from "@/lib/api"
 
 interface Invitation {
   id: number
@@ -47,7 +47,7 @@ export default function AcceptInvitationPage({ params }: { params: { token: stri
 
   const fetchInvitation = async () => {
     try {
-      const response = await api.get<Invitation>(`/invitations/${params.token}`)
+      const response = await fetchAPI(`/api/v1/invitations/${params.token}`)
       setInvitation(response)
       
       // Pre-fill name if provided
@@ -83,9 +83,13 @@ export default function AcceptInvitationPage({ params }: { params: { token: stri
 
     setAccepting(true)
     try {
-      const response = await api.post(`/invitations/${params.token}/accept`, {
-        password,
-        name: name || undefined
+      const response = await fetchAPI(`/api/v1/invitations/${params.token}/accept`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password,
+          name: name || undefined
+        })
       })
 
       toast({

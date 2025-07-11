@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Card, CardContent } from '@/components/ui/Card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, CheckCircle, XCircle } from 'lucide-react'
 import { handleOAuthCallback, linkSocialAccount, SocialProvider } from '@/lib/social-auth'
@@ -15,7 +15,7 @@ export default function SocialAuthCallbackPage({
 }) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { login: authLogin } = useAuth()
+  const auth = useAuth()
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing')
   const [error, setError] = useState<string>('')
 
@@ -59,7 +59,7 @@ export default function SocialAuthCallbackPage({
         const response = await handleOAuthCallback(provider, code, state)
         
         // Update auth context
-        await authLogin(response.access_token, response.refresh_token)
+        auth.setAuthTokens(response.access_token, response.refresh_token)
         
         setStatus('success')
         

@@ -1,6 +1,6 @@
 import React from 'react'
 import { FunnelIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 
 export interface FilterOption {
   value: string

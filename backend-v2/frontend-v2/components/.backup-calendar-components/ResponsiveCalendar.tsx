@@ -8,7 +8,7 @@ import CalendarDayView from './CalendarDayView'
 import CalendarAgendaView from './CalendarAgendaView'
 import CalendarMobileNav from './calendar/CalendarMobileNav'
 import CalendarDaySwiper from './calendar/CalendarDaySwiper'
-import { Button } from './ui/Button'
+import { Button } from '../ui/button'
 import { CalendarIcon, CalendarDaysIcon, Squares2X2Icon, ListBulletIcon } from '@heroicons/react/24/outline'
 
 interface ResponsiveCalendarProps {

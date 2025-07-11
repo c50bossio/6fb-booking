@@ -2,8 +2,8 @@
 
 import React from 'react'
 import { AlertTriangle, RefreshCw, Wifi, WifiOff } from 'lucide-react'
-import { Button } from './ui/Button'
-import { Card, CardContent } from '@/components/ui/Card'
+import { Button } from './ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 
 interface LoadingSkeletonProps {
   type?: 'card' | 'list' | 'table' | 'calendar' | 'dashboard'

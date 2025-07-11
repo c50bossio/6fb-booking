@@ -4,14 +4,14 @@ import React, { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Save, Package, Plus, Edit2, Trash2, Upload, RefreshCw } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Label } from '@/components/ui/Label'
-import { Select } from '@/components/ui/Select'
-import { Switch } from '@/components/ui/Switch'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Badge } from '@/components/ui/Badge'
+import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { productsAPI } from '@/lib/api/products'
@@ -57,7 +57,7 @@ export default function ProductDetailPage() {
   // Fetch Shopify integration status
   const { data: integrations } = useQuery({
     queryKey: ['integrations', 'shopify'],
-    queryFn: () => integrationsAPI.getIntegrations({ integration_type: IntegrationType.SHOPIFY })
+    queryFn: () => integrationsAPI.getIntegrations(IntegrationType.SHOPIFY)
   })
   
   const shopifyIntegration = integrations?.find(i => i.integration_type === IntegrationType.SHOPIFY && i.is_active)
@@ -323,17 +323,18 @@ export default function ProductDetailPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="product_type">Product Type</Label>
-                      <Select
+                      <select
                         id="product_type"
                         value={formData.product_type || ''}
                         onChange={(e) => handleInputChange('product_type', e.target.value)}
                         disabled={!isEditing}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       >
                         <option value={ProductType.PHYSICAL}>Physical Product</option>
                         <option value={ProductType.SERVICE}>Service</option>
                         <option value={ProductType.DIGITAL}>Digital Product</option>
                         <option value={ProductType.GIFT_CARD}>Gift Card</option>
-                      </Select>
+                      </select>
                     </div>
                     
                     <div>
@@ -507,17 +508,18 @@ export default function ProductDetailPage() {
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="status">Product Status</Label>
-                <Select
+                <select
                   id="status"
                   value={formData.status || ''}
                   onChange={(e) => handleInputChange('status', e.target.value)}
                   disabled={!isEditing}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value={ProductStatus.ACTIVE}>Active</option>
                   <option value={ProductStatus.INACTIVE}>Inactive</option>
                   <option value={ProductStatus.DRAFT}>Draft</option>
                   <option value={ProductStatus.ARCHIVED}>Archived</option>
-                </Select>
+                </select>
               </div>
               
               <div className="flex items-center justify-between">

@@ -47,7 +47,7 @@ jest.mock('@/components/ui/Input', () => ({
 }))
 
 // Mock the Card components
-jest.mock('@/components/ui/card', () => ({
+jest.mock('@/components/ui/Card', () => ({
   Card: ({ children, ...props }: any) => <div {...props}>{children}</div>,
   CardContent: ({ children, ...props }: any) => <div {...props}>{children}</div>,
 }))

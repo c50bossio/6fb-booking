@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect, useMemo } from 'react'
 import { Modal, ModalBody } from '../ui/Modal'
-import { Button } from '../ui/Button'
-import { Card } from '@/components/ui/Card'
-import { Input } from '../ui/Input'
-import { Select } from '../ui/Select'
+import { Button } from '../ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '../ui/input'
+import { Select } from '../ui/select'
 import {
   CogIcon,
   ArrowLeftIcon,

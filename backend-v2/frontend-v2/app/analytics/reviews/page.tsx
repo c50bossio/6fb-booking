@@ -6,8 +6,8 @@ import { getProfile, type User } from '@/lib/api'
 import { AnalyticsLayout, AnalyticsSectionLayout } from '@/components/analytics/AnalyticsLayout'
 import { AnalyticsCardGrid } from '@/components/analytics/shared/AnalyticsCard'
 import { DateRangeSelector, DateRangePreset } from '@/components/analytics/shared/DateRangeSelector'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
 import { 
   StarIcon,

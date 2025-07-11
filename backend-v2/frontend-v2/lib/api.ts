@@ -1,5 +1,6 @@
 import { validateAPIRequest, validateAPIResponse, APIPerformanceMonitor, retryOperation, defaultRetryConfigs } from './apiUtils'
 import { toast } from '@/hooks/use-toast'
+import { getEnhancedErrorMessage, formatErrorForToast, ErrorContext } from './error-messages'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -180,60 +181,62 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
     try {
       errorData = await response.json()
     } catch {
-      throw new Error(`Network error: ${response.status} ${response.statusText}`)
-    }
-    
-    // Handle specific error types
-    if (response.status === 429) {
-      const retryAfter = errorData.retry_after || 60
-      const message = `Rate limit exceeded. Please try again in ${retryAfter} seconds.`
-      throw new Error(message)
-    }
-    
-    if (response.status === 422) {
-      // Validation errors - extract more specific message
-      if (Array.isArray(errorData.detail)) {
-        const messages = errorData.detail.map((err: ValidationError) => err.msg).join(', ')
-        throw new Error(messages)
-      }
-    }
-    
-    if (response.status === 401) {
-      const message = 'Authentication failed. Please log in again.'
-      const error = new Error(message)
-      ;(error as any).status = 401
+      // Network or parsing error - use enhanced error messaging
+      const context: ErrorContext = { endpoint }
+      const enhancedError = getEnhancedErrorMessage(response.status, {}, context)
+      
+      // Show user-friendly toast notification
+      toast(formatErrorForToast(enhancedError))
+      
+      // Record error for monitoring
+      APIPerformanceMonitor.recordError(endpoint)
+      endTiming()
+      
+      const error = new Error(enhancedError.message)
+      ;(error as any).status = response.status
+      ;(error as any).enhancedError = enhancedError
       throw error
     }
     
-    if (response.status === 403) {
-      const message = 'Access denied. You do not have permission to perform this action.'
-      const error = new Error(message)
-      ;(error as any).status = 403
-      throw error
+    // Create context for enhanced error messaging
+    const context: ErrorContext = { 
+      endpoint,
+      action: endpoint.includes('/login') ? 'login' : 
+             endpoint.includes('/register') ? 'registration' :
+             endpoint.includes('/appointment') ? 'booking' :
+             endpoint.includes('/payment') ? 'payment' : undefined
     }
     
-    if (response.status >= 500) {
-      const message = 'Server error. Please try again later or contact support.'
-      throw new Error(message)
-    }
+    // Generate enhanced error message
+    const enhancedError = getEnhancedErrorMessage(response.status, errorData, context)
     
-    // Handle both string and object detail formats
-    const message = typeof errorData.detail === 'string' 
-      ? errorData.detail 
-      : errorData.message || `API Error: ${response.status}`
+    // Show user-friendly toast notification
+    toast(formatErrorForToast(enhancedError))
     
-    // Show toast notification
-    toast({
-      title: 'Request Failed',
-      description: message,
-      variant: 'destructive',
-    })
-    
-    // Record error for monitoring
+    // Record error for monitoring with additional context
     APIPerformanceMonitor.recordError(endpoint)
     endTiming()
     
-    throw new Error(message)
+    // Create enhanced error object
+    const error = new Error(enhancedError.message)
+    ;(error as any).status = response.status
+    ;(error as any).enhancedError = enhancedError
+    ;(error as any).originalData = errorData
+    
+    // Handle automatic redirects for auth errors
+    if (response.status === 401 && !retry) {
+      // If refresh already failed, redirect to login
+      localStorage.removeItem('token')
+      localStorage.removeItem('refresh_token')
+      document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
+      if (typeof window !== 'undefined') {
+        setTimeout(() => {
+          window.location.href = '/login'
+        }, 2000) // Give user time to read the error message
+      }
+    }
+    
+    throw error
   }
 
   const responseData = await response.json()

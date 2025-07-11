@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { getProfile, updateOnboardingStatus, type User } from '@/lib/api'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { 
   CheckCircle2, 
@@ -78,7 +78,7 @@ export default function WelcomePage() {
       icon: Users,
       href: '/settings/team',
       completed: completedSteps.includes('staff'),
-      optional: user?.unified_role === 'INDIVIDUAL_BARBER'
+      optional: (user?.unified_role as string) === 'INDIVIDUAL_BARBER'
     },
     {
       id: 'services',

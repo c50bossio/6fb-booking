@@ -16,9 +16,9 @@ import {
   InformationCircleIcon
 } from '@heroicons/react/24/outline'
 import { Modal, ModalBody, ModalFooter } from '@/components/ui/Modal'
-import { Button } from '@/components/ui/Button'
-import { Input, Textarea } from '@/components/ui/Input'
-import { Switch } from '@/components/ui/Switch'
+import { Button } from '@/components/ui/button'
+import { Input, Textarea } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
 import { ButtonLoading } from '@/components/ui/LoadingStates'
 import { ErrorDisplay } from '@/components/ui/ErrorStates'
 import { 

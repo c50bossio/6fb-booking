@@ -1,9 +1,9 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { 
   Clock, 
   Calendar,
@@ -139,7 +139,7 @@ export default function QuickBookingPanel({
               <h4 className="font-semibold text-primary-900 dark:text-primary-100">
                 Next Available
               </h4>
-              <Badge variant="primary" className="text-xs">
+              <Badge variant="default" className="text-xs">
                 <Clock className="w-3 h-3 mr-1" />
                 Fastest
               </Badge>

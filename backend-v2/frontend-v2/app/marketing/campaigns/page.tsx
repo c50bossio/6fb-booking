@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { 
   PlusIcon,
   FunnelIcon,
@@ -224,7 +224,7 @@ export default function CampaignsPage() {
 
       {/* Campaign Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card variant="accent">
+        <Card variant="elevated">
           <CardContent className="p-4">
             <div className="text-3xl font-bold text-primary-900 dark:text-primary-100">
               {campaigns.length}

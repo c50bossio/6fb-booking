@@ -2,7 +2,7 @@
 
 import { Suspense } from 'react'
 import TrackingPixelSettings from '@/components/dashboard/TrackingPixelSettings'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 
 function TrackingPixelsContent() {

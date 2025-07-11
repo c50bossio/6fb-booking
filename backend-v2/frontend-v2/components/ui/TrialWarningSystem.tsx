@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react'
 import { AlertTriangle, X, Clock, CreditCard } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import { Card, CardContent } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { TrialStatus } from './TrialStatusBanner'
 
 interface TrialWarningSystemProps {

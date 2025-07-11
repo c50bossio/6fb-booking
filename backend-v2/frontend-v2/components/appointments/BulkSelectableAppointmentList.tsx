@@ -1,9 +1,9 @@
 'use client'
 
 import React, { useState, useCallback, useMemo, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { 
@@ -20,7 +20,7 @@ import {
 import { format, parseISO, isToday, isTomorrow, isPast } from 'date-fns'
 import { Appointment } from '@/types/appointment'
 import { BulkSelectionCriteria, selectAppointmentsByCriteria } from '@/lib/calendar-export-enhanced'
-import { Select, SelectOption } from '@/components/ui/Select'
+import { Select, SelectOption } from '@/components/ui/select'
 import {
   Popover,
   PopoverContent,

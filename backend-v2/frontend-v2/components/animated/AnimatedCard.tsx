@@ -1,7 +1,7 @@
 'use client'
 
 import React, { forwardRef } from 'react'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { useInView } from 'react-intersection-observer'
 

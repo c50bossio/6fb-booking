@@ -3,8 +3,8 @@
 import React, { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Check, X, AlertCircle, Loader2 } from 'lucide-react';
-import { Label } from '@/components/ui/Label';
-import { Select, SelectOption } from '@/components/ui/Select';
+import { Label } from '@/components/ui/label';
+import { Select, SelectOption } from '@/components/ui/select';
 
 export interface ValidatedSelectProps {
   label?: string;

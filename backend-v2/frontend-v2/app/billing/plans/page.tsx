@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { getProfile, getTrialStatus, type User, type TrialStatus } from '@/lib/api'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import PricingCalculator from '@/components/ui/PricingCalculator'
 import { ArrowLeft, Star, Zap, Check } from 'lucide-react'
 

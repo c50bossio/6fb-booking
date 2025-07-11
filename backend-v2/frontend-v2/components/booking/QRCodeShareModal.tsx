@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { X, Share2, QrCode } from 'lucide-react';
 import QRCodeGenerator from './QRCodeGenerator';
-import { Button } from '../ui/Button';
+import { Button } from '../ui/button';
 
 interface QRCodeShareModalProps {
   isOpen: boolean;

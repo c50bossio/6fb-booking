@@ -10,7 +10,7 @@ import {
   XMarkIcon,
   LightBulbIcon
 } from '@heroicons/react/24/outline'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { getTheme } from '@/lib/calendar-premium-theme'
 import { aiTimeSuggestions } from '@/lib/ai-time-suggestions'
 import type { BookingResponse } from '@/lib/api'

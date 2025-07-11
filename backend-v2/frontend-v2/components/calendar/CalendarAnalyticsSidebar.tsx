@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, useMemo } from 'react'
-import { Card, CardContent } from '@/components/ui/Card'
+import { Card, CardContent } from '@/components/ui/card'
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -18,7 +18,7 @@ import {
 import { format, startOfWeek, endOfWeek } from 'date-fns'
 import { getAppointmentPatterns, type BookingResponse } from '@/lib/api'
 import { useResponsive } from '@/hooks/useResponsive'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 
 interface CalendarAnalyticsSidebarProps {
   appointments: BookingResponse[]

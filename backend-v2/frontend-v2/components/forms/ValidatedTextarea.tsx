@@ -4,7 +4,7 @@ import React, { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Check, X, AlertCircle, Loader2 } from 'lucide-react';
 // Using native textarea element
-import { Label } from '@/components/ui/Label';
+import { Label } from '@/components/ui/label';
 
 export interface ValidatedTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;

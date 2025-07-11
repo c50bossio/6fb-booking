@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Modal } from '@/components/ui/Modal'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { LoadingButton, ErrorDisplay } from '@/components/LoadingStates'
 import { formatDateForAPI } from '@/lib/timezone'
 import { appointmentsAPI, type AppointmentCreate } from '@/lib/api'

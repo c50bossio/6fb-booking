@@ -7,9 +7,10 @@ import { AnalyticsLayout, AnalyticsSectionLayout } from '@/components/analytics/
 import { AnalyticsCardGrid } from '@/components/analytics/shared/AnalyticsCard'
 import { AnalyticsFilters, FilterOption } from '@/components/analytics/shared/AnalyticsFilters'
 import { DateRangeSelector, DateRangePreset } from '@/components/analytics/shared/DateRangeSelector'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { AnalyticsLoading, LoadingStates } from '@/components/ui/LoadingStates'
+import { ErrorDisplay } from '@/components/LoadingStates'
 import UsageChart from '@/components/marketing/UsageChart'
 import { 
   EnvelopeOpenIcon,
@@ -133,7 +134,7 @@ export default function MarketingAnalyticsPage() {
   }, [startDate, endDate, campaignType, channelFilter, router])
 
   if (loading) {
-    return <PageLoading message="Loading marketing analytics..." />
+    return <AnalyticsLoading type="marketing" />
   }
 
   if (error) {

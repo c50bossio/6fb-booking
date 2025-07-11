@@ -3,9 +3,9 @@
 import React, { useState } from 'react'
 import { format } from 'date-fns'
 import { Cookie, Shield, BarChart3, Target, Zap, Settings, Eye, RefreshCw } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Switch } from '@/components/ui/Switch'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
 import useCookieConsent from '@/hooks/useCookieConsent'
 import LegalDocument, { LegalSection, LegalList } from '@/components/LegalDocument'
 

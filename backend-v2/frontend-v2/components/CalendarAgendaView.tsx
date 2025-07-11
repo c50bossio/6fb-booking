@@ -4,7 +4,7 @@ import React, { useMemo, useCallback } from 'react'
 import { format, isSameDay, startOfDay, addDays, isToday } from 'date-fns'
 import { ClockIcon, UserIcon, ScissorsIcon } from '@heroicons/react/24/outline'
 import { parseAPIDate } from '@/lib/timezone'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 
 interface Appointment {
   id: number

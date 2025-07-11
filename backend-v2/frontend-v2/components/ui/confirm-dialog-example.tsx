@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { ConfirmDialog, useConfirmDialog } from './confirm-dialog'
 import { TrashIcon } from '@heroicons/react/24/outline'
 

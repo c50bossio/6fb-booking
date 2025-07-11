@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef, memo } from 'react'
-import { Input } from '@/components/ui/Input'
-import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { LoadingButton } from '@/components/LoadingStates'
 import { searchClients, createClient, type Client } from '@/lib/api'
 import { ChevronDownIcon, UserIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline'

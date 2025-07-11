@@ -2,8 +2,8 @@
 
 import React from 'react'
 import { Shield, Eye, Lock, Database, Download, Trash2 } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import LegalDocument, { LegalSection, LegalList } from '@/components/LegalDocument'
 
 const PrivacyPolicyPage = () => {

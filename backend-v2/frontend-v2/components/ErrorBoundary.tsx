@@ -2,7 +2,7 @@
 
 import React, { Component, ReactNode, ErrorInfo } from 'react'
 import { AlertTriangle, RefreshCw, Home, MessageSquare } from 'lucide-react'
-import { Button } from './ui/Button'
+import { Button } from './ui/button'
 import { Alert, AlertDescription, AlertTitle } from './ui/alert'
 import { Sentry } from '../lib/sentry'
 import { reportApiError, captureUserFeedback, addUserActionBreadcrumb } from '../lib/sentry'

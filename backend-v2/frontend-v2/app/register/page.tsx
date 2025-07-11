@@ -10,6 +10,7 @@ import { LogoFull } from '@/components/ui/Logo'
 import { ArrowLeftIcon, SparklesIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
 import { SocialLoginGroup } from '@/components/auth/SocialLoginButton'
 import { useToast } from '@/hooks/use-toast'
+import { getBusinessContextError, formatErrorForToast } from '@/lib/error-messages'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -94,11 +95,20 @@ export default function RegisterPage() {
       // Redirect to check-email page
       router.push(`/check-email?email=${encodeURIComponent(data.accountInfo.email)}`)
     } catch (err: any) {
-      if (err.response?.data?.detail) {
-        setError(err.response.data.detail)
-      } else {
-        setError('Registration failed. Please try again.')
-      }
+      // Generate enhanced error message for registration
+      const enhancedError = getBusinessContextError('registration', err, {
+        userType: data.businessType === 'individual' ? 'barber' : 'barbershop',
+        feature: 'account_creation'
+      })
+      
+      // Set user-friendly error message
+      setError(enhancedError.message + '. ' + enhancedError.explanation)
+      
+      // Also show toast with enhanced error
+      toast(formatErrorForToast(enhancedError))
+      
+      console.error('Registration failed:', err)
+      console.error('Enhanced registration error:', enhancedError)
     } finally {
       setLoading(false)
     }
@@ -142,11 +152,11 @@ export default function RegisterPage() {
             <SparklesIcon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
           </div>
           
-          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-ios-largeTitle font-bold text-accent-900 dark:text-white tracking-tight">
             Start Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-blue-600 dark:from-primary-400 dark:to-blue-400">Six Figure</span> Journey
           </h1>
           
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+          <p className="text-lg text-accent-600 dark:text-gray-300 max-w-2xl mx-auto">
             Join thousands of barbers building their empire with BookedBarber's all-in-one platform
           </p>
 
@@ -238,11 +248,14 @@ export default function RegisterPage() {
         <div className="max-w-md mx-auto px-4 pb-8">
           <SocialLoginGroup 
             onError={(error) => {
-              toast({
-                variant: 'destructive',
-                title: 'Social login error',
-                description: error.message
+              // Generate enhanced error message for social registration
+              const enhancedError = getBusinessContextError('social_registration', error, {
+                userType: 'client',
+                feature: 'social_authentication'
               })
+              
+              // Show enhanced error message
+              toast(formatErrorForToast(enhancedError))
             }}
           />
         </div>
@@ -256,10 +269,10 @@ export default function RegisterPage() {
       {/* Customer Testimonials */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
         <div className="text-center mb-12">
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h2 className="text-ios-title1 font-semibold text-accent-800 dark:text-gray-100 tracking-tight mb-4">
             Trusted by Barbers Nationwide
-          </h3>
-          <p className="text-gray-600 dark:text-gray-300">
+          </h2>
+          <p className="text-accent-600 dark:text-gray-300">
             See what other barbers are saying about BookedBarber
           </p>
         </div>

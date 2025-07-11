@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { format, addDays, parseISO } from 'date-fns'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { LoadingButton } from '@/components/LoadingStates'
 import { 
   appointmentsAPI,

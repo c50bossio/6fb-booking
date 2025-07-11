@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { analyticsAPI, RevenueAnalytics } from '@/lib/api'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
 import { DoughnutChart } from './ChartComponents'
 import { formatters } from '@/lib/formatters'

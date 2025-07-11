@@ -2,7 +2,7 @@
 
 import { ReactNode, memo } from 'react'
 import { Modal, ModalBody, ModalFooter } from '@/components/ui/Modal'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { LoadingButton } from '@/components/LoadingStates'
 import { cn } from '@/lib/utils'
 

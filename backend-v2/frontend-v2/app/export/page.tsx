@@ -3,8 +3,8 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { getProfile, logout, type User } from '@/lib/api'
-import { Button } from '@/components/ui/Button'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import ExportBuilder from '@/components/export/ExportBuilder'
 
 function ExportContent() {

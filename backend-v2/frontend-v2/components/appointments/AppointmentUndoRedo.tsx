@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, ReactNode, useEffect } from 'react'
 import { useUndoRedo } from '@/hooks/useUndoRedo'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { toast } from '@/hooks/use-toast'
 import { Undo2, Redo2 } from 'lucide-react'
 import { apiRequest } from '@/lib/api'

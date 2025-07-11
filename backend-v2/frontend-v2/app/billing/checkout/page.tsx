@@ -6,8 +6,8 @@ import { Elements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 import { getProfile, getTrialStatus, type User, type TrialStatus } from '@/lib/api'
 import { createSetupIntent } from '@/lib/stripe'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { StripePaymentForm } from '@/components/ui/StripePaymentForm'
 import { ArrowLeft, CreditCard, Shield, Check, AlertTriangle, Loader2 } from 'lucide-react'
 
@@ -64,7 +64,7 @@ export default function CheckoutPage() {
     initializeCheckout()
   }, [])
 
-  const handlePaymentSuccess = async (paymentMethodId: string) => {
+  const handlePaymentSuccess = async (paymentMethodId?: string) => {
     setCheckoutState({ step: 'processing' })
     
     try {
@@ -253,7 +253,7 @@ export default function CheckoutPage() {
     return (
       <main className="min-h-screen bg-gradient-to-br from-ios-gray-50 to-white dark:from-zinc-900 dark:to-zinc-800">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Card variant="success">
+          <Card variant="outlined" className="border-green-200 bg-green-50">
             <CardContent className="text-center py-8">
               <Check className="h-12 w-12 text-green-600 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-green-800 mb-2">Payment Method Added!</h2>

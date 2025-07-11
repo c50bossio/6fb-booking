@@ -353,6 +353,89 @@ export const InlineLoading = ({
   </div>
 )
 
+// Context-aware Loading Component
+export const ContextualLoading = ({ 
+  context,
+  size = 'md',
+  className,
+  ...props 
+}: {
+  context: 'analytics' | 'booking' | 'calendar' | 'payments' | 'sync' | 'dashboard' | 'form' | 'search'
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+  className?: string
+} & React.HTMLAttributes<HTMLDivElement>) => {
+  const getContextConfig = () => {
+    switch (context) {
+      case 'analytics':
+        return {
+          text: 'Analyzing your data...',
+          icon: '📊',
+          variant: 'primary' as const
+        }
+      case 'booking':
+        return {
+          text: 'Processing your booking...',
+          icon: '📅',
+          variant: 'primary' as const
+        }
+      case 'calendar':
+        return {
+          text: 'Loading calendar...',
+          icon: '🗓️',
+          variant: 'primary' as const
+        }
+      case 'payments':
+        return {
+          text: 'Processing payment...',
+          icon: '💳',
+          variant: 'primary' as const
+        }
+      case 'sync':
+        return {
+          text: 'Syncing data...',
+          icon: '🔄',
+          variant: 'secondary' as const
+        }
+      case 'dashboard':
+        return {
+          text: 'Loading dashboard...',
+          icon: '🏠',
+          variant: 'primary' as const
+        }
+      case 'form':
+        return {
+          text: 'Submitting form...',
+          icon: '📝',
+          variant: 'primary' as const
+        }
+      case 'search':
+        return {
+          text: 'Searching...',
+          icon: '🔍',
+          variant: 'secondary' as const
+        }
+      default:
+        return {
+          text: 'Loading...',
+          icon: '⏳',
+          variant: 'primary' as const
+        }
+    }
+  }
+
+  const config = getContextConfig()
+  
+  return (
+    <div 
+      className={cn('flex flex-col items-center justify-center gap-3', className)}
+      {...props}
+    >
+      <div className="text-2xl">{config.icon}</div>
+      <LoadingSpinner size={size} variant={config.variant} label={config.text} />
+    </div>
+  )
+}
+
 // Card Loading State
 export const CardLoading = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div 
@@ -379,11 +462,378 @@ export const CardLoading = ({ className, ...props }: React.HTMLAttributes<HTMLDi
   </div>
 )
 
-// Export all components
-export {
-  spinnerVariants,
-  dotsVariants,
+// Table Loading State
+export const TableLoading = ({ 
+  rows = 5, 
+  columns = 4, 
+  className,
+  ...props 
+}: {
+  rows?: number
+  columns?: number
+  className?: string
+} & React.HTMLAttributes<HTMLDivElement>) => (
+  <div 
+    className={cn(
+      'bg-white dark:bg-dark-surface-200 rounded-lg border border-ios-gray-200 dark:border-ios-gray-700 overflow-hidden',
+      className
+    )}
+    {...props}
+  >
+    <div className="animate-pulse">
+      {/* Header */}
+      <div className="border-b border-ios-gray-200 dark:border-ios-gray-700 p-4">
+        <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
+          {Array.from({ length: columns }).map((_, i) => (
+            <div key={`header-${i}`} className="h-4 bg-ios-gray-200 dark:bg-ios-gray-700 rounded w-3/4" />
+          ))}
+        </div>
+      </div>
+      
+      {/* Rows */}
+      {Array.from({ length: rows }).map((_, rowIndex) => (
+        <div key={`row-${rowIndex}`} className="border-b border-ios-gray-100 dark:border-ios-gray-800 p-4">
+          <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
+            {Array.from({ length: columns }).map((_, colIndex) => (
+              <div 
+                key={`cell-${rowIndex}-${colIndex}`} 
+                className={cn(
+                  'h-3 bg-ios-gray-200 dark:bg-ios-gray-700 rounded',
+                  colIndex === 0 ? 'w-full' : 'w-3/4'
+                )}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+)
+
+// List Loading State
+export const ListLoading = ({ 
+  items = 3, 
+  className,
+  ...props 
+}: {
+  items?: number
+  className?: string
+} & React.HTMLAttributes<HTMLDivElement>) => (
+  <div 
+    className={cn('space-y-4', className)}
+    {...props}
+  >
+    {Array.from({ length: items }).map((_, i) => (
+      <div key={i} className="animate-pulse flex items-center space-x-4">
+        <div className="w-12 h-12 bg-ios-gray-200 dark:bg-ios-gray-700 rounded-full" />
+        <div className="flex-1 space-y-2">
+          <div className="h-4 bg-ios-gray-200 dark:bg-ios-gray-700 rounded w-2/3" />
+          <div className="h-3 bg-ios-gray-200 dark:bg-ios-gray-700 rounded w-1/2" />
+        </div>
+        <div className="w-16 h-8 bg-ios-gray-200 dark:bg-ios-gray-700 rounded" />
+      </div>
+    ))}
+  </div>
+)
+
+// Form Loading State
+export const FormLoading = ({ 
+  fields = 4, 
+  className,
+  ...props 
+}: {
+  fields?: number
+  className?: string
+} & React.HTMLAttributes<HTMLDivElement>) => (
+  <div 
+    className={cn('space-y-6', className)}
+    {...props}
+  >
+    <div className="animate-pulse">
+      <div className="h-6 bg-ios-gray-200 dark:bg-ios-gray-700 rounded w-1/3 mb-6" />
+      
+      {Array.from({ length: fields }).map((_, i) => (
+        <div key={i} className="space-y-2 mb-4">
+          <div className="h-4 bg-ios-gray-200 dark:bg-ios-gray-700 rounded w-1/4" />
+          <div className="h-10 bg-ios-gray-200 dark:bg-ios-gray-700 rounded w-full" />
+        </div>
+      ))}
+      
+      <div className="flex gap-3 mt-6">
+        <div className="h-10 bg-ios-gray-200 dark:bg-ios-gray-700 rounded w-24" />
+        <div className="h-10 bg-ios-gray-200 dark:bg-ios-gray-700 rounded w-20" />
+      </div>
+    </div>
+  </div>
+)
+
+// Time Slots Loading Skeleton
+export const TimeSlotsLoadingSkeleton = ({ 
+  slots = 8, 
+  className,
+  ...props 
+}: {
+  slots?: number
+  className?: string
+} & React.HTMLAttributes<HTMLDivElement>) => (
+  <div 
+    className={cn('space-y-3', className)}
+    {...props}
+  >
+    <div className="h-5 bg-ios-gray-200 dark:bg-ios-gray-700 rounded w-32 mb-4 animate-pulse" />
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+      {Array.from({ length: slots }).map((_, i) => (
+        <div 
+          key={i} 
+          className="h-12 bg-ios-gray-200 dark:bg-ios-gray-700 rounded-lg animate-pulse"
+          style={{ animationDelay: `${i * 0.1}s` }}
+        />
+      ))}
+    </div>
+  </div>
+)
+
+// Progressive Loading with auto-advancement
+export const ProgressiveLoading = ({ 
+  stages, 
+  currentStage = 0, 
+  autoAdvance = false, 
+  onComplete,
+  className,
+  ...props 
+}: {
+  stages: Array<{ label: string; duration?: number }>
+  currentStage?: number
+  autoAdvance?: boolean
+  onComplete?: () => void
+  className?: string
+} & React.HTMLAttributes<HTMLDivElement>) => {
+  const [stage, setStage] = React.useState(currentStage)
+  const [progress, setProgress] = React.useState(0)
+
+  React.useEffect(() => {
+    if (!autoAdvance || stage >= stages.length) return
+
+    const currentStageData = stages[stage]
+    const duration = currentStageData.duration || 1000
+    const interval = 50
+    const totalSteps = duration / interval
+    let currentStep = 0
+
+    const timer = setInterval(() => {
+      currentStep++
+      const stageProgress = (currentStep / totalSteps) * 100
+      setProgress(stageProgress)
+
+      if (currentStep >= totalSteps) {
+        clearInterval(timer)
+        if (stage < stages.length - 1) {
+          setStage(stage + 1)
+          setProgress(0)
+        } else if (onComplete) {
+          setTimeout(onComplete, 200)
+        }
+      }
+    }, interval)
+
+    return () => clearInterval(timer)
+  }, [stage, autoAdvance, stages, onComplete])
+
+  const overallProgress = ((stage + progress / 100) / stages.length) * 100
+
+  return (
+    <div 
+      className={cn('flex flex-col items-center justify-center gap-4', className)}
+      {...props}
+    >
+      <LoadingSpinner size="lg" />
+      
+      <div className="text-center space-y-2">
+        <p className="text-lg font-medium text-ios-gray-900 dark:text-ios-gray-100">
+          {stages[stage]?.label || 'Loading...'}
+        </p>
+        
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-ios-gray-600 dark:text-ios-gray-400">
+            Step {stage + 1} of {stages.length}
+          </span>
+          <span className="text-sm font-medium text-primary-600">
+            {Math.round(overallProgress)}%
+          </span>
+        </div>
+        
+        <div className="w-64 bg-ios-gray-200 dark:bg-ios-gray-700 rounded-full h-2">
+          <div 
+            className="bg-primary-600 h-2 rounded-full transition-all duration-300 ease-out"
+            style={{ width: `${overallProgress}%` }}
+          />
+        </div>
+      </div>
+      
+      {/* Stage indicators */}
+      <div className="flex items-center gap-2">
+        {stages.map((_, index) => (
+          <div 
+            key={index}
+            className={cn(
+              'w-2 h-2 rounded-full transition-all duration-300',
+              index < stage ? 'bg-primary-600' : 
+              index === stage ? 'bg-primary-400 animate-pulse' : 
+              'bg-ios-gray-300 dark:bg-ios-gray-600'
+            )}
+          />
+        ))}
+      </div>
+    </div>
+  )
 }
+
+// Analytics Specific Loading State
+export const AnalyticsLoading = ({ 
+  type = 'general', 
+  className,
+  ...props 
+}: {
+  type?: 'general' | 'revenue' | 'clients' | 'marketing' | 'reviews' | 'productivity'
+  className?: string
+} & React.HTMLAttributes<HTMLDivElement>) => {
+  const getAnalyticsConfig = () => {
+    switch (type) {
+      case 'revenue':
+        return {
+          icon: '💰',
+          title: 'Loading Revenue Analytics',
+          subtitle: 'Calculating your earnings and growth metrics...'
+        }
+      case 'clients':
+        return {
+          icon: '👥',
+          title: 'Loading Client Analytics',
+          subtitle: 'Analyzing client behavior and retention...'
+        }
+      case 'marketing':
+        return {
+          icon: '📈',
+          title: 'Loading Marketing Analytics',
+          subtitle: 'Processing campaign performance and ROI...'
+        }
+      case 'reviews':
+        return {
+          icon: '⭐',
+          title: 'Loading Review Analytics',
+          subtitle: 'Analyzing feedback and ratings...'
+        }
+      case 'productivity':
+        return {
+          icon: '⚡',
+          title: 'Loading Productivity Analytics',
+          subtitle: 'Calculating efficiency and utilization...'
+        }
+      default:
+        return {
+          icon: '📊',
+          title: 'Loading Analytics',
+          subtitle: 'Processing your business data...'
+        }
+    }
+  }
+
+  const config = getAnalyticsConfig()
+
+  return (
+    <div 
+      className={cn('flex flex-col items-center justify-center py-12 px-6', className)}
+      {...props}
+    >
+      <div className="text-4xl mb-4">{config.icon}</div>
+      <LoadingSpinner size="lg" className="mb-4" />
+      <h3 className="text-lg font-semibold text-ios-gray-900 dark:text-ios-gray-100 mb-2">
+        {config.title}
+      </h3>
+      <p className="text-sm text-ios-gray-600 dark:text-ios-gray-400 text-center max-w-xs">
+        {config.subtitle}
+      </p>
+    </div>
+  )
+}
+
+// Smart Loading Hook
+export const useSmartLoading = ({
+  context,
+  estimatedDuration = 2000,
+  autoComplete = false
+}: {
+  context: 'analytics' | 'booking' | 'calendar' | 'payments' | 'sync' | 'dashboard' | 'form' | 'search'
+  estimatedDuration?: number
+  autoComplete?: boolean
+}) => {
+  const [isLoading, setIsLoading] = React.useState(false)
+  const [progress, setProgress] = React.useState(0)
+  const [stage, setStage] = React.useState<'initializing' | 'processing' | 'finalizing'>('initializing')
+
+  const startLoading = React.useCallback(() => {
+    setIsLoading(true)
+    setProgress(0)
+    setStage('initializing')
+
+    if (autoComplete) {
+      const interval = 50
+      const totalSteps = estimatedDuration / interval
+      let currentStep = 0
+
+      const timer = setInterval(() => {
+        currentStep++
+        const newProgress = (currentStep / totalSteps) * 100
+        setProgress(newProgress)
+
+        if (newProgress < 30) {
+          setStage('initializing')
+        } else if (newProgress < 80) {
+          setStage('processing')
+        } else {
+          setStage('finalizing')
+        }
+
+        if (currentStep >= totalSteps) {
+          clearInterval(timer)
+          setIsLoading(false)
+          setProgress(100)
+        }
+      }, interval)
+
+      return () => clearInterval(timer)
+    }
+  }, [estimatedDuration, autoComplete])
+
+  const stopLoading = React.useCallback(() => {
+    setIsLoading(false)
+    setProgress(100)
+    setStage('finalizing')
+  }, [])
+
+  const updateProgress = React.useCallback((newProgress: number) => {
+    setProgress(Math.min(100, Math.max(0, newProgress)))
+    
+    if (newProgress < 30) {
+      setStage('initializing')
+    } else if (newProgress < 80) {
+      setStage('processing')
+    } else {
+      setStage('finalizing')
+    }
+  }, [])
+
+  return {
+    isLoading,
+    progress,
+    stage,
+    startLoading,
+    stopLoading,
+    updateProgress
+  }
+}
+
+// Export all components (individual exports already handled above)
 
 // Export LoadingStates as a compound component
 export const LoadingStates = {
@@ -395,7 +845,14 @@ export const LoadingStates = {
   PageLoading,
   ButtonLoading,
   InlineLoading,
-  CardLoading
+  ContextualLoading,
+  CardLoading,
+  TableLoading,
+  ListLoading,
+  FormLoading,
+  TimeSlotsLoadingSkeleton,
+  ProgressiveLoading,
+  AnalyticsLoading
 }
 
 // CSS for indeterminate animation (add to globals.css)

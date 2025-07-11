@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Card, CardContent } from '@/components/ui/Card'
+import { Card, CardContent } from '@/components/ui/card'
 import { QuickActions } from '@/components/QuickActions'
 import SnapshotDashboard from '@/components/dashboards/SnapshotDashboard'
 import { ClockIcon } from '@heroicons/react/24/outline'

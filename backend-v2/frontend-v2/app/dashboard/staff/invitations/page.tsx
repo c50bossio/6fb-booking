@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/Label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from "@/components/ui/use-toast"
 import { 
   Select, 
@@ -16,7 +16,7 @@ import {
   SelectItem, 
   SelectTrigger, 
   SelectValue 
-} from "@/components/ui/select"
+} from '@/components/ui/select'
 import { 
   Table, 
   TableBody, 
@@ -91,7 +91,7 @@ export default function StaffInvitationsPage() {
   const [inviteMessage, setInviteMessage] = useState("")
   
   // Get user's organization ID (assuming it's stored in the user object)
-  const organizationId = user?.organization_id || user?.organizations?.[0]?.id
+  const organizationId = (user as any)?.organization_id || (user as any)?.organizations?.[0]?.id
 
   useEffect(() => {
     if (organizationId) {
@@ -112,7 +112,7 @@ export default function StaffInvitationsPage() {
         params.append("status", activeTab)
       }
       
-      const response = await api.get<InvitationListResponse>(`/invitations/?${params}`)
+      const response = await (api as any).get(`/invitations/?${params}`) as InvitationListResponse
       setInvitations(response.invitations)
       setPendingCount(response.pending_count)
       setAcceptedCount(response.accepted_count)
@@ -140,7 +140,7 @@ export default function StaffInvitationsPage() {
 
     setLoading(true)
     try {
-      const response = await api.post<Invitation>("/invitations/", {
+      const response = await (api as any).post("/invitations/", {
         email: inviteEmail,
         first_name: inviteFirstName || undefined,
         last_name: inviteLastName || undefined,
@@ -178,7 +178,7 @@ export default function StaffInvitationsPage() {
   const resendInvitation = async (invitationId: number) => {
     setLoading(true)
     try {
-      await api.post(`/invitations/${invitationId}/resend`)
+      await (api as any).post(`/invitations/${invitationId}/resend`)
       toast({
         title: "Success",
         description: "Invitation resent successfully"
@@ -200,7 +200,7 @@ export default function StaffInvitationsPage() {
 
     setLoading(true)
     try {
-      await api.delete(`/invitations/${invitationId}`)
+      await (api as any).delete(`/invitations/${invitationId}`)
       toast({
         title: "Success",
         description: "Invitation cancelled"
@@ -329,14 +329,14 @@ export default function StaffInvitationsPage() {
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="role">Role *</Label>
-                    <Select value={inviteRole} onValueChange={setInviteRole}>
+                    <Select value={inviteRole} onValueChange={setInviteRole} {...({} as any)}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="barber">Barber</SelectItem>
-                        <SelectItem value="receptionist">Receptionist</SelectItem>
-                        <SelectItem value="shop_manager">Shop Manager</SelectItem>
+                        <SelectItem value="barber" {...({} as any)}>Barber</SelectItem>
+                        <SelectItem value="receptionist" {...({} as any)}>Receptionist</SelectItem>
+                        <SelectItem value="shop_manager" {...({} as any)}>Shop Manager</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -368,7 +368,7 @@ export default function StaffInvitationsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <Tabs value={activeTab} defaultValue={activeTab} onValueChange={setActiveTab}>
             <TabsList>
               <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="pending">Pending</TabsTrigger>

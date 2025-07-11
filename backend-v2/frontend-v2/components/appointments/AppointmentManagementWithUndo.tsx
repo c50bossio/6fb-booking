@@ -7,8 +7,8 @@ import {
   AppointmentActionHistory,
   useAppointmentUndoRedo 
 } from './AppointmentUndoRedo'
-import { Button } from '@/components/ui/Button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar, Clock, User, Trash2, Edit, RotateCcw } from 'lucide-react'
 import { apiRequest } from '@/lib/api'
 import { toast } from '@/hooks/use-toast'

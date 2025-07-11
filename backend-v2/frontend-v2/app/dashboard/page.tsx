@@ -10,13 +10,14 @@ import TimezoneSetupModal from '@/components/TimezoneSetupModal'
 import { BarberDashboardLayout } from '@/components/BarberDashboardLayout'
 import { useAsyncOperation } from '@/lib/useAsyncOperation'
 import { PageLoading, ErrorDisplay, SuccessMessage } from '@/components/LoadingStates'
-import { Button } from '@/components/ui/Button'
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
 import { QuickActions } from '@/components/QuickActions'
 import CalendarDayMini from '@/components/calendar/CalendarDayMini'
 import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton'
 import { TrialStatusBanner } from '@/components/ui/TrialStatusBanner'
 import { TrialWarningSystem } from '@/components/ui/TrialWarningSystem'
+import { ErrorBoundary } from '@/components/error-boundaries'
 
 // Simple Icon Components
 const BookIcon = () => (
@@ -332,7 +333,7 @@ function DashboardContent() {
 
           {/* Success Message */}
           {showSuccess && (
-            <Card variant="success" className="mb-6" animated>
+            <Card variant="default" className="mb-6 border-green-200 bg-green-50">
               <CardContent className="flex items-center space-x-3">
                 <div className="flex-shrink-0">
                   <svg className="w-6 h-6 text-success-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -357,7 +358,7 @@ function DashboardContent() {
 
           {/* Timezone Warning */}
           {showTimezoneWarning && (
-            <Card variant="warning" className="mb-6" animated>
+            <Card variant="default" className="mb-6 border-yellow-200 bg-yellow-50">
               <CardContent className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="flex-shrink-0">
@@ -384,11 +385,16 @@ function DashboardContent() {
             </Card>
           )}
 
-          <BarberDashboardLayout 
-            user={user}
-            todayStats={todayStats}
-            upcomingAppointments={upcomingAppointments}
-          />
+          <ErrorBoundary 
+            feature="barber-dashboard"
+            userId={user?.id}
+          >
+            <BarberDashboardLayout 
+              user={user}
+              todayStats={todayStats}
+              upcomingAppointments={upcomingAppointments}
+            />
+          </ErrorBoundary>
         </div>
 
         <TimezoneSetupModal
@@ -472,7 +478,7 @@ function DashboardContent() {
 
         {/* Success Message */}
         {showSuccess && (
-          <Card variant="success" className="mb-6" animated>
+          <Card variant="default" className="mb-6 border-green-200 bg-green-50">
             <CardContent className="flex items-center space-x-3">
               <div className="flex-shrink-0">
                 <svg className="w-6 h-6 text-success-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -497,7 +503,7 @@ function DashboardContent() {
 
         {/* Timezone Warning */}
         {showTimezoneWarning && (
-          <Card variant="warning" className="mb-6" animated>
+          <Card variant="default" className="mb-6 border-yellow-200 bg-yellow-50">
             <CardContent className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="flex-shrink-0">
@@ -514,7 +520,7 @@ function DashboardContent() {
               </div>
               <Button
                 onClick={() => router.push('/settings')}
-                variant="warning"
+                variant="outline"
                 size="sm"
                 leftIcon={<SettingsIcon />}
               >
@@ -526,14 +532,16 @@ function DashboardContent() {
 
         {/* Quick Actions - Prominent placement after warnings */}
         {user && (
-          <QuickActions userRole={user.role} className="mb-8" />
+          <ErrorBoundary feature="quick-actions" userId={user?.id}>
+            <QuickActions userRole={user.role} className="mb-8" />
+          </ErrorBoundary>
         )}
 
         {user && (
           <Card className="mb-6">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle as="h2">Welcome back!</CardTitle>
+                <CardTitle>Welcome back!</CardTitle>
                 <Button
                   onClick={() => router.push('/settings')}
                   variant="ghost"
@@ -558,12 +566,14 @@ function DashboardContent() {
                 
                 {/* Today's Appointments Mini Calendar */}
                 <div className="md:col-span-1">
-                  <CalendarDayMini
-                    appointments={bookings}
-                    selectedDate={new Date()}
-                    maxItems={3}
-                    onViewAll={() => router.push('/calendar')}
-                  />
+                  <ErrorBoundary feature="calendar-mini" userId={user?.id}>
+                    <CalendarDayMini
+                      appointments={bookings}
+                      selectedDate={new Date()}
+                      maxItems={3}
+                      onViewAll={() => router.push('/calendar')}
+                    />
+                  </ErrorBoundary>
                 </div>
                 
                 <Card variant="default">

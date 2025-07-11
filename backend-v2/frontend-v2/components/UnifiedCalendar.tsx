@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useCallback, useMemo } from 'react'
 import { isSameDay, startOfDay, startOfMonth, startOfWeek, endOfWeek, addDays, format } from 'date-fns'
 import { ChevronLeftIcon, ChevronRightIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
-import { Button } from './ui/Button'
+import { Button } from './ui/button'
 import { getMobileTouchClass } from '@/lib/mobile-touch-enhancements'
 import ClientDetailModal from './modals/ClientDetailModal'
 import { touchDragManager, TouchDragManager } from '@/lib/touch-utils'

@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { AlertTriangle, RefreshCw, WifiOff, Lock, FileX, Server } from 'lucide-react'
-import { Button } from './Button'
+import { Button } from './button'
 
 export type ErrorType = 'network' | 'auth' | 'permission' | 'notfound' | 'server' | 'validation' | 'generic'
 

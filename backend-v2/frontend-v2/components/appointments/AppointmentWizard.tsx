@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { format, addDays, setHours, setMinutes } from 'date-fns'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { LoadingButton } from '@/components/LoadingStates'
-import { Input } from '@/components/ui/Input'
+import { Input } from '@/components/ui/input'
 import { 
   appointmentsAPI,
   getServices,

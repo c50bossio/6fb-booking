@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getProfile, getEnterpriseAnalytics, type User, type EnterpriseAnalytics } from '@/lib/api'
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Select } from '@/components/ui/Select'
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Select } from '@/components/ui/select'
 import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
 import { usePermissions } from '@/components/ProtectedRoute'
 
@@ -206,7 +206,7 @@ export default function EnterpriseDashboardPage() {
             {alerts.map((alert, index) => (
               <Card
                 key={index}
-                variant={alert.type === 'warning' ? 'warning' : alert.type === 'success' ? 'success' : 'default'}
+                variant="default"
                 className="border-l-4"
               >
                 <CardContent className="flex items-center space-x-3 py-3">

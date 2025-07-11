@@ -4,12 +4,12 @@ import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useMutation } from '@tanstack/react-query'
 import { ArrowLeft, Save, Package } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Label } from '@/components/ui/Label'
-import { Select } from '@/components/ui/Select'
-import { Switch } from '@/components/ui/Switch'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import { productsAPI } from '@/lib/api/products'
 import { ProductCreate, ProductType, ProductStatus } from '@/types/product'
@@ -154,16 +154,17 @@ export default function NewProductPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="product_type">Product Type *</Label>
-                <Select
+                <select
                   id="product_type"
                   value={formData.product_type}
                   onChange={(e) => handleInputChange('product_type', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value={ProductType.PHYSICAL}>Physical Product</option>
                   <option value={ProductType.SERVICE}>Service</option>
                   <option value={ProductType.DIGITAL}>Digital Product</option>
                   <option value={ProductType.GIFT_CARD}>Gift Card</option>
-                </Select>
+                </select>
               </div>
               
               <div>
@@ -271,16 +272,17 @@ export default function NewProductPage() {
                 
                 <div>
                   <Label htmlFor="weight_unit">Weight Unit</Label>
-                  <Select
+                  <select
                     id="weight_unit"
                     value={formData.weight_unit || 'lb'}
                     onChange={(e) => handleInputChange('weight_unit', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="lb">Pounds (lb)</option>
                     <option value="oz">Ounces (oz)</option>
                     <option value="kg">Kilograms (kg)</option>
                     <option value="g">Grams (g)</option>
-                  </Select>
+                  </select>
                 </div>
               </div>
             )}
@@ -312,15 +314,16 @@ export default function NewProductPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="status">Status</Label>
-                <Select
+                <select
                   id="status"
                   value={formData.status}
                   onChange={(e) => handleInputChange('status', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value={ProductStatus.ACTIVE}>Active</option>
                   <option value={ProductStatus.DRAFT}>Draft</option>
                   <option value={ProductStatus.INACTIVE}>Inactive</option>
-                </Select>
+                </select>
               </div>
               
               <div className="flex items-center gap-4 pt-6">

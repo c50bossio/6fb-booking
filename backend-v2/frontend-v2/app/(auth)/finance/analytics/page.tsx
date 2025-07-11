@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { getProfile, type User } from '@/lib/api'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { SkeletonCard, SkeletonStats } from '@/components/ui/skeleton-loader'
 import { ErrorMessage } from '@/components/ui/error-message'
 import { 

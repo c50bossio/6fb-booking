@@ -3,9 +3,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { format } from 'date-fns'
 import { Modal } from '@/components/ui/Modal'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { LoadingButton, ErrorDisplay } from '@/components/LoadingStates'
-import { Input } from '@/components/ui/Input'
+import { Input } from '@/components/ui/input'
 import { 
   searchClients,
   createClient,

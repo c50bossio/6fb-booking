@@ -1,16 +1,16 @@
 "use client"
 
 import { useState, useMemo } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { 
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   CurrencyDollarIcon,
   CalculatorIcon,
-  Target,
+  ChartBarIcon,
   ArrowUpIcon,
   ArrowDownIcon,
   InformationCircleIcon
@@ -239,7 +239,7 @@ export default function ConversionMetricsPanel({
                 </p>
               </div>
               <div className="p-2 rounded-lg bg-purple-100">
-                <Target className="h-5 w-5 text-purple-600" />
+                <ChartBarIcon className="h-5 w-5 text-purple-600" />
               </div>
             </div>
             <div className="mt-2">

@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { CheckCircle, Clock, AlertCircle, Loader2, ChevronRight, X, ArrowRight, Download, Upload, Wifi, WifiOff } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { Badge } from '@/components/ui/Badge'
+import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { cn } from '@/lib/utils'
 

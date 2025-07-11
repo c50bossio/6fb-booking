@@ -19,8 +19,8 @@ import CreateAppointmentModal from '@/components/modals/CreateAppointmentModal'
 import TimePickerModal from '@/components/modals/TimePickerModal'
 import RescheduleModal from '@/components/modals/RescheduleModal'
 import { format } from 'date-fns'
-import { Card, CardContent, CardHeader } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { LoadingButton, ErrorDisplay } from '@/components/LoadingStates'
 import { getMyBookings, cancelBooking, rescheduleBooking, getProfile, getAllUsers, getLocations, type BookingResponse, type Location } from '@/lib/api'
 import { useCalendarOptimisticUpdates } from '@/lib/calendar-optimistic-updates'
@@ -40,7 +40,7 @@ import { CalendarNetworkStatus, CalendarRequestQueue } from '@/components/calend
 import { LocationSelector } from '@/components/navigation/LocationSelector'
 import { LocationSelectorLoadingState, LocationSelectorErrorState } from '@/components/navigation/LocationSelectorSkeleton'
 import { CalendarExport } from '@/components/calendar/CalendarExport'
-import type { Appointment, CalendarView, User, CalendarInteraction } from '@/types/calendar'
+import type { Appointment, AppointmentStatus, CalendarView, User, CalendarInteraction } from '@/types/calendar'
 import { 
   formatDateForAPI, 
   parseAPIDate, 
@@ -659,12 +659,12 @@ export default function CalendarPage() {
 
   return (
     <ErrorBoundary>
-      <div className="calendar-page p-6 space-y-6 md:p-6 sm:p-4">
+      <div className="calendar-page p-4 sm:p-6 lg:p-8 space-y-6">
       {/* Header */}
       <div className="calendar-header flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div className="order-1 lg:order-1">
-          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">Calendar</h1>
-          <p className="text-gray-600 dark:text-gray-400 text-sm lg:text-base">
+          <h1 className="text-ios-largeTitle font-bold text-accent-900 dark:text-white tracking-tight">Calendar</h1>
+          <p className="text-accent-600 dark:text-gray-400 text-sm lg:text-base">
             Manage your appointments and schedule
           </p>
           
@@ -857,8 +857,8 @@ export default function CalendarPage() {
             
             {/* Export Button */}
             <CalendarExport 
-              appointments={bookings}
-              selectedAppointments={filteredBookings}
+              appointments={bookings as any}
+              selectedAppointments={filteredBookings as any}
               onExport={(format) => {
                 console.log(`Exported appointments in ${format} format`)
               }}
@@ -894,7 +894,7 @@ export default function CalendarPage() {
 
       <CalendarErrorBoundary context={`calendar-${viewMode}-view`}>
         <div className="relative">
-          <Card variant="glass" padding="none" className="col-span-full">
+          <Card variant="default" className="col-span-full p-0">
             <Suspense fallback={<CalendarSkeleton view={viewMode} showStats={false} />}>
               <UnifiedCalendar
                 view={viewMode}
@@ -933,7 +933,7 @@ export default function CalendarPage() {
                 slotDuration={30}
                 isLoading={loading}
                 error={error}
-                onRefresh={refreshOptimistic}
+                onRefresh={() => refreshOptimistic(() => getMyBookings())}
                 onRetry={() => window.location.reload()}
                 className="h-[800px]"
               />
@@ -962,12 +962,11 @@ export default function CalendarPage() {
                 <Suspense fallback={<div className="animate-pulse bg-gray-200 h-96 rounded-lg"></div>}>
                   <AvailabilityHeatmap
                     appointments={bookings}
-                    currentDate={selectedDate || new Date()}
-                    viewType={viewMode}
-                    onTimeSlotClick={(date) => {
+                    startDate={selectedDate || new Date()}
+                    onTimeSlotClick={(date, time) => {
                       setShowHeatmap(false)
                       setSelectedDate(date)
-                      setPreselectedTime(format(date, 'HH:mm'))
+                      setPreselectedTime(time)
                       setShowCreateModal(true)
                     }}
                   />
@@ -1003,7 +1002,7 @@ export default function CalendarPage() {
             onBookingComplete={async () => {
               // Refresh appointments after quick booking
               try {
-                await refreshOptimistic()
+                await refreshOptimistic(() => getMyBookings())
                 toastSuccess('Calendar Updated', 'Your new appointment has been added.')
               } catch (error) {
                 console.error('Failed to refresh calendar:', error)
@@ -1015,7 +1014,7 @@ export default function CalendarPage() {
 
       {/* Calendar Integration Status */}
       {user?.role === 'barber' && !showSyncPanel && (
-        <Card variant="glass" padding="lg">
+        <Card variant="default" className="p-6">
           <CardHeader>
             <h2 className="text-lg font-semibold">Calendar Integration</h2>
             <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -1090,13 +1089,38 @@ export default function CalendarPage() {
           }}
           onReschedule={handleModalReschedule}
           appointment={
-            bookings.find(booking => booking.id === rescheduleModalData.appointmentId) || {
-              id: rescheduleModalData.appointmentId,
-              start_time: rescheduleModalData.newStartTime,
-              client_name: 'Client',
-              service_name: 'Service',
-              barber_name: 'Barber'
-            }
+            (() => {
+              const booking = bookings.find(booking => booking.id === rescheduleModalData.appointmentId)
+              if (booking) {
+                // Convert BookingResponse to Appointment with proper typing
+                return {
+                  ...booking,
+                  status: (booking.status as 'pending' | 'confirmed' | 'cancelled' | 'completed') || 'pending',
+                  end_time: booking.end_time || (() => {
+                    const start = new Date(booking.start_time)
+                    const end = new Date(start.getTime() + (booking.duration_minutes || 30) * 60000)
+                    return end.toISOString()
+                  })()
+                } as Appointment
+              } else {
+                // Fallback appointment object
+                return {
+                  id: rescheduleModalData.appointmentId,
+                  start_time: rescheduleModalData.newStartTime,
+                  end_time: (() => {
+                    const start = new Date(rescheduleModalData.newStartTime)
+                    const end = new Date(start.getTime() + 30 * 60000) // Default 30 minutes
+                    return end.toISOString()
+                  })(),
+                  service_name: 'Service',
+                  client_name: 'Client',
+                  barber_name: 'Barber',
+                  status: 'pending' as 'pending',
+                  duration_minutes: 30,
+                  price: 0
+                } as Appointment
+              }
+            })()
           }
         />
       )}
@@ -1117,7 +1141,7 @@ export default function CalendarPage() {
           onBookingComplete={async () => {
             // Refresh appointments after quick booking
             try {
-              await refreshOptimistic()
+              await refreshOptimistic(() => getMyBookings())
               toastSuccess('Calendar Updated', 'Your new appointment has been added.')
             } catch (error) {
               console.error('Failed to refresh calendar:', error)
