@@ -338,7 +338,7 @@ export default function LandingPage() {
 
                   <Link href="/register">
                     <Button 
-                      variant={'popular' in plan && plan.popular ? 'primary' : 'outline'} 
+                      variant={('popular' in plan && plan.popular) ? 'primary' : 'outline'} 
                       className="w-full"
                     >
                       Start Free Trial
