@@ -3,7 +3,7 @@
 import React, { Component, ReactNode, ErrorInfo } from 'react'
 import { AlertTriangle, RefreshCw, Home, MessageSquare } from 'lucide-react'
 import { Button } from './ui/Button'
-import { Alert, AlertDescription, AlertTitle } from './ui/alert'
+// import { Alert, AlertDescription, AlertTitle } from './ui/alert' // Temporarily removed
 import * as Sentry from '@sentry/nextjs'
 import { reportApiError, captureUserFeedback, addUserActionBreadcrumb } from '../lib/sentry'
 
@@ -177,15 +177,17 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="min-h-[400px] flex items-center justify-center p-4">
           <div className="max-w-md w-full space-y-4">
-            <Alert variant="destructive" className="border-red-200 dark:border-red-800">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>
-                {isNetworkError ? 'Connection Error' : 
-                 isChunkLoadError ? 'Loading Error' : 
-                 'Something went wrong'}
-              </AlertTitle>
-              <AlertDescription className="mt-2">
-                <p className="text-sm">
+            <div className="border border-red-200 bg-red-50 rounded-lg p-4">
+              <div className="flex items-center mb-2">
+                <AlertTriangle className="h-4 w-4 text-red-600 mr-2" />
+                <h3 className="text-red-800 font-medium">
+                  {isNetworkError ? 'Connection Error' : 
+                   isChunkLoadError ? 'Loading Error' : 
+                   'Something went wrong'}
+                </h3>
+              </div>
+              <div className="mt-2">
+                <p className="text-sm text-red-700">
                   {isNetworkError ? 
                     'Unable to connect to the server. Please check your internet connection.' :
                    isChunkLoadError ?
@@ -194,7 +196,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 </p>
                 {process.env.NODE_ENV === 'development' && this.state.errorInfo && (
                   <details className="mt-4">
-                    <summary className="cursor-pointer text-xs font-medium">
+                    <summary className="cursor-pointer text-xs font-medium text-red-800">
                       Error details
                     </summary>
                     <div className="mt-2 space-y-2">
@@ -207,8 +209,8 @@ export class ErrorBoundary extends Component<Props, State> {
                     </div>
                   </details>
                 )}
-              </AlertDescription>
-            </Alert>
+              </div>
+            </div>
             
             <div className="flex gap-2 justify-center flex-wrap">
               <Button 
