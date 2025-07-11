@@ -19,7 +19,7 @@ import {
   XMarkIcon,
   CalendarIcon
 } from '@heroicons/react/24/outline'
-import GoogleCalendarSettings from '@/components/settings/GoogleCalendarSettings'
+// import GoogleCalendarSettings from '@/components/settings/GoogleCalendarSettings'
 import axios from 'axios'
 
 interface BusinessSettings {
@@ -582,7 +582,10 @@ export default function SettingsPage() {
                     </div>
                   </div>
                   <div className="p-4">
-                    <GoogleCalendarSettings />
+                    {/* <GoogleCalendarSettings /> */}
+                    <div className="text-center py-8 text-gray-500">
+                      <p>Google Calendar integration coming soon!</p>
+                    </div>
                   </div>
                 </div>
 

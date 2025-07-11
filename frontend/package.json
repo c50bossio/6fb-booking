@@ -117,13 +117,16 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^30.0.0",
+    "@types/serviceworker": "^0.0.141",
     "eslint": "^8.57.0",
     "eslint-config-next": "14.2.14",
     "jest": "^30.0.0",
     "jest-environment-jsdom": "^30.0.0",
+    "next-pwa": "^5.6.0",
     "nodemon": "^3.1.10",
     "puppeteer": "^24.10.2",
     "typescript": "^5.8.3",
-    "webpack-bundle-analyzer": "^4.10.2"
+    "webpack-bundle-analyzer": "^4.10.2",
+    "workbox-webpack-plugin": "^7.3.0"
   }
 }

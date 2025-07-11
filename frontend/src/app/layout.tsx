@@ -21,15 +21,24 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Booked Barber Platform",
-  description: "Six Figure Barber booking and analytics platform",
-  keywords: "barber, booking, appointments, six figure barber, analytics",
-  authors: [{ name: "Booked Barber Team" }],
+  title: "6FB Booking Platform",
+  description: "The complete platform for six-figure barbers",
+  keywords: "barber, booking, appointments, six figure barber, analytics, PWA",
+  authors: [{ name: "6FB Booking Team" }],
   robots: "index, follow",
+  manifest: '/manifest.json',
   icons: {
     icon: '/favicon.png',
     shortcut: '/favicon.png',
-    apple: '/icons/icon-144x144.png',
+    apple: '/icon-192x192.png',
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: '6FB Booking',
+  },
+  formatDetection: {
+    telephone: false,
   },
   other: {
     // Security headers
@@ -38,6 +47,9 @@ export const metadata: Metadata = {
     'X-XSS-Protection': '1; mode=block',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
+    // PWA theme colors
+    'theme-color': '#14b8a6',
+    'msapplication-TileColor': '#14b8a6',
   }
 };
 
