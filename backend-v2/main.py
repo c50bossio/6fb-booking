@@ -20,7 +20,13 @@ from middleware.configuration_security import ConfigurationSecurityMiddleware, c
 import logging
 
 # Initialize Sentry error tracking (must be done before importing FastAPI app)
-from config.sentry import configure_sentry
+# from config.sentry import configure_sentry  # Commented out - config.sentry module missing
+
+# Stub function to replace missing sentry configuration
+def configure_sentry() -> bool:
+    """Stub function for sentry configuration"""
+    return False
+
 sentry_configured = configure_sentry()
 
 # Create database tables
