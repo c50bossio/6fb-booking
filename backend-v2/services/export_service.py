@@ -3,7 +3,7 @@ from typing import List, Optional, Dict, Any, Union
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, func, text
 import models
-import pandas as pd
+# import pandas as pd  # Commented out - pandas removed from dependencies
 import json
 import csv
 import io

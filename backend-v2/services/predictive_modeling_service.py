@@ -7,7 +7,7 @@ using both individual business data and cross-user patterns.
 
 import logging
 import numpy as np
-import pandas as pd
+# import pandas as pd  # Commented out - pandas removed from dependencies
 from typing import Dict, List, Optional, Any, Tuple, Union
 from datetime import datetime, timedelta, date
 from dataclasses import dataclass
