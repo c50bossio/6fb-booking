@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { getProfile, type User } from '@/lib/api'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Progress } from '@/components/ui/progress'
@@ -34,52 +33,15 @@ interface OnboardingStep {
 
 export default function WelcomePage() {
   const router = useRouter()
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
   const [completedSteps, setCompletedSteps] = useState<string[]>([])
-  const [currentStep, setCurrentStep] = useState(0)
   const [skipping, setSkipping] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    async function fetchUserData() {
-      try {
-        // Mock user data for demo purposes
-        const userData = {
-          id: '1',
-          name: 'Admin Test User',
-          first_name: 'Admin',
-          email: 'admin@bookedbarber.com',
-          unified_role: 'INDIVIDUAL_BARBER',
-          onboarding_status: {
-            completed_steps: [], // Empty array means no steps completed yet
-            current_step: 0,
-            completed: false
-          }
-        }
-        setUser(userData)
-        
-        // Load completed steps from user's onboarding status
-        if (userData.onboarding_status?.completed_steps) {
-          setCompletedSteps(userData.onboarding_status.completed_steps)
-        }
-      } catch (error) {
-        console.error('Failed to fetch user data:', error)
-        // For demo, don't redirect to login
-        setUser({
-          id: '1',
-          name: 'Admin Test User',
-          first_name: 'Admin',
-          email: 'admin@bookedbarber.com',
-          unified_role: 'INDIVIDUAL_BARBER'
-        })
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchUserData()
-  }, [router])
+  // Mock user data
+  const user = {
+    first_name: 'Admin',
+    name: 'Admin Test User',
+    unified_role: 'INDIVIDUAL_BARBER'
+  }
 
   const onboardingSteps: OnboardingStep[] = [
     {
@@ -97,7 +59,7 @@ export default function WelcomePage() {
       icon: Users,
       href: '/settings/team',
       completed: completedSteps.includes('staff'),
-      optional: user?.unified_role === 'INDIVIDUAL_BARBER'
+      optional: true
     },
     {
       id: 'services',
@@ -115,14 +77,6 @@ export default function WelcomePage() {
       href: '/settings/integrations',
       completed: completedSteps.includes('calendar'),
       optional: true
-    },
-    {
-      id: 'payment',
-      title: 'Set Up Payments',
-      description: 'Connect Stripe to accept online payments',
-      icon: CreditCard,
-      href: '/settings/payments',
-      completed: completedSteps.includes('payment')
     }
   ]
 
@@ -130,47 +84,11 @@ export default function WelcomePage() {
   const completedRequiredSteps = requiredSteps.filter(step => step.completed).length
   const progress = (completedRequiredSteps / requiredSteps.length) * 100
 
-  const handleStepComplete = async (stepId: string) => {
-    const newCompletedSteps = [...completedSteps, stepId]
-    setCompletedSteps(newCompletedSteps)
-    
-    // Mock: Update onboarding status in backend
-    console.log('Mock: Updating onboarding status', stepId)
-  }
-
-  const handleSkipOnboarding = async () => {
-    try {
-      setSkipping(true)
-      setError(null)
-      
-      // Mock: Skip onboarding
-      console.log('Mock: Skipping onboarding')
-      
+  const handleSkipOnboarding = () => {
+    setSkipping(true)
+    setTimeout(() => {
       router.push('/dashboard')
-    } catch (error) {
-      console.error('Failed to skip onboarding:', error)
-      setError('Failed to skip onboarding. Please try again or contact support if the problem persists.')
-    } finally {
-      setSkipping(false)
-    }
-  }
-
-  if (loading) {
-    return (
-      <main className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-zinc-900 dark:to-zinc-800">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
-            <div className="grid gap-4 mt-8">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </main>
-    )
+    }, 1000)
   }
 
   return (
@@ -185,7 +103,7 @@ export default function WelcomePage() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                  Welcome to BookedBarber, {user?.first_name}! 
+                  Welcome to BookedBarber, {user.first_name}! 
                   <Sparkles className="inline-block h-6 w-6 ml-2 text-yellow-500" />
                 </h1>
                 <p className="text-gray-600 dark:text-gray-300 mt-1">
@@ -203,33 +121,6 @@ export default function WelcomePage() {
               {skipping ? 'Skipping...' : 'Skip for now'}
             </Button>
           </div>
-
-          {/* Error Display */}
-          {error && (
-            <Card className="mb-6 border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30">
-              <CardContent className="py-4">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-red-100 dark:bg-red-800 rounded-full">
-                    <svg className="h-5 w-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-red-800 dark:text-red-200 font-medium">Error</p>
-                    <p className="text-red-700 dark:text-red-300 text-sm">{error}</p>
-                  </div>
-                  <Button
-                    onClick={() => setError(null)}
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
-                  >
-                    ×
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Progress */}
           <Card className="mb-6">

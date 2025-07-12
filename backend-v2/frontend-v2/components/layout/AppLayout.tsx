@@ -256,7 +256,11 @@ export function AppLayout({ children }: AppLayoutProps) {
             </main>
             
             {/* Mobile Navigation */}
-            <MobileNavigation user={user} />
+            <MobileNavigation 
+              user={user}
+              isOpen={!sidebarCollapsed}
+              onClose={() => setSidebarCollapsed(true)}
+            />
           </div>
         )}
 
@@ -324,7 +328,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             </div>
             {/* Show footer on legal pages */}
             {(pathname === '/terms' || pathname === '/privacy' || pathname === '/cookies') && (
-              <Footer variant="minimal" />
+              <Footer />
             )}
           </div>
         )}
@@ -335,9 +339,13 @@ export function AppLayout({ children }: AppLayoutProps) {
         {/* Session Timeout Warning - Shows warning before session expires */}
         {!isPublicRoute && user && (
           <SessionTimeoutWarning 
-            sessionDurationMinutes={30}
-            warningMinutesBeforeTimeout={5}
-            enabled={true}
+            isVisible={false}
+            timeRemaining={300}
+            onExtend={() => console.log('Session extended')}
+            onLogout={() => {
+              console.log('Session logout')
+              window.location.href = '/login'
+            }}
           />
         )}
       </div>
