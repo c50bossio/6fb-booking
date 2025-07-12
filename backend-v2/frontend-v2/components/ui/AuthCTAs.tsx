@@ -2,15 +2,14 @@
 
 import { CTAButton, CTAGroup } from './CTASystem'
 import Link from 'next/link'
+import { useAuth } from '@/hooks/useAuth'
 
 /**
  * Authentication-Aware Header CTAs
  * Shows login/register for guests, logout for authenticated users
  */
 export function AuthHeaderCTAs({ className = '' }: { className?: string }) {
-  // For now, show guest state - we'll add authentication later
-  const isAuthenticated = false
-  const isLoading = false
+  const { isAuthenticated, isLoading, user, logout } = useAuth()
 
   // Show loading state
   if (isLoading) {
@@ -43,6 +42,9 @@ export function AuthHeaderCTAs({ className = '' }: { className?: string }) {
   // Authenticated state
   return (
     <nav role="navigation" aria-label="Account actions" className={`flex items-center space-x-3 ${className}`}>
+      <span className="text-sm text-gray-600 hidden sm:block">
+        Welcome, {user?.firstName}
+      </span>
       <Link href="/dashboard">
         <CTAButton variant="ghost" size="sm">
           Dashboard
@@ -51,10 +53,7 @@ export function AuthHeaderCTAs({ className = '' }: { className?: string }) {
       <CTAButton 
         variant="secondary" 
         size="sm"
-        onClick={() => {
-          // Handle logout
-          console.log('Logout clicked')
-        }}
+        onClick={logout}
       >
         Logout
       </CTAButton>
@@ -67,7 +66,7 @@ export function AuthHeaderCTAs({ className = '' }: { className?: string }) {
  */
 export function AuthHeroCTAs({ className = '' }: { className?: string }) {
   return (
-    <div className={`flex flex-col sm:flex-row gap-4 justify-center ${className}`}>
+    <div className={`flex justify-center ${className}`}>
       <Link href="/register">
         <CTAButton 
           variant="primary" 
@@ -75,15 +74,6 @@ export function AuthHeroCTAs({ className = '' }: { className?: string }) {
           className="bg-teal-500 text-white hover:bg-teal-600"
         >
           Start Free Trial
-        </CTAButton>
-      </Link>
-      <Link href="/book">
-        <CTAButton 
-          variant="secondary" 
-          size="lg"
-          className="text-white border-white hover:bg-white hover:text-black"
-        >
-          Book a Demo
         </CTAButton>
       </Link>
     </div>

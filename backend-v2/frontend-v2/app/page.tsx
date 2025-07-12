@@ -148,10 +148,13 @@ export default function LandingPage() {
       <section className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
           <div className="text-center space-y-8">
-            <div className="mx-auto">
-              <h1 className="text-6xl md:text-8xl font-black text-gray-900 mb-4 tracking-tight">
-                BOOKEDBARBER
-              </h1>
+            <div className="mx-auto flex flex-col items-center">
+              <LogoFull 
+                variant="color" 
+                size="xl" 
+                href={null}
+                className="mb-4"
+              />
               <div className="w-32 h-1 bg-teal-400 mx-auto mb-8"></div>
             </div>
             
@@ -296,12 +299,14 @@ export default function LandingPage() {
                   ))}
                 </ul>
 
-                <AccessibleButton
-                  variant={('popular' in plan && plan.popular) ? "primary" : "secondary"}
-                  className="w-full"
-                >
-                  Get Started
-                </AccessibleButton>
+                <Link href="/register">
+                  <AccessibleButton
+                    variant={('popular' in plan && plan.popular) ? "primary" : "secondary"}
+                    className="w-full"
+                  >
+                    Get Started
+                  </AccessibleButton>
+                </Link>
               </div>
             ))}
           </div>
@@ -318,21 +323,14 @@ export default function LandingPage() {
             Join thousands of barbers who've transformed their business with BookedBarber. 
             Start your journey to six figures today.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <AccessibleButton
-              variant="primary"
-              size="lg"
-              className="bg-teal-500 text-white hover:bg-teal-600"
-            >
-              Start Free Trial
-            </AccessibleButton>
-            <Link href="/book">
+          <div className="flex justify-center">
+            <Link href="/register">
               <AccessibleButton
-                variant="secondary"
+                variant="primary"
                 size="lg"
-                className="text-white border-white hover:bg-white hover:text-black"
+                className="bg-teal-500 text-white hover:bg-teal-600"
               >
-                Book a Demo
+                Start Free Trial
               </AccessibleButton>
             </Link>
           </div>

@@ -11,7 +11,9 @@ import {
   CalendarDaysIcon,
   ShieldCheckIcon,
   BuildingStorefrontIcon,
-  PaintBrushIcon
+  PaintBrushIcon,
+  RectangleStackIcon,
+  BeakerIcon
 } from '@heroicons/react/24/outline'
 
 export default function SettingsPage() {
@@ -23,6 +25,8 @@ export default function SettingsPage() {
     { id: 'scheduling', label: 'Scheduling', icon: CalendarDaysIcon },
     { id: 'notifications', label: 'Notifications', icon: BellIcon },
     { id: 'payments', label: 'Payments', icon: CreditCardIcon },
+    { id: 'subscription', label: 'Subscription', icon: RectangleStackIcon },
+    { id: 'test-data', label: 'Test Data', icon: BeakerIcon },
     { id: 'appearance', label: 'Appearance', icon: PaintBrushIcon },
     { id: 'security', label: 'Security', icon: ShieldCheckIcon }
   ]
@@ -496,6 +500,52 @@ export default function SettingsPage() {
     </div>
   )
 
+  const renderSubscriptionSettings = () => (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Subscription & Billing</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <p className="text-gray-600 mb-4">
+              Manage your subscription plans and billing information.
+            </p>
+            <AccessibleButton 
+              variant="primary"
+              onClick={() => window.location.href = '/billing/plans'}
+            >
+              View Subscription Plans
+            </AccessibleButton>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+
+  const renderTestDataSettings = () => (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Test Data Management</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <p className="text-gray-600 mb-4">
+              Manage test data for development and testing purposes.
+            </p>
+            <AccessibleButton 
+              variant="primary"
+              onClick={() => window.location.href = '/settings/test-data'}
+            >
+              Manage Test Data
+            </AccessibleButton>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+
   const renderContent = () => {
     switch (activeSection) {
       case 'profile':
@@ -508,6 +558,10 @@ export default function SettingsPage() {
         return renderNotificationSettings()
       case 'payments':
         return renderPaymentSettings()
+      case 'subscription':
+        return renderSubscriptionSettings()
+      case 'test-data':
+        return renderTestDataSettings()
       case 'appearance':
         return renderAppearanceSettings()
       case 'security':
