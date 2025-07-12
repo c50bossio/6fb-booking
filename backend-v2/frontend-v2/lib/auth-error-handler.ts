@@ -1,12 +1,24 @@
 // Authentication error handling utilities
 
-export const handleAuthError = (error: any) => {
+export const handleAuthError = (
+  error: any, 
+  router?: any, 
+  options?: {
+    clearTokens?: boolean
+    redirectToLogin?: boolean
+    skipPublicRoutes?: boolean
+  }
+) => {
   console.error('Auth error:', error)
   
   // Handle different types of auth errors
   if (error.status === 401) {
     // Unauthorized - redirect to login
-    window.location.href = '/login'
+    if (options?.redirectToLogin && router) {
+      router.push('/login')
+    } else {
+      window.location.href = '/login'
+    }
     return
   }
   

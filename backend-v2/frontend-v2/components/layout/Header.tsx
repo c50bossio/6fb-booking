@@ -3,15 +3,27 @@
 import React from 'react'
 import { User } from '@/lib/api'
 
+interface BreadcrumbItem {
+  label: string
+  href: string
+  isLast?: boolean
+}
+
 interface HeaderProps {
   user?: User
+  breadcrumbs?: BreadcrumbItem[]
   onMenuClick?: () => void
+  onMenuToggle?: () => void
+  showMenuToggle?: boolean
   className?: string
 }
 
 export const Header: React.FC<HeaderProps> = ({
   user,
+  breadcrumbs = [],
   onMenuClick,
+  onMenuToggle,
+  showMenuToggle = false,
   className = ''
 }) => {
   return (
