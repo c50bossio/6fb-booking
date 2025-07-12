@@ -1,23 +1,28 @@
-# 🚀 Simplest Way to Deploy V2 to Render
+# 🚀 6FB Booking V2 - Render Deployment Guide
 
-Since GitHub is blocking pushes with secrets, here's the absolute simplest deployment method:
+## ✅ Current Working Staging Environment
 
-## Option 1: Manual Service Creation (10 minutes)
+Your staging environment is now live and working:
 
-### Step 1: Create Backend Service
+- **Backend**: https://sixfb-backend-v2-staging.onrender.com
+- **Frontend**: https://sixfb-frontend-v2-staging.onrender.com  
+- **Database**: 6fb-database (PostgreSQL 16)
+- **API Docs**: https://sixfb-backend-v2-staging.onrender.com/docs
+
+## 🎯 Production Deployment (When Ready)
+
+### Step 1: Create Production Backend Service
 1. Go to https://dashboard.render.com
 2. Click "New +" → "Web Service"
-3. **Public Git repository**: Enter `https://github.com/c50bossio/6fb-booking`
-4. **Name**: `sixfb-backend-v2`
+3. **Public Git repository**: `https://github.com/c50bossio/6fb-booking`
+4. **Name**: `sixfb-backend-v2-production`
 5. **Environment**: Python 3
-6. **Branch**: `main` (we'll deploy from main since our branch has secrets)
+6. **Branch**: `main`
 7. **Root Directory**: `backend-v2`
 8. **Build Command**: `pip install -r requirements.txt`
 9. **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
-10. Click "Create Web Service"
 
-### Step 2: Add Backend Environment Variables
-In the service's Environment tab, add these from your `backend-v2/.env`:
+### Step 2: Production Backend Environment Variables
 ```
 STRIPE_SECRET_KEY = [your live key]
 STRIPE_PUBLISHABLE_KEY = [your live key]
@@ -31,68 +36,99 @@ TWILIO_PHONE_NUMBER = [your phone]
 SECRET_KEY = [from your .env]
 JWT_SECRET_KEY = [from your .env]
 ENVIRONMENT = production
-CORS_ALLOWED_ORIGINS = https://sixfb-frontend-v2.onrender.com
+CORS_ALLOWED_ORIGINS = https://sixfb-frontend-v2-production.onrender.com
+DATABASE_URL = [production postgresql url]
 ```
 
-### Step 3: Create Frontend Service
-1. Click "New +" → "Web Service" again
+### Step 3: Create Production Frontend Service
+1. Click "New +" → "Web Service"
 2. **Public Git repository**: `https://github.com/c50bossio/6fb-booking`
-3. **Name**: `sixfb-frontend-v2`
+3. **Name**: `sixfb-frontend-v2-production`
 4. **Environment**: Node
 5. **Branch**: `main`
 6. **Root Directory**: `backend-v2/frontend-v2`
 7. **Build Command**: `npm ci && npm run build`
 8. **Start Command**: `npm start`
-9. Click "Create Web Service"
 
-### Step 4: Add Frontend Environment Variables
+### Step 4: Production Frontend Environment Variables
 ```
-NEXT_PUBLIC_API_URL = https://sixfb-backend-v2.onrender.com
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = [your publishable key]
+NODE_ENV = production
+NEXT_PUBLIC_API_URL = https://sixfb-backend-v2-production.onrender.com
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = [your live publishable key]
 ```
 
-### Step 5: Create or Connect Database
-- If you need a new database: "New +" → "PostgreSQL"
-- Or connect to existing `sixfb-db`
-- Copy the Internal Database URL
-- Add to Backend as: `DATABASE_URL = [postgresql url]`
+## 🗂️ Service Organization
 
-## Option 2: Use Render's Shell to Deploy
+### Current Services (3 total):
+- ✅ **sixfb-backend-v2-staging** - Staging backend
+- ✅ **sixfb-frontend-v2-staging** - Staging frontend
+- ✅ **6fb-database** - PostgreSQL 16 database
 
-If the above doesn't work because of the branch issue:
+### When Production is Ready (6 total):
+- **sixfb-backend-v2-staging** - Staging backend
+- **sixfb-frontend-v2-staging** - Staging frontend
+- **sixfb-backend-v2-production** - Production backend
+- **sixfb-frontend-v2-production** - Production frontend
+- **6fb-database** - Staging database
+- **6fb-database-production** - Production database
 
-1. Create empty services first (without connecting to Git)
-2. Use Render's shell to manually upload code:
-   ```bash
-   # In Render shell for backend
-   git clone https://github.com/c50bossio/6fb-booking.git .
-   cd backend-v2
-   pip install -r requirements.txt
-   ```
+## 🧪 Testing Your Staging Environment
 
-## ✅ Verification After Deployment
+### Backend Health Check:
+```bash
+curl https://sixfb-backend-v2-staging.onrender.com/health
+# Expected: {"status":"healthy","service":"BookedBarber API"}
+```
 
-1. Backend Health Check:
-   ```
-   https://sixfb-backend-v2.onrender.com/health
-   ```
+### Frontend:
+Open https://sixfb-frontend-v2-staging.onrender.com in your browser
 
-2. Frontend:
-   ```
-   https://sixfb-frontend-v2.onrender.com
-   ```
+### API Documentation:
+Open https://sixfb-backend-v2-staging.onrender.com/docs
 
-3. API Docs:
-   ```
-   https://sixfb-backend-v2.onrender.com/docs
-   ```
+## 💰 Cost Optimization Achieved
 
-## 🎯 That's It!
+- **Before cleanup**: 8 services (~$60-120/month)
+- **After cleanup**: 3 services (~$25-50/month)
+- **Monthly savings**: $35-70
 
-This manual approach bypasses all the Git secret issues. You're just:
-1. Creating services
-2. Pointing to your public repo
-3. Adding environment variables
-4. Deploying
+## 📋 Next Steps
 
-Total time: ~10-15 minutes including build time.
+1. **Test staging thoroughly** - Verify all features work
+2. **Update custom domain** (if applicable) to point to staging
+3. **Plan production deployment** when ready
+4. **Set up monitoring** and alerts
+5. **Configure backups** for production database
+
+## 🔧 Quick Commands for Development
+
+```bash
+# Check staging backend health
+curl https://sixfb-backend-v2-staging.onrender.com/health
+
+# Test API endpoints
+curl https://sixfb-backend-v2-staging.onrender.com/api/v1/bookings
+
+# View real-time logs (in Render dashboard)
+# Services → sixfb-backend-v2-staging → Logs
+# Services → sixfb-frontend-v2-staging → Logs
+```
+
+## 🚨 Important Notes
+
+- **Environment**: Currently using staging environment variables
+- **Database**: Using shared staging database
+- **Keys**: Using live Stripe keys (be careful with test transactions)
+- **CORS**: Configured for staging frontend URL
+- **Branch**: Deploying from `deployment-clean` branch
+
+## 🎯 Production Readiness Checklist
+
+- [ ] Test all booking flows in staging
+- [ ] Verify payment processing works
+- [ ] Test email/SMS notifications
+- [ ] Configure production database
+- [ ] Set up domain and SSL certificates
+- [ ] Configure monitoring and alerts
+- [ ] Plan backup and recovery procedures
+- [ ] Update documentation for production URLs
