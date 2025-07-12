@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { toast } from '@/hooks/use-toast'
+import { toastError, toastSuccess } from '@/hooks/use-toast'
 import { fetchAPI } from '@/lib/api'
 
 // Icons
@@ -95,11 +94,7 @@ export default function TestDataPage() {
       setStatus(data)
     } catch (error) {
       console.error('Failed to fetch test data status:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to load test data status',
-        variant: 'destructive',
-      })
+      toastError('Failed to load test data status')
     } finally {
       setLoading(false)
     }
@@ -116,20 +111,15 @@ export default function TestDataPage() {
         },
         body: JSON.stringify(requestBody)
       })
-      toast({
-        title: 'Success',
-        description: useCustomization 
+      toastSuccess(
+        useCustomization 
           ? `Test data created with ${customization.client_count} clients and ${customization.appointment_count} appointments!`
-          : 'Test data created successfully!',
-      })
+          : 'Test data created successfully!'
+      )
       await fetchTestDataStatus()
     } catch (error) {
       console.error('Failed to create test data:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to create test data',
-        variant: 'destructive',
-      })
+      toastError('Failed to create test data')
     } finally {
       setActionLoading(false)
     }
@@ -145,18 +135,11 @@ export default function TestDataPage() {
       await fetchAPI('/api/v1/test-data', {
         method: 'DELETE',
       })
-      toast({
-        title: 'Success',
-        description: 'Test data deleted successfully!',
-      })
+      toastSuccess('Test data deleted successfully!')
       await fetchTestDataStatus()
     } catch (error) {
       console.error('Failed to delete test data:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to delete test data',
-        variant: 'destructive',
-      })
+      toastError('Failed to delete test data')
     } finally {
       setActionLoading(false)
     }
@@ -173,20 +156,15 @@ export default function TestDataPage() {
         },
         body: JSON.stringify(requestBody)
       })
-      toast({
-        title: 'Success',
-        description: useCustomization 
+      toastSuccess(
+        useCustomization 
           ? `Test data refreshed with ${customization.client_count} clients and ${customization.appointment_count} appointments!`
-          : 'Test data refreshed successfully!',
-      })
+          : 'Test data refreshed successfully!'
+      )
       await fetchTestDataStatus()
     } catch (error) {
       console.error('Failed to refresh test data:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to refresh test data',
-        variant: 'destructive',
-      })
+      toastError('Failed to refresh test data')
     } finally {
       setActionLoading(false)
     }
@@ -600,14 +578,16 @@ export default function TestDataPage() {
 
       {/* Warning Alert */}
       {status?.has_test_data && (
-        <Alert>
-          <InfoIcon />
-          <AlertDescription>
-            <strong>Important:</strong> Test data is for learning purposes only. When you start accepting real bookings, 
-            delete all test data to keep your records clean. Test appointments will show a "TEST" badge to distinguish 
-            them from real bookings.
-          </AlertDescription>
-        </Alert>
+        <Card className="border-yellow-200 bg-yellow-50">
+          <CardContent className="flex items-center gap-2 pt-4">
+            <InfoIcon />
+            <div>
+              <strong>Important:</strong> Test data is for learning purposes only. When you start accepting real bookings, 
+              delete all test data to keep your records clean. Test appointments will show a "TEST" badge to distinguish 
+              them from real bookings.
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   )
