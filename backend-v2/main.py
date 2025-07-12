@@ -26,7 +26,7 @@ sentry_configured = configure_sentry()
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
-# Create FastAPI app
+# Create FastAPI app with all dependencies resolved
 app = FastAPI(title="6FB Booking API v2")
 
 # Root health check endpoint
