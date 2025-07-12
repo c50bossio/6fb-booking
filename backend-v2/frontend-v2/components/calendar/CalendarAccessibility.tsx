@@ -322,3 +322,53 @@ export const getCalendarCellAriaLabel = (
   
   return label;
 };
+
+// Missing exports that Calendar.tsx expects
+export const useScreenReaderAnnouncement = () => {
+  const { announceToScreenReader } = useCalendarA11y();
+  
+  const announce = useCallback((message: string, priority: 'polite' | 'assertive' = 'polite') => {
+    announceToScreenReader({ message, priority });
+  }, [announceToScreenReader]);
+  
+  return { announce };
+};
+
+export const useReducedMotion = () => {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    
+    const handleChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches);
+    };
+    
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+  
+  return prefersReducedMotion;
+};
+
+export const useHighContrastMode = () => {
+  const [highContrast, setHighContrast] = useState(false);
+  
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-contrast: high)');
+    setHighContrast(mediaQuery.matches);
+    
+    const handleChange = (e: MediaQueryListEvent) => {
+      setHighContrast(e.matches);
+    };
+    
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+  
+  return highContrast;
+};
+
+// Alias for CalendarSkipLink to match the expected import
+export const SkipToCalendar = CalendarSkipLink;
