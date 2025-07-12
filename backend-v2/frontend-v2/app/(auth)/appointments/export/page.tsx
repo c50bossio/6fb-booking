@@ -1,13 +1,13 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
 import { BulkSelectableAppointmentList } from '@/components/appointments/BulkSelectableAppointmentList'
 import { EnhancedCalendarExport } from '@/components/calendar/EnhancedCalendarExport'
 import { Appointment } from '@/types/appointment'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { InfoIcon } from 'lucide-react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs'
 import { useToast } from '@/hooks/use-toast'
 
 // Mock data generator for demonstration
