@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { AccessibleButton } from '@/lib/accessibility-helpers'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { 
@@ -13,6 +13,7 @@ import {
   PlusIcon
 } from '@heroicons/react/24/outline'
 import { format, addDays, startOfWeek, endOfWeek, isSameDay, startOfMonth, endOfMonth, addWeeks, addMonths } from 'date-fns'
+import { enhancedMockAPI, BookingConfirmation } from '@/lib/enhanced-mock-api'
 
 type CalendarView = 'day' | 'week' | 'month'
 
@@ -71,6 +72,28 @@ const mockAppointments = [
 export default function CalendarPage() {
   const [currentView, setCurrentView] = useState<CalendarView>('week')
   const [currentDate, setCurrentDate] = useState(new Date())
+  const [realAppointments, setRealAppointments] = useState<BookingConfirmation[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Load real appointments from enhanced API
+  useEffect(() => {
+    loadAppointments()
+  }, [])
+
+  const loadAppointments = async () => {
+    try {
+      setLoading(true)
+      const appointments = await enhancedMockAPI.getAllBookings()
+      setRealAppointments(appointments)
+      setError(null)
+    } catch (err) {
+      setError('Failed to load appointments')
+      console.error('Failed to load appointments:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Navigation functions
   const navigateDate = useCallback((direction: 'prev' | 'next') => {
@@ -97,29 +120,41 @@ export default function CalendarPage() {
 
   // Get appointments for current view
   const getFilteredAppointments = () => {
-    const today = new Date()
+    // Use real appointments if available, fallback to mock data
+    const appointments = realAppointments.length > 0 ? realAppointments.map(apt => ({
+      id: parseInt(apt.id.split('_')[1]) || Math.random(),
+      client_name: `${apt.client_info.first_name} ${apt.client_info.last_name}`,
+      client_phone: apt.client_info.phone,
+      service_name: apt.service.name,
+      service_duration: apt.service.duration,
+      service_price: apt.service.price,
+      start_time: `${apt.date}T${apt.time}:00.000Z`,
+      end_time: `${apt.date}T${apt.end_time}:00.000Z`,
+      status: apt.status,
+      barber_name: apt.barber.name
+    })) : mockAppointments
     
     switch (currentView) {
       case 'day':
-        return mockAppointments.filter(apt => 
+        return appointments.filter(apt => 
           isSameDay(new Date(apt.start_time), currentDate)
         )
       case 'week':
         const weekStart = startOfWeek(currentDate)
         const weekEnd = endOfWeek(currentDate)
-        return mockAppointments.filter(apt => {
+        return appointments.filter(apt => {
           const aptDate = new Date(apt.start_time)
           return aptDate >= weekStart && aptDate <= weekEnd
         })
       case 'month':
         const monthStart = startOfMonth(currentDate)
         const monthEnd = endOfMonth(currentDate)
-        return mockAppointments.filter(apt => {
+        return appointments.filter(apt => {
           const aptDate = new Date(apt.start_time)
           return aptDate >= monthStart && aptDate <= monthEnd
         })
       default:
-        return mockAppointments
+        return appointments
     }
   }
 
@@ -319,6 +354,7 @@ export default function CalendarPage() {
               </h1>
               <p className="text-gray-600 mt-1">
                 Manage your schedule and appointments
+                {loading && <span className="ml-2 text-blue-600">Loading...</span>}
               </p>
             </div>
             

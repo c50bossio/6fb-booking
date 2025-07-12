@@ -228,8 +228,31 @@ export const BUSINESS_HOURS: BusinessHours[] = [
 
 const dataStore = new MockDataStore()
 
-// Simulate realistic API delays
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+// Simulate realistic API delays with occasional longer delays for realism
+const delay = (ms: number) => {
+  // 10% chance of slower response to simulate network variability
+  const actualDelay = Math.random() < 0.1 ? ms * 2 : ms;
+  return new Promise(resolve => setTimeout(resolve, actualDelay));
+}
+
+// Simulate edge cases
+const simulateEdgeCases = {
+  // Simulate occasional "just booked" conflicts
+  shouldSimulateConflict: () => Math.random() < 0.05, // 5% chance
+  
+  // Simulate network timeouts
+  shouldSimulateTimeout: () => Math.random() < 0.02, // 2% chance
+  
+  // Simulate fully booked scenarios for certain dates
+  shouldSimulateFullyBooked: (date: string) => {
+    const day = new Date(date).getDay();
+    // Saturdays are more likely to be fully booked
+    return day === 6 && Math.random() < 0.3; // 30% chance on Saturday
+  },
+  
+  // Simulate special barber unavailability
+  shouldSimulateBarbeUnavailable: () => Math.random() < 0.1 // 10% chance
+}
 
 // Get day of week for business hours
 const getDayOfWeek = (date: string): string => {
@@ -261,6 +284,9 @@ const generateTimeSlots = (date: string, serviceDuration: number): TimeSlot[] =>
     return slots
   }
   
+  // Check if this should be a fully booked day
+  const isFullyBookedDay = simulateEdgeCases.shouldSimulateFullyBooked(date)
+  
   // Generate 30-minute slots during business hours
   const startTime = businessDay.open
   const endTime = businessDay.close
@@ -274,12 +300,24 @@ const generateTimeSlots = (date: string, serviceDuration: number): TimeSlot[] =>
     // Skip lunch break (12:00 - 13:30)
     const isLunchBreak = currentTime >= '12:00' && currentTime <= '13:30'
     
+    // Simulate barber unavailability for some slots
+    const isBarbeUnavailable = simulateEdgeCases.shouldSimulateBarbeUnavailable()
+    
+    // Force fully booked scenario if simulated
+    const isSlotAvailable = !isBooked && isValidTime && !isLunchBreak && !isFullyBookedDay && !isBarbeUnavailable
+    
+    let reason: 'booked' | 'break' | 'closed' | 'blocked' | undefined
+    if (isBooked) reason = 'booked'
+    else if (isLunchBreak) reason = 'break'
+    else if (isFullyBookedDay) reason = 'booked'
+    else if (isBarbeUnavailable) reason = 'blocked'
+    
     slots.push({
       time: currentTime,
-      available: !isBooked && isValidTime && !isLunchBreak,
+      available: isSlotAvailable,
       barber_id: 'alex-thompson',
       barber_name: 'Alex Thompson',
-      reason: isBooked ? 'booked' : isLunchBreak ? 'break' : undefined
+      reason
     })
     
     // Add 30 minutes
@@ -363,9 +401,20 @@ export const enhancedMockAPI = {
   createBooking: async (bookingData: BookingData): Promise<BookingConfirmation> => {
     await delay(800) // Simulate booking processing
     
-    // Simulate occasional failures for testing
-    if (Math.random() < 0.05) { // 5% failure rate
+    // Simulate timeout scenarios
+    if (simulateEdgeCases.shouldSimulateTimeout()) {
+      await delay(10000) // Simulate very slow response
+      throw new Error('Request timeout. Please check your connection and try again.')
+    }
+    
+    // Simulate booking conflicts (someone else just booked)
+    if (simulateEdgeCases.shouldSimulateConflict()) {
       throw new Error('This time slot was just booked by another customer. Please select a different time.')
+    }
+    
+    // Simulate payment processing failures
+    if (Math.random() < 0.03) { // 3% failure rate
+      throw new Error('Payment processing failed. Please check your payment information and try again.')
     }
     
     const service = SERVICES.find(s => s.id === bookingData.service_id)!

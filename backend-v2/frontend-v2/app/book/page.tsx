@@ -283,7 +283,7 @@ export default function BookPage() {
                     </div>
                   ) : (
                     <div 
-                      className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-4"
                       role="group"
                       aria-labelledby="service-selection-heading"
                       aria-describedby="service-instructions"
@@ -336,7 +336,7 @@ export default function BookPage() {
                     Select Your Date
                   </h2>
                   
-                  <div className="grid grid-cols-7 gap-2 max-w-2xl mx-auto">
+                  <div className="grid grid-cols-7 gap-1 sm:gap-2 max-w-2xl mx-auto">
                     {generateCalendarDates().slice(0, 21).map((date, index) => {
                       const isSelected = selectedDate?.toDateString() === date.toDateString();
                       
@@ -346,7 +346,7 @@ export default function BookPage() {
                           variant={isSelected ? 'primary' : 'secondary'}
                           size="sm"
                           onClick={() => handleDateSelect(date)}
-                          className="aspect-square p-2 text-sm"
+                          className="aspect-square p-1 sm:p-2 text-xs sm:text-sm"
                           aria-pressed={isSelected}
                           aria-label={`${date.toLocaleDateString('en-US', { 
                             weekday: 'long', 
@@ -409,7 +409,7 @@ export default function BookPage() {
                     </div>
                   ) : (
                     <div 
-                      className="grid grid-cols-2 md:grid-cols-4 gap-3"
+                      className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3"
                       role="group"
                       aria-labelledby="time-slots-heading"
                     >
@@ -422,7 +422,7 @@ export default function BookPage() {
                             key={slot.time}
                             variant={isSelected ? 'primary' : 'secondary'}
                             onClick={() => !isDisabled && handleTimeSelect(slot.time)}
-                            className={`py-3 ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            className={`py-2 sm:py-3 text-sm ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                             aria-pressed={isSelected}
                             disabled={isDisabled}
                             aria-label={`${slot.time}${isDisabled ? ` - ${slot.reason}` : ', available'}`}
@@ -620,13 +620,14 @@ export default function BookPage() {
                         </ul>
                       </div>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <AccessibleButton
                           variant="primary"
                           onClick={() => {
                             // In a real app, this would navigate to calendar or booking management
                             alert('Calendar integration would open here');
                           }}
+                          className="w-full"
                         >
                           Add to Calendar
                         </AccessibleButton>
@@ -646,6 +647,7 @@ export default function BookPage() {
                             setBookingConfirmation(null);
                             announce('Starting new booking process');
                           }}
+                          className="w-full"
                         >
                           Book Another Appointment
                         </AccessibleButton>
