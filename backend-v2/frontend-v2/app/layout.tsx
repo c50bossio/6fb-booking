@@ -191,8 +191,9 @@ export default function RootLayout({
               <Toaster />
               <CookieConsent />
               <DevHealthMonitor />
-              <PWAInstallPrompt />
-              <ServiceWorkerUpdate />
+              {/* Temporarily disabled due to service worker errors */}
+              {/* <PWAInstallPrompt />
+              <ServiceWorkerUpdate /> */}
             </ErrorBoundary>
           </ToastProvider>
         </QueryProvider>
