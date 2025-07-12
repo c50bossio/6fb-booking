@@ -19,7 +19,6 @@ import {
   XMarkIcon,
   CalendarIcon
 } from '@heroicons/react/24/outline'
-// import GoogleCalendarSettings from '@/components/settings/GoogleCalendarSettings'
 import axios from 'axios'
 
 interface BusinessSettings {
@@ -112,7 +111,12 @@ export default function SettingsPage() {
   const fetchSettings = async () => {
     try {
       setLoading(true)
-      const token = localStorage.getItem('access_token')
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
+
+      if (!token) {
+        setLoading(false)
+        return
+      }
 
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/settings`,
@@ -125,7 +129,6 @@ export default function SettingsPage() {
       if (response.data.security) setSecuritySettings(response.data.security)
 
     } catch (error) {
-      console.error('Failed to fetch settings:', error)
       // Use demo data if API fails
       setBusinessSettings({
         name: 'Headlines Barbershop',
@@ -145,7 +148,12 @@ export default function SettingsPage() {
   const saveSettings = async (settingsType: string, data: any) => {
     try {
       setSaving(true)
-      const token = localStorage.getItem('access_token')
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
+
+      if (!token) {
+        setMessage({ type: 'error', text: 'Authentication required. Please log in.' })
+        return
+      }
 
       await axios.patch(
         `${process.env.NEXT_PUBLIC_API_URL}/settings/${settingsType}`,
@@ -157,7 +165,6 @@ export default function SettingsPage() {
       setTimeout(() => setMessage(null), 3000)
 
     } catch (error) {
-      console.error('Failed to save settings:', error)
       setMessage({ type: 'error', text: 'Failed to save settings. Please try again.' })
       setTimeout(() => setMessage(null), 3000)
     } finally {
@@ -171,9 +178,19 @@ export default function SettingsPage() {
       return
     }
 
+    if (!passwordForm.new_password || passwordForm.new_password.length < 6) {
+      setMessage({ type: 'error', text: 'Password must be at least 6 characters long.' })
+      return
+    }
+
     try {
       setSaving(true)
-      const token = localStorage.getItem('access_token')
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
+
+      if (!token) {
+        setMessage({ type: 'error', text: 'Authentication required. Please log in.' })
+        return
+      }
 
       await axios.patch(
         `${process.env.NEXT_PUBLIC_API_URL}/auth/change-password`,
@@ -188,7 +205,6 @@ export default function SettingsPage() {
       setMessage({ type: 'success', text: 'Password changed successfully!' })
 
     } catch (error) {
-      console.error('Failed to change password:', error)
       setMessage({ type: 'error', text: 'Failed to change password. Please check your current password.' })
     } finally {
       setSaving(false)
@@ -217,8 +233,9 @@ export default function SettingsPage() {
         {/* Message Banner */}
         {message && (
           <div className={`p-4 rounded-lg flex items-center justify-between ${
-            message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' :
-            'bg-red-50 text-red-800 border border-red-200'
+            message.type === 'success' 
+              ? 'bg-green-50 text-green-800 border border-green-200' 
+              : 'bg-red-50 text-red-800 border border-red-200'
           }`}>
             <div className="flex items-center">
               {message.type === 'success' ? (
@@ -269,73 +286,73 @@ export default function SettingsPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Business Name
                     </label>
                     <input
                       type="text"
                       value={businessSettings.name}
                       onChange={(e) => setBusinessSettings(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Phone Number
                     </label>
                     <input
                       type="tel"
                       value={businessSettings.phone}
                       onChange={(e) => setBusinessSettings(prev => ({ ...prev, phone: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Email Address
                     </label>
                     <input
                       type="email"
                       value={businessSettings.email}
                       onChange={(e) => setBusinessSettings(prev => ({ ...prev, email: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Website
                     </label>
                     <input
                       type="url"
                       value={businessSettings.website}
                       onChange={(e) => setBusinessSettings(prev => ({ ...prev, website: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     />
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Address
                     </label>
                     <textarea
                       rows={3}
                       value={businessSettings.address}
                       onChange={(e) => setBusinessSettings(prev => ({ ...prev, address: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Timezone
                     </label>
                     <select
                       value={businessSettings.timezone}
                       onChange={(e) => setBusinessSettings(prev => ({ ...prev, timezone: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     >
                       <option value="America/New_York">Eastern Time</option>
                       <option value="America/Chicago">Central Time</option>
@@ -345,15 +362,22 @@ export default function SettingsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Tax Rate (%)
                     </label>
                     <input
                       type="number"
                       step="0.01"
-                      value={businessSettings.tax_rate}
-                      onChange={(e) => setBusinessSettings(prev => ({ ...prev, tax_rate: parseFloat(e.target.value) }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                      min="0"
+                      max="100"
+                      value={businessSettings.tax_rate || 0}
+                      onChange={(e) => {
+                        const value = parseFloat(e.target.value)
+                        if (!isNaN(value) && value >= 0 && value <= 100) {
+                          setBusinessSettings(prev => ({ ...prev, tax_rate: value }))
+                        }
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     />
                   </div>
                 </div>
@@ -426,8 +450,8 @@ export default function SettingsPage() {
                     <div className="flex items-center">
                       <CreditCardIcon className="h-5 w-5 text-gray-400 mr-3" />
                       <div>
-                        <p className="text-sm font-medium text-gray-900">Payment Notifications</p>
-                        <p className="text-sm text-gray-500">Notifications for payments and payouts</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">Payment Notifications</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Notifications for payments and payouts</p>
                       </div>
                     </div>
                     <input
@@ -442,8 +466,8 @@ export default function SettingsPage() {
                     <div className="flex items-center">
                       <BellIcon className="h-5 w-5 text-gray-400 mr-3" />
                       <div>
-                        <p className="text-sm font-medium text-gray-900">Push Notifications</p>
-                        <p className="text-sm text-gray-500">Browser push notifications</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">Push Notifications</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Browser push notifications</p>
                       </div>
                     </div>
                     <input
@@ -506,13 +530,13 @@ export default function SettingsPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Payout Frequency
                       </label>
                       <select
                         value={paymentSettings.payout_frequency}
                         onChange={(e) => setPaymentSettings(prev => ({ ...prev, payout_frequency: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       >
                         <option value="daily">Daily</option>
                         <option value="weekly">Weekly</option>
@@ -522,22 +546,28 @@ export default function SettingsPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Minimum Payout Amount ($)
                       </label>
                       <input
                         type="number"
-                        value={paymentSettings.minimum_payout}
-                        onChange={(e) => setPaymentSettings(prev => ({ ...prev, minimum_payout: parseInt(e.target.value) }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                        min="1"
+                        value={paymentSettings.minimum_payout || 100}
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value)
+                          if (!isNaN(value) && value > 0) {
+                            setPaymentSettings(prev => ({ ...prev, minimum_payout: value }))
+                          }
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       />
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-900">Automatic Payouts</p>
-                      <p className="text-sm text-gray-500">Enable automatic payouts to barbers</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">Automatic Payouts</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Enable automatic payouts to barbers</p>
                     </div>
                     <input
                       type="checkbox"
@@ -582,7 +612,6 @@ export default function SettingsPage() {
                     </div>
                   </div>
                   <div className="p-4">
-                    {/* <GoogleCalendarSettings /> */}
                     <div className="text-center py-8 text-gray-500">
                       <p>Google Calendar integration coming soon!</p>
                     </div>
@@ -597,11 +626,11 @@ export default function SettingsPage() {
                         <span className="text-white text-xs font-bold">$</span>
                       </div>
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900">QuickBooks</h4>
-                        <p className="text-sm text-gray-500">Coming Soon</p>
+                        <h4 className="text-sm font-medium text-gray-900 dark:text-white">QuickBooks</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Coming Soon</p>
                       </div>
                     </div>
-                    <p className="text-xs text-gray-400">Sync financial data with QuickBooks for accounting</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Sync financial data with QuickBooks for accounting</p>
                   </div>
 
                   <div className="border border-gray-200 rounded-lg p-4 opacity-50">
@@ -610,11 +639,11 @@ export default function SettingsPage() {
                         <span className="text-white text-xs font-bold">S</span>
                       </div>
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900">Shopify</h4>
-                        <p className="text-sm text-gray-500">Coming Soon</p>
+                        <h4 className="text-sm font-medium text-gray-900 dark:text-white">Shopify</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Coming Soon</p>
                       </div>
                     </div>
-                    <p className="text-xs text-gray-400">Integrate with your online store for product sales</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Integrate with your online store for product sales</p>
                   </div>
                 </div>
               </div>
@@ -628,10 +657,10 @@ export default function SettingsPage() {
                 <div className="space-y-6">
                   {/* Change Password */}
                   <div className="border border-gray-200 rounded-lg p-4">
-                    <h4 className="text-sm font-medium text-gray-900 mb-4">Change Password</h4>
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-4">Change Password</h4>
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Current Password
                         </label>
                         <div className="relative">
@@ -639,7 +668,7 @@ export default function SettingsPage() {
                             type={showPassword ? 'text' : 'password'}
                             value={passwordForm.current_password}
                             onChange={(e) => setPasswordForm(prev => ({ ...prev, current_password: e.target.value }))}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 pr-10"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                           />
                           <button
                             type="button"
@@ -656,26 +685,26 @@ export default function SettingsPage() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           New Password
                         </label>
                         <input
                           type="password"
                           value={passwordForm.new_password}
                           onChange={(e) => setPasswordForm(prev => ({ ...prev, new_password: e.target.value }))}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Confirm New Password
                         </label>
                         <input
                           type="password"
                           value={passwordForm.confirm_password}
                           onChange={(e) => setPasswordForm(prev => ({ ...prev, confirm_password: e.target.value }))}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         />
                       </div>
 
@@ -695,8 +724,8 @@ export default function SettingsPage() {
                       <div className="flex items-center">
                         <KeyIcon className="h-5 w-5 text-gray-400 mr-3" />
                         <div>
-                          <p className="text-sm font-medium text-gray-900">Two-Factor Authentication</p>
-                          <p className="text-sm text-gray-500">Add an extra layer of security</p>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">Two-Factor Authentication</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Add an extra layer of security</p>
                         </div>
                       </div>
                       <input
@@ -711,8 +740,8 @@ export default function SettingsPage() {
                       <div className="flex items-center">
                         <BellIcon className="h-5 w-5 text-gray-400 mr-3" />
                         <div>
-                          <p className="text-sm font-medium text-gray-900">Login Notifications</p>
-                          <p className="text-sm text-gray-500">Get notified of new login attempts</p>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">Login Notifications</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Get notified of new login attempts</p>
                         </div>
                       </div>
                       <input
@@ -725,26 +754,40 @@ export default function SettingsPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Session Timeout (minutes)
                         </label>
                         <input
                           type="number"
-                          value={securitySettings.session_timeout}
-                          onChange={(e) => setSecuritySettings(prev => ({ ...prev, session_timeout: parseInt(e.target.value) }))}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                          min="5"
+                          max="480"
+                          value={securitySettings.session_timeout || 30}
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value)
+                            if (!isNaN(value) && value >= 5 && value <= 480) {
+                              setSecuritySettings(prev => ({ ...prev, session_timeout: value }))
+                            }
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Password Expiry (days)
                         </label>
                         <input
                           type="number"
-                          value={securitySettings.password_expiry}
-                          onChange={(e) => setSecuritySettings(prev => ({ ...prev, password_expiry: parseInt(e.target.value) }))}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                          min="30"
+                          max="365"
+                          value={securitySettings.password_expiry || 90}
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value)
+                            if (!isNaN(value) && value >= 30 && value <= 365) {
+                              setSecuritySettings(prev => ({ ...prev, password_expiry: value }))
+                            }
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         />
                       </div>
                     </div>
@@ -761,6 +804,7 @@ export default function SettingsPage() {
               </div>
             )}
           </div>
+        </div>
       </div>
     </div>
   )

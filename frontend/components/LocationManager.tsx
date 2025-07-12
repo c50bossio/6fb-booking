@@ -9,7 +9,6 @@ import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { 
-  Building, 
   Users, 
   TrendingUp, 
   DollarSign, 
@@ -23,7 +22,6 @@ import {
   Edit,
   Trash2,
   CheckCircle,
-  AlertTriangle,
   Clock
 } from 'lucide-react'
 
@@ -86,7 +84,7 @@ interface LocationAnalytics {
 
 export default function LocationManager() {
   const [activeTab, setActiveTab] = useState('overview')
-  const [selectedLocation, setSelectedLocation] = useState<number>(1)
+  const [selectedLocation] = useState<number>(1)
   const [locationDetails, setLocationDetails] = useState<LocationDetails | null>(null)
   const [locationBarbers, setLocationBarbers] = useState<LocationBarber[]>([])
   const [locationAnalytics, setLocationAnalytics] = useState<LocationAnalytics | null>(null)
@@ -192,7 +190,7 @@ export default function LocationManager() {
       setLocationBarbers(mockLocationBarbers)
       setLocationAnalytics(mockLocationAnalytics)
     } catch (error) {
-      console.error('Error loading location data:', error)
+      // Error loading location data - handle silently in production
     } finally {
       setLoading(false)
     }
@@ -204,19 +202,19 @@ export default function LocationManager() {
 
   const handleSaveLocation = () => {
     setEditMode(false)
-    console.log('Save location changes')
+    // TODO: Implement location save functionality
   }
 
   const handleAddBarber = () => {
-    console.log('Add new barber')
+    // TODO: Implement add barber functionality
   }
 
   const handleRemoveBarber = (barberId: number) => {
-    console.log('Remove barber:', barberId)
+    // TODO: Implement remove barber functionality
   }
 
   const handleEditBarber = (barberId: number) => {
-    console.log('Edit barber:', barberId)
+    // TODO: Implement edit barber functionality
   }
 
   if (loading) {

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -37,11 +37,7 @@ export default function DashboardWithAPI() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    loadDashboardData()
-  }, [])
-
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -59,12 +55,16 @@ export default function DashboardWithAPI() {
         setRevenueTrend(trends.data)
       }
     } catch (err) {
-      console.error('Error loading dashboard data:', err)
+      // Error loading dashboard data - handle silently in production
       setError('Failed to load dashboard data')
     } finally {
       setLoading(false)
     }
-  }
+  }, [hasRole])
+
+  useEffect(() => {
+    loadDashboardData()
+  }, [loadDashboardData])
 
   if (loading) {
     return (

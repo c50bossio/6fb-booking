@@ -7,19 +7,15 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from './AuthProvider'
 import { Permission, Role } from '@/lib/api/auth'
-import { PermissionGate, AdminOnly, MentorOnly } from './PermissionGate'
 import {
   BarChart3,
   Users,
-  MapPin,
   GraduationCap,
-  Settings,
   Menu,
   X,
   Building,
   Shield,
   Bell,
-  User,
   LogOut
 } from 'lucide-react'
 
@@ -94,7 +90,7 @@ export default function Navigation() {
 
   if (!user) return null
 
-  const hasAccess = (item: any) => {
+  const hasAccess = (item: typeof navigationItems[0]) => {
     // Check role-based access
     if (item.roles && !hasRole(item.roles)) {
       return false
