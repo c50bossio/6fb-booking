@@ -7,7 +7,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { QueryProvider } from '@/components/providers/QueryProvider'
 import CookieConsent from '@/components/CookieConsent'
 import { DevHealthMonitor } from '@/components/DevHealthMonitor'
-import { ToastProvider } from '@/hooks/useToast'
+import { ToastProvider } from '@/components/ui/toast'
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt'
 import { ServiceWorkerUpdate } from '@/components/ServiceWorkerUpdate'
 
