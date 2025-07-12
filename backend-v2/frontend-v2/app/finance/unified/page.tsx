@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { getProfile, fetchAPI, type User } from '@/lib/api'
 import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 import { Button } from '@/components/ui/Button'
 import { DateRangeSelector, DateRangePreset } from '@/components/analytics/shared/DateRangeSelector'
 import { 

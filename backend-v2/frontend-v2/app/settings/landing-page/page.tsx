@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Label } from "@/components/ui/Label"
 import { Switch } from '@/components/ui/Switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from '@/hooks/use-toast'

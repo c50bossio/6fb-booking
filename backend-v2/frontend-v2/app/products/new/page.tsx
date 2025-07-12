@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { Select } from '@/components/ui/Select'
 import { Switch } from '@/components/ui/Switch'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card"
 import { useToast } from '@/hooks/use-toast'
 import { productsAPI } from '@/lib/api/products'
 import { ProductCreate, ProductType, ProductStatus } from '@/types/product'

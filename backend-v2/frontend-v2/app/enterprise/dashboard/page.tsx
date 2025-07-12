@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getProfile, getEnterpriseAnalytics, type User, type EnterpriseAnalytics } from '@/lib/api'
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/Card"
 import { Button } from '@/components/ui/Button'
 import { Select } from '@/components/ui/Select'
 import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'

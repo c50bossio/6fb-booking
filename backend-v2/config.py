@@ -238,9 +238,17 @@ class Settings(BaseSettings):
     @validator('stripe_secret_key')
     def validate_stripe_key(cls, v):
         """Validate Stripe secret key format"""
+        # Allow empty keys in development environment
+        if not v:
+            return v
+            
         test_prefix = 'sk_' + 'test_'
         live_prefix = 'sk_' + 'live_'
-        if v and not (v.startswith(test_prefix) or v.startswith(live_prefix)):
+        if not (v.startswith(test_prefix) or v.startswith(live_prefix)):
+            # In development, allow placeholder keys
+            env = os.getenv('ENVIRONMENT', 'development').lower()
+            if env == 'development' and ('placeholder' in v.lower() or 'demo' in v.lower()):
+                return v
             raise ValueError("Invalid Stripe secret key format")
         return v
     

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { getProfile, type User } from '@/lib/api'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 import { Button } from '@/components/ui/Button'
 import SixFigureAnalyticsDashboard from '@/components/analytics/SixFigureAnalyticsDashboard'
 import { 

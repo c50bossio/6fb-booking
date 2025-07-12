@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Shield, Eye, Lock, Database, Download, Trash2 } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Button } from '@/components/ui/Button'
 import LegalDocument, { LegalSection, LegalList } from '@/components/LegalDocument'
 

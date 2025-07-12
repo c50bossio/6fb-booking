@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 import { getProfile } from '@/lib/api'
 import { toast } from '@/hooks/use-toast'
 import { generateOrganizationBookingURL } from '@/lib/booking-link-generator'

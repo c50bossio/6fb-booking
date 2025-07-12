@@ -163,7 +163,8 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="apple-touch-icon" href="/apple-icon" />
-        <link rel="manifest" href="/manifest.json" />
+        {/* Temporarily disabled to prevent service worker errors */}
+        {/* <link rel="manifest" href="/manifest.json" /> */}
       </head>
       <body 
         className={`
@@ -197,6 +198,23 @@ export default function RootLayout({
             </ErrorBoundary>
           </ToastProvider>
         </QueryProvider>
+        
+        {/* Service worker unregistration script */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Unregister any existing service workers to prevent infinite error loops
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                  for(let registration of registrations) {
+                    console.log('Unregistering service worker:', registration);
+                    registration.unregister();
+                  }
+                });
+              }
+            `,
+          }}
+        />
         
         {/* Performance monitoring script */}
         <script
