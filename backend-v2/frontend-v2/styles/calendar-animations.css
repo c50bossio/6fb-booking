@@ -1,0 +1,67 @@
+/* Calendar animations and transitions */
+
+.calendar-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.calendar-slide-left {
+  animation: slideLeft 0.3s ease-in-out;
+}
+
+.calendar-slide-right {
+  animation: slideRight 0.3s ease-in-out;
+}
+
+.calendar-pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideLeft {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideRight {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Calendar cell animations */
+.calendar-cell {
+  transition: all 0.2s ease-in-out;
+}
+
+.calendar-cell:hover {
+  transform: scale(1.05);
+}
+
+.calendar-cell:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .calendar-fade-in,
+  .calendar-slide-left,
+  .calendar-slide-right,
+  .calendar-pulse,
+  .calendar-cell {
+    animation: none;
+    transition: none;
+  }
+  
+  .calendar-cell:hover {
+    transform: none;
+  }
+}
