@@ -42,13 +42,13 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 rounded-md bg-secondary hover:bg-accent transition-colors"
+      className="p-2 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
     >
       {isDark ? (
-        <SunIcon className="w-5 h-5 text-foreground" />
+        <SunIcon className="w-5 h-5 text-gray-900 dark:text-gray-100" />
       ) : (
-        <MoonIcon className="w-5 h-5 text-foreground" />
+        <MoonIcon className="w-5 h-5 text-gray-900 dark:text-gray-100" />
       )}
     </button>
   )

@@ -1,5 +1,13 @@
 // Basic API types and functions for booking system
 
+export interface User {
+  id: string
+  name: string
+  email: string
+  role: 'barber' | 'manager' | 'client'
+  onboardingCompleted?: boolean
+}
+
 export interface TimeSlot {
   time: string;
   available: boolean;
@@ -146,5 +154,12 @@ export const createPaymentIntent = async (data: PaymentIntentRequest): Promise<P
 export const confirmPayment = async (data: ConfirmPaymentRequest): Promise<void> => {
   // Mock payment confirmation for demo
   console.log('Payment confirmed:', data);
+  return;
+};
+
+// Onboarding API functions
+export const updateOnboardingStatus = async (status: string): Promise<void> => {
+  // Mock onboarding status update for demo
+  console.log('Onboarding status updated:', status);
   return;
 };
