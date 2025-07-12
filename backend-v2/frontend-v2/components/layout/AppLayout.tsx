@@ -15,6 +15,12 @@ import { TestDataIndicator } from '@/components/TestDataIndicator'
 import { navigationItems } from '@/lib/navigation'
 import { SessionTimeoutWarning } from '@/components/auth/SessionTimeoutWarning'
 
+interface BreadcrumbItem {
+  label: string
+  href: string
+  isLast?: boolean
+}
+
 interface AppLayoutProps {
   children: React.ReactNode
 }
@@ -93,7 +99,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
 
     const paths = pathname.split('/').filter(Boolean)
-    const breadcrumbs = [{ label: 'Dashboard', href: '/dashboard' }]
+    const breadcrumbs: BreadcrumbItem[] = [{ label: 'Dashboard', href: '/dashboard' }]
 
     
     // Find matching navigation items for better labels
@@ -132,7 +138,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   // Prevent hydration issues by not rendering anything until mounted
   if (!mounted) {
     return (
-      <ThemeProvider defaultTheme="system" storageKey="6fb-theme">
+      <ThemeProvider defaultTheme="system">
         <div className="min-h-screen bg-gray-50 dark:bg-dark-surface-100">
           {/* Render children for public routes even when not mounted */}
           {isPublicRoute && children}
@@ -143,7 +149,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   if (loading) {
     return (
-      <ThemeProvider defaultTheme="system" storageKey="6fb-theme">
+      <ThemeProvider defaultTheme="system">
         <div className="min-h-screen bg-gray-50 dark:bg-dark-surface-100 flex items-center justify-center">
           <div className="flex flex-col items-center space-y-4">
             <div className="w-8 h-8 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin" />
