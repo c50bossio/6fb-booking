@@ -44,7 +44,19 @@ export default function WelcomePage() {
   useEffect(() => {
     async function fetchUserData() {
       try {
-        const userData = await getProfile()
+        // Mock user data for demo purposes
+        const userData = {
+          id: '1',
+          name: 'Admin Test User',
+          first_name: 'Admin',
+          email: 'admin@bookedbarber.com',
+          unified_role: 'INDIVIDUAL_BARBER',
+          onboarding_status: {
+            completed_steps: [], // Empty array means no steps completed yet
+            current_step: 0,
+            completed: false
+          }
+        }
         setUser(userData)
         
         // Load completed steps from user's onboarding status
@@ -53,7 +65,14 @@ export default function WelcomePage() {
         }
       } catch (error) {
         console.error('Failed to fetch user data:', error)
-        router.push('/login')
+        // For demo, don't redirect to login
+        setUser({
+          id: '1',
+          name: 'Admin Test User',
+          first_name: 'Admin',
+          email: 'admin@bookedbarber.com',
+          unified_role: 'INDIVIDUAL_BARBER'
+        })
       } finally {
         setLoading(false)
       }
