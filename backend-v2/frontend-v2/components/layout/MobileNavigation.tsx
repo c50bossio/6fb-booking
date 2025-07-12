@@ -1,16 +1,19 @@
 'use client'
 
 import React from 'react'
+import { User } from '@/lib/api'
 
 interface MobileNavigationProps {
   isOpen: boolean
   onClose: () => void
+  user?: User
   children?: React.ReactNode
 }
 
 export const MobileNavigation: React.FC<MobileNavigationProps> = ({
   isOpen,
   onClose,
+  user,
   children
 }) => {
   if (!isOpen) return null

@@ -161,7 +161,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   }
 
   return (
-    <ThemeProvider defaultTheme="system" storageKey="6fb-theme">
+    <ThemeProvider defaultTheme="system">
       <div className="min-h-screen bg-gray-50 dark:bg-dark-surface-100 transition-colors duration-200">
         {/* Desktop Layout */}
         {mounted && !isMobile && !isPublicRoute && (
