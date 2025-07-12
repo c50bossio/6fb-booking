@@ -3,9 +3,15 @@
 export interface User {
   id: string
   name: string
+  first_name?: string
   email: string
   role: 'barber' | 'manager' | 'client'
+  unified_role?: string
   onboardingCompleted?: boolean
+  onboarding_status?: {
+    completed_steps: string[]
+    current_step?: string
+  }
 }
 
 export interface TimeSlot {
@@ -88,8 +94,21 @@ export const getMyBookings = async (): Promise<BookingResponse[]> => {
   return [];
 };
 
-export const getProfile = async () => {
-  throw new Error('Not authenticated');
+export const getProfile = async (): Promise<User> => {
+  // Mock user profile for demo
+  return {
+    id: '1',
+    name: 'Demo User',
+    first_name: 'Demo',
+    email: 'demo@bookedbarber.com',
+    role: 'barber',
+    unified_role: 'INDIVIDUAL_BARBER',
+    onboardingCompleted: false,
+    onboarding_status: {
+      completed_steps: [],
+      current_step: 'profile_setup'
+    }
+  };
 };
 
 export const getNextAvailableSlot = async (service: string): Promise<NextAvailableSlot> => {
