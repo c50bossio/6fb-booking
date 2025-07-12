@@ -39,6 +39,7 @@ numpy==1.26.4
 
 # Error tracking and monitoring
 sentry-sdk[fastapi]==1.40.6
+psutil==5.9.8
 
 # Multi-Factor Authentication
 pyotp==2.9.0
