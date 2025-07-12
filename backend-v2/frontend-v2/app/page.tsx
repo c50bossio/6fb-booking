@@ -152,12 +152,12 @@ export default function LandingPage() {
               <h1 className="text-6xl md:text-8xl font-black text-gray-900 mb-4 tracking-tight">
                 BOOKEDBARBER
               </h1>
-              <div className="w-32 h-1 bg-yellow-400 mx-auto mb-8"></div>
+              <div className="w-32 h-1 bg-teal-400 mx-auto mb-8"></div>
             </div>
             
             <h2 className="text-4xl md:text-6xl font-bold text-gray-900">
               The #1 Booking Platform for
-              <span className="text-yellow-600"> Six Figure Barbers</span>
+              <span className="text-teal-600"> Six Figure Barbers</span>
             </h2>
             
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
@@ -176,7 +176,7 @@ export default function LandingPage() {
         </div>
 
         {/* Decorative gradient orbs */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-yellow-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-teal-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
         <div className="absolute bottom-0 right-0 translate-x-1/3 translate-y-1/3 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
       </section>
 
@@ -198,8 +198,8 @@ export default function LandingPage() {
                 key={index}
                 className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow"
               >
-                <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
-                  <feature.icon className="w-6 h-6 text-yellow-600" />
+                <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center mb-4">
+                  <feature.icon className="w-6 h-6 text-teal-600" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
                   {feature.title}
@@ -230,7 +230,7 @@ export default function LandingPage() {
               <div key={index} className="bg-gray-50 p-6 rounded-xl">
                 <div className="flex mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <StarIcon key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                    <StarIcon key={i} className="w-5 h-5 text-teal-400 fill-current" />
                   ))}
                 </div>
                 <blockquote className="text-gray-900 mb-4 italic">
@@ -262,11 +262,11 @@ export default function LandingPage() {
             {Object.entries(plans).map(([key, plan]) => (
               <div 
                 key={key}
-                className={`bg-white rounded-xl p-8 ${('popular' in plan && plan.popular) ? 'ring-2 ring-yellow-400 relative' : 'border border-gray-200'}`}
+                className={`bg-white rounded-xl p-8 ${('popular' in plan && plan.popular) ? 'ring-2 ring-teal-400 relative' : 'border border-gray-200'}`}
               >
                 {('popular' in plan && plan.popular) && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-yellow-400 text-black px-4 py-2 rounded-full text-sm font-medium">
+                    <span className="bg-teal-400 text-white px-4 py-2 rounded-full text-sm font-medium">
                       Most Popular
                     </span>
                   </div>
@@ -322,7 +322,7 @@ export default function LandingPage() {
             <AccessibleButton
               variant="primary"
               size="lg"
-              className="bg-yellow-400 text-black hover:bg-yellow-300"
+              className="bg-teal-500 text-white hover:bg-teal-600"
             >
               Start Free Trial
             </AccessibleButton>

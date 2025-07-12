@@ -72,7 +72,7 @@ export function AuthHeroCTAs({ className = '' }: { className?: string }) {
         <CTAButton 
           variant="primary" 
           size="lg"
-          className="bg-yellow-400 text-black hover:bg-yellow-300"
+          className="bg-teal-500 text-white hover:bg-teal-600"
         >
           Start Free Trial
         </CTAButton>
