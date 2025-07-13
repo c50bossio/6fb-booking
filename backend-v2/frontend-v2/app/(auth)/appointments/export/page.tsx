@@ -193,7 +193,6 @@ export default function AppointmentExportPage() {
           <BulkSelectableAppointmentList
             appointments={appointments}
             onSelectionChange={handleSelectionChange}
-            onStatusChange={handleStatusChange}
           />
         </TabsContent>
 
