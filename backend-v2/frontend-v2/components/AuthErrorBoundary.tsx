@@ -1,7 +1,7 @@
 'use client'
 
 import React, { Component, ReactNode } from 'react'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/Button'
 import { AlertCircle, RefreshCw, Home, LogIn } from 'lucide-react'
 
 // ===============================
