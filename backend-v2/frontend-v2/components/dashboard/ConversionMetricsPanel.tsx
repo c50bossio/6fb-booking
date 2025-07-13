@@ -6,11 +6,10 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Progress } from '@/components/ui/progress'
 import { 
-  TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
   CurrencyDollarIcon,
   CalculatorIcon,
-  Target,
   ArrowUpIcon,
   ArrowDownIcon,
   InformationCircleIcon
@@ -190,7 +189,7 @@ export default function ConversionMetricsPanel({
                 aggregatedMetrics.overall_roi >= 200 ? 'bg-green-100' : 
                 aggregatedMetrics.overall_roi >= 100 ? 'bg-yellow-100' : 'bg-red-100'
               }`}>
-                <TrendingUpIcon className="h-5 w-5 text-current" />
+                <ArrowTrendingUpIcon className="h-5 w-5 text-current" />
               </div>
             </div>
             <div className="mt-2">
@@ -239,7 +238,7 @@ export default function ConversionMetricsPanel({
                 </p>
               </div>
               <div className="p-2 rounded-lg bg-purple-100">
-                <Target className="h-5 w-5 text-purple-600" />
+                <ArrowUpIcon className="h-5 w-5 text-purple-600" />
               </div>
             </div>
             <div className="mt-2">
@@ -472,7 +471,7 @@ export default function ConversionMetricsPanel({
             {aggregatedMetrics.overall_roi >= 300 && (
               <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
                 <div className="flex items-start">
-                  <TrendingUpIcon className="h-5 w-5 text-green-600 mt-0.5 mr-2" />
+                  <ArrowTrendingUpIcon className="h-5 w-5 text-green-600 mt-0.5 mr-2" />
                   <div>
                     <div className="text-sm font-medium text-green-800">Excellent Performance</div>
                     <div className="text-xs text-green-600">
