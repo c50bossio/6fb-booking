@@ -903,7 +903,7 @@ function ConversionOptimizedBookingContent({
                                 }}
                                 title={
                                   slot.calendar_conflicts && slot.calendar_conflicts.length > 0
-                                    ? `Calendar conflict: ${slot.calendar_conflicts[0].title || 'Busy'}`
+                                    ? `Calendar conflict: ${slot.calendar_conflicts[0]?.title || 'Busy'}`
                                     : slot.calendar_synced
                                     ? 'Calendar integrated - verified availability'
                                     : undefined

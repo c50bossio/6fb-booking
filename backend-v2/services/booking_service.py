@@ -5,7 +5,9 @@ from sqlalchemy import and_, or_
 import models
 import pytz
 import logging
+import asyncio
 from services import barber_availability_service
+from services.calendar_availability_service import calendar_availability_service
 from config import settings
 
 # Configure logging
@@ -43,7 +45,7 @@ def get_booking_settings(db: Session) -> models.BookingSettings:
     
     return settings
 
-def get_available_slots(db: Session, target_date: date, user_timezone: Optional[str] = None, include_next_available: bool = True) -> Dict[str, Any]:
+async def get_available_slots(db: Session, target_date: date, user_timezone: Optional[str] = None, include_next_available: bool = True, barber_id: Optional[int] = None, include_calendar_sync: bool = True) -> Dict[str, Any]:
     """Get available time slots for a given date with configurable settings.
     
     Args:
@@ -51,6 +53,8 @@ def get_available_slots(db: Session, target_date: date, user_timezone: Optional[
         target_date: Date to check for available slots
         user_timezone: User's timezone string (e.g., 'America/Los_Angeles'). If None, uses business timezone.
         include_next_available: Whether to find and mark the next available slot
+        barber_id: Optional barber ID for calendar integration checking
+        include_calendar_sync: Whether to check external calendar availability
     
     Returns:
         Dict containing available slots with times displayed in user's timezone
@@ -152,12 +156,37 @@ def get_available_slots(db: Session, target_date: date, user_timezone: Optional[
                 is_available = False
                 break
         
+        # Check external calendar availability if enabled and barber_id provided
+        calendar_conflicts = []
+        if is_available and include_calendar_sync and barber_id:
+            try:
+                is_calendar_available, conflicts = await calendar_availability_service.check_barber_calendar_availability(
+                    db=db,
+                    barber_id=barber_id,
+                    start_time=slot_start_utc,
+                    duration_minutes=settings.slot_duration_minutes
+                )
+                if not is_calendar_available:
+                    is_available = False
+                    calendar_conflicts = conflicts
+            except Exception as e:
+                logger.warning(f"Error checking calendar availability for slot {slot['time']}: {e}")
+                # On calendar error, remain available to avoid blocking all bookings
+        
         # Always create slot data, but mark availability correctly
         slot_data = {
             "time": slot["time"],
             "available": is_available,
             "is_next_available": False
         }
+        
+        # Add calendar sync information if calendar checking was performed
+        if include_calendar_sync and barber_id:
+            slot_data["calendar_synced"] = True
+            if calendar_conflicts:
+                slot_data["calendar_conflicts"] = calendar_conflicts
+        else:
+            slot_data["calendar_synced"] = False
         
         # Mark the first available slot as next available if enabled
         if is_available and include_next_available and settings.show_soonest_available and next_available_slot is None:
@@ -182,7 +211,7 @@ def get_available_slots(db: Session, target_date: date, user_timezone: Optional[
             if target_date == date.today() and len(available_slots) == 0:
                 search_start_date = target_date + timedelta(days=1)
             
-            next_slot = get_next_available_slot(db, search_start_date, user_timezone=user_timezone)
+            next_slot = await get_next_available_slot(db, search_start_date, user_timezone=user_timezone, barber_id=barber_id, include_calendar_sync=include_calendar_sync)
             if next_slot:
                 next_available_summary = {
                     "date": next_slot.date().isoformat(),
@@ -201,7 +230,7 @@ def get_available_slots(db: Session, target_date: date, user_timezone: Optional[
         "slot_duration_minutes": settings.slot_duration_minutes
     }
 
-def get_next_available_slot(db: Session, start_date: date, user_timezone: Optional[str] = None, max_days_ahead: int = 7) -> Optional[datetime]:
+async def get_next_available_slot(db: Session, start_date: date, user_timezone: Optional[str] = None, max_days_ahead: int = 7, barber_id: Optional[int] = None, include_calendar_sync: bool = True) -> Optional[datetime]:
     """Find the next available slot across multiple days.
     
     Args:
@@ -240,7 +269,7 @@ def get_next_available_slot(db: Session, start_date: date, user_timezone: Option
     
     while current_date <= max_search_date:
         # Get available slots for this date (without next_available processing to avoid recursion)
-        day_slots = get_available_slots(db, current_date, user_timezone=user_timezone, include_next_available=False)
+        day_slots = await get_available_slots(db, current_date, user_timezone=user_timezone, include_next_available=False, barber_id=barber_id, include_calendar_sync=include_calendar_sync)
         
         # Find the first available slot that meets the minimum time requirement
         for slot in day_slots["slots"]:
@@ -264,13 +293,46 @@ def get_next_available_slot(db: Session, start_date: date, user_timezone: Option
     return None
 
 
-def get_available_slots_with_barber_availability(
+# Backwards compatibility wrapper for non-async code
+def get_available_slots_sync(db: Session, target_date: date, user_timezone: Optional[str] = None, include_next_available: bool = True, barber_id: Optional[int] = None) -> Dict[str, Any]:
+    """
+    Synchronous wrapper for get_available_slots that disables calendar integration.
+    This maintains backwards compatibility for existing code.
+    """
+    try:
+        loop = asyncio.get_event_loop()
+        return loop.run_until_complete(
+            get_available_slots(
+                db=db, 
+                target_date=target_date, 
+                user_timezone=user_timezone, 
+                include_next_available=include_next_available, 
+                barber_id=barber_id, 
+                include_calendar_sync=False  # Disable for sync calls
+            )
+        )
+    except RuntimeError:
+        # If no event loop is running, create one
+        return asyncio.run(
+            get_available_slots(
+                db=db, 
+                target_date=target_date, 
+                user_timezone=user_timezone, 
+                include_next_available=include_next_available, 
+                barber_id=barber_id, 
+                include_calendar_sync=False  # Disable for sync calls
+            )
+        )
+
+
+async def get_available_slots_with_barber_availability(
     db: Session, 
     target_date: date, 
     barber_id: Optional[int] = None, 
     service_id: Optional[int] = None,
     user_timezone: Optional[str] = None, 
-    include_next_available: bool = True
+    include_next_available: bool = True,
+    include_calendar_sync: bool = True
 ) -> Dict[str, Any]:
     """Get available time slots considering barber availability.
     

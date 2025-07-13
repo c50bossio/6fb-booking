@@ -520,6 +520,15 @@ export interface TimeSlot {
   time: string
   available: boolean
   is_next_available?: boolean
+  calendar_synced?: boolean
+  calendar_conflicts?: Array<{
+    provider: string
+    title?: string
+    start: string
+    end: string
+    event_id?: string
+    error?: string
+  }>
 }
 
 export interface NextAvailableSlot {

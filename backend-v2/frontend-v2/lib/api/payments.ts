@@ -673,6 +673,48 @@ export const paymentsApi = {
   calculateYoYGrowth(currentPeriod: number, previousPeriod: number): number {
     if (previousPeriod === 0) return 0
     return ((currentPeriod - previousPeriod) / previousPeriod) * 100
+  },
+
+  // ===============================
+  // Guest Payment Methods
+  // ===============================
+
+  /**
+   * Create payment intent for a guest booking (no authentication required)
+   */
+  async createGuestPaymentIntent(
+    paymentData: PaymentIntentCreate,
+    idempotencyKey?: string
+  ): Promise<PaymentIntentResponse> {
+    const response = await fetch(`${API_BASE_URL}/api/v1/payments/guest/create-intent`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(idempotencyKey && { 'Idempotency-Key': idempotencyKey || generateIdempotencyKey() })
+      },
+      body: JSON.stringify(paymentData)
+    })
+
+    return handleResponse(response)
+  },
+
+  /**
+   * Confirm payment for a guest booking after client-side processing
+   */
+  async confirmGuestPayment(
+    confirmData: PaymentConfirm,
+    idempotencyKey?: string
+  ): Promise<PaymentResponse> {
+    const response = await fetch(`${API_BASE_URL}/api/v1/payments/guest/confirm`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(idempotencyKey && { 'Idempotency-Key': idempotencyKey || generateIdempotencyKey() })
+      },
+      body: JSON.stringify(confirmData)
+    })
+
+    return handleResponse(response)
   }
 }
 

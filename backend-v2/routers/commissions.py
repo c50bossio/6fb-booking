@@ -641,3 +641,166 @@ def get_commission_optimization(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error generating optimization recommendations: {str(e)}"
         )
+
+
+@router.get("/preview/payout")
+@commission_report_rate_limit
+def get_payout_candidates(
+    request: Request,
+    barber_id: Optional[int] = Query(None, description="Filter by specific barber"),
+    start_date: Optional[datetime] = Query(None, description="Start date for period"),
+    end_date: Optional[datetime] = Query(None, description="End date for period"),
+    include_retail: bool = Query(True, description="Include retail commissions"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get list of barbers eligible for payout with their commission amounts.
+    Admin only endpoint for payout processing interface.
+    """
+    if current_user.role not in ["admin", "super_admin"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to view payout candidates"
+        )
+    
+    try:
+        commission_service = CommissionService(db)
+        
+        # Get barbers to check
+        if barber_id:
+            barbers = db.query(User).filter(User.id == barber_id, User.role == "barber").all()
+        else:
+            barbers = db.query(User).filter(User.role == "barber").all()
+        
+        candidates = []
+        
+        for barber in barbers:
+            try:
+                # Calculate payout amounts
+                payout_data = commission_service.calculate_barber_payout_amount(
+                    barber_id=barber.id,
+                    include_retail=include_retail,
+                    start_date=start_date,
+                    end_date=end_date
+                )
+                
+                # Check if barber meets minimum payout requirements
+                minimum_payout_met = payout_data["total_payout"] >= 25.0  # $25 minimum
+                
+                # Simulate account status check (in production, check actual Stripe account)
+                account_status = "active" if barber.stripe_account_id else "pending"
+                
+                candidates.append({
+                    "barber_id": barber.id,
+                    "barber_name": barber.name,
+                    "barber_email": barber.email,
+                    "service_amount": payout_data["service_amount"],
+                    "retail_amount": payout_data["retail_amount"],
+                    "total_amount": payout_data["total_payout"],
+                    "service_payments_count": payout_data["service_payments_count"],
+                    "retail_items_count": payout_data.get("retail_breakdown", {}).get("order_items_count", 0) + 
+                                         payout_data.get("retail_breakdown", {}).get("pos_transactions_count", 0),
+                    "stripe_account_id": barber.stripe_account_id,
+                    "account_status": account_status,
+                    "minimum_payout_met": minimum_payout_met
+                })
+                
+            except Exception as e:
+                # Log error but continue with other barbers
+                commission_audit_logger.log_admin_event(
+                    event_type="payout_candidate_error",
+                    admin_user_id=str(current_user.id),
+                    target_user_id=str(barber.id),
+                    action="get_payout_candidates",
+                    details={"error": str(e), "barber_name": barber.name}
+                )
+                continue
+        
+        return candidates
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching payout candidates: {str(e)}"
+        )
+
+
+@router.post("/preview/batch")
+@commission_report_rate_limit
+def preview_batch_payouts(
+    request: Request,
+    batch_request: dict,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Preview batch payout details for selected barbers.
+    Admin only endpoint for payout processing interface.
+    """
+    if current_user.role not in ["admin", "super_admin"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to preview batch payouts"
+        )
+    
+    try:
+        barber_ids = batch_request.get("barber_ids", [])
+        include_retail = batch_request.get("include_retail", True)
+        start_date = datetime.fromisoformat(batch_request["period_start"]) if batch_request.get("period_start") else None
+        end_date = datetime.fromisoformat(batch_request["period_end"]) if batch_request.get("period_end") else None
+        
+        if not barber_ids:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No barber IDs provided"
+            )
+        
+        commission_service = CommissionService(db)
+        previews = []
+        
+        for barber_id in barber_ids:
+            try:
+                payout_data = commission_service.calculate_barber_payout_amount(
+                    barber_id=barber_id,
+                    include_retail=include_retail,
+                    start_date=start_date,
+                    end_date=end_date
+                )
+                
+                # Estimate processing fees (typically 0.25% for Stripe Express)
+                estimated_fees = payout_data["total_payout"] * 0.0025
+                net_amount = payout_data["total_payout"] - estimated_fees
+                
+                previews.append({
+                    "barber_id": barber_id,
+                    "service_amount": payout_data["service_amount"],
+                    "retail_amount": payout_data["retail_amount"],
+                    "total_amount": payout_data["total_payout"],
+                    "estimated_fees": estimated_fees,
+                    "net_amount": net_amount,
+                    "items_included": {
+                        "service_payments": payout_data["service_payments_count"],
+                        "order_items": payout_data.get("retail_breakdown", {}).get("order_items_count", 0),
+                        "pos_transactions": payout_data.get("retail_breakdown", {}).get("pos_transactions_count", 0)
+                    }
+                })
+                
+            except Exception as e:
+                # Log error but continue with other barbers
+                commission_audit_logger.log_admin_event(
+                    event_type="batch_payout_preview_error",
+                    admin_user_id=str(current_user.id),
+                    target_user_id=str(barber_id),
+                    action="preview_batch_payouts",
+                    details={"error": str(e)}
+                )
+                continue
+        
+        return previews
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generating batch payout preview: {str(e)}"
+        )

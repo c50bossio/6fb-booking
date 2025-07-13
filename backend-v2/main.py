@@ -6,7 +6,7 @@ from database import engine, Base
 import models
 # Import tracking models to register them with SQLAlchemy
 import models.tracking
-from routers import auth, auth_simple, bookings, appointments, payments, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health
+from routers import auth, auth_simple, bookings, appointments, payments, payouts, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health
 from routers.services import public_router as services_public_router
 from utils.rate_limit import limiter, rate_limit_exceeded_handler
 from services.integration_service import IntegrationServiceFactory
@@ -67,6 +67,10 @@ async def startup_event():
         # Apply double-booking prevention enhancements (disabled - service archived)
         # from services.booking_service_wrapper import configure_booking_service
         # configure_booking_service(enable_double_booking_prevention=True)
+        
+        # Start privacy background tasks for GDPR compliance
+        from services.privacy_background_tasks import start_privacy_background_tasks
+        await start_privacy_background_tasks()
         # logger.info("Double-booking prevention system activated")
         
         # Initialize MFA middleware instance for session management
@@ -89,6 +93,21 @@ async def startup_event():
         if sentry_configured:
             import sentry_sdk
             sentry_sdk.capture_exception(e)
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Clean up resources on application shutdown"""
+    logger = logging.getLogger(__name__)
+    try:
+        # Stop privacy background tasks
+        from services.privacy_background_tasks import stop_privacy_background_tasks
+        await stop_privacy_background_tasks()
+        logger.info("Privacy background tasks stopped")
+        
+    except Exception as e:
+        logger.error(f"Error during shutdown: {e}")
+
 
 # Add security middleware
 import logging
@@ -265,6 +284,7 @@ app.include_router(mfa.router, prefix="/api/v1")  # Multi-Factor Authentication 
 app.include_router(bookings.router, prefix="/api/v1")
 app.include_router(appointments.router, prefix="/api/v1")  # Standardized appointment endpoints
 app.include_router(payments.router, prefix="/api/v1")
+app.include_router(payouts.router, prefix="/api/v1")
 app.include_router(clients.router, prefix="/api/v1")
 app.include_router(users.router, prefix="/api/v1")
 app.include_router(timezones.router, prefix="/api/v1")

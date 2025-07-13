@@ -15,7 +15,7 @@ from sqlalchemy import and_
 
 from models import User
 from models.integration import Integration, IntegrationType
-from services.redis_service import redis_service
+from services.redis_service import RedisConnectionManager
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -24,7 +24,11 @@ class MetaDeduplicationService:
     """Service for managing event deduplication between Meta Pixel and Conversions API"""
     
     def __init__(self):
-        self.redis_client = redis_service.get_client() if redis_service else None
+        self.redis_manager = RedisConnectionManager()
+        try:
+            self.redis_client = self.redis_manager.get_client()
+        except Exception:
+            self.redis_client = None
         self.deduplication_enabled = os.getenv("META_ENABLE_DEDUPLICATION", "true").lower() == "true"
         self.deduplication_window_hours = int(os.getenv("META_DEDUPLICATION_WINDOW_HOURS", "24"))
         self.event_id_prefix = os.getenv("META_EVENT_ID_PREFIX", "bookedbarber_")

@@ -451,8 +451,13 @@ async def request_data_export(
             ip_address=ip_address
         )
         
-        # TODO: Add background task to process the export
-        # background_tasks.add_task(process_data_export, export_request.id)
+        # Add background task to process the export
+        from services.privacy_data_export_service import PrivacyDataExportService
+        privacy_service = PrivacyDataExportService(db)
+        background_tasks.add_task(
+            privacy_service.process_export_request,
+            export_request.request_id
+        )
         
         logger.info(f"Data export requested for user {current_user.id}: {export_request.request_id}")
         

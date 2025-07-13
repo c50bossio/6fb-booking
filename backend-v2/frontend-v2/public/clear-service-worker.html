@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Service Worker Cleanup</title>
+</head>
+<body>
+    <h1>Clearing Service Workers...</h1>
+    <div id="status">Initializing cleanup...</div>
+    
+    <script>
+        const statusEl = document.getElementById('status');
+        
+        async function clearAllServiceWorkers() {
+            try {
+                statusEl.innerHTML += '<br>Starting service worker cleanup...';
+                
+                // Get all registrations
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                statusEl.innerHTML += `<br>Found ${registrations.length} service worker registrations`;
+                
+                // Unregister all
+                for (let registration of registrations) {
+                    await registration.unregister();
+                    statusEl.innerHTML += `<br>Unregistered: ${registration.scope}`;
+                }
+                
+                // Clear all caches
+                const cacheNames = await caches.keys();
+                statusEl.innerHTML += `<br>Found ${cacheNames.length} caches`;
+                
+                for (let cacheName of cacheNames) {
+                    await caches.delete(cacheName);
+                    statusEl.innerHTML += `<br>Deleted cache: ${cacheName}`;
+                }
+                
+                // Clear storage
+                if ('storage' in navigator && 'estimate' in navigator.storage) {
+                    // Clear IndexedDB, localStorage, etc.
+                    statusEl.innerHTML += '<br>Clearing storage...';
+                    localStorage.clear();
+                    sessionStorage.clear();
+                }
+                
+                statusEl.innerHTML += '<br><strong style="color: green;">✅ CLEANUP COMPLETE!</strong>';
+                statusEl.innerHTML += '<br>Please close this tab and restart your browser.';
+                statusEl.innerHTML += '<br>Then navigate back to http://localhost:3000';
+                
+            } catch (error) {
+                statusEl.innerHTML += `<br><strong style="color: red;">Error: ${error.message}</strong>`;
+            }
+        }
+        
+        // Auto-start cleanup
+        clearAllServiceWorkers();
+    </script>
+</body>
+</html>

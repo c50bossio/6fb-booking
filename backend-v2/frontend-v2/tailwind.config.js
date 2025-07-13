@@ -30,12 +30,12 @@ module.exports = {
           200: '#99f6e4',
           300: '#5eead4',
           400: '#2dd4bf',
-          500: '#14b8a6', // Main brand color
-          600: '#0d9488',
-          700: '#0f766e',
-          800: '#115e59',
-          900: '#134e4a',
-          950: '#042f2e',
+          500: '#0d9488', // Darker for better contrast - was #14b8a6
+          600: '#0f766e', // Enhanced darker shade
+          700: '#115e59',
+          800: '#134e4a',
+          900: '#042f2e',
+          950: '#021716',
         },
         
         // Secondary/Neutral Colors

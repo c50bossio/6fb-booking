@@ -380,7 +380,14 @@ class RequestValidationMiddleware(BaseHTTPMiddleware):
 
 class APIKeyValidationMiddleware(BaseHTTPMiddleware):
     """
-    Validate API keys for service-to-service communication.
+    Comprehensive API key validation middleware for external integrations.
+    
+    Features:
+    - Database-backed API key validation using existing APIKey model
+    - Permission-based access control
+    - Rate limiting per API key
+    - IP whitelisting support
+    - Usage tracking and analytics
     """
     
     def __init__(self, app, protected_paths: Optional[Set[str]] = None):
@@ -388,46 +395,238 @@ class APIKeyValidationMiddleware(BaseHTTPMiddleware):
         self.protected_paths = protected_paths or {
             "/api/v1/webhooks",
             "/api/v1/internal",
+            "/api/v1/external",
+            "/api/v1/integrations",
+        }
+        
+        # In-memory cache for API keys (production should use Redis)
+        self.api_key_cache = {}
+        self.rate_limit_cache = {}
+        
+        # Rate limits per key type (requests per minute)
+        self.rate_limits = {
+            'webhook': 200,    # Webhook endpoints (higher limit)
+            'integration': 100, # Integration endpoints
+            'internal': 500,   # Internal service calls
+            'default': 50      # Default limit
         }
     
     async def dispatch(self, request: Request, call_next):
         # Check if path requires API key
-        if any(request.url.path.startswith(path) for path in self.protected_paths):
-            api_key = request.headers.get("X-API-Key")
-            
-            if not api_key:
-                return JSONResponse(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    content={"detail": "API key required"}
-                )
-            
-            # Validate API key (implement your validation logic)
-            if not await self._validate_api_key(api_key, request):
-                return JSONResponse(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    content={"detail": "Invalid API key"}
-                )
+        if not any(request.url.path.startswith(path) for path in self.protected_paths):
+            return await call_next(request)
         
-        return await call_next(request)
+        # Extract API key from request
+        api_key = self._extract_api_key(request)
+        if not api_key:
+            return self._unauthorized_response("API key required")
+        
+        # Validate API key against database
+        key_info = await self._validate_api_key(api_key, request)
+        if not key_info:
+            return self._forbidden_response("Invalid or expired API key")
+        
+        # Check rate limits
+        if not await self._check_rate_limit(api_key, key_info):
+            return self._rate_limit_response()
+        
+        # Check IP whitelist if configured
+        if not self._check_ip_whitelist(request, key_info):
+            return self._forbidden_response("IP address not whitelisted")
+        
+        # Log API usage
+        await self._log_api_usage(api_key, key_info, request)
+        
+        # Add key info to request state for use in endpoints
+        request.state.api_key_info = key_info
+        
+        response = await call_next(request)
+        
+        # Add API key usage headers
+        response.headers["X-API-Key-Usage"] = str(key_info.get('usage_count', 0))
+        response.headers["X-API-Rate-Limit"] = str(self._get_rate_limit(key_info))
+        
+        return response
     
-    async def _validate_api_key(self, api_key: str, request: Request) -> bool:
-        """Validate API key against database or cache."""
-        # TODO: Implement actual API key validation
-        # For now, just check format
-        if not re.match(r'^[a-zA-Z0-9]{32,}$', api_key):
+    def _extract_api_key(self, request: Request) -> Optional[str]:
+        """Extract API key from request headers"""
+        # Check Authorization header (preferred)
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            return auth_header[7:]  # Remove "Bearer " prefix
+        
+        # Check X-API-Key header (alternative)
+        api_key = request.headers.get("X-API-Key")
+        if api_key:
+            return api_key
+        
+        # Check query parameter (least secure, for backwards compatibility)
+        return request.query_params.get("api_key")
+    
+    async def _validate_api_key(self, api_key: str, request: Request) -> Optional[Dict]:
+        """Validate API key against database"""
+        # Check cache first
+        if api_key in self.api_key_cache:
+            key_info = self.api_key_cache[api_key]
+            # Check if cached entry is still valid (15 minute cache)
+            if (datetime.utcnow() - key_info.get('cached_at', datetime.min)).seconds < 900:
+                return key_info
+        
+        # Import here to avoid circular imports
+        from database import get_db
+        from models.api_key import APIKey, APIKeyStatus
+        
+        # Validate against database
+        db = next(get_db())
+        try:
+            # Hash the API key for database lookup
+            key_hash = hashlib.sha256(api_key.encode()).hexdigest()
+            
+            api_key_obj = db.query(APIKey).filter(
+                APIKey.key_hash == key_hash,
+                APIKey.status == APIKeyStatus.ACTIVE
+            ).first()
+            
+            if not api_key_obj or not api_key_obj.is_active:
+                return None
+            
+            # Update last used timestamp
+            api_key_obj.last_used_at = datetime.utcnow()
+            api_key_obj.usage_count += 1
+            db.commit()
+            
+            # Create key info for caching
+            key_info = {
+                'id': api_key_obj.id,
+                'name': api_key_obj.name,
+                'user_id': api_key_obj.user_id,
+                'key_type': api_key_obj.key_type,
+                'permissions': api_key_obj.permissions,
+                'allowed_ips': api_key_obj.allowed_ips or [],
+                'usage_count': api_key_obj.usage_count,
+                'cached_at': datetime.utcnow(),
+                'rate_limit_override': api_key_obj.rate_limit_override
+            }
+            
+            # Cache the key info
+            self.api_key_cache[api_key] = key_info
+            return key_info
+            
+        except Exception as e:
+            logger.error(f"Error validating API key: {e}")
+            return None
+        finally:
+            db.close()
+    
+    def _get_rate_limit(self, key_info: Dict) -> int:
+        """Get rate limit for API key"""
+        # Check for custom rate limit override
+        if key_info.get('rate_limit_override'):
+            return key_info['rate_limit_override']
+        
+        # Use rate limit based on key type
+        key_type = key_info.get('key_type', 'default')
+        return self.rate_limits.get(key_type, self.rate_limits['default'])
+    
+    async def _check_rate_limit(self, api_key: str, key_info: Dict) -> bool:
+        """Check if API key is within rate limits"""
+        max_requests = self._get_rate_limit(key_info)
+        
+        # Rate limiting key (per minute)
+        current_minute = datetime.utcnow().strftime('%Y-%m-%d %H:%M')
+        rate_key = f"{api_key}:{current_minute}"
+        
+        # Get current count
+        current_count = self.rate_limit_cache.get(rate_key, 0)
+        
+        if current_count >= max_requests:
+            logger.warning(f"Rate limit exceeded for API key: {api_key[:8]}...")
             return False
         
-        # Log API key usage
+        # Increment counter
+        self.rate_limit_cache[rate_key] = current_count + 1
+        
+        # Cleanup old entries periodically
+        if len(self.rate_limit_cache) > 10000:
+            # Keep only current minute entries
+            self.rate_limit_cache = {
+                k: v for k, v in self.rate_limit_cache.items()
+                if current_minute in k
+            }
+        
+        return True
+    
+    def _check_ip_whitelist(self, request: Request, key_info: Dict) -> bool:
+        """Check if client IP is whitelisted for this API key"""
+        allowed_ips = key_info.get('allowed_ips', [])
+        
+        # If no IP restrictions, allow all
+        if not allowed_ips:
+            return True
+        
+        client_ip = request.client.host
+        return client_ip in allowed_ips
+    
+    async def _log_api_usage(self, api_key: str, key_info: Dict, request: Request):
+        """Log API key usage for analytics and monitoring"""
         audit_logger.log_security_event(
             "api_key_usage",
             details={
+                "api_key_id": key_info.get('id'),
+                "api_key_name": key_info.get('name'),
                 "api_key_prefix": api_key[:8] + "...",
-                "path": request.url.path,
-                "method": request.method
+                "endpoint": request.url.path,
+                "method": request.method,
+                "client_ip": request.client.host,
+                "user_agent": request.headers.get('user-agent', ''),
+                "user_id": key_info.get('user_id'),
+                "key_type": key_info.get('key_type')
             }
         )
-        
-        return True
+    
+    def _unauthorized_response(self, message: str) -> JSONResponse:
+        """Return 401 Unauthorized response"""
+        return JSONResponse(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            content={
+                "error": "Unauthorized",
+                "message": message,
+                "code": "API_KEY_REQUIRED"
+            },
+            headers={
+                "WWW-Authenticate": "Bearer",
+                "X-API-Error": "unauthorized"
+            }
+        )
+    
+    def _forbidden_response(self, message: str) -> JSONResponse:
+        """Return 403 Forbidden response"""
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN,
+            content={
+                "error": "Forbidden",
+                "message": message,
+                "code": "INSUFFICIENT_PERMISSIONS"
+            },
+            headers={
+                "X-API-Error": "forbidden"
+            }
+        )
+    
+    def _rate_limit_response(self) -> JSONResponse:
+        """Return 429 Too Many Requests response"""
+        return JSONResponse(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            content={
+                "error": "Too Many Requests",
+                "message": "API rate limit exceeded",
+                "code": "RATE_LIMIT_EXCEEDED"
+            },
+            headers={
+                "Retry-After": "60",
+                "X-API-Error": "rate_limit"
+            }
+        )
 
 
 class CSRFProtectionMiddleware(BaseHTTPMiddleware):

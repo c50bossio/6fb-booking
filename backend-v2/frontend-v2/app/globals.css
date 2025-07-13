@@ -1313,6 +1313,104 @@
   }
 }
 
+/* ENHANCED BUTTON VISIBILITY - Dark Mode Contrast Fixes */
+.dark {
+  /* Primary button visibility - force high contrast colors */
+  .bg-primary-400 {
+    background-color: rgb(45, 212, 191) !important; /* primary-400 - bright teal */
+    color: rgb(17, 24, 39) !important; /* gray-900 - dark text for readability */
+  }
+  
+  .hover\:bg-primary-300:hover {
+    background-color: rgb(94, 234, 212) !important; /* primary-300 - even brighter */
+  }
+  
+  /* Outline button visibility */
+  .border-primary-300 {
+    border-color: rgb(94, 234, 212) !important;
+  }
+  
+  .text-primary-100 {
+    color: rgb(204, 251, 241) !important; /* Very bright text */
+  }
+  
+  .dark\:text-primary-100 {
+    color: rgb(204, 251, 241) !important;
+  }
+  
+  /* Secondary button visibility */
+  .bg-gray-700\/80 {
+    background-color: rgba(55, 65, 81, 0.9) !important; /* More opaque for visibility */
+  }
+  
+  .hover\:bg-gray-600\/90:hover {
+    background-color: rgba(75, 85, 99, 0.95) !important;
+  }
+  
+  /* Ghost button visibility */
+  .bg-gray-800\/20 {
+    background-color: rgba(31, 41, 55, 0.3) !important;
+  }
+  
+  .hover\:bg-gray-700\/50:hover {
+    background-color: rgba(55, 65, 81, 0.6) !important;
+  }
+  
+  .text-gray-200 {
+    color: rgb(229, 231, 235) !important;
+  }
+  
+  .hover\:text-primary-200:hover {
+    color: rgb(153, 246, 228) !important;
+  }
+  
+  /* Button borders for definition */
+  .border-gray-600\/30 {
+    border-color: rgba(75, 85, 99, 0.4) !important;
+  }
+  
+  .hover\:border-gray-500\/50:hover {
+    border-color: rgba(107, 114, 128, 0.6) !important;
+  }
+  
+  /* Enhanced shadows for depth */
+  .shadow-md {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2) !important;
+  }
+  
+  .hover\:shadow-lg:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2) !important;
+  }
+  
+  .hover\:shadow-xl:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2) !important;
+  }
+  
+  /* Ensure button text never becomes invisible */
+  button, .btn, [role="button"] {
+    min-height: 44px; /* Touch target size */
+  }
+  
+  button:not(:disabled):not(.disabled), 
+  .btn:not(:disabled):not(.disabled), 
+  [role="button"]:not(:disabled):not(.disabled) {
+    cursor: pointer;
+    /* Ensure buttons have visual weight */
+    font-weight: 500 !important;
+  }
+  
+  /* Force visibility for any button with insufficient contrast */
+  button[class*="bg-primary"]:not([class*="dark:"]) {
+    background-color: rgb(45, 212, 191) !important;
+    color: rgb(17, 24, 39) !important;
+  }
+  
+  /* Fix any transparent or low-contrast buttons */
+  button[class*="text-primary-"]:not([class*="dark:"]) {
+    color: rgb(204, 251, 241) !important;
+  }
+}
+
 /* CRITICAL DARK MODE CONTRAST FIXES - WCAG AA Compliance */
 .dark {
   /* CRITICAL FIX: Form labels must be visible - address white-on-white issues */

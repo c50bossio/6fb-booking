@@ -1,0 +1,205 @@
+{
+  "timestamp": "2025-07-13T15:52:36.306Z",
+  "page": "login",
+  "summary": {
+    "lightIssues": 11,
+    "darkIssues": 8,
+    "total": 19
+  },
+  "results": {
+    "light": [
+      {
+        "element": "button",
+        "text": "[input]",
+        "textColor": "rgb(156, 163, 175)",
+        "backgroundColor": "rgb(255, 255, 255)",
+        "contrast": 2.54,
+        "needed": 4.5,
+        "className": "focus:outline-none text-gray-400 hover:text-gray-600",
+        "severity": "high"
+      },
+      {
+        "element": "button",
+        "text": "Sign in",
+        "textColor": "rgb(255, 255, 255)",
+        "backgroundColor": "rgb(13, 148, 136)",
+        "contrast": 3.74,
+        "needed": 4.5,
+        "className": "inline-flex items-center justify-center ease-ios focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation bg-primary-500 hover:bg-primary-600 dark:bg-primary-400 dark:hover:bg-primary-300 text-white dark:text-gray-900 shadow-premium hover:shadow-premium-colored dark:shadow-lg dark:hover:shadow-xl transition-all duration-200 ease-ios hover:-translate-y-0.5 active:translate-y-0 active:scale-95 focus:ring-2 focus:ring-primary-500/50 dark:focus:ring-primary-300/50 focus:ring-offset-2 transform-gpu will-change-transform relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-white/20 before:to-transparent before:translate-x-[-100%] hover:before:translate-x-[100%] before:transition-transform before:duration-700 text-base px-8 py-3.5 min-h-[48px] rounded-ios-lg gap-2.5 tracking-wide font-medium w-full rounded-lg group",
+        "severity": "medium"
+      },
+      {
+        "element": "button",
+        "text": "Accept AllAccept all cookies i",
+        "textColor": "rgb(255, 255, 255)",
+        "backgroundColor": "rgb(13, 148, 136)",
+        "contrast": 3.74,
+        "needed": 4.5,
+        "className": "inline-flex items-center justify-center ease-ios focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation bg-primary-500 hover:bg-primary-600 dark:bg-primary-400 dark:hover:bg-primary-300 text-white dark:text-gray-900 font-semibold shadow-premium hover:shadow-premium-colored dark:shadow-lg dark:hover:shadow-xl transition-all duration-200 ease-ios hover:-translate-y-0.5 active:translate-y-0 active:scale-95 focus:ring-2 focus:ring-primary-500/50 dark:focus:ring-primary-300/50 focus:ring-offset-2 transform-gpu will-change-transform relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-white/20 before:to-transparent before:translate-x-[-100%] hover:before:translate-x-[100%] before:transition-transform before:duration-700 text-sm px-4 py-2 min-h-[40px] rounded-ios gap-2 tracking-wide rounded-lg group w-full sm:w-auto",
+        "severity": "medium"
+      },
+      {
+        "element": "button",
+        "text": "×",
+        "textColor": "rgb(156, 163, 175)",
+        "backgroundColor": "rgb(255, 255, 255)",
+        "contrast": 2.54,
+        "needed": 4.5,
+        "className": "text-gray-400 hover:text-gray-600 ml-2 flex-shrink-0 w-6 h-6 flex items-center justify-center",
+        "severity": "high"
+      },
+      {
+        "element": "span",
+        "text": "[input]",
+        "textColor": "rgb(255, 255, 255)",
+        "backgroundColor": "rgb(13, 148, 136)",
+        "contrast": 3.74,
+        "needed": 4.5,
+        "className": "absolute inset-0 overflow-hidden rounded-inherit",
+        "severity": "medium"
+      },
+      {
+        "element": "span",
+        "text": "Sign in",
+        "textColor": "rgb(255, 255, 255)",
+        "backgroundColor": "rgb(13, 148, 136)",
+        "contrast": 3.74,
+        "needed": 4.5,
+        "className": "relative z-10 flex items-center justify-center",
+        "severity": "medium"
+      },
+      {
+        "element": "span",
+        "text": "Sign in",
+        "textColor": "rgb(255, 255, 255)",
+        "backgroundColor": "rgb(13, 148, 136)",
+        "contrast": 3.74,
+        "needed": 4.5,
+        "className": "truncate",
+        "severity": "medium"
+      },
+      {
+        "element": "span",
+        "text": "[input]",
+        "textColor": "rgb(255, 255, 255)",
+        "backgroundColor": "rgb(13, 148, 136)",
+        "contrast": 3.74,
+        "needed": 4.5,
+        "className": "absolute inset-0 overflow-hidden rounded-inherit",
+        "severity": "medium"
+      },
+      {
+        "element": "span",
+        "text": "Accept AllAccept all cookies i",
+        "textColor": "rgb(255, 255, 255)",
+        "backgroundColor": "rgb(13, 148, 136)",
+        "contrast": 3.74,
+        "needed": 4.5,
+        "className": "relative z-10 flex items-center justify-center",
+        "severity": "medium"
+      },
+      {
+        "element": "span",
+        "text": "Accept AllAccept all cookies i",
+        "textColor": "rgb(255, 255, 255)",
+        "backgroundColor": "rgb(13, 148, 136)",
+        "contrast": 3.74,
+        "needed": 4.5,
+        "className": "truncate",
+        "severity": "medium"
+      },
+      {
+        "element": "span",
+        "text": "Accept all cookies including a",
+        "textColor": "rgb(255, 255, 255)",
+        "backgroundColor": "rgb(13, 148, 136)",
+        "contrast": 3.74,
+        "needed": 4.5,
+        "className": "sr-only",
+        "severity": "medium"
+      }
+    ],
+    "dark": [
+      {
+        "element": "h3",
+        "text": "Dev Health Monitor×",
+        "textColor": "rgb(17, 24, 39)",
+        "backgroundColor": "rgb(24, 24, 27)",
+        "contrast": 1,
+        "needed": 4.5,
+        "className": "text-lg font-semibold text-gray-900 flex items-center justify-between text-sm",
+        "severity": "critical"
+      },
+      {
+        "element": "p",
+        "text": "Use the email associated with ",
+        "textColor": "rgb(107, 114, 128)",
+        "backgroundColor": "rgb(24, 24, 27)",
+        "contrast": 3.66,
+        "needed": 4.5,
+        "className": "text-sm text-gray-500",
+        "severity": "medium"
+      },
+      {
+        "element": "button",
+        "text": "Accept AllAccept all cookies i",
+        "textColor": "rgb(17, 24, 39)",
+        "backgroundColor": "rgb(24, 24, 27)",
+        "contrast": 1,
+        "needed": 4.5,
+        "className": "inline-flex items-center justify-center ease-ios focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation bg-primary-500 hover:bg-primary-600 dark:bg-primary-400 dark:hover:bg-primary-300 text-white dark:text-gray-900 font-semibold shadow-premium hover:shadow-premium-colored dark:shadow-lg dark:hover:shadow-xl transition-all duration-200 ease-ios hover:-translate-y-0.5 active:translate-y-0 active:scale-95 focus:ring-2 focus:ring-primary-500/50 dark:focus:ring-primary-300/50 focus:ring-offset-2 transform-gpu will-change-transform relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-white/20 before:to-transparent before:translate-x-[-100%] hover:before:translate-x-[100%] before:transition-transform before:duration-700 text-sm px-4 py-2 min-h-[40px] rounded-ios gap-2 tracking-wide rounded-lg group w-full sm:w-auto",
+        "severity": "critical"
+      },
+      {
+        "element": "span",
+        "text": "[input]",
+        "textColor": "rgb(17, 24, 39)",
+        "backgroundColor": "rgb(24, 24, 27)",
+        "contrast": 1,
+        "needed": 4.5,
+        "className": "absolute inset-0 overflow-hidden rounded-inherit",
+        "severity": "critical"
+      },
+      {
+        "element": "span",
+        "text": "Accept AllAccept all cookies i",
+        "textColor": "rgb(17, 24, 39)",
+        "backgroundColor": "rgb(24, 24, 27)",
+        "contrast": 1,
+        "needed": 4.5,
+        "className": "relative z-10 flex items-center justify-center",
+        "severity": "critical"
+      },
+      {
+        "element": "span",
+        "text": "Dev Health Monitor",
+        "textColor": "rgb(17, 24, 39)",
+        "backgroundColor": "rgb(24, 24, 27)",
+        "contrast": 1,
+        "needed": 4.5,
+        "className": "flex items-center gap-2",
+        "severity": "critical"
+      },
+      {
+        "element": "span",
+        "text": "0ms",
+        "textColor": "rgb(107, 114, 128)",
+        "backgroundColor": "rgb(24, 24, 27)",
+        "contrast": 3.66,
+        "needed": 4.5,
+        "className": "text-xs text-gray-500 hidden sm:inline",
+        "severity": "medium"
+      },
+      {
+        "element": "span",
+        "text": "16ms",
+        "textColor": "rgb(107, 114, 128)",
+        "backgroundColor": "rgb(24, 24, 27)",
+        "contrast": 3.66,
+        "needed": 4.5,
+        "className": "text-xs text-gray-500 hidden sm:inline",
+        "severity": "medium"
+      }
+    ]
+  }
+}

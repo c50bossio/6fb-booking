@@ -571,3 +571,148 @@ def get_stripe_connect_status(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error retrieving Stripe Connect status: {str(e)}"
         )
+
+# ===============================
+# Guest Payment Endpoints
+# ===============================
+
+@router.post("/guest/create-intent", response_model=PaymentIntentResponse)
+@payment_intent_rate_limit
+def create_guest_payment_intent(
+    request: Request,
+    payment_data: PaymentIntentCreate,
+    db: Session = Depends(get_db)
+):
+    """Create a payment intent for a guest booking (no authentication required)"""
+    try:
+        # Get the appointment to determine the amount
+        from models import Appointment
+        appointment = db.query(Appointment).filter(
+            Appointment.id == payment_data.booking_id
+        ).first()
+        
+        if not appointment:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Booking not found"
+            )
+        
+        if appointment.status != "pending":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Booking is not in pending status"
+            )
+        
+        # Get idempotency key from request header
+        idempotency_key = request.headers.get("Idempotency-Key")
+        
+        # Create payment intent for guest booking
+        result = PaymentService.create_payment_intent(
+            amount=appointment.price,
+            booking_id=payment_data.booking_id,
+            db=db,
+            gift_certificate_code=payment_data.gift_certificate_code,
+            user_id=appointment.user_id,  # May be None for guest bookings
+            idempotency_key=idempotency_key
+        )
+        
+        # Log guest payment API operation
+        financial_audit_logger.log_payment_event(
+            event_type="guest_payment_intent_created",
+            user_id=str(appointment.user_id) if appointment.user_id else "guest",
+            amount=float(appointment.price),
+            payment_id=str(result.get("payment_id", "")),
+            success=True,
+            details={
+                "booking_id": payment_data.booking_id,
+                "appointment_id": appointment.id,
+                "barber_id": appointment.barber_id,
+                "gift_certificate_code": payment_data.gift_certificate_code,
+                "client_secret": result.get("client_secret", "")[:20] + "..." if result.get("client_secret") else None,
+                "payment_intent_id": result.get("payment_intent_id", ""),
+                "final_amount": result.get("amount", 0),
+                "gift_certificate_used": result.get("gift_certificate_used", 0),
+                "guest_booking": True
+            }
+        )
+        
+        return result
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Payment processing error: {str(e)}"
+        )
+
+@router.post("/guest/confirm")
+@payment_confirm_rate_limit
+def confirm_guest_payment(
+    request: Request,
+    payment_data: PaymentConfirm,
+    db: Session = Depends(get_db)
+) -> Dict:
+    """Confirm payment and finalize guest booking"""
+    try:
+        # Get the appointment for guest booking
+        from models import Appointment
+        appointment = db.query(Appointment).filter(
+            Appointment.id == payment_data.booking_id
+        ).first()
+        
+        if not appointment:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Booking not found"
+            )
+        
+        # Get idempotency key from request header
+        idempotency_key = request.headers.get("Idempotency-Key")
+        
+        # Confirm the payment
+        result = PaymentService.confirm_payment(
+            payment_intent_id=payment_data.payment_intent_id,
+            booking_id=payment_data.booking_id,
+            db=db,
+            idempotency_key=idempotency_key
+        )
+        
+        # Log guest payment confirmation
+        financial_audit_logger.log_payment_event(
+            event_type="guest_payment_confirmed",
+            user_id=str(appointment.user_id) if appointment.user_id else "guest",
+            amount=float(result["amount_charged"]),
+            payment_id=str(result["payment_id"]),
+            success=True,
+            details={
+                "booking_id": payment_data.booking_id,
+                "appointment_id": result["appointment_id"],
+                "payment_intent_id": payment_data.payment_intent_id,
+                "amount_charged": result["amount_charged"],
+                "gift_certificate_used": result["gift_certificate_used"],
+                "guest_booking": True
+            }
+        )
+        
+        return {
+            "message": "Payment confirmed successfully",
+            "booking_id": result["appointment_id"],
+            "payment_id": result["payment_id"],
+            "amount_charged": result["amount_charged"],
+            "gift_certificate_used": result["gift_certificate_used"]
+        }
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Payment confirmation error: {str(e)}"
+        )

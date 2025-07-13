@@ -9,8 +9,8 @@ from database import get_db
 from utils.auth import get_current_user
 from utils.authorization import verify_location_access, get_user_locations
 from models import User
-# TODO: Implement proper location models and schemas
-# For now, return empty list to fix 404 error
+from location_models import BarbershopLocation, LocationStatus
+from location_schemas import LocationResponse, LocationCreate, LocationUpdate
 import logging
 
 logger = logging.getLogger(__name__)
@@ -40,9 +40,13 @@ async def get_locations(
             # User has no accessible locations
             return []
         
-        # TODO: Implement location query once models are defined
-        # For now, return empty list
-        return []
+        # Query locations based on user access
+        locations = db.query(BarbershopLocation).filter(
+            BarbershopLocation.id.in_(user_location_ids),
+            BarbershopLocation.status != LocationStatus.INACTIVE
+        ).all()
+        
+        location_responses = []
         for location in locations:
             # Calculate occupancy rate and vacant chairs
             vacant_chairs = max(0, location.total_chairs - location.active_chairs)

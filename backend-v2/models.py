@@ -106,6 +106,7 @@ class User(Base):
     payouts = relationship("Payout", back_populates="barber")
     gift_certificates_created = relationship("GiftCertificate", back_populates="created_by")
     api_keys = relationship("APIKey", back_populates="user", foreign_keys="APIKey.user_id", cascade="all, delete-orphan")
+    stripe_account = relationship("StripeAccount", back_populates="user", uselist=False, cascade="all, delete-orphan")
     # AI Analytics relationships
     ai_insights = relationship("AIInsightCache", back_populates="user", cascade="all, delete-orphan")
     bi_reports = relationship("BusinessIntelligenceReport", back_populates="user", cascade="all, delete-orphan")

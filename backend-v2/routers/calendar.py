@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Query
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from typing import Optional, List
@@ -629,4 +629,74 @@ async def cleanup_orphaned_events(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error during cleanup: {str(e)}"
+        )
+
+
+@router.get("/barber/{barber_id}/availability")
+async def get_barber_calendar_availability(
+    barber_id: int,
+    date: datetime = Query(..., description="Date to check availability for"),
+    user_timezone: Optional[str] = Query(None, description="User's timezone"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get barber availability integrated with calendar sync"""
+    try:
+        from services.booking_service import get_available_slots_with_barber_availability
+        import logging
+        
+        logger = logging.getLogger(__name__)
+        
+        # Convert datetime to date
+        target_date = date.date()
+        
+        # Get calendar-integrated availability for the specific barber
+        availability = await get_available_slots_with_barber_availability(
+            db=db,
+            target_date=target_date,
+            barber_id=barber_id,
+            user_timezone=user_timezone,
+            include_calendar_sync=True
+        )
+        
+        return availability
+        
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error getting barber calendar availability: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get calendar availability: {str(e)}"
+        )
+
+
+@router.post("/barber/{barber_id}/sync")
+async def sync_barber_calendar(
+    barber_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Trigger calendar sync for a specific barber"""
+    try:
+        from services.calendar_availability_service import calendar_availability_service
+        import logging
+        
+        logger = logging.getLogger(__name__)
+        
+        # Trigger calendar sync
+        sync_result = await calendar_availability_service.sync_barber_calendar(
+            db=db,
+            barber_id=barber_id
+        )
+        
+        return sync_result
+        
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error syncing barber calendar: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to sync calendar: {str(e)}"
         )
