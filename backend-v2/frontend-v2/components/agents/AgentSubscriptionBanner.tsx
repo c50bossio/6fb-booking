@@ -1,27 +1,50 @@
 'use client'
 
 import React from 'react'
-import { CreditCard, AlertTriangle, CheckCircle, Clock } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { CreditCard, AlertTriangle, CheckCircle, Clock, Crown, Zap } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { type Subscription } from '@/lib/api/agents'
 
 interface SubscriptionBannerProps {
-  subscription: {
-    tier: string
-    status: string
-    conversations_used: number
-    conversation_limit: number | null
-    agents_used: number
-    agent_limit: number
-    trial_ends_at?: string
-    monthly_price?: number
-  }
+  subscription: Subscription | null
 }
 
 export function AgentSubscriptionBanner({ subscription }: SubscriptionBannerProps) {
-  const getTierColor = (tier: string) => {
-    switch (tier.toLowerCase()) {
+  const router = useRouter()
+
+  // Show create subscription banner if no subscription exists
+  if (!subscription) {
+    return (
+      <Card className="p-4 border-l-4 border-l-blue-500 bg-blue-50 dark:bg-blue-900/20">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Zap className="w-5 h-5 text-blue-600" />
+            <div>
+              <h3 className="font-medium text-blue-900 dark:text-blue-200">
+                Get Started with AI Agents
+              </h3>
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                Create your first subscription to start using AI agents for your barbershop
+              </p>
+            </div>
+          </div>
+          <Button 
+            onClick={() => router.push('/agents/subscription')}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            <Crown className="w-4 h-4 mr-2" />
+            Start Free Trial
+          </Button>
+        </div>
+      </Card>
+    )
+  }
+
+  const getTierColor = (plan: string) => {
+    switch (plan.toLowerCase()) {
       case 'trial': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
       case 'starter': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
       case 'professional': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400'
@@ -30,13 +53,10 @@ export function AgentSubscriptionBanner({ subscription }: SubscriptionBannerProp
     }
   }
 
-  const getStatusIcon = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'active': return <CheckCircle className="w-4 h-4 text-green-600" />
-      case 'trial': return <Clock className="w-4 h-4 text-blue-600" />
-      case 'past_due': return <AlertTriangle className="w-4 h-4 text-red-600" />
-      default: return <CreditCard className="w-4 h-4 text-gray-600" />
-    }
+  const getStatusIcon = (isActive: boolean) => {
+    return isActive 
+      ? <CheckCircle className="w-4 h-4 text-green-600" />
+      : <AlertTriangle className="w-4 h-4 text-red-600" />
   }
 
   const calculateUsagePercentage = (used: number, limit: number | null) => {
@@ -49,24 +69,31 @@ export function AgentSubscriptionBanner({ subscription }: SubscriptionBannerProp
     return (used / limit) >= 0.8
   }
 
-  const getTrialDaysLeft = () => {
-    if (!subscription.trial_ends_at) return 0
-    const trialEnd = new Date(subscription.trial_ends_at)
+  const getDaysUntilNextBilling = () => {
+    const billingDate = new Date(subscription.next_billing_date)
     const now = new Date()
-    const diffTime = trialEnd.getTime() - now.getTime()
+    const diffTime = billingDate.getTime() - now.getTime()
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
     return Math.max(0, diffDays)
   }
+
+  const agentsUsed = subscription.current_usage.agents_count
+  const conversationsUsed = subscription.current_usage.conversations_this_month
 
   return (
     <Card className="p-4 border-l-4 border-l-primary-500">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
-            {getStatusIcon(subscription.status)}
-            <Badge className={getTierColor(subscription.tier)}>
-              {subscription.tier.charAt(0).toUpperCase() + subscription.tier.slice(1)}
+            {getStatusIcon(subscription.is_active)}
+            <Badge className={getTierColor(subscription.plan)}>
+              {subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1)}
             </Badge>
+            {subscription.billing_cycle === 'yearly' && (
+              <Badge variant="outline" className="text-xs">
+                Yearly
+              </Badge>
+            )}
           </div>
 
           <div className="hidden md:flex items-center space-x-6">
@@ -74,12 +101,12 @@ export function AgentSubscriptionBanner({ subscription }: SubscriptionBannerProp
             <div className="text-sm">
               <span className="text-gray-600 dark:text-gray-400">Conversations: </span>
               <span className={`font-medium ${
-                isNearLimit(subscription.conversations_used, subscription.conversation_limit)
+                isNearLimit(conversationsUsed, subscription.max_conversations_per_month)
                   ? 'text-red-600'
                   : 'text-gray-900 dark:text-white'
               }`}>
-                {subscription.conversations_used}
-                {subscription.conversation_limit ? ` / ${subscription.conversation_limit}` : ' (unlimited)'}
+                {conversationsUsed}
+                {subscription.max_conversations_per_month ? ` / ${subscription.max_conversations_per_month}` : ' (unlimited)'}
               </span>
             </div>
 
@@ -87,47 +114,45 @@ export function AgentSubscriptionBanner({ subscription }: SubscriptionBannerProp
             <div className="text-sm">
               <span className="text-gray-600 dark:text-gray-400">Agents: </span>
               <span className={`font-medium ${
-                subscription.agents_used >= subscription.agent_limit
+                agentsUsed >= subscription.max_agents
                   ? 'text-red-600'
                   : 'text-gray-900 dark:text-white'
               }`}>
-                {subscription.agents_used} / {subscription.agent_limit}
+                {agentsUsed} / {subscription.max_agents}
               </span>
             </div>
 
-            {/* Trial Info */}
-            {subscription.tier === 'trial' && subscription.trial_ends_at && (
+            {/* Next Billing */}
+            {subscription.is_active && subscription.auto_renew && (
               <div className="text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Trial ends in: </span>
-                <span className="font-medium text-blue-600">
-                  {getTrialDaysLeft()} days
+                <span className="text-gray-600 dark:text-gray-400">Next billing: </span>
+                <span className="font-medium text-gray-900 dark:text-white">
+                  {getDaysUntilNextBilling()} days
                 </span>
               </div>
             )}
 
-            {/* Monthly Price */}
-            {subscription.monthly_price && subscription.monthly_price > 0 && (
-              <div className="text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Monthly: </span>
-                <span className="font-medium text-gray-900 dark:text-white">
-                  ${subscription.monthly_price}
-                </span>
-              </div>
-            )}
+            {/* Billing Cycle */}
+            <div className="text-sm">
+              <span className="text-gray-600 dark:text-gray-400">Plan: </span>
+              <span className="font-medium text-gray-900 dark:text-white">
+                {subscription.billing_cycle === 'yearly' ? 'Annual' : 'Monthly'}
+              </span>
+            </div>
           </div>
         </div>
 
         <div className="flex items-center space-x-3">
           {/* Warning Messages */}
-          {subscription.tier === 'trial' && getTrialDaysLeft() <= 3 && (
+          {!subscription.is_active && (
             <div className="hidden sm:block">
-              <p className="text-sm text-orange-600">
-                Trial expires soon - upgrade to continue using agents
+              <p className="text-sm text-red-600">
+                Subscription inactive - reactivate to use agents
               </p>
             </div>
           )}
 
-          {isNearLimit(subscription.conversations_used, subscription.conversation_limit) && (
+          {isNearLimit(conversationsUsed, subscription.max_conversations_per_month) && (
             <div className="hidden sm:block">
               <p className="text-sm text-red-600">
                 Approaching conversation limit
@@ -135,7 +160,7 @@ export function AgentSubscriptionBanner({ subscription }: SubscriptionBannerProp
             </div>
           )}
 
-          {subscription.agents_used >= subscription.agent_limit && (
+          {agentsUsed >= subscription.max_agents && (
             <div className="hidden sm:block">
               <p className="text-sm text-red-600">
                 Agent limit reached
@@ -143,23 +168,31 @@ export function AgentSubscriptionBanner({ subscription }: SubscriptionBannerProp
             </div>
           )}
 
+          {getDaysUntilNextBilling() <= 3 && subscription.auto_renew && (
+            <div className="hidden sm:block">
+              <p className="text-sm text-orange-600">
+                Billing date approaching
+              </p>
+            </div>
+          )}
+
           {/* Action Buttons */}
-          {subscription.tier === 'trial' && (
-            <Button size="sm" onClick={() => window.location.href = '/agents/subscription'}>
-              Upgrade Plan
+          {!subscription.is_active && (
+            <Button size="sm" onClick={() => router.push('/agents/subscription')}>
+              Reactivate
             </Button>
           )}
 
-          {subscription.status === 'past_due' && (
-            <Button size="sm" variant="outline" onClick={() => window.location.href = '/agents/subscription'}>
-              Update Payment
+          {agentsUsed >= subscription.max_agents && (
+            <Button size="sm" onClick={() => router.push('/agents/subscription')}>
+              Upgrade Plan
             </Button>
           )}
 
           <Button 
             size="sm" 
             variant="ghost" 
-            onClick={() => window.location.href = '/agents/subscription'}
+            onClick={() => router.push('/agents/subscription')}
           >
             Manage
           </Button>

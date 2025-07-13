@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { formatDistanceToNow } from 'date-fns'
 import { 
   Bot, 
   Play, 
@@ -11,7 +12,11 @@ import {
   MessageSquare, 
   TrendingUp,
   Clock,
-  MoreVertical
+  MoreVertical,
+  Activity,
+  CheckCircle,
+  AlertCircle,
+  Zap
 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -22,24 +27,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { 
+  type AgentInstance, 
+  agentsApi 
+} from '@/lib/api/agents'
 
 interface AgentCardProps {
-  agent: {
-    id: number
-    name: string
-    status: 'draft' | 'active' | 'paused' | 'inactive' | 'error'
-    total_conversations: number
-    successful_conversations: number
-    total_revenue_generated: number
-    last_run_at: string | null
-    next_run_at: string | null
-    agent: {
-      name: string
-      agent_type: string
-      description: string
-    }
-  }
-  onAction: (agentId: number, action: 'activate' | 'pause' | 'delete') => void
+  agent: AgentInstance
+  onAction: (agentId: number, action: 'activate' | 'pause' | 'delete') => Promise<void>
   isLoading?: boolean
 }
 
@@ -47,38 +42,46 @@ export function AgentCard({ agent, onAction, isLoading = false }: AgentCardProps
   const [showConfirmDelete, setShowConfirmDelete] = useState(false)
   const router = useRouter()
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-      case 'paused': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
-      case 'draft': return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-      case 'error': return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+  const getStatusIcon = () => {
+    switch (agent.status) {
+      case 'active':
+        return <CheckCircle className="w-4 h-4 text-green-600" />
+      case 'paused':
+        return <Pause className="w-4 h-4 text-yellow-600" />
+      case 'error':
+        return <AlertCircle className="w-4 h-4 text-red-600" />
+      default:
+        return <Bot className="w-4 h-4 text-gray-600" />
     }
   }
 
-  const getAgentTypeIcon = (type: string) => {
-    switch (type) {
-      case 'rebooking': return '🔄'
-      case 'no_show_fee': return '💳'
-      case 'birthday_wishes': return '🎂'
-      case 'holiday_greetings': return '🎄'
-      case 'review_request': return '⭐'
-      case 'retention': return '💝'
-      case 'upsell': return '⬆️'
-      case 'appointment_reminder': return '⏰'
-      default: return '🤖'
+  const getStatusColor = () => {
+    switch (agent.status) {
+      case 'active':
+        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+      case 'paused':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+      case 'error':
+        return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+      case 'stopped':
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'
+      default:
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
     }
   }
 
-  const formatDateTime = (dateString: string | null) => {
-    if (!dateString) return 'Never'
-    return new Date(dateString).toLocaleString()
+  const getAgentTypeIcon = () => {
+    // Return appropriate icon based on agent type or use Bot as default
+    return <Bot className="w-6 h-6 text-blue-600" />
   }
 
-  const calculateSuccessRate = () => {
-    if (agent.total_conversations === 0) return 0
-    return Math.round((agent.successful_conversations / agent.total_conversations) * 100)
+  const formatLastActivity = () => {
+    if (!agent.last_activity) return 'No activity'
+    try {
+      return `Active ${formatDistanceToNow(new Date(agent.last_activity))} ago`
+    } catch {
+      return 'Activity unknown'
+    }
   }
 
   const handleDelete = () => {
@@ -92,27 +95,33 @@ export function AgentCard({ agent, onAction, isLoading = false }: AgentCardProps
     }
   }
 
+  const canActivate = agentsApi.canActivate(agent)
+  const canPause = agentsApi.canPause(agent)
+  const canDelete = agentsApi.canDelete(agent)
+
   return (
     <Card className="p-6 hover:shadow-lg transition-shadow">
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900 rounded-lg flex items-center justify-center text-lg">
-            {getAgentTypeIcon(agent.agent.agent_type)}
+          <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+            {getAgentTypeIcon()}
           </div>
+          
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               {agent.name}
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              {agent.agent.name}
+              {agentsApi.getAgentTypeDisplay(agent.agent_type || 'customer_service')}
             </p>
           </div>
         </div>
 
         <div className="flex items-center space-x-2">
-          <Badge className={getStatusColor(agent.status)}>
-            {agent.status.charAt(0).toUpperCase() + agent.status.slice(1)}
+          <Badge className={getStatusColor()}>
+            {getStatusIcon()}
+            <span className="ml-1">{agentsApi.getStatusDisplay(agent.status)}</span>
           </Badge>
 
           <DropdownMenu>
@@ -142,100 +151,107 @@ export function AgentCard({ agent, onAction, isLoading = false }: AgentCardProps
         </div>
       </div>
 
-      {/* Description */}
-      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-        {agent.agent.description}
-      </p>
-
       {/* Metrics */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-3 gap-4 mb-4">
         <div className="text-center">
-          <div className="text-lg font-semibold text-gray-900 dark:text-white">
-            {agent.total_conversations}
+          <div className="flex items-center justify-center space-x-1 mb-1">
+            <MessageSquare className="w-4 h-4 text-blue-600" />
+            <span className="text-sm text-gray-600 dark:text-gray-400">Conversations</span>
           </div>
-          <div className="text-xs text-gray-600 dark:text-gray-400">
-            Conversations
-          </div>
+          <p className="text-lg font-bold text-gray-900 dark:text-white">
+            {agent.total_conversations.toLocaleString()}
+          </p>
         </div>
 
         <div className="text-center">
-          <div className="text-lg font-semibold text-gray-900 dark:text-white">
-            {calculateSuccessRate()}%
+          <div className="flex items-center justify-center space-x-1 mb-1">
+            <Activity className="w-4 h-4 text-green-600" />
+            <span className="text-sm text-gray-600 dark:text-gray-400">Uptime</span>
           </div>
-          <div className="text-xs text-gray-600 dark:text-gray-400">
-            Success Rate
-          </div>
+          <p className="text-lg font-bold text-gray-900 dark:text-white">
+            {agentsApi.formatUptime(agent.uptime_percentage)}
+          </p>
         </div>
 
-        <div className="text-center col-span-2">
-          <div className="text-lg font-semibold text-green-600">
-            ${agent.total_revenue_generated.toFixed(0)}
+        <div className="text-center">
+          <div className="flex items-center justify-center space-x-1 mb-1">
+            <Zap className="w-4 h-4 text-orange-600" />
+            <span className="text-sm text-gray-600 dark:text-gray-400">Messages</span>
           </div>
-          <div className="text-xs text-gray-600 dark:text-gray-400">
-            Revenue Generated
-          </div>
+          <p className="text-lg font-bold text-gray-900 dark:text-white">
+            {agent.total_messages.toLocaleString()}
+          </p>
         </div>
       </div>
 
-      {/* Timing Info */}
-      {agent.status === 'active' && (
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 mb-4">
-          <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
-            <div className="flex items-center">
-              <Clock className="w-3 h-3 mr-1" />
-              Last run: {formatDateTime(agent.last_run_at)}
-            </div>
-          </div>
-          {agent.next_run_at && (
-            <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-              Next run: {formatDateTime(agent.next_run_at)}
-            </div>
-          )}
-        </div>
-      )}
+      {/* Last Activity */}
+      <div className="flex items-center space-x-2 mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <Clock className="w-4 h-4 text-gray-500" />
+        <span className="text-sm text-gray-600 dark:text-gray-400">
+          {formatLastActivity()}
+        </span>
+      </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-2">
-          {agent.status === 'draft' || agent.status === 'paused' ? (
-            <Button 
+          {canActivate && (
+            <Button
               size="sm"
+              variant="outline"
               onClick={() => onAction(agent.id, 'activate')}
-              className="bg-green-600 hover:bg-green-700"
+              className="text-green-600 border-green-200 hover:bg-green-50 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-900/20"
               disabled={isLoading}
             >
               {isLoading ? (
-                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
+                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-green-600 mr-1"></div>
               ) : (
-                <Play className="w-3 h-3 mr-1" />
+                <Play className="w-4 h-4 mr-1" />
               )}
               {isLoading ? 'Activating...' : 'Activate'}
             </Button>
-          ) : agent.status === 'active' ? (
-            <Button 
-              size="sm" 
+          )}
+
+          {canPause && (
+            <Button
+              size="sm"
               variant="outline"
               onClick={() => onAction(agent.id, 'pause')}
+              className="text-yellow-600 border-yellow-200 hover:bg-yellow-50 dark:text-yellow-400 dark:border-yellow-800 dark:hover:bg-yellow-900/20"
               disabled={isLoading}
             >
               {isLoading ? (
-                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-600 mr-1"></div>
+                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-yellow-600 mr-1"></div>
               ) : (
-                <Pause className="w-3 h-3 mr-1" />
+                <Pause className="w-4 h-4 mr-1" />
               )}
               {isLoading ? 'Pausing...' : 'Pause'}
             </Button>
-          ) : null}
+          )}
         </div>
 
-        <Button 
-          size="sm" 
-          variant="ghost"
-          onClick={() => router.push(`/agents/${agent.id}/analytics`)}
-        >
-          <TrendingUp className="w-3 h-3 mr-1" />
-          View Analytics
-        </Button>
+        <div className="flex items-center space-x-2">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => router.push(`/agents/${agent.id}/analytics`)}
+            className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+          >
+            <TrendingUp className="w-4 h-4 mr-1" />
+            Analytics
+          </Button>
+
+          {canDelete && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => onAction(agent.id, 'delete')}
+              className="text-red-600 hover:text-red-900 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
       </div>
     </Card>
   )

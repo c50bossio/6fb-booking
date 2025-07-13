@@ -11,15 +11,15 @@ import { Badge } from '@/components/ui/Badge'
 import { Switch } from '@/components/ui/Switch'
 import { Modal } from '@/components/ui/Modal'
 import { 
-  getAgentTemplates, 
-  getAIProviders, 
-  createAgentInstance,
-  type AgentTemplate 
-} from '@/lib/api'
-import { toast } from '@/hooks/use-toast'
+  agentsApi,
+  type AgentTemplate,
+  type AgentInstanceCreate,
+  type AIProvider
+} from '@/lib/api/agents'
+import { useToast } from '@/hooks/use-toast'
 
 interface AgentCreationWizardProps {
-  isOpen: boolean
+  templates: AgentTemplate[]
   onClose: () => void
   onSuccess: () => void
 }
@@ -31,12 +31,12 @@ const WIZARD_STEPS = [
   { id: 'review', title: 'Review & Create', description: 'Review and create your agent' }
 ]
 
-export function AgentCreationWizard({ isOpen, onClose, onSuccess }: AgentCreationWizardProps) {
+export function AgentCreationWizard({ templates, onClose, onSuccess }: AgentCreationWizardProps) {
   const [currentStep, setCurrentStep] = useState(0)
-  const [templates, setTemplates] = useState<AgentTemplate[]>([])
-  const [providers, setProviders] = useState<any[]>([])
+  const [providers, setProviders] = useState<AIProvider[]>([])
   const [loading, setLoading] = useState(false)
   const [creating, setCreating] = useState(false)
+  const { toast } = useToast()
 
   // Form state
   const [selectedTemplate, setSelectedTemplate] = useState<AgentTemplate | null>(null)
@@ -45,40 +45,20 @@ export function AgentCreationWizard({ isOpen, onClose, onSuccess }: AgentCreatio
   const [config, setConfig] = useState<any>({})
 
   useEffect(() => {
-    if (isOpen) {
-      loadTemplates()
-      loadProviders()
-    }
-  }, [isOpen])
+    loadProviders()
+  }, [])
 
   useEffect(() => {
     if (selectedTemplate) {
       setAgentName(`${selectedTemplate.name} - ${new Date().toLocaleDateString()}`)
-      setConfig(selectedTemplate.default_config)
+      setConfig(selectedTemplate.configuration || {})
     }
   }, [selectedTemplate])
 
-  const loadTemplates = async () => {
-    try {
-      setLoading(true)
-      const templatesData = await getAgentTemplates()
-      setTemplates(templatesData)
-    } catch (error) {
-      console.error('Failed to load templates:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to load agent templates. Please try again.',
-        variant: 'destructive'
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const loadProviders = async () => {
     try {
-      const providersData = await getAIProviders()
-      setProviders(providersData.available_providers || [])
+      const providersData = await agentsApi.getAIProviders()
+      setProviders(providersData)
     } catch (error) {
       console.error('Failed to load providers:', error)
       toast({
@@ -87,7 +67,11 @@ export function AgentCreationWizard({ isOpen, onClose, onSuccess }: AgentCreatio
         variant: 'default'
       })
       // Set default providers if API fails
-      setProviders(['anthropic', 'openai', 'google'])
+      setProviders([
+        { name: 'anthropic', models: ['claude-3'], capabilities: ['chat'], pricing: {}, is_available: true },
+        { name: 'openai', models: ['gpt-4'], capabilities: ['chat'], pricing: {}, is_available: true },
+        { name: 'google', models: ['gemini-pro'], capabilities: ['chat'], pricing: {}, is_available: true }
+      ])
     }
   }
 
@@ -109,21 +93,35 @@ export function AgentCreationWizard({ isOpen, onClose, onSuccess }: AgentCreatio
     try {
       setCreating(true)
       
-      // For development, we'll use a simple mapping based on agent type index
-      // In production, this would be dynamic from the backend
-      const agentId = templates.findIndex(t => t.agent_type === selectedTemplate.agent_type) + 1
+      // First create the agent template, then create instance
+      const agentCreateData = {
+        name: selectedTemplate.name,
+        agent_type: selectedTemplate.agent_type,
+        description: selectedTemplate.description,
+        configuration: {
+          ...selectedTemplate.configuration,
+          ...config,
+          ai_provider: selectedProvider
+        },
+        is_active: false // Created in draft mode
+      }
+
+      const agentResponse = await agentsApi.createAgent(agentCreateData)
       
       // Create agent instance
-      await createAgentInstance({
-        agent_id: agentId,
+      const instanceCreateData: AgentInstanceCreate = {
+        agent_id: agentResponse.agent.id,
         name: agentName,
-        config: {
+        configuration: {
           ...config,
           ai_provider: selectedProvider,
           use_ai_personalization: true,
           agent_type: selectedTemplate.agent_type
-        }
-      })
+        },
+        auto_start: false
+      }
+
+      await agentsApi.createAgentInstance(instanceCreateData)
 
       toast({
         title: 'Success',
@@ -152,45 +150,44 @@ export function AgentCreationWizard({ isOpen, onClose, onSuccess }: AgentCreatio
         return (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold mb-4">Choose Your Agent Type</h3>
-            {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto">
-                {templates.map((template) => (
-                  <Card
-                    key={template.agent_type}
-                    className={`p-4 cursor-pointer transition-all ${
-                      selectedTemplate?.agent_type === template.agent_type
-                        ? 'ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                        : 'hover:shadow-md'
-                    }`}
-                    onClick={() => setSelectedTemplate(template)}
-                  >
-                    <div className="flex items-start space-x-3">
-                      <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900 rounded-lg flex items-center justify-center">
-                        <Bot className="w-5 h-5 text-primary-600" />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-medium text-gray-900 dark:text-white mb-1">
-                          {template.name}
-                        </h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {template.description}
-                        </p>
-                        <Badge variant="secondary" className="mt-2">
-                          {template.agent_type.replace('_', ' ')}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto">
+              {templates.map((template) => (
+                <Card
+                  key={template.agent_type}
+                  className={`p-4 cursor-pointer transition-all ${
+                    selectedTemplate?.agent_type === template.agent_type
+                      ? 'ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                      : 'hover:shadow-md'
+                  }`}
+                  onClick={() => setSelectedTemplate(template)}
+                >
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900 rounded-lg flex items-center justify-center">
+                      <Bot className="w-5 h-5 text-primary-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-medium text-gray-900 dark:text-white mb-1">
+                        {template.name}
+                      </h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {template.description}
+                      </p>
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        <Badge variant="secondary">
+                          {agentsApi.getAgentTypeDisplay(template.agent_type)}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          ${template.estimated_cost_per_month}/mo
                         </Badge>
                       </div>
-                      {selectedTemplate?.agent_type === template.agent_type && (
-                        <Check className="w-5 h-5 text-primary-600" />
-                      )}
                     </div>
-                  </Card>
-                ))}
-              </div>
-            )}
+                    {selectedTemplate?.agent_type === template.agent_type && (
+                      <Check className="w-5 h-5 text-primary-600" />
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
           </div>
         )
 
@@ -347,77 +344,52 @@ export function AgentCreationWizard({ isOpen, onClose, onSuccess }: AgentCreatio
             <h3 className="text-lg font-semibold">Choose AI Provider</h3>
             
             <div className="grid grid-cols-1 gap-4">
-              <Card
-                className={`p-4 cursor-pointer transition-all ${
-                  selectedProvider === 'anthropic'
-                    ? 'ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                    : 'hover:shadow-md'
-                }`}
-                onClick={() => setSelectedProvider('anthropic')}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <Sparkles className="w-5 h-5 text-blue-600" />
+              {providers.map((provider) => (
+                <Card
+                  key={provider.name}
+                  className={`p-4 cursor-pointer transition-all ${
+                    selectedProvider === provider.name
+                      ? 'ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                      : 'hover:shadow-md'
+                  } ${!provider.is_available ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  onClick={() => provider.is_available && setSelectedProvider(provider.name)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                        provider.name === 'anthropic' ? 'bg-blue-100' :
+                        provider.name === 'openai' ? 'bg-green-100' :
+                        provider.name === 'google' ? 'bg-yellow-100' : 'bg-gray-100'
+                      }`}>
+                        {provider.name === 'anthropic' ? (
+                          <Sparkles className="w-5 h-5 text-blue-600" />
+                        ) : provider.name === 'openai' ? (
+                          <Bot className="w-5 h-5 text-green-600" />
+                        ) : (
+                          <Sparkles className="w-5 h-5 text-yellow-600" />
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="font-medium capitalize">
+                          {provider.name === 'anthropic' ? 'Claude (Anthropic)' :
+                           provider.name === 'openai' ? 'GPT-4 (OpenAI)' :
+                           provider.name === 'google' ? 'Gemini (Google)' :
+                           provider.name}
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          {provider.capabilities.includes('chat') && 'Chat capabilities'} • {provider.models.length} models
+                        </p>
+                        {!provider.is_available && (
+                          <p className="text-xs text-red-600 mt-1">Currently unavailable</p>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-medium">Claude (Anthropic)</h4>
-                      <p className="text-sm text-gray-600">Best for natural conversations</p>
-                    </div>
+                    {selectedProvider === provider.name && (
+                      <Check className="w-5 h-5 text-primary-600" />
+                    )}
                   </div>
-                  {selectedProvider === 'anthropic' && (
-                    <Check className="w-5 h-5 text-primary-600" />
-                  )}
-                </div>
-              </Card>
-
-              <Card
-                className={`p-4 cursor-pointer transition-all ${
-                  selectedProvider === 'openai'
-                    ? 'ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                    : 'hover:shadow-md'
-                }`}
-                onClick={() => setSelectedProvider('openai')}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                      <Bot className="w-5 h-5 text-green-600" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium">GPT-4 (OpenAI)</h4>
-                      <p className="text-sm text-gray-600">Versatile and widely used</p>
-                    </div>
-                  </div>
-                  {selectedProvider === 'openai' && (
-                    <Check className="w-5 h-5 text-primary-600" />
-                  )}
-                </div>
-              </Card>
-
-              <Card
-                className={`p-4 cursor-pointer transition-all ${
-                  selectedProvider === 'google'
-                    ? 'ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                    : 'hover:shadow-md'
-                }`}
-                onClick={() => setSelectedProvider('google')}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                      <Sparkles className="w-5 h-5 text-yellow-600" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium">Gemini (Google)</h4>
-                      <p className="text-sm text-gray-600">Fast and cost-effective</p>
-                    </div>
-                  </div>
-                  {selectedProvider === 'google' && (
-                    <Check className="w-5 h-5 text-primary-600" />
-                  )}
-                </div>
-              </Card>
+                </Card>
+              ))}
             </div>
           </div>
         )
@@ -491,10 +463,8 @@ export function AgentCreationWizard({ isOpen, onClose, onSuccess }: AgentCreatio
     }
   }
 
-  if (!isOpen) return null
-
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="large">
+    <Modal isOpen={true} onClose={onClose} size="large">
       <div className="p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
