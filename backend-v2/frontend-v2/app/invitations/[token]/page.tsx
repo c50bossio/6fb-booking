@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/Badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useToast } from "@/components/ui/use-toast"
 import { Building2, CheckCircle, XCircle, Clock, AlertCircle } from "lucide-react"
-import { apiClient as api } from "@/lib/api"
+import { api } from "@/lib/api"
 
 interface Invitation {
   id: number

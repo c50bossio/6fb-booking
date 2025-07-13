@@ -683,7 +683,7 @@ export default function CatalogPage() {
                   className="pl-10 w-64"
                 />
               </div>
-              <Select value={serviceFilter} onValueChange={setServiceFilter}>
+              <Select value={serviceFilter} onValueChange={setServiceFilter} defaultValue="all">
                 <SelectTrigger className="w-40">
                   <SelectValue />
                 </SelectTrigger>
@@ -694,7 +694,7 @@ export default function CatalogPage() {
                   <SelectItem value="packages">Packages</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter} defaultValue="all">
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
@@ -842,7 +842,7 @@ export default function CatalogPage() {
                   className="pl-10 w-64"
                 />
               </div>
-              <Select value={productFilter} onValueChange={setProductFilter}>
+              <Select value={productFilter} onValueChange={setProductFilter} defaultValue="all">
                 <SelectTrigger className="w-40">
                   <SelectValue />
                 </SelectTrigger>

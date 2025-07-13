@@ -15,62 +15,31 @@ import {
   BarChart3,
   Lightbulb
 } from 'lucide-react'
+import { 
+  AgentAnalytics, 
+  agentsApi 
+} from '@/lib/api/agents'
 
 interface BusinessIntelligenceProps {
-  data: {
-    total_revenue?: number
-    total_conversations?: number
-    success_rate?: number
-    roi?: number
-    optimization_recommendations?: Array<{
-      type: string
-      priority: string
-      title: string
-      description: string
-      action: string
-      potential_impact: string
-    }>
-    competitive_benchmarks?: {
-      industry_averages: {
-        success_rate: number
-        avg_response_time: number
-        roi: number
-        engagement_rate: number
-      }
-      top_quartile: {
-        success_rate: number
-        avg_response_time: number
-        roi: number
-        engagement_rate: number
-      }
-      your_performance_vs_industry?: string
-    }
-    current_period_performance?: {
-      today_conversations: number
-      today_revenue: number
-      active_conversations: number
-      agents_running: number
-    }
-  }
+  data: AgentAnalytics
 }
 
 export function BusinessIntelligenceDashboard({ data }: BusinessIntelligenceProps) {
   const formatCurrency = (amount: number | undefined | null) => {
     const value = amount ?? 0
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value)
+    return agentsApi.formatRevenue(value)
   }
 
   const formatPercentage = (value: number | undefined | null) => {
     const safeValue = value ?? 0
-    return `${safeValue.toFixed(1)}%`
+    return agentsApi.formatPercentage(safeValue)
   }
 
   const getPriorityColor = (priority: string) => {
+    return agentsApi.getRecommendationPriorityColor(priority as any)
+  }
+
+  const getPriorityColorLegacy = (priority: string) => {
     switch (priority.toLowerCase()) {
       case 'high':
         return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
