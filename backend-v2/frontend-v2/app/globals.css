@@ -1560,4 +1560,31 @@
   .text-yellow-500 {
     color: rgb(234, 179, 8) !important; /* Bright yellow for visibility */
   }
+
+  /* CRITICAL FIX: Checkbox contrast improvements for WCAG AA compliance */
+  [data-radix-checkbox-root] {
+    border-color: rgb(229, 231, 235) !important; /* gray-200 - ensures 4.5:1 contrast on dark bg */
+    background-color: rgb(31, 41, 55) !important; /* gray-800 - dark but visible background */
+  }
+
+  [data-radix-checkbox-root]:hover {
+    border-color: rgb(243, 244, 246) !important; /* gray-100 - even brighter on hover */
+  }
+
+  [data-radix-checkbox-root]:focus-visible {
+    outline: 2px solid rgb(59, 130, 246) !important; /* blue-500 - visible focus indicator */
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 2px rgb(9, 9, 11), 0 0 0 4px rgb(59, 130, 246) !important;
+  }
+
+  /* Ensure checkbox indicators are visible */
+  [data-radix-checkbox-indicator] {
+    color: rgb(255, 255, 255) !important; /* white checkmark for checked state */
+  }
+
+  /* Fix any peer-related styling for checkbox labels */
+  .peer-disabled\:cursor-not-allowed,
+  .peer-disabled\:opacity-70 {
+    color: rgb(156, 163, 175) !important; /* gray-400 - muted but readable */
+  }
 }

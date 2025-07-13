@@ -63,5 +63,4 @@ export function ConfirmationDialog({
 export default ConfirmationDialog;
 
 // Export named version and alias for compatibility
-export { ConfirmationDialog }
 export { ConfirmationDialog as CancelConfirmationDialog }
