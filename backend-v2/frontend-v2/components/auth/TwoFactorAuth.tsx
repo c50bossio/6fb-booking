@@ -79,3 +79,6 @@ export function TwoFactorAuth({ className = '', onEnable, onDisable }: TwoFactor
 }
 
 export default TwoFactorAuth;
+
+// Export alias for compatibility
+export { TwoFactorAuth as TwoFactorSetup };

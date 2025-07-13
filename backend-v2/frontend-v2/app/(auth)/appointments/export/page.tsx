@@ -206,7 +206,7 @@ export default function AppointmentExportPage() {
                 {Object.entries(
                   appointments.reduce((acc, apt) => {
                     if (!acc[apt.status]) acc[apt.status] = 0
-                    acc[apt.status] += apt.total_price
+                    acc[apt.status] += apt.total_price || apt.total_amount || 0
                     return acc
                   }, {} as Record<string, number>)
                 ).map(([status, revenue]) => (

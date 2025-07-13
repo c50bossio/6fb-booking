@@ -10,7 +10,7 @@ import {
   ChartBarIcon, 
   UserGroupIcon, 
   BanknotesIcon,
-  ArrowArrowTrendingUpIcon,
+  ArrowTrendingUpIcon,
   ArrowArrowTrendingDownIcon,
   ChevronRightIcon,
   ExclamationTriangleIcon,

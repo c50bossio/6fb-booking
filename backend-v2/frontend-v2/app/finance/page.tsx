@@ -14,7 +14,7 @@ import {
   ReceiptPercentIcon,
   GiftIcon,
   ChartBarIcon,
-  ArrowArrowTrendingUpIcon
+  ArrowTrendingUpIcon
 } from '@heroicons/react/24/outline'
 
 interface FinanceHubSection {
@@ -216,7 +216,7 @@ export default function FinanceHubPage() {
               <div className="flex items-center justify-between mb-2">
                 <CurrencyDollarIcon className="w-5 h-5 text-green-600" />
                 <span className="text-sm font-medium text-green-600 flex items-center">
-                  <ArrowArrowTrendingUpIcon className="w-4 h-4 mr-1" />
+                  <ArrowTrendingUpIcon className="w-4 h-4 mr-1" />
                   {financialSummary.monthlyGrowth}%
                 </span>
               </div>

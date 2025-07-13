@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { 
   CreditCardIcon,
   ChartBarIcon,
-  ArrowArrowTrendingUpIcon,
+  ArrowTrendingUpIcon,
   ClockIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
@@ -448,7 +448,7 @@ export default function MarketingBillingPage() {
                   Get more for less
                 </p>
                 <Button size="sm" variant="outline" className="w-full" onClick={() => setShowUpgradeModal(true)}>
-                  <ArrowArrowTrendingUpIcon className="w-4 h-4 mr-1" />
+                  <ArrowTrendingUpIcon className="w-4 h-4 mr-1" />
                   View Plans
                 </Button>
               </CardContent>

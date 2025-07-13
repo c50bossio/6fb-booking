@@ -8,7 +8,7 @@ import { Progress } from '@/components/ui/progress'
 import { 
   ArrowUpIcon,
   ArrowDownIcon,
-  ArrowArrowTrendingUpIcon,
+  ArrowTrendingUpIcon,
   CurrencyDollarIcon,
   ChartBarIcon,
   EyeIcon,

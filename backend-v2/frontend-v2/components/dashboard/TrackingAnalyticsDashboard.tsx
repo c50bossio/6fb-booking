@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AnalyticsCard, AnalyticsCardGrid } from '@/components/analytics/shared/AnalyticsCard'
 import { 
-  ArrowArrowTrendingUpIcon,
+  ArrowTrendingUpIcon,
   ArrowArrowTrendingDownIcon,
   CurrencyDollarIcon,
   UsersIcon,

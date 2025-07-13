@@ -16,7 +16,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { productsAPI } from '@/lib/api/products'
 import { integrationsAPI } from '@/lib/api/integrations'
-import { ProductUpdate, ProductType, ProductStatus, IntegrationType } from '@/types/product'
+import { ProductUpdate, ProductType, ProductStatus } from '@/types/product'
+import { IntegrationType } from '@/types/integration'
 import { getProfile } from '@/lib/api'
 
 export default function ProductDetailPage() {

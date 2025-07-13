@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { 
   CurrencyDollarIcon,
   CalendarDaysIcon,
-  ArrowArrowTrendingUpIcon,
+  ArrowTrendingUpIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline'
 

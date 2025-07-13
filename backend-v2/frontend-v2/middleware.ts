@@ -28,6 +28,7 @@ const publicRoutes = [
   '/terms',
   '/privacy', 
   '/cookies',
+  '/calendar', // Temporarily added for testing calendar functionality
 ]
 
 // List of routes that require admin role
