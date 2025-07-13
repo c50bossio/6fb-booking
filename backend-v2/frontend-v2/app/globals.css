@@ -437,19 +437,28 @@
   }
   
   .form-label {
-    @apply block text-ios-footnote font-medium text-ios-gray-700 dark:text-ios-gray-300 mb-2;
-    @apply transition-colors duration-200;
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgb(55, 65, 81);
+    margin-bottom: 0.5rem;
+    transition: color 200ms;
     letter-spacing: 0.01em;
+  }
+  
+  .dark .form-label {
+    color: rgb(243, 244, 246);
   }
   
   .form-label.required::after {
     content: ' *';
-    @apply text-error-500;
+    color: rgb(239, 68, 68);
   }
   
   .form-label.optional::after {
     content: ' (optional)';
-    @apply text-ios-gray-500 font-normal;
+    color: rgb(107, 114, 128);
+    font-weight: 400;
   }
   
   .form-textarea {
@@ -501,8 +510,11 @@
   }
   
   .card.glass {
-    @apply bg-white/10 dark:bg-white/5 backdrop-blur-glass border-white/20 dark:border-white/10;
-    @apply shadow-glass;
+    /* @apply bg-white/10 dark:bg-white/5 backdrop-blur-glass border-white/20 dark:border-white/10; */
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(20px);
+    /* @apply shadow-glass; */
   }
   
   .card.premium {
@@ -1213,5 +1225,221 @@
   
   .animate-indeterminate {
     animation: indeterminate 1.5s ease-in-out infinite;
+  }
+}
+
+/* Dark Mode Contrast Enhancements (WCAG AA Compliance) */
+@layer utilities {
+  /* Fix critical dark mode contrast issues */
+  .dark {
+    /* Primary link colors - better contrast for dark mode */
+    --text-primary-600: rgb(45, 212, 191); /* was rgb(13, 148, 136) - insufficient contrast */
+    --text-primary-400: rgb(94, 234, 212); /* was rgb(45, 212, 191) - still insufficient */
+    
+    /* Enhanced contrast for dark mode primary colors */
+    .text-primary-600 {
+      color: rgb(94, 234, 212) !important; /* Ensures 4.5:1 contrast on dark backgrounds */
+    }
+    
+    .text-primary-400 {
+      color: rgb(153, 246, 228) !important; /* Even better contrast for secondary text */
+    }
+    
+    /* Form elements enhanced contrast */
+    .text-muted-foreground {
+      color: rgb(209, 213, 219) !important; /* Better contrast for muted text */
+    }
+    
+    /* Ensure background contrasts are correct */
+    .dark\:text-primary-400 {
+      color: rgb(153, 246, 228) !important;
+    }
+    
+    .dark\:text-primary-300 {
+      color: rgb(204, 251, 241) !important;
+    }
+    
+    /* Fix button and link hover states */
+    .dark\:hover\:text-primary-300:hover {
+      color: rgb(204, 251, 241) !important;
+    }
+  }
+  
+  /* Enhanced muted text colors for better dark mode readability */
+  .dark .text-muted-foreground {
+    color: rgb(209, 213, 219) !important;
+  }
+  
+  .dark .text-xs.text-muted-foreground {
+    color: rgb(229, 231, 235) !important;
+  }
+  
+  /* Ensure all gray text has proper contrast in dark mode */
+  .dark .text-gray-300 {
+    color: rgb(229, 231, 235) !important;
+  }
+  
+  .dark .text-gray-400 {
+    color: rgb(209, 213, 219) !important;
+  }
+  
+  /* Fix cookie consent and button contrast issues */
+  .dark .bg-white\/10 {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+  }
+  
+  /* Enhanced form input contrast */
+  .dark input,
+  .dark textarea,
+  .dark select {
+    background-color: rgb(39, 39, 42) !important;
+    border-color: rgb(82, 82, 91) !important;
+    color: rgb(250, 250, 250) !important;
+  }
+  
+  .dark input:focus,
+  .dark textarea:focus,
+  .dark select:focus {
+    border-color: rgb(20, 184, 166) !important;
+  }
+  
+  /* Fix premium primary background in dark mode */
+  .dark .bg-premium-primary {
+    background-color: rgb(20, 184, 166) !important;
+  }
+  
+  .dark .hover\:bg-premium-primary-hover:hover {
+    background-color: rgb(13, 148, 136) !important;
+  }
+}
+
+/* CRITICAL DARK MODE CONTRAST FIXES - WCAG AA Compliance */
+.dark {
+  /* CRITICAL FIX: Form labels must be visible - address white-on-white issues */
+  label,
+  .peer-disabled\:cursor-not-allowed,
+  .peer-disabled\:opacity-70 {
+    color: rgb(244, 244, 245) !important; /* zinc-100 - high contrast white text */
+    background-color: transparent !important; /* Ensure no white background */
+  }
+
+  /* CRITICAL FIX: Muted text should be visible, not white-on-white */
+  .text-muted-foreground {
+    color: rgb(161, 161, 170) !important; /* zinc-400 - readable muted text on dark */
+    background-color: transparent !important; /* Remove any white background */
+  }
+
+  /* CRITICAL FIX: Specific muted text elements */
+  .text-xs.text-muted-foreground,
+  .text-sm.text-muted-foreground {
+    color: rgb(161, 161, 170) !important; /* Ensure visibility */
+    background-color: transparent !important;
+  }
+
+  /* CRITICAL FIX: Font-medium elements (health monitor text) */
+  .font-medium {
+    color: rgb(244, 244, 245) !important; /* Ensure labels and headings are white */
+    background-color: transparent !important;
+  }
+
+  /* CRITICAL FIX: Truncated text elements */
+  .truncate {
+    color: rgb(244, 244, 245) !important; /* Fix health monitor service names */
+    background-color: transparent !important;
+  }
+
+  /* CRITICAL FIX: Cookie consent button backgrounds */
+  .bg-white\/10 {
+    background-color: rgba(0, 0, 0, 0.8) !important; /* Dark bg instead of white */
+  }
+
+  .border-primary-500\/60 {
+    border-color: rgb(94, 234, 212) !important; /* Visible border */
+  }
+
+  /* CRITICAL FIX: Ensure all text elements have dark backgrounds */
+  p, span, div {
+    background-color: inherit !important; /* Inherit proper dark background */
+  }
+
+  /* CRITICAL FIX: Primary link colors for better contrast */
+  .text-primary-600 {
+    color: rgb(94, 234, 212) !important; /* teal-300 - Ensures 4.5:1 contrast on dark bg */
+  }
+  
+  .text-primary-400 {
+    color: rgb(153, 246, 228) !important; /* teal-200 - Better contrast for secondary text */
+  }
+
+  .text-primary-300 {
+    color: rgb(204, 251, 241) !important; /* Very light teal for subtle text */
+  }
+
+  /* CRITICAL FIX: Interactive link states */
+  .hover\:text-primary:hover {
+    color: rgb(94, 234, 212) !important;
+  }
+
+  .hover\:text-primary-700:hover {
+    color: rgb(153, 246, 228) !important;
+  }
+
+  .hover\:text-primary-300:hover {
+    color: rgb(204, 251, 241) !important;
+  }
+
+  /* CRITICAL FIX: Gray text improvements for better contrast */
+  .text-gray-400 {
+    color: rgb(156, 163, 175) !important; /* Ensure minimum contrast */
+  }
+
+  .text-gray-300 {
+    color: rgb(209, 213, 219) !important; /* Lighter gray for better visibility */
+  }
+
+  .text-gray-600 {
+    color: rgb(229, 231, 235) !important; /* Much lighter for dark backgrounds */
+  }
+
+  .text-gray-700 {
+    color: rgb(243, 244, 246) !important; /* Nearly white for good contrast */
+  }
+
+  /* CRITICAL FIX: Ensure link elements are visible */
+  a {
+    color: rgb(153, 246, 228) !important; /* Bright teal for links */
+  }
+
+  a:hover {
+    color: rgb(204, 251, 241) !important; /* Lighter on hover */
+  }
+
+  /* CRITICAL FIX: Button text visibility */
+  button {
+    background-color: inherit !important; /* Don't override button backgrounds unnecessarily */
+  }
+
+  /* CRITICAL FIX: Override any remaining white text on white backgrounds */
+  [style*="color: rgb(255, 255, 255)"] {
+    color: rgb(244, 244, 245) !important;
+    background-color: transparent !important;
+  }
+
+  /* CRITICAL FIX: Background color overrides */
+  .bg-background {
+    background-color: rgb(9, 9, 11) !important; /* zinc-900 */
+  }
+
+  .bg-card {
+    background-color: rgb(24, 24, 27) !important; /* zinc-800 */
+  }
+
+  /* CRITICAL FIX: Health monitor specific elements */
+  .text-green-500 {
+    color: rgb(34, 197, 94) !important; /* Bright green for visibility */
+  }
+
+  .text-yellow-500 {
+    color: rgb(234, 179, 8) !important; /* Bright yellow for visibility */
   }
 }

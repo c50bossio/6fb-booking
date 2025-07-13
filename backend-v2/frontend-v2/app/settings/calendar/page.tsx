@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import CalendarSync from '@/components/CalendarSync'
 import CalendarConflictResolver from '@/components/CalendarConflictResolver'
-import { calendarAPI, getProfile, type User as ApiUser } from '@/lib/api'
+import { calendarApi } from '@/lib/api/calendar'
+import { getProfile, type User as ApiUser } from '@/lib/api'
 import { CheckCircle, XCircle, Calendar, Link, Settings, RefreshCw, AlertTriangle, Repeat } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui'
 
@@ -61,12 +62,12 @@ export default function CalendarSettingsPage() {
   const checkCalendarStatus = async () => {
     try {
       setLoading(true)
-      const response = await calendarAPI.getStatus()
+      const response = await calendarApi.getConnectionStatus()
       setStatus(response)
       
       if (response.connected && response.valid) {
         // Fetch available calendars
-        const calendarList = await calendarAPI.listCalendars()
+        const calendarList = await calendarApi.listCalendars()
         setCalendars(calendarList.calendars)
         setSelectedCalendarId(response.selected_calendar_id || null)
       }
@@ -82,7 +83,7 @@ export default function CalendarSettingsPage() {
     try {
       setConnecting(true)
       setError(null)
-      const { authorization_url } = await calendarAPI.initiateAuth()
+      const { authorization_url } = await calendarApi.initiateAuth()
       // Redirect to Google OAuth
       window.location.href = authorization_url
     } catch (err) {
@@ -95,7 +96,7 @@ export default function CalendarSettingsPage() {
   const handleDisconnect = async () => {
     if (confirm('Are you sure you want to disconnect your Google Calendar? This will stop all syncing.')) {
       try {
-        await calendarAPI.disconnect()
+        await calendarApi.disconnectCalendar()
         setStatus({ connected: false })
         setCalendars([])
         setSelectedCalendarId(null)
@@ -108,7 +109,7 @@ export default function CalendarSettingsPage() {
 
   const handleSelectCalendar = async (calendarId: string) => {
     try {
-      await calendarAPI.selectCalendar(calendarId)
+      await calendarApi.selectCalendar(calendarId)
       setSelectedCalendarId(calendarId)
       setError(null)
     } catch (err) {
