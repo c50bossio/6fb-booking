@@ -44,7 +44,7 @@ import {
   Copy,
   RefreshCw
 } from "lucide-react"
-import { api } from "@/lib/api"
+import { apiClient as api } from "@/lib/api"
 import { useAuth } from "@/hooks/useAuth"
 import { format } from "date-fns"
 

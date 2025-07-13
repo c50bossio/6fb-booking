@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useThemeStyles } from '@/hooks/useTheme'
@@ -37,6 +37,8 @@ export function Logo({
   showTagline = false
 }: LogoProps) {
   const { isDark } = useThemeStyles()
+  const [hasError, setHasError] = useState(false)
+  const [errorLogged, setErrorLogged] = useState(false)
   
   // Determine which logo to use based on variant and theme
   const getLogoSrc = () => {
@@ -54,10 +56,44 @@ export function Logo({
     }
   }
   
-  const logoSrc = getLogoSrc()
+  // Get fallback logo path
+  const getFallbackSrc = () => {
+    // If primary logo fails, try these in order
+    const fallbacks = [
+      '/logos/logo-color.png',
+      '/logos/logo-black.png', 
+      '/logos/logo-white.png'
+    ]
+    return fallbacks.find(src => src !== getLogoSrc()) || '/logos/logo-color.png'
+  }
+  
+  const logoSrc = hasError ? getFallbackSrc() : getLogoSrc()
   const heightPx = sizePixels[size]
   // Aspect ratio of the logo (approximate based on the design)
   const widthPx = showTagline ? heightPx * 6 : heightPx * 5
+  
+  // Handle error case with text fallback
+  if (hasError) {
+    const textFallback = (
+      <div 
+        className={`relative ${sizeClasses[size]} ${className} flex items-center justify-center transition-all duration-300 hover:scale-105`}
+        style={{
+          filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.06))',
+        }}
+      >
+        <span className="font-bold text-xl text-gray-900 dark:text-white">BOOKEDBARBER</span>
+      </div>
+    )
+    
+    if (href && href !== null) {
+      return (
+        <Link href={href} className="inline-block">
+          {textFallback}
+        </Link>
+      )
+    }
+    return textFallback
+  }
   
   const logoImage = (
     <div 
@@ -79,14 +115,13 @@ export function Logo({
         priority
         unoptimized={true} // Prevent Next.js optimization issues
         onError={(e) => {
-          console.error('Logo failed to load:', logoSrc, e);
-          // Fallback to text if image fails
-          const target = e.target as HTMLImageElement;
-          target.style.display = 'none';
-          const parent = target.parentElement;
-          if (parent) {
-            parent.innerHTML = `<span class="font-bold text-xl text-gray-900 dark:text-white">BOOKEDBARBER</span>`;
+          // Only log the error once to prevent spam
+          if (!errorLogged) {
+            console.error('Logo failed to load:', logoSrc);
+            setErrorLogged(true)
           }
+          // Set error state to trigger fallback
+          setHasError(true)
         }}
       />
     </div>

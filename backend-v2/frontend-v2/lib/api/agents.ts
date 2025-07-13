@@ -138,24 +138,96 @@ export interface SendMessageRequest {
   metadata?: Record<string, any>
 }
 
+// Enhanced interfaces for business intelligence analytics
+export interface OptimizationRecommendation {
+  type: string
+  priority: 'high' | 'medium' | 'low'
+  title: string
+  description: string
+  action: string
+  potential_impact: string
+}
+
+export interface CompetitiveBenchmarks {
+  industry_averages: {
+    success_rate: number
+    avg_response_time: number
+    roi: number
+    engagement_rate: number
+  }
+  top_quartile: {
+    success_rate: number
+    avg_response_time: number
+    roi: number
+    engagement_rate: number
+  }
+  your_performance_vs_industry: string
+}
+
+export interface CurrentPeriodPerformance {
+  today_conversations: number
+  today_revenue: number
+  active_conversations: number
+  agents_running: number
+}
+
+export interface ConversationTrend {
+  date: string
+  conversations: number
+  revenue: number
+  conversion_rate: number
+}
+
+export interface TopPerformingAgent {
+  name: string
+  revenue: number
+  conversion_rate: number
+  conversations?: number
+  agent_type?: AgentType
+  performance_score?: number
+}
+
 export interface AgentAnalytics {
+  // Core metrics
   total_agents: number
   active_instances: number
   total_conversations: number
   total_messages: number
   average_response_time: number
   success_rate: number
+  total_revenue: number
+  roi: number
+  
+  // Enhanced business intelligence
+  optimization_recommendations: OptimizationRecommendation[]
+  competitive_benchmarks: CompetitiveBenchmarks
+  current_period_performance: CurrentPeriodPerformance
+  revenue_by_agent_type: Record<string, number>
+  conversation_trends: ConversationTrend[]
+  top_performing_agents: TopPerformingAgent[]
+  
+  // Cost analysis
   cost_summary: {
     total_cost: number
     cost_by_provider: Record<string, number>
     cost_by_agent_type: Record<string, number>
   }
+  
+  // Legacy usage trends (maintained for backward compatibility)
   usage_trends: Array<{
     date: string
     conversations: number
     messages: number
     cost: number
   }>
+  
+  // Metadata
+  date_range: {
+    start: string
+    end: string
+    days: number
+  }
+  last_updated: string
 }
 
 export interface InstanceAnalytics {
@@ -536,25 +608,128 @@ export const agentsApi = {
   // ===============================
 
   /**
-   * Get overall agent analytics
+   * Get comprehensive agent analytics with business intelligence
    */
   async getAgentAnalytics(
     startDate?: string, 
     endDate?: string
   ): Promise<AgentAnalytics> {
-    const params = {
-      ...(startDate && { start_date: startDate }),
-      ...(endDate && { end_date: endDate })
-    }
-
-    const response = await fetch(
-      `${API_BASE_URL}/api/v1/agents/analytics${buildQueryString(params)}`,
-      {
-        headers: getAuthHeaders()
+    try {
+      const params = {
+        ...(startDate && { start_date: startDate }),
+        ...(endDate && { end_date: endDate })
       }
-    )
 
-    return handleResponse(response)
+      const response = await fetch(
+        `${API_BASE_URL}/api/v1/agents/analytics${buildQueryString(params)}`,
+        {
+          headers: getAuthHeaders()
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error(`Analytics API failed with status ${response.status}`)
+      }
+
+      const data = await response.json()
+      
+      // Validate that we have the expected structure
+      if (!data || typeof data !== 'object') {
+        throw new Error('Invalid analytics data received from API')
+      }
+
+      // Ensure all required fields have fallback values for type safety
+      const analytics: AgentAnalytics = {
+        // Core metrics with defaults
+        total_agents: data.total_agents ?? 0,
+        active_instances: data.active_instances ?? 0,
+        total_conversations: data.total_conversations ?? 0,
+        total_messages: data.total_messages ?? 0,
+        average_response_time: data.average_response_time ?? data.avg_response_time ?? 0,
+        success_rate: data.success_rate ?? 0,
+        total_revenue: data.total_revenue ?? 0,
+        roi: data.roi ?? 0,
+        
+        // Business intelligence with fallbacks
+        optimization_recommendations: data.optimization_recommendations ?? [],
+        competitive_benchmarks: data.competitive_benchmarks ?? {
+          industry_averages: { success_rate: 0, avg_response_time: 0, roi: 0, engagement_rate: 0 },
+          top_quartile: { success_rate: 0, avg_response_time: 0, roi: 0, engagement_rate: 0 },
+          your_performance_vs_industry: 'unknown'
+        },
+        current_period_performance: data.current_period_performance ?? {
+          today_conversations: 0,
+          today_revenue: 0,
+          active_conversations: 0,
+          agents_running: 0
+        },
+        revenue_by_agent_type: data.revenue_by_agent_type ?? {},
+        conversation_trends: data.conversation_trends ?? [],
+        top_performing_agents: data.top_performing_agents ?? [],
+        
+        // Cost analysis
+        cost_summary: data.cost_summary ?? {
+          total_cost: 0,
+          cost_by_provider: {},
+          cost_by_agent_type: {}
+        },
+        
+        // Legacy compatibility
+        usage_trends: data.usage_trends ?? [],
+        
+        // Metadata
+        date_range: data.date_range ?? {
+          start: startDate ?? '',
+          end: endDate ?? '',
+          days: 0
+        },
+        last_updated: data.last_updated ?? new Date().toISOString()
+      }
+
+      return analytics
+      
+    } catch (error) {
+      console.error('Error fetching agent analytics:', error)
+      
+      // Return fallback analytics to prevent UI breakage
+      return {
+        total_agents: 0,
+        active_instances: 0,
+        total_conversations: 0,
+        total_messages: 0,
+        average_response_time: 0,
+        success_rate: 0,
+        total_revenue: 0,
+        roi: 0,
+        optimization_recommendations: [],
+        competitive_benchmarks: {
+          industry_averages: { success_rate: 0, avg_response_time: 0, roi: 0, engagement_rate: 0 },
+          top_quartile: { success_rate: 0, avg_response_time: 0, roi: 0, engagement_rate: 0 },
+          your_performance_vs_industry: 'unknown'
+        },
+        current_period_performance: {
+          today_conversations: 0,
+          today_revenue: 0,
+          active_conversations: 0,
+          agents_running: 0
+        },
+        revenue_by_agent_type: {},
+        conversation_trends: [],
+        top_performing_agents: [],
+        cost_summary: {
+          total_cost: 0,
+          cost_by_provider: {},
+          cost_by_agent_type: {}
+        },
+        usage_trends: [],
+        date_range: {
+          start: startDate ?? '',
+          end: endDate ?? '',
+          days: 0
+        },
+        last_updated: new Date().toISOString()
+      }
+    }
   },
 
   /**
@@ -739,6 +914,170 @@ export const agentsApi = {
     }
     
     return useCaseMap[useCase] || 'customer_service'
+  },
+
+  // ===============================
+  // Business Intelligence Utilities
+  // ===============================
+
+  /**
+   * Get priority color for optimization recommendations
+   */
+  getRecommendationPriorityColor(priority: OptimizationRecommendation['priority']): string {
+    const colorMap = {
+      'high': 'red',
+      'medium': 'yellow',
+      'low': 'blue'
+    }
+    return colorMap[priority] || 'gray'
+  },
+
+  /**
+   * Format revenue for display
+   */
+  formatRevenue(amount: number): string {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount)
+  },
+
+  /**
+   * Format percentage for display
+   */
+  formatPercentage(value: number): string {
+    return `${value.toFixed(1)}%`
+  },
+
+  /**
+   * Format response time for display
+   */
+  formatResponseTime(timeInSeconds: number): string {
+    if (timeInSeconds < 60) {
+      return `${timeInSeconds.toFixed(1)}s`
+    }
+    const minutes = Math.floor(timeInSeconds / 60)
+    const seconds = timeInSeconds % 60
+    return `${minutes}m ${seconds.toFixed(0)}s`
+  },
+
+  /**
+   * Get performance indicator for benchmarking
+   */
+  getPerformanceIndicator(
+    yourValue: number, 
+    industryAverage: number, 
+    topQuartile: number
+  ): 'excellent' | 'above_average' | 'average' | 'below_average' {
+    if (yourValue >= topQuartile) return 'excellent'
+    if (yourValue >= industryAverage) return 'above_average'
+    if (yourValue >= industryAverage * 0.8) return 'average'
+    return 'below_average'
+  },
+
+  /**
+   * Calculate total revenue from revenue breakdown
+   */
+  calculateTotalRevenue(revenueByType: Record<string, number>): number {
+    return Object.values(revenueByType).reduce((sum, value) => sum + value, 0)
+  },
+
+  /**
+   * Get top performing agent types
+   */
+  getTopPerformingTypes(
+    revenueByType: Record<string, number>, 
+    limit: number = 3
+  ): Array<{type: string, revenue: number, percentage: number}> {
+    const total = this.calculateTotalRevenue(revenueByType)
+    if (total === 0) return []
+
+    return Object.entries(revenueByType)
+      .map(([type, revenue]) => ({
+        type,
+        revenue,
+        percentage: (revenue / total) * 100
+      }))
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, limit)
+  },
+
+  /**
+   * Validate analytics data structure
+   */
+  validateAnalyticsData(data: any): boolean {
+    try {
+      // Check required top-level fields
+      const requiredFields = [
+        'total_agents', 'total_conversations', 'success_rate',
+        'optimization_recommendations', 'competitive_benchmarks',
+        'current_period_performance'
+      ]
+      
+      for (const field of requiredFields) {
+        if (!(field in data)) {
+          console.warn(`Missing required field: ${field}`)
+          return false
+        }
+      }
+
+      // Validate array fields
+      if (!Array.isArray(data.optimization_recommendations)) {
+        console.warn('optimization_recommendations is not an array')
+        return false
+      }
+
+      if (!Array.isArray(data.conversation_trends)) {
+        console.warn('conversation_trends is not an array')
+        return false
+      }
+
+      if (!Array.isArray(data.top_performing_agents)) {
+        console.warn('top_performing_agents is not an array')
+        return false
+      }
+
+      // Validate nested objects
+      if (!data.competitive_benchmarks.industry_averages || !data.competitive_benchmarks.top_quartile) {
+        console.warn('Invalid competitive_benchmarks structure')
+        return false
+      }
+
+      return true
+    } catch (error) {
+      console.error('Error validating analytics data:', error)
+      return false
+    }
+  },
+
+  /**
+   * Get analytics summary for quick overview
+   */
+  getAnalyticsSummary(analytics: AgentAnalytics): {
+    totalRevenue: string
+    conversionRate: string
+    responseTime: string
+    agentCount: number
+    activeConversations: number
+    performanceStatus: string
+  } {
+    const industryAvg = analytics.competitive_benchmarks.industry_averages
+    const performanceStatus = this.getPerformanceIndicator(
+      analytics.success_rate,
+      industryAvg.success_rate,
+      analytics.competitive_benchmarks.top_quartile.success_rate
+    )
+
+    return {
+      totalRevenue: this.formatRevenue(analytics.total_revenue),
+      conversionRate: this.formatPercentage(analytics.success_rate),
+      responseTime: this.formatResponseTime(analytics.average_response_time),
+      agentCount: analytics.total_agents,
+      activeConversations: analytics.current_period_performance.active_conversations,
+      performanceStatus
+    }
   }
 }
 
