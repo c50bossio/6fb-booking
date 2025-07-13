@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -279,6 +279,88 @@ export default function CatalogPage() {
     }
   }
 
+  // Import/Export handlers
+  const handleImport = () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.csv,.xlsx,.xls'
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (!file) return
+
+      try {
+        setIsLoading(true)
+        let result
+
+        if (selectedTab === 'services' || selectedTab === 'overview') {
+          result = await catalogApi.importServices(file)
+        } else {
+          result = await catalogApi.importProducts(file)
+        }
+
+        toast({
+          title: 'Import Complete',
+          description: `Successfully imported ${result.success} items. ${result.failed > 0 ? `Failed: ${result.failed}` : ''}`
+        })
+
+        // Reload data to show imported items
+        await loadCatalogData()
+        
+      } catch (err) {
+        console.error('Import failed:', err)
+        toast({
+          title: 'Import Failed',
+          description: 'Failed to import data. Please check file format.',
+          variant: 'destructive'
+        })
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    input.click()
+  }
+
+  const handleExport = async () => {
+    try {
+      setIsLoading(true)
+      let blob: Blob
+
+      if (selectedTab === 'services' || selectedTab === 'overview') {
+        blob = await catalogApi.exportServices(undefined, 'csv')
+        downloadBlob(blob, 'services-export.csv')
+      } else {
+        blob = await catalogApi.exportProducts(undefined, 'csv')
+        downloadBlob(blob, 'products-export.csv')
+      }
+
+      toast({
+        title: 'Export Complete',
+        description: 'Data exported successfully'
+      })
+      
+    } catch (err) {
+      console.error('Export failed:', err)
+      toast({
+        title: 'Export Failed',
+        description: 'Failed to export data',
+        variant: 'destructive'
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const downloadBlob = (blob: Blob, filename: string) => {
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+  }
+
   // UI helpers
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -393,20 +475,14 @@ export default function CatalogPage() {
           </Button>
           <Button 
             variant="outline"
-            onClick={() => {
-              // TODO: Implement import functionality
-              toast({ title: 'Coming Soon', description: 'Import feature in development' })
-            }}
+            onClick={handleImport}
           >
             <Upload className="h-4 w-4 mr-2" />
             Import
           </Button>
           <Button 
             variant="outline"
-            onClick={() => {
-              // TODO: Implement export functionality  
-              toast({ title: 'Coming Soon', description: 'Export feature in development' })
-            }}
+            onClick={handleExport}
           >
             <Download className="h-4 w-4 mr-2" />
             Export
