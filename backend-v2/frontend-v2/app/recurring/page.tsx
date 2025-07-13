@@ -79,7 +79,7 @@ export default function RecurringAppointmentsPage() {
   const fetchPatterns = async () => {
     try {
       const token = localStorage.getItem('token');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
       const response = await fetch(`${apiUrl}/api/v1/recurring-appointments/patterns`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -104,7 +104,7 @@ export default function RecurringAppointmentsPage() {
   const fetchUpcomingAppointments = async () => {
     try {
       const token = localStorage.getItem('token');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
       const response = await fetch(`${apiUrl}/api/v1/recurring-appointments/upcoming?days_ahead=30`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -125,7 +125,7 @@ export default function RecurringAppointmentsPage() {
     setCreating(true);
     try {
       const token = localStorage.getItem('token');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
       const response = await fetch(`${apiUrl}/api/v1/recurring-appointments/patterns`, {
         method: 'POST',
@@ -174,7 +174,7 @@ export default function RecurringAppointmentsPage() {
   const generateAppointments = async (patternId: number) => {
     try {
       const token = localStorage.getItem('token');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
       const response = await fetch(
         `${apiUrl}/api/v1/recurring-appointments/patterns/${patternId}/generate`,
@@ -207,7 +207,7 @@ export default function RecurringAppointmentsPage() {
   const deletePattern = async (patternId: number) => {
     try {
       const token = localStorage.getItem('token');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
       const response = await fetch(
         `${apiUrl}/api/v1/recurring-appointments/patterns/${patternId}`,
