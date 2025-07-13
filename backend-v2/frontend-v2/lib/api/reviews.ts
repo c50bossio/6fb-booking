@@ -23,7 +23,7 @@ import {
   TemplateGenerateRequest,
   TemplateGenerateResponse
 } from '@/types/review'
-import { apiClient } from '@/lib/api'
+import { apiClient } from '@/lib/api/client'
 
 export class ReviewsAPI {
   private baseUrl = '/api/v1/reviews'

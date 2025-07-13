@@ -111,8 +111,15 @@ export default function AppointmentExportPage() {
     setIsLoading(false)
   }, [])
 
-  const handleExport = (format: string, count: number) => {
-    console.log(`Exported ${count} appointments in ${format} format`)
+  const handleExport = (options: {
+    format: 'ics' | 'csv' | 'pdf'
+    dateRange: { start: string; end: string }
+    includeDetails: boolean
+    includeNotes: boolean
+    includeCancelled: boolean
+  }) => {
+    console.log(`Exported ${selectedAppointments.length} appointments in ${options.format} format`)
+    console.log('Export options:', options)
   }
 
   const handleStatusChange = (id: number, status: Appointment['status']) => {

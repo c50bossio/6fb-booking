@@ -327,3 +327,33 @@ export function CalendarErrorState({ error, onRetry, context }: CalendarErrorSta
     </div>
   )
 }
+
+interface CalendarSmartLoadingProps {
+  message?: string
+  view?: CalendarView
+  showProgress?: boolean
+  progress?: number
+  showSkeleton?: boolean
+}
+
+/**
+ * Smart loading component that adapts to different calendar states
+ */
+export function CalendarSmartLoading({ 
+  message = 'Loading calendar...', 
+  view = 'month',
+  showProgress = false,
+  progress,
+  showSkeleton = true
+}: CalendarSmartLoadingProps) {
+  if (showSkeleton) {
+    return <CalendarSkeleton view={view} />
+  }
+
+  return (
+    <CalendarLoading 
+      message={message} 
+      progress={showProgress ? progress : undefined} 
+    />
+  )
+}

@@ -9,7 +9,15 @@ from enum import Enum
 
 
 class AgentType(str, Enum):
-    """Types of available agents"""
+    """Types of available agents - aligned with frontend interface"""
+    BOOKING_ASSISTANT = "booking_assistant"
+    CUSTOMER_SERVICE = "customer_service"
+    MARKETING_ASSISTANT = "marketing_assistant"
+    ANALYTICS_ASSISTANT = "analytics_assistant"
+    SALES_ASSISTANT = "sales_assistant"
+    RETENTION_SPECIALIST = "retention_specialist"
+    
+    # Legacy types for backward compatibility
     REBOOKING = "rebooking"
     NO_SHOW_FEE = "no_show_fee"
     BIRTHDAY_WISHES = "birthday_wishes"
@@ -22,20 +30,29 @@ class AgentType(str, Enum):
 
 
 class AgentStatus(str, Enum):
-    """Agent instance status"""
-    DRAFT = "draft"
+    """Agent instance status - aligned with frontend interface"""
     ACTIVE = "active"
     PAUSED = "paused"
-    INACTIVE = "inactive"
+    STOPPED = "stopped"
     ERROR = "error"
+    MAINTENANCE = "maintenance"
+    
+    # Legacy statuses for backward compatibility
+    DRAFT = "draft"
+    INACTIVE = "inactive"
 
 
 class ConversationStatus(str, Enum):
-    """Status of agent conversations"""
+    """Status of agent conversations - aligned with frontend interface"""
+    ACTIVE = "active"
+    PAUSED = "paused"
+    COMPLETED = "completed"
+    ERROR = "error"
+    
+    # Legacy statuses for backward compatibility
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
     WAITING_RESPONSE = "waiting_response"
-    COMPLETED = "completed"
     FAILED = "failed"
     OPTED_OUT = "opted_out"
 
@@ -154,6 +171,44 @@ class ConversationMessage(BaseModel):
     content: str
     timestamp: datetime
     tokens_used: Optional[int] = None
+
+
+class AgentMessageCreate(BaseModel):
+    """Schema for creating a new agent message"""
+    conversation_id: str
+    sender_type: str = Field(..., regex="^(user|agent|system)$")
+    sender_id: Optional[int] = None
+    content: str = Field(..., min_length=1)
+    message_type: str = Field(default="text", max_length=50)
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+
+class AgentMessageResponse(BaseModel):
+    """Schema for agent message responses"""
+    id: str
+    conversation_id: str
+    sender_type: str
+    sender_id: Optional[int]
+    content: str
+    message_type: str
+    prompt_tokens: int
+    completion_tokens: int
+    total_tokens: int
+    token_cost: float
+    metadata: Dict[str, Any]
+    processing_time_ms: Optional[int]
+    ai_provider: Optional[str]
+    ai_model: Optional[str]
+    is_delivered: bool
+    is_read: bool
+    delivered_at: Optional[datetime]
+    read_at: Optional[datetime]
+    failed_at: Optional[datetime]
+    failure_reason: Optional[str]
+    created_at: datetime
+    updated_at: datetime
+    
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ConversationCreate(BaseModel):

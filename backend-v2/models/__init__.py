@@ -102,7 +102,7 @@ from .google_calendar_settings import (
     GoogleCalendarSettings, GoogleCalendarSyncLog
 )
 from .agent import (
-    Agent, AgentInstance, AgentConversation, AgentMetrics, AgentSubscription, AgentTemplate,
+    Agent, AgentInstance, AgentConversation, AgentMessage, AgentMetrics, AgentSubscription, AgentTemplate,
     AgentType, AgentStatus, ConversationStatus, SubscriptionTier
 )
 # Organization Models
@@ -153,7 +153,7 @@ __all__ = [
     # Google Calendar Models
     'GoogleCalendarSettings', 'GoogleCalendarSyncLog',
     # AI Agent Models
-    'Agent', 'AgentInstance', 'AgentConversation', 'AgentMetrics', 'AgentSubscription', 'AgentTemplate',
+    'Agent', 'AgentInstance', 'AgentConversation', 'AgentMessage', 'AgentMetrics', 'AgentSubscription', 'AgentTemplate',
     'AgentType', 'AgentStatus', 'ConversationStatus', 'SubscriptionTier',
     # Organization Models
     'Organization', 'UserOrganization', 'BillingPlan', 'UserRole', 'OrganizationType',

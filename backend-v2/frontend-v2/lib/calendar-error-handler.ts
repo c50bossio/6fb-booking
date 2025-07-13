@@ -66,4 +66,34 @@ export const isValidationError = (error: CalendarError) => error.type === 'valid
 export const isNetworkError = (error: CalendarError) => error.type === 'network';
 export const isPermissionError = (error: CalendarError) => error.type === 'permission';
 
+// Calendar timeout constants
+export const CALENDAR_TIMEOUTS = {
+  API_REQUEST: 5000,
+  RENDER: 3000,
+  INTERACTION: 1000,
+  DEBOUNCE: 300,
+  ANIMATION: 500
+} as const;
+
+// Timeout wrapper function
+export const withTimeout = <T>(
+  promise: Promise<T>,
+  timeoutMs: number = CALENDAR_TIMEOUTS.API_REQUEST,
+  errorMessage: string = 'Operation timed out'
+): Promise<T> => {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) => {
+      setTimeout(() => {
+        const error = logCalendarError({
+          type: 'network',
+          message: errorMessage,
+          details: { timeout: timeoutMs }
+        });
+        reject(new Error(errorMessage));
+      }, timeoutMs);
+    })
+  ]);
+};
+
 export default CalendarErrorHandler;

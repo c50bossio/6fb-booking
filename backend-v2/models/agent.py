@@ -18,7 +18,15 @@ def utcnow():
 
 
 class AgentType(enum.Enum):
-    """Types of available agents"""
+    """Types of available agents - aligned with frontend interface"""
+    BOOKING_ASSISTANT = "booking_assistant"
+    CUSTOMER_SERVICE = "customer_service"
+    MARKETING_ASSISTANT = "marketing_assistant"
+    ANALYTICS_ASSISTANT = "analytics_assistant"
+    SALES_ASSISTANT = "sales_assistant"
+    RETENTION_SPECIALIST = "retention_specialist"
+    
+    # Legacy types for backward compatibility
     REBOOKING = "rebooking"
     NO_SHOW_FEE = "no_show_fee"
     BIRTHDAY_WISHES = "birthday_wishes"
@@ -31,20 +39,29 @@ class AgentType(enum.Enum):
 
 
 class AgentStatus(enum.Enum):
-    """Agent instance status"""
-    DRAFT = "draft"
+    """Agent instance status - aligned with frontend interface"""
     ACTIVE = "active"
     PAUSED = "paused"
-    INACTIVE = "inactive"
+    STOPPED = "stopped"
     ERROR = "error"
+    MAINTENANCE = "maintenance"
+    
+    # Legacy statuses for backward compatibility
+    DRAFT = "draft"
+    INACTIVE = "inactive"
 
 
 class ConversationStatus(enum.Enum):
-    """Status of agent conversations"""
+    """Status of agent conversations - aligned with frontend interface"""
+    ACTIVE = "active"
+    PAUSED = "paused"
+    COMPLETED = "completed"
+    ERROR = "error"
+    
+    # Legacy statuses for backward compatibility
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
     WAITING_RESPONSE = "waiting_response"
-    COMPLETED = "completed"
     FAILED = "failed"
     OPTED_OUT = "opted_out"
 
@@ -72,8 +89,15 @@ class Agent(Base):
     prompt_templates = Column(JSON, nullable=False, default={})
     
     # Capabilities and requirements
+    capabilities = Column(JSON, default=[])
     required_permissions = Column(JSON, default=[])
     supported_channels = Column(JSON, default=["sms", "email"])
+    
+    # Cost estimation fields for frontend
+    estimated_cost_per_month = Column(Float, default=0.0)
+    
+    # Owner/creator tracking
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     
     # Business rules
     min_interval_hours = Column(Integer, default=24)  # Minimum time between messages
@@ -87,15 +111,23 @@ class Agent(Base):
     # Metadata
     is_active = Column(Boolean, default=True)
     is_premium = Column(Boolean, default=False)
+    
+    # Soft delete support
+    is_deleted = Column(Boolean, default=False)
+    deleted_at = Column(DateTime, nullable=True)
+    
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     
     # Relationships
     instances = relationship("AgentInstance", back_populates="agent", cascade="all, delete-orphan")
+    created_by = relationship("User", foreign_keys=[created_by_id])
     
     # Indexes
     __table_args__ = (
         Index('idx_agent_type_active', 'agent_type', 'is_active'),
+        Index('idx_agent_not_deleted', 'is_deleted', 'is_active'),
+        Index('idx_agent_created_by', 'created_by_id', 'is_active'),
     )
 
 
@@ -121,7 +153,7 @@ class AgentInstance(Base):
     })
     
     # Status and health
-    status = Column(SQLEnum(AgentStatus), default=AgentStatus.DRAFT, index=True)
+    status = Column(SQLEnum(AgentStatus), default=AgentStatus.STOPPED, index=True)
     last_run_at = Column(DateTime, nullable=True)
     next_run_at = Column(DateTime, nullable=True)
     error_count = Column(Integer, default=0)
@@ -129,12 +161,21 @@ class AgentInstance(Base):
     
     # Performance metrics
     total_conversations = Column(Integer, default=0)
+    total_messages = Column(Integer, default=0)
     successful_conversations = Column(Integer, default=0)
     total_revenue_generated = Column(Float, default=0.0)
+    uptime_percentage = Column(Float, default=100.0)
+    
+    # Activity tracking
+    last_activity = Column(DateTime, nullable=True)
     
     # Activation
     activated_at = Column(DateTime, nullable=True)
     deactivated_at = Column(DateTime, nullable=True)
+    
+    # Soft delete support
+    is_deleted = Column(Boolean, default=False)
+    deleted_at = Column(DateTime, nullable=True)
     
     # Metadata
     created_at = Column(DateTime, default=utcnow)
@@ -150,6 +191,8 @@ class AgentInstance(Base):
     __table_args__ = (
         Index('idx_agent_instance_user_status', 'user_id', 'status'),
         Index('idx_agent_instance_next_run', 'next_run_at', 'status'),
+        Index('idx_agent_instance_not_deleted', 'is_deleted', 'status'),
+        Index('idx_agent_instance_last_activity', 'last_activity', 'status'),
     )
 
 
@@ -191,6 +234,10 @@ class AgentConversation(Base):
     completed_at = Column(DateTime, nullable=True)
     expires_at = Column(DateTime, nullable=True)
     
+    # Soft delete support
+    is_deleted = Column(Boolean, default=False)
+    deleted_at = Column(DateTime, nullable=True)
+    
     # Metadata
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
@@ -204,6 +251,60 @@ class AgentConversation(Base):
     __table_args__ = (
         Index('idx_conversation_status_scheduled', 'status', 'scheduled_at'),
         Index('idx_conversation_client_agent', 'client_id', 'agent_instance_id'),
+        Index('idx_conversation_not_deleted', 'is_deleted', 'status'),
+        Index('idx_conversation_last_message', 'last_message_at', 'status'),
+    )
+
+
+class AgentMessage(Base):
+    """Individual messages within agent conversations"""
+    __tablename__ = "agent_messages"
+    
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()), index=True)
+    conversation_id = Column(String(36), ForeignKey("agent_conversations.conversation_id"), nullable=False)
+    
+    # Message details
+    sender_type = Column(String(20), nullable=False, index=True)  # user, agent, system
+    sender_id = Column(Integer, nullable=True)  # Reference to user/client if applicable
+    content = Column(Text, nullable=False)
+    message_type = Column(String(50), default="text")  # text, image, action, etc.
+    
+    # AI processing details
+    prompt_tokens = Column(Integer, default=0)
+    completion_tokens = Column(Integer, default=0)
+    total_tokens = Column(Integer, default=0)
+    token_cost = Column(Float, default=0.0)
+    
+    # Processing metadata
+    metadata = Column(JSON, default={})
+    processing_time_ms = Column(Integer, nullable=True)
+    ai_provider = Column(String(50), nullable=True)
+    ai_model = Column(String(100), nullable=True)
+    
+    # Status and timing
+    is_delivered = Column(Boolean, default=False)
+    is_read = Column(Boolean, default=False)
+    delivered_at = Column(DateTime, nullable=True)
+    read_at = Column(DateTime, nullable=True)
+    failed_at = Column(DateTime, nullable=True)
+    failure_reason = Column(Text, nullable=True)
+    
+    # Soft delete support
+    is_deleted = Column(Boolean, default=False)
+    deleted_at = Column(DateTime, nullable=True)
+    
+    # Metadata
+    created_at = Column(DateTime, default=utcnow, index=True)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+    
+    # Relationships
+    conversation = relationship("AgentConversation", backref="messages")
+    
+    # Indexes
+    __table_args__ = (
+        Index('idx_message_conversation_created', 'conversation_id', 'created_at'),
+        Index('idx_message_sender_type', 'sender_type', 'created_at'),
+        Index('idx_message_not_deleted', 'is_deleted', 'created_at'),
     )
 
 
