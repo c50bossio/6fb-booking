@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { 
   CurrencyDollarIcon,
   CalendarDaysIcon,
-  TrendingUpIcon,
+  ArrowArrowTrendingUpIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline'
 
@@ -96,7 +96,7 @@ export default function EarningsSection({ userRole, dateRange }: EarningsSection
                   }
                 </p>
               </div>
-              <TrendingUpIcon className="h-5 w-5 text-orange-600" />
+              <ArrowTrendingUpIcon className="h-5 w-5 text-orange-600" />
             </div>
           </CardContent>
         </Card>

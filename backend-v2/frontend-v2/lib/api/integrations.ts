@@ -208,6 +208,34 @@ export const reviewsApi = {
   }
 }
 
+// Tracking API placeholder for conversion tracking
+export const trackingApi = {
+  async setupGoogleAnalytics(config: any) {
+    return { success: true }
+  },
+  async setupMetaPixel(config: any) {
+    return { success: true }
+  },
+  async setupGoogleTagManager(config: any) {
+    return { success: true }
+  },
+  async trackEvent(eventName: string, data: any) {
+    return { success: true }
+  },
+  async getTrackingStatus() {
+    return { ga: false, meta: false, gtm: false }
+  },
+  async getConversionData(dateRange: any) {
+    return { events: [], conversions: 0, revenue: 0 }
+  },
+  async validatePixel(provider: string, pixelId: string) {
+    return { valid: true }
+  },
+  async testConversion(provider: string) {
+    return { success: true }
+  }
+}
+
 // Export commonly used methods directly
 export const {
   initiateOAuth,

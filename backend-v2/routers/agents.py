@@ -22,9 +22,9 @@ from schemas_new.agent import (
 )
 from models import (
     User, Agent, AgentInstance, AgentConversation, AgentSubscription,
-    AgentType, AgentStatus, ConversationStatus, AgentMessage, AgentMetrics
+    AgentType, AgentStatus, ConversationStatus, AgentMessage, AgentMetrics,
+    AgentTemplate
 )
-from models.agent import AgentTemplate
 from services.agent_orchestration_service import agent_orchestration_service
 from services.agent_templates import agent_templates
 from services.ai_providers import AIProviderManager
