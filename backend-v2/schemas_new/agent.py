@@ -176,11 +176,11 @@ class ConversationMessage(BaseModel):
 class AgentMessageCreate(BaseModel):
     """Schema for creating a new agent message"""
     conversation_id: str
-    sender_type: str = Field(..., regex="^(user|agent|system)$")
+    sender_type: str = Field(..., pattern="^(user|agent|system)$")
     sender_id: Optional[int] = None
     content: str = Field(..., min_length=1)
     message_type: str = Field(default="text", max_length=50)
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    message_metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
 class AgentMessageResponse(BaseModel):
@@ -195,7 +195,7 @@ class AgentMessageResponse(BaseModel):
     completion_tokens: int
     total_tokens: int
     token_cost: float
-    metadata: Dict[str, Any]
+    message_metadata: Dict[str, Any]
     processing_time_ms: Optional[int]
     ai_provider: Optional[str]
     ai_model: Optional[str]

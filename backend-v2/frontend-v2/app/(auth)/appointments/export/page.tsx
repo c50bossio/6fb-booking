@@ -122,6 +122,13 @@ export default function AppointmentExportPage() {
     console.log('Export options:', options)
   }
 
+  const handleSelectionChange = (selectedIds: string[]) => {
+    const selectedAppointments = appointments.filter(apt => 
+      selectedIds.includes(apt.id.toString())
+    )
+    setSelectedAppointments(selectedAppointments)
+  }
+
   const handleStatusChange = (id: number, status: Appointment['status']) => {
     setAppointments(prev => 
       prev.map(apt => apt.id === id ? { ...apt, status } : apt)
@@ -185,7 +192,7 @@ export default function AppointmentExportPage() {
         <TabsContent value="list">
           <BulkSelectableAppointmentList
             appointments={appointments}
-            onSelectionChange={setSelectedAppointments}
+            onSelectionChange={handleSelectionChange}
             onStatusChange={handleStatusChange}
           />
         </TabsContent>

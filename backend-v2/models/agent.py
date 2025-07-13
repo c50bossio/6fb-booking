@@ -276,7 +276,7 @@ class AgentMessage(Base):
     token_cost = Column(Float, default=0.0)
     
     # Processing metadata
-    metadata = Column(JSON, default={})
+    message_metadata = Column(JSON, default={})
     processing_time_ms = Column(Integer, nullable=True)
     ai_provider = Column(String(50), nullable=True)
     ai_model = Column(String(100), nullable=True)

@@ -180,6 +180,34 @@ export const marketingApi = {
   }
 }
 
+// Reviews API placeholder for review management
+export const reviewsApi = {
+  async getReviews(locationId?: string) {
+    return []
+  },
+  async getReviewSummary(locationId?: string) {
+    return { total: 0, average: 0, recent: [] }
+  },
+  async respondToReview(reviewId: string, response: string) {
+    return { success: true }
+  },
+  async getResponseTemplates() {
+    return []
+  },
+  async createResponseTemplate(template: any) {
+    return template
+  },
+  async updateResponseTemplate(id: string, template: any) {
+    return template
+  },
+  async deleteResponseTemplate(id: string) {
+    return { success: true }
+  },
+  async syncReviews(locationId: string) {
+    return { success: true, count: 0 }
+  }
+}
+
 // Export commonly used methods directly
 export const {
   initiateOAuth,
