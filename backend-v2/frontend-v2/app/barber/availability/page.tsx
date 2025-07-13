@@ -73,10 +73,10 @@ export default function BarberAvailabilityPage() {
   const fetchAvailabilityData = async (barberId: number) => {
     try {
       const token = localStorage.getItem('token');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
       // Fetch regular availability
-      const regularResponse = await fetch(`${apiUrl}/barber-availability/availability/${barberId}`, {
+      const regularResponse = await fetch(`${apiUrl}/api/v1/barber-availability/availability/${barberId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -100,7 +100,7 @@ export default function BarberAvailabilityPage() {
       }
 
       // Fetch time off requests
-      const timeOffResponse = await fetch(`${apiUrl}/barber-availability/time-off/${barberId}`, {
+      const timeOffResponse = await fetch(`${apiUrl}/api/v1/barber-availability/time-off/${barberId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -110,7 +110,7 @@ export default function BarberAvailabilityPage() {
       }
 
       // Fetch special availability
-      const specialResponse = await fetch(`${apiUrl}/barber-availability/special/${barberId}`, {
+      const specialResponse = await fetch(`${apiUrl}/api/v1/barber-availability/special/${barberId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -141,11 +141,11 @@ export default function BarberAvailabilityPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
       if (updatedDay.id) {
         // Update existing
-        await fetch(`${apiUrl}/barber-availability/availability/${updatedDay.id}`, {
+        await fetch(`${apiUrl}/api/v1/barber-availability/availability/${updatedDay.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -159,7 +159,7 @@ export default function BarberAvailabilityPage() {
         });
       } else if (updatedDay.is_active) {
         // Create new (only if active)
-        const response = await fetch(`${apiUrl}/barber-availability/availability/${barberId}`, {
+        const response = await fetch(`${apiUrl}/api/v1/barber-availability/availability/${barberId}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -207,9 +207,9 @@ export default function BarberAvailabilityPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-      const response = await fetch(`${apiUrl}/barber-availability/time-off/${barberId}`, {
+      const response = await fetch(`${apiUrl}/api/v1/barber-availability/time-off/${barberId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -249,9 +249,9 @@ export default function BarberAvailabilityPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-      const response = await fetch(`${apiUrl}/barber-availability/special/${barberId}`, {
+      const response = await fetch(`${apiUrl}/api/v1/barber-availability/special/${barberId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

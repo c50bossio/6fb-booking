@@ -607,6 +607,35 @@ function ConversionOptimizedBookingContent({
 
   const selectedServiceData = selectedService ? services.find(s => s.id === selectedService) : null
 
+  // Helper function for slot styling
+  const getSlotClassName = (slot: TimeSlot) => {
+    if (selectedTime === slot.time) {
+      return 'w-full p-3 rounded-lg text-center transition-colors relative text-white'
+    }
+    if (slot.available) {
+      if (slot.calendar_synced) {
+        return 'w-full p-3 rounded-lg text-center transition-colors relative bg-green-50 border border-green-200 hover:bg-green-100 text-gray-900'
+      }
+      return 'w-full p-3 rounded-lg text-center transition-colors relative bg-gray-100 hover:bg-gray-200 text-gray-900'
+    }
+    if (slot.calendar_conflicts && slot.calendar_conflicts.length > 0) {
+      return 'w-full p-3 rounded-lg text-center transition-colors relative bg-red-50 border border-red-200 text-red-400 cursor-not-allowed'
+    }
+    return 'w-full p-3 rounded-lg text-center transition-colors relative bg-gray-50 text-gray-400 cursor-not-allowed'
+  }
+
+  // Helper function for slot title
+  const getSlotTitle = (slot: TimeSlot) => {
+    if (slot.calendar_conflicts && slot.calendar_conflicts.length > 0) {
+      const conflictTitle = slot.calendar_conflicts[0]?.title || 'Busy'
+      return `Calendar conflict: ${conflictTitle}`
+    }
+    if (slot.calendar_synced) {
+      return 'Calendar integrated - verified availability'
+    }
+    return undefined
+  }
+
   // Load time slots when date changes
   useEffect(() => {
     if (selectedDate && barberId && selectedService) {
@@ -887,27 +916,11 @@ function ConversionOptimizedBookingContent({
                               <button
                                 onClick={() => slot.available && handleDateTimeSelect(selectedDate, slot.time)}
                                 disabled={!slot.available}
-                                className={`w-full p-3 rounded-lg text-center transition-colors relative ${
-                                  selectedTime === slot.time
-                                    ? 'text-white'
-                                    : slot.available
-                                    ? slot.calendar_synced
-                                      ? 'bg-green-50 border border-green-200 hover:bg-green-100 text-gray-900'
-                                      : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
-                                    : slot.calendar_conflicts && slot.calendar_conflicts.length > 0
-                                    ? 'bg-red-50 border border-red-200 text-red-400 cursor-not-allowed'
-                                    : 'bg-gray-50 text-gray-400 cursor-not-allowed'
-                                }`}
+                                className={getSlotClassName(slot)}
                                 style={{
                                   backgroundColor: selectedTime === slot.time ? primaryColor : undefined
                                 }}
-                                title={
-                                  slot.calendar_conflicts && slot.calendar_conflicts.length > 0
-                                    ? `Calendar conflict: ${slot.calendar_conflicts[0]?.title || 'Busy'}`
-                                    : slot.calendar_synced
-                                    ? 'Calendar integrated - verified availability'
-                                    : undefined
-                                }
+                                title={getSlotTitle(slot)}
                               >
                                 {slot.time}
                                 

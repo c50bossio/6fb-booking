@@ -49,7 +49,8 @@ export function Logo({
         return isDark ? '/logos/logo-white.png' : '/logos/logo-black.png'
       case 'auto':
       default:
-        return isDark ? '/logos/logo-white.png' : '/logos/logo-black.png'
+        // Use color logo as fallback if theme detection fails
+        return isDark ? '/logos/logo-white.png' : '/logos/logo-color.png'
     }
   }
   
@@ -76,6 +77,17 @@ export function Logo({
           filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.05))'
         }}
         priority
+        unoptimized={true} // Prevent Next.js optimization issues
+        onError={(e) => {
+          console.error('Logo failed to load:', logoSrc, e);
+          // Fallback to text if image fails
+          const target = e.target as HTMLImageElement;
+          target.style.display = 'none';
+          const parent = target.parentElement;
+          if (parent) {
+            parent.innerHTML = `<span class="font-bold text-xl text-gray-900 dark:text-white">BOOKEDBARBER</span>`;
+          }
+        }}
       />
     </div>
   )

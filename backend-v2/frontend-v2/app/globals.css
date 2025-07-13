@@ -1325,6 +1325,26 @@
     background-color: rgb(94, 234, 212) !important; /* primary-300 - even brighter */
   }
   
+  /* CRITICAL: Force visibility for primary buttons - highest specificity */
+  button[class*="bg-primary-500"],
+  button[class*="bg-primary-400"],
+  a[class*="bg-primary-500"],
+  a[class*="bg-primary-400"] {
+    background-color: rgb(45, 212, 191) !important; /* Bright teal - clearly visible */
+    color: rgb(17, 24, 39) !important; /* Dark text for high contrast */
+    border: 1px solid rgba(45, 212, 191, 0.8) !important; /* Subtle border for definition */
+  }
+  
+  /* Ensure hover states are also visible */
+  button[class*="bg-primary-500"]:hover,
+  button[class*="bg-primary-400"]:hover,
+  a[class*="bg-primary-500"]:hover,
+  a[class*="bg-primary-400"]:hover {
+    background-color: rgb(94, 234, 212) !important; /* Even brighter on hover */
+    color: rgb(17, 24, 39) !important;
+    border-color: rgba(94, 234, 212, 0.9) !important;
+  }
+  
   /* Outline button visibility */
   .border-primary-300 {
     border-color: rgb(94, 234, 212) !important;
