@@ -418,3 +418,21 @@ export const catalogApi = {
 }
 
 export default catalogApi
+
+// Export individual functions for direct imports
+export const {
+  getServices,
+  getService,
+  createService,
+  updateService,
+  deleteService,
+  duplicateService,
+  getProducts,
+  getProduct,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  getCatalogStats,
+  getServiceAnalytics,
+  getProductAnalytics
+} = catalogApi

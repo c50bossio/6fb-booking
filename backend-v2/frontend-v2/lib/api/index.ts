@@ -9,3 +9,6 @@ export { apiClient, APIClient, api } from './client'
 
 // Export specific functions needed by components
 export * from './catalog'
+
+// Export specific functions for compatibility
+export { catalogApi } from './catalog'
