@@ -122,6 +122,10 @@ export const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
             ref={ref}
             type={inputType}
             disabled={disabled}
+            autoComplete={
+              props.autoComplete || 
+              (type === 'password' && !props.autoComplete ? 'current-password' : undefined)
+            }
             className={cn(
               'pr-10 transition-all duration-200',
               leftIcon && 'pl-10',
@@ -134,7 +138,7 @@ export const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
             aria-describedby={
               showError ? `${props.id}-error` : helperText ? `${props.id}-helper` : undefined
             }
-            {...(({ size, ...rest }) => rest)(props)}
+            {...(({ size, autoComplete, ...rest }) => rest)(props)}
           />
           
           {(renderRightIcon() || showValidating || showError || showSuccessState) && (

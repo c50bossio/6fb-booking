@@ -44,7 +44,7 @@ import {
   Copy,
   RefreshCw
 } from "lucide-react"
-import { api } from "@/lib/api"
+import apiClient from "@/lib/api/client"
 import { useAuth } from "@/hooks/useAuth"
 import { format } from "date-fns"
 
@@ -112,7 +112,7 @@ export default function StaffInvitationsPage() {
         params.append("status", activeTab)
       }
       
-      const response = await api.get<InvitationListResponse>(`/invitations/?${params}`)
+      const response = await apiClient.get<InvitationListResponse>(`/invitations/?${params}`)
       setInvitations(response.invitations)
       setPendingCount(response.pending_count)
       setAcceptedCount(response.accepted_count)
@@ -140,7 +140,7 @@ export default function StaffInvitationsPage() {
 
     setLoading(true)
     try {
-      const response = await api.post<Invitation>("/invitations/", {
+      const response = await apiClient.post<Invitation>("/invitations/", {
         email: inviteEmail,
         first_name: inviteFirstName || undefined,
         last_name: inviteLastName || undefined,
@@ -178,7 +178,7 @@ export default function StaffInvitationsPage() {
   const resendInvitation = async (invitationId: number) => {
     setLoading(true)
     try {
-      await api.post(`/invitations/${invitationId}/resend`)
+      await apiClient.post(`/invitations/${invitationId}/resend`)
       toast({
         title: "Success",
         description: "Invitation resent successfully"
@@ -200,7 +200,7 @@ export default function StaffInvitationsPage() {
 
     setLoading(true)
     try {
-      await api.delete(`/invitations/${invitationId}`)
+      await apiClient.delete(`/invitations/${invitationId}`)
       toast({
         title: "Success",
         description: "Invitation cancelled"

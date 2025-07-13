@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/Badge'
 import { Select } from '@/components/ui/Select'
 import { AgentAnalytics } from '@/components/agents/AgentAnalytics'
 import { BusinessIntelligenceDashboard } from '@/components/agents/BusinessIntelligenceDashboard'
+import { RealTimePerformanceTracker } from '@/components/agents/RealTimePerformanceTracker'
+import { CompetitiveBenchmarkingPanel } from '@/components/agents/CompetitiveBenchmarkingPanel'
 import { agentsApi, type AgentAnalytics as AgentAnalyticsType } from '@/lib/api/agents'
 
 // Using the AgentAnalytics type from the API
@@ -98,10 +100,10 @@ export default function AgentAnalyticsPage() {
           
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Agent Analytics
+              AI Agent Intelligence Hub
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Track performance and ROI of your AI agents
+              Real-time performance monitoring, competitive benchmarking, and business intelligence
             </p>
           </div>
         </div>
@@ -296,6 +298,12 @@ export default function AgentAnalyticsPage() {
               </div>
             </Card>
           </div>
+
+          {/* Real-Time Performance Monitoring */}
+          <RealTimePerformanceTracker initialData={analytics} />
+
+          {/* Competitive Benchmarking */}
+          <CompetitiveBenchmarkingPanel data={analytics} />
 
           {/* Business Intelligence Dashboard */}
           <BusinessIntelligenceDashboard data={analytics} />
