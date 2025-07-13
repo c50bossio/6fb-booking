@@ -38,11 +38,11 @@ import { ServicePricingOptimization } from '@/components/services/ServicePricing
 import { 
   getProfile,
   getServices,
-  getServiceAnalytics,
   getServiceMetrics,
   type Service,
   type User
 } from '@/lib/api'
+import { getServiceAnalytics } from '@/lib/api/catalog'
 import { LoadingSpinner } from '@/components/ui/LoadingStates'
 import { EmptyState } from '@/components/ui/EmptyState'
 

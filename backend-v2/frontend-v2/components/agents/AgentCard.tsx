@@ -23,8 +23,8 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Minus,
-  Lightning,
-  Optimize,
+  Sliders,
+  Zap,
   TrendingDown,
   Star,
   Medal
@@ -353,7 +353,7 @@ export function AgentCard({
       {topRecommendation && (
         <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
           <div className="flex items-start space-x-2">
-            <Lightning className="w-4 h-4 text-blue-600 mt-0.5" />
+            <Zap className="w-4 h-4 text-blue-600 mt-0.5" />
             <div className="flex-1">
               <div className="flex items-center space-x-2 mb-1">
                 <span className="text-sm font-medium text-blue-900 dark:text-blue-200">
@@ -384,7 +384,7 @@ export function AgentCard({
                   onClick={() => onAction(agent.id, 'optimize')}
                   className="text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-900/20 h-6 px-2 text-xs"
                 >
-                  <Optimize className="w-3 h-3 mr-1" />
+                  <Sliders className="w-3 h-3 mr-1" />
                   Optimize
                 </Button>
               </div>
@@ -448,6 +448,16 @@ export function AgentCard({
           >
             <TrendingUp className="w-4 h-4 mr-1" />
             Analytics
+          </Button>
+          
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => router.push(`/agents/compare?selected=${agent.id}`)}
+            className="text-blue-600 hover:text-blue-900 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
+          >
+            <Target className="w-4 h-4 mr-1" />
+            Compare
           </Button>
 
           {canDelete && (

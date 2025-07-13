@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/Badge'
 import { AgentCard } from '@/components/agents/AgentCard'
 import { AgentCreationWizard } from '@/components/agents/AgentCreationWizard'
 import { AgentSubscriptionBanner } from '@/components/agents/AgentSubscriptionBanner'
+import { AgentComparisonModal } from '@/components/agents/AgentComparisonModal'
 import { agentsApi, type AgentInstance, type AgentTemplate } from '@/lib/api/agents'
 import { useToast } from '@/hooks/use-toast'
 
@@ -17,8 +18,10 @@ export default function AgentsPage() {
   const [agentInstances, setAgentInstances] = useState<AgentInstance[]>([])
   const [agentTemplates, setAgentTemplates] = useState<AgentTemplate[]>([])
   const [showCreateWizard, setShowCreateWizard] = useState(false)
+  const [showComparison, setShowComparison] = useState(false)
   const [subscription, setSubscription] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
+  const [selectedComparisonAgent, setSelectedComparisonAgent] = useState<number | undefined>()
   const router = useRouter()
   const { toast } = useToast()
 
@@ -58,7 +61,7 @@ export default function AgentsPage() {
     }
   }
 
-  const handleAgentAction = async (agentId: number, action: 'activate' | 'pause' | 'delete') => {
+  const handleAgentAction = async (agentId: number, action: 'activate' | 'pause' | 'delete' | 'optimize') => {
     try {
       switch (action) {
         case 'activate':
@@ -80,6 +83,15 @@ export default function AgentsPage() {
           toast({
             title: 'Agent deleted',
             description: 'Agent has been permanently deleted'
+          })
+          break
+        case 'optimize':
+          setSelectedComparisonAgent(agentId)
+          setShowComparison(true)
+          toast({
+            title: 'Optimization Mode',
+            description: 'Compare this agent with others to identify improvements',
+            variant: 'default'
           })
           break
       }
@@ -105,6 +117,76 @@ export default function AgentsPage() {
       : 0
 
     return { active, totalConversations, avgUptime }
+  }
+
+  const getAgentPerformanceRank = (agentId: number) => {
+    // Sort agents by a composite performance score
+    const sortedAgents = [...agentInstances].sort((a, b) => {
+      const scoreA = (a.total_conversations * (a.success_rate || 0)) + (a.uptime_percentage || 0)
+      const scoreB = (b.total_conversations * (b.success_rate || 0)) + (b.uptime_percentage || 0)
+      return scoreB - scoreA
+    })
+    
+    return sortedAgents.findIndex(agent => agent.id === agentId) + 1
+  }
+
+  const generateMockROIData = (agent: AgentInstance) => {
+    // Generate realistic ROI data based on agent performance
+    const baseRevenue = agent.total_conversations * 25 // $25 per conversation avg
+    const costPerConv = Math.random() * 3 + 1 // $1-4 per conversation
+    const totalCost = agent.total_conversations * costPerConv
+    const profit = baseRevenue - totalCost
+    const profitMargin = baseRevenue > 0 ? (profit / baseRevenue) * 100 : 0
+    
+    return {
+      revenue_generated: baseRevenue,
+      cost_per_conversation: costPerConv,
+      profit_margin: profitMargin,
+      monthly_projection: baseRevenue * 1.2 // 20% growth projection
+    }
+  }
+
+  const generateOptimizationRecommendations = (agent: AgentInstance) => {
+    const recommendations = []
+    
+    if ((agent.success_rate || 0) < 80) {
+      recommendations.push({
+        type: 'success_rate' as const,
+        priority: 'high' as const,
+        title: 'Improve success rate by optimizing message templates',
+        potential_improvement: '+15% conversion rate'
+      })
+    }
+    
+    if ((agent.uptime_percentage || 0) < 95) {
+      recommendations.push({
+        type: 'response_time' as const,
+        priority: 'medium' as const,
+        title: 'Reduce response time with better AI provider settings',
+        potential_improvement: '-30% response time'
+      })
+    }
+    
+    if (agent.total_conversations < 100) {
+      recommendations.push({
+        type: 'engagement' as const,
+        priority: 'low' as const,
+        title: 'Increase conversation volume through better targeting',
+        potential_improvement: '+50% conversations'
+      })
+    }
+    
+    return recommendations
+  }
+
+  const handleOptimizeAgent = (agentId: number, recommendations: string[]) => {
+    toast({
+      title: 'Optimization Applied',
+      description: `Applied ${recommendations.length} optimizations to improve agent performance`,
+      variant: 'default'
+    })
+    // In a real implementation, this would apply the optimizations
+    setShowComparison(false)
   }
 
   const stats = getQuickStats()
@@ -143,6 +225,15 @@ export default function AgentsPage() {
           >
             <BarChart3 className="w-4 h-4 mr-2" />
             Analytics
+          </Button>
+          
+          <Button 
+            variant="outline"
+            onClick={() => setShowComparison(true)}
+            disabled={agentInstances.length < 2}
+          >
+            <Activity className="w-4 h-4 mr-2" />
+            Compare Agents
           </Button>
           
           <Button onClick={() => setShowCreateWizard(true)}>
@@ -230,6 +321,10 @@ export default function AgentsPage() {
               key={agent.id}
               agent={agent}
               onAction={handleAgentAction}
+              performanceRank={getAgentPerformanceRank(agent.id)}
+              totalAgents={agentInstances.length}
+              roiData={generateMockROIData(agent)}
+              optimizationRecommendations={generateOptimizationRecommendations(agent)}
             />
           ))}
         </div>

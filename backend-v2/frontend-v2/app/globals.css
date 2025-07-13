@@ -1587,4 +1587,16 @@
   .peer-disabled\:opacity-70 {
     color: rgb(156, 163, 175) !important; /* gray-400 - muted but readable */
   }
+
+  /* Force maximum visibility for all checkbox elements in dark mode */
+  .dark [role="checkbox"] {
+    border: 2px solid rgb(229, 231, 235) !important; /* gray-200 - maximum contrast */
+    background-color: rgb(31, 41, 55) !important; /* gray-800 background */
+    min-width: 16px !important;
+    min-height: 16px !important;
+  }
+
+  .dark [role="checkbox"]:hover {
+    border-color: rgb(243, 244, 246) !important; /* gray-100 - even higher contrast on hover */
+  }
 }
