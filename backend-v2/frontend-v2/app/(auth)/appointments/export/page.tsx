@@ -170,8 +170,6 @@ export default function AppointmentExportPage() {
               Selected: {selectedAppointments.length}
             </div>
             <EnhancedCalendarExport
-              appointments={appointments}
-              selectedAppointments={selectedAppointments}
               onExport={handleExport}
             />
           </div>

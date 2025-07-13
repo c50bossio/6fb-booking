@@ -152,6 +152,34 @@ class IntegrationsAPI {
 // Export singleton instance
 export const integrationsAPI = new IntegrationsAPI()
 
+// Marketing API placeholder for template management
+export const marketingApi = {
+  async getEmailTemplates() {
+    return []
+  },
+  async getSMSTemplates() {
+    return []
+  },
+  async createEmailTemplate(template: any) {
+    return template
+  },
+  async createSMSTemplate(template: any) {
+    return template
+  },
+  async updateEmailTemplate(id: string, template: any) {
+    return template
+  },
+  async updateSMSTemplate(id: string, template: any) {
+    return template
+  },
+  async deleteEmailTemplate(id: string) {
+    return { success: true }
+  },
+  async deleteSMSTemplate(id: string) {
+    return { success: true }
+  }
+}
+
 // Export commonly used methods directly
 export const {
   initiateOAuth,
