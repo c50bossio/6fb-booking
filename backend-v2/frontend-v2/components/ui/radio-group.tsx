@@ -45,3 +45,6 @@ export const RadioOption: React.FC<RadioOptionProps> = ({ value, children, class
     </label>
   )
 }
+
+// Export RadioGroupItem alias for compatibility
+export { RadioOption as RadioGroupItem }

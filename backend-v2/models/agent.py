@@ -246,6 +246,7 @@ class AgentConversation(Base):
     agent_instance = relationship("AgentInstance", back_populates="conversations")
     client = relationship("Client", backref="agent_conversations")
     appointment = relationship("Appointment", backref="agent_conversation")
+    agent_messages = relationship("AgentMessage", back_populates="conversation")
     
     # Indexes
     __table_args__ = (
@@ -298,7 +299,7 @@ class AgentMessage(Base):
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     
     # Relationships
-    conversation = relationship("AgentConversation", backref="messages")
+    conversation = relationship("AgentConversation", back_populates="agent_messages")
     
     # Indexes
     __table_args__ = (

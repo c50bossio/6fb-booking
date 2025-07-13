@@ -72,5 +72,8 @@ class APIClient {
 const apiClient = new APIClient()
 export default apiClient
 
-// Also export the class for named imports
+// Also export the class for named imports  
 export { APIClient, apiClient }
+
+// Export api alias directly from source
+export { apiClient as api }

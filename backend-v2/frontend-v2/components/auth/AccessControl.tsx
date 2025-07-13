@@ -17,3 +17,6 @@ export const AccessControl: React.FC<AccessControlProps> = ({
   // In a real implementation, this would check user permissions
   return <>{children}</>
 }
+
+// Export as default for compatibility
+export default AccessControl

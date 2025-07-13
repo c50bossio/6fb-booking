@@ -215,7 +215,9 @@ def configure_cors():
     
     else:
         # Development: Allow localhost and development domains
-        dev_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001").split(",")
+        # Check both ALLOWED_ORIGINS and CORS_ORIGINS for backward compatibility
+        cors_origins_env = os.getenv("CORS_ORIGINS") or os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001")
+        dev_origins = cors_origins_env.split(",")
         allowed_origins = [origin.strip() for origin in dev_origins if origin.strip()]
     
     # Add deployment platform URLs if they exist
