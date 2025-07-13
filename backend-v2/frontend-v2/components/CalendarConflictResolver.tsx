@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
 import { AlertTriangle, Calendar, Clock, CheckCircle, XCircle, ArrowRight, Info } from 'lucide-react'
-import { calendarAPI } from '@/lib/api'
+import { calendarApi } from '@/lib/api/calendar'
 
 interface Conflict {
   id: string

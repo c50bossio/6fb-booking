@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { calendarAPI } from '@/lib/api'
+import { calendarApi } from '@/lib/api/calendar'
 import { RefreshCw, AlertCircle, CheckCircle, Clock, Calendar, Info } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -40,7 +40,7 @@ export default function CalendarSync() {
   const fetchSyncStatus = async () => {
     try {
       setLoading(true)
-      const status = await calendarAPI.getSyncStatus()
+      const status = await calendarApi.getSyncStatus()
       setSyncStatus(status)
     } catch (error) {
       console.error('Error fetching sync status:', error)
@@ -62,10 +62,10 @@ export default function CalendarSync() {
       setSyncing(true)
       setSyncResult(null)
       
-      const result = await calendarAPI.bulkSync({
-        start_date: new Date(dateRange.start).toISOString(),
-        end_date: new Date(dateRange.end).toISOString()
-      })
+      const result = await calendarApi.bulkSyncAppointments(
+        new Date(dateRange.start),
+        new Date(dateRange.end)
+      )
 
       setSyncResult({
         success: result.results.synced || 0,
@@ -96,7 +96,7 @@ export default function CalendarSync() {
 
     try {
       setSyncing(true)
-      const result = await calendarAPI.cleanupOrphaned()
+      const result = await calendarApi.cleanupOrphanedEvents()
       
       // Show result in sync result format
       setSyncResult({

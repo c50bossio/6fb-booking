@@ -223,7 +223,13 @@ const TimeSlots = React.memo(function TimeSlots({
             const ariaLabelParts = [formatTime(slot.time)];
             if (isSelected) ariaLabelParts.push('Selected');
             if (isNextAvailable) ariaLabelParts.push('Next available');
-            if (!slot.available) ariaLabelParts.push('Unavailable');
+            if (!slot.available) {
+              ariaLabelParts.push('Unavailable');
+              if (slot.calendar_conflicts && slot.calendar_conflicts.length > 0) {
+                ariaLabelParts.push('Calendar conflict');
+              }
+            }
+            if (slot.calendar_synced) ariaLabelParts.push('Calendar integrated');
             
             return (
               <div key={slot.time} className="relative" role="gridcell">
@@ -240,16 +246,36 @@ const TimeSlots = React.memo(function TimeSlots({
                     w-full px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 relative
                     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500
                     ${!slot.available 
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                      ? slot.calendar_conflicts && slot.calendar_conflicts.length > 0
+                        ? 'bg-red-50 text-red-400 cursor-not-allowed border border-red-200' 
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       : isSelected
                         ? 'bg-primary-600 text-white'
                         : isNextAvailable
                           ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg ring-2 ring-primary-300 hover:from-primary-600 hover:to-primary-700'
-                          : 'bg-white border border-gray-300 text-gray-700 hover:border-primary-400 hover:bg-primary-50'
+                          : slot.calendar_synced
+                            ? 'bg-white border border-green-300 text-gray-700 hover:border-primary-400 hover:bg-primary-50'
+                            : 'bg-white border border-gray-300 text-gray-700 hover:border-primary-400 hover:bg-primary-50'
                     }
                   `}
                 >
                   <span aria-hidden="true">{formatTime(slot.time)}</span>
+                  {/* Calendar sync indicator */}
+                  {slot.calendar_synced && (
+                    <span 
+                      className="absolute bottom-0 right-0 w-2 h-2 bg-green-400 rounded-full"
+                      aria-hidden="true"
+                      title="Calendar integrated"
+                    />
+                  )}
+                  {/* Calendar conflict indicator */}
+                  {slot.calendar_conflicts && slot.calendar_conflicts.length > 0 && (
+                    <span 
+                      className="absolute top-0 left-0 w-2 h-2 bg-red-400 rounded-full"
+                      aria-hidden="true"
+                      title={`Calendar conflict: ${slot.calendar_conflicts[0].title || 'Busy'}`}
+                    />
+                  )}
                 </button>
                 {isNextAvailable && slot.available && (
                   <>
