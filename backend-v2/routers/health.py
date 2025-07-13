@@ -15,7 +15,7 @@ from services.redis_service import cache_service
 from config import settings
 
 router = APIRouter(
-    prefix="/api/v1/health",
+    prefix="/health",
     tags=["health"]
 )
 

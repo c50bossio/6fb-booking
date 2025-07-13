@@ -1,13 +1,13 @@
-#\!/usr/bin/env python3
+#!/usr/bin/env python3
 import requests
 from datetime import datetime, timedelta
 import json
 
 # Login first
 login_response = requests.post('http://localhost:8000/api/v1/auth/login', 
-    json={'email': 'john@example.com', 'password': 'Test123\!@#'})
+    json={'email': 'john@example.com', 'password': 'Test123!@#'})
 
-if login_response.status_code \!= 200:
+if login_response.status_code != 200:
     print(f"Login failed: {login_response.status_code}")
     print(login_response.text)
     exit(1)
@@ -17,7 +17,7 @@ headers = {'Authorization': f'Bearer {token}'}
 
 # Get appointments
 appointments_response = requests.get('http://localhost:8000/api/v1/appointments/', headers=headers)
-if appointments_response.status_code \!= 200:
+if appointments_response.status_code != 200:
     print(f"Failed to get appointments: {appointments_response.status_code}")
     exit(1)
 

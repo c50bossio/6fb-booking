@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { getProfile, logout as apiLogout, type User } from '@/lib/api'
+import { tokenManager, isTokenValid, getValidToken, clearTokens } from '@/lib/tokenManager'
 
 export interface AuthState {
   user: User | null
@@ -68,71 +69,42 @@ export function useAuth(): AuthState & { logout: () => Promise<void> } {
     }, 5000)
     
     try {
-      
-      // Check if we have a token first
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
-      console.log('🔍 checkAuthState: Token present:', !!token)
+      // Use token manager to get valid token (with automatic refresh)
+      const token = await getValidToken()
       
       if (!token) {
-        console.log('🔍 checkAuthState: No token, ensuring clean state')
-        // Also clear any stale cookies
-        if (typeof window !== 'undefined') {
-          document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
-        }
+        console.log('🔍 checkAuthState: No valid token available')
+        clearTokens()
         updateGlobalState({ user: null, isLoading: false, isChecking: false, hasChecked: true })
         clearTimeout(timeoutId)
         return
       }
 
-      console.log('🔍 checkAuthState: Token found, validating with API')
+      console.log('🔍 checkAuthState: Valid token obtained, fetching user profile')
       
-      // Make a direct API call to validate the token
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      const response = await fetch(`${API_URL}/api/v1/auth/me`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      })
-
-      if (response.ok) {
-        const userData = await response.json()
-        console.log('🔍 checkAuthState: Token valid, user authenticated:', userData)
-        // Ensure cookie is set for middleware
-        if (typeof window !== 'undefined') {
-          document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
-        }
-        updateGlobalState({ user: userData, isLoading: false, isChecking: false, hasChecked: true })
-      } else if (response.status === 401 || response.status === 403) {
-        console.log('🔍 checkAuthState: Token invalid/expired, clearing all auth storage')
-        // Clear all token storage locations
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('token')
-          localStorage.removeItem('refresh_token')
-          localStorage.removeItem('user')
-          // Clear cookie as well
-          document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
-        }
-        updateGlobalState({ user: null, isLoading: false, isChecking: false, hasChecked: true })
-      } else {
-        console.warn('🔍 checkAuthState: API call failed with status:', response.status)
-        // Don't clear tokens for server errors, just set user to null
-        updateGlobalState({ user: null, isLoading: false, isChecking: false, hasChecked: true })
-      }
+      // Get user profile using the enhanced API with retry logic
+      const userData = await getProfile()
+      
+      console.log('🔍 checkAuthState: User profile fetched successfully')
+      updateGlobalState({ user: userData, isLoading: false, isChecking: false, hasChecked: true })
+      
     } catch (error) {
       console.warn('🔍 checkAuthState: Auth check failed:', error)
       
-      // Clear tokens on network/auth errors
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token')
-        localStorage.removeItem('refresh_token')
-        localStorage.removeItem('user')
-        document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
-      }
-      updateGlobalState({ user: null, isLoading: false, isChecking: false, hasChecked: true })
+      // Clear tokens and update state
+      clearTokens()
+      
+      const errorMessage = error instanceof Error ? error.message : 'Authentication failed'
+      updateGlobalState({ 
+        user: null, 
+        isLoading: false, 
+        isChecking: false, 
+        hasChecked: true,
+        error: errorMessage
+      })
     } finally {
       clearTimeout(timeoutId)
-      console.log('🔍 checkAuthState: Auth check complete, loading finished')
+      console.log('🔍 checkAuthState: Auth check complete')
     }
   }
 
@@ -140,19 +112,19 @@ export function useAuth(): AuthState & { logout: () => Promise<void> } {
     try {
       console.log('🔓 logout: Starting logout process')
       await apiLogout()
-      updateGlobalState({ user: null, error: null })
       
-      // Ensure complete cleanup of all auth storage
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token')
-        localStorage.removeItem('refresh_token')
-        localStorage.removeItem('user')
-        // Clear session storage too
-        sessionStorage.clear()
-        // Clear auth cookie
-        document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
-        console.log('🔓 logout: All auth storage cleared')
-      }
+      // Use token manager for complete cleanup
+      clearTokens()
+      
+      updateGlobalState({ 
+        user: null, 
+        error: null, 
+        isLoading: false, 
+        isChecking: false, 
+        hasChecked: true 
+      })
+      
+      console.log('🔓 logout: All auth storage cleared')
       
       // Redirect to homepage after logout
       if (typeof window !== 'undefined') {
@@ -161,16 +133,17 @@ export function useAuth(): AuthState & { logout: () => Promise<void> } {
       }
     } catch (error) {
       console.error('Logout failed:', error)
-      updateGlobalState({ error: 'Logout failed' })
       
       // Even if API logout fails, clear local storage
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token')
-        localStorage.removeItem('refresh_token')
-        localStorage.removeItem('user')
-        sessionStorage.clear()
-        document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
-      }
+      clearTokens()
+      
+      updateGlobalState({ 
+        user: null, 
+        error: 'Logout failed',
+        isLoading: false, 
+        isChecking: false, 
+        hasChecked: true 
+      })
     }
   }
 
@@ -189,5 +162,5 @@ export function useAuth(): AuthState & { logout: () => Promise<void> } {
  */
 export function isAuthenticatedSync(): boolean {
   if (typeof window === 'undefined') return false
-  return !!localStorage.getItem('token')
+  return isTokenValid()
 }

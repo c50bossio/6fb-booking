@@ -103,9 +103,10 @@ const CookieConsent: React.FC<CookieConsentProps> = ({ className }) => {
             'shadow-lg transform transition-transform duration-300 ease-out',
             className
           )}
-          role="dialog"
-          aria-labelledby="cookie-banner-title"
-          aria-describedby="cookie-banner-description"
+          role="region"
+          aria-label="Cookie consent banner"
+          aria-live="polite"
+          aria-atomic="true"
         >
             <div className="container mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -122,12 +123,17 @@ const CookieConsent: React.FC<CookieConsentProps> = ({ className }) => {
                         {!showDetails && (
                           <button
                             type="button"
-                            className="ml-1 text-primary hover:underline focus:outline-none focus:underline"
+                            className="ml-1 text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm"
                             onClick={() => setShowDetails(!showDetails)}
                             aria-expanded={showDetails}
                             aria-controls="cookie-details"
+                            aria-describedby="learn-more-description"
                           >
                             Learn more
+                            <span id="learn-more-description" className="sr-only">
+                              Show detailed information about cookie categories and preferences
+                            </span>
+                            <ChevronDown className="h-3 w-3 inline ml-1" aria-hidden="true" />
                           </button>
                         )}
                       </p>
@@ -172,10 +178,11 @@ const CookieConsent: React.FC<CookieConsentProps> = ({ className }) => {
                               <div className="mt-3 flex items-center gap-2">
                                 <button
                                   type="button"
-                                  className="text-xs text-primary hover:underline focus:outline-none focus:underline"
+                                  className="text-xs text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm p-1"
                                   onClick={() => setShowDetails(false)}
                                   aria-expanded={showDetails}
                                   aria-controls="cookie-details"
+                                  aria-label="Hide detailed cookie information"
                                 >
                                   <ChevronUp className="h-3 w-3 inline mr-1" aria-hidden="true" />
                                   Show less
@@ -189,15 +196,19 @@ const CookieConsent: React.FC<CookieConsentProps> = ({ className }) => {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center lg:flex-shrink-0">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center lg:flex-shrink-0" role="group" aria-label="Cookie consent actions">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={handleRejectAll}
                     disabled={isSaving}
                     className="w-full sm:w-auto"
+                    aria-describedby="reject-all-description"
                   >
                     Reject All
+                    <span id="reject-all-description" className="sr-only">
+                      Reject all non-essential cookies and use only necessary cookies
+                    </span>
                   </Button>
                   
                   <Button
@@ -206,9 +217,13 @@ const CookieConsent: React.FC<CookieConsentProps> = ({ className }) => {
                     onClick={() => setShowPreferences(true)}
                     disabled={isSaving}
                     className="w-full sm:w-auto"
+                    aria-describedby="manage-prefs-description"
                   >
                     <Settings className="h-4 w-4 mr-2" aria-hidden="true" />
                     Manage Preferences
+                    <span id="manage-prefs-description" className="sr-only">
+                      Open detailed preferences to customize which cookie categories to enable
+                    </span>
                   </Button>
                   
                   <Button
@@ -216,8 +231,12 @@ const CookieConsent: React.FC<CookieConsentProps> = ({ className }) => {
                     onClick={handleAcceptAll}
                     disabled={isSaving}
                     className="w-full sm:w-auto"
+                    aria-describedby="accept-all-description"
                   >
                     Accept All
+                    <span id="accept-all-description" className="sr-only">
+                      Accept all cookies including analytics, marketing, and functional cookies
+                    </span>
                   </Button>
                 </div>
               </div>
@@ -227,32 +246,42 @@ const CookieConsent: React.FC<CookieConsentProps> = ({ className }) => {
 
       {/* Preferences Modal */}
       <Dialog open={showPreferences} onOpenChange={setShowPreferences}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent 
+          className="max-w-2xl max-h-[90vh] overflow-y-auto"
+          aria-labelledby="preferences-title"
+          aria-describedby="preferences-description"
+        >
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle id="preferences-title" className="flex items-center gap-2">
               <Settings className="h-5 w-5" aria-hidden="true" />
               Cookie Preferences
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription id="preferences-description">
               Customize your cookie settings. You can change these preferences at any time in your privacy settings.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="space-y-4" role="group" aria-label="Cookie category preferences">
             {Object.entries(categoryInfo).map(([key, info]) => {
               const Icon = info.icon
               const isRequired = key === 'necessary'
               const enabled = isRequired ? true : tempCategories[key as keyof CookieCategories]
 
               return (
-                <Card key={key} className={cn(isRequired && 'bg-muted/50')}>
+                <Card 
+                  key={key} 
+                  className={cn(isRequired && 'bg-muted/50')}
+                  role="region"
+                  aria-labelledby={`${key}-title`}
+                  aria-describedby={`${key}-description ${key}-examples`}
+                >
                   <CardHeader className="pb-3">
                     <CardTitle className="flex items-center justify-between text-base">
                       <div className="flex items-center gap-2">
                         <Icon className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-                        {info.title}
+                        <span id={`${key}-title`}>{info.title}</span>
                         {isRequired && (
-                          <span className="text-xs font-normal text-muted-foreground px-2 py-0.5 bg-muted rounded">
+                          <span className="text-xs font-normal text-muted-foreground px-2 py-0.5 bg-muted rounded" aria-label="This category is required and cannot be disabled">
                             Required
                           </span>
                         )}
@@ -261,15 +290,16 @@ const CookieConsent: React.FC<CookieConsentProps> = ({ className }) => {
                         checked={enabled}
                         onCheckedChange={(checked) => handleCategoryChange(key as keyof CookieCategories, checked)}
                         disabled={isRequired}
-                        aria-label={`Toggle ${info.title}`}
+                        aria-label={`${isRequired ? 'Required' : 'Toggle'} ${info.title} cookies`}
+                        aria-describedby={`${key}-description`}
                       />
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    <p className="text-sm text-muted-foreground mb-2">
+                    <p id={`${key}-description`} className="text-sm text-muted-foreground mb-2">
                       {info.description}
                     </p>
-                    <div className="text-xs text-muted-foreground">
+                    <div id={`${key}-examples`} className="text-xs text-muted-foreground">
                       <strong>Examples:</strong> {info.examples}
                     </div>
                   </CardContent>
@@ -278,17 +308,19 @@ const CookieConsent: React.FC<CookieConsentProps> = ({ className }) => {
             })}
           </div>
 
-          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end pt-4 border-t">
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end pt-4 border-t" role="group" aria-label="Preference actions">
             <Button
               variant="outline"
               onClick={() => setShowPreferences(false)}
               disabled={isSaving}
+              aria-label="Cancel changes and close preferences"
             >
               Cancel
             </Button>
             <Button
               onClick={handleSavePreferences}
               disabled={isSaving}
+              aria-label={isSaving ? 'Saving your cookie preferences...' : 'Save your cookie preferences'}
             >
               {isSaving ? 'Saving...' : 'Save Preferences'}
             </Button>

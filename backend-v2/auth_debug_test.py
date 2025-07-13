@@ -1,4 +1,4 @@
-#\!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 Debug authentication timeout issue
 """
@@ -34,7 +34,7 @@ def test_auth_timeout():
         if elapsed > 5:
             print(f"   ⚠️  WARNING: {elapsed:.1f}s is too slow for invalid login")
     except requests.exceptions.Timeout:
-        print("   ❌ Invalid login TIMED OUT - This is the problem\!")
+        print("   ❌ Invalid login TIMED OUT - This is the problem!")
     except Exception as e:
         print(f"   ❌ Invalid login failed: {str(e)}")
     
@@ -42,4 +42,3 @@ def test_auth_timeout():
 
 if __name__ == "__main__":
     test_auth_timeout()
-EOF < /dev/null

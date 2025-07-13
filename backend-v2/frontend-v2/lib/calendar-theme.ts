@@ -29,7 +29,7 @@ export const SERVICE_COLORS = {
   },
   beard: {
     name: 'Beard Trim',
-    color: '#10B981', // Green
+    color: '#059669', // Emerald 600 - WCAG AA compliant green
     lightColor: '#D1FAE5',
     darkColor: '#047857',
     accentColor: '#34D399',
@@ -47,9 +47,9 @@ export const SERVICE_COLORS = {
   },
   color: {
     name: 'Hair Color',
-    color: '#F59E0B', // Amber
+    color: '#D97706', // Amber 600 - WCAG AA compliant orange
     lightColor: '#FEF3C7',
-    darkColor: '#D97706',
+    darkColor: '#92400E',
     accentColor: '#FBBF24',
     icon: '🎨',
     gradientFrom: 'from-amber-500',
@@ -101,7 +101,7 @@ export const SERVICE_COLORS = {
   },
   consultation: {
     name: 'Consultation',
-    color: '#06B6D4', // Cyan
+    color: '#0891B2', // Cyan 600 - WCAG AA compliant cyan
     lightColor: '#CFFAFE',
     darkColor: '#0891B2',
     accentColor: '#22D3EE',

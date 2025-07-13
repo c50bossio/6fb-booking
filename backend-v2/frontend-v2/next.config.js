@@ -8,7 +8,26 @@ const nextConfig = {
 
   // Image optimization configuration
   images: {
-    domains: ['localhost', 'bookedbarber.com', 'api.bookedbarber.com'],
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'bookedbarber.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.bookedbarber.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
@@ -33,6 +52,14 @@ const nextConfig = {
 
   // Webpack optimizations
   webpack: (config, { isServer, dev }) => {
+    // Suppress OpenTelemetry warnings in development only
+    if (dev && !isServer) {
+      config.ignoreWarnings = [
+        /Critical dependency: the request of a dependency is an expression/,
+        /Critical dependency: require function is used in a way in which dependencies cannot be statically extracted/,
+      ]
+    }
+
     // Bundle analyzer in development
     if (!isServer && !dev) {
       const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')

@@ -1,365 +1,292 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { BusinessTypeSelection, BusinessType } from './BusinessTypeSelection'
-import { AccountSetup, AccountInfo } from './AccountSetup'
-import { BusinessInformation, BusinessInfo } from './BusinessInformation'
-import { PricingConfirmation } from './PricingConfirmation'
-import { PaymentSetup } from './PaymentSetup'
-import { validateStep, ValidationError, getFieldError } from '@/lib/registrationValidation'
-import { toast } from '@/hooks/use-toast'
-
-export type RegistrationStep = 1 | 2 | 3 | 4 | 5
-
-export interface RegistrationData {
-  businessType: BusinessType | null
-  accountInfo: AccountInfo
-  businessInfo: BusinessInfo
-  pricingInfo: {
-    chairs: number
-    monthlyTotal: number
-    tier: string
-  } | null
-  paymentInfo: {
-    trialStarted: boolean
-    paymentMethodAdded: boolean
-  } | null
-}
+import React, { useState } from 'react'
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
+import { RegistrationData, RegistrationStep } from './types'
+import { CheckCircleIcon, ArrowRightIcon, ArrowLeftIcon } from '@heroicons/react/24/outline'
 
 interface MultiStepRegistrationProps {
-  onComplete?: (data: RegistrationData) => void
-  onCancel?: () => void
+  onComplete: (data: RegistrationData) => void
+  loading?: boolean
+  error?: string
 }
 
-const steps = [
-  { number: 1, title: 'Business Type', description: 'What describes your business?' },
-  { number: 2, title: 'Account Setup', description: 'Create your login credentials' },
-  { number: 3, title: 'Business Details', description: 'Tell us about your business' },
-  { number: 4, title: 'Pricing', description: 'Confirm your plan and pricing' },
-  { number: 5, title: 'Payment', description: 'Start your free trial' }
+const registrationSteps: RegistrationStep[] = [
+  {
+    id: 'personal',
+    title: 'Personal Information',
+    description: 'Tell us about yourself',
+    fields: ['name', 'email', 'phone']
+  },
+  {
+    id: 'account',
+    title: 'Account Security',
+    description: 'Create your secure account',
+    fields: ['password', 'confirmPassword']
+  },
+  {
+    id: 'business',
+    title: 'Business Details',
+    description: 'Tell us about your business',
+    fields: ['businessName', 'businessType', 'role'],
+    optional: true
+  },
+  {
+    id: 'preferences',
+    title: 'Preferences',
+    description: 'Customize your experience',
+    fields: ['serviceTemplate', 'acceptTerms', 'acceptMarketing']
+  }
 ]
 
-export function MultiStepRegistration({ onComplete, onCancel }: MultiStepRegistrationProps) {
-  const [currentStep, setCurrentStep] = useState<RegistrationStep>(1)
-  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([])
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
-  
-  // Check for reduced motion preference
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setPrefersReducedMotion(mediaQuery.matches)
-    
-    const handleChange = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches)
-    mediaQuery.addEventListener('change', handleChange)
-    
-    return () => mediaQuery.removeEventListener('change', handleChange)
-  }, [])
-  
-  const [registrationData, setRegistrationData] = useState<RegistrationData>({
-    businessType: null,
-    accountInfo: {
-      firstName: '',
-      lastName: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-      consent: {
-        terms: false,
-        privacy: false,
-        marketing: false,
-        testData: false
-      }
-    },
-    businessInfo: {
-      businessName: '',
-      address: {
-        street: '',
-        city: '',
-        state: '',
-        zipCode: ''
-      },
-      phone: '',
-      website: '',
-      chairCount: 1,
-      barberCount: 1,
-      description: ''
-    },
-    pricingInfo: null,
-    paymentInfo: null
+export function MultiStepRegistration({ onComplete, loading, error }: MultiStepRegistrationProps) {
+  const [currentStep, setCurrentStep] = useState(0)
+  const [formData, setFormData] = useState<RegistrationData>({
+    email: '',
+    password: '',
+    confirmPassword: '',
+    name: '',
+    phone: '',
+    businessName: '',
+    businessType: 'individual',
+    role: 'barber',
+    serviceTemplate: 'basic-barber',
+    acceptTerms: false,
+    acceptMarketing: false,
+    referralCode: '',
+    timezone: 'America/New_York'
   })
 
-  const updateBusinessType = (businessType: BusinessType) => {
-    setRegistrationData(prev => ({ ...prev, businessType }))
-  }
-
-  const updateAccountInfo = (accountInfo: AccountInfo) => {
-    setRegistrationData(prev => ({ ...prev, accountInfo }))
-  }
-
-  const updateBusinessInfo = (businessInfo: BusinessInfo) => {
-    setRegistrationData(prev => ({ ...prev, businessInfo }))
-  }
-
-  const updatePricingInfo = (chairs: number, monthlyTotal: number, tier: string) => {
-    setRegistrationData(prev => ({
-      ...prev,
-      pricingInfo: { chairs, monthlyTotal, tier }
-    }))
-  }
-
-  const updatePaymentInfo = (paymentInfo: { trialStarted: boolean; paymentMethodAdded: boolean }) => {
-    setRegistrationData(prev => ({ ...prev, paymentInfo }))
+  const updateFormData = (field: keyof RegistrationData, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
   }
 
   const nextStep = () => {
-    console.log('[MultiStepRegistration] nextStep called, currentStep:', currentStep)
-    console.log('[MultiStepRegistration] registrationData:', registrationData)
-    
-    // Validate current step before proceeding
-    const validation = validateStep(currentStep, registrationData)
-    console.log('[MultiStepRegistration] validation result:', validation)
-    
-    if (!validation.isValid) {
-      setValidationErrors(validation.errors)
-      
-      // Show first error in toast
-      if (validation.errors.length > 0) {
-        toast({
-          title: 'Validation Error',
-          description: validation.errors[0].message,
-          variant: 'destructive'
-        })
-      }
-      return
-    }
-    
-    // Clear validation errors if validation passed
-    setValidationErrors([])
-    
-    if (currentStep < 5) {
-      console.log('[MultiStepRegistration] Moving to next step')
-      setCurrentStep((prev) => (prev + 1) as RegistrationStep)
+    if (currentStep < registrationSteps.length - 1) {
+      setCurrentStep(currentStep + 1)
     }
   }
 
   const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep((prev) => (prev - 1) as RegistrationStep)
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1)
     }
   }
 
-  const goToStep = (step: RegistrationStep) => {
-    // Only allow going to previous steps or next step if current step is valid
-    if (step <= currentStep || step === currentStep + 1) {
-      setCurrentStep(step)
+  const handleSubmit = () => {
+    onComplete(formData)
+  }
+
+  const isStepValid = (stepIndex: number): boolean => {
+    const step = registrationSteps[stepIndex]
+    
+    // Check required fields for this step
+    return step.fields.every(field => {
+      if (field === 'acceptTerms') return formData.acceptTerms
+      if (step.optional) return true // Optional steps are always valid
+      
+      const value = formData[field as keyof RegistrationData]
+      return value && value.toString().trim().length > 0
+    })
+  }
+
+  const renderStep = () => {
+    const step = registrationSteps[currentStep]
+    
+    switch (step.id) {
+      case 'personal':
+        return (
+          <div className="space-y-4">
+            <Input
+              label="Full Name"
+              value={formData.name}
+              onChange={(e) => updateFormData('name', e.target.value)}
+              required
+            />
+            <Input
+              label="Email Address"
+              type="email"
+              value={formData.email}
+              onChange={(e) => updateFormData('email', e.target.value)}
+              required
+            />
+            <Input
+              label="Phone Number"
+              type="tel"
+              value={formData.phone || ''}
+              onChange={(e) => updateFormData('phone', e.target.value)}
+            />
+          </div>
+        )
+      
+      case 'account':
+        return (
+          <div className="space-y-4">
+            <Input
+              label="Password"
+              type="password"
+              value={formData.password}
+              onChange={(e) => updateFormData('password', e.target.value)}
+              required
+            />
+            <Input
+              label="Confirm Password"
+              type="password"
+              value={formData.confirmPassword}
+              onChange={(e) => updateFormData('confirmPassword', e.target.value)}
+              required
+            />
+          </div>
+        )
+      
+      case 'business':
+        return (
+          <div className="space-y-4">
+            <Input
+              label="Business Name"
+              value={formData.businessName || ''}
+              onChange={(e) => updateFormData('businessName', e.target.value)}
+            />
+            <div>
+              <label className="block text-sm font-medium mb-2">Business Type</label>
+              <select
+                value={formData.businessType}
+                onChange={(e) => updateFormData('businessType', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              >
+                <option value="individual">Individual Barber</option>
+                <option value="shop">Barber Shop</option>
+                <option value="enterprise">Enterprise</option>
+              </select>
+            </div>
+          </div>
+        )
+      
+      case 'preferences':
+        return (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Service Template</label>
+              <select
+                value={formData.serviceTemplate}
+                onChange={(e) => updateFormData('serviceTemplate', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              >
+                <option value="basic-barber">Basic Barber Services</option>
+                <option value="premium-salon">Premium Salon Services</option>
+                <option value="custom">Custom Setup</option>
+              </select>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.acceptTerms}
+                  onChange={(e) => updateFormData('acceptTerms', e.target.checked)}
+                  className="mr-2"
+                />
+                I accept the Terms of Service and Privacy Policy
+              </label>
+              
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.acceptMarketing}
+                  onChange={(e) => updateFormData('acceptMarketing', e.target.checked)}
+                  className="mr-2"
+                />
+                I'd like to receive marketing emails and updates
+              </label>
+            </div>
+          </div>
+        )
+      
+      default:
+        return <div>Unknown step</div>
     }
-  }
-
-  const handleComplete = () => {
-    onComplete?.(registrationData)
-  }
-
-  const getStepStatus = (stepNumber: number) => {
-    if (stepNumber < currentStep) return 'completed'
-    if (stepNumber === currentStep) return 'current'
-    return 'upcoming'
   }
 
   return (
-    <div className="py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Premium Progress Indicator */}
-        <div className="mb-12">
-          {/* Mobile Progress Bar */}
-          <div className="sm:hidden mb-6">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Step {currentStep} of {steps.length}
-              </span>
-              <div className="flex items-center space-x-3">
-                <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-                  ~{Math.max(1, 4 - currentStep)} min remaining
-                </span>
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  {Math.round((currentStep / steps.length) * 100)}% Complete
-                </span>
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          {registrationSteps[currentStep].title}
+          <span className="text-sm text-gray-500">
+            ({currentStep + 1}/{registrationSteps.length})
+          </span>
+        </CardTitle>
+        <CardDescription>
+          {registrationSteps[currentStep].description}
+        </CardDescription>
+      </CardHeader>
+      
+      <CardContent>
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-300 text-red-700 rounded">
+            {error}
+          </div>
+        )}
+        
+        {/* Progress indicators */}
+        <div className="flex items-center mb-6">
+          {registrationSteps.map((step, index) => (
+            <div key={step.id} className="flex items-center">
+              <div className={`
+                w-8 h-8 rounded-full flex items-center justify-center text-sm
+                ${index < currentStep ? 'bg-green-500 text-white' : 
+                  index === currentStep ? 'bg-blue-500 text-white' : 
+                  'bg-gray-200 text-gray-600'}
+              `}>
+                {index < currentStep ? (
+                  <CheckCircleIcon className="w-5 h-5" />
+                ) : (
+                  index + 1
+                )}
               </div>
+              {index < registrationSteps.length - 1 && (
+                <div className={`w-8 h-1 mx-1 ${
+                  index < currentStep ? 'bg-green-500' : 'bg-gray-200'
+                }`} />
+              )}
             </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div 
-                className={`bg-gradient-to-r from-primary-500 to-blue-500 h-2 rounded-full ${prefersReducedMotion ? '' : 'transition-all duration-200 ease-out'}`}
-                style={{ width: `${(currentStep / steps.length) * 100}%` }}
-              />
-            </div>
-            <p className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-              {steps[currentStep - 1].title}
-            </p>
-          </div>
-
-          {/* Desktop Progress Steps */}
-          <div className="hidden sm:block">
-            <div className="relative">
-              {/* Background Line */}
-              <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200 dark:bg-gray-700"></div>
-              
-              {/* Progress Line */}
-              <div 
-                className={`absolute top-5 left-0 h-0.5 bg-gradient-to-r from-primary-500 to-blue-500 ${prefersReducedMotion ? '' : 'transition-all duration-200 ease-out'}`}
-                style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
-              />
-
-              {/* Steps */}
-              <div className="relative flex justify-between">
-                {steps.map((step, index) => {
-                  const status = getStepStatus(step.number)
-                  return (
-                    <div key={step.number} className="flex flex-col items-center">
-                      {/* Step Circle */}
-                      <button
-                        onClick={() => goToStep(step.number as RegistrationStep)}
-                        className={`
-                          relative w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${prefersReducedMotion ? '' : 'transition-colors duration-200'}
-                          ${status === 'completed' 
-                            ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg' 
-                            : status === 'current'
-                            ? 'bg-gradient-to-r from-primary-500 to-blue-500 text-white shadow-md ring-2 ring-primary-200'
-                            : 'bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-2 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                          }
-                          ${(step.number <= currentStep || step.number === currentStep + 1) 
-                            ? 'cursor-pointer' 
-                            : 'cursor-not-allowed opacity-50'
-                          }
-                        `}
-                        disabled={step.number > currentStep + 1}
-                      >
-                        {status === 'completed' ? (
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        ) : (
-                          step.number
-                        )}
-                        
-                      </button>
-                      
-                      {/* Step Info */}
-                      <div className="mt-3 text-center">
-                        <div className={`text-sm font-medium ${prefersReducedMotion ? '' : 'transition-colors'} ${
-                          status === 'current' 
-                            ? 'text-primary-600 dark:text-primary-400' 
-                            : status === 'completed'
-                            ? 'text-green-600 dark:text-green-400'
-                            : 'text-gray-500 dark:text-gray-400'
-                        }`}>
-                          {step.title}
-                        </div>
-                        <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                          {step.description}
-                        </div>
-                        
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
 
-        {/* Step Content Container - Simplified */}
-        <div className="relative">
-          {/* Content Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
-            {/* Step Content */}
-            <div className="relative">
-              {currentStep === 1 && (
-                <div className="p-6 sm:p-8 lg:p-10 ">
-                  <BusinessTypeSelection
-                    selectedType={registrationData.businessType}
-                    onSelect={updateBusinessType}
-                    onNext={nextStep}
-                    onBack={onCancel}
-                  />
-                </div>
-              )}
+        {/* Step content */}
+        {renderStep()}
 
-              {currentStep === 2 && registrationData.businessType && (
-                <div className="p-6 sm:p-8 lg:p-10 ">
-                  <AccountSetup
-                    businessType={registrationData.businessType}
-                    accountInfo={registrationData.accountInfo}
-                    validationErrors={validationErrors}
-                    onUpdate={updateAccountInfo}
-                    onNext={nextStep}
-                    onBack={prevStep}
-                  />
-                </div>
-              )}
+        {/* Navigation */}
+        <div className="flex justify-between mt-6">
+          <Button
+            variant="outline"
+            onClick={prevStep}
+            disabled={currentStep === 0}
+          >
+            <ArrowLeftIcon className="w-4 h-4 mr-2" />
+            Previous
+          </Button>
 
-              {currentStep === 3 && registrationData.businessType && (
-                <div className="p-6 sm:p-8 lg:p-10 ">
-                  <BusinessInformation
-                    businessType={registrationData.businessType}
-                    businessInfo={registrationData.businessInfo}
-                    validationErrors={validationErrors}
-                    onUpdate={updateBusinessInfo}
-                    onNext={nextStep}
-                    onBack={prevStep}
-                  />
-                </div>
-              )}
-
-              {currentStep === 4 && registrationData.businessType && (
-                <div className="p-6 sm:p-8 lg:p-10 ">
-                  <PricingConfirmation
-                businessType={registrationData.businessType}
-                chairCount={registrationData.businessInfo.chairCount}
-                businessName={registrationData.businessInfo.businessName}
-                onConfirm={updatePricingInfo}
-                onNext={nextStep}
-                onBack={prevStep}
-                  />
-                </div>
-              )}
-
-              {currentStep === 5 && registrationData.pricingInfo && (
-                <div className="p-6 sm:p-8 lg:p-10 ">
-                  <PaymentSetup
-                    businessName={registrationData.businessInfo.businessName}
-                    pricingInfo={registrationData.pricingInfo}
-                    onComplete={updatePaymentInfo}
-                    onFinish={handleComplete}
-                    onBack={prevStep}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
+          {currentStep === registrationSteps.length - 1 ? (
+            <Button
+              onClick={handleSubmit}
+              disabled={!isStepValid(currentStep) || loading}
+            >
+              {loading ? 'Creating Account...' : 'Complete Registration'}
+            </Button>
+          ) : (
+            <Button
+              onClick={nextStep}
+              disabled={!isStepValid(currentStep)}
+            >
+              Next
+              <ArrowRightIcon className="w-4 h-4 ml-2" />
+            </Button>
+          )}
         </div>
-
-        {/* Premium Footer */}
-        <div className="mt-8 text-center">
-          <div className="flex items-center justify-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
-            <span className="flex items-center">
-              <svg className="w-4 h-4 mr-1 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              SSL Encrypted
-            </span>
-            <span className="text-gray-300 dark:text-gray-600">•</span>
-            <span>Step {currentStep} of {steps.length}</span>
-            <span className="text-gray-300 dark:text-gray-600">•</span>
-            <span className="flex items-center">
-              <svg className="w-4 h-4 mr-1 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              PCI Compliant
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 }
-
-export default MultiStepRegistration

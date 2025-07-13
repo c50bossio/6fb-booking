@@ -182,10 +182,10 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-gray-50 dark:bg-gray-800">
+      <section id="features" className="py-20 bg-gray-50 dark:bg-gray-800" aria-labelledby="features-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 id="features-heading" className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               Everything You Need to Scale Your Business
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300">
@@ -274,10 +274,10 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-20 bg-gray-50 dark:bg-gray-800">
+      <section id="pricing" className="py-20 bg-gray-50 dark:bg-gray-800" aria-labelledby="pricing-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 id="pricing-heading" className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               Simple, Transparent Pricing
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300">
@@ -296,7 +296,7 @@ export default function LandingPage() {
               >
                 {'popular' in plan && plan.popular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="bg-primary-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                    <span className="bg-gray-900 text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm">
                       Most Popular
                     </span>
                   </div>
@@ -352,9 +352,9 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-primary-600 dark:bg-primary-700">
+      <section id="cta" className="py-20 bg-primary-600 dark:bg-primary-700" aria-labelledby="cta-heading">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+          <h2 id="cta-heading" className="text-3xl md:text-4xl font-bold text-white mb-6">
             Ready to Grow Your Business?
           </h2>
           <p className="text-xl text-primary-100 mb-8">

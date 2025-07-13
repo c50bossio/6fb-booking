@@ -21,6 +21,7 @@ Payment = models_file.Payment
 Service = models_file.Service
 BarberAvailability = models_file.BarberAvailability
 PasswordResetToken = models_file.PasswordResetToken
+StripeAccount = models_file.StripeAccount
 Payout = models_file.Payout
 GiftCertificate = models_file.GiftCertificate
 Client = models_file.Client
@@ -108,6 +109,9 @@ from .agent import (
 from .organization import (
     Organization, UserOrganization, BillingPlan, UserRole, OrganizationType
 )
+
+# Aliases for compatibility
+Location = Organization
 # Invitation Models
 from .invitation import (
     StaffInvitation, InvitationStatus, InvitationRole
@@ -116,7 +120,7 @@ from .invitation import (
 __all__ = [
     # Main models from parent models.py
     'UnifiedUserRole', 'User', 'Appointment', 'Payment', 'Service', 'BarberAvailability',
-    'PasswordResetToken', 'Payout', 'GiftCertificate', 'Client', 'Refund',
+    'PasswordResetToken', 'StripeAccount', 'Payout', 'GiftCertificate', 'Client', 'Refund',
     'BookingSettings', 'ServiceCategoryEnum', 'ServicePricingRule', 'ServiceBookingRule',
     'NotificationTemplate', 'NotificationPreference', 'NotificationStatus', 'NotificationQueue',
     'SMSConversation', 'SMSMessage', 'SMSMessageDirection', 'SMSMessageStatus',
@@ -153,6 +157,8 @@ __all__ = [
     'AgentType', 'AgentStatus', 'ConversationStatus', 'SubscriptionTier',
     # Organization Models
     'Organization', 'UserOrganization', 'BillingPlan', 'UserRole', 'OrganizationType',
+    # Aliases
+    'Location',
     # Invitation Models
     'StaffInvitation', 'InvitationStatus', 'InvitationRole'
 ]

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Service Worker Cache</title>
+</head>
+<body>
+    <h1>Clearing Service Worker Cache...</h1>
+    <div id="status">Processing...</div>
+    
+    <script>
+        async function clearEverything() {
+            const status = document.getElementById('status');
+            
+            try {
+                // Unregister all service workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (let registration of registrations) {
+                        console.log('Unregistering:', registration);
+                        await registration.unregister();
+                    }
+                    status.innerHTML += '<br>✅ Service workers unregistered';
+                }
+                
+                // Clear all caches
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(
+                        cacheNames.map(cacheName => {
+                            console.log('Deleting cache:', cacheName);
+                            return caches.delete(cacheName);
+                        })
+                    );
+                    status.innerHTML += '<br>✅ All caches cleared';
+                }
+                
+                // Clear localStorage
+                localStorage.clear();
+                status.innerHTML += '<br>✅ Local storage cleared';
+                
+                // Clear sessionStorage
+                sessionStorage.clear();
+                status.innerHTML += '<br>✅ Session storage cleared';
+                
+                status.innerHTML += '<br><br>🎉 All caches and service workers cleared!';
+                status.innerHTML += '<br><a href="/">Return to main site</a>';
+                
+            } catch (error) {
+                console.error('Error clearing cache:', error);
+                status.innerHTML += '<br>❌ Error: ' + error.message;
+            }
+        }
+        
+        clearEverything();
+    </script>
+</body>
+</html>

@@ -337,3 +337,16 @@ def update_user_model():
     lifetime_value = Column(Float, default=0.0)
     """
     pass
+
+
+class CampaignSource(str, enum.Enum):
+    """Campaign source types for tracking"""
+    GOOGLE_ADS = "google_ads"
+    META_ADS = "meta_ads"
+    ORGANIC_SEARCH = "organic_search"
+    DIRECT = "direct"
+    EMAIL = "email"
+    SMS = "sms"
+    REFERRAL = "referral"
+    SOCIAL = "social"
+    OTHER = "other"

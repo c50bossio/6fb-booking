@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey, Boolean, Text, JSON, Time, Enum, Table, Date, Index
+from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey, Boolean, Text, JSON, Time, Enum, Table, Date, Index, func
 from sqlalchemy.orm import relationship
 from database import Base
 from datetime import datetime, timedelta, time, timezone, date
@@ -386,6 +386,24 @@ class PasswordResetToken(Base):
     def is_valid(self):
         """Check if token is valid (not used and not expired)"""
         return not self.used and not self.is_expired()
+
+
+class StripeAccount(Base):
+    """Stripe Connect account information for barbershops"""
+    __tablename__ = "stripe_accounts"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    stripe_account_id = Column(String, nullable=False, unique=True)
+    account_type = Column(String, default="express")  # express, standard, custom
+    charges_enabled = Column(Boolean, default=False)
+    payouts_enabled = Column(Boolean, default=False)
+    details_submitted = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    # Relationship
+    user = relationship("User", back_populates="stripe_account")
 
 
 class BookingSettings(Base):

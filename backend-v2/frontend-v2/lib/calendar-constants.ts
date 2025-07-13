@@ -69,7 +69,7 @@ export const SERVICE_STYLES: Record<ServiceType, ServiceConfig> = {
   },
   [SERVICE_TYPES.BEARD]: {
     name: 'Beard Trim',
-    color: '#10B981',
+    color: '#059669', // Emerald 600 - WCAG AA compliant
     lightColor: '#D1FAE5',
     darkColor: '#047857',
     icon: '🧔',
@@ -92,9 +92,9 @@ export const SERVICE_STYLES: Record<ServiceType, ServiceConfig> = {
   },
   [SERVICE_TYPES.COLOR]: {
     name: 'Hair Color',
-    color: '#F59E0B',
+    color: '#D97706', // Amber 600 - WCAG AA compliant
     lightColor: '#FEF3C7',
-    darkColor: '#D97706',
+    darkColor: '#92400E',
     icon: '🎨',
     gradient: {
       from: 'from-amber-500',
@@ -161,7 +161,7 @@ export const SERVICE_STYLES: Record<ServiceType, ServiceConfig> = {
   },
   [SERVICE_TYPES.CONSULTATION]: {
     name: 'Consultation',
-    color: '#06B6D4',
+    color: '#0891B2', // Cyan 600 - WCAG AA compliant
     lightColor: '#CFFAFE',
     darkColor: '#0891B2',
     icon: '💬',

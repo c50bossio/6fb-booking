@@ -1628,3 +1628,29 @@ def count_all_bookings(
         query = query.filter(models.Appointment.barber_id == barber_id)
     
     return query.count()
+
+
+class BookingService:
+    """
+    Class-based wrapper for booking service functions
+    Provides compatibility for tests expecting a class-based interface
+    """
+    
+    def __init__(self, db: Session):
+        self.db = db
+    
+    def create_booking(self, booking_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a new booking"""
+        return create_booking(self.db, **booking_data)
+    
+    def get_user_bookings(self, user_id: int, skip: int = 0, limit: int = 100, status: Optional[str] = None):
+        """Get bookings for a user"""
+        return get_user_bookings(self.db, user_id, skip, limit, status)
+    
+    def cancel_booking(self, booking_id: int, user_id: int, reason: str = ""):
+        """Cancel a booking"""
+        return cancel_booking(self.db, booking_id, user_id, reason)
+    
+    def get_available_slots(self, target_date: date, user_timezone: Optional[str] = None):
+        """Get available booking slots"""
+        return get_available_slots(self.db, target_date, user_timezone)

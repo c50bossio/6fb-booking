@@ -323,7 +323,7 @@ export class RequestBatcher {
   // Make the actual HTTP request
   private async makeRequest(endpoint: string, options: RequestInit): Promise<any> {
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
     
     const config: RequestInit = {
       ...options,

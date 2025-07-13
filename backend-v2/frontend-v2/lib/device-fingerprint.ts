@@ -130,3 +130,40 @@ export function clearTrustedDevices(): void {
     console.warn('Failed to clear trusted devices:', error)
   }
 }
+
+/**
+ * Generate a human-readable device name
+ */
+export function generateDeviceName(): string {
+  if (typeof window === 'undefined') return 'Server Device'
+  
+  try {
+    const userAgent = navigator.userAgent.toLowerCase()
+    const platform = navigator.platform.toLowerCase()
+    
+    // Detect mobile
+    if (/mobile|android|iphone|ipad|ipod/.test(userAgent)) {
+      if (/iphone|ipod/.test(userAgent)) return 'iPhone'
+      if (/ipad/.test(userAgent)) return 'iPad'
+      if (/android/.test(userAgent)) return 'Android Device'
+      return 'Mobile Device'
+    }
+    
+    // Detect desktop OS
+    if (/mac/.test(platform)) return 'Mac'
+    if (/win/.test(platform)) return 'Windows PC'
+    if (/linux/.test(platform)) return 'Linux Computer'
+    if (/chrome os/.test(userAgent)) return 'Chromebook'
+    
+    // Detect browser
+    if (/edge/.test(userAgent)) return 'Edge Browser'
+    if (/chrome/.test(userAgent)) return 'Chrome Browser'
+    if (/firefox/.test(userAgent)) return 'Firefox Browser'
+    if (/safari/.test(userAgent)) return 'Safari Browser'
+    
+    return 'Unknown Device'
+  } catch (error) {
+    console.warn('Failed to generate device name:', error)
+    return 'Unknown Device'
+  }
+}

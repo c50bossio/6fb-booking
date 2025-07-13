@@ -35,6 +35,24 @@ import {
   ChartPieIcon,
   CurrencyDollarIcon,
   BeakerIcon,
+  // Additional icons for new features
+  SparklesIcon,
+  RocketLaunchIcon,
+  ComputerDesktopIcon,
+  ChatBubbleOvalLeftEllipsisIcon,
+  AcademicCapIcon,
+  LightBulbIcon,
+  BoltIcon,
+  MegaphoneIcon,
+  AtSymbolIcon,
+  DevicePhoneMobileIcon,
+  ShoppingBagIcon,
+  SwatchIcon,
+  StarIcon,
+  EyeIcon,
+  LinkIcon,
+  CodeBracketIcon,
+  MapIcon,
   // Solid versions for mobile
   HomeIcon as HomeIconSolid,
   CalendarIcon as CalendarIconSolid,
@@ -203,13 +221,13 @@ export const navigationItems: NavigationItem[] = [
     description: 'Send notifications and messages'
   },
   
-  // Marketing Suite
+  // Marketing & Automation (Enhanced)
   {
-    name: 'Marketing Suite',
+    name: 'Marketing & Automation',
     href: '/marketing',
-    icon: EnvelopeIcon,
+    icon: MegaphoneIcon,
     roles: ['admin', 'super_admin'],
-    description: 'Email and SMS marketing campaigns',
+    description: 'Email, SMS, and digital marketing campaigns',
     isNew: true,
     children: [
       {
@@ -220,11 +238,41 @@ export const navigationItems: NavigationItem[] = [
         description: 'Create and manage campaigns'
       },
       {
+        name: 'Email Marketing',
+        href: '/marketing/email',
+        icon: AtSymbolIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Email campaigns and automation'
+      },
+      {
+        name: 'SMS Marketing',
+        href: '/marketing/sms',
+        icon: DevicePhoneMobileIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Text message campaigns'
+      },
+      {
         name: 'Templates',
         href: '/marketing/templates',
         icon: DocumentArrowDownIcon,
         roles: ['admin', 'super_admin'],
         description: 'Email and SMS templates'
+      },
+      {
+        name: 'Google My Business',
+        href: '/marketing/gmb',
+        icon: StarIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'GMB integration and review management',
+        isNew: true
+      },
+      {
+        name: 'Conversion Tracking',
+        href: '/marketing/tracking',
+        icon: EyeIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Track marketing ROI and conversions',
+        isNew: true
       },
       {
         name: 'Contacts',
@@ -280,32 +328,148 @@ export const navigationItems: NavigationItem[] = [
     ]
   },
   
-  // Analytics & Insights
+  // AI Agents (user specifically requested "spin up agents")
   {
-    name: 'Analytics',
+    name: 'AI Agents',
+    href: '/agents',
+    icon: ComputerDesktopIcon,
+    roles: ['admin', 'super_admin'],
+    description: 'AI agent management and automation',
+    isNew: true,
+    children: [
+      {
+        name: 'Agent Templates',
+        href: '/agents/templates',
+        icon: AcademicCapIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Manage AI agent templates'
+      },
+      {
+        name: 'Active Agents',
+        href: '/agents/instances',
+        icon: RocketLaunchIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Running AI agent instances'
+      },
+      {
+        name: 'Conversations',
+        href: '/agents/conversations',
+        icon: ChatBubbleOvalLeftEllipsisIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'AI agent conversation history'
+      },
+      {
+        name: 'Agent Analytics',
+        href: '/agents/analytics',
+        icon: ChartPieIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'AI performance metrics'
+      }
+    ]
+  },
+  
+  // Analytics & Insights (Enhanced)
+  {
+    name: 'Analytics & Insights',
     href: '/analytics',
     icon: ChartBarIcon,
     roles: ['barber', 'admin', 'super_admin'],
-    description: 'Business performance insights'
+    description: 'Business performance and predictive insights',
+    children: [
+      {
+        name: 'Business Dashboard',
+        href: '/analytics',
+        icon: PresentationChartLineIcon,
+        roles: ['barber', 'admin', 'super_admin'],
+        description: 'Revenue and booking analytics'
+      },
+      {
+        name: 'AI Analytics',
+        href: '/analytics/ai',
+        icon: SparklesIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Predictive analytics and benchmarking',
+        isNew: true
+      },
+      {
+        name: 'Six Figure Barber Metrics',
+        href: '/analytics/6fb',
+        icon: BoltIcon,
+        roles: ['barber', 'admin', 'super_admin'],
+        description: '6FB methodology tracking'
+      },
+      {
+        name: 'Client Analytics',
+        href: '/analytics/clients',
+        icon: UserCircleIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Client retention and LTV analysis'
+      }
+    ]
   },
   
-  // Enterprise section (super_admin only)
+  // Enterprise Management (Enhanced)
   {
-    name: 'Enterprise',
-    href: '/enterprise/dashboard',
+    name: 'Enterprise Management',
+    href: '/enterprise',
     icon: BuildingStorefrontIcon,
-    roles: ['super_admin'],
-    description: 'Multi-location management',
-    isNew: true
+    roles: ['super_admin', 'enterprise_owner'],
+    description: 'Multi-location and organization management',
+    isNew: true,
+    children: [
+      {
+        name: 'Dashboard',
+        href: '/enterprise/dashboard',
+        icon: PresentationChartLineIcon,
+        roles: ['super_admin', 'enterprise_owner'],
+        description: 'Enterprise overview'
+      },
+      {
+        name: 'Organizations',
+        href: '/enterprise/organizations',
+        icon: BuildingStorefrontIcon,
+        roles: ['super_admin'],
+        description: 'Manage business organizations'
+      },
+      {
+        name: 'Locations',
+        href: '/enterprise/locations',
+        icon: MapIcon,
+        roles: ['super_admin', 'enterprise_owner'],
+        description: 'Multi-location management'
+      },
+      {
+        name: 'Product Catalog',
+        href: '/enterprise/products',
+        icon: ShoppingBagIcon,
+        roles: ['super_admin', 'enterprise_owner'],
+        description: 'Manage products and inventory',
+        isNew: true
+      },
+      {
+        name: 'User Management',
+        href: '/enterprise/users',
+        icon: UserGroupIcon,
+        roles: ['super_admin', 'enterprise_owner'],
+        description: 'Enterprise user administration'
+      },
+      {
+        name: 'Analytics',
+        href: '/enterprise/analytics',
+        icon: ChartBarIcon,
+        roles: ['super_admin', 'enterprise_owner'],
+        description: 'Cross-location analytics'
+      }
+    ]
   },
   
-  // Admin section
+  // Administration (Enhanced)
   {
     name: 'Administration',
     href: '/admin',
     icon: ShieldCheckIcon,
     roles: ['admin', 'super_admin'],
-    description: 'System administration',
+    description: 'System administration and configuration',
     children: [
       {
         name: 'Overview',
@@ -314,10 +478,18 @@ export const navigationItems: NavigationItem[] = [
         roles: ['admin', 'super_admin']
       },
       {
-        name: 'Services',
+        name: 'Services & Pricing',
         href: '/admin/services',
         icon: ScissorsIcon,
-        roles: ['admin', 'super_admin']
+        roles: ['admin', 'super_admin'],
+        description: 'Manage service catalog'
+      },
+      {
+        name: 'Staff Management',
+        href: '/admin/staff',
+        icon: UserGroupIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Manage team members and roles'
       },
       {
         name: 'Staff Invitations',
@@ -330,13 +502,30 @@ export const navigationItems: NavigationItem[] = [
         name: 'Booking Rules',
         href: '/admin/booking-rules',
         icon: ClipboardDocumentListIcon,
-        roles: ['admin', 'super_admin']
+        roles: ['admin', 'super_admin'],
+        description: 'Configure booking policies'
+      },
+      {
+        name: 'Integration Management',
+        href: '/admin/integrations',
+        icon: LinkIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Third-party integrations',
+        isNew: true
       },
       {
         name: 'Webhooks',
         href: '/admin/webhooks',
         icon: CloudIcon,
-        roles: ['admin', 'super_admin']
+        roles: ['admin', 'super_admin'],
+        description: 'Configure webhook endpoints'
+      },
+      {
+        name: 'System Health',
+        href: '/admin/health',
+        icon: ShieldCheckIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Monitor system status'
       }
     ]
   },
@@ -400,6 +589,20 @@ export const navigationItems: NavigationItem[] = [
         description: 'Manage conversion tracking pixels'
       },
       {
+        name: 'API Access',
+        href: '/settings/api',
+        icon: CodeBracketIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'API keys and developer settings'
+      },
+      {
+        name: 'Branding',
+        href: '/settings/branding',
+        icon: SwatchIcon,
+        roles: ['admin', 'super_admin'],
+        description: 'Customize colors and branding'
+      },
+      {
         name: 'Test Data',
         href: '/settings/test-data',
         icon: BeakerIcon,
@@ -447,6 +650,13 @@ export const mobileNavigationTabs: MobileTabItem[] = [
     icon: BanknotesIcon,
     iconSolid: BanknotesIconSolid,
     roles: ['barber']
+  },
+  {
+    name: 'Analytics',
+    href: '/analytics',
+    icon: ChartBarIcon,
+    iconSolid: ChartBarIconSolid,
+    roles: ['barber', 'admin', 'super_admin']
   },
   {
     name: 'Admin',
@@ -500,6 +710,23 @@ export const quickActions: QuickAction[] = [
     roles: ['barber']
   },
   
+  // AI & Analytics quick actions
+  {
+    name: 'AI Analytics',
+    href: '/analytics/ai',
+    icon: SparklesIcon,
+    description: 'View predictive insights',
+    roles: ['admin', 'super_admin'],
+    color: 'primary'
+  },
+  {
+    name: 'Launch AI Agent',
+    href: '/agents/instances',
+    icon: RocketLaunchIcon,
+    description: 'Start new AI agent',
+    roles: ['admin', 'super_admin']
+  },
+  
   // Super Admin quick actions
   {
     name: 'Enterprise Dashboard',
@@ -531,6 +758,20 @@ export const quickActions: QuickAction[] = [
     href: '/export',
     icon: DocumentArrowDownIcon,
     description: 'Download business data',
+    roles: ['admin', 'super_admin']
+  },
+  {
+    name: 'Marketing Analytics',
+    href: '/marketing/analytics',
+    icon: ChartPieIcon,
+    description: 'View campaign performance',
+    roles: ['admin', 'super_admin']
+  },
+  {
+    name: 'Google My Business',
+    href: '/marketing/gmb',
+    icon: StarIcon,
+    description: 'Manage reviews and listings',
     roles: ['admin', 'super_admin']
   },
   {

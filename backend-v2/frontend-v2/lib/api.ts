@@ -95,7 +95,7 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
       // If JSON parsing fails, continue (might be form data or other format)
     }
   }
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
   
   const config: RequestInit = {
     ...options,
@@ -140,7 +140,7 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
         
         if (refreshResponse.ok) {
           const data = await refreshResponse.json()
-          localStorage.setItem('token', data.access_token)
+          localStorage.setItem('access_token', data.access_token)
           // Also update the cookie
           document.cookie = `token=${data.access_token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
           if (data.refresh_token) {
@@ -152,7 +152,7 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
       }
     } catch (error) {
       // If refresh fails, redirect to login
-      localStorage.removeItem('token')
+      localStorage.removeItem('access_token')
       localStorage.removeItem('refresh_token')
       // Remove the cookie
       document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
@@ -254,7 +254,7 @@ export async function login(email: string, password: string) {
   
   // Store tokens
   if (response.access_token) {
-    localStorage.setItem('token', response.access_token)
+    localStorage.setItem('access_token', response.access_token)
     // Also set as httpOnly:false cookie so middleware can detect auth
     // Note: httpOnly:false is needed because we're setting from client-side
     document.cookie = `token=${response.access_token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
@@ -267,7 +267,7 @@ export async function login(email: string, password: string) {
 }
 
 export async function logout() {
-  localStorage.removeItem('token')
+  localStorage.removeItem('access_token')
   localStorage.removeItem('refresh_token')
   // Remove the cookie by setting it with an expired date
   document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
@@ -402,7 +402,7 @@ export async function refreshToken() {
   
   // Update tokens
   if (response.access_token) {
-    localStorage.setItem('token', response.access_token)
+    localStorage.setItem('access_token', response.access_token)
     // Also update the cookie
     document.cookie = `token=${response.access_token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
   }
@@ -5100,7 +5100,7 @@ export const importsAPI = {
     if (onProgress) {
       return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest()
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+        const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
         
         xhr.upload.addEventListener('progress', (e) => {
           if (e.lengthComputable) {

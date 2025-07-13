@@ -148,10 +148,11 @@ export default function RootLayout({
           />
         )}
         
-        {/* iOS Web App Capabilities */}
+        {/* iOS Web App Capabilities - Updated for modern PWA standards */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Booked Barber" />
+        <meta name="mobile-web-app-capable" content="yes" />
         
         {/* Font preloading is handled automatically by Next.js Google Fonts */}
         
@@ -199,23 +200,40 @@ export default function RootLayout({
           </ToastProvider>
         </QueryProvider>
         
-        {/* Service worker unregistration script */}
+        
+        {/* Service Worker Cleanup Script */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              // Unregister any existing service workers to prevent infinite error loops
+              // Clean up problematic service worker
               if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.getRegistrations().then(function(registrations) {
                   for(let registration of registrations) {
-                    console.log('Unregistering service worker:', registration);
+                    console.log('Unregistering service worker:', registration.scope);
                     registration.unregister();
                   }
+                }).catch(function(error) {
+                  console.log('Service worker cleanup error:', error);
                 });
+                
+                // Also clear any existing caches
+                if ('caches' in window) {
+                  caches.keys().then(function(cacheNames) {
+                    return Promise.all(
+                      cacheNames.map(function(cacheName) {
+                        console.log('Deleting cache:', cacheName);
+                        return caches.delete(cacheName);
+                      })
+                    );
+                  }).catch(function(error) {
+                    console.log('Cache cleanup error:', error);
+                  });
+                }
               }
             `,
           }}
         />
-        
+
         {/* Performance monitoring script */}
         <script
           dangerouslySetInnerHTML={{

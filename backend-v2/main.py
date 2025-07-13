@@ -253,8 +253,8 @@ def configure_cors():
 cors_config = configure_cors()
 app.add_middleware(CORSMiddleware, **cors_config)
 
-# Include health router (no prefix for easy access)
-app.include_router(health.router)
+# Include health router with API versioning
+app.include_router(health.router, prefix="/api/v1")
 
 # Include routers with API versioning
 app.include_router(auth.router, prefix="/api/v1")
