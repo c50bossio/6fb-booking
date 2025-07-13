@@ -187,7 +187,7 @@ export default function AIAnalyticsPage() {
             AI analytics uses anonymized industry data to provide benchmarks and predictions. 
             Your data remains private and is only used to generate personalized insights.
             <Button 
-              variant="link" 
+              variant="ghost" 
               className="ml-2 p-0 h-auto"
               onClick={() => handleConsentUpdate(true)}
             >
