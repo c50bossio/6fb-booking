@@ -7,7 +7,7 @@
 // Export the main API client
 export { apiClient, APIClient } from './client'
 
-// Export other API modules
+// Export other API modules (only ones that exist and have proper exports)
 export * from './auth'
 export * from './appointments'
 export * from './calendar'
@@ -19,6 +19,4 @@ export * from './analytics'
 export * from './integrations'
 export * from './tracking'
 export * from './catalog'
-export * from './products'
 export * from './clients'
-export * from './enterprise'

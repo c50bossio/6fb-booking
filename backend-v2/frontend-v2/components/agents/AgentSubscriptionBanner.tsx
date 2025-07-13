@@ -202,23 +202,23 @@ export function AgentSubscriptionBanner({ subscription }: SubscriptionBannerProp
       {/* Mobile-friendly usage bars */}
       <div className="mt-4 md:hidden space-y-3">
         {/* Conversation Usage Bar */}
-        {subscription.conversation_limit && (
+        {subscription.max_conversations_per_month && (
           <div>
             <div className="flex justify-between text-sm mb-1">
               <span className="text-gray-600 dark:text-gray-400">Conversations</span>
               <span className="font-medium">
-                {subscription.conversations_used} / {subscription.conversation_limit}
+                {conversationsUsed} / {subscription.max_conversations_per_month}
               </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
                 className={`h-2 rounded-full ${
-                  isNearLimit(subscription.conversations_used, subscription.conversation_limit)
+                  isNearLimit(conversationsUsed, subscription.max_conversations_per_month)
                     ? 'bg-red-500'
                     : 'bg-primary-500'
                 }`}
                 style={{
-                  width: `${Math.min(100, calculateUsagePercentage(subscription.conversations_used, subscription.conversation_limit))}%`
+                  width: `${Math.min(100, calculateUsagePercentage(conversationsUsed, subscription.max_conversations_per_month))}%`
                 }}
               />
             </div>
@@ -230,18 +230,18 @@ export function AgentSubscriptionBanner({ subscription }: SubscriptionBannerProp
           <div className="flex justify-between text-sm mb-1">
             <span className="text-gray-600 dark:text-gray-400">Agents</span>
             <span className="font-medium">
-              {subscription.agents_used} / {subscription.agent_limit}
+              {agentsUsed} / {subscription.max_agents}
             </span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
               className={`h-2 rounded-full ${
-                subscription.agents_used >= subscription.agent_limit
+                agentsUsed >= subscription.max_agents
                   ? 'bg-red-500'
                   : 'bg-primary-500'
               }`}
               style={{
-                width: `${Math.min(100, (subscription.agents_used / subscription.agent_limit) * 100)}%`
+                width: `${Math.min(100, (agentsUsed / subscription.max_agents) * 100)}%`
               }}
             />
           </div>

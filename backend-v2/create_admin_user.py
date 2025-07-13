@@ -40,14 +40,14 @@ def create_admin_user():
             conn.execute(
                 text("""
                     UPDATE users 
-                    SET password_hash = :password_hash,
+                    SET hashed_password = :hashed_password,
                         is_active = 1,
                         email_verified = 1,
                         role = 'admin'
                     WHERE email = :email
                 """),
                 {
-                    "password_hash": password_hash,
+                    "hashed_password": password_hash,
                     "email": "admin@bookedbarber.com"
                 }
             )
@@ -58,18 +58,17 @@ def create_admin_user():
             conn.execute(
                 text("""
                     INSERT INTO users (
-                        email, password_hash, first_name, last_name, 
-                        is_active, email_verified, role, created_at
+                        email, hashed_password, name, 
+                        is_active, email_verified, role, unified_role, created_at
                     ) VALUES (
-                        :email, :password_hash, :first_name, :last_name,
-                        1, 1, 'admin', datetime('now')
+                        :email, :hashed_password, :name,
+                        1, 1, 'admin', 'admin', datetime('now')
                     )
                 """),
                 {
                     "email": "admin@bookedbarber.com",
-                    "password_hash": password_hash,
-                    "first_name": "Admin",
-                    "last_name": "User"
+                    "hashed_password": password_hash,
+                    "name": "Admin User"
                 }
             )
             conn.commit()
