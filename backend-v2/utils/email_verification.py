@@ -1,5 +1,5 @@
 """
-Email verification functionality
+Email verification functionality for user registration
 """
 import secrets
 from datetime import datetime, timedelta, timezone
@@ -26,7 +26,6 @@ def create_verification_token(db: Session, user: models.User) -> str:
     user.verification_token_expires = expires_at
     
     db.commit()
-    # Remove unnecessary refresh - user is already in session
     
     return token
 
@@ -79,7 +78,7 @@ def send_verification_email(email: str, verification_token: str, user_name: str 
     from config import settings
     
     # Use environment-based URL
-    base_url = settings.frontend_url if hasattr(settings, 'frontend_url') else "http://localhost:3000"
+    base_url = getattr(settings, 'frontend_url', "http://localhost:3000")
     verification_url = f"{base_url}/verify-email?token={verification_token}"
     
     # If notification service is available, use it
@@ -136,7 +135,7 @@ The BookedBarber Team
 """
         
         # Send email if SendGrid is configured
-        if notification_service.sendgrid_client:
+        if hasattr(notification_service, 'sendgrid_client') and notification_service.sendgrid_client:
             result = notification_service.send_email(
                 to_email=email,
                 subject="Verify Your Email Address - BookedBarber",

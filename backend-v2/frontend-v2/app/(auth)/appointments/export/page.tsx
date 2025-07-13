@@ -7,7 +7,7 @@ import { EnhancedCalendarExport } from '@/components/calendar/EnhancedCalendarEx
 import { Appointment } from '@/types/appointment'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { InfoIcon } from 'lucide-react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 
 // Mock data generator for demonstration
@@ -75,12 +75,13 @@ function generateMockAppointments(): Appointment[] {
       appointments.push({
         id: appointments.length + 1,
         barber_id: barber.id,
-        client_id: client.id,
+        client_name: client.name,
+        client_email: client.email,
         service_id: service.id,
         start_time: startTime.toISOString(),
         end_time: endTime.toISOString(),
         status,
-        total_price: service.price,
+        total_amount: service.price,
         notes: Math.random() < 0.3 ? 'Client prefers shorter style on sides' : undefined,
         created_at: new Date(startTime.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString(),
         updated_at: startTime.toISOString(),
