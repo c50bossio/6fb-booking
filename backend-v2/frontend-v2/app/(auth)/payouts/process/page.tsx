@@ -21,7 +21,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { Badge } from '@/components/ui/Badge'
-import { Checkbox } from '@/components/ui/Checkbox'
+import { Checkbox } from '@/components/ui/checkbox'
 import { 
   Select,
   SelectContent,
@@ -36,7 +36,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/Table'
+} from '@/components/ui/table'
 import { 
   Dialog,
   DialogContent,
@@ -44,7 +44,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/Dialog'
+} from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
 import { fetchAPI } from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
