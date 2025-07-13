@@ -24,7 +24,6 @@ import {
   ArrowDownRight,
   Minus,
   Sliders,
-  Zap,
   TrendingDown,
   Star,
   Medal

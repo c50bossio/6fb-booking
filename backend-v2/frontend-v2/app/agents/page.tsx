@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Bot, BarChart3, Settings, Activity, Zap, AlertCircle } from 'lucide-react'
+import { Plus, Bot, BarChart3, Settings, Activity, Zap, AlertCircle, Flask } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card } from "@/components/ui/Card"
 import { Badge } from '@/components/ui/Badge'
@@ -10,6 +10,7 @@ import { AgentCard } from '@/components/agents/AgentCard'
 import { AgentCreationWizard } from '@/components/agents/AgentCreationWizard'
 import { AgentSubscriptionBanner } from '@/components/agents/AgentSubscriptionBanner'
 import { AgentComparisonModal } from '@/components/agents/AgentComparisonModal'
+import { MessageVariantTester } from '@/components/agents/MessageVariantTester'
 import { agentsApi, type AgentInstance, type AgentTemplate } from '@/lib/api/agents'
 import { useToast } from '@/hooks/use-toast'
 
@@ -19,6 +20,8 @@ export default function AgentsPage() {
   const [agentTemplates, setAgentTemplates] = useState<AgentTemplate[]>([])
   const [showCreateWizard, setShowCreateWizard] = useState(false)
   const [showComparison, setShowComparison] = useState(false)
+  const [showVariantTester, setShowVariantTester] = useState(false)
+  const [selectedTestAgent, setSelectedTestAgent] = useState<AgentInstance | null>(null)
   const [subscription, setSubscription] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const [selectedComparisonAgent, setSelectedComparisonAgent] = useState<number | undefined>()
@@ -189,6 +192,16 @@ export default function AgentsPage() {
     setShowComparison(false)
   }
 
+  const handleTestMessages = (agent: AgentInstance) => {
+    setSelectedTestAgent(agent)
+    setShowVariantTester(true)
+    toast({
+      title: 'A/B Testing Lab',
+      description: `Open message testing lab for ${agent.name}`,
+      variant: 'default'
+    })
+  }
+
   const stats = getQuickStats()
 
   if (loading) {
@@ -234,6 +247,19 @@ export default function AgentsPage() {
           >
             <Activity className="w-4 h-4 mr-2" />
             Compare Agents
+          </Button>
+          
+          <Button 
+            variant="outline"
+            onClick={() => {
+              if (agentInstances.length > 0) {
+                handleTestMessages(agentInstances[0])
+              }
+            }}
+            disabled={agentInstances.length === 0}
+          >
+            <Flask className="w-4 h-4 mr-2" />
+            A/B Testing Lab
           </Button>
           
           <Button onClick={() => setShowCreateWizard(true)}>
