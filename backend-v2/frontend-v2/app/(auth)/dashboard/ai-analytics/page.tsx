@@ -171,7 +171,7 @@ export default function AIAnalyticsPage() {
             {consentGiven ? "AI Enabled" : "AI Disabled"}
           </Badge>
           <Button
-            variant={consentGiven ? "outline" : "default"}
+            variant={consentGiven ? "outline" : "primary"}
             onClick={() => handleConsentUpdate(!consentGiven)}
           >
             {consentGiven ? "Disable AI" : "Enable AI"}
