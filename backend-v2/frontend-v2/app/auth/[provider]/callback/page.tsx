@@ -15,7 +15,7 @@ export default function SocialAuthCallbackPage({
 }) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { login: authLogin } = useAuth()
+  const { user } = useAuth()
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing')
   const [error, setError] = useState<string>('')
 
@@ -58,8 +58,7 @@ export default function SocialAuthCallbackPage({
         // Login or register with social account
         const response = await handleOAuthCallback(provider, code, state)
         
-        // Update auth context
-        await authLogin(response.access_token, response.refresh_token)
+        // Authentication tokens handled by handleOAuthCallback
         
         setStatus('success')
         
