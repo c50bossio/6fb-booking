@@ -85,10 +85,10 @@ export default function IntegrationsCallbackPage() {
         }, 3000)
       } else {
         setStatus('error')
-        setMessage(result.error || 'Failed to complete integration setup')
+        setMessage((result as any).error || 'Failed to complete integration setup')
         toast({
           title: 'Connection Failed',
-          description: result.error || 'Setup could not be completed',
+          description: (result as any).error || 'Setup could not be completed',
           variant: 'destructive'
         })
       }
