@@ -25,7 +25,7 @@ from fastapi import HTTPException, status
 from models.integration import Integration, IntegrationType, IntegrationStatus
 from models.tracking import ConversionEvent, ConversionStatus
 from models import User, Client, Appointment
-from schemas_new.integration import IntegrationCreate, IntegrationUpdate
+from schemas import IntegrationCreate, IntegrationUpdate
 from services.integration_service import BaseIntegrationService, IntegrationServiceFactory
 from utils.encryption import encrypt_text, decrypt_text
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader } from '@/components/ui/Card'
 import { LoadingButton, LoadingSpinner, ErrorDisplay } from '@/components/LoadingStates'
-import Calendar from '@/components/Calendar'
+import { Calendar } from '@/components/ui/Calendar'
 import TimeSlots from '@/components/TimeSlots'
 import {
   updateRecurringPattern,
@@ -384,9 +384,9 @@ export default function RecurringSeriesManager({ pattern, onUpdate, onClose }: R
           <div>
             <h4 className="font-medium mb-3">Select New Date</h4>
             <Calendar
-              selectedDate={modifyDate}
-              onDateSelect={setModifyDate}
-              bookingDates={[]}
+              mode="single"
+              selected={modifyDate || undefined}
+              onSelect={(date) => setModifyDate(date || null)}
             />
           </div>
 

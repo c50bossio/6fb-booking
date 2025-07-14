@@ -410,6 +410,18 @@ export const catalogApi = {
     return response.data
   },
 
+  async getServiceMetrics(serviceId?: number, dateRange?: { start: string; end: string }): Promise<any> {
+    // Placeholder for service metrics - returns empty metrics for now
+    return {
+      total_bookings: 0,
+      total_revenue: 0,
+      average_rating: 0,
+      repeat_customers: 0,
+      popular_times: [],
+      performance_trends: []
+    }
+  },
+
   async getProductAnalytics(productId: number, dateRange?: { start: string; end: string }): Promise<any> {
     const params = dateRange ? { start_date: dateRange.start, end_date: dateRange.end } : {}
     const response = await apiClient.get(`/products/${productId}/analytics`, { params })
@@ -434,5 +446,6 @@ export const {
   deleteProduct,
   getCatalogStats,
   getServiceAnalytics,
+  getServiceMetrics,
   getProductAnalytics
 } = catalogApi
