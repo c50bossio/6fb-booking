@@ -59,11 +59,7 @@ async def lifespan(app: FastAPI):
 # Create FastAPI app with lifespan management
 app = FastAPI(title="6FB Booking API v2", lifespan=lifespan)
 
-# Root health check endpoint
-@app.get("/health")
-async def health_check():
-    """Simple health check endpoint"""
-    return {"status": "healthy", "service": "BookedBarber API"}
+# Health check endpoint moved to enhanced version below
 
 # Add rate limiter to app state
 app.state.limiter = limiter
