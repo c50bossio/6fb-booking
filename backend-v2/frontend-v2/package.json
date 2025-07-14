@@ -5,8 +5,6 @@
   "scripts": {
     "dev": "next dev",
     "dev:turbo": "next dev --turbo",
-    "staging": "cp .env.staging .env.local && next dev -p 3001",
-    "staging:turbo": "cp .env.staging .env.local && next dev --turbo -p 3001",
     "build": "next build",
     "build:analyze": "ANALYZE=true next build",
     "build:profile": "next build --profile",
@@ -37,6 +35,15 @@
     "test:puppeteer:mobile": "node tests/e2e/puppeteer/mobile-responsive-test.js",
     "test:puppeteer:performance": "node tests/e2e/puppeteer/performance-test.js",
     "test:puppeteer:errors": "node tests/e2e/puppeteer/error-handling-test.js",
+    "context7:start": "npx @upstash/context7-mcp",
+    "context7:test": "npx @modelcontextprotocol/inspector npx @upstash/context7-mcp",
+    "context7:http": "npx @upstash/context7-mcp --transport http --port 3007",
+    "docs:react": "echo 'Use: mcp__context7__get-library-docs context7CompatibleLibraryID=/context7/react_dev topic=hooks tokens=2000'",
+    "docs:nextjs": "echo 'Use: mcp__context7__get-library-docs context7CompatibleLibraryID=/context7/nextjs topic=\"app router\" tokens=2000'",
+    "docs:fastapi": "echo 'Use: mcp__context7__get-library-docs context7CompatibleLibraryID=/tiangolo/fastapi topic=\"dependency injection\" tokens=2000'",
+    "docs:stripe": "echo 'Use: mcp__context7__get-library-docs context7CompatibleLibraryID=/stripe/stripe-python topic=\"payment intents\" tokens=2000'",
+    "docs:sqlalchemy": "echo 'Use: mcp__context7__get-library-docs context7CompatibleLibraryID=/sqlalchemy/sqlalchemy topic=relationships tokens=2500'",
+    "docs:search": "echo 'Use: mcp__context7__resolve-library-id libraryName=\"library-name\"'",
     "test:puppeteer:scrolling": "node tests/e2e/puppeteer/registration-scrolling-test.js",
     "optimize": "npm run lint:fix && npm run build:analyze",
     "size": "npx size-limit",
@@ -45,8 +52,7 @@
     "precommit": "npm run lint && npm run test",
     "env": "node scripts/show-environment.js",
     "env:check": "node scripts/check-ports.js",
-    "ports": "lsof -i :3000 && lsof -i :3001 && lsof -i :8000 && lsof -i :8001 || echo 'Checking ports...'",
-    "kill:staging": "lsof -ti:3001 | xargs kill -9 && lsof -ti:8001 | xargs kill -9 || echo 'No staging processes to kill'"
+    "ports": "lsof -i :3000 && lsof -i :8000 || echo 'Checking ports...'"
   },
   "dependencies": {
     "@builder.io/react": "^8.2.5",

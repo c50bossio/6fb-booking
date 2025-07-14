@@ -564,13 +564,12 @@ If you see 422 errors with `/bookings/my`:
 ## 🌍 Environment Management Guide (2025-07-03)
 
 ### Environment Overview
-BookedBarber V2 supports multiple environments for safe development and testing:
+BookedBarber V2 uses a streamlined 3-environment setup:
 
 | Environment | Frontend | Backend | Purpose | Database |
 |-------------|----------|---------|---------|----------|
 | **Development** | `localhost:3000` | `localhost:8000` | Daily development work | `6fb_booking.db` |
-| **Staging (Local)** | `localhost:3001` | `localhost:8001` | Testing & validation | `staging_6fb_booking.db` |
-| **Staging (Cloud)** | `staging.bookedbarber.com` | `api-staging.bookedbarber.com` | Team demos & collaboration | PostgreSQL staging |
+| **Cloud Staging** | `staging.bookedbarber.com` | `api-staging.bookedbarber.com` | Team demos & testing | PostgreSQL staging |
 | **Production** | `bookedbarber.com` | `api.bookedbarber.com` | Live customer environment | PostgreSQL production |
 
 ### Environment Access for Claude Code
@@ -590,22 +589,7 @@ Database: SQLite (6fb_booking.db)
 Redis: Database 0
 ```
 
-#### Staging Environment (Local Testing)
-```bash
-# Frontend
-http://localhost:3001
-
-# Backend API  
-http://localhost:8001
-http://localhost:8001/docs  # API documentation
-
-# Configuration
-Environment: .env.staging
-Database: SQLite (staging_6fb_booking.db)
-Redis: Database 1
-```
-
-#### Staging Environment (Cloud)
+#### Cloud Staging Environment
 ```bash
 # Frontend
 https://staging.bookedbarber.com
@@ -634,31 +618,7 @@ cd frontend-v2
 npm run dev  # Runs on port 3000
 ```
 
-#### Start Staging (Local)
-```bash
-cd backend-v2
-
-# Backend
-uvicorn main:app --reload --port 8001 --env-file .env.staging
-
-# Frontend (separate terminal)
-cd frontend-v2
-npm run staging  # Runs on port 3001
-```
-
-#### Start Both Environments (Parallel)
-```bash
-# Method 1: Docker Compose
-docker-compose -f docker-compose.staging.yml up -d
-
-# Method 2: Manual parallel startup
-cd backend-v2
-uvicorn main:app --reload --port 8000 &  # Development
-uvicorn main:app --reload --port 8001 --env-file .env.staging &  # Staging
-cd frontend-v2
-npm run dev &  # Development frontend (port 3000)
-npm run staging &  # Staging frontend (port 3001)
-```
+For cloud staging, use the Render deployment at `staging.bookedbarber.com`
 
 ### Environment Management Scripts
 
@@ -674,13 +634,10 @@ lsof -i :8000  # Development backend
 lsof -i :8001  # Staging backend
 ```
 
-#### Environment Control Scripts
+#### Development Scripts
 ```bash
-# Start staging environment
-./scripts/start-staging.sh
-
-# Stop staging environment
-./scripts/stop-staging.sh
+# Start development environment
+./scripts/start-dev.sh
 
 # Reset staging data
 ./scripts/reset-staging.sh
@@ -719,8 +676,8 @@ When Claude mentions URLs, always use the correct environment:
 ```bash
 # ✅ Correct environment-specific URLs
 Development: "localhost:3000" or "localhost:8000"
-Staging:     "localhost:3001" or "localhost:8001"
-Cloud:       "staging.bookedbarber.com" or "api-staging.bookedbarber.com"
+Cloud Staging: "staging.bookedbarber.com" or "api-staging.bookedbarber.com"
+Production: "bookedbarber.com" or "api.bookedbarber.com"
 
 # ❌ Avoid generic references
 "localhost" (which port?)
@@ -733,25 +690,23 @@ Cloud:       "staging.bookedbarber.com" or "api-staging.bookedbarber.com"
 #### Environment Files Location
 ```bash
 backend-v2/
-├── .env.development     # Development settings
-├── .env.staging        # Local staging settings
-├── .env.staging.template  # Staging template
+├── .env                 # Development settings
+├── .env.template        # Development template
 ├── .env.production.template  # Production template
 └── config.py           # Configuration loader
 ```
 
 #### Key Configuration Differences
 ```bash
-# Development
+# Development (Local)
 PORT=8000
 DATABASE_URL=sqlite:///./6fb_booking.db
 REDIS_URL=redis://localhost:6379/0
 DEBUG=true
 
-# Staging
-PORT=8001
-DATABASE_URL=sqlite:///./staging_6fb_booking.db
-REDIS_URL=redis://localhost:6379/1
+# Production/Cloud Staging (Render)
+DATABASE_URL=postgresql://...
+REDIS_URL=redis://...
 DEBUG=false
 ```
 
@@ -795,13 +750,8 @@ All middleware now supports:
 # Development migrations
 alembic upgrade head
 
-# Staging migrations
-ENV_FILE=.env.staging alembic upgrade head
-
-# Reset staging database
-rm staging_6fb_booking.db
-ENV_FILE=.env.staging alembic upgrade head
-python scripts/populate_staging_data.py
+# Development migrations
+alembic upgrade head
 ```
 
 ### Troubleshooting Environment Issues
@@ -823,8 +773,6 @@ lsof -i :8000
 cd backend-v2
 python -c "from config import settings; print(f'Environment: {settings.environment}, Port: {settings.port}')"
 
-# Check staging environment
-ENV_FILE=.env.staging python -c "from config import settings; print(f'Environment: {settings.environment}, Port: {settings.port}')"
 ```
 
 #### Docker Environment Issues
@@ -833,10 +781,6 @@ ENV_FILE=.env.staging python -c "from config import settings; print(f'Environmen
 docker-compose -f docker-compose.staging.yml ps
 
 # View staging logs
-docker-compose -f docker-compose.staging.yml logs
-
-# Restart staging environment
-docker-compose -f docker-compose.staging.yml restart
 ```
 
 ### Staging Environment Troubleshooting
@@ -852,10 +796,7 @@ lsof -ti:3001 | xargs kill -9  # Kill staging frontend
 lsof -ti:8001 | xargs kill -9  # Kill staging backend
 
 # Environment variable loading issues
-ENV_FILE=.env.staging python -c "from config import settings; print(settings.environment)"
-
-# Database migration issues
-ENV_FILE=.env.staging alembic upgrade head
+python -c "from config import settings; print(settings.environment)"
 ```
 
 ### Best Practices for Environment Management

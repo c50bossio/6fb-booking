@@ -341,6 +341,22 @@
       "message": "🧹 Cleaning up development session..."
     },
     {
+      "name": "context7_documentation_suggestions",
+      "description": "Provide Context7 documentation suggestions based on file being edited",
+      "event": "PreToolUse",
+      "matchers": [
+        "Edit(file_path:*/frontend-v2/*.tsx)",
+        "Edit(file_path:*/frontend-v2/*.ts)",
+        "Edit(file_path:*/backend-v2/*.py)",
+        "Write(file_path:*/frontend-v2/*.tsx)",
+        "Write(file_path:*/frontend-v2/*.ts)",
+        "Write(file_path:*/backend-v2/*.py)"
+      ],
+      "command": "/Users/bossio/6fb-booking/.claude/scripts/context7-suggestions.sh",
+      "blocking": false,
+      "message": "📚 Checking relevant Context7 documentation..."
+    },
+    {
       "name": "notification_summary",
       "description": "Provide development summary and next steps",
       "event": "Stop",

@@ -1,0 +1,14 @@
+# Context7 Auto-Rules for BookedBarber V2
+# Automatically invoke Context7 for library documentation requests
+
+[[calls]]
+match = "when the user requests code examples, setup or configuration steps, or library/API documentation for React, Next.js, FastAPI, Stripe, Tailwind, TypeScript, or any other library"
+tool = "context7"
+
+[[calls]]
+match = "when implementing features with external libraries or frameworks"
+tool = "context7"
+
+[[calls]]
+match = "when debugging library-specific issues or asking about API usage"
+tool = "context7"

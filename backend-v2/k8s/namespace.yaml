@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bookedbarber-production
+  labels:
+    name: bookedbarber-production
+    environment: production
+    app: bookedbarber-v2
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bookedbarber-staging
+  labels:
+    name: bookedbarber-staging
+    environment: staging
+    app: bookedbarber-v2
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bookedbarber-monitoring
+  labels:
+    name: bookedbarber-monitoring
+    environment: monitoring
+    app: prometheus-stack

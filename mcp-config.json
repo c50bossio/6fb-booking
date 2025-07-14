@@ -1,0 +1,127 @@
+{
+  "mcpServers": {
+    "6fb-booking-filesystem": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-filesystem", "/Users/bossio/6fb-booking"],
+      "description": "File system access for the 6fb-booking project",
+      "capabilities": ["read", "write", "create", "delete", "list"],
+      "allowedPaths": [
+        "/Users/bossio/6fb-booking"
+      ]
+    },
+    "6fb-booking-git": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-git", "--repository", "/Users/bossio/6fb-booking"],
+      "description": "Git operations for the 6fb-booking repository",
+      "capabilities": ["status", "log", "diff", "branch", "commit"]
+    },
+    "6fb-booking-sqlite": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-sqlite", "--db-path", "/Users/bossio/6fb-booking/backend-v2/6fb_booking.db"],
+      "description": "SQLite database access for 6fb-booking development database",
+      "capabilities": ["query", "schema", "inspect"]
+    },
+    "6fb-booking-sqlite-staging": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-sqlite", "--db-path", "/Users/bossio/6fb-booking/backend-v2/staging_6fb_booking.db"],
+      "description": "SQLite database access for 6fb-booking staging database",
+      "capabilities": ["query", "schema", "inspect"]
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["@upstash/context7-mcp"],
+      "description": "Context7 documentation server for library and framework documentation",
+      "capabilities": ["library-search", "documentation-retrieval", "api-reference"]
+    },
+    "browser-logs": {
+      "command": "python",
+      "args": ["/Users/bossio/6fb-booking/browser-logs-mcp-server.py"],
+      "description": "Real-time browser debugging and log monitoring for 6fb-booking frontend",
+      "capabilities": ["console-logs", "network-requests", "javascript-errors", "live-monitoring"],
+      "env": {
+        "CHROME_DEBUG_PORT": "9222"
+      }
+    },
+    "6fb-booking-fetch": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-fetch"],
+      "description": "Web content fetching for 6fb-booking external integrations",
+      "capabilities": ["web-fetch", "content-conversion"]
+    }
+  },
+  "projectInfo": {
+    "name": "6fb-booking",
+    "description": "BookedBarber V2 - Barbershop booking platform with payment processing and marketing integrations",
+    "version": "2.2.0",
+    "repository": "/Users/bossio/6fb-booking",
+    "mainBranch": "main",
+    "activeBranch": "deployment-clean",
+    "technology": {
+      "backend": "FastAPI (Python 3.9+)",
+      "frontend": "Next.js 14 with TypeScript",
+      "database": "PostgreSQL (production) / SQLite (development)",
+      "cache": "Redis",
+      "payments": "Stripe Connect",
+      "integrations": ["Google Calendar", "SendGrid", "Twilio", "Google My Business", "Meta Business SDK"]
+    },
+    "environments": {
+      "development": {
+        "frontend": "http://localhost:3000",
+        "backend": "http://localhost:8000",
+        "database": "sqlite:///6fb_booking.db"
+      },
+      "staging": {
+        "frontend": "http://localhost:3001", 
+        "backend": "http://localhost:8001",
+        "database": "sqlite:///staging_6fb_booking.db"
+      },
+      "production": {
+        "frontend": "https://bookedbarber.com",
+        "backend": "https://api.bookedbarber.com"
+      }
+    }
+  },
+  "workingDirectories": {
+    "backend": "/Users/bossio/6fb-booking/backend-v2",
+    "frontend": "/Users/bossio/6fb-booking/backend-v2/frontend-v2",
+    "scripts": "/Users/bossio/6fb-booking/scripts",
+    "docs": "/Users/bossio/6fb-booking/docs",
+    "tests": "/Users/bossio/6fb-booking/backend-v2/tests"
+  },
+  "quickCommands": {
+    "start-dev": {
+      "description": "Start development environment",
+      "command": "cd /Users/bossio/6fb-booking && ./scripts/start-dev-session.sh"
+    },
+    "start-staging": {
+      "description": "Start staging environment",
+      "command": "cd /Users/bossio/6fb-booking && ./scripts/start-staging.sh"
+    },
+    "run-tests": {
+      "description": "Run all tests",
+      "command": "cd /Users/bossio/6fb-booking && ./scripts/parallel-tests.sh"
+    },
+    "chrome-debug": {
+      "description": "Start Chrome with debugging for browser logs MCP",
+      "command": "cd /Users/bossio/6fb-booking && ./scripts/start-chrome-debug.sh"
+    }
+  },
+  "integrationConfig": {
+    "chromeBrowserDebugging": {
+      "port": 9222,
+      "userDataDir": "/tmp/chrome-debug-6fb",
+      "required": "For browser logs MCP server functionality"
+    },
+    "context7": {
+      "httpPort": 3007,
+      "transport": "stdio",
+      "usage": "Library documentation and API references"
+    }
+  },
+  "securityNotes": [
+    "File system access limited to project directory only",
+    "Database access is read-only for safety",
+    "Browser debugging requires Chrome with --remote-debugging-port=9222",
+    "No production credentials or sensitive data exposed"
+  ]
+}

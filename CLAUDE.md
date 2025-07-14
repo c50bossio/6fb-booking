@@ -374,6 +374,159 @@ google-chrome \
   --no-first-run
 ```
 
+## 📚 Context7 Documentation Automation
+
+### Context7 MCP Server
+BookedBarber V2 is configured with Context7 MCP for real-time documentation access and library references. Context7 provides instant access to documentation for libraries, frameworks, and APIs used in the project.
+
+#### Features
+- **Library Documentation Lookup**: Access docs for React, Next.js, FastAPI, SQLAlchemy, etc.
+- **API Reference Integration**: Quick access to Stripe, Google Calendar, and other API docs
+- **Code Examples & Patterns**: Get implementation examples for common patterns
+- **Version-Specific Documentation**: Access docs for specific versions of libraries
+- **Real-time Search**: Search documentation without leaving the development environment
+
+#### Setup & Configuration
+Context7 is already configured in the project with the following npm scripts:
+
+```bash
+# Start Context7 MCP server (stdio transport)
+npm run context7:start
+
+# Test Context7 functionality with inspector
+npm run context7:test  
+
+# Start Context7 with HTTP transport on port 3007
+npm run context7:http
+```
+
+#### Integration with Development Workflow
+
+**Before implementing new features:**
+```bash
+# Use Context7 to research documentation
+resolve-library-id "next.js"
+get-library-docs "/vercel/next.js" topic="app router"
+```
+
+**During development:**
+- Access library docs instantly through MCP tools
+- Get API references for third-party services
+- Find implementation patterns and best practices
+- Verify function signatures and parameters
+
+**Common Context7 Usage Patterns:**
+
+```bash
+# Research React patterns
+resolve-library-id "react"
+get-library-docs "/facebook/react" topic="hooks"
+
+# FastAPI documentation
+resolve-library-id "fastapi" 
+get-library-docs "/tiangolo/fastapi" topic="authentication"
+
+# Stripe API reference
+resolve-library-id "stripe"
+get-library-docs "/stripe/stripe-node" topic="connect"
+
+# Database patterns
+resolve-library-id "sqlalchemy"
+get-library-docs "/sqlalchemy/sqlalchemy" topic="relationships"
+```
+
+#### Project-Specific Library Configuration
+
+The project includes preconfigured access to:
+- **Next.js 14**: App Router, TypeScript, Tailwind integration
+- **FastAPI**: Authentication, WebSockets, Background Tasks
+- **React**: Hooks, Components, Context API
+- **Stripe**: Connect, Payments, Webhooks
+- **SQLAlchemy**: Models, Relationships, Migrations
+- **Tailwind CSS**: Components, Utilities, Configuration
+
+#### MCP Server Configuration
+
+Context7 is configured in the project-specific MCP configuration (`mcp-config.json`):
+
+```json
+{
+  "context7": {
+    "command": "npx",
+    "args": ["@upstash/context7-mcp"],
+    "description": "Context7 documentation server for library and framework documentation",
+    "capabilities": ["library-search", "documentation-retrieval", "api-reference"]
+  }
+}
+```
+
+#### Integration with Other MCP Servers
+
+Context7 works alongside other MCP servers in the project:
+- **Filesystem MCP**: Access project files
+- **Git MCP**: Repository operations  
+- **Browser Logs MCP**: Frontend debugging
+- **SQLite MCP**: Database inspection
+- **Context7 MCP**: Documentation lookup
+
+#### Common Development Workflows
+
+**Feature Implementation Workflow:**
+1. **Research**: Use Context7 to understand library capabilities
+2. **Plan**: Review documentation for implementation patterns
+3. **Implement**: Write code with real-time doc access
+4. **Debug**: Use Browser Logs MCP for frontend issues
+5. **Test**: Validate against library best practices
+
+**API Integration Workflow:**
+1. **Documentation**: Get API docs through Context7
+2. **Authentication**: Review auth patterns for the service
+3. **Implementation**: Code integration with doc references
+4. **Testing**: Validate against API specifications
+
+#### Performance & Efficiency Benefits
+
+- **Reduced Context Switching**: No need to leave IDE for documentation
+- **Real-time Accuracy**: Always access current documentation versions
+- **Pattern Discovery**: Find optimal implementation approaches quickly
+- **Error Prevention**: Verify function signatures before implementation
+
+#### Available Documentation Libraries
+
+Common libraries with Context7 integration:
+- **Frontend**: React, Next.js, TypeScript, Tailwind CSS
+- **Backend**: FastAPI, SQLAlchemy, Pydantic, Alembic
+- **Integrations**: Stripe, Google APIs, SendGrid, Twilio
+- **Testing**: Jest, Playwright, pytest, pytest-asyncio
+- **Deployment**: Docker, Kubernetes, Railway, Render
+
+#### Troubleshooting Context7
+
+**If Context7 doesn't respond:**
+```bash
+# Check MCP server status
+npm run context7:test
+
+# Restart with HTTP transport
+npm run context7:http
+
+# Verify installation
+npm list @upstash/context7-mcp
+```
+
+**If documentation seems outdated:**
+- Context7 automatically fetches latest docs
+- Verify you're using the correct library ID format
+- Use `resolve-library-id` to find the right library reference
+
+#### Best Practices
+
+1. **Start with resolve-library-id**: Always resolve library names first
+2. **Use specific topics**: Focus searches with topic parameters  
+3. **Version awareness**: Specify versions when working with older libraries
+4. **Pattern research**: Look for implementation patterns before coding
+5. **API verification**: Double-check API endpoints and parameters
+
 ## 🔐 Security Protocols
 
 ### Environment Variables

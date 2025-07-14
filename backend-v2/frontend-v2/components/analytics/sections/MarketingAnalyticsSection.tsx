@@ -77,25 +77,26 @@ export default function MarketingAnalyticsSection({ userRole, dateRange }: Marke
       title: 'Campaign Revenue',
       value: `$${marketingData.performance.revenue.toLocaleString()}`,
       icon: <CurrencyDollarIcon className="w-5 h-5 text-green-600" />,
-      trend: 'up',
+      trend: 'up' as const,
       change: 18.5
     },
     {
       title: 'Open Rate',
       value: `${marketingData.engagement.averageOpenRate}%`,
       icon: <EnvelopeOpenIcon className="w-5 h-5 text-blue-600" />,
-      trend: marketingData.engagement.averageOpenRate > 70 ? 'up' : 'down'
+      trend: (marketingData.engagement.averageOpenRate > 70 ? 'up' : 'down') as 'up' | 'down'
     },
     {
       title: 'Click Rate',
       value: `${marketingData.engagement.averageClickRate}%`,
       icon: <CursorArrowRaysIcon className="w-5 h-5 text-purple-600" />,
-      trend: marketingData.engagement.averageClickRate > 20 ? 'up' : 'down'
+      trend: (marketingData.engagement.averageClickRate > 20 ? 'up' : 'down') as 'up' | 'down'
     },
     {
       title: 'Conversions',
       value: marketingData.performance.conversions,
       icon: <ArrowTrendingUpIcon className="w-5 h-5 text-orange-600" />,
+      trend: 'neutral' as const,
       change: marketingData.engagement.averageConversionRate,
       changeLabel: 'rate'
     }
