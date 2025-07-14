@@ -271,7 +271,7 @@ export default function IntegrationsPage() {
     return integration?.icon || Globe
   }
 
-  const categories = ['all', ...new Set(AVAILABLE_INTEGRATIONS.map(i => i.category))]
+  const categories = ['all', ...Array.from(new Set(AVAILABLE_INTEGRATIONS.map(i => i.category)))]
   const filteredIntegrations = selectedCategory === 'all' 
     ? AVAILABLE_INTEGRATIONS 
     : AVAILABLE_INTEGRATIONS.filter(i => i.category === selectedCategory)
