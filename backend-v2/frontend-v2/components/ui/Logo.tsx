@@ -51,8 +51,8 @@ export function Logo({
         return isDark ? '/logos/logo-white.png' : '/logos/logo-black.png'
       case 'auto':
       default:
-        // Use color logo as fallback if theme detection fails
-        return isDark ? '/logos/logo-white.png' : '/logos/logo-color.png'
+        // Use black logo in light mode for better contrast and professionalism
+        return isDark ? '/logos/logo-white.png' : '/logos/logo-black.png'
     }
   }
   

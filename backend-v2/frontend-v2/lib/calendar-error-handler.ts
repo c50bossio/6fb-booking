@@ -72,6 +72,24 @@ export class CalendarErrorHandler {
     
     throw lastError!;
   }
+
+  static async handleError(error: any, context: string): Promise<CalendarError> {
+    const instance = CalendarErrorHandler.getInstance();
+    const calendarError = instance.logError({
+      type: error.name === 'NetworkError' ? 'network' : 'unknown',
+      message: error.message || 'An error occurred',
+      details: { context, originalError: error },
+      timestamp: new Date()
+    });
+    
+    return calendarError;
+  }
+
+  static clearRetryHistory(context: string): void {
+    // Clear any retry history for the given context
+    // This is a placeholder implementation
+    console.log(`Clearing retry history for context: ${context}`);
+  }
 }
 
 // Convenience functions
@@ -98,7 +116,9 @@ export const CALENDAR_TIMEOUTS = {
   RENDER: 3000,
   INTERACTION: 1000,
   DEBOUNCE: 300,
-  ANIMATION: 500
+  ANIMATION: 500,
+  DEFAULT: 5000,
+  APPOINTMENT: 8000
 } as const;
 
 // Timeout wrapper function
