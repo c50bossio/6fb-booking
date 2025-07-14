@@ -273,7 +273,7 @@ export default function PayoutProcessPage() {
             </div>
             <div>
               <Label htmlFor="barber-filter">Filter by Barber</Label>
-              <Select value={selectedBarberId} onValueChange={setSelectedBarberId}>
+              <Select value={selectedBarberId} onValueChange={setSelectedBarberId} defaultValue="">
                 <SelectTrigger>
                   <SelectValue placeholder="All barbers" />
                 </SelectTrigger>
