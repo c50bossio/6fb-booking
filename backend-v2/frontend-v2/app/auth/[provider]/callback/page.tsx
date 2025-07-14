@@ -48,7 +48,7 @@ export default function SocialAuthCallbackPage({
     try {
       if (isLinking) {
         // Link account to existing user
-        await linkSocialAccount(provider, code)
+        await linkSocialAccount(provider, user?.id?.toString() || '', code || '')
         sessionStorage.removeItem('linking_social_account')
         setStatus('success')
         setTimeout(() => {
