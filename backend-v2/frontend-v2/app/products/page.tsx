@@ -207,26 +207,27 @@ export default function ProductsPage() {
             
             <Select
               value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value as ProductType | '')}
-            >
-              <option value="">All Types</option>
-              <option value={ProductType.PHYSICAL}>Physical</option>
-              <option value={ProductType.SERVICE}>Service</option>
-              <option value={ProductType.DIGITAL}>Digital</option>
-              <option value={ProductType.GIFT_CARD}>Gift Card</option>
-            </Select>
+              onChange={(value) => setSelectedType(value as ProductType | '')}
+              options={[
+                { value: '', label: 'All Types' },
+                { value: ProductType.PHYSICAL, label: 'Physical' },
+                { value: ProductType.SERVICE, label: 'Service' },
+                { value: ProductType.DIGITAL, label: 'Digital' },
+                { value: ProductType.GIFT_CARD, label: 'Gift Card' }
+              ]}
+            />
             
             <Select
               value={filters.status || ''}
-              onChange={(e) => setFilters(prev => ({
+              onChange={(value) => setFilters(prev => ({
                 ...prev,
-                status: e.target.value as ProductStatus || undefined
+                status: value as ProductStatus || undefined
               }))}
-            >
-              <option value="">All Status</option>
-              <option value={ProductStatus.ACTIVE}>Active</option>
-              <option value={ProductStatus.INACTIVE}>Inactive</option>
-              <option value={ProductStatus.DRAFT}>Draft</option>
+              options={[
+                { value: '', label: 'All Status' },
+                { value: ProductStatus.ACTIVE, label: 'Active' },
+                { value: ProductStatus.INACTIVE, label: 'Inactive' },
+                { value: ProductStatus.DRAFT, label: 'Draft' }
               <option value={ProductStatus.ARCHIVED}>Archived</option>
             </Select>
             

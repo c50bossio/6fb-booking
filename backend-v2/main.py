@@ -123,6 +123,9 @@ async def startup_event():
             import sentry_sdk
             sentry_sdk.capture_exception(e)
 
+# Add Redis caching middleware
+from middleware.cache_middleware import SmartCacheMiddleware
+
 # Add security middleware
 import logging
 import os
