@@ -250,7 +250,7 @@ export default function IntegrationsPage() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'connected': return <CheckCircle className="h-4 w-4 text-green-500" />
+      case 'active': return <CheckCircle className="h-4 w-4 text-green-500" />
       case 'error': return <XCircle className="h-4 w-4 text-red-500" />
       case 'pending': return <Clock className="h-4 w-4 text-yellow-500" />
       default: return <XCircle className="h-4 w-4 text-gray-400" />
@@ -259,7 +259,7 @@ export default function IntegrationsPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'connected': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+      case 'active': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
       case 'error': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
       case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
@@ -634,7 +634,7 @@ export default function IntegrationsPage() {
                         <div className="flex items-center gap-4">
                           <div className="text-right">
                             <div className="text-sm font-medium">
-                              {integration.status === 'connected' ? 'Healthy' : 'Issues'}
+                              {integration.status === 'active' ? 'Healthy' : 'Issues'}
                             </div>
                             <div className="text-xs text-muted-foreground">
                               Response time: N/A
