@@ -235,7 +235,7 @@ export default function PayoutProcessPage() {
         <div className="flex items-center space-x-2">
           <Button 
             variant="outline"
-            onClick={refetch}
+            onClick={() => refetch()}
             disabled={loadingCandidates}
           >
             {loadingCandidates ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Refresh'}
