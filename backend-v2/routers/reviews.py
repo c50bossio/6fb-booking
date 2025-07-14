@@ -12,11 +12,10 @@ from database import get_db
 from models import User
 from models.review import Review, ReviewResponse, ReviewTemplate, ReviewPlatform, ReviewSentiment
 from models.integration import Integration, IntegrationType
-from schemas_new.review import (
-    ReviewResponse as ReviewResponseSchema,
+from schemas import (
+    ReviewResponseSchema,
     ReviewResponseCreate,
     ReviewResponseUpdate,
-    ReviewResponseSchema as ReviewResponseDisplaySchema,
     ReviewTemplateSchema,
     ReviewTemplateCreate,
     ReviewTemplateUpdate,
@@ -251,7 +250,7 @@ async def get_review(
 
 
 # Rest of the routes remain the same...
-@router.post("/{review_id}/respond", response_model=ReviewResponseDisplaySchema)
+@router.post("/{review_id}/respond", response_model=ReviewResponseSchema)
 @limiter.limit("10/minute")
 async def create_review_response(
     request: Request,
@@ -276,7 +275,7 @@ async def create_review_response(
         # If user wants to send immediately, try to send via platform API
         # This would be handled in background task for better UX
         
-        return ReviewResponseDisplaySchema.from_orm(response)
+        return ReviewResponseSchema.from_orm(response)
         
     except HTTPException:
         raise
@@ -287,7 +286,7 @@ async def create_review_response(
         )
 
 
-@router.put("/responses/{response_id}", response_model=ReviewResponseDisplaySchema)
+@router.put("/responses/{response_id}", response_model=ReviewResponseSchema)
 @limiter.limit("20/minute")
 async def update_review_response(
     request: Request,

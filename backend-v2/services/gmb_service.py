@@ -14,7 +14,7 @@ from fastapi import HTTPException
 
 from models.review import Review, ReviewPlatform, ReviewSentiment, ReviewResponseStatus
 from models.integration import Integration, IntegrationType, IntegrationStatus
-from schemas_new.review import GMBLocation, ReviewCreate
+from schemas import GMBLocation, ReviewCreate
 from utils.encryption import decrypt_text
 
 

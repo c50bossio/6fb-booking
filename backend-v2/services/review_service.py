@@ -15,7 +15,7 @@ from models.review import (
     Review, ReviewResponse, ReviewTemplate, ReviewPlatform, 
     ReviewSentiment, ReviewResponseStatus
 )
-from schemas_new.review import (
+from schemas import (
     ReviewFilters, ReviewAnalytics, ReviewTemplateGenerateRequest,
     AutoResponseConfig, AutoResponseStats
 )

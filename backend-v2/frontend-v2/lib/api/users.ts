@@ -681,3 +681,28 @@ export const usersApi = {
 }
 
 export default usersApi
+
+// Export individual functions for direct imports
+export const {
+  getCurrentUser,
+  updateProfile,
+  getUserTimezone,
+  updateTimezone,
+  updateOnboardingStatus,
+  getUsers,
+  updateUserRole,
+  getUser,
+  deleteUser,
+  getUserPreferences,
+  updateUserPreferences,
+  getUserAnalytics,
+  getUserActivity,
+  getUserSessions,
+  revokeSession,
+  revokeAllOtherSessions,
+  uploadAvatar,
+  removeAvatar
+} = usersApi
+
+// Alias for compatibility
+export const getProfile = usersApi.getCurrentUser

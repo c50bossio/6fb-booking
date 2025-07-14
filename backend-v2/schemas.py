@@ -1146,6 +1146,184 @@ class CalendarFreeBusyRequest(BaseModel):
     end_date: datetime = Field(..., description="End date for free/busy query")
 
 
+# Integration Schemas
+class IntegrationType(str, Enum):
+    GOOGLE_ADS = "google_ads"
+    GOOGLE_MY_BUSINESS = "google_my_business"
+    META_PIXEL = "meta_pixel"
+    STRIPE_CONNECT = "stripe_connect"
+    GOOGLE_CALENDAR = "google_calendar"
+    SENDGRID = "sendgrid"
+    TWILIO = "twilio"
+
+class IntegrationCreate(BaseModel):
+    provider: IntegrationType
+    config: Dict[str, Any] = {}
+    enabled: bool = True
+
+class IntegrationUpdate(BaseModel):
+    config: Optional[Dict[str, Any]] = None
+    enabled: Optional[bool] = None
+
+class IntegrationResponse(BaseModel):
+    id: int
+    provider: IntegrationType
+    status: str
+    config: Dict[str, Any]
+    enabled: bool
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+class OAuthInitiateRequest(BaseModel):
+    provider: IntegrationType
+    redirect_uri: Optional[str] = None
+
+class OAuthCallbackRequest(BaseModel):
+    provider: IntegrationType
+    code: str
+    state: Optional[str] = None
+
+class OAuthCallbackResponse(BaseModel):
+    success: bool
+    integration_id: Optional[int] = None
+    message: str
+
+class IntegrationHealthCheck(BaseModel):
+    provider: IntegrationType
+    healthy: bool
+    message: str
+    last_checked: datetime
+
+class IntegrationHealthSummary(BaseModel):
+    total_integrations: int
+    healthy_count: int
+    unhealthy_count: int
+    checks: List[IntegrationHealthCheck]
+
+class IntegrationDisconnectResponse(BaseModel):
+    success: bool
+    message: str
+
+class IntegrationTokenRefreshRequest(BaseModel):
+    provider: IntegrationType
+
+class IntegrationTokenRefreshResponse(BaseModel):
+    success: bool
+    message: str
+
+# Review Schemas
+class ReviewResponseSchema(BaseModel):
+    id: int
+    review_id: int
+    response_text: str
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+class ReviewResponseCreate(BaseModel):
+    review_id: int
+    response_text: str
+
+class ReviewResponseUpdate(BaseModel):
+    response_text: str
+
+class ReviewTemplateSchema(BaseModel):
+    id: int
+    name: str
+    template_text: str
+    platform: str
+    rating_range: str
+    active: bool
+    created_at: datetime
+
+class ReviewTemplateCreate(BaseModel):
+    name: str
+    template_text: str
+    platform: str
+    rating_range: str
+    active: bool = True
+
+class ReviewTemplateUpdate(BaseModel):
+    name: Optional[str] = None
+    template_text: Optional[str] = None
+    platform: Optional[str] = None
+    rating_range: Optional[str] = None
+    active: Optional[bool] = None
+
+class ReviewAnalytics(BaseModel):
+    total_reviews: int
+    average_rating: float
+    response_rate: float
+    recent_reviews: int
+
+class ReviewFilters(BaseModel):
+    platform: Optional[str] = None
+    rating_min: Optional[int] = None
+    rating_max: Optional[int] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+
+class ReviewSyncRequest(BaseModel):
+    platform: str
+    location_id: Optional[str] = None
+
+class ReviewSyncResponse(BaseModel):
+    success: bool
+    synced_count: int
+    message: str
+
+class GMBAuthRequest(BaseModel):
+    redirect_uri: str
+
+class GMBAuthResponse(BaseModel):
+    auth_url: str
+    state: str
+
+class ReviewTemplateGenerateRequest(BaseModel):
+    rating: int
+    platform: str
+    business_type: str
+
+class ReviewTemplateGenerateResponse(BaseModel):
+    template_text: str
+    suggested_keywords: List[str]
+
+class BulkResponseRequest(BaseModel):
+    review_ids: List[int]
+    template_id: Optional[int] = None
+    custom_message: Optional[str] = None
+
+class BulkResponseResponse(BaseModel):
+    success: bool
+    processed_count: int
+    failed_count: int
+    message: str
+
+class AutoResponseConfig(BaseModel):
+    enabled: bool
+    rating_threshold: int
+    delay_minutes: int
+    template_id: Optional[int] = None
+
+class AutoResponseStats(BaseModel):
+    total_auto_responses: int
+    this_month: int
+    success_rate: float
+
+class GMBLocation(BaseModel):
+    name: str
+    location_id: str
+    address: str
+    phone: Optional[str] = None
+    website: Optional[str] = None
+
+class ReviewCreate(BaseModel):
+    platform: str
+    rating: int
+    review_text: str
+    reviewer_name: Optional[str] = None
+    reviewer_email: Optional[str] = None
+    location_id: Optional[str] = None
+
 class BusyPeriod(BaseModel):
     start: str
     end: str
