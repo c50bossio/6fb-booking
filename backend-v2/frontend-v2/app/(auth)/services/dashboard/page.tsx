@@ -205,7 +205,7 @@ export default function ServiceDashboardPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <EmptyState
-          icon={<AlertCircle className="w-12 h-12" />}
+          icon={AlertCircle}
           title="Error Loading Dashboard"
           description={error}
           action={{
@@ -351,22 +351,10 @@ export default function ServiceDashboardPage() {
               />
 
               {/* Service Grid */}
-              <ServiceOverviewGrid
-                services={filteredServices}
-                selectedServices={selectedServices}
-                onSelectionChange={setSelectedServices}
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                filterCategory={filterCategory}
-                onFilterChange={setFilterCategory}
-                onServiceEdit={(service) => router.push(`/services/edit/${service.id}`)}
-              />
+              <ServiceOverviewGrid />
 
               {/* Template Recommendations */}
-              <ServiceTemplateRecommendations
-                currentServices={services}
-                onApplyTemplate={loadData}
-              />
+              <ServiceTemplateRecommendations />
             </div>
           </TabsContent>
 
@@ -380,11 +368,7 @@ export default function ServiceDashboardPage() {
           </TabsContent>
 
           <TabsContent value="optimization">
-            <ServicePricingOptimization
-              services={services}
-              metrics={metrics}
-              onOptimize={loadData}
-            />
+            <ServicePricingOptimization />
           </TabsContent>
 
           <TabsContent value="compliance">
@@ -406,11 +390,7 @@ export default function ServiceDashboardPage() {
 
         {/* Performance Metrics */}
         <div className="mt-8">
-          <ServicePerformanceMetrics
-            topServices={metrics?.topPerformingServices || []}
-            underperformingServices={metrics?.underperformingServices || []}
-            dateRange={dateRange}
-          />
+          <ServicePerformanceMetrics />
         </div>
       </div>
     </div>

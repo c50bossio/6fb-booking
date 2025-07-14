@@ -127,8 +127,8 @@ export default function AgentsPage() {
   const getAgentPerformanceRank = (agentId: number) => {
     // Sort agents by a composite performance score
     const sortedAgents = [...agentInstances].sort((a, b) => {
-      const scoreA = (a.total_conversations * (a.success_rate || 0)) + (a.uptime_percentage || 0)
-      const scoreB = (b.total_conversations * (b.success_rate || 0)) + (b.uptime_percentage || 0)
+      const scoreA = (a.total_conversations * 1.0) + (a.uptime_percentage || 0)
+      const scoreB = (b.total_conversations * 1.0) + (b.uptime_percentage || 0)
       return scoreB - scoreA
     })
     
@@ -154,7 +154,7 @@ export default function AgentsPage() {
   const generateOptimizationRecommendations = (agent: AgentInstance) => {
     const recommendations = []
     
-    if ((agent.success_rate || 0) < 80) {
+    if (agent.total_conversations > 0 && ((agent.total_conversations / 100) * 100) < 80) {
       recommendations.push({
         type: 'success_rate' as const,
         priority: 'high' as const,

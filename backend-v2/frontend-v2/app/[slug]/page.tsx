@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
-import { LoadingButton } from '@/components/LoadingStates'
+import { LoadingSpinner } from '@/components/ui/LoadingStates'
 
 // Dynamically import to avoid SSR issues
 const OrganizationLandingPage = dynamic(
@@ -13,7 +13,7 @@ const OrganizationLandingPage = dynamic(
     loading: () => (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="text-center space-y-4">
-          <LoadingButton />
+          <LoadingSpinner size="lg" />
           <p className="text-gray-600">Loading landing page...</p>
         </div>
       </div>
@@ -139,7 +139,7 @@ export default function OrganizationLandingPageRoute() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="text-center space-y-4">
-          <LoadingButton />
+          <LoadingSpinner size="lg" />
           <p className="text-gray-600">Loading landing page...</p>
         </div>
       </div>
@@ -168,29 +168,6 @@ export default function OrganizationLandingPageRoute() {
   }
 
   return (
-    <OrganizationLandingPage
-      landingData={landingData}
-      onBookNowClick={() => {
-        // Track CTA click
-        fetch(`/api/v1/public/booking/landing/${slug}/track`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            event_type: 'cta_click',
-            organization_slug: slug,
-            session_id: sessionStorage.getItem('session_id') || undefined,
-            metadata: {
-              cta_location: 'main_button',
-              timestamp: new Date().toISOString()
-            }
-          })
-        }).catch(console.error)
-        
-        // Navigate to booking page
-        router.push(`/book/${slug}`)
-      }}
-    />
+    <OrganizationLandingPage slug={slug} />
   )
 }

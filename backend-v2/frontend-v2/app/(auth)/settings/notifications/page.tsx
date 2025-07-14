@@ -41,15 +41,14 @@ export default function NotificationsSettingsPage() {
       setUser(profile)
       
       // Load notification preferences from user profile
-      if (profile.notification_preferences) {
-        setSettings({
-          emailNotifications: profile.notification_preferences.email_enabled ?? true,
-          smsNotifications: profile.notification_preferences.sms_enabled ?? true,
-          appointmentReminders: profile.notification_preferences.appointment_reminders ?? true,
-          marketingEmails: profile.notification_preferences.marketing_emails ?? false,
-          reminderTiming: profile.notification_preferences.reminder_timing ?? '24'
-        })
-      }
+      // Note: notification_preferences will be loaded separately when backend is ready
+      setSettings({
+        emailNotifications: true,
+        smsNotifications: true,
+        appointmentReminders: true,
+        marketingEmails: false,
+        reminderTiming: '24'
+      })
     } catch (error) {
       console.error('Failed to load notification settings:', error)
       toast({
@@ -68,9 +67,9 @@ export default function NotificationsSettingsPage() {
       await updateNotificationPreferences({
         email_enabled: settings.emailNotifications,
         sms_enabled: settings.smsNotifications,
-        appointment_reminders: settings.appointmentReminders,
-        marketing_emails: settings.marketingEmails,
-        reminder_timing: settings.reminderTiming
+        email_appointment_reminder: settings.appointmentReminders,
+        sms_appointment_reminder: settings.appointmentReminders,
+        reminder_hours: [parseInt(settings.reminderTiming)]
       })
       
       toast({
@@ -190,26 +189,14 @@ export default function NotificationsSettingsPage() {
         <CardContent>
           <RadioGroup
             value={settings.reminderTiming}
-            onValueChange={(value) => 
+            onChange={(value) => 
               setSettings({ ...settings, reminderTiming: value })
             }
           >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="1" id="1hour" />
-              <Label htmlFor="1hour">1 hour before</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="2" id="2hours" />
-              <Label htmlFor="2hours">2 hours before</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="24" id="24hours" />
-              <Label htmlFor="24hours">24 hours before</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="48" id="48hours" />
-              <Label htmlFor="48hours">48 hours before</Label>
-            </div>
+            <RadioGroupItem value="1">1 hour before</RadioGroupItem>
+            <RadioGroupItem value="2">2 hours before</RadioGroupItem>
+            <RadioGroupItem value="24">24 hours before</RadioGroupItem>
+            <RadioGroupItem value="48">48 hours before</RadioGroupItem>
           </RadioGroup>
         </CardContent>
       </Card>

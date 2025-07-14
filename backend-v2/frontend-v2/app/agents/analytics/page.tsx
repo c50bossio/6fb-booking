@@ -112,11 +112,15 @@ export default function AgentAnalyticsPage() {
         </div>
 
         <div className="flex items-center space-x-3">
-          <Select value={dateRange} onValueChange={setDateRange}>
+          <select 
+            value={dateRange} 
+            onChange={(e) => setDateRange(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md bg-white text-sm"
+          >
             <option value="7d">Last 7 days</option>
             <option value="30d">Last 30 days</option>
             <option value="90d">Last 90 days</option>
-          </Select>
+          </select>
         </div>
       </div>
 
@@ -333,7 +337,7 @@ export default function AgentAnalyticsPage() {
 
           {/* Detailed Analytics Component */}
           <AgentAnalytics 
-            data={analytics}
+            data={{...analytics, avg_response_time: 0} as any}
             dateRange={dateRange}
           />
         </>

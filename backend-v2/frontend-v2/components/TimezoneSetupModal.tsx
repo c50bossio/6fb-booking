@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { Modal, ModalBody, ModalFooter } from './ui/Modal'
 import { Button } from './ui/Button'
-import { LoadingButton } from './ui/LoadingStates'
 import TimezoneSelector from './TimezoneSelector'
 import { updateUserTimezone } from '@/lib/api'
 import { 
@@ -161,7 +160,7 @@ export default function TimezoneSetupModal({ isOpen, onClose, onComplete }: Time
           {showSkipWarning ? 'Skip anyway' : 'Skip for now'}
         </Button>
         
-        <LoadingButton
+        <Button
           onClick={handleSave}
           loading={saving}
           disabled={!timezone}
@@ -170,7 +169,7 @@ export default function TimezoneSetupModal({ isOpen, onClose, onComplete }: Time
           className="min-w-[160px]"
         >
           Save and Continue
-        </LoadingButton>
+        </Button>
       </ModalFooter>
     </Modal>
   )

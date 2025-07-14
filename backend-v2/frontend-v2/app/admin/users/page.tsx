@@ -331,7 +331,7 @@ function AdminUsersPageContent() {
 
 export default function AdminUsersPage() {
   return (
-    <AccessControl requiredRoles={['super_admin', 'platform_admin']}>
+    <AccessControl requiredRole="super_admin">
       <AdminUsersPageContent />
     </AccessControl>
   )
