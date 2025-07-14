@@ -399,7 +399,8 @@ async def register(
         )
     
     # Validate user type - clients cannot register through dashboard
-    if user_data.role == "client":
+    user_type_value = user_data.user_type.value if hasattr(user_data.user_type, 'value') else str(user_data.user_type)
+    if user_type_value == "client":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Client registration is not allowed. Clients should book appointments through your barbershop's booking page. Please select 'Barber' or 'Barbershop Owner' to register for dashboard access."
