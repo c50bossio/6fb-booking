@@ -6,6 +6,7 @@ import { getProfile, getDashboardAnalytics, getEnterpriseAnalytics, type User } 
 import { AnalyticsLayout } from '@/components/analytics/AnalyticsLayout'
 import { DateRangeSelector, DateRangePreset } from '@/components/analytics/shared/DateRangeSelector'
 import { SkeletonStats, SkeletonCard } from '@/components/ui/skeleton-loader'
+import { PageLoading } from '@/components/ui/LoadingStates'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import AIInsightsPanel from '@/components/ai/AIInsightsPanel'
 
