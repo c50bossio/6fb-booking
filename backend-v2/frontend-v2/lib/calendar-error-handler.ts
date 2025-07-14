@@ -49,9 +49,10 @@ export class CalendarErrorHandler {
 
   static async retryWithBackoff<T>(
     fn: () => Promise<T>,
-    maxRetries = 3,
-    baseDelay = 1000
+    context?: string,
+    options: { maxRetries?: number; baseDelay?: number } = {}
   ): Promise<T> {
+    const { maxRetries = 3, baseDelay = 1000 } = options;
     let lastError: Error;
     
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
