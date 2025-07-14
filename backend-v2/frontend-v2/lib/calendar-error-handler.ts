@@ -4,7 +4,7 @@
  */
 
 export interface CalendarError {
-  type: 'validation' | 'network' | 'permission' | 'unknown';
+  type: 'validation' | 'network' | 'permission' | 'conflict' | 'CONFLICT_RESOLUTION_FAILED' | 'unknown';
   message: string;
   details?: any;
   timestamp: Date;
