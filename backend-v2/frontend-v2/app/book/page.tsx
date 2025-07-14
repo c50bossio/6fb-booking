@@ -456,6 +456,9 @@ export default function BookPage() {
           client_name: 'Not Available',
           status: 'confirmed',
           duration_minutes: 30,
+          price: 0, // No price for booked slots display
+          user_id: null, // No user for display purposes
+          created_at: new Date().toISOString(),
           barber_id: 1,
           barber_name: 'Booked',
           isAvailableSlot: false
