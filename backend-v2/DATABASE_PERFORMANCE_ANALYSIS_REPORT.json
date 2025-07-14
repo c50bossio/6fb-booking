@@ -1,37 +1,151 @@
 {
-  "timestamp": "2025-06-30T02:22:09.285368",
+  "timestamp": "2025-07-13T20:31:26.763001",
   "structure_analysis": {
     "tables": {
+      "agent_conversations": {
+        "columns": 23,
+        "indexes": 5,
+        "foreign_keys": 3,
+        "indexed_columns": [
+          "scheduled_at",
+          "status",
+          "agent_instance_id",
+          "conversation_id",
+          "client_id",
+          "id"
+        ]
+      },
+      "agent_instances": {
+        "columns": 19,
+        "indexes": 4,
+        "foreign_keys": 3,
+        "indexed_columns": [
+          "next_run_at",
+          "status",
+          "id",
+          "user_id"
+        ]
+      },
+      "agent_messages": {
+        "columns": 24,
+        "indexes": 6,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "sender_type",
+          "conversation_id",
+          "is_deleted",
+          "created_at",
+          "id"
+        ]
+      },
+      "agent_metrics": {
+        "columns": 19,
+        "indexes": 3,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "date",
+          "agent_instance_id",
+          "id"
+        ]
+      },
+      "agent_subscriptions": {
+        "columns": 20,
+        "indexes": 4,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "status",
+          "id",
+          "tier"
+        ]
+      },
+      "agent_templates": {
+        "columns": 16,
+        "indexes": 3,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "is_active",
+          "agent_type",
+          "id"
+        ]
+      },
+      "agents": {
+        "columns": 17,
+        "indexes": 3,
+        "foreign_keys": 0,
+        "indexed_columns": [
+          "is_active",
+          "agent_type",
+          "id"
+        ]
+      },
+      "ai_insights_cache": {
+        "columns": 22,
+        "indexes": 10,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "expires_at",
+          "insight_type",
+          "user_id",
+          "id",
+          "business_segment",
+          "is_active",
+          "priority_score"
+        ]
+      },
       "alembic_version": {
         "columns": 1,
         "indexes": 0,
         "foreign_keys": 0,
         "indexed_columns": []
       },
-      "appointments": {
-        "columns": 16,
-        "indexes": 9,
-        "foreign_keys": 4,
+      "api_keys": {
+        "columns": 20,
+        "indexes": 5,
+        "foreign_keys": 2,
         "indexed_columns": [
-          "service_name",
+          "key_hash",
+          "expires_at",
           "status",
-          "client_id",
-          "created_at",
-          "start_time",
-          "duration_minutes",
+          "user_id",
+          "key_type",
+          "id"
+        ]
+      },
+      "appointment_cancellations": {
+        "columns": 30,
+        "indexes": 1,
+        "foreign_keys": 6,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "appointments": {
+        "columns": 26,
+        "indexes": 4,
+        "foreign_keys": 7,
+        "indexed_columns": [
+          "user_timezone",
+          "display_timezone",
           "id",
-          "user_id"
+          "created_timezone"
+        ]
+      },
+      "attribution_paths": {
+        "columns": 10,
+        "indexes": 2,
+        "foreign_keys": 2,
+        "indexed_columns": [
+          "user_id",
+          "id"
         ]
       },
       "barber_availability": {
-        "columns": 8,
-        "indexes": 3,
+        "columns": 9,
+        "indexes": 2,
         "foreign_keys": 1,
         "indexed_columns": [
           "day_of_week",
-          "is_active",
-          "id",
-          "barber_id"
+          "id"
         ]
       },
       "barber_locations": {
@@ -58,14 +172,13 @@
         ]
       },
       "barber_time_off": {
-        "columns": 12,
-        "indexes": 4,
+        "columns": 13,
+        "indexes": 3,
         "foreign_keys": 2,
         "indexed_columns": [
-          "start_date",
           "end_date",
           "id",
-          "barber_id"
+          "start_date"
         ]
       },
       "barbershop_locations": {
@@ -77,6 +190,17 @@
           "id"
         ]
       },
+      "blackout_dates": {
+        "columns": 19,
+        "indexes": 4,
+        "foreign_keys": 3,
+        "indexed_columns": [
+          "location_id",
+          "blackout_date",
+          "id",
+          "barber_id"
+        ]
+      },
       "booking_rules": {
         "columns": 14,
         "indexes": 1,
@@ -86,9 +210,57 @@
         ]
       },
       "booking_settings": {
-        "columns": 16,
+        "columns": 20,
         "indexes": 1,
         "foreign_keys": 0,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "business_intelligence_reports": {
+        "columns": 19,
+        "indexes": 4,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "user_id",
+          "report_type",
+          "generated_at",
+          "id"
+        ]
+      },
+      "campaign_analytics": {
+        "columns": 18,
+        "indexes": 1,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "campaign_tracking": {
+        "columns": 23,
+        "indexes": 5,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "start_date",
+          "user_id",
+          "id",
+          "campaign_id",
+          "end_date",
+          "is_active"
+        ]
+      },
+      "cancellation_policies": {
+        "columns": 32,
+        "indexes": 1,
+        "foreign_keys": 3,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "cancellation_policy_history": {
+        "columns": 7,
+        "indexes": 1,
+        "foreign_keys": 2,
         "indexed_columns": [
           "id"
         ]
@@ -110,19 +282,13 @@
         ]
       },
       "clients": {
-        "columns": 28,
-        "indexes": 9,
+        "columns": 32,
+        "indexes": 3,
         "foreign_keys": 3,
         "indexed_columns": [
-          "total_visits",
-          "total_spent",
-          "email",
-          "created_at",
-          "id",
-          "first_visit_date",
           "phone",
-          "customer_type",
-          "last_visit_date"
+          "id",
+          "email"
         ]
       },
       "compensation_plans": {
@@ -133,13 +299,314 @@
           "id"
         ]
       },
+      "contact_list_members": {
+        "columns": 4,
+        "indexes": 2,
+        "foreign_keys": 2,
+        "indexed_columns": [
+          "list_id",
+          "contact_id",
+          "id"
+        ]
+      },
+      "contact_lists": {
+        "columns": 7,
+        "indexes": 1,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "contact_segments": {
+        "columns": 8,
+        "indexes": 1,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "conversion_events": {
+        "columns": 30,
+        "indexes": 12,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "event_type",
+          "user_id",
+          "created_at",
+          "event_id",
+          "client_id",
+          "channel",
+          "session_id",
+          "event_name",
+          "utm_campaign",
+          "id"
+        ]
+      },
+      "conversion_goals": {
+        "columns": 14,
+        "indexes": 3,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "user_id",
+          "is_active",
+          "id"
+        ]
+      },
+      "cookie_consents": {
+        "columns": 13,
+        "indexes": 2,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "session_id",
+          "id"
+        ]
+      },
+      "cross_user_metrics": {
+        "columns": 20,
+        "indexes": 8,
+        "foreign_keys": 0,
+        "indexed_columns": [
+          "location_type",
+          "has_online_booking",
+          "uses_marketing_automation",
+          "is_top_performer",
+          "date",
+          "business_segment",
+          "service_category",
+          "period_type",
+          "id"
+        ]
+      },
+      "data_export_requests": {
+        "columns": 15,
+        "indexes": 1,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "data_processing_logs": {
+        "columns": 12,
+        "indexes": 1,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "email_ab_tests": {
+        "columns": 22,
+        "indexes": 1,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "email_analytics_events": {
+        "columns": 23,
+        "indexes": 5,
+        "foreign_keys": 3,
+        "indexed_columns": [
+          "timestamp",
+          "event_type",
+          "message_id",
+          "id",
+          "email_address"
+        ]
+      },
+      "email_analytics_summaries": {
+        "columns": 28,
+        "indexes": 6,
+        "foreign_keys": 0,
+        "indexed_columns": [
+          "date",
+          "campaign_id",
+          "template_name",
+          "id",
+          "hour"
+        ]
+      },
+      "email_campaigns": {
+        "columns": 19,
+        "indexes": 1,
+        "foreign_keys": 0,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "email_deliverability_tests": {
+        "columns": 23,
+        "indexes": 1,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "email_previews": {
+        "columns": 16,
+        "indexes": 2,
+        "foreign_keys": 0,
+        "indexed_columns": [
+          "template_name",
+          "id"
+        ]
+      },
       "gift_certificates": {
         "columns": 16,
         "indexes": 2,
         "foreign_keys": 1,
         "indexed_columns": [
+          "code",
+          "id"
+        ]
+      },
+      "google_calendar_settings": {
+        "columns": 29,
+        "indexes": 3,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "is_connected",
+          "user_id",
+          "id"
+        ]
+      },
+      "google_calendar_sync_logs": {
+        "columns": 13,
+        "indexes": 8,
+        "foreign_keys": 2,
+        "indexed_columns": [
+          "direction",
+          "google_event_id",
+          "status",
+          "appointment_id",
+          "user_id",
+          "created_at",
+          "operation",
+          "id"
+        ]
+      },
+      "holiday_calendar": {
+        "columns": 15,
+        "indexes": 3,
+        "foreign_keys": 2,
+        "indexed_columns": [
+          "holiday_date",
           "id",
-          "code"
+          "location_id"
+        ]
+      },
+      "idempotency_keys": {
+        "columns": 9,
+        "indexes": 7,
+        "foreign_keys": 0,
+        "indexed_columns": [
+          "expires_at",
+          "user_id",
+          "operation_type",
+          "created_at",
+          "key",
+          "id"
+        ]
+      },
+      "integrations": {
+        "columns": 22,
+        "indexes": 1,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "inventory_items": {
+        "columns": 17,
+        "indexes": 2,
+        "foreign_keys": 2,
+        "indexed_columns": [
+          "id",
+          "external_id"
+        ]
+      },
+      "legal_consent_audit": {
+        "columns": 13,
+        "indexes": 2,
+        "foreign_keys": 2,
+        "indexed_columns": [
+          "timestamp",
+          "id"
+        ]
+      },
+      "marketing_campaigns": {
+        "columns": 16,
+        "indexes": 1,
+        "foreign_keys": 4,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "marketing_templates": {
+        "columns": 14,
+        "indexes": 1,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "marketing_usage": {
+        "columns": 16,
+        "indexes": 2,
+        "foreign_keys": 0,
+        "indexed_columns": [
+          "period_end",
+          "id",
+          "period_start"
+        ]
+      },
+      "mfa_backup_codes": {
+        "columns": 7,
+        "indexes": 3,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "is_used",
+          "user_id",
+          "code_hash",
+          "id"
+        ]
+      },
+      "mfa_device_trusts": {
+        "columns": 15,
+        "indexes": 4,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "trusted_until",
+          "user_id",
+          "trust_token",
+          "device_fingerprint",
+          "id"
+        ]
+      },
+      "mfa_events": {
+        "columns": 9,
+        "indexes": 3,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "created_at",
+          "user_id",
+          "id",
+          "event_type"
+        ]
+      },
+      "notification_channels": {
+        "columns": 13,
+        "indexes": 1,
+        "foreign_keys": 0,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "notification_preference_audit": {
+        "columns": 10,
+        "indexes": 1,
+        "foreign_keys": 2,
+        "indexed_columns": [
+          "id"
         ]
       },
       "notification_preferences": {
@@ -148,6 +615,15 @@
         "foreign_keys": 1,
         "indexed_columns": [
           "id"
+        ]
+      },
+      "notification_preferences_v2": {
+        "columns": 39,
+        "indexes": 2,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "id",
+          "unsubscribe_token"
         ]
       },
       "notification_queue": {
@@ -167,6 +643,35 @@
           "id"
         ]
       },
+      "order_items": {
+        "columns": 23,
+        "indexes": 2,
+        "foreign_keys": 3,
+        "indexed_columns": [
+          "id",
+          "external_id"
+        ]
+      },
+      "orders": {
+        "columns": 34,
+        "indexes": 3,
+        "foreign_keys": 4,
+        "indexed_columns": [
+          "id",
+          "external_id",
+          "order_number"
+        ]
+      },
+      "organizations": {
+        "columns": 43,
+        "indexes": 3,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "name",
+          "id",
+          "slug"
+        ]
+      },
       "password_reset_tokens": {
         "columns": 6,
         "indexes": 2,
@@ -177,16 +682,11 @@
         ]
       },
       "payments": {
-        "columns": 19,
-        "indexes": 8,
-        "foreign_keys": 4,
+        "columns": 20,
+        "indexes": 1,
+        "foreign_keys": 5,
         "indexed_columns": [
-          "status",
-          "barber_id",
-          "created_at",
-          "id",
-          "amount",
-          "user_id"
+          "id"
         ]
       },
       "payouts": {
@@ -197,10 +697,93 @@
           "id"
         ]
       },
-      "recurring_appointment_patterns": {
-        "columns": 17,
-        "indexes": 1,
+      "performance_benchmarks": {
+        "columns": 19,
+        "indexes": 10,
+        "foreign_keys": 0,
+        "indexed_columns": [
+          "year",
+          "category",
+          "month",
+          "metric_name",
+          "business_segment",
+          "region",
+          "id"
+        ]
+      },
+      "pos_transactions": {
+        "columns": 25,
+        "indexes": 2,
         "foreign_keys": 4,
+        "indexed_columns": [
+          "id",
+          "transaction_number"
+        ]
+      },
+      "predictive_models": {
+        "columns": 24,
+        "indexes": 4,
+        "foreign_keys": 0,
+        "indexed_columns": [
+          "accuracy_score",
+          "model_name",
+          "prediction_target",
+          "id",
+          "is_active"
+        ]
+      },
+      "product_variants": {
+        "columns": 24,
+        "indexes": 3,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "sku",
+          "id",
+          "external_id"
+        ]
+      },
+      "products": {
+        "columns": 26,
+        "indexes": 4,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "sku",
+          "id",
+          "handle",
+          "external_id"
+        ]
+      },
+      "recurring_appointment_conflicts": {
+        "columns": 14,
+        "indexes": 2,
+        "foreign_keys": 2,
+        "indexed_columns": [
+          "id",
+          "conflict_date"
+        ]
+      },
+      "recurring_appointment_exceptions": {
+        "columns": 13,
+        "indexes": 3,
+        "foreign_keys": 4,
+        "indexed_columns": [
+          "pattern_id",
+          "exception_date",
+          "id"
+        ]
+      },
+      "recurring_appointment_patterns": {
+        "columns": 33,
+        "indexes": 1,
+        "foreign_keys": 5,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "recurring_appointment_series": {
+        "columns": 18,
+        "indexes": 1,
+        "foreign_keys": 2,
         "indexed_columns": [
           "id"
         ]
@@ -210,6 +793,42 @@
         "indexes": 1,
         "foreign_keys": 2,
         "indexed_columns": [
+          "id"
+        ]
+      },
+      "review_responses": {
+        "columns": 22,
+        "indexes": 2,
+        "foreign_keys": 2,
+        "indexed_columns": [
+          "id",
+          "template_id"
+        ]
+      },
+      "review_templates": {
+        "columns": 25,
+        "indexes": 2,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "category",
+          "id"
+        ]
+      },
+      "reviews": {
+        "columns": 42,
+        "indexes": 11,
+        "foreign_keys": 2,
+        "indexed_columns": [
+          "platform",
+          "business_id",
+          "source",
+          "status",
+          "response_status",
+          "external_review_id",
+          "created_at",
+          "review_date",
+          "sentiment",
+          "external_id",
           "id"
         ]
       },
@@ -236,15 +855,23 @@
         ]
       },
       "services": {
-        "columns": 22,
-        "indexes": 6,
-        "foreign_keys": 1,
+        "columns": 24,
+        "indexes": 4,
+        "foreign_keys": 2,
         "indexed_columns": [
-          "name",
-          "is_bookable_online",
           "category",
           "id",
-          "is_active"
+          "is_active",
+          "name"
+        ]
+      },
+      "short_urls": {
+        "columns": 12,
+        "indexes": 2,
+        "foreign_keys": 0,
+        "indexed_columns": [
+          "id",
+          "short_code"
         ]
       },
       "sms_conversations": {
@@ -252,8 +879,8 @@
         "indexes": 2,
         "foreign_keys": 2,
         "indexed_columns": [
-          "id",
-          "customer_phone"
+          "customer_phone",
+          "id"
         ]
       },
       "sms_messages": {
@@ -261,20 +888,112 @@
         "indexes": 2,
         "foreign_keys": 2,
         "indexed_columns": [
+          "twilio_sid",
+          "id"
+        ]
+      },
+      "staff_invitations": {
+        "columns": 17,
+        "indexes": 3,
+        "foreign_keys": 3,
+        "indexed_columns": [
+          "token",
           "id",
-          "twilio_sid"
+          "email"
+        ]
+      },
+      "stripe_accounts": {
+        "columns": 9,
+        "indexes": 1,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "timezone_cache": {
+        "columns": 11,
+        "indexes": 2,
+        "foreign_keys": 0,
+        "indexed_columns": [
+          "id",
+          "timezone_name"
+        ]
+      },
+      "timezone_conversion_log": {
+        "columns": 10,
+        "indexes": 3,
+        "foreign_keys": 2,
+        "indexed_columns": [
+          "user_id",
+          "id",
+          "appointment_id"
+        ]
+      },
+      "tracking_configurations": {
+        "columns": 21,
+        "indexes": 1,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "unsubscribe_requests": {
+        "columns": 14,
+        "indexes": 3,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "phone_number",
+          "id",
+          "email_address"
+        ]
+      },
+      "user_consents": {
+        "columns": 12,
+        "indexes": 1,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "id"
+        ]
+      },
+      "user_mfa_secrets": {
+        "columns": 14,
+        "indexes": 2,
+        "foreign_keys": 1,
+        "indexed_columns": [
+          "is_enabled",
+          "user_id",
+          "id"
+        ]
+      },
+      "user_organizations": {
+        "columns": 12,
+        "indexes": 5,
+        "foreign_keys": 2,
+        "indexed_columns": [
+          "role",
+          "is_primary",
+          "user_id",
+          "organization_id",
+          "id"
         ]
       },
       "users": {
-        "columns": 15,
+        "columns": 34,
         "indexes": 4,
         "foreign_keys": 0,
         "indexed_columns": [
-          "email",
-          "role",
-          "created_at",
+          "timezone_preference",
           "id",
-          "is_active"
+          "email",
+          "unified_role"
+        ]
+      },
+      "waitlist_entries": {
+        "columns": 30,
+        "indexes": 1,
+        "foreign_keys": 7,
+        "indexed_columns": [
+          "id"
         ]
       },
       "webhook_endpoints": {
@@ -291,17 +1010,101 @@
         "indexes": 4,
         "foreign_keys": 1,
         "indexed_columns": [
-          "status",
           "created_at",
-          "event_type",
-          "endpoint_id"
+          "endpoint_id",
+          "status",
+          "event_type"
         ]
       }
     },
     "missing_indexes": [
       {
+        "table": "agent_conversations",
+        "column": "appointment_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "agent_instances",
+        "column": "agent_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "agent_instances",
+        "column": "location_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "agent_subscriptions",
+        "column": "user_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "agent_templates",
+        "column": "created_by_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "api_keys",
+        "column": "revoked_by_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "appointment_cancellations",
+        "column": "appointment_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "appointment_cancellations",
+        "column": "policy_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "appointment_cancellations",
+        "column": "cancelled_by_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "appointment_cancellations",
+        "column": "refund_processed_by_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "appointment_cancellations",
+        "column": "original_payment_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "appointment_cancellations",
+        "column": "refund_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
         "table": "appointments",
-        "column": "recurring_pattern_id",
+        "column": "user_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "appointments",
+        "column": "barber_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "appointments",
+        "column": "client_id",
         "type": "foreign_key",
         "reason": "Foreign key should be indexed for JOIN performance"
       },
@@ -313,9 +1116,63 @@
       },
       {
         "table": "appointments",
+        "column": "location_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "appointments",
+        "column": "recurring_pattern_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "appointments",
+        "column": "recurring_series_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "appointments",
+        "column": "start_time",
+        "type": "query_optimization",
+        "reason": "Commonly filtered column in appointments"
+      },
+      {
+        "table": "appointments",
+        "column": "status",
+        "type": "query_optimization",
+        "reason": "Commonly filtered column in appointments"
+      },
+      {
+        "table": "appointments",
         "column": "barber_id",
         "type": "query_optimization",
         "reason": "Commonly filtered column in appointments"
+      },
+      {
+        "table": "appointments",
+        "column": "client_id",
+        "type": "query_optimization",
+        "reason": "Commonly filtered column in appointments"
+      },
+      {
+        "table": "appointments",
+        "column": "created_at",
+        "type": "query_optimization",
+        "reason": "Commonly filtered column in appointments"
+      },
+      {
+        "table": "attribution_paths",
+        "column": "conversion_event_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "barber_availability",
+        "column": "barber_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
       },
       {
         "table": "barber_locations",
@@ -349,6 +1206,12 @@
       },
       {
         "table": "barber_time_off",
+        "column": "barber_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "barber_time_off",
         "column": "approved_by_id",
         "type": "foreign_key",
         "reason": "Foreign key should be indexed for JOIN performance"
@@ -366,8 +1229,50 @@
         "reason": "Foreign key should be indexed for JOIN performance"
       },
       {
+        "table": "blackout_dates",
+        "column": "created_by_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
         "table": "booking_rules",
         "column": "created_by_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "campaign_analytics",
+        "column": "campaign_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "cancellation_policies",
+        "column": "service_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "cancellation_policies",
+        "column": "location_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "cancellation_policies",
+        "column": "created_by_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "cancellation_policy_history",
+        "column": "policy_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "cancellation_policy_history",
+        "column": "changed_by_id",
         "type": "foreign_key",
         "reason": "Foreign key should be indexed for JOIN performance"
       },
@@ -438,13 +1343,157 @@
         "reason": "Foreign key should be indexed for JOIN performance"
       },
       {
+        "table": "contact_lists",
+        "column": "created_by_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "contact_segments",
+        "column": "created_by_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "cookie_consents",
+        "column": "user_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "data_export_requests",
+        "column": "user_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "data_processing_logs",
+        "column": "user_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "email_ab_tests",
+        "column": "created_by_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "email_analytics_events",
+        "column": "user_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "email_analytics_events",
+        "column": "notification_queue_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "email_analytics_events",
+        "column": "ab_test_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "email_deliverability_tests",
+        "column": "created_by_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
         "table": "gift_certificates",
         "column": "created_by_id",
         "type": "foreign_key",
         "reason": "Foreign key should be indexed for JOIN performance"
       },
       {
+        "table": "holiday_calendar",
+        "column": "created_by_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "integrations",
+        "column": "user_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "inventory_items",
+        "column": "product_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "inventory_items",
+        "column": "location_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "legal_consent_audit",
+        "column": "user_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "legal_consent_audit",
+        "column": "performed_by",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "marketing_campaigns",
+        "column": "template_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "marketing_campaigns",
+        "column": "recipient_list_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "marketing_campaigns",
+        "column": "recipient_segment_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "marketing_campaigns",
+        "column": "created_by_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "marketing_templates",
+        "column": "created_by_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "notification_preference_audit",
+        "column": "preferences_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "notification_preference_audit",
+        "column": "user_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
         "table": "notification_preferences",
+        "column": "user_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "notification_preferences_v2",
         "column": "user_id",
         "type": "foreign_key",
         "reason": "Foreign key should be indexed for JOIN performance"
@@ -458,6 +1507,54 @@
       {
         "table": "notification_queue",
         "column": "appointment_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "order_items",
+        "column": "order_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "order_items",
+        "column": "product_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "order_items",
+        "column": "variant_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "orders",
+        "column": "customer_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "orders",
+        "column": "location_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "orders",
+        "column": "processed_by",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "orders",
+        "column": "commission_barber_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "organizations",
+        "column": "parent_organization_id",
         "type": "foreign_key",
         "reason": "Foreign key should be indexed for JOIN performance"
       },
@@ -469,7 +1566,25 @@
       },
       {
         "table": "payments",
+        "column": "user_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "payments",
         "column": "appointment_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "payments",
+        "column": "barber_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "payments",
+        "column": "location_id",
         "type": "foreign_key",
         "reason": "Foreign key should be indexed for JOIN performance"
       },
@@ -481,6 +1596,24 @@
       },
       {
         "table": "payments",
+        "column": "status",
+        "type": "query_optimization",
+        "reason": "Commonly filtered column in payments"
+      },
+      {
+        "table": "payments",
+        "column": "created_at",
+        "type": "query_optimization",
+        "reason": "Commonly filtered column in payments"
+      },
+      {
+        "table": "payments",
+        "column": "user_id",
+        "type": "query_optimization",
+        "reason": "Commonly filtered column in payments"
+      },
+      {
+        "table": "payments",
         "column": "appointment_id",
         "type": "query_optimization",
         "reason": "Commonly filtered column in payments"
@@ -488,6 +1621,72 @@
       {
         "table": "payouts",
         "column": "barber_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "pos_transactions",
+        "column": "location_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "pos_transactions",
+        "column": "barber_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "pos_transactions",
+        "column": "cashier_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "pos_transactions",
+        "column": "customer_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "product_variants",
+        "column": "product_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "products",
+        "column": "location_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "recurring_appointment_conflicts",
+        "column": "pattern_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "recurring_appointment_conflicts",
+        "column": "resolved_by_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "recurring_appointment_exceptions",
+        "column": "new_barber_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "recurring_appointment_exceptions",
+        "column": "new_service_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "recurring_appointment_exceptions",
+        "column": "created_by_id",
         "type": "foreign_key",
         "reason": "Foreign key should be indexed for JOIN performance"
       },
@@ -516,6 +1715,24 @@
         "reason": "Foreign key should be indexed for JOIN performance"
       },
       {
+        "table": "recurring_appointment_patterns",
+        "column": "location_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "recurring_appointment_series",
+        "column": "pattern_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "recurring_appointment_series",
+        "column": "user_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
         "table": "refunds",
         "column": "payment_id",
         "type": "foreign_key",
@@ -524,6 +1741,36 @@
       {
         "table": "refunds",
         "column": "initiated_by_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "review_responses",
+        "column": "review_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "review_responses",
+        "column": "user_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "review_templates",
+        "column": "user_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "reviews",
+        "column": "user_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "reviews",
+        "column": "integration_id",
         "type": "foreign_key",
         "reason": "Foreign key should be indexed for JOIN performance"
       },
@@ -548,6 +1795,12 @@
       {
         "table": "service_pricing_rules",
         "column": "service_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "services",
+        "column": "barber_id",
         "type": "foreign_key",
         "reason": "Foreign key should be indexed for JOIN performance"
       },
@@ -582,6 +1835,102 @@
         "reason": "Foreign key should be indexed for JOIN performance"
       },
       {
+        "table": "staff_invitations",
+        "column": "organization_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "staff_invitations",
+        "column": "invited_by_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "staff_invitations",
+        "column": "accepted_by_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "stripe_accounts",
+        "column": "user_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "tracking_configurations",
+        "column": "user_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "unsubscribe_requests",
+        "column": "user_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "user_consents",
+        "column": "user_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "users",
+        "column": "role",
+        "type": "query_optimization",
+        "reason": "Commonly filtered column in users"
+      },
+      {
+        "table": "users",
+        "column": "is_active",
+        "type": "query_optimization",
+        "reason": "Commonly filtered column in users"
+      },
+      {
+        "table": "waitlist_entries",
+        "column": "user_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "waitlist_entries",
+        "column": "client_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "waitlist_entries",
+        "column": "service_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "waitlist_entries",
+        "column": "barber_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "waitlist_entries",
+        "column": "location_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "waitlist_entries",
+        "column": "current_offer_appointment_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
+        "table": "waitlist_entries",
+        "column": "fulfilled_appointment_id",
+        "type": "foreign_key",
+        "reason": "Foreign key should be indexed for JOIN performance"
+      },
+      {
         "table": "webhook_endpoints",
         "column": "created_by",
         "type": "foreign_key",
@@ -590,7 +1939,23 @@
     ],
     "recommendations": []
   },
-  "benchmarks": [],
+  "benchmarks": [
+    {
+      "operation": "User lookup by email (100x)",
+      "duration_ms": 119.38,
+      "avg_per_query": 1.19
+    },
+    {
+      "operation": "Appointments by date range (50x)",
+      "duration_ms": 7.74,
+      "avg_per_query": 0.15
+    },
+    {
+      "operation": "Payments by status (50x)",
+      "duration_ms": 5.19,
+      "avg_per_query": 0.1
+    }
+  ],
   "recommendations": [
     {
       "sql": "CREATE INDEX IF NOT EXISTS idx_appointments_start_time ON appointments(start_time);",

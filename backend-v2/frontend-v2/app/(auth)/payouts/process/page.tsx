@@ -28,7 +28,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/Select'
+} from '@/components/ui/radix-select'
 import { 
   Table,
   TableBody,
