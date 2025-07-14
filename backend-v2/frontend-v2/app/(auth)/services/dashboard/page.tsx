@@ -121,14 +121,14 @@ export default function ServiceDashboardPage() {
     const totalBookings = analytics?.totalBookings || 0
     const avgBookingsPerService = totalBookings > 0 ? totalBookings / services.length : 0
 
-    // Identify top and underperforming services
+    // Identify top and underperforming services (sorted by price as proxy for popularity)
     const topPerformingServices = services
-      .sort((a, b) => (b.booking_count || 0) - (a.booking_count || 0))
+      .sort((a, b) => b.base_price - a.base_price)
       .slice(0, 5)
 
     const underperformingServices = services
       .filter(s => s.is_active)
-      .sort((a, b) => (a.booking_count || 0) - (b.booking_count || 0))
+      .sort((a, b) => a.base_price - b.base_price)
       .slice(0, 5)
 
     // Calculate 6FB compliance score

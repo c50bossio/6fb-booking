@@ -348,7 +348,7 @@ export class UnifiedAuthClient extends UnifiedAPIClient {
 // Export singleton instance
 export const authClient = new UnifiedAuthClient()
 
-// Export class for custom instances
+// Export class for type checking and custom instances
 export { UnifiedAuthClient }
 
 // Export for backward compatibility

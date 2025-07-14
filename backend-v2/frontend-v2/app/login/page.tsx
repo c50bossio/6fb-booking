@@ -3,7 +3,8 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { login, getProfile, resendVerification } from '@/lib/api'
+import { authClient, AuthenticationError, ValidationError } from '@/lib/api/unified-index'
+import { getProfile, resendVerification } from '@/lib/api'
 import { getDefaultDashboard } from '@/lib/routeGuards'
 import { useAsyncOperation } from '@/lib/useAsyncOperation'
 import { LoadingButton, ErrorDisplay, SuccessMessage } from '@/components/LoadingStates'
@@ -86,7 +87,10 @@ function LoginContent() {
     try {
       console.log('Starting login...')
       setIsSubmitting(true)
-      const response = await loginActions.execute(() => login(values.email, values.password))
+      const response = await loginActions.execute(() => authClient.login({
+        email: values.email,
+        password: values.password
+      }))
       console.log('Login response:', response)
       
       if (response.access_token) {
@@ -156,15 +160,25 @@ function LoginContent() {
       // Increment rate limit attempts on failed login
       rateLimit.incrementAttempts()
       
-      // Check if this is a verification error (403 status)
-      if (err.message && err.message.includes('Email address not verified')) {
-        setVerificationError(true)
-        setShowResendButton(true)
+      // Handle specific error types from unified client
+      if (err instanceof AuthenticationError) {
+        console.error('Authentication failed:', err.message)
+        if (err.message.includes('Email address not verified')) {
+          setVerificationError(true)
+          setShowResendButton(true)
+        } else {
+          setVerificationError(false)
+          setShowResendButton(false)
+        }
+      } else if (err instanceof ValidationError) {
+        console.error('Validation failed:', err.validationErrors)
+        setVerificationError(false)
+        setShowResendButton(false)
       } else {
+        console.error('Login failed:', err)
         setVerificationError(false)
         setShowResendButton(false)
       }
-      console.error('Login failed:', err)
     } finally {
       setIsSubmitting(false)
     }
