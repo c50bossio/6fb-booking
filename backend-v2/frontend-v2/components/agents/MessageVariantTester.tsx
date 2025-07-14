@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import {
-  Flask,
+  TestTube,
   MessageSquare,
   TrendingUp,
   TrendingDown,
@@ -32,7 +32,7 @@ import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
-import { Textarea } from '@/components/ui/Textarea'
+import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/Select'
 import { Modal } from '@/components/ui/Modal'
 import { Progress } from '@/components/ui/Progress'
@@ -336,7 +336,7 @@ export function MessageVariantTester({
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
-                <Flask className="w-5 h-5 text-green-600" />
+                <TestTube className="w-5 h-5 text-green-600" />
               </div>
               <div>
                 <h3 className="font-semibold text-green-900 dark:text-green-200">
@@ -425,7 +425,7 @@ export function MessageVariantTester({
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
-                  <Flask className="w-5 h-5 text-blue-600" />
+                  <TestTube className="w-5 h-5 text-blue-600" />
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-900 dark:text-white">
@@ -490,7 +490,7 @@ export function MessageVariantTester({
 
         {tests.length === 0 && (
           <div className="text-center py-12">
-            <Flask className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <TestTube className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
               No A/B Tests Yet
             </h3>
@@ -835,7 +835,7 @@ export function MessageVariantTester({
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
-              <Flask className="w-5 h-5 text-purple-600" />
+              <TestTube className="w-5 h-5 text-purple-600" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">

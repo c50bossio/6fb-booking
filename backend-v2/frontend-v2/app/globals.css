@@ -1594,9 +1594,49 @@
     background-color: rgb(31, 41, 55) !important; /* gray-800 background */
     min-width: 16px !important;
     min-height: 16px !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
   }
 
   .dark [role="checkbox"]:hover {
     border-color: rgb(243, 244, 246) !important; /* gray-100 - even higher contrast on hover */
+  }
+
+  /* Additional fallback for Radix UI checkboxes */
+  .dark [data-state] {
+    border: 2px solid rgb(229, 231, 235) !important;
+    background-color: rgb(31, 41, 55) !important;
+    width: 16px !important;
+    height: 16px !important;
+    display: inline-block !important;
+  }
+
+  /* NUCLEAR OPTION: Force ALL possible checkbox selectors to be visible */
+  .dark button[role="checkbox"],
+  .dark div[role="checkbox"],
+  .dark span[role="checkbox"],
+  .dark [data-radix-checkbox-root],
+  .dark input[type="checkbox"],
+  .dark .checkbox,
+  .dark [class*="checkbox"],
+  .dark [id*="checkbox"],
+  .dark [id*="remember"] {
+    border: 2px solid rgb(229, 231, 235) !important;
+    background-color: rgb(31, 41, 55) !important;
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 16px !important;
+    min-height: 16px !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 999 !important;
+  }
+
+  /* Force the checkbox container to show the border */
+  .dark *[class*="checkbox"] {
+    outline: 2px solid rgb(229, 231, 235) !important;
   }
 }

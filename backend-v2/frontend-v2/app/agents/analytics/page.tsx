@@ -11,6 +11,8 @@ import { AgentAnalytics } from '@/components/agents/AgentAnalytics'
 import { BusinessIntelligenceDashboard } from '@/components/agents/BusinessIntelligenceDashboard'
 import { RealTimePerformanceTracker } from '@/components/agents/RealTimePerformanceTracker'
 import { CompetitiveBenchmarkingPanel } from '@/components/agents/CompetitiveBenchmarkingPanel'
+import { StrategicInsightsDashboard } from '@/components/agents/StrategicInsightsDashboard'
+import { AdvancedAnalyticsFeatures } from '@/components/agents/AdvancedAnalyticsFeatures'
 import { agentsApi, type AgentAnalytics as AgentAnalyticsType } from '@/lib/api/agents'
 
 // Using the AgentAnalytics type from the API
@@ -304,6 +306,18 @@ export default function AgentAnalyticsPage() {
 
           {/* Competitive Benchmarking */}
           <CompetitiveBenchmarkingPanel data={analytics} />
+
+          {/* Strategic Insights Dashboard */}
+          <StrategicInsightsDashboard 
+            data={analytics}
+            dateRange={dateRange}
+          />
+
+          {/* Advanced Analytics Features */}
+          <AdvancedAnalyticsFeatures 
+            data={analytics}
+            dateRange={dateRange}
+          />
 
           {/* Business Intelligence Dashboard */}
           <BusinessIntelligenceDashboard data={analytics} />

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Bot, BarChart3, Settings, Activity, Zap, AlertCircle, TestTube } from 'lucide-react'
+import { Plus, Bot, BarChart3, Settings, Activity, Zap, AlertCircle, TestTube, Link } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card } from "@/components/ui/Card"
 import { Badge } from '@/components/ui/Badge'
@@ -11,6 +11,7 @@ import { AgentCreationWizard } from '@/components/agents/AgentCreationWizard'
 import { AgentSubscriptionBanner } from '@/components/agents/AgentSubscriptionBanner'
 import { AgentComparisonModal } from '@/components/agents/AgentComparisonModal'
 import { MessageVariantTester } from '@/components/agents/MessageVariantTester'
+import { IntegrationHub } from '@/components/agents/IntegrationHub'
 import { agentsApi, type AgentInstance, type AgentTemplate } from '@/lib/api/agents'
 import { useToast } from '@/hooks/use-toast'
 
@@ -22,6 +23,7 @@ export default function AgentsPage() {
   const [showComparison, setShowComparison] = useState(false)
   const [showVariantTester, setShowVariantTester] = useState(false)
   const [selectedTestAgent, setSelectedTestAgent] = useState<AgentInstance | null>(null)
+  const [showIntegrationHub, setShowIntegrationHub] = useState(false)
   const [subscription, setSubscription] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const [selectedComparisonAgent, setSelectedComparisonAgent] = useState<number | undefined>()
@@ -262,6 +264,14 @@ export default function AgentsPage() {
             A/B Testing Lab
           </Button>
           
+          <Button 
+            variant="outline"
+            onClick={() => setShowIntegrationHub(true)}
+          >
+            <Link className="w-4 h-4 mr-2" />
+            Integrations
+          </Button>
+          
           <Button onClick={() => setShowCreateWizard(true)}>
             <Plus className="w-4 h-4 mr-2" />
             Create Agent
@@ -412,6 +422,12 @@ export default function AgentsPage() {
           }}
         />
       )}
+
+      {/* Integration Hub */}
+      <IntegrationHub
+        isOpen={showIntegrationHub}
+        onClose={() => setShowIntegrationHub(false)}
+      />
     </div>
   )
 }
