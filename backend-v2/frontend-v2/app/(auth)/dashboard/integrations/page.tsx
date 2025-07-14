@@ -276,8 +276,8 @@ export default function IntegrationsPage() {
     ? AVAILABLE_INTEGRATIONS 
     : AVAILABLE_INTEGRATIONS.filter(i => i.category === selectedCategory)
 
-  const connectedCount = connectedIntegrations.filter(i => i.status === 'connected').length
-  const errorCount = connectedIntegrations.filter(i => i.status === 'error').length
+  const connectedCount = connectedIntegrations.filter(i => i.status === 'active').length
+  const errorCount = connectedIntegrations.filter(i => i.status === 'inactive').length
   const healthyCount = healthSummary?.healthy_count || 0
   const totalConnected = connectedIntegrations.length
 
