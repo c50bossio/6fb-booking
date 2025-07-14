@@ -154,6 +154,9 @@ export const integrationsAPI = new IntegrationsAPI()
 
 // Marketing API placeholder for template management
 export const marketingApi = {
+  async getCampaigns() {
+    return []
+  },
   async getEmailTemplates() {
     return []
   },
