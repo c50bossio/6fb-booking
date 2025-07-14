@@ -90,7 +90,7 @@ export default function ServiceDashboardPage() {
       // Load services and analytics
       const [servicesData, analyticsData] = await Promise.all([
         getServices(),
-        getServiceAnalytics({ dateRange })
+        getServiceMetrics(undefined, { start: dateRange, end: dateRange })
       ])
       
       setServices(servicesData)
