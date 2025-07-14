@@ -42,7 +42,7 @@ export const createLazyComponent = <T extends ComponentType<any>>(
 export const LazyComponents = {
   // Calendar components (heavy date manipulation)
   Calendar: createLazyComponent(
-    () => import('@/components/Calendar'),
+    () => import('@/components/ui/Calendar'),
     { 
       loading: () => React.createElement(CardLoading, { className: "h-96" }),
       ssr: false 

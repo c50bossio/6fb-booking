@@ -862,3 +862,6 @@ export function autoInitializeAnalytics(): GA4Analytics | null {
 // Export types
 export type { GA4Config, GA4Event, GA4User, GA4EcommerceItem, ConsentStatus }
 export { GA4Analytics }
+
+// Export analytics instance for backward compatibility
+export const analytics = getAnalytics()

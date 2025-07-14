@@ -135,7 +135,7 @@ export interface TrialStatus {
  * Get available billing plans with chair-based pricing tiers
  */
 export async function getBillingPlans(): Promise<BillingPlan[]> {
-  return fetchAPI<BillingPlan[]>('/api/v1/billing/plans')
+  return fetchAPI('/api/v1/billing/plans')
 }
 
 /**
@@ -145,7 +145,7 @@ export async function calculatePrice(
   chairsCount: number,
   billingCycle: 'monthly' | 'yearly' = 'monthly'
 ): Promise<PriceCalculation> {
-  return fetchAPI<PriceCalculation>('/api/v1/billing/calculate-price', {
+  return fetchAPI('/api/v1/billing/calculate-price', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -159,7 +159,7 @@ export async function calculatePrice(
  * Get current subscription details for the authenticated user's organization
  */
 export async function getCurrentSubscription(): Promise<Subscription> {
-  return fetchAPI<Subscription>('/api/v1/billing/current-subscription')
+  return fetchAPI('/api/v1/billing/current-subscription')
 }
 
 /**
@@ -168,7 +168,7 @@ export async function getCurrentSubscription(): Promise<Subscription> {
 export async function createSubscription(
   request: CreateSubscriptionRequest
 ): Promise<Subscription> {
-  return fetchAPI<Subscription>('/api/v1/billing/create-subscription', {
+  return fetchAPI('/api/v1/billing/create-subscription', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(request)
@@ -181,7 +181,7 @@ export async function createSubscription(
 export async function updateSubscription(
   request: UpdateSubscriptionRequest
 ): Promise<Subscription> {
-  return fetchAPI<Subscription>('/api/v1/billing/update-subscription', {
+  return fetchAPI('/api/v1/billing/update-subscription', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(request)
@@ -194,7 +194,7 @@ export async function updateSubscription(
 export async function cancelSubscription(
   request: CancelSubscriptionRequest
 ): Promise<CancelSubscriptionResponse> {
-  return fetchAPI<CancelSubscriptionResponse>('/api/v1/billing/cancel-subscription', {
+  return fetchAPI('/api/v1/billing/cancel-subscription', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(request)
@@ -210,14 +210,14 @@ export async function getPaymentHistory(
   const url = organizationId 
     ? `/api/v1/billing/payment-history?organization_id=${organizationId}`
     : '/api/v1/billing/payment-history'
-  return fetchAPI<PaymentHistoryItem[]>(url)
+  return fetchAPI(url)
 }
 
 /**
  * Get trial status for the current user
  */
 export async function getTrialStatus(): Promise<TrialStatus> {
-  return fetchAPI<TrialStatus>('/api/v1/billing/trial-status')
+  return fetchAPI('/api/v1/billing/trial-status')
 }
 
 /**
@@ -239,7 +239,7 @@ export async function convertTrialToPaid(
   organizationId: number,
   paymentMethodId: string
 ): Promise<Subscription> {
-  return fetchAPI<Subscription>('/api/v1/billing/convert-trial', {
+  return fetchAPI('/api/v1/billing/convert-trial', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

@@ -46,7 +46,7 @@ async def test_auth_route():
     return {"status": "ok", "message": "Auth router is responding"}
 
 @router.post("/login", response_model=schemas.Token)
-# @login_rate_limit  # Temporarily disabled for debugging
+@login_rate_limit
 async def login(request: Request, user_credentials: schemas.UserLogin, db: Session = Depends(get_db)):
     """Enhanced login endpoint with MFA support."""
     client_ip = request.client.host if request.client else "unknown"

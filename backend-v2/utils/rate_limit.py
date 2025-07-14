@@ -9,8 +9,8 @@ from fastapi import Request, Response
 from fastapi.responses import JSONResponse
 from config import settings
 
-# Create limiter instance using client IP address with in-memory storage
-# Using in-memory storage to avoid Redis connection timeouts that were causing 120s hangs
+# Create limiter instance using client IP address with Redis storage
+# Redis provides proper TTL and ensures rate limits reset correctly
 def get_rate_limit_key(request: Request) -> str:
     """Get rate limit key. Use simple approach to avoid Redis timeouts."""
     try:
@@ -19,10 +19,11 @@ def get_rate_limit_key(request: Request) -> str:
         # Fallback to a default key if remote address fails
         return "127.0.0.1"
 
-# Use in-memory storage instead of Redis to prevent timeout issues
+# Use Redis storage for proper rate limiting with TTL
+# Redis ensures rate limits reset properly and don't persist across server restarts
 limiter = Limiter(
     key_func=get_rate_limit_key,
-    storage_uri="memory://"  # Force in-memory storage instead of Redis
+    storage_uri="redis://localhost:6379/0"  # Use Redis for proper rate limiting
 )
 
 # Rate limit configurations
