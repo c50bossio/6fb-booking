@@ -116,7 +116,7 @@ export default function UnifiedAnalyticsPage() {
               total: analytics.revenue_summary.total_revenue,
               thisMonth: analytics.revenue_summary.total_revenue,
               lastMonth: analytics.revenue_summary.total_revenue * 0.9,
-              average: analytics.revenue_summary.average_ticket_price
+              average: analytics.revenue_summary.average_ticket
             },
             appointments: {
               total: analytics.appointment_summary.total_appointments,
