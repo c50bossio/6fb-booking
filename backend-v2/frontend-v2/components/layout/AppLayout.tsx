@@ -90,17 +90,8 @@ export function AppLayout({ children }: AppLayoutProps) {
     return []
   }
 
-  // Prevent hydration issues by not rendering anything until mounted
-  if (!mounted) {
-    return (
-      <ThemeProvider defaultTheme="system" storageKey="6fb-theme">
-        <div className="min-h-screen bg-gray-50 dark:bg-dark-surface-100">
-          {/* Render children for public routes even when not mounted */}
-          {isPublicRoute && children}
-        </div>
-      </ThemeProvider>
-    )
-  }
+  // Render public routes immediately to prevent hydration issues
+  // Only delay rendering for protected routes that need authentication
 
   if (loading) {
     return (

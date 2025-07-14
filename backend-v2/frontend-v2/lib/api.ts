@@ -1,4 +1,5 @@
 import { validateAPIRequest, validateAPIResponse, APIPerformanceMonitor, retryOperation, defaultRetryConfigs } from './apiUtils'
+import { authClient } from './api/domains/auth-client-unified'
 import { toast } from '@/hooks/use-toast'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -80,8 +81,8 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
   // Start performance monitoring
   const endTiming = APIPerformanceMonitor.startTiming(endpoint)
   
-  // Validate request data if present
-  if (options.body && typeof options.body === 'string') {
+  // Validate request data if present (skip validation for auth endpoints)
+  if (options.body && typeof options.body === 'string' && !endpoint.includes('/auth/')) {
     try {
       const requestData = JSON.parse(options.body)
       const validation = validateAPIRequest(endpoint, requestData)
@@ -223,54 +224,62 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
 
   const responseData = await response.json()
   
-  // Validate response data structure
-  const responseValidation = validateAPIResponse(endpoint, responseData)
-  if (!responseValidation.isValid) {
-    console.warn(`Response validation failed for ${endpoint}:`, responseValidation.errors)
-    // Don't throw error for response validation - just log warning
+  // Validate response data structure (skip validation for auth endpoints)
+  if (!endpoint.includes('/auth/')) {
+    const responseValidation = validateAPIResponse(endpoint, responseData)
+    if (!responseValidation.isValid) {
+      console.warn(`Response validation failed for ${endpoint}:`, responseValidation.errors)
+      // Don't throw error for response validation - just log warning
+    }
   }
   
   endTiming()
   return responseData
 }
 
-// Auth functions with retry logic for critical operations
+// Auth functions with simplified direct API calls (bypassing retry mechanism issues)
 export async function login(email: string, password: string) {
-  const requestBody = { email, password };
-  console.log('🚀 Login request body:', requestBody);
-  console.log('🚀 Login request body JSON:', JSON.stringify(requestBody));
+  console.log('🚀 Login attempt with unified client:', { email });
   
-  const response = await retryOperation(
-    () => fetchAPI('/api/v1/auth/login', {
-      method: 'POST',
-      body: JSON.stringify(requestBody),
-    }),
-    defaultRetryConfigs.critical,
-    (error) => {
-      // Don't retry auth errors
-      return !error.message?.includes('401') && !error.message?.includes('Invalid')
+  try {
+    // Use unified auth client for login
+    const result = await authClient.login({ email, password });
+    console.log('✅ Login successful with unified client:', result);
+    
+    // The unified client handles token storage automatically,
+    // but we also need to set cookies for middleware compatibility
+    if (result.access_token) {
+      // Also set as httpOnly:false cookie so middleware can detect auth
+      // Note: httpOnly:false is needed because we're setting from client-side
+      document.cookie = `token=${result.access_token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+      console.log('✅ Additional cookie set for middleware compatibility');
     }
-  )
-  
-  // Store tokens
-  if (response.access_token) {
-    localStorage.setItem('access_token', response.access_token)
-    // Also set as httpOnly:false cookie so middleware can detect auth
-    // Note: httpOnly:false is needed because we're setting from client-side
-    document.cookie = `token=${response.access_token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
+    
+    return result;
+  } catch (error: any) {
+    console.error('❌ Login failed with unified client:', error);
+    throw error;
   }
-  if (response.refresh_token) {
-    localStorage.setItem('refresh_token', response.refresh_token)
-  }
-  
-  return response
 }
 
 export async function logout() {
-  localStorage.removeItem('access_token')
-  localStorage.removeItem('refresh_token')
-  // Remove the cookie by setting it with an expired date
-  document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
+  console.log('🚪 Logging out with unified client...');
+  try {
+    // Use unified auth client for logout (handles token cleanup automatically)
+    await authClient.logout();
+    console.log('✅ Logout successful with unified client');
+    
+    // Also clear cookie for middleware compatibility
+    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
+    console.log('✅ Cookie cleared for middleware compatibility');
+  } catch (error: any) {
+    console.error('❌ Logout failed with unified client:', error);
+    // Even if logout API fails, clear local storage and cookies
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
+    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
+    console.log('✅ Local storage and cookies cleared manually');
+  }
 }
 
 // @deprecated - Use registerComplete() instead. This old function uses a single "name" field.
@@ -415,10 +424,15 @@ export async function refreshToken() {
 
 // Basic API functions
 export async function getProfile(): Promise<User> {
-  return retryOperation(
-    () => fetchAPI('/api/v1/auth/me'),
-    defaultRetryConfigs.standard
-  )
+  console.log('🔍 Getting user profile with unified client...');
+  try {
+    const user = await authClient.getCurrentUser();
+    console.log('✅ Profile fetched successfully:', user);
+    return user;
+  } catch (error: any) {
+    console.error('❌ Failed to fetch profile with unified client:', error);
+    throw error;
+  }
 }
 
 export async function getAppointments() {

@@ -88,7 +88,7 @@ def debug_test_combined_endpoint(
 
 @router.get("/slots", response_model=schemas.SlotsResponse)
 @booking_slots_rate_limit
-def get_available_appointment_slots(
+async def get_available_appointment_slots(
     request: Request,
     appointment_date: date = Query(..., description="Date to check availability (YYYY-MM-DD)"),
     barber_id: Optional[int] = Query(None, description="Specific barber ID to filter availability"),
@@ -121,7 +121,7 @@ def get_available_appointment_slots(
     try:
         # Use the barber-aware version to get slots for specific barber or all available barbers
         # This prevents the issue where ALL slots are marked unavailable
-        slots_data = booking_service.get_available_slots_with_barber_availability(
+        slots_data = await booking_service.get_available_slots_with_barber_availability(
             db, 
             appointment_date, 
             barber_id=barber_id,  # Get slots for specific barber if provided, otherwise all available barbers

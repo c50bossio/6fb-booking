@@ -797,7 +797,7 @@ export default function CalendarPage() {
       </div>
 
       <CalendarErrorBoundary context={`calendar-${viewMode}-view`}>
-        <Card variant="glass" padding="none" className="col-span-full">
+        <Card variant="outlined" padding="none" className="col-span-full">
           <Suspense fallback={<CalendarSkeleton view={viewMode} showStats={false} />}>
             <UnifiedCalendar
               view={viewMode}
@@ -864,7 +864,7 @@ export default function CalendarPage() {
 
       {/* Calendar Integration Status */}
       {user?.role === 'barber' && !showSyncPanel && (
-        <Card variant="glass" padding="lg">
+        <Card variant="outlined" padding="lg">
           <CardHeader>
             <h2 className="text-lg font-semibold">Calendar Integration</h2>
             <p className="text-sm text-gray-600 dark:text-gray-400">

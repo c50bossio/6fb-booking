@@ -307,7 +307,7 @@ function FinancialOverview({ summary, userRole }: { summary: any; userRole?: str
     <div className="space-y-6">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card variant="elevated" animated>
+        <Card variant="elevated">
           <CardContent>
             <div className="flex items-center justify-between mb-2">
               <CurrencyDollarIcon className="w-5 h-5 text-green-600" />
@@ -327,7 +327,7 @@ function FinancialOverview({ summary, userRole }: { summary: any; userRole?: str
 
         {userRole !== 'client' && (
           <>
-            <Card variant="elevated" animated animationDelay={100}>
+            <Card variant="elevated">
               <CardContent>
                 <div className="flex items-center justify-between mb-2">
                   <BanknotesIcon className="w-5 h-5 text-blue-600" />
@@ -341,7 +341,7 @@ function FinancialOverview({ summary, userRole }: { summary: any; userRole?: str
               </CardContent>
             </Card>
 
-            <Card variant="elevated" animated animationDelay={200}>
+            <Card variant="elevated">
               <CardContent>
                 <div className="flex items-center justify-between mb-2">
                   <CreditCardIcon className="w-5 h-5 text-purple-600" />
@@ -357,7 +357,7 @@ function FinancialOverview({ summary, userRole }: { summary: any; userRole?: str
           </>
         )}
 
-        <Card variant="elevated" animated animationDelay={300}>
+        <Card variant="elevated">
           <CardContent>
             <div className="flex items-center justify-between mb-2">
               <GiftIcon className="w-5 h-5 text-orange-600" />

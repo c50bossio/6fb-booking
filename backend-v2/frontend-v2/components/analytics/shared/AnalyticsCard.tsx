@@ -25,7 +25,7 @@ export function AnalyticsCard({
 }: AnalyticsCardProps) {
   if (loading) {
     return (
-      <Card variant="elevated" animated>
+      <Card variant="elevated">
         <CardContent>
           <div className="animate-pulse">
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
@@ -50,7 +50,7 @@ export function AnalyticsCard({
   }
 
   return (
-    <Card variant="elevated" animated>
+    <Card variant="elevated">
       <CardContent>
         <div className="flex items-center justify-between mb-4">
           {icon && (

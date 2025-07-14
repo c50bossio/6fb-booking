@@ -332,7 +332,7 @@ function DashboardContent() {
 
           {/* Success Message */}
           {showSuccess && (
-            <Card variant="success" className="mb-6" animated>
+            <Card variant="outlined" className="mb-6">
               <CardContent className="flex items-center space-x-3">
                 <div className="flex-shrink-0">
                   <svg className="w-6 h-6 text-success-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -357,7 +357,7 @@ function DashboardContent() {
 
           {/* Timezone Warning */}
           {showTimezoneWarning && (
-            <Card variant="warning" className="mb-6" animated>
+            <Card variant="outlined" className="mb-6">
               <CardContent className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="flex-shrink-0">
@@ -472,7 +472,7 @@ function DashboardContent() {
 
         {/* Success Message */}
         {showSuccess && (
-          <Card variant="success" className="mb-6" animated>
+          <Card variant="outlined" className="mb-6">
             <CardContent className="flex items-center space-x-3">
               <div className="flex-shrink-0">
                 <svg className="w-6 h-6 text-success-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -497,7 +497,7 @@ function DashboardContent() {
 
         {/* Timezone Warning */}
         {showTimezoneWarning && (
-          <Card variant="warning" className="mb-6" animated>
+          <Card variant="outlined" className="mb-6">
             <CardContent className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="flex-shrink-0">
@@ -514,7 +514,7 @@ function DashboardContent() {
               </div>
               <Button
                 onClick={() => router.push('/settings')}
-                variant="warning"
+                variant="outlined"
                 size="sm"
                 leftIcon={<SettingsIcon />}
               >

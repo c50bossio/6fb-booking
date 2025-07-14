@@ -225,7 +225,7 @@ export default function EnterpriseDashboardPage() {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card variant="elevated" animated>
+          <Card variant="elevated">
             <CardContent>
               <div className="flex items-center justify-between mb-4">
                 <div className="p-2 bg-primary-100 dark:bg-primary-900 rounded-ios-lg">
@@ -252,7 +252,7 @@ export default function EnterpriseDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card variant="elevated" animated animationDelay={100}>
+          <Card variant="elevated">
             <CardContent>
               <div className="flex items-center justify-between mb-4">
                 <div className="p-2 bg-accent-100 dark:bg-accent-900 rounded-ios-lg">
@@ -271,7 +271,7 @@ export default function EnterpriseDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card variant="elevated" animated animationDelay={200}>
+          <Card variant="elevated">
             <CardContent>
               <div className="flex items-center justify-between mb-4">
                 <div className="p-2 bg-success-100 dark:bg-success-900 rounded-ios-lg">
@@ -290,7 +290,7 @@ export default function EnterpriseDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card variant="elevated" animated animationDelay={300}>
+          <Card variant="elevated">
             <CardContent>
               <div className="flex items-center justify-between mb-4">
                 <div className="p-2 bg-warning-100 dark:bg-warning-900 rounded-ios-lg">
