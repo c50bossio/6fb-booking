@@ -231,9 +231,11 @@ export default function BookPage() {
     }
   }
 
-  const handleDateSelect = (date: Date) => {
-    setSelectedDate(date)
-    setSelectedTime(null) // Reset time when date changes
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      setSelectedDate(date)
+      setSelectedTime(null) // Reset time when date changes
+    }
   }
 
   const handleTimeSelect = (time: string) => {
@@ -722,7 +724,9 @@ export default function BookPage() {
                       currentDate={selectedDate || new Date()}
                       onDateChange={(date) => {
                         setSelectedDate(date)
-                        handleDateSelect(date)
+                        if (date) {
+                          handleDateSelect(date)
+                        }
                       }}
                       onAppointmentClick={(appointment: any) => {
                         // Only handle clicks on available slots
