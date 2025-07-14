@@ -426,7 +426,7 @@ export default function BookPage() {
           status: 'available',
           duration_minutes: 30,
           price: SERVICES.find(s => s.id === selectedService)?.amount || 0,
-          user_id: null, // No user for available slots
+          user_id: 0, // Placeholder user ID for available slots
           created_at: new Date().toISOString(),
           // Custom properties
           isAvailableSlot: true,
@@ -457,7 +457,7 @@ export default function BookPage() {
           status: 'confirmed',
           duration_minutes: 30,
           price: 0, // No price for booked slots display
-          user_id: null, // No user for display purposes
+          user_id: 0, // Placeholder user ID for booked slots display
           created_at: new Date().toISOString(),
           barber_id: 1,
           barber_name: 'Booked',
