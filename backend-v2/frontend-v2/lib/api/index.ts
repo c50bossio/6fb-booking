@@ -14,4 +14,4 @@ export * from './users'
 export * from './services'
 
 // Export specific functions for compatibility
-export { catalogApi } from './catalog'
+export { catalogApi, getServiceMetrics } from './catalog'

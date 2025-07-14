@@ -315,16 +315,7 @@
   opacity: 0;
 }
 
-@keyframes scaleIn {
-  0% {
-    transform: scale(0);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
+/* Note: scaleIn keyframes defined in globals.css to avoid duplication */
 
 @keyframes checkmarkDraw {
   0% {
@@ -368,14 +359,7 @@
   animation: shimmer 1.5s infinite;
 }
 
-@keyframes shimmer {
-  0% {
-    left: -100%;
-  }
-  100% {
-    left: 100%;
-  }
-}
+/* Note: shimmer keyframes defined in globals.css to avoid duplication */
 
 /* Multiple skeleton variations */
 .skeleton-text {
@@ -401,14 +385,7 @@
   animation: pulse 1.5s ease-in-out infinite;
 }
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 0.4;
-  }
-  50% {
-    opacity: 0.8;
-  }
-}
+/* Note: pulse keyframes defined in globals.css to avoid duplication */
 
 /* ============================================
    6. Enhanced Today Indicator with Pulse

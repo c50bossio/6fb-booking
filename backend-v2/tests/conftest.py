@@ -73,11 +73,11 @@ async def async_client(override_get_db) -> AsyncGenerator[AsyncClient, None]:
 
 @pytest.fixture(scope="function")
 def client(override_get_db):
-    """Create a synchronous test client"""
+    """Create a test client using the proper FastAPI TestClient"""
     from fastapi.testclient import TestClient
     app.dependency_overrides[get_db] = override_get_db
-    with TestClient(app) as test_client:
-        yield test_client
+    test_client = TestClient(app)
+    yield test_client
     app.dependency_overrides.clear()
 
 
