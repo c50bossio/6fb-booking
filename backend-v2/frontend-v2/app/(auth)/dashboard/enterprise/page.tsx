@@ -786,17 +786,17 @@ export default function EnterprisePage() {
                             </Badge>
                             <div className="flex gap-1">
                               {userOrg.permissions.includes('can_manage_billing') && (
-                                <Badge size="sm" className="bg-purple-100 text-purple-800">
+                                <Badge className="bg-purple-100 text-purple-800 text-xs">
                                   <DollarSign className="h-3 w-3" />
                                 </Badge>
                               )}
                               {userOrg.permissions.includes('can_manage_staff') && (
-                                <Badge size="sm" className="bg-blue-100 text-blue-800">
+                                <Badge className="bg-blue-100 text-blue-800 text-xs">
                                   <Users className="h-3 w-3" />
                                 </Badge>
                               )}
                               {userOrg.permissions.includes('can_view_analytics') && (
-                                <Badge size="sm" className="bg-green-100 text-green-800">
+                                <Badge className="bg-green-100 text-green-800 text-xs">
                                   <BarChart3 className="h-3 w-3" />
                                 </Badge>
                               )}
