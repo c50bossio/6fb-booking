@@ -37,7 +37,7 @@ import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Select } from '@/components/ui/Select'
-import { Progress } from '@/components/ui/Progress'
+import { Progress } from '@/components/ui/progress'
 import { type AgentAnalytics } from '@/lib/api/agents'
 
 interface BusinessMetrics {

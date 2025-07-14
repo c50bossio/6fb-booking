@@ -13,6 +13,7 @@ import { RealTimePerformanceTracker } from '@/components/agents/RealTimePerforma
 import { CompetitiveBenchmarkingPanel } from '@/components/agents/CompetitiveBenchmarkingPanel'
 import { StrategicInsightsDashboard } from '@/components/agents/StrategicInsightsDashboard'
 import { AdvancedAnalyticsFeatures } from '@/components/agents/AdvancedAnalyticsFeatures'
+import { PerformancePredictionEngine } from '@/components/agents/PerformancePredictionEngine'
 import { agentsApi, type AgentAnalytics as AgentAnalyticsType } from '@/lib/api/agents'
 
 // Using the AgentAnalytics type from the API
@@ -317,6 +318,14 @@ export default function AgentAnalyticsPage() {
           <AdvancedAnalyticsFeatures 
             data={analytics}
             dateRange={dateRange}
+          />
+
+          {/* Performance Prediction Engine */}
+          <PerformancePredictionEngine 
+            data={analytics}
+            onImplementRecommendation={(recommendation) => {
+              console.log('Implementing recommendation:', recommendation)
+            }}
           />
 
           {/* Business Intelligence Dashboard */}

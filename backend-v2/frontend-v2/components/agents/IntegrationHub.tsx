@@ -43,7 +43,7 @@ import { Label } from '@/components/ui/Label'
 import { Select } from '@/components/ui/Select'
 import { Switch } from '@/components/ui/Switch'
 import { Modal } from '@/components/ui/Modal'
-import { Progress } from '@/components/ui/Progress'
+import { Progress } from '@/components/ui/progress'
 
 interface Integration {
   id: string

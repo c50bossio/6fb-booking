@@ -128,6 +128,7 @@ export function EnhancedRememberMe({ value, onChange, className }: EnhancedRemem
           checked={value}
           onCheckedChange={onChange}
           className="mt-1"
+          aria-label="Keep me signed in for 30 days on this device"
         />
         <div className="space-y-1">
           <Label

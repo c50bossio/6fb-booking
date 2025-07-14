@@ -124,7 +124,8 @@ export const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
             disabled={disabled}
             autoComplete={
               props.autoComplete || 
-              (type === 'password' && !props.autoComplete ? 'current-password' : undefined)
+              (type === 'password' && !props.autoComplete ? 'current-password' : 
+               type === 'email' && !props.autoComplete ? 'username' : undefined)
             }
             className={cn(
               'pr-10 transition-all duration-200',
@@ -135,6 +136,7 @@ export const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
               inputClassName
             )}
             aria-invalid={!!showError}
+            aria-label={props.placeholder || props.name || `${type} input`}
             aria-describedby={
               showError ? `${props.id}-error` : helperText ? `${props.id}-helper` : undefined
             }

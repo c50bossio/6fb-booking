@@ -35,7 +35,7 @@ import { Label } from '@/components/ui/Label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/Select'
 import { Modal } from '@/components/ui/Modal'
-import { Progress } from '@/components/ui/Progress'
+import { Progress } from '@/components/ui/progress'
 import { 
   type AgentInstance, 
   agentsApi 
