@@ -398,7 +398,7 @@ export default function IntegrationsPage() {
                         <div className="flex items-center gap-3">
                           <IconComponent className="h-6 w-6" />
                           <div>
-                            <CardTitle className="text-base">{integration.display_name}</CardTitle>
+                            <CardTitle className="text-base">{integration.name}</CardTitle>
                             <CardDescription className="text-xs">
                               {integration.integration_type}
                             </CardDescription>
