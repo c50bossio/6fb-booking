@@ -86,6 +86,18 @@ class Settings(BaseSettings):
     redis_max_connections: int = 20
     redis_socket_timeout: int = 5
     
+    # Cache Configuration
+    enable_caching: bool = True
+    cache_default_ttl: int = 300  # 5 minutes default TTL
+    cache_user_profile_ttl: int = 1800  # 30 minutes for user profiles
+    cache_appointments_ttl: int = 300  # 5 minutes for appointments
+    cache_services_ttl: int = 3600  # 1 hour for services (rarely change)
+    cache_analytics_ttl: int = 900  # 15 minutes for analytics
+    cache_notifications_ttl: int = 600  # 10 minutes for notifications
+    cache_max_memory_mb: int = 100  # Maximum memory usage for cache
+    cache_warmup_on_startup: bool = True
+    cache_invalidation_events: list = ["appointment_created", "appointment_updated", "appointment_deleted", "user_updated"]
+    
     # AWS ElastiCache Configuration
     aws_elasticache_enabled: bool = False
     aws_elasticache_cluster_id: str = ""

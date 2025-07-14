@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+from contextlib import asynccontextmanager
 from database import engine, Base
 import models
 # Import tracking models to register them with SQLAlchemy
@@ -19,6 +20,7 @@ from middleware.financial_security import FinancialSecurityMiddleware
 from middleware.sentry_middleware import SentryEnhancementMiddleware
 from middleware.enhanced_security import EnhancedSecurityMiddleware, WebhookSecurityMiddleware
 from middleware.configuration_security import ConfigurationSecurityMiddleware, configuration_reporter
+from middleware.cache_middleware import SmartCacheMiddleware
 import logging
 
 # Initialize Sentry error tracking (must be done before importing FastAPI app)
@@ -28,8 +30,34 @@ sentry_configured = configure_sentry()
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
-# Create FastAPI app
-app = FastAPI(title="6FB Booking API v2")
+# Define lifespan context manager for startup/shutdown
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    logger = logging.getLogger(__name__)
+    logger.info("🚀 Starting BookedBarber V2 backend...")
+    
+    # Initialize Redis cache
+    try:
+        from services.startup_cache import startup_cache_init
+        cache_results = await startup_cache_init()
+        logger.info(f"✅ Cache initialization completed: {cache_results}")
+    except Exception as e:
+        logger.error(f"❌ Cache initialization failed: {e}")
+        # Continue without cache rather than fail startup
+    
+    yield
+    
+    # Shutdown
+    try:
+        from services.startup_cache import shutdown_cache
+        await shutdown_cache()
+        logger.info("✅ Cache shutdown completed")
+    except Exception as e:
+        logger.error(f"❌ Cache shutdown failed: {e}")
+
+# Create FastAPI app with lifespan management
+app = FastAPI(title="6FB Booking API v2", lifespan=lifespan)
 
 # Root health check endpoint
 @app.get("/health")
@@ -109,6 +137,9 @@ if ENVIRONMENT == "development" and ENABLE_DEVELOPMENT_MODE:
     # Lightweight middleware stack for development
     logger.info("🔧 Development mode: Using lightweight middleware stack")
     
+    # Add smart cache middleware for development
+    app.add_middleware(SmartCacheMiddleware, enable_cache=True)
+    
     # Only essential middleware for development
     app.add_middleware(SecurityHeadersMiddleware)
     
@@ -160,7 +191,10 @@ else:
     # Add enhanced security headers middleware
     app.add_middleware(SecurityHeadersMiddleware)
     
-    logger.info("✅ Enhanced security stack applied with production-grade settings and configuration validation")
+    # Add smart cache middleware for production (after security middleware)
+    app.add_middleware(SmartCacheMiddleware, enable_cache=True)
+    
+    logger.info("✅ Enhanced security stack applied with production-grade settings, configuration validation, and intelligent caching")
 
 # Add rate limit exceeded handler
 app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
