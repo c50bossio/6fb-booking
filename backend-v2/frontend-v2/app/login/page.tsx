@@ -94,10 +94,10 @@ function LoginContent() {
         // Token is already stored in the login function
         
         // Handle device trust if remember me is checked
-        if (rememberMe && response.user_id) {
+        if (rememberMe && response.user?.id) {
           try {
-            const deviceId = await generateDeviceFingerprint()
-            await trustDevice(deviceId, response.user_id, 30) // Trust for 30 days
+            const deviceFingerprint = generateDeviceFingerprint()
+            trustDevice(deviceFingerprint) // Trust for 30 days
             console.log('✅ Device trusted successfully')
           } catch (error) {
             console.error('Failed to trust device:', error)

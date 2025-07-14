@@ -78,7 +78,7 @@ export default function WelcomePage() {
       icon: Users,
       href: '/settings/team',
       completed: completedSteps.includes('staff'),
-      optional: user?.unified_role === 'INDIVIDUAL_BARBER'
+      optional: user?.unified_role === 'individual_barber'
     },
     {
       id: 'services',

@@ -129,14 +129,14 @@ export default function LandingPage() {
             <div className="flex items-center">
               <LogoFull variant="auto" size="md" href="/" />
             </div>
-            <nav className="hidden md:flex items-center space-x-8">
-              <Link href="/billing/plans" className="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-colors">
+            <nav className="hidden md:flex items-center space-x-10">
+              <Link href="/billing/plans" className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-all duration-250 hover:scale-105 px-2 py-1">
                 Pricing
               </Link>
-              <Link href="#features" className="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-colors">
+              <Link href="#features" className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-all duration-250 hover:scale-105 px-2 py-1">
                 Features
               </Link>
-              <Link href="#testimonials" className="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-colors">
+              <Link href="#testimonials" className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-all duration-250 hover:scale-105 px-2 py-1">
                 Testimonials
               </Link>
             </nav>
@@ -148,20 +148,20 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 to-white dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
-          <div className="text-center space-y-8">
+          <div className="text-center space-y-10">
             <div className="mx-auto">
-              <h1 className="text-6xl md:text-8xl font-black text-gray-900 dark:text-white mb-4 tracking-tight">
+              <h1 className="text-6xl md:text-8xl font-black text-gray-900 dark:text-white mb-6 tracking-tight leading-[0.9]">
                 BOOKEDBARBER
               </h1>
-              <div className="w-32 h-1 bg-primary-600 mx-auto mb-8"></div>
+              <div className="w-32 h-1 bg-primary-600 mx-auto mb-10"></div>
             </div>
             
-            <h2 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white leading-[1.1] max-w-5xl mx-auto">
               The #1 Booking Platform for
               <span className="text-primary-600 dark:text-primary-400"> Six Figure Barbers</span>
             </h2>
             
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+            <p className="text-xl leading-relaxed text-gray-600 dark:text-gray-300 max-w-3xl mx-auto font-medium">
               Turn your chair into a thriving business with our all-in-one booking and management platform. 
               Built on proven Six Figure Barber methodology.
             </p>

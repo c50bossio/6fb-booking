@@ -4,15 +4,18 @@
  */
 
 import React, { useState } from 'react';
+import type { BookingResponse } from '@/lib/api';
 
 interface CalendarExportProps {
   className?: string;
   onExport?: (format: ExportFormat) => void;
+  appointments?: BookingResponse[];
+  selectedAppointments?: BookingResponse[];
 }
 
 export type ExportFormat = 'ical' | 'csv' | 'pdf' | 'json';
 
-export function CalendarExport({ className = '', onExport }: CalendarExportProps) {
+export function CalendarExport({ className = '', onExport, appointments = [], selectedAppointments = [] }: CalendarExportProps) {
   const [isExporting, setIsExporting] = useState(false);
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('ical');
 

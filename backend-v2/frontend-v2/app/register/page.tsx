@@ -21,7 +21,6 @@ export default function RegisterPage() {
   React.useEffect(() => {
     console.log('[RegisterPage] Component mounted successfully')
     console.log('[RegisterPage] handleComplete function exists:', !!handleComplete)
-    console.log('[RegisterPage] handleCancel function exists:', !!handleCancel)
   }, [])
 
   const handleComplete = async (data: RegistrationData) => {
@@ -31,68 +30,58 @@ export default function RegisterPage() {
     try {
       // Map the registration data to the complete registration API format
       const registrationPayload: CompleteRegistrationData = {
-        firstName: data.accountInfo.firstName,
-        lastName: data.accountInfo.lastName,
-        email: data.accountInfo.email,
-        password: data.accountInfo.password,
+        firstName: data.name.split(' ')[0] || data.name,
+        lastName: data.name.split(' ').slice(1).join(' ') || '',
+        email: data.email,
+        password: data.password,
         user_type: data.businessType === 'individual' ? 'barber' : 'barbershop',
-        businessName: data.businessInfo.businessName,
-        businessType: data.businessType || 'individual',
+        businessName: data.businessName || '',
+        businessType: data.businessType === 'shop' ? 'studio' : (data.businessType || 'individual'),
         address: {
-          street: data.businessInfo.address.street,
-          city: data.businessInfo.address.city,
-          state: data.businessInfo.address.state,
-          zipCode: data.businessInfo.address.zipCode
+          street: '',
+          city: '',
+          state: '',
+          zipCode: ''
         },
-        phone: data.businessInfo.phone,
-        website: data.businessInfo.website,
-        chairCount: data.businessInfo.chairCount,
-        barberCount: data.businessInfo.barberCount,
-        description: data.businessInfo.description,
-        pricingInfo: data.pricingInfo ? {
-          chairs: data.pricingInfo.chairs,
-          monthlyTotal: data.pricingInfo.monthlyTotal,
-          tier: data.pricingInfo.tier
-        } : undefined,
+        phone: data.phone || '',
+        website: '',
+        chairCount: 1,
+        barberCount: 1,
+        description: '',
+        pricingInfo: undefined,
         consent: {
-          terms: data.accountInfo.consent.terms,
-          privacy: data.accountInfo.consent.privacy,
-          marketing: data.accountInfo.consent.marketing,
-          testData: data.accountInfo.consent.testData
+          terms: data.acceptTerms,
+          privacy: data.acceptTerms,
+          marketing: data.acceptMarketing,
+          testData: false
         }
       }
 
       // Call the complete registration API
-      await registerComplete(registrationPayload)
+      const registrationResponse = await registerComplete(registrationPayload)
 
-      // Apply service templates if any were selected
-      if (data.serviceTemplates && data.serviceTemplates.length > 0) {
+      // Apply service template if one was selected
+      if (data.serviceTemplate && registrationResponse.user) {
         try {
-          console.log('[RegisterPage] Applying service templates:', data.serviceTemplates)
+          console.log('[RegisterPage] Applying service template:', data.serviceTemplate)
           
-          // Apply each template
-          for (const template of data.serviceTemplates) {
-            await applyServiceTemplate({
-              template_id: template.id,
-              customizations: {
-                // Use suggested pricing as default
-                price: template.suggested_base_price,
-                duration: template.estimated_duration,
-                description: template.description || ''
-              }
-            })
-          }
+          // Apply the template
+          await applyServiceTemplate({
+            templateId: data.serviceTemplate,
+            userId: registrationResponse.user.id,
+            customizations: {}
+          })
           
-          console.log('[RegisterPage] Service templates applied successfully')
+          console.log('[RegisterPage] Service template applied successfully')
         } catch (templateError) {
-          console.error('[RegisterPage] Error applying service templates:', templateError)
+          console.error('[RegisterPage] Error applying service template:', templateError)
           // Don't fail registration if template application fails
           // Templates can be applied later from the dashboard
         }
       }
 
       // Redirect to check-email page
-      router.push(`/check-email?email=${encodeURIComponent(data.accountInfo.email)}`)
+      router.push(`/check-email?email=${encodeURIComponent(data.email)}`)
     } catch (err: any) {
       if (err.response?.data?.detail) {
         setError(err.response.data.detail)
@@ -104,9 +93,6 @@ export default function RegisterPage() {
     }
   }
 
-  const handleCancel = () => {
-    router.push('/')
-  }
 
   return (
     <div className="bg-gray-50 dark:bg-gray-900">
@@ -249,7 +235,8 @@ export default function RegisterPage() {
 
         <MultiStepRegistration
           onComplete={handleComplete}
-          onCancel={handleCancel}
+          loading={loading}
+          error={error}
         />
       </div>
 

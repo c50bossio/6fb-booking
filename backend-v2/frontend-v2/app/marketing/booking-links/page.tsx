@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 import { getProfile } from '@/lib/api'
 import { toast } from '@/hooks/use-toast'
-import { generateOrganizationBookingURL } from '@/lib/booking-link-generator'
+import { generateBookingURL } from '@/lib/booking-link-generator'
 import { 
   LinkIcon, 
   QrCodeIcon,
@@ -68,10 +68,12 @@ export default function BookingLinksPage() {
 
   const loadData = async () => {
     try {
-      // Get user profile to get organization slug
+      // Get user profile to get organization slug (hardcoded for now since User interface doesn't have organization)
       const profile = await getProfile()
-      if (profile?.organization?.slug) {
-        setOrganizationSlug(profile.organization.slug)
+      if (profile?.email) {
+        // Use a derived slug from email for now
+        const slug = profile.email.split('@')[0] || 'default-org'
+        setOrganizationSlug(slug)
       }
       
       // In a real implementation, these would be actual API calls

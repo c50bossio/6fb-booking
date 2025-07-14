@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import VirtualList from '@/components/VirtualList'
 import { EmptyClients } from '@/components/ui/empty-state'
-import { ConfirmDialog, useConfirmDialog } from '@/components/ui/confirm-dialog'
+import { useConfirmDialog } from '@/components/ui/confirm-dialog'
 import { SkeletonTable } from '@/components/ui/skeleton-loader'
 
 export default function ClientsPage() {
@@ -69,17 +69,12 @@ export default function ClientsPage() {
     }
   }
 
-  const { confirm, ConfirmDialog } = useConfirmDialog()
+  const { confirm } = useConfirmDialog()
 
   const handleDeleteClient = async (clientId: number) => {
     const clientName = clients.find(c => c.id === clientId)?.first_name || 'this client'
     
-    const confirmed = await confirm({
-      title: 'Delete Client',
-      description: `Are you sure you want to delete ${clientName}? This will remove all their appointment history and cannot be undone.`,
-      confirmText: 'Delete Client',
-      variant: 'danger'
-    })
+    const confirmed = confirm(`Are you sure you want to delete ${clientName}? This will remove all their appointment history and cannot be undone.`)
 
     if (confirmed) {
       try {
@@ -364,8 +359,6 @@ export default function ClientsPage() {
         )}
       </div>
       
-      {/* Delete Confirmation Dialog */}
-      <ConfirmDialog />
     </main>
   )
 }

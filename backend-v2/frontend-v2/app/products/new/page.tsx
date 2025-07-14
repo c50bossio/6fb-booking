@@ -157,13 +157,14 @@ export default function NewProductPage() {
                 <Select
                   id="product_type"
                   value={formData.product_type}
-                  onChange={(e) => handleInputChange('product_type', e.target.value)}
-                >
-                  <option value={ProductType.PHYSICAL}>Physical Product</option>
-                  <option value={ProductType.SERVICE}>Service</option>
-                  <option value={ProductType.DIGITAL}>Digital Product</option>
-                  <option value={ProductType.GIFT_CARD}>Gift Card</option>
-                </Select>
+                  onChange={(value) => handleInputChange('product_type', value)}
+                  options={[
+                    { value: ProductType.PHYSICAL, label: 'Physical Product' },
+                    { value: ProductType.SERVICE, label: 'Service' },
+                    { value: ProductType.DIGITAL, label: 'Digital Product' },
+                    { value: ProductType.GIFT_CARD, label: 'Gift Card' },
+                  ]}
+                />
               </div>
               
               <div>
@@ -274,13 +275,14 @@ export default function NewProductPage() {
                   <Select
                     id="weight_unit"
                     value={formData.weight_unit || 'lb'}
-                    onChange={(e) => handleInputChange('weight_unit', e.target.value)}
-                  >
-                    <option value="lb">Pounds (lb)</option>
-                    <option value="oz">Ounces (oz)</option>
-                    <option value="kg">Kilograms (kg)</option>
-                    <option value="g">Grams (g)</option>
-                  </Select>
+                    onChange={(value) => handleInputChange('weight_unit', value)}
+                    options={[
+                      { value: 'lb', label: 'Pounds (lb)' },
+                      { value: 'oz', label: 'Ounces (oz)' },
+                      { value: 'kg', label: 'Kilograms (kg)' },
+                      { value: 'g', label: 'Grams (g)' },
+                    ]}
+                  />
                 </div>
               </div>
             )}
@@ -315,12 +317,13 @@ export default function NewProductPage() {
                 <Select
                   id="status"
                   value={formData.status}
-                  onChange={(e) => handleInputChange('status', e.target.value)}
-                >
-                  <option value={ProductStatus.ACTIVE}>Active</option>
-                  <option value={ProductStatus.DRAFT}>Draft</option>
-                  <option value={ProductStatus.INACTIVE}>Inactive</option>
-                </Select>
+                  onChange={(value) => handleInputChange('status', value)}
+                  options={[
+                    { value: ProductStatus.ACTIVE, label: 'Active' },
+                    { value: ProductStatus.DRAFT, label: 'Draft' },
+                    { value: ProductStatus.INACTIVE, label: 'Inactive' },
+                  ]}
+                />
               </div>
               
               <div className="flex items-center gap-4 pt-6">

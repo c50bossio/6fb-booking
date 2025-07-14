@@ -57,7 +57,7 @@ export default function ProductDetailPage() {
   // Fetch Shopify integration status
   const { data: integrations } = useQuery({
     queryKey: ['integrations', 'shopify'],
-    queryFn: () => integrationsAPI.getIntegrations({ integration_type: IntegrationType.SHOPIFY })
+    queryFn: () => integrationsAPI.getIntegrations(IntegrationType.SHOPIFY)
   })
   
   const shopifyIntegration = integrations?.find(i => i.integration_type === IntegrationType.SHOPIFY && i.is_active)
@@ -326,14 +326,15 @@ export default function ProductDetailPage() {
                       <Select
                         id="product_type"
                         value={formData.product_type || ''}
-                        onChange={(e) => handleInputChange('product_type', e.target.value)}
+                        onChange={(value) => handleInputChange('product_type', value)}
                         disabled={!isEditing}
-                      >
-                        <option value={ProductType.PHYSICAL}>Physical Product</option>
-                        <option value={ProductType.SERVICE}>Service</option>
-                        <option value={ProductType.DIGITAL}>Digital Product</option>
-                        <option value={ProductType.GIFT_CARD}>Gift Card</option>
-                      </Select>
+                        options={[
+                          { value: ProductType.PHYSICAL, label: 'Physical Product' },
+                          { value: ProductType.SERVICE, label: 'Service' },
+                          { value: ProductType.DIGITAL, label: 'Digital Product' },
+                          { value: ProductType.GIFT_CARD, label: 'Gift Card' },
+                        ]}
+                      />
                     </div>
                     
                     <div>
@@ -510,14 +511,15 @@ export default function ProductDetailPage() {
                 <Select
                   id="status"
                   value={formData.status || ''}
-                  onChange={(e) => handleInputChange('status', e.target.value)}
+                  onChange={(value) => handleInputChange('status', value)}
                   disabled={!isEditing}
-                >
-                  <option value={ProductStatus.ACTIVE}>Active</option>
-                  <option value={ProductStatus.INACTIVE}>Inactive</option>
-                  <option value={ProductStatus.DRAFT}>Draft</option>
-                  <option value={ProductStatus.ARCHIVED}>Archived</option>
-                </Select>
+                  options={[
+                    { value: ProductStatus.ACTIVE, label: 'Active' },
+                    { value: ProductStatus.INACTIVE, label: 'Inactive' },
+                    { value: ProductStatus.DRAFT, label: 'Draft' },
+                    { value: ProductStatus.ARCHIVED, label: 'Archived' },
+                  ]}
+                />
               </div>
               
               <div className="flex items-center justify-between">

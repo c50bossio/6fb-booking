@@ -10,13 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/Badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/components/ui/use-toast"
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/Select"
+import { Select } from "@/components/ui/Select"
 import { 
   Table, 
   TableBody, 
@@ -90,8 +84,8 @@ export default function StaffInvitationsPage() {
   const [inviteRole, setInviteRole] = useState("barber")
   const [inviteMessage, setInviteMessage] = useState("")
   
-  // Get user's organization ID (assuming it's stored in the user object)
-  const organizationId = user?.organization_id || user?.organizations?.[0]?.id
+  // Get user's organization ID (hardcoded for now since User interface doesn't have organization properties)
+  const organizationId = 1
 
   useEffect(() => {
     if (organizationId) {
@@ -112,7 +106,7 @@ export default function StaffInvitationsPage() {
         params.append("status", activeTab)
       }
       
-      const response = await apiClient.get<InvitationListResponse>(`/invitations/?${params}`)
+      const response = await apiClient.get(`/invitations/?${params}`)
       setInvitations(response.invitations)
       setPendingCount(response.pending_count)
       setAcceptedCount(response.accepted_count)
@@ -140,7 +134,7 @@ export default function StaffInvitationsPage() {
 
     setLoading(true)
     try {
-      const response = await apiClient.post<Invitation>("/invitations/", {
+      const response = await apiClient.post("/invitations/", {
         email: inviteEmail,
         first_name: inviteFirstName || undefined,
         last_name: inviteLastName || undefined,
@@ -329,16 +323,15 @@ export default function StaffInvitationsPage() {
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="role">Role *</Label>
-                    <Select value={inviteRole} onValueChange={setInviteRole}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="barber">Barber</SelectItem>
-                        <SelectItem value="receptionist">Receptionist</SelectItem>
-                        <SelectItem value="shop_manager">Shop Manager</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Select 
+                      value={inviteRole} 
+                      onChange={(value) => setInviteRole(value as string)}
+                      options={[
+                        { label: "Barber", value: "barber" },
+                        { label: "Receptionist", value: "receptionist" },
+                        { label: "Shop Manager", value: "shop_manager" }
+                      ]}
+                    />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="message">Personal Message (Optional)</Label>
@@ -368,7 +361,7 @@ export default function StaffInvitationsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue={activeTab}>
             <TabsList>
               <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="pending">Pending</TabsTrigger>

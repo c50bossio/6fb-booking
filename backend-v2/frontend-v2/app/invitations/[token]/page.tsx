@@ -47,7 +47,7 @@ export default function AcceptInvitationPage({ params }: { params: { token: stri
 
   const fetchInvitation = async () => {
     try {
-      const response = await apiClient.get<Invitation>(`/invitations/${params.token}`)
+      const response = await apiClient.get(`/invitations/${params.token}`)
       setInvitation(response)
       
       // Pre-fill name if provided

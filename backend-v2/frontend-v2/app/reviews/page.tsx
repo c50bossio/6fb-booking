@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -178,7 +178,7 @@ function ReviewCard({ review, onRespond, onView }: ReviewCardProps) {
               
               {review.can_respond && review.response_status !== ReviewResponseStatus.SENT && (
                 <Button
-                  variant="default"
+                  variant="primary"
                   size="sm"
                   onClick={() => onRespond(review.id)}
                 >
@@ -238,7 +238,7 @@ export default function ReviewsPage() {
       sort_by: 'review_date',
       sort_order: 'desc'
     }),
-    keepPreviousData: true
+    placeholderData: keepPreviousData
   })
 
   // Sync reviews mutation
@@ -452,50 +452,33 @@ export default function ReviewsPage() {
                 <Select
                   placeholder="Platform"
                   value={filters.platform || ''}
-                  onValueChange={(value) => setFilters({ ...filters, platform: value as ReviewPlatform })}
-                >
-                  {filterOptions.platforms.map((platform) => (
-                    <option key={platform.value} value={platform.value}>
-                      {platform.label}
-                    </option>
-                  ))}
-                </Select>
+                  onChange={(value) => setFilters({ ...filters, platform: value as ReviewPlatform })}
+                  options={filterOptions.platforms}
+                />
                 
                 <Select
                   placeholder="Sentiment"
                   value={filters.sentiment || ''}
-                  onValueChange={(value) => setFilters({ ...filters, sentiment: value as ReviewSentiment })}
-                >
-                  {filterOptions.sentiments.map((sentiment) => (
-                    <option key={sentiment.value} value={sentiment.value}>
-                      {sentiment.label}
-                    </option>
-                  ))}
-                </Select>
+                  onChange={(value) => setFilters({ ...filters, sentiment: value as ReviewSentiment })}
+                  options={filterOptions.sentiments}
+                />
                 
                 <Select
                   placeholder="Response Status"
                   value={filters.response_status || ''}
-                  onValueChange={(value) => setFilters({ ...filters, response_status: value as ReviewResponseStatus })}
-                >
-                  {filterOptions.responseStatuses.map((status) => (
-                    <option key={status.value} value={status.value}>
-                      {status.label}
-                    </option>
-                  ))}
-                </Select>
+                  onChange={(value) => setFilters({ ...filters, response_status: value as ReviewResponseStatus })}
+                  options={filterOptions.responseStatuses}
+                />
                 
                 <Select
                   placeholder="Min Rating"
                   value={filters.min_rating?.toString() || ''}
-                  onValueChange={(value) => setFilters({ ...filters, min_rating: value ? Number(value) : undefined })}
-                >
-                  {filterOptions.ratings.map((rating) => (
-                    <option key={rating.value} value={rating.value}>
-                      {rating.label}
-                    </option>
-                  ))}
-                </Select>
+                  onChange={(value) => setFilters({ ...filters, min_rating: value ? Number(value) : undefined })}
+                  options={filterOptions.ratings.map(rating => ({ 
+                    value: rating.value.toString(), 
+                    label: rating.label 
+                  }))}
+                />
               </div>
               
               <div className="flex items-center space-x-4 mt-4">
@@ -517,7 +500,7 @@ export default function ReviewsPage() {
       </Card>
 
       {/* Review Tabs */}
-      <Tabs value={currentTab} onValueChange={applyTabFilter}>
+      <Tabs value={currentTab} onValueChange={applyTabFilter} defaultValue="all">
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="all">All Reviews</TabsTrigger>
           <TabsTrigger value="needs_response">Needs Response</TabsTrigger>

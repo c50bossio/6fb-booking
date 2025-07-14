@@ -5,9 +5,9 @@
 /* Premium Calendar Styles */
 @import '../styles/calendar-premium.css';
 
-/* Modern CSS Reset & Performance Optimizations */
+/* Apple-Quality Design System */
 @layer base {
-  /* Box sizing and modern reset */
+  /* Modern CSS Reset */
   *,
   *::before,
   *::after {
@@ -16,43 +16,101 @@
     padding: 0;
   }
   
-  /* Root font-size for rem calculations */
   :root {
     font-size: 16px;
     
-    /* Modern viewport units support */
-    --vh: 1vh;
-    --vw: 1vw;
+    /* Apple Color System */
+    --color-primary: 20 184 166;
+    --color-primary-foreground: 255 255 255;
+    --color-background: 255 255 255;
+    --color-foreground: 17 24 39; /* Darker for better contrast */
+    --color-muted: 248 250 252;
+    --color-muted-foreground: 100 116 139;
+    --color-border: 226 232 240;
+    --color-card: 255 255 255;
+    --color-card-foreground: 15 23 42;
     
-    /* Performance optimizations */
-    --transform-origin: center;
-    --will-change: auto;
+    /* Apple System Grays */
+    --gray-50: 249 250 251;
+    --gray-100: 243 244 246;
+    --gray-200: 229 231 235;
+    --gray-300: 209 213 219;
+    --gray-400: 156 163 175;
+    --gray-500: 107 114 128;
+    --gray-600: 75 85 99;
+    --gray-700: 55 65 81;
+    --gray-800: 31 41 55;
+    --gray-900: 17 24 39;
+    
+    /* Apple Shadow System */
+    --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    
+    /* Apple Glass Effects */
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(255, 255, 255, 0.18);
+    --backdrop-blur: 20px;
+    
+    /* Apple Transitions */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring: 500ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .dark {
+    --color-primary: 20 184 166;
+    --color-primary-foreground: 255 255 255;
+    --color-background: 0 0 0; /* True black for OLED */
+    --color-foreground: 255 255 255;
+    --color-muted: 15 23 42;
+    --color-muted-foreground: 148 163 184;
+    --color-border: 30 41 59;
+    --color-card: 15 23 42;
+    --color-card-foreground: 248 250 252;
+    
+    /* Dark mode glass effects */
+    --glass-bg: rgba(0, 0, 0, 0.8);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    
+    /* Enhanced dark shadows */
+    --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
   }
   
-  /* Performance optimizations for smooth scrolling */
+  /* Apple Typography System */
   html {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
-    scroll-padding-top: 2rem;
-    /* Simple scrolling - let browser handle naturally */
     height: 100%;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
   
-  /* Optimize font rendering */
   body {
+    color: rgb(var(--color-foreground));
+    background: rgb(var(--color-background));
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-synthesis: none;
-    font-variant-ligatures: none;
-    /* Simple scrolling - let browser handle naturally */
     min-height: 100%;
     margin: 0;
     padding: 0;
+    -webkit-overflow-scrolling: touch;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    letter-spacing: -0.022em; /* Apple's signature tight letter spacing */
   }
   
-  /* Improve image and media performance */
+  /* Apple-quality image rendering */
   img,
   picture,
   video,
@@ -61,724 +119,177 @@
     display: block;
     max-width: 100%;
     height: auto;
-  }
-  
-  /* Performance optimization for images */
-  img {
     image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
   }
   
-  /* Modern form elements */
+  /* Premium form elements */
   input,
   button,
   textarea,
   select {
     font: inherit;
     color: inherit;
+    letter-spacing: inherit;
   }
   
-  /* Button optimizations */
   button {
     cursor: pointer;
     border: none;
     background: none;
     appearance: none;
+    touch-action: manipulation;
   }
   
-  /* Link optimizations */
   a {
     color: inherit;
     text-decoration: none;
     touch-action: manipulation;
   }
   
-  /* Focus management for accessibility */
-  :focus {
-    outline: 2px solid rgb(var(--color-primary));
-    outline-offset: 2px;
-  }
-  
-  :focus:not(:focus-visible) {
-    outline: none;
-  }
-  
+  /* Apple-quality focus states */
   :focus-visible {
     outline: 2px solid rgb(var(--color-primary));
     outline-offset: 2px;
+    border-radius: 4px;
   }
-}
-
-/* Enhanced CSS Variables for Dynamic Theming and Performance */
-:root {
-  /* Light Theme Colors - Enhanced for better contrast */
-  --color-primary: 20 184 166;
-  --color-primary-foreground: 255 255 255;
-  --color-secondary: 100 116 139;
-  --color-secondary-foreground: 255 255 255;
-  --color-background: 255 255 255;
-  --color-foreground: 9 9 11;
-  --color-muted: 245 245 245;
-  --color-muted-foreground: 115 115 115;
-  --color-border: 229 229 229;
-  --color-ring: 20 184 166;
-  --color-card: 255 255 255;
-  --color-card-foreground: 9 9 11;
   
-  /* Enhanced glow effects */
-  --glow-primary: 0 0 20px rgba(20, 184, 166, 0.3);
-  --glow-primary-strong: 0 0 30px rgba(20, 184, 166, 0.6);
-  --glow-success: 0 0 20px rgba(34, 197, 94, 0.3);
-  --glow-warning: 0 0 20px rgba(245, 158, 11, 0.3);
-  --glow-error: 0 0 20px rgba(239, 68, 68, 0.3);
-  
-  /* Surface and elevation effects */
-  --surface-glow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  --elevated-glow: 0 8px 40px rgba(0, 0, 0, 0.12);
-  
-  /* Ambient lighting */
-  --ambient-light: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
-  --ambient-warm: linear-gradient(135deg, rgba(255, 245, 235, 0.8) 0%, rgba(255, 237, 213, 0.4) 100%);
-  --ambient-cool: linear-gradient(135deg, rgba(239, 246, 255, 0.8) 0%, rgba(219, 234, 254, 0.4) 100%);
-  
-  /* Performance variables */
-  --transition-smooth: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  --transition-ios: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  --transform-gpu: translate3d(0, 0, 0);
-}
-
-.dark {
-  /* Dark Theme Colors - Enhanced for OLED displays */
-  --color-primary: 20 184 166;
-  --color-primary-foreground: 255 255 255;
-  --color-secondary: 63 63 70;
-  --color-secondary-foreground: 255 255 255;
-  --color-background: 0 0 0; /* True black for OLED */
-  --color-foreground: 255 255 255;
-  --color-muted: 24 24 27;
-  --color-muted-foreground: 161 161 170;
-  --color-border: 39 39 42;
-  --color-ring: 20 184 166;
-  --color-card: 9 9 11;
-  --color-card-foreground: 250 250 250;
-  
-  /* Enhanced dark theme glow effects */
-  --glow-primary: 0 0 25px rgba(20, 184, 166, 0.4);
-  --glow-primary-strong: 0 0 40px rgba(20, 184, 166, 0.7);
-  --glow-success: 0 0 25px rgba(34, 197, 94, 0.4);
-  --glow-warning: 0 0 25px rgba(245, 158, 11, 0.4);
-  --glow-error: 0 0 25px rgba(239, 68, 68, 0.4);
-  
-  /* Dark surface effects */
-  --surface-glow: 0 4px 20px rgba(255, 255, 255, 0.04);
-  --elevated-glow: 0 8px 40px rgba(255, 255, 255, 0.08);
-  
-  /* Dark ambient lighting */
-  --ambient-light: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-  --ambient-warm: linear-gradient(135deg, rgba(255, 245, 235, 0.1) 0%, rgba(255, 237, 213, 0.05) 100%);
-  --ambient-cool: linear-gradient(135deg, rgba(239, 246, 255, 0.1) 0%, rgba(219, 234, 254, 0.05) 100%);
-}
-
-/* Enhanced Base Styles with Performance Optimizations */
-@layer base {
   * {
     border-color: rgb(var(--color-border));
   }
-  
-  body {
-    color: rgb(var(--color-foreground));
-    background: rgb(var(--color-background));
-    font-feature-settings: "rlig" 1, "calt" 1;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    
-    /* Better mobile scrolling */
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: none;
-    
-    /* Prevent zoom on iOS */
-    -webkit-text-size-adjust: 100%;
-    -ms-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-  }
-  
-  /* Mobile-specific scrolling fixes - simplified */
-  @media (max-width: 768px) {
-    /* Enable smooth scrolling on iOS */
-    body {
-      -webkit-overflow-scrolling: touch;
-    }
-  }
-  
-  /* Enhanced Scrollbar with iOS-style design */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  
-  ::-webkit-scrollbar-track {
-    background: transparent;
-    border-radius: 3px;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, 
-      rgba(var(--color-muted-foreground), 0.3) 0%, 
-      rgba(var(--color-muted-foreground), 0.2) 100%);
-    border-radius: 3px;
-    border: 1px solid rgba(var(--color-background), 0.1);
-    transition: var(--transition-smooth);
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, 
-      rgba(var(--color-muted-foreground), 0.5) 0%, 
-      rgba(var(--color-muted-foreground), 0.4) 100%);
-    transform: scale(1.1);
-  }
-  
-  ::-webkit-scrollbar-thumb:active {
-    background: linear-gradient(135deg, 
-      rgba(var(--color-primary), 0.6) 0%, 
-      rgba(var(--color-primary), 0.4) 100%);
-  }
-  
-  /* Firefox Scrollbar */
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(var(--color-muted-foreground), 0.3) transparent;
-  }
-  
-  /* Scrollbar for dark mode */
-  .dark ::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, 
-      rgba(255, 255, 255, 0.2) 0%, 
-      rgba(255, 255, 255, 0.1) 100%);
-  }
-  
-  .dark ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, 
-      rgba(255, 255, 255, 0.3) 0%, 
-      rgba(255, 255, 255, 0.2) 100%);
-  }
-  
-  /* Enhanced Selection Styling */
-  ::selection {
-    background-color: rgba(var(--color-primary), 0.2);
-    color: rgb(var(--color-foreground));
-    text-shadow: none;
-  }
-  
-  ::-moz-selection {
-    background-color: rgba(var(--color-primary), 0.2);
-    color: rgb(var(--color-foreground));
-    text-shadow: none;
-  }
-  
-  /* Selection in dark mode */
-  .dark ::selection {
-    background-color: rgba(var(--color-primary), 0.3);
-  }
-  
-  .dark ::-moz-selection {
-    background-color: rgba(var(--color-primary), 0.3);
-  }
 }
 
-/* iOS-style focus indicators */
-@layer base {
-  .focus-ring {
-    position: relative;
-    outline: none;
-  }
-  
-  .focus-ring:focus-visible::after {
-    content: '';
-    position: absolute;
-    inset: -2px;
-    border-radius: inherit;
-    border: 2px solid rgb(var(--color-primary));
-    box-shadow: 0 0 0 4px rgba(var(--color-primary), 0.2);
-    pointer-events: none;
-    transition: var(--transition-smooth);
-  }
-  
-  /* Skip link for accessibility */
-  .skip-link {
-    position: absolute;
-    top: -40px;
-    left: 6px;
-    background: rgb(var(--color-primary));
-    color: rgb(var(--color-primary-foreground));
-    padding: 8px;
-    border-radius: 4px;
-    text-decoration: none;
-    font-weight: 600;
-    z-index: 9999;
-    transition: var(--transition-smooth);
-  }
-  
-  .skip-link:focus {
-    top: 6px;
-  }
+/* Apple Glass Morphism System */
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--backdrop-blur));
 }
 
-/* Enhanced Component Styles */
-@layer components {
-  /* Enhanced Loading States */
-  .loading-skeleton {
-    @apply relative overflow-hidden rounded-lg;
-    background: linear-gradient(
-      90deg,
-      rgba(var(--color-muted), 1) 0%,
-      rgba(var(--color-muted-foreground), 0.1) 50%,
-      rgba(var(--color-muted), 1) 100%
-    );
-    background-size: 200% 100%;
-    animation: shimmer 1.5s ease-in-out infinite;
-  }
-  
-  .loading-skeleton::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(var(--color-background), 0.6) 50%,
-      transparent 100%
-    );
-    transform: translateX(-100%);
-    animation: shimmer-overlay 1.5s ease-in-out infinite;
-  }
-  
-  .loading-spinner {
-    @apply inline-block w-5 h-5 border-2 border-current border-t-transparent rounded-full;
-    animation: spin 1s linear infinite;
-    transform: var(--transform-gpu);
-  }
-  
-  .loading-dots {
-    display: inline-flex;
-    gap: 0.25rem;
-  }
-  
-  .loading-dots::before,
-  .loading-dots::after,
-  .loading-dots {
-    content: '';
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 50%;
-    background: currentColor;
-    animation: loading-dots 1.4s ease-in-out infinite;
-  }
-  
-  .loading-dots::before {
-    animation-delay: -0.32s;
-  }
-  
-  .loading-dots::after {
-    animation-delay: -0.16s;
-  }
-  
-  @keyframes shimmer-overlay {
-    0% {
-      transform: translateX(-100%);
-    }
-    100% {
-      transform: translateX(100%);
-    }
-  }
-  
-  @keyframes loading-dots {
-    0%, 80%, 100% {
-      transform: scale(0.8);
-      opacity: 0.5;
-    }
-    40% {
-      transform: scale(1);
-      opacity: 1;
-    }
-  }
-  
-  /* Enhanced Form Components */
-  .form-input {
-    @apply w-full px-4 py-3 border border-ios-gray-300 dark:border-ios-gray-600 rounded-input;
-    @apply bg-white dark:bg-dark-surface-200 text-ios-gray-900 dark:text-ios-gray-100;
-    @apply placeholder-ios-gray-500 dark:placeholder-ios-gray-400;
-    @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500;
-    @apply transition-all duration-200 ease-ios;
-    @apply shadow-sm hover:shadow-md focus:shadow-lg;
-    @apply will-change-transform;
-    
-    /* iOS-style touch feedback */
-    @apply touch-manipulation;
-    
-    /* Enhanced typography */
-    font-size: 16px; /* Prevents zoom on iOS */
-    line-height: 1.5;
-    letter-spacing: 0.01em;
-  }
-  
-  .form-input:focus {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(var(--color-primary), 0.15);
-  }
-  
-  .form-input.error {
-    @apply border-error-500 focus:border-error-500 focus:ring-error-500;
-    box-shadow: 0 0 0 3px rgba(var(--glow-error));
-  }
-  
-  .form-input.success {
-    @apply border-success-500 focus:border-success-500 focus:ring-success-500;
-    box-shadow: 0 0 0 3px rgba(var(--glow-success));
-  }
-  
-  .form-label {
-    display: block;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: rgb(55, 65, 81);
-    margin-bottom: 0.5rem;
-    transition: color 200ms;
-    letter-spacing: 0.01em;
-  }
-  
-  .dark .form-label {
-    color: rgb(243, 244, 246);
-  }
-  
-  .form-label.required::after {
-    content: ' *';
-    color: rgb(239, 68, 68);
-  }
-  
-  .form-label.optional::after {
-    content: ' (optional)';
-    color: rgb(107, 114, 128);
-    font-weight: 400;
-  }
-  
-  .form-textarea {
-    @apply form-input resize-y min-h-[100px];
-    @apply leading-relaxed;
-    
-    /* Better scroll behavior */
-    scroll-behavior: smooth;
-    scrollbar-width: thin;
-  }
-  
-  .form-select {
-    @apply form-input appearance-none bg-no-repeat bg-right pr-10 cursor-pointer;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 0.75rem center;
-    background-size: 1.25em 1.25em;
-  }
-  
-  .form-select:focus {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2314b8a6' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-  }
-  
-  .dark .form-select {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a1a1aa' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-  }
-  
-  .dark .form-select:focus {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2314b8a6' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-  }
-  
-  /* Enhanced Card Components */
-  .card {
-    @apply bg-white dark:bg-dark-surface-200 rounded-card border border-ios-gray-200 dark:border-ios-gray-700;
-    @apply shadow-card hover:shadow-card-hover transition-all duration-300 ease-ios;
-    @apply will-change-transform;
-    transform: var(--transform-gpu);
-  }
-  
-  .card:hover {
-    transform: translateY(-2px) var(--transform-gpu);
-  }
-  
-  .card.interactive {
-    @apply cursor-pointer;
-  }
-  
-  .card.interactive:active {
-    transform: translateY(0) scale(0.98) var(--transform-gpu);
-  }
-  
-  .card.glass {
-    /* @apply bg-white/10 dark:bg-white/5 backdrop-blur-glass border-white/20 dark:border-white/10; */
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(20px);
-    /* @apply shadow-glass; */
-  }
-  
-  .card.premium {
-    @apply bg-gradient-to-br from-white to-ios-gray-50 dark:from-dark-surface-100 dark:to-dark-surface-200;
-    @apply shadow-premium;
-  }
-  
-  .card-header {
-    @apply p-card-lg pb-card-md;
-    @apply border-b border-ios-gray-200 dark:border-ios-gray-700;
-  }
-  
-  .card-content {
-    @apply p-card-lg pt-card-md;
-  }
-  
-  .card-footer {
-    @apply p-card-lg pt-card-md border-t border-ios-gray-200 dark:border-ios-gray-700;
-    @apply flex items-center justify-between;
-  }
-  
-  /* Enhanced Alert Components */
-  .alert {
-    @apply p-4 rounded-ios-lg border backdrop-blur-sm;
-    @apply transition-all duration-300 ease-ios;
-    @apply animate-slide-up;
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .alert::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, currentColor, transparent);
-    animation: alert-shimmer 2s ease-in-out infinite;
-  }
-  
-  @keyframes alert-shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-  }
-  
-  .alert-success {
-    @apply bg-success-50/80 dark:bg-success-900/20 border-success-200 dark:border-success-800;
-    @apply text-success-800 dark:text-success-200;
-    @apply shadow-glow-success;
-  }
-  
-  .alert-warning {
-    @apply bg-warning-50/80 dark:bg-warning-900/20 border-warning-200 dark:border-warning-800;
-    @apply text-warning-800 dark:text-warning-200;
-    @apply shadow-glow-warning;
-  }
-  
-  .alert-error {
-    @apply bg-error-50/80 dark:bg-error-900/20 border-error-200 dark:border-error-800;
-    @apply text-error-800 dark:text-error-200;
-    @apply shadow-glow-error;
-  }
-  
-  .alert-info {
-    @apply bg-info-50/80 dark:bg-info-900/20 border-info-200 dark:border-info-800;
-    @apply text-info-800 dark:text-info-200;
-    @apply shadow-lg;
-  }
+.glass-header {
+  background: rgba(255, 255, 255, 0.8);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 
-/* Enhanced Utility Classes */
-@layer utilities {
-  /* iOS-style system colors */
-  .ios-system-blue {
-    color: rgb(0, 122, 255);
-  }
-  
-  .ios-system-green {
-    color: rgb(52, 199, 89);
-  }
-  
-  .ios-system-red {
-    color: rgb(255, 59, 48);
-  }
-  
-  .ios-system-orange {
-    color: rgb(255, 149, 0);
-  }
-  
-  .ios-system-yellow {
-    color: rgb(255, 204, 0);
-  }
-  
-  .ios-system-purple {
-    color: rgb(175, 82, 222);
-  }
-  
-  .ios-system-pink {
-    color: rgb(255, 45, 85);
-  }
-  
-  .ios-system-gray {
-    color: rgb(142, 142, 147);
-  }
-  
-  /* Touch Targets for Mobile - Enhanced */
-  .touch-target {
-    @apply min-w-[44px] min-h-[44px] touch-manipulation;
-    cursor: pointer;
-  }
-  
-  .touch-target-large {
-    @apply min-w-[60px] min-h-[60px] touch-manipulation;
-    cursor: pointer;
-  }
-  
-  /* Enhanced Focus States */
-  .focus-ring {
-    @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
-    @apply dark:focus:ring-offset-dark-surface-200;
-    @apply transition-all duration-200 ease-ios;
-  }
-  
-  .focus-ring:focus-visible {
-    box-shadow: 0 0 0 2px rgb(var(--color-background)), 0 0 0 4px rgb(var(--color-primary)), var(--glow-primary);
-  }
-  
-  /* Enhanced Smooth Transitions */
-  .transition-smooth {
-    transition: var(--transition-smooth);
-  }
-  
-  .transition-ios {
-    transition: var(--transition-ios);
-  }
-  
-  .transition-bounce {
-    @apply transition-all duration-300 ease-bounce;
-  }
-  
-  .transition-spring {
-    @apply transition-all duration-500 ease-ios-spring;
-  }
-  
-  /* Enhanced Typography Utilities */
-  .text-balance {
-    text-wrap: balance;
-  }
-  
-  .text-pretty {
-    text-wrap: pretty;
-  }
-  
-  .text-ios {
-    font-family: -apple-system, BlinkMacSystemFont, 'San Francisco', system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-  }
-  
-  .text-gradient {
-    background: linear-gradient(135deg, rgb(var(--color-primary)), rgb(var(--color-secondary)));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  
-  .text-glow {
-    text-shadow: 0 0 10px rgba(var(--color-primary), 0.5);
-  }
-  
-  /* Scrollbar Utilities */
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-  
-  .scrollbar-thin {
-    scrollbar-width: thin;
-  }
-  
-  .scroll-smooth {
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-  }
-  
-  .overscroll-none {
-    overscroll-behavior: none;
-  }
-  
-  .overscroll-contain {
-    overscroll-behavior: contain;
-  }
-  
-  /* Performance Utilities */
-  .gpu-layer {
-    transform: var(--transform-gpu);
-    will-change: transform;
-  }
-  
-  .content-visibility {
-    content-visibility: auto;
-    contain-intrinsic-size: 0 500px;
-  }
-  
-  .isolation {
-    isolation: isolate;
-  }
-  
-  /* Glass Morphism Utilities */
-  .backdrop-glass {
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-  }
-  
-  .backdrop-glass-light {
-    backdrop-filter: blur(12px) brightness(1.1);
-    -webkit-backdrop-filter: blur(12px) brightness(1.1);
-  }
-  
-  .backdrop-glass-dark {
-    backdrop-filter: blur(12px) brightness(0.9);
-    -webkit-backdrop-filter: blur(12px) brightness(0.9);
-  }
-  
-  /* iOS-style utilities */
-  .ios-scroll {
-    -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
-    overscroll-behavior: contain;
-  }
-  
-  .ios-tap-highlight-none {
-    -webkit-tap-highlight-color: transparent;
-  }
-  
-  .ios-user-select-none {
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
+.dark .glass-header {
+  background: rgba(0, 0, 0, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Enhanced Essential Animations with GPU Acceleration */
-@keyframes fadeIn {
+/* Apple Shadow System */
+.shadow-apple-sm { box-shadow: var(--shadow-sm); }
+.shadow-apple-md { box-shadow: var(--shadow-md); }
+.shadow-apple-lg { box-shadow: var(--shadow-lg); }
+.shadow-apple-xl { box-shadow: var(--shadow-xl); }
+.shadow-apple-2xl { box-shadow: var(--shadow-2xl); }
+
+/* Apple Button System */
+.btn-apple-primary {
+  background: linear-gradient(180deg, #0071e3 0%, #005bb5 100%);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  transition: var(--transition-base);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.btn-apple-primary:hover {
+  background: linear-gradient(180deg, #0077ed 0%, #0061c1 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 113, 227, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.btn-apple-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.btn-apple-secondary {
+  background: rgba(var(--gray-100), 1);
+  border: 1px solid rgba(var(--gray-300), 1);
+  border-radius: 8px;
+  color: rgb(var(--gray-900));
+  font-weight: 500;
+  letter-spacing: -0.022em;
+  transition: var(--transition-base);
+  box-shadow: var(--shadow-xs);
+}
+
+.btn-apple-secondary:hover {
+  background: rgba(var(--gray-50), 1);
+  border-color: rgba(var(--gray-400), 1);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.dark .btn-apple-secondary {
+  background: rgba(var(--gray-800), 1);
+  border-color: rgba(var(--gray-700), 1);
+  color: rgb(var(--gray-100));
+}
+
+.dark .btn-apple-secondary:hover {
+  background: rgba(var(--gray-700), 1);
+  border-color: rgba(var(--gray-600), 1);
+}
+
+/* Apple Card System */
+.card-apple {
+  background: rgb(var(--color-card));
+  border: 1px solid rgba(var(--gray-200), 1);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-base);
+  overflow: hidden;
+}
+
+.card-apple:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.dark .card-apple {
+  background: rgb(var(--color-card));
+  border-color: rgba(var(--gray-800), 1);
+}
+
+/* Apple Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(var(--gray-400), 0.5);
+  border-radius: 4px;
+  transition: var(--transition-fast);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--gray-500), 0.7);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Apple Animations */
+@keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translate3d(0, 10px, 0);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 20px, 0);
+    transform: translate3d(0, 24px, 0);
   }
   to {
     opacity: 1;
@@ -789,91 +300,75 @@
 @keyframes scaleIn {
   from {
     opacity: 0;
-    transform: translate3d(0, 0, 0) scale(0.95);
+    transform: scale(0.95);
   }
   to {
     opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
+    transform: scale(1);
   }
 }
 
-@keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translate3d(-20px, 0, 0);
-  }
+@keyframes spin {
   to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
+    transform: rotate(360deg);
   }
 }
 
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translate3d(20px, 0, 0);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-@keyframes indeterminate {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(400%);
-  }
-}
-
-/* Enhanced Animation Classes */
-.animate-fade-in {
-  animation: fadeIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.animate-slide-up {
-  animation: slideUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+/* Apple Animation Classes */
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s var(--transition-spring);
 }
 
 .animate-scale-in {
-  animation: scaleIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  animation: scaleIn 0.4s var(--transition-base);
 }
 
-.animate-slide-in-left {
-  animation: slideInLeft 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+.animate-spin {
+  animation: spin 1s linear infinite;
 }
 
-.animate-slide-in-right {
-  animation: slideInRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+/* Apple Mobile Optimizations */
+@media (max-width: 768px) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .container,
+  .max-w-7xl,
+  .max-w-6xl,
+  .max-w-5xl,
+  .max-w-4xl {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  input,
+  textarea,
+  select {
+    font-size: 16px !important; /* Prevent zoom on iOS */
+  }
+  
+  /* Mobile glass effects */
+  .glass-header {
+    backdrop-filter: blur(10px) saturate(180%);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+  }
 }
 
-.animate-shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(var(--color-muted), 1) 0%,
-    rgba(var(--color-muted-foreground), 0.1) 50%,
-    rgba(var(--color-muted), 1) 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
+/* High contrast support */
+@media (prefers-contrast: high) {
+  :root {
+    --color-border: 64 64 64;
+  }
+  
+  .dark {
+    --color-border: 191 191 191;
+  }
 }
 
-.animate-indeterminate {
-  animation: indeterminate 1.5s ease-in-out infinite;
-}
-
-/* Enhanced Reduced Motion Support */
+/* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -883,50 +378,9 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  
-  .animate-pulse {
-    animation: none !important;
-  }
-  
-  .animate-spin {
-    animation: none !important;
-  }
-  
-  .animate-bounce {
-    animation: none !important;
-  }
 }
 
-/* Enhanced High Contrast Support */
-@media (prefers-contrast: high) {
-  :root {
-    --color-border: 64 64 64;
-  }
-  
-  .dark {
-    --color-border: 191 191 191;
-  }
-  
-  .card {
-    @apply border-2 border-ios-gray-600 dark:border-ios-gray-300;
-    @apply shadow-lg;
-  }
-  
-  .form-input {
-    @apply border-2 border-ios-gray-600 dark:border-ios-gray-300;
-  }
-  
-  .button {
-    @apply border-2;
-  }
-  
-  .focus-ring:focus-visible {
-    outline: 3px solid currentColor !important;
-    outline-offset: 2px !important;
-  }
-}
-
-/* Enhanced Print Styles */
+/* Print styles */
 @media print {
   * {
     -webkit-print-color-adjust: exact !important;
@@ -940,697 +394,5 @@
   
   .no-print {
     display: none !important;
-  }
-  
-  .print-break-before {
-    page-break-before: always;
-  }
-  
-  .print-break-after {
-    page-break-after: always;
-  }
-  
-  .print-avoid-break {
-    page-break-inside: avoid;
-  }
-  
-  a[href]:after {
-    content: " (" attr(href) ")";
-    font-size: 0.8em;
-    color: #666;
-  }
-  
-  .card {
-    border: 1px solid #ddd !important;
-    box-shadow: none !important;
-  }
-}
-
-/* Dark mode specific enhancements */
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-  }
-}
-
-/* Light mode specific enhancements */
-@media (prefers-color-scheme: light) {
-  :root {
-    color-scheme: light;
-  }
-}
-
-/* System theme detection and optimization */
-@supports (color-scheme: dark light) {
-  :root {
-    color-scheme: light dark;
-  }
-}
-
-/* Performance optimizations for specific viewport sizes */
-@media (max-width: 768px) {
-  /* Mobile optimizations */
-  * {
-    -webkit-tap-highlight-color: transparent;
-  }
-  
-  .card {
-    border-radius: 12px; /* Slightly smaller radius on mobile */
-  }
-  
-  .form-input {
-    font-size: 16px; /* Prevent zoom on iOS */
-  }
-}
-
-@media (min-width: 769px) {
-  /* Desktop optimizations */
-  .hover\:scale-105:hover {
-    transform: scale(1.05) var(--transform-gpu);
-  }
-  
-  .group:hover .group-hover\:translate-y-0 {
-    transform: translateY(0) var(--transform-gpu);
-  }
-}
-
-/* Optimize for different pixel densities */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-  .high-dpi {
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
-  }
-}
-
-/* Container queries support (progressive enhancement) */
-@supports (container-type: inline-size) {
-  .container-adaptive {
-    container-type: inline-size;
-  }
-  
-  @container (min-width: 400px) {
-    .container-responsive {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-    }
-  }
-}
-
-/* Mobile Responsiveness Fixes */
-@layer utilities {
-  /* Prevent horizontal overflow on all screen sizes */
-  .no-overflow-x {
-    overflow-x: hidden;
-    max-width: 100vw;
-  }
-  
-  /* Mobile-safe containers */
-  .mobile-safe {
-    width: 100%;
-    max-width: 100vw;
-    overflow-x: hidden;
-    box-sizing: border-box;
-  }
-  
-  /* Responsive text that prevents overflow */
-  .text-responsive {
-    word-wrap: break-word;
-    word-break: break-word;
-    hyphens: auto;
-    overflow-wrap: break-word;
-  }
-  
-  /* Mobile touch targets */
-  .touch-target {
-    min-height: 44px;
-    min-width: 44px;
-    touch-action: manipulation;
-  }
-  
-  /* Prevent zoom on input focus (iOS) */
-  .no-zoom {
-    font-size: 16px !important;
-    transform-origin: left top;
-  }
-}
-
-/* Mobile-specific media queries */
-@media (max-width: 768px) {
-  /* Force all containers to be mobile-safe */
-  .container,
-  .max-w-7xl,
-  .max-w-6xl,
-  .max-w-5xl,
-  .max-w-4xl {
-    max-width: 100vw !important;
-    overflow-x: hidden !important;
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-  }
-  
-  /* Fix potential grid overflow issues */
-  .grid {
-    overflow-x: hidden;
-  }
-  
-  /* Ensure all children respect container width */
-  * {
-    max-width: 100%;
-    box-sizing: border-box;
-  }
-}
-
-/* Small screen fixes */
-@media (max-width: 480px) {
-  /* Ensure tables are responsive */
-  table {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
-  }
-}
-
-/* Loading Animation Styles */
-@layer utilities {
-  /* Loading skeleton animations */
-  .loading-skeleton {
-    @apply bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700;
-    background-size: 200% 100%;
-    animation: skeleton-shimmer 1.5s ease-in-out infinite;
-  }
-  
-  @keyframes skeleton-shimmer {
-    0% {
-      background-position: -200% 0;
-    }
-    100% {
-      background-position: 200% 0;
-    }
-  }
-  
-  /* Shimmer effect */
-  .animate-shimmer {
-    background-size: 200% 100%;
-    animation: shimmer 1.5s ease-in-out infinite;
-  }
-  
-  @keyframes shimmer {
-    0% {
-      background-position: -200% 0;
-    }
-    100% {
-      background-position: 200% 0;
-    }
-  }
-  
-  /* Bounce animation with delays */
-  .animation-delay-0 {
-    animation-delay: 0s;
-  }
-  
-  .animation-delay-150 {
-    animation-delay: 0.15s;
-  }
-  
-  .animation-delay-300 {
-    animation-delay: 0.3s;
-  }
-  
-  /* Pulse animation */
-  @keyframes pulse {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.5;
-    }
-  }
-  
-  /* Slide up animation */
-  @keyframes slide-up {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  .animate-slide-up {
-    animation: slide-up 0.3s ease-out;
-  }
-  
-  /* Fade in animation */
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-  
-  .animate-fade-in {
-    animation: fade-in 0.3s ease-out;
-  }
-  
-  /* Scale up animation */
-  @keyframes scale-up {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-  
-  .animate-scale-up {
-    animation: scale-up 0.3s ease-out;
-  }
-  
-  /* Indeterminate progress bar */
-  @keyframes indeterminate {
-    0% {
-      transform: translateX(-100%);
-    }
-    100% {
-      transform: translateX(400%);
-    }
-  }
-  
-  .animate-indeterminate {
-    animation: indeterminate 1.5s ease-in-out infinite;
-  }
-}
-
-/* Dark Mode Contrast Enhancements (WCAG AA Compliance) */
-@layer utilities {
-  /* Fix critical dark mode contrast issues */
-  .dark {
-    /* Primary link colors - better contrast for dark mode */
-    --text-primary-600: rgb(45, 212, 191); /* was rgb(13, 148, 136) - insufficient contrast */
-    --text-primary-400: rgb(94, 234, 212); /* was rgb(45, 212, 191) - still insufficient */
-    
-    /* Enhanced contrast for dark mode primary colors */
-    .text-primary-600 {
-      color: rgb(94, 234, 212) !important; /* Ensures 4.5:1 contrast on dark backgrounds */
-    }
-    
-    .text-primary-400 {
-      color: rgb(153, 246, 228) !important; /* Even better contrast for secondary text */
-    }
-    
-    /* Form elements enhanced contrast */
-    .text-muted-foreground {
-      color: rgb(209, 213, 219) !important; /* Better contrast for muted text */
-    }
-    
-    /* Ensure background contrasts are correct */
-    .dark\:text-primary-400 {
-      color: rgb(153, 246, 228) !important;
-    }
-    
-    .dark\:text-primary-300 {
-      color: rgb(204, 251, 241) !important;
-    }
-    
-    /* Fix button and link hover states */
-    .dark\:hover\:text-primary-300:hover {
-      color: rgb(204, 251, 241) !important;
-    }
-  }
-  
-  /* Enhanced muted text colors for better dark mode readability */
-  .dark .text-muted-foreground {
-    color: rgb(209, 213, 219) !important;
-  }
-  
-  .dark .text-xs.text-muted-foreground {
-    color: rgb(229, 231, 235) !important;
-  }
-  
-  /* Ensure all gray text has proper contrast in dark mode */
-  .dark .text-gray-300 {
-    color: rgb(229, 231, 235) !important;
-  }
-  
-  .dark .text-gray-400 {
-    color: rgb(209, 213, 219) !important;
-  }
-  
-  /* Fix cookie consent and button contrast issues */
-  .dark .bg-white\/10 {
-    background-color: rgba(255, 255, 255, 0.15) !important;
-  }
-  
-  /* Enhanced form input contrast */
-  .dark input,
-  .dark textarea,
-  .dark select {
-    background-color: rgb(39, 39, 42) !important;
-    border-color: rgb(82, 82, 91) !important;
-    color: rgb(250, 250, 250) !important;
-  }
-  
-  .dark input:focus,
-  .dark textarea:focus,
-  .dark select:focus {
-    border-color: rgb(20, 184, 166) !important;
-  }
-  
-  /* Fix premium primary background in dark mode */
-  .dark .bg-premium-primary {
-    background-color: rgb(20, 184, 166) !important;
-  }
-  
-  .dark .hover\:bg-premium-primary-hover:hover {
-    background-color: rgb(13, 148, 136) !important;
-  }
-}
-
-/* ENHANCED BUTTON VISIBILITY - Dark Mode Contrast Fixes */
-.dark {
-  /* Primary button visibility - force high contrast colors */
-  .bg-primary-400 {
-    background-color: rgb(45, 212, 191) !important; /* primary-400 - bright teal */
-    color: rgb(17, 24, 39) !important; /* gray-900 - dark text for readability */
-  }
-  
-  .hover\:bg-primary-300:hover {
-    background-color: rgb(94, 234, 212) !important; /* primary-300 - even brighter */
-  }
-  
-  /* CRITICAL: Force visibility for primary buttons - highest specificity */
-  button[class*="bg-primary-500"],
-  button[class*="bg-primary-400"],
-  a[class*="bg-primary-500"],
-  a[class*="bg-primary-400"] {
-    background-color: rgb(45, 212, 191) !important; /* Bright teal - clearly visible */
-    color: rgb(17, 24, 39) !important; /* Dark text for high contrast */
-    border: 1px solid rgba(45, 212, 191, 0.8) !important; /* Subtle border for definition */
-  }
-  
-  /* Ensure hover states are also visible */
-  button[class*="bg-primary-500"]:hover,
-  button[class*="bg-primary-400"]:hover,
-  a[class*="bg-primary-500"]:hover,
-  a[class*="bg-primary-400"]:hover {
-    background-color: rgb(94, 234, 212) !important; /* Even brighter on hover */
-    color: rgb(17, 24, 39) !important;
-    border-color: rgba(94, 234, 212, 0.9) !important;
-  }
-  
-  /* Outline button visibility */
-  .border-primary-300 {
-    border-color: rgb(94, 234, 212) !important;
-  }
-  
-  .text-primary-100 {
-    color: rgb(204, 251, 241) !important; /* Very bright text */
-  }
-  
-  .dark\:text-primary-100 {
-    color: rgb(204, 251, 241) !important;
-  }
-  
-  /* Secondary button visibility */
-  .bg-gray-700\/80 {
-    background-color: rgba(55, 65, 81, 0.9) !important; /* More opaque for visibility */
-  }
-  
-  .hover\:bg-gray-600\/90:hover {
-    background-color: rgba(75, 85, 99, 0.95) !important;
-  }
-  
-  /* Ghost button visibility */
-  .bg-gray-800\/20 {
-    background-color: rgba(31, 41, 55, 0.3) !important;
-  }
-  
-  .hover\:bg-gray-700\/50:hover {
-    background-color: rgba(55, 65, 81, 0.6) !important;
-  }
-  
-  .text-gray-200 {
-    color: rgb(229, 231, 235) !important;
-  }
-  
-  .hover\:text-primary-200:hover {
-    color: rgb(153, 246, 228) !important;
-  }
-  
-  /* Button borders for definition */
-  .border-gray-600\/30 {
-    border-color: rgba(75, 85, 99, 0.4) !important;
-  }
-  
-  .hover\:border-gray-500\/50:hover {
-    border-color: rgba(107, 114, 128, 0.6) !important;
-  }
-  
-  /* Enhanced shadows for depth */
-  .shadow-md {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2) !important;
-  }
-  
-  .hover\:shadow-lg:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2) !important;
-  }
-  
-  .hover\:shadow-xl:hover {
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2) !important;
-  }
-  
-  /* Ensure button text never becomes invisible */
-  button, .btn, [role="button"] {
-    min-height: 44px; /* Touch target size */
-  }
-  
-  button:not(:disabled):not(.disabled), 
-  .btn:not(:disabled):not(.disabled), 
-  [role="button"]:not(:disabled):not(.disabled) {
-    cursor: pointer;
-    /* Ensure buttons have visual weight */
-    font-weight: 500 !important;
-  }
-  
-  /* Force visibility for any button with insufficient contrast */
-  button[class*="bg-primary"]:not([class*="dark:"]) {
-    background-color: rgb(45, 212, 191) !important;
-    color: rgb(17, 24, 39) !important;
-  }
-  
-  /* Fix any transparent or low-contrast buttons */
-  button[class*="text-primary-"]:not([class*="dark:"]) {
-    color: rgb(204, 251, 241) !important;
-  }
-}
-
-/* CRITICAL DARK MODE CONTRAST FIXES - WCAG AA Compliance */
-.dark {
-  /* CRITICAL FIX: Form labels must be visible - address white-on-white issues */
-  label,
-  .peer-disabled\:cursor-not-allowed,
-  .peer-disabled\:opacity-70 {
-    color: rgb(244, 244, 245) !important; /* zinc-100 - high contrast white text */
-    background-color: transparent !important; /* Ensure no white background */
-  }
-
-  /* CRITICAL FIX: Muted text should be visible, not white-on-white */
-  .text-muted-foreground {
-    color: rgb(161, 161, 170) !important; /* zinc-400 - readable muted text on dark */
-    background-color: transparent !important; /* Remove any white background */
-  }
-
-  /* CRITICAL FIX: Specific muted text elements */
-  .text-xs.text-muted-foreground,
-  .text-sm.text-muted-foreground {
-    color: rgb(161, 161, 170) !important; /* Ensure visibility */
-    background-color: transparent !important;
-  }
-
-  /* CRITICAL FIX: Font-medium elements (health monitor text) */
-  .font-medium {
-    color: rgb(244, 244, 245) !important; /* Ensure labels and headings are white */
-    background-color: transparent !important;
-  }
-
-  /* CRITICAL FIX: Truncated text elements */
-  .truncate {
-    color: rgb(244, 244, 245) !important; /* Fix health monitor service names */
-    background-color: transparent !important;
-  }
-
-  /* CRITICAL FIX: Cookie consent button backgrounds */
-  .bg-white\/10 {
-    background-color: rgba(0, 0, 0, 0.8) !important; /* Dark bg instead of white */
-  }
-
-  .border-primary-500\/60 {
-    border-color: rgb(94, 234, 212) !important; /* Visible border */
-  }
-
-  /* CRITICAL FIX: Ensure all text elements have dark backgrounds */
-  p, span, div {
-    background-color: inherit !important; /* Inherit proper dark background */
-  }
-
-  /* CRITICAL FIX: Primary link colors for better contrast */
-  .text-primary-600 {
-    color: rgb(94, 234, 212) !important; /* teal-300 - Ensures 4.5:1 contrast on dark bg */
-  }
-  
-  .text-primary-400 {
-    color: rgb(153, 246, 228) !important; /* teal-200 - Better contrast for secondary text */
-  }
-
-  .text-primary-300 {
-    color: rgb(204, 251, 241) !important; /* Very light teal for subtle text */
-  }
-
-  /* CRITICAL FIX: Interactive link states */
-  .hover\:text-primary:hover {
-    color: rgb(94, 234, 212) !important;
-  }
-
-  .hover\:text-primary-700:hover {
-    color: rgb(153, 246, 228) !important;
-  }
-
-  .hover\:text-primary-300:hover {
-    color: rgb(204, 251, 241) !important;
-  }
-
-  /* CRITICAL FIX: Gray text improvements for better contrast */
-  .text-gray-400 {
-    color: rgb(156, 163, 175) !important; /* Ensure minimum contrast */
-  }
-
-  .text-gray-300 {
-    color: rgb(209, 213, 219) !important; /* Lighter gray for better visibility */
-  }
-
-  .text-gray-600 {
-    color: rgb(229, 231, 235) !important; /* Much lighter for dark backgrounds */
-  }
-
-  .text-gray-700 {
-    color: rgb(243, 244, 246) !important; /* Nearly white for good contrast */
-  }
-
-  /* CRITICAL FIX: Ensure link elements are visible */
-  a {
-    color: rgb(153, 246, 228) !important; /* Bright teal for links */
-  }
-
-  a:hover {
-    color: rgb(204, 251, 241) !important; /* Lighter on hover */
-  }
-
-  /* CRITICAL FIX: Button text visibility */
-  button {
-    background-color: inherit !important; /* Don't override button backgrounds unnecessarily */
-  }
-
-  /* CRITICAL FIX: Override any remaining white text on white backgrounds */
-  [style*="color: rgb(255, 255, 255)"] {
-    color: rgb(244, 244, 245) !important;
-    background-color: transparent !important;
-  }
-
-  /* CRITICAL FIX: Background color overrides */
-  .bg-background {
-    background-color: rgb(9, 9, 11) !important; /* zinc-900 */
-  }
-
-  .bg-card {
-    background-color: rgb(24, 24, 27) !important; /* zinc-800 */
-  }
-
-  /* CRITICAL FIX: Health monitor specific elements */
-  .text-green-500 {
-    color: rgb(34, 197, 94) !important; /* Bright green for visibility */
-  }
-
-  .text-yellow-500 {
-    color: rgb(234, 179, 8) !important; /* Bright yellow for visibility */
-  }
-
-  /* CRITICAL FIX: Checkbox contrast improvements for WCAG AA compliance */
-  [data-radix-checkbox-root] {
-    border-color: rgb(229, 231, 235) !important; /* gray-200 - ensures 4.5:1 contrast on dark bg */
-    background-color: rgb(31, 41, 55) !important; /* gray-800 - dark but visible background */
-  }
-
-  [data-radix-checkbox-root]:hover {
-    border-color: rgb(243, 244, 246) !important; /* gray-100 - even brighter on hover */
-  }
-
-  [data-radix-checkbox-root]:focus-visible {
-    outline: 2px solid rgb(59, 130, 246) !important; /* blue-500 - visible focus indicator */
-    outline-offset: 2px !important;
-    box-shadow: 0 0 0 2px rgb(9, 9, 11), 0 0 0 4px rgb(59, 130, 246) !important;
-  }
-
-  /* Ensure checkbox indicators are visible */
-  [data-radix-checkbox-indicator] {
-    color: rgb(255, 255, 255) !important; /* white checkmark for checked state */
-  }
-
-  /* Fix any peer-related styling for checkbox labels */
-  .peer-disabled\:cursor-not-allowed,
-  .peer-disabled\:opacity-70 {
-    color: rgb(156, 163, 175) !important; /* gray-400 - muted but readable */
-  }
-
-  /* Force maximum visibility for all checkbox elements in dark mode */
-  .dark [role="checkbox"] {
-    border: 2px solid rgb(229, 231, 235) !important; /* gray-200 - maximum contrast */
-    background-color: rgb(31, 41, 55) !important; /* gray-800 background */
-    min-width: 16px !important;
-    min-height: 16px !important;
-    display: inline-block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-
-  .dark [role="checkbox"]:hover {
-    border-color: rgb(243, 244, 246) !important; /* gray-100 - even higher contrast on hover */
-  }
-
-  /* Additional fallback for Radix UI checkboxes */
-  .dark [data-state] {
-    border: 2px solid rgb(229, 231, 235) !important;
-    background-color: rgb(31, 41, 55) !important;
-    width: 16px !important;
-    height: 16px !important;
-    display: inline-block !important;
-  }
-
-  /* Comprehensive checkbox visibility for dark mode */
-  .dark [role="checkbox"],
-  .dark [data-radix-checkbox-root],
-  .dark input[type="checkbox"],
-  .dark [class*="checkbox"] {
-    border: 2px solid rgb(229, 231, 235);
-    background-color: rgb(31, 41, 55);
-    width: 16px;
-    height: 16px;
-    min-width: 16px;
-    min-height: 16px;
-    display: inline-block;
-    visibility: visible;
-    opacity: 1;
-    position: relative;
-  }
-
-  /* Force the checkbox container to show the border */
-  .dark *[class*="checkbox"] {
-    outline: 2px solid rgb(229, 231, 235) !important;
   }
 }

@@ -206,7 +206,7 @@ export default function EnterpriseDashboardPage() {
             {alerts.map((alert, index) => (
               <Card
                 key={index}
-                variant={alert.type === 'warning' ? 'warning' : alert.type === 'success' ? 'success' : 'default'}
+                variant={alert.type === 'warning' ? 'outlined' : alert.type === 'success' ? 'accent' : 'default'}
                 className="border-l-4"
               >
                 <CardContent className="flex items-center space-x-3 py-3">

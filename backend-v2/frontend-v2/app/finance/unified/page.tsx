@@ -278,7 +278,7 @@ function UnifiedFinanceContent() {
         </div>
 
         {/* Tabbed Financial Content */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue={activeTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-auto gap-2">
             {availableTabs.map(tab => (
               <TabsTrigger 

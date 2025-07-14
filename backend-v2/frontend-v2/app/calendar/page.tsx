@@ -35,7 +35,7 @@ import { CalendarNetworkStatus, CalendarRequestQueue } from '@/components/calend
 import { LocationSelector } from '@/components/navigation/LocationSelector'
 import { LocationSelectorLoadingState, LocationSelectorErrorState } from '@/components/navigation/LocationSelectorSkeleton'
 import { CalendarExport } from '@/components/calendar/CalendarExport'
-import type { Appointment, CalendarView, User, CalendarInteraction } from '@/types/calendar'
+import type { Appointment, CalendarView, User, CalendarInteraction, AppointmentStatus } from '@/types/calendar'
 import { 
   formatDateForAPI, 
   parseAPIDate, 
@@ -835,9 +835,7 @@ export default function CalendarPage() {
               endHour={19}
               slotDuration={30}
               isLoading={loading}
-              error={error}
-              onRefresh={refreshOptimistic}
-              onRetry={() => window.location.reload()}
+              onRefresh={() => refreshOptimistic(() => getMyBookings())}
               className="h-[800px]"
             />
           </Suspense>
@@ -938,15 +936,23 @@ export default function CalendarPage() {
             setRescheduleModalData(null)
           }}
           onReschedule={handleModalReschedule}
-          appointment={
-            bookings.find(booking => booking.id === rescheduleModalData.appointmentId) || {
+          appointment={(() => {
+            const booking = bookings.find(booking => booking.id === rescheduleModalData.appointmentId)
+            if (booking) {
+              return {
+                ...booking,
+                status: booking.status as AppointmentStatus
+              }
+            }
+            return {
               id: rescheduleModalData.appointmentId,
               start_time: rescheduleModalData.newStartTime,
               client_name: 'Client',
               service_name: 'Service',
-              barber_name: 'Barber'
+              barber_name: 'Barber',
+              status: 'scheduled' as AppointmentStatus
             }
-          }
+          })()}
         />
       )}
       
