@@ -11,7 +11,7 @@ import {
   UserGroupIcon, 
   BanknotesIcon,
   ArrowTrendingUpIcon,
-  ArrowArrowTrendingDownIcon,
+  ArrowTrendingDownIcon,
   ChevronRightIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
