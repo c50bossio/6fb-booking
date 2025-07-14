@@ -1,0 +1,54 @@
+graph TD
+    Card[Card<br/>DUPLICATE<br/>169 uses]
+    class Card duplicate
+    Tabs[Tabs<br/>29 uses]
+    class Tabs other
+    PageLoading[PageLoading<br/>DUPLICATE<br/>17 uses]
+    class PageLoading duplicate
+    Select[Select<br/>DUPLICATE<br/>11 uses]
+    class Select duplicate
+    DateRangeSelector[DateRangeSelector<br/>DUPLICATE<br/>5 uses]
+    class DateRangeSelector duplicate
+    Modal[Modal<br/>DUPLICATE<br/>3 uses]
+    class Modal duplicate
+    SixFigureAnalyticsDashboard[SixFigureAnalyticsDashboard<br/>3 uses]
+    class SixFigureAnalyticsDashboard other
+    VirtualList[VirtualList<br/>2 uses]
+    class VirtualList other
+    UnifiedCalendar[UnifiedCalendar<br/>DUPLICATE<br/>2 uses]
+    class UnifiedCalendar duplicate
+    LoadingSpinner[LoadingSpinner<br/>DUPLICATE<br/>2 uses]
+    class LoadingSpinner duplicate
+    UsageChart[UsageChart<br/>2 uses]
+    class UsageChart other
+    AnalyticsLayout[AnalyticsLayout<br/>2 uses]
+    class AnalyticsLayout other
+    ServiceForm[ServiceForm<br/>DUPLICATE<br/>1 uses]
+    class ServiceForm duplicate
+    CalendarConflictResolver[CalendarConflictResolver<br/>DUPLICATE<br/>1 uses]
+    class CalendarConflictResolver duplicate
+    CalendarSync[CalendarSync<br/>DUPLICATE<br/>1 uses]
+    class CalendarSync duplicate
+    BusinessOwnerGuard[BusinessOwnerGuard<br/>1 uses]
+    class BusinessOwnerGuard other
+    TimezoneSelector[TimezoneSelector<br/>DUPLICATE<br/>1 uses]
+    class TimezoneSelector duplicate
+    TimezoneTooltip[TimezoneTooltip<br/>1 uses]
+    class TimezoneTooltip other
+    PrivacyDashboard[PrivacyDashboard<br/>1 uses]
+    class PrivacyDashboard other
+    ThemeToggle[ThemeToggle<br/>1 uses]
+    class ThemeToggle other
+    UsageChart --> Card
+    ServiceForm --> Select
+    ServiceForm --> Card
+    SixFigureAnalyticsDashboard --> Card
+    SixFigureAnalyticsDashboard --> PageLoading
+    PrivacyDashboard --> Card
+
+    classDef ui_component fill:#3B82F6,stroke:#1E40AF,color:#ffffff
+    classDef feature_component fill:#10B981,stroke:#047857,color:#ffffff
+    classDef page fill:#F59E0B,stroke:#D97706,color:#ffffff
+    classDef duplicate fill:#DC2626,stroke:#B91C1C,color:#ffffff
+    classDef unused fill:#9CA3AF,stroke:#6B7280,color:#ffffff
+    classDef other fill:#374151,stroke:#1F2937,color:#ffffff

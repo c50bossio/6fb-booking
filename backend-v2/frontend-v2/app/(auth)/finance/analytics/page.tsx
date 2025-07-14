@@ -194,7 +194,6 @@ export default function FinancialAnalyticsPage() {
           <ErrorMessage
             title="Failed to Load Analytics"
             message={error}
-            onRetry={handleRefresh}
           />
         </div>
       </main>

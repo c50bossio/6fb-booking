@@ -1,0 +1,5760 @@
+{
+  "nodes": [
+    {
+      "id": "TestComponent",
+      "label": "TestComponent",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 19,
+      "is_duplicate": false,
+      "path": "components/test-syntax.tsx"
+    },
+    {
+      "id": "WebhookLogs",
+      "label": "WebhookLogs",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 274,
+      "is_duplicate": false,
+      "path": "components/WebhookLogs.tsx"
+    },
+    {
+      "id": "ClientCommunication",
+      "label": "ClientCommunication",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 658,
+      "is_duplicate": false,
+      "path": "components/ClientCommunication.tsx"
+    },
+    {
+      "id": "WebhookDocumentation",
+      "label": "WebhookDocumentation",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 515,
+      "is_duplicate": false,
+      "path": "components/WebhookDocumentation.tsx"
+    },
+    {
+      "id": "SimpleLoading",
+      "label": "SimpleLoading",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 172,
+      "is_duplicate": true,
+      "path": "components/LazyComponents.tsx"
+    },
+    {
+      "id": "RecurringPatternCreator",
+      "label": "RecurringPatternCreator",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 602,
+      "is_duplicate": false,
+      "path": "components/RecurringPatternCreator.tsx"
+    },
+    {
+      "id": "ServiceForm",
+      "label": "ServiceForm",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 623,
+      "is_duplicate": true,
+      "path": "components/catalog/ServiceForm.tsx"
+    },
+    {
+      "id": "TestBadge",
+      "label": "TestBadge",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 44,
+      "is_duplicate": false,
+      "path": "components/TestBadge.tsx"
+    },
+    {
+      "id": "ClientHistory",
+      "label": "ClientHistory",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 507,
+      "is_duplicate": false,
+      "path": "components/ClientHistory.tsx"
+    },
+    {
+      "id": "CalendarConflictResolver",
+      "label": "CalendarConflictResolver",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 424,
+      "is_duplicate": true,
+      "path": "components/CalendarConflictResolver.tsx"
+    },
+    {
+      "id": "AuthErrorBoundary",
+      "label": "AuthErrorBoundary",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 451,
+      "is_duplicate": false,
+      "path": "components/AuthErrorBoundary.tsx"
+    },
+    {
+      "id": "RoleGuard",
+      "label": "RoleGuard",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 139,
+      "is_duplicate": false,
+      "path": "components/ProtectedRoute.tsx"
+    },
+    {
+      "id": "EnhancedErrorBoundaryWrapper",
+      "label": "EnhancedErrorBoundaryWrapper",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 697,
+      "is_duplicate": false,
+      "path": "components/ErrorBoundaryWithRetry.tsx"
+    },
+    {
+      "id": "NotificationSettings",
+      "label": "NotificationSettings",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 480,
+      "is_duplicate": true,
+      "path": "components/NotificationSettings.tsx"
+    },
+    {
+      "id": "CalendarAgendaView",
+      "label": "CalendarAgendaView",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 283,
+      "is_duplicate": true,
+      "path": "components/CalendarAgendaView.tsx"
+    },
+    {
+      "id": "RefundManager",
+      "label": "RefundManager",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 367,
+      "is_duplicate": false,
+      "path": "components/RefundManager.tsx"
+    },
+    {
+      "id": "CalendarSync",
+      "label": "CalendarSync",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 299,
+      "is_duplicate": true,
+      "path": "components/CalendarSync.tsx"
+    },
+    {
+      "id": "NotificationTemplates",
+      "label": "NotificationTemplates",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 338,
+      "is_duplicate": true,
+      "path": "components/NotificationTemplates.tsx"
+    },
+    {
+      "id": "SendNotification",
+      "label": "SendNotification",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 574,
+      "is_duplicate": true,
+      "path": "components/SendNotification.tsx"
+    },
+    {
+      "id": "PaymentReports",
+      "label": "PaymentReports",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 538,
+      "is_duplicate": false,
+      "path": "components/PaymentReports.tsx"
+    },
+    {
+      "id": "VirtualList",
+      "label": "VirtualList",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 2,
+      "size_lines": 378,
+      "is_duplicate": false,
+      "path": "components/VirtualList.tsx"
+    },
+    {
+      "id": "PaymentDetails",
+      "label": "PaymentDetails",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 316,
+      "is_duplicate": false,
+      "path": "components/PaymentDetails.tsx"
+    },
+    {
+      "id": "NetworkStatus",
+      "label": "NetworkStatus",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 267,
+      "is_duplicate": false,
+      "path": "components/ErrorAndLoadingStates.tsx"
+    },
+    {
+      "id": "LegalDocument",
+      "label": "LegalDocument",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 300,
+      "is_duplicate": false,
+      "path": "components/LegalDocument.tsx"
+    },
+    {
+      "id": "ClientAnalytics",
+      "label": "ClientAnalytics",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 414,
+      "is_duplicate": false,
+      "path": "components/ClientAnalytics.tsx"
+    },
+    {
+      "id": "WebhookConfiguration",
+      "label": "WebhookConfiguration",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 628,
+      "is_duplicate": false,
+      "path": "components/WebhookConfiguration.tsx"
+    },
+    {
+      "id": "StructuredData",
+      "label": "StructuredData",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 308,
+      "is_duplicate": false,
+      "path": "components/SEO.tsx"
+    },
+    {
+      "id": "ConversionOptimizedBooking",
+      "label": "ConversionOptimizedBooking",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 33,
+      "is_duplicate": false,
+      "path": "components/ConversionOptimizedBooking.tsx"
+    },
+    {
+      "id": "BusinessOwnerGuard",
+      "label": "BusinessOwnerGuard",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 219,
+      "is_duplicate": false,
+      "path": "components/PermissionGuard.tsx"
+    },
+    {
+      "id": "TimezoneSelector",
+      "label": "TimezoneSelector",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 384,
+      "is_duplicate": true,
+      "path": "components/TimezoneSelector.tsx"
+    },
+    {
+      "id": "TimezoneTooltip",
+      "label": "TimezoneTooltip",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 58,
+      "is_duplicate": false,
+      "path": "components/TimezoneTooltip.tsx"
+    },
+    {
+      "id": "BarberDashboardLayout",
+      "label": "BarberDashboardLayout",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 234,
+      "is_duplicate": false,
+      "path": "app/dashboard/barber-layout.tsx"
+    },
+    {
+      "id": "SentryPerformanceMonitor",
+      "label": "SentryPerformanceMonitor",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 306,
+      "is_duplicate": true,
+      "path": "components/SentryPerformanceMonitor.tsx"
+    },
+    {
+      "id": "VirtualizedTimeSlots",
+      "label": "VirtualizedTimeSlots",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 186,
+      "is_duplicate": false,
+      "path": "components/VirtualizedTimeSlots.tsx"
+    },
+    {
+      "id": "ServiceWorkerUpdate",
+      "label": "ServiceWorkerUpdate",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 31,
+      "is_duplicate": false,
+      "path": "components/ServiceWorkerUpdate.tsx"
+    },
+    {
+      "id": "DevHealthMonitor",
+      "label": "DevHealthMonitor",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 228,
+      "is_duplicate": false,
+      "path": "components/DevHealthMonitor.tsx"
+    },
+    {
+      "id": "SMSConversationView",
+      "label": "SMSConversationView",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 331,
+      "is_duplicate": false,
+      "path": "components/SMSConversationView.tsx"
+    },
+    {
+      "id": "Calendar",
+      "label": "Calendar",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 482,
+      "is_duplicate": true,
+      "path": "components/ui/Calendar.tsx"
+    },
+    {
+      "id": "PricingRuleEditor",
+      "label": "PricingRuleEditor",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 404,
+      "is_duplicate": false,
+      "path": "components/PricingRuleEditor.tsx"
+    },
+    {
+      "id": "CookieConsent",
+      "label": "CookieConsent",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 344,
+      "is_duplicate": false,
+      "path": "components/CookieConsent.tsx"
+    },
+    {
+      "id": "BookingRulesList",
+      "label": "BookingRulesList",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 346,
+      "is_duplicate": false,
+      "path": "components/BookingRulesList.tsx"
+    },
+    {
+      "id": "PrivacyDashboard",
+      "label": "PrivacyDashboard",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 454,
+      "is_duplicate": false,
+      "path": "components/PrivacyDashboard.tsx"
+    },
+    {
+      "id": "RecurringSeriesManager",
+      "label": "RecurringSeriesManager",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 684,
+      "is_duplicate": false,
+      "path": "components/recurring/RecurringSeriesManager.tsx"
+    },
+    {
+      "id": "ThemeToggle",
+      "label": "ThemeToggle",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 208,
+      "is_duplicate": false,
+      "path": "components/ThemeToggle.tsx"
+    },
+    {
+      "id": "UnifiedCalendar",
+      "label": "UnifiedCalendar",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 2,
+      "size_lines": 1173,
+      "is_duplicate": true,
+      "path": "components/UnifiedCalendar.tsx"
+    },
+    {
+      "id": "StripeConnectOnboarding",
+      "label": "StripeConnectOnboarding",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 297,
+      "is_duplicate": false,
+      "path": "components/StripeConnectOnboarding.tsx"
+    },
+    {
+      "id": "ServiceList",
+      "label": "ServiceList",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 338,
+      "is_duplicate": false,
+      "path": "components/ServiceList.tsx"
+    },
+    {
+      "id": "OrganizationLandingPage",
+      "label": "OrganizationLandingPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 103,
+      "is_duplicate": false,
+      "path": "components/OrganizationLandingPage.tsx"
+    },
+    {
+      "id": "TimezoneSetupModal",
+      "label": "TimezoneSetupModal",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 128,
+      "is_duplicate": true,
+      "path": "components/TimezoneSetupModal.tsx"
+    },
+    {
+      "id": "LazyCalendarEvent",
+      "label": "LazyCalendarEvent",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 305,
+      "is_duplicate": true,
+      "path": "components/LazyCalendarEvent.tsx"
+    },
+    {
+      "id": "QuickActions",
+      "label": "QuickActions",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 140,
+      "is_duplicate": false,
+      "path": "components/QuickActions.tsx"
+    },
+    {
+      "id": "BookingRuleEditor",
+      "label": "BookingRuleEditor",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 607,
+      "is_duplicate": false,
+      "path": "components/BookingRuleEditor.tsx"
+    },
+    {
+      "id": "ClientNotes",
+      "label": "ClientNotes",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 651,
+      "is_duplicate": false,
+      "path": "components/ClientNotes.tsx"
+    },
+    {
+      "id": "AccessibilityProvider",
+      "label": "AccessibilityProvider",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 234,
+      "is_duplicate": false,
+      "path": "components/AccessibilityMonitor.tsx"
+    },
+    {
+      "id": "GiftCertificates",
+      "label": "GiftCertificates",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 613,
+      "is_duplicate": false,
+      "path": "components/GiftCertificates.tsx"
+    },
+    {
+      "id": "BusinessHours",
+      "label": "BusinessHours",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 465,
+      "is_duplicate": false,
+      "path": "components/BusinessHours.tsx"
+    },
+    {
+      "id": "TimeSlots",
+      "label": "TimeSlots",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 392,
+      "is_duplicate": false,
+      "path": "components/TimeSlots.tsx"
+    },
+    {
+      "id": "WebhookTester",
+      "label": "WebhookTester",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 68,
+      "is_duplicate": false,
+      "path": "components/WebhookTester.tsx"
+    },
+    {
+      "id": "PWAInstallPrompt",
+      "label": "PWAInstallPrompt",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 176,
+      "is_duplicate": false,
+      "path": "components/PWAInstallPrompt.tsx"
+    },
+    {
+      "id": "ServiceCategories",
+      "label": "ServiceCategories",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 288,
+      "is_duplicate": false,
+      "path": "components/ServiceCategories.tsx"
+    },
+    {
+      "id": "NotificationHistory",
+      "label": "NotificationHistory",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 498,
+      "is_duplicate": true,
+      "path": "components/NotificationHistory.tsx"
+    },
+    {
+      "id": "SimpleBookingTest",
+      "label": "SimpleBookingTest",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 20,
+      "is_duplicate": false,
+      "path": "components/SimpleBookingTest.tsx"
+    },
+    {
+      "id": "PaymentForm",
+      "label": "PaymentForm",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 145,
+      "is_duplicate": true,
+      "path": "components/PaymentForm.tsx"
+    },
+    {
+      "id": "ScheduleGrid",
+      "label": "ScheduleGrid",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 607,
+      "is_duplicate": false,
+      "path": "components/ScheduleGrid.tsx"
+    },
+    {
+      "id": "TimeOffManager",
+      "label": "TimeOffManager",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 522,
+      "is_duplicate": false,
+      "path": "components/TimeOffManager.tsx"
+    },
+    {
+      "id": "WrappedComponent",
+      "label": "WrappedComponent",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 368,
+      "is_duplicate": false,
+      "path": "components/ErrorBoundary.tsx"
+    },
+    {
+      "id": "BulkAvailabilityUpdater",
+      "label": "BulkAvailabilityUpdater",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 540,
+      "is_duplicate": false,
+      "path": "components/BulkAvailabilityUpdater.tsx"
+    },
+    {
+      "id": "TestDataIndicator",
+      "label": "TestDataIndicator",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 46,
+      "is_duplicate": false,
+      "path": "components/TestDataIndicator.tsx"
+    },
+    {
+      "id": "PageLoading",
+      "label": "PageLoading",
+      "size": 15,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 17,
+      "size_lines": 425,
+      "is_duplicate": true,
+      "path": "components/LoadingStates.tsx"
+    },
+    {
+      "id": "AuthCTAs",
+      "label": "AuthCTAs",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 97,
+      "is_duplicate": false,
+      "path": "components/ui/AuthCTAs.tsx"
+    },
+    {
+      "id": "Tabs",
+      "label": "Tabs",
+      "size": 15,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 29,
+      "size_lines": 126,
+      "is_duplicate": false,
+      "path": "components/ui/Tabs.tsx"
+    },
+    {
+      "id": "FadeIn",
+      "label": "FadeIn",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 623,
+      "is_duplicate": false,
+      "path": "components/ui/AnimatedComponents.tsx"
+    },
+    {
+      "id": "Card",
+      "label": "Card",
+      "size": 20,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 169,
+      "size_lines": 165,
+      "is_duplicate": true,
+      "path": "components/ui/Card.tsx"
+    },
+    {
+      "id": "TrialWarningSystem",
+      "label": "TrialWarningSystem",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 262,
+      "is_duplicate": false,
+      "path": "components/ui/TrialWarningSystem.tsx"
+    },
+    {
+      "id": "PaymentErrorRecovery",
+      "label": "PaymentErrorRecovery",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 330,
+      "is_duplicate": false,
+      "path": "components/ui/PaymentErrorRecovery.tsx"
+    },
+    {
+      "id": "EmptyClients",
+      "label": "EmptyClients",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 20,
+      "is_duplicate": false,
+      "path": "components/ui/empty-state.tsx"
+    },
+    {
+      "id": "ConfirmationDialog",
+      "label": "ConfirmationDialog",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 66,
+      "is_duplicate": true,
+      "path": "components/ui/ConfirmationDialog.tsx"
+    },
+    {
+      "id": "StripePaymentForm",
+      "label": "StripePaymentForm",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 227,
+      "is_duplicate": true,
+      "path": "components/ui/StripePaymentForm.tsx"
+    },
+    {
+      "id": "PricingCalculator",
+      "label": "PricingCalculator",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 427,
+      "is_duplicate": true,
+      "path": "components/ui/PricingCalculator.tsx"
+    },
+    {
+      "id": "Label",
+      "label": "Label",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 23,
+      "is_duplicate": false,
+      "path": "components/ui/Label.tsx"
+    },
+    {
+      "id": "ImageUpload",
+      "label": "ImageUpload",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 486,
+      "is_duplicate": false,
+      "path": "components/ui/ImageUpload.tsx"
+    },
+    {
+      "id": "ValidationDisplay",
+      "label": "ValidationDisplay",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 49,
+      "is_duplicate": false,
+      "path": "components/ui/ValidationDisplay.tsx"
+    },
+    {
+      "id": "Switch",
+      "label": "Switch",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 88,
+      "is_duplicate": false,
+      "path": "components/ui/Switch.tsx"
+    },
+    {
+      "id": "HeaderCTAs",
+      "label": "HeaderCTAs",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 441,
+      "is_duplicate": false,
+      "path": "components/ui/CTASystem.tsx"
+    },
+    {
+      "id": "RadioGroupContext",
+      "label": "RadioGroupContext",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 50,
+      "is_duplicate": false,
+      "path": "components/ui/radio-group.tsx"
+    },
+    {
+      "id": "LogoCompact",
+      "label": "LogoCompact",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 176,
+      "is_duplicate": false,
+      "path": "components/ui/Logo.tsx"
+    },
+    {
+      "id": "AlertDialog",
+      "label": "AlertDialog",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 325,
+      "is_duplicate": true,
+      "path": "components/ui/dialog.tsx"
+    },
+    {
+      "id": "Portal",
+      "label": "Portal",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 48,
+      "is_duplicate": false,
+      "path": "components/ui/Portal.tsx"
+    },
+    {
+      "id": "Badge",
+      "label": "Badge",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 26,
+      "is_duplicate": false,
+      "path": "components/ui/Badge.tsx"
+    },
+    {
+      "id": "TrialStatusBanner",
+      "label": "TrialStatusBanner",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 190,
+      "is_duplicate": false,
+      "path": "components/ui/TrialStatusBanner.tsx"
+    },
+    {
+      "id": "ButtonGroup",
+      "label": "ButtonGroup",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 348,
+      "is_duplicate": true,
+      "path": "components/ui/Button.tsx"
+    },
+    {
+      "id": "Modal",
+      "label": "Modal",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 3,
+      "size_lines": 348,
+      "is_duplicate": true,
+      "path": "components/ui/Modal.tsx"
+    },
+    {
+      "id": "ToastProvider",
+      "label": "ToastProvider",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 129,
+      "is_duplicate": true,
+      "path": "components/ui/toast.tsx"
+    },
+    {
+      "id": "EmptyState",
+      "label": "EmptyState",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 52,
+      "is_duplicate": false,
+      "path": "components/ui/EmptyState.tsx"
+    },
+    {
+      "id": "UserFriendlyError",
+      "label": "UserFriendlyError",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 344,
+      "is_duplicate": false,
+      "path": "components/ui/UserFriendlyError.tsx"
+    },
+    {
+      "id": "DropdownMenuSeparator",
+      "label": "DropdownMenuSeparator",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 397,
+      "is_duplicate": true,
+      "path": "components/ui/dropdown-menu.tsx"
+    },
+    {
+      "id": "Select",
+      "label": "Select",
+      "size": 15,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 11,
+      "size_lines": 475,
+      "is_duplicate": true,
+      "path": "components/ui/Select.tsx"
+    },
+    {
+      "id": "ErrorCard",
+      "label": "ErrorCard",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 281,
+      "is_duplicate": true,
+      "path": "components/ui/ErrorStates.tsx"
+    },
+    {
+      "id": "Textarea",
+      "label": "Textarea",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 23,
+      "is_duplicate": false,
+      "path": "components/ui/textarea.tsx"
+    },
+    {
+      "id": "Input",
+      "label": "Input",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 418,
+      "is_duplicate": true,
+      "path": "components/ui/Input.tsx"
+    },
+    {
+      "id": "OptimizedImage",
+      "label": "OptimizedImage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 340,
+      "is_duplicate": false,
+      "path": "components/ui/OptimizedImage.tsx"
+    },
+    {
+      "id": "LoadingSpinner",
+      "label": "LoadingSpinner",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 2,
+      "size_lines": 413,
+      "is_duplicate": true,
+      "path": "components/ui/LoadingStates.tsx"
+    },
+    {
+      "id": "SelectContext",
+      "label": "SelectContext",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 159,
+      "is_duplicate": true,
+      "path": "components/ui/radix-select.tsx"
+    },
+    {
+      "id": "MultiStepRegistration",
+      "label": "MultiStepRegistration",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 292,
+      "is_duplicate": false,
+      "path": "components/registration/MultiStepRegistration.tsx"
+    },
+    {
+      "id": "AccountSetup",
+      "label": "AccountSetup",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 517,
+      "is_duplicate": false,
+      "path": "components/registration/AccountSetup.tsx"
+    },
+    {
+      "id": "BusinessTypeSelection",
+      "label": "BusinessTypeSelection",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 251,
+      "is_duplicate": true,
+      "path": "components/registration/BusinessTypeSelection.tsx"
+    },
+    {
+      "id": "BusinessInformation",
+      "label": "BusinessInformation",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 432,
+      "is_duplicate": true,
+      "path": "components/registration/BusinessInformation.tsx"
+    },
+    {
+      "id": "PaymentSetup",
+      "label": "PaymentSetup",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 480,
+      "is_duplicate": false,
+      "path": "components/registration/PaymentSetup.tsx"
+    },
+    {
+      "id": "PricingConfirmation",
+      "label": "PricingConfirmation",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 297,
+      "is_duplicate": false,
+      "path": "components/registration/PricingConfirmation.tsx"
+    },
+    {
+      "id": "CalendarDayMini",
+      "label": "CalendarDayMini",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 180,
+      "is_duplicate": true,
+      "path": "components/calendar/CalendarDayMini.tsx"
+    },
+    {
+      "id": "CalendarDaySwiper",
+      "label": "CalendarDaySwiper",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 157,
+      "is_duplicate": true,
+      "path": "components/calendar/CalendarDaySwiper.tsx"
+    },
+    {
+      "id": "CalendarDayViewMobile",
+      "label": "CalendarDayViewMobile",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 308,
+      "is_duplicate": true,
+      "path": "components/calendar/CalendarDayViewMobile.tsx"
+    },
+    {
+      "id": "CalendarDragPreview",
+      "label": "CalendarDragPreview",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 465,
+      "is_duplicate": true,
+      "path": "components/calendar/CalendarDragPreview.tsx"
+    },
+    {
+      "id": "CalendarVisualFeedback",
+      "label": "CalendarVisualFeedback",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 530,
+      "is_duplicate": true,
+      "path": "components/calendar/CalendarVisualFeedback.tsx"
+    },
+    {
+      "id": "PremiumCalendarNavigation",
+      "label": "PremiumCalendarNavigation",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 237,
+      "is_duplicate": true,
+      "path": "components/calendar/PremiumCalendarNavigation.tsx"
+    },
+    {
+      "id": "AccessibilityTester",
+      "label": "AccessibilityTester",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 371,
+      "is_duplicate": false,
+      "path": "components/calendar/AccessibilityTester.tsx"
+    },
+    {
+      "id": "CalendarMobileNav",
+      "label": "CalendarMobileNav",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 73,
+      "is_duplicate": true,
+      "path": "components/calendar/CalendarMobileNav.tsx"
+    },
+    {
+      "id": "CalendarA11yContext",
+      "label": "CalendarA11yContext",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 404,
+      "is_duplicate": true,
+      "path": "components/calendar/CalendarAccessibility.tsx"
+    },
+    {
+      "id": "CalendarExport",
+      "label": "CalendarExport",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 77,
+      "is_duplicate": true,
+      "path": "components/calendar/CalendarExport.tsx"
+    },
+    {
+      "id": "CalendarMobileLoading",
+      "label": "CalendarMobileLoading",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 274,
+      "is_duplicate": true,
+      "path": "components/calendar/CalendarMobileMenu.tsx"
+    },
+    {
+      "id": "MobileBookingOverlay",
+      "label": "MobileBookingOverlay",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 465,
+      "is_duplicate": true,
+      "path": "components/calendar/MobileBookingOverlay.tsx"
+    },
+    {
+      "id": "PremiumAppointmentCard",
+      "label": "PremiumAppointmentCard",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 365,
+      "is_duplicate": true,
+      "path": "components/calendar/PremiumAppointmentCard.tsx"
+    },
+    {
+      "id": "MobileModal",
+      "label": "MobileModal",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 292,
+      "is_duplicate": true,
+      "path": "components/calendar/MobileModal.tsx"
+    },
+    {
+      "id": "EnhancedCalendarExport",
+      "label": "EnhancedCalendarExport",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 196,
+      "is_duplicate": true,
+      "path": "components/calendar/EnhancedCalendarExport.tsx"
+    },
+    {
+      "id": "SmartConflictResolver",
+      "label": "SmartConflictResolver",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 344,
+      "is_duplicate": false,
+      "path": "components/calendar/SmartConflictResolver.tsx"
+    },
+    {
+      "id": "AvailabilityHeatmap",
+      "label": "AvailabilityHeatmap",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 330,
+      "is_duplicate": false,
+      "path": "components/calendar/AvailabilityHeatmap.tsx"
+    },
+    {
+      "id": "PremiumCalendarSkeleton",
+      "label": "PremiumCalendarSkeleton",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 235,
+      "is_duplicate": true,
+      "path": "components/calendar/PremiumCalendarSkeleton.tsx"
+    },
+    {
+      "id": "MobileTimeSlot",
+      "label": "MobileTimeSlot",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 412,
+      "is_duplicate": false,
+      "path": "components/calendar/MobileTimeSlot.tsx"
+    },
+    {
+      "id": "PullToRefresh",
+      "label": "PullToRefresh",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 201,
+      "is_duplicate": false,
+      "path": "components/calendar/PullToRefresh.tsx"
+    },
+    {
+      "id": "CalendarNetworkStatus",
+      "label": "CalendarNetworkStatus",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 311,
+      "is_duplicate": true,
+      "path": "components/calendar/CalendarNetworkStatus.tsx"
+    },
+    {
+      "id": "CalendarSkeleton",
+      "label": "CalendarSkeleton",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 359,
+      "is_duplicate": true,
+      "path": "components/calendar/CalendarLoadingStates.tsx"
+    },
+    {
+      "id": "CalendarErrorBoundaryWrapper",
+      "label": "CalendarErrorBoundaryWrapper",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 473,
+      "is_duplicate": true,
+      "path": "components/calendar/CalendarErrorBoundary.tsx"
+    },
+    {
+      "id": "MobileDatePicker",
+      "label": "MobileDatePicker",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 302,
+      "is_duplicate": true,
+      "path": "components/calendar/MobileDatePicker.tsx"
+    },
+    {
+      "id": "ScreenReaderAnnouncements",
+      "label": "ScreenReaderAnnouncements",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 53,
+      "is_duplicate": false,
+      "path": "components/calendar/ScreenReaderAnnouncements.tsx"
+    },
+    {
+      "id": "ValidatedSelect",
+      "label": "ValidatedSelect",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 134,
+      "is_duplicate": true,
+      "path": "components/forms/ValidatedSelect.tsx"
+    },
+    {
+      "id": "ValidatedInput",
+      "label": "ValidatedInput",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 294,
+      "is_duplicate": true,
+      "path": "components/forms/ValidatedInput.tsx"
+    },
+    {
+      "id": "ValidatedTextarea",
+      "label": "ValidatedTextarea",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 149,
+      "is_duplicate": true,
+      "path": "components/forms/ValidatedTextarea.tsx"
+    },
+    {
+      "id": "FormContext",
+      "label": "FormContext",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 114,
+      "is_duplicate": true,
+      "path": "components/forms/Form.tsx"
+    },
+    {
+      "id": "DataExportRequestComponent",
+      "label": "DataExportRequestComponent",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 358,
+      "is_duplicate": false,
+      "path": "components/privacy/DataExportRequest.tsx"
+    },
+    {
+      "id": "LocationForm",
+      "label": "LocationForm",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 744,
+      "is_duplicate": true,
+      "path": "components/enterprise/LocationForm.tsx"
+    },
+    {
+      "id": "OrganizationForm",
+      "label": "OrganizationForm",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 431,
+      "is_duplicate": true,
+      "path": "components/enterprise/OrganizationForm.tsx"
+    },
+    {
+      "id": "UserInviteForm",
+      "label": "UserInviteForm",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 639,
+      "is_duplicate": true,
+      "path": "components/enterprise/UserInviteForm.tsx"
+    },
+    {
+      "id": "BulkSelectableAppointmentList",
+      "label": "BulkSelectableAppointmentList",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 131,
+      "is_duplicate": true,
+      "path": "components/appointments/BulkSelectableAppointmentList.tsx"
+    },
+    {
+      "id": "TrustedDevices",
+      "label": "TrustedDevices",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 73,
+      "is_duplicate": false,
+      "path": "components/auth/TrustedDevices.tsx"
+    },
+    {
+      "id": "EnhancedRememberMe",
+      "label": "EnhancedRememberMe",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 173,
+      "is_duplicate": false,
+      "path": "components/auth/RememberMe.tsx"
+    },
+    {
+      "id": "RateLimitIndicator",
+      "label": "RateLimitIndicator",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 254,
+      "is_duplicate": false,
+      "path": "components/auth/RateLimitIndicator.tsx"
+    },
+    {
+      "id": "TwoFactorAuth",
+      "label": "TwoFactorAuth",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 84,
+      "is_duplicate": false,
+      "path": "components/auth/TwoFactorAuth.tsx"
+    },
+    {
+      "id": "SocialLoginButton",
+      "label": "SocialLoginButton",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 153,
+      "is_duplicate": true,
+      "path": "components/auth/SocialLoginButton.tsx"
+    },
+    {
+      "id": "SocialAccountsManager",
+      "label": "SocialAccountsManager",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 124,
+      "is_duplicate": false,
+      "path": "components/auth/SocialAccountsManager.tsx"
+    },
+    {
+      "id": "AccessControl",
+      "label": "AccessControl",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 22,
+      "is_duplicate": false,
+      "path": "components/auth/AccessControl.tsx"
+    },
+    {
+      "id": "LinkCustomizer",
+      "label": "LinkCustomizer",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 739,
+      "is_duplicate": false,
+      "path": "components/booking/LinkCustomizer.tsx"
+    },
+    {
+      "id": "QRCodeShareModal",
+      "label": "QRCodeShareModal",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 127,
+      "is_duplicate": true,
+      "path": "components/booking/QRCodeShareModal.tsx"
+    },
+    {
+      "id": "BookingLinkHandler",
+      "label": "BookingLinkHandler",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 413,
+      "is_duplicate": false,
+      "path": "components/booking/BookingLinkHandler.tsx"
+    },
+    {
+      "id": "AppointmentCancellation",
+      "label": "AppointmentCancellation",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 468,
+      "is_duplicate": false,
+      "path": "components/booking/AppointmentCancellation.tsx"
+    },
+    {
+      "id": "ShareBookingModal",
+      "label": "ShareBookingModal",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 299,
+      "is_duplicate": true,
+      "path": "components/booking/ShareBookingModal.tsx"
+    },
+    {
+      "id": "EmbedCodeGenerator",
+      "label": "EmbedCodeGenerator",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 551,
+      "is_duplicate": false,
+      "path": "components/booking/EmbedCodeGenerator.tsx"
+    },
+    {
+      "id": "QRCodeGenerator",
+      "label": "QRCodeGenerator",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 309,
+      "is_duplicate": false,
+      "path": "components/booking/QRCodeGenerator.tsx"
+    },
+    {
+      "id": "MobileNavigation",
+      "label": "MobileNavigation",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 179,
+      "is_duplicate": false,
+      "path": "components/layout/MobileNavigation.tsx"
+    },
+    {
+      "id": "Footer",
+      "label": "Footer",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 330,
+      "is_duplicate": false,
+      "path": "components/layout/Footer.tsx"
+    },
+    {
+      "id": "AppLayout",
+      "label": "AppLayout",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 292,
+      "is_duplicate": false,
+      "path": "components/layout/AppLayout.tsx"
+    },
+    {
+      "id": "SWIPE_THRESHOLD",
+      "label": "SWIPE_THRESHOLD",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 339,
+      "is_duplicate": false,
+      "path": "components/layout/MobileDrawer.tsx"
+    },
+    {
+      "id": "Header",
+      "label": "Header",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 541,
+      "is_duplicate": false,
+      "path": "components/layout/Header.tsx"
+    },
+    {
+      "id": "Sidebar",
+      "label": "Sidebar",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 239,
+      "is_duplicate": false,
+      "path": "components/layout/Sidebar.tsx"
+    },
+    {
+      "id": "GA4Provider",
+      "label": "GA4Provider",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 414,
+      "is_duplicate": false,
+      "path": "components/providers/GA4Provider.tsx"
+    },
+    {
+      "id": "QueryProvider",
+      "label": "QueryProvider",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 28,
+      "is_duplicate": false,
+      "path": "components/providers/QueryProvider.tsx"
+    },
+    {
+      "id": "ProductForm",
+      "label": "ProductForm",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 644,
+      "is_duplicate": true,
+      "path": "components/catalog/ProductForm.tsx"
+    },
+    {
+      "id": "CancellationPolicyManager",
+      "label": "CancellationPolicyManager",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 721,
+      "is_duplicate": false,
+      "path": "components/admin/CancellationPolicyManager.tsx"
+    },
+    {
+      "id": "VirtualizedLocationList",
+      "label": "VirtualizedLocationList",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 286,
+      "is_duplicate": false,
+      "path": "components/navigation/VirtualizedLocationList.tsx"
+    },
+    {
+      "id": "CompactLocationSelector",
+      "label": "CompactLocationSelector",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 339,
+      "is_duplicate": true,
+      "path": "components/navigation/LocationSelector.tsx"
+    },
+    {
+      "id": "ResponsiveBreadcrumb",
+      "label": "ResponsiveBreadcrumb",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 199,
+      "is_duplicate": false,
+      "path": "components/navigation/HierarchicalBreadcrumb.tsx"
+    },
+    {
+      "id": "LocationSelectorSkeleton",
+      "label": "LocationSelectorSkeleton",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 120,
+      "is_duplicate": true,
+      "path": "components/navigation/LocationSelectorSkeleton.tsx"
+    },
+    {
+      "id": "AgentCard",
+      "label": "AgentCard",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 491,
+      "is_duplicate": true,
+      "path": "components/agents/AgentCard.tsx"
+    },
+    {
+      "id": "AdvancedAnalyticsFeatures",
+      "label": "AdvancedAnalyticsFeatures",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 815,
+      "is_duplicate": false,
+      "path": "components/agents/AdvancedAnalyticsFeatures.tsx"
+    },
+    {
+      "id": "AgentAnalytics",
+      "label": "AgentAnalytics",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 346,
+      "is_duplicate": false,
+      "path": "components/agents/AgentAnalytics.tsx"
+    },
+    {
+      "id": "PerformancePredictionEngine",
+      "label": "PerformancePredictionEngine",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 772,
+      "is_duplicate": true,
+      "path": "components/agents/PerformancePredictionEngine.tsx"
+    },
+    {
+      "id": "AgentComparisonModal",
+      "label": "AgentComparisonModal",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 440,
+      "is_duplicate": true,
+      "path": "components/agents/AgentComparisonModal.tsx"
+    },
+    {
+      "id": "MessageVariantTester",
+      "label": "MessageVariantTester",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 877,
+      "is_duplicate": false,
+      "path": "components/agents/MessageVariantTester.tsx"
+    },
+    {
+      "id": "AgentSubscriptionBanner",
+      "label": "AgentSubscriptionBanner",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 252,
+      "is_duplicate": false,
+      "path": "components/agents/AgentSubscriptionBanner.tsx"
+    },
+    {
+      "id": "BusinessIntelligenceDashboard",
+      "label": "BusinessIntelligenceDashboard",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 262,
+      "is_duplicate": false,
+      "path": "components/agents/BusinessIntelligenceDashboard.tsx"
+    },
+    {
+      "id": "IntegrationHub",
+      "label": "IntegrationHub",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 757,
+      "is_duplicate": false,
+      "path": "components/agents/IntegrationHub.tsx"
+    },
+    {
+      "id": "StrategicInsightsDashboard",
+      "label": "StrategicInsightsDashboard",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 588,
+      "is_duplicate": false,
+      "path": "components/agents/StrategicInsightsDashboard.tsx"
+    },
+    {
+      "id": "CompetitiveBenchmarkingPanel",
+      "label": "CompetitiveBenchmarkingPanel",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 593,
+      "is_duplicate": true,
+      "path": "components/agents/CompetitiveBenchmarkingPanel.tsx"
+    },
+    {
+      "id": "RealTimePerformanceTracker",
+      "label": "RealTimePerformanceTracker",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 595,
+      "is_duplicate": true,
+      "path": "components/agents/RealTimePerformanceTracker.tsx"
+    },
+    {
+      "id": "WIZARD_STEPS",
+      "label": "WIZARD_STEPS",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 547,
+      "is_duplicate": false,
+      "path": "components/agents/AgentCreationWizard.tsx"
+    },
+    {
+      "id": "CreateAppointmentModal",
+      "label": "CreateAppointmentModal",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 1005,
+      "is_duplicate": true,
+      "path": "components/modals/CreateAppointmentModal.tsx"
+    },
+    {
+      "id": "ClientDetailModal",
+      "label": "ClientDetailModal",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 401,
+      "is_duplicate": true,
+      "path": "components/modals/ClientDetailModal.tsx"
+    },
+    {
+      "id": "TimePickerModal",
+      "label": "TimePickerModal",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 131,
+      "is_duplicate": true,
+      "path": "components/modals/TimePickerModal.tsx"
+    },
+    {
+      "id": "RescheduleModal",
+      "label": "RescheduleModal",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 696,
+      "is_duplicate": true,
+      "path": "components/modals/RescheduleModal.tsx"
+    },
+    {
+      "id": "ConflictResolutionModal",
+      "label": "ConflictResolutionModal",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 295,
+      "is_duplicate": true,
+      "path": "components/modals/ConflictResolutionModal.tsx"
+    },
+    {
+      "id": "SixFBComplianceDashboard",
+      "label": "SixFBComplianceDashboard",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 72,
+      "is_duplicate": false,
+      "path": "components/compliance/SixFBComplianceDashboard.tsx"
+    },
+    {
+      "id": "ProgressIndicator",
+      "label": "ProgressIndicator",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 568,
+      "is_duplicate": false,
+      "path": "components/feedback/UserFeedback.tsx"
+    },
+    {
+      "id": "ErrorHandler",
+      "label": "ErrorHandler",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 515,
+      "is_duplicate": false,
+      "path": "components/feedback/ErrorHandler.tsx"
+    },
+    {
+      "id": "ConversionMetricsPanel",
+      "label": "ConversionMetricsPanel",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 520,
+      "is_duplicate": true,
+      "path": "components/dashboard/ConversionMetricsPanel.tsx"
+    },
+    {
+      "id": "TrackingAnalyticsDashboard",
+      "label": "TrackingAnalyticsDashboard",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 612,
+      "is_duplicate": false,
+      "path": "components/dashboard/TrackingAnalyticsDashboard.tsx"
+    },
+    {
+      "id": "TrackingPixelSettings",
+      "label": "TrackingPixelSettings",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 1130,
+      "is_duplicate": false,
+      "path": "components/dashboard/TrackingPixelSettings.tsx"
+    },
+    {
+      "id": "PlatformComparisonCharts",
+      "label": "PlatformComparisonCharts",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 445,
+      "is_duplicate": true,
+      "path": "components/dashboard/PlatformComparisonCharts.tsx"
+    },
+    {
+      "id": "ConversionFunnelChart",
+      "label": "ConversionFunnelChart",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 417,
+      "is_duplicate": false,
+      "path": "components/dashboard/ConversionFunnelChart.tsx"
+    },
+    {
+      "id": "IntegrationCard",
+      "label": "IntegrationCard",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 438,
+      "is_duplicate": true,
+      "path": "components/integrations/IntegrationCard.tsx"
+    },
+    {
+      "id": "ConversionTrackingSetup",
+      "label": "ConversionTrackingSetup",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 604,
+      "is_duplicate": false,
+      "path": "components/integrations/ConversionTrackingSetup.tsx"
+    },
+    {
+      "id": "ReviewManagementPanel",
+      "label": "ReviewManagementPanel",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 531,
+      "is_duplicate": true,
+      "path": "components/integrations/ReviewManagementPanel.tsx"
+    },
+    {
+      "id": "GA4TestSuite",
+      "label": "GA4TestSuite",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 587,
+      "is_duplicate": false,
+      "path": "components/testing/GA4TestSuite.tsx"
+    },
+    {
+      "id": "DashboardSkeleton",
+      "label": "DashboardSkeleton",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 119,
+      "is_duplicate": true,
+      "path": "components/skeletons/DashboardSkeleton.tsx"
+    },
+    {
+      "id": "SnapshotDashboard",
+      "label": "SnapshotDashboard",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 178,
+      "is_duplicate": false,
+      "path": "components/dashboards/SnapshotDashboard.tsx"
+    },
+    {
+      "id": "AIInsightsPanel",
+      "label": "AIInsightsPanel",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 513,
+      "is_duplicate": true,
+      "path": "components/ai/AIInsightsPanel.tsx"
+    },
+    {
+      "id": "BenchmarkWidget",
+      "label": "BenchmarkWidget",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 327,
+      "is_duplicate": false,
+      "path": "components/ai/BenchmarkWidget.tsx"
+    },
+    {
+      "id": "BillingSettingsExample",
+      "label": "BillingSettingsExample",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 209,
+      "is_duplicate": false,
+      "path": "components/examples/PermissionExamples.tsx"
+    },
+    {
+      "id": "CampaignBuilder",
+      "label": "CampaignBuilder",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 737,
+      "is_duplicate": false,
+      "path": "components/marketing/CampaignBuilder.tsx"
+    },
+    {
+      "id": "TemplateManager",
+      "label": "TemplateManager",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 634,
+      "is_duplicate": false,
+      "path": "components/marketing/TemplateManager.tsx"
+    },
+    {
+      "id": "MarketingAnalyticsDashboard",
+      "label": "MarketingAnalyticsDashboard",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 49,
+      "is_duplicate": false,
+      "path": "components/marketing/MarketingAnalyticsDashboard.tsx"
+    },
+    {
+      "id": "ContactList",
+      "label": "ContactList",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 348,
+      "is_duplicate": false,
+      "path": "components/marketing/ContactList.tsx"
+    },
+    {
+      "id": "TemplateEditor",
+      "label": "TemplateEditor",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 377,
+      "is_duplicate": false,
+      "path": "components/marketing/TemplateEditor.tsx"
+    },
+    {
+      "id": "CampaignAnalytics",
+      "label": "CampaignAnalytics",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 573,
+      "is_duplicate": false,
+      "path": "components/marketing/CampaignAnalytics.tsx"
+    },
+    {
+      "id": "CampaignCard",
+      "label": "CampaignCard",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 201,
+      "is_duplicate": true,
+      "path": "components/marketing/CampaignCard.tsx"
+    },
+    {
+      "id": "UsageChart",
+      "label": "UsageChart",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 2,
+      "size_lines": 220,
+      "is_duplicate": false,
+      "path": "components/marketing/UsageChart.tsx"
+    },
+    {
+      "id": "RealTimeAnalytics",
+      "label": "RealTimeAnalytics",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 298,
+      "is_duplicate": false,
+      "path": "components/marketing/RealTimeAnalytics.tsx"
+    },
+    {
+      "id": "ConversionTracker",
+      "label": "ConversionTracker",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 339,
+      "is_duplicate": false,
+      "path": "components/tracking/ConversionTracker.tsx"
+    },
+    {
+      "id": "ExportProgress",
+      "label": "ExportProgress",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 157,
+      "is_duplicate": false,
+      "path": "components/export/ExportProgress.tsx"
+    },
+    {
+      "id": "ExportBuilder",
+      "label": "ExportBuilder",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 377,
+      "is_duplicate": false,
+      "path": "components/export/ExportBuilder.tsx"
+    },
+    {
+      "id": "DataPreview",
+      "label": "DataPreview",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 145,
+      "is_duplicate": false,
+      "path": "components/import/DataPreview.tsx"
+    },
+    {
+      "id": "FieldMapper",
+      "label": "FieldMapper",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 310,
+      "is_duplicate": true,
+      "path": "components/import/FieldMapper.tsx"
+    },
+    {
+      "id": "FileUpload",
+      "label": "FileUpload",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 309,
+      "is_duplicate": false,
+      "path": "components/import/FileUpload.tsx"
+    },
+    {
+      "id": "ImportProgress",
+      "label": "ImportProgress",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 301,
+      "is_duplicate": false,
+      "path": "components/import/ImportProgress.tsx"
+    },
+    {
+      "id": "ImportWizard",
+      "label": "ImportWizard",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 234,
+      "is_duplicate": false,
+      "path": "components/import/ImportWizard.tsx"
+    },
+    {
+      "id": "Service6FBCompliance",
+      "label": "Service6FBCompliance",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 77,
+      "is_duplicate": false,
+      "path": "components/services/Service6FBCompliance.tsx"
+    },
+    {
+      "id": "ServicePerformanceMetrics",
+      "label": "ServicePerformanceMetrics",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 40,
+      "is_duplicate": true,
+      "path": "components/services/ServicePerformanceMetrics.tsx"
+    },
+    {
+      "id": "ServiceTemplateRecommendations",
+      "label": "ServiceTemplateRecommendations",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 31,
+      "is_duplicate": false,
+      "path": "components/services/ServiceTemplateRecommendations.tsx"
+    },
+    {
+      "id": "ServiceAnalyticsPanel",
+      "label": "ServiceAnalyticsPanel",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 80,
+      "is_duplicate": true,
+      "path": "components/services/ServiceAnalyticsPanel.tsx"
+    },
+    {
+      "id": "ServicePricingOptimization",
+      "label": "ServicePricingOptimization",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 48,
+      "is_duplicate": false,
+      "path": "components/services/ServicePricingOptimization.tsx"
+    },
+    {
+      "id": "ServiceBulkOperations",
+      "label": "ServiceBulkOperations",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 62,
+      "is_duplicate": false,
+      "path": "components/services/ServiceBulkOperations.tsx"
+    },
+    {
+      "id": "ServiceQuickActions",
+      "label": "ServiceQuickActions",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 42,
+      "is_duplicate": false,
+      "path": "components/services/ServiceQuickActions.tsx"
+    },
+    {
+      "id": "ServiceOverviewGrid",
+      "label": "ServiceOverviewGrid",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 42,
+      "is_duplicate": false,
+      "path": "components/services/ServiceOverviewGrid.tsx"
+    },
+    {
+      "id": "CalendarDayView",
+      "label": "CalendarDayView",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 1484,
+      "is_duplicate": true,
+      "path": "components/.backup-calendar-components/CalendarDayView.tsx"
+    },
+    {
+      "id": "ResponsiveCalendar",
+      "label": "ResponsiveCalendar",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 177,
+      "is_duplicate": true,
+      "path": "components/.backup-calendar-components/ResponsiveCalendar.tsx"
+    },
+    {
+      "id": "CalendarMonthView",
+      "label": "CalendarMonthView",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 777,
+      "is_duplicate": true,
+      "path": "components/.backup-calendar-components/CalendarMonthView.tsx"
+    },
+    {
+      "id": "CalendarWeekView",
+      "label": "CalendarWeekView",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 846,
+      "is_duplicate": true,
+      "path": "components/.backup-calendar-components/CalendarWeekView.tsx"
+    },
+    {
+      "id": "RecurringAppointmentWizard",
+      "label": "RecurringAppointmentWizard",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 865,
+      "is_duplicate": false,
+      "path": "components/recurring/RecurringAppointmentWizard.tsx"
+    },
+    {
+      "id": "BlackoutDateManager",
+      "label": "BlackoutDateManager",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 859,
+      "is_duplicate": false,
+      "path": "components/recurring/BlackoutDateManager.tsx"
+    },
+    {
+      "id": "ClientRetentionChart",
+      "label": "ClientRetentionChart",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 280,
+      "is_duplicate": false,
+      "path": "components/analytics/ClientRetentionChart.tsx"
+    },
+    {
+      "id": "AnalyticsLayout",
+      "label": "AnalyticsLayout",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 2,
+      "size_lines": 78,
+      "is_duplicate": false,
+      "path": "app/analytics/layout.tsx"
+    },
+    {
+      "id": "AppointmentPatterns",
+      "label": "AppointmentPatterns",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 348,
+      "is_duplicate": false,
+      "path": "components/analytics/AppointmentPatterns.tsx"
+    },
+    {
+      "id": "ClientInsightsChart",
+      "label": "ClientInsightsChart",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 148,
+      "is_duplicate": false,
+      "path": "components/analytics/ClientInsightsChart.tsx"
+    },
+    {
+      "id": "SixFigureAnalyticsDashboard",
+      "label": "SixFigureAnalyticsDashboard",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 3,
+      "size_lines": 606,
+      "is_duplicate": false,
+      "path": "components/analytics/SixFigureAnalyticsDashboard.tsx"
+    },
+    {
+      "id": "EnhancedAnalyticsDashboard",
+      "label": "EnhancedAnalyticsDashboard",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 633,
+      "is_duplicate": false,
+      "path": "components/analytics/EnhancedAnalyticsDashboard.tsx"
+    },
+    {
+      "id": "RevenueChart",
+      "label": "RevenueChart",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 393,
+      "is_duplicate": false,
+      "path": "components/analytics/RevenueChart.tsx"
+    },
+    {
+      "id": "ChartComponents",
+      "label": "ChartComponents",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 444,
+      "is_duplicate": false,
+      "path": "components/analytics/ChartComponents.tsx"
+    },
+    {
+      "id": "ServiceRevenueChart",
+      "label": "ServiceRevenueChart",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 364,
+      "is_duplicate": false,
+      "path": "components/analytics/ServiceRevenueChart.tsx"
+    },
+    {
+      "id": "ComparisonChart",
+      "label": "ComparisonChart",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 524,
+      "is_duplicate": false,
+      "path": "components/analytics/ComparisonChart.tsx"
+    },
+    {
+      "id": "PerformanceMetrics",
+      "label": "PerformanceMetrics",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 277,
+      "is_duplicate": true,
+      "path": "components/analytics/PerformanceMetrics.tsx"
+    },
+    {
+      "id": "ContactsSection",
+      "label": "ContactsSection",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 24,
+      "is_duplicate": false,
+      "path": "components/customers/sections/ContactsSection.tsx"
+    },
+    {
+      "id": "ClientsSection",
+      "label": "ClientsSection",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 152,
+      "is_duplicate": false,
+      "path": "components/customers/sections/ClientsSection.tsx"
+    },
+    {
+      "id": "SegmentsSection",
+      "label": "SegmentsSection",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 23,
+      "is_duplicate": false,
+      "path": "components/customers/sections/SegmentsSection.tsx"
+    },
+    {
+      "id": "CampaignsSection",
+      "label": "CampaignsSection",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 23,
+      "is_duplicate": false,
+      "path": "components/customers/sections/CampaignsSection.tsx"
+    },
+    {
+      "id": "LoyaltySection",
+      "label": "LoyaltySection",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 23,
+      "is_duplicate": false,
+      "path": "components/customers/sections/LoyaltySection.tsx"
+    },
+    {
+      "id": "BookingFlowTracking",
+      "label": "BookingFlowTracking",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 227,
+      "is_duplicate": false,
+      "path": "components/tracking/examples/BookingFlowTracking.tsx"
+    },
+    {
+      "id": "PayoutsSection",
+      "label": "PayoutsSection",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 183,
+      "is_duplicate": false,
+      "path": "components/finance/sections/PayoutsSection.tsx"
+    },
+    {
+      "id": "GiftCertificatesSection",
+      "label": "GiftCertificatesSection",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 257,
+      "is_duplicate": false,
+      "path": "components/finance/sections/GiftCertificatesSection.tsx"
+    },
+    {
+      "id": "EarningsSection",
+      "label": "EarningsSection",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 187,
+      "is_duplicate": false,
+      "path": "components/finance/sections/EarningsSection.tsx"
+    },
+    {
+      "id": "CommissionsSection",
+      "label": "CommissionsSection",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 206,
+      "is_duplicate": false,
+      "path": "components/finance/sections/CommissionsSection.tsx"
+    },
+    {
+      "id": "TransactionsSection",
+      "label": "TransactionsSection",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 346,
+      "is_duplicate": false,
+      "path": "components/finance/sections/TransactionsSection.tsx"
+    },
+    {
+      "id": "BillingSection",
+      "label": "BillingSection",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 240,
+      "is_duplicate": false,
+      "path": "components/finance/sections/BillingSection.tsx"
+    },
+    {
+      "id": "MarketingAnalyticsSection",
+      "label": "MarketingAnalyticsSection",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 268,
+      "is_duplicate": false,
+      "path": "components/analytics/sections/MarketingAnalyticsSection.tsx"
+    },
+    {
+      "id": "ClientAnalyticsSection",
+      "label": "ClientAnalyticsSection",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 214,
+      "is_duplicate": false,
+      "path": "components/analytics/sections/ClientAnalyticsSection.tsx"
+    },
+    {
+      "id": "RevenueAnalyticsSection",
+      "label": "RevenueAnalyticsSection",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 185,
+      "is_duplicate": false,
+      "path": "components/analytics/sections/RevenueAnalyticsSection.tsx"
+    },
+    {
+      "id": "ReviewsAnalyticsSection",
+      "label": "ReviewsAnalyticsSection",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 340,
+      "is_duplicate": false,
+      "path": "components/analytics/sections/ReviewsAnalyticsSection.tsx"
+    },
+    {
+      "id": "ProductivityAnalyticsSection",
+      "label": "ProductivityAnalyticsSection",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 279,
+      "is_duplicate": false,
+      "path": "components/analytics/sections/ProductivityAnalyticsSection.tsx"
+    },
+    {
+      "id": "AnalyticsNavigation",
+      "label": "AnalyticsNavigation",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 201,
+      "is_duplicate": false,
+      "path": "components/analytics/shared/AnalyticsNavigation.tsx"
+    },
+    {
+      "id": "DateRangeSelector",
+      "label": "DateRangeSelector",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 5,
+      "size_lines": 141,
+      "is_duplicate": true,
+      "path": "components/analytics/shared/DateRangeSelector.tsx"
+    },
+    {
+      "id": "AnalyticsFilters",
+      "label": "AnalyticsFilters",
+      "size": 10,
+      "color": "#374151",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 111,
+      "is_duplicate": false,
+      "path": "components/analytics/shared/AnalyticsFilters.tsx"
+    },
+    {
+      "id": "AnalyticsCard",
+      "label": "AnalyticsCard",
+      "size": 10,
+      "color": "#DC2626",
+      "category": "other",
+      "usage_count": 1,
+      "size_lines": 111,
+      "is_duplicate": true,
+      "path": "components/analytics/shared/AnalyticsCard.tsx"
+    },
+    {
+      "id": "ChurnPredictionPanel",
+      "label": "ChurnPredictionPanel",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 301,
+      "is_duplicate": true,
+      "path": "components/analytics/ai/ChurnPredictionPanel.tsx"
+    },
+    {
+      "id": "DemandForecastPanel",
+      "label": "DemandForecastPanel",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 310,
+      "is_duplicate": true,
+      "path": "components/analytics/ai/DemandForecastPanel.tsx"
+    },
+    {
+      "id": "PricingOptimizationPanel",
+      "label": "PricingOptimizationPanel",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 354,
+      "is_duplicate": true,
+      "path": "components/analytics/ai/PricingOptimizationPanel.tsx"
+    },
+    {
+      "id": "RevenueForecastChart",
+      "label": "RevenueForecastChart",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 205,
+      "is_duplicate": false,
+      "path": "components/analytics/ai/RevenueForecastChart.tsx"
+    },
+    {
+      "id": "BarberAnalyticsView",
+      "label": "BarberAnalyticsView",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 213,
+      "is_duplicate": false,
+      "path": "components/analytics/views/BarberAnalyticsView.tsx"
+    },
+    {
+      "id": "ManagerAnalyticsView",
+      "label": "ManagerAnalyticsView",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 235,
+      "is_duplicate": false,
+      "path": "components/analytics/views/ManagerAnalyticsView.tsx"
+    },
+    {
+      "id": "EnterpriseAnalyticsView",
+      "label": "EnterpriseAnalyticsView",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 293,
+      "is_duplicate": false,
+      "path": "components/analytics/views/EnterpriseAnalyticsView.tsx"
+    },
+    {
+      "id": "ui",
+      "label": "ui",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 36,
+      "is_duplicate": false,
+      "path": "components/ui/index.ts"
+    },
+    {
+      "id": "registration",
+      "label": "registration",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 3,
+      "is_duplicate": false,
+      "path": "components/registration/index.ts"
+    },
+    {
+      "id": "booking",
+      "label": "booking",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 4,
+      "is_duplicate": false,
+      "path": "components/booking/index.ts"
+    },
+    {
+      "id": "navigation",
+      "label": "navigation",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 12,
+      "is_duplicate": false,
+      "path": "components/navigation/index.ts"
+    },
+    {
+      "id": "tracking",
+      "label": "tracking",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 12,
+      "is_duplicate": false,
+      "path": "components/tracking/index.ts"
+    },
+    {
+      "id": "AppleIcon",
+      "label": "AppleIcon",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 39,
+      "is_duplicate": false,
+      "path": "app/apple-icon.tsx"
+    },
+    {
+      "id": "Icon",
+      "label": "Icon",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 38,
+      "is_duplicate": false,
+      "path": "app/icon.tsx"
+    },
+    {
+      "id": "RootLayout",
+      "label": "RootLayout",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 142,
+      "is_duplicate": false,
+      "path": "lib/theme-integration-example.tsx"
+    },
+    {
+      "id": "LandingPage",
+      "label": "LandingPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 412,
+      "is_duplicate": false,
+      "path": "app/page.tsx"
+    },
+    {
+      "id": "UnifiedCustomersPage",
+      "label": "UnifiedCustomersPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 457,
+      "is_duplicate": false,
+      "path": "app/customers/page.tsx"
+    },
+    {
+      "id": "ClientsPage",
+      "label": "ClientsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 371,
+      "is_duplicate": false,
+      "path": "app/clients/page.tsx"
+    },
+    {
+      "id": "SettingsPage",
+      "label": "SettingsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 156,
+      "is_duplicate": false,
+      "path": "app/settings/page.tsx"
+    },
+    {
+      "id": "PaymentsPage",
+      "label": "PaymentsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 537,
+      "is_duplicate": false,
+      "path": "app/payments/page.tsx"
+    },
+    {
+      "id": "CheckEmailPage",
+      "label": "CheckEmailPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 200,
+      "is_duplicate": false,
+      "path": "app/check-email/page.tsx"
+    },
+    {
+      "id": "CalendarPage",
+      "label": "CalendarPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 966,
+      "is_duplicate": true,
+      "path": "app/calendar/page.tsx"
+    },
+    {
+      "id": "ProductsPage",
+      "label": "ProductsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 400,
+      "is_duplicate": false,
+      "path": "app/products/page.tsx"
+    },
+    {
+      "id": "EmbedPage",
+      "label": "EmbedPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 27,
+      "is_duplicate": false,
+      "path": "app/embed/page.tsx"
+    },
+    {
+      "id": "EnterpriseLayout",
+      "label": "EnterpriseLayout",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 14,
+      "is_duplicate": false,
+      "path": "app/enterprise/layout.tsx"
+    },
+    {
+      "id": "MyBookingsPage",
+      "label": "MyBookingsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 622,
+      "is_duplicate": false,
+      "path": "app/bookings/page.tsx"
+    },
+    {
+      "id": "SMSPage",
+      "label": "SMSPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 65,
+      "is_duplicate": false,
+      "path": "app/sms/page.tsx"
+    },
+    {
+      "id": "AdminPage",
+      "label": "AdminPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 504,
+      "is_duplicate": false,
+      "path": "app/admin/page.tsx"
+    },
+    {
+      "id": "AgentsPage",
+      "label": "AgentsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 433,
+      "is_duplicate": false,
+      "path": "app/agents/page.tsx"
+    },
+    {
+      "id": "DashboardPage",
+      "label": "DashboardPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 671,
+      "is_duplicate": false,
+      "path": "app/dashboard/page.tsx"
+    },
+    {
+      "id": "VerifyEmailPage",
+      "label": "VerifyEmailPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 180,
+      "is_duplicate": false,
+      "path": "app/verify-email/page.tsx"
+    },
+    {
+      "id": "RegisterPage",
+      "label": "RegisterPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 347,
+      "is_duplicate": false,
+      "path": "app/register/page.tsx"
+    },
+    {
+      "id": "ForgotPasswordPage",
+      "label": "ForgotPasswordPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 117,
+      "is_duplicate": false,
+      "path": "app/forgot-password/page.tsx"
+    },
+    {
+      "id": "BookingLayout",
+      "label": "BookingLayout",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 18,
+      "is_duplicate": false,
+      "path": "app/book/layout.tsx"
+    },
+    {
+      "id": "BookPage",
+      "label": "BookPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 1137,
+      "is_duplicate": false,
+      "path": "app/book/page.tsx"
+    },
+    {
+      "id": "MarketingDashboard",
+      "label": "MarketingDashboard",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 373,
+      "is_duplicate": false,
+      "path": "app/marketing/page.tsx"
+    },
+    {
+      "id": "ResetPasswordPage",
+      "label": "ResetPasswordPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 247,
+      "is_duplicate": false,
+      "path": "app/reset-password/page.tsx"
+    },
+    {
+      "id": "FinanceHubPage",
+      "label": "FinanceHubPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 352,
+      "is_duplicate": false,
+      "path": "app/finance/page.tsx"
+    },
+    {
+      "id": "ExportPage",
+      "label": "ExportPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 200,
+      "is_duplicate": false,
+      "path": "app/export/page.tsx"
+    },
+    {
+      "id": "ImportPage",
+      "label": "ImportPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 140,
+      "is_duplicate": false,
+      "path": "app/import/page.tsx"
+    },
+    {
+      "id": "OrganizationLandingPageRoute",
+      "label": "OrganizationLandingPageRoute",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 196,
+      "is_duplicate": false,
+      "path": "app/[slug]/page.tsx"
+    },
+    {
+      "id": "NotificationsPage",
+      "label": "NotificationsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 338,
+      "is_duplicate": true,
+      "path": "app/notifications/page.tsx"
+    },
+    {
+      "id": "LoginPage",
+      "label": "LoginPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 344,
+      "is_duplicate": false,
+      "path": "app/login/page.tsx"
+    },
+    {
+      "id": "PayoutsPage",
+      "label": "PayoutsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 286,
+      "is_duplicate": false,
+      "path": "app/payouts/page.tsx"
+    },
+    {
+      "id": "OfflinePage",
+      "label": "OfflinePage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 83,
+      "is_duplicate": false,
+      "path": "app/offline/page.tsx"
+    },
+    {
+      "id": "RecurringAppointmentsPage",
+      "label": "RecurringAppointmentsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 522,
+      "is_duplicate": false,
+      "path": "app/recurring/page.tsx"
+    },
+    {
+      "id": "UnifiedAnalyticsPage",
+      "label": "UnifiedAnalyticsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 207,
+      "is_duplicate": false,
+      "path": "app/analytics/unified-page.tsx"
+    },
+    {
+      "id": "ReviewsPage",
+      "label": "ReviewsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 597,
+      "is_duplicate": false,
+      "path": "app/reviews/page.tsx"
+    },
+    {
+      "id": "NewClientPage",
+      "label": "NewClientPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 186,
+      "is_duplicate": false,
+      "path": "app/clients/new/page.tsx"
+    },
+    {
+      "id": "ClientDetailPage",
+      "label": "ClientDetailPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 521,
+      "is_duplicate": false,
+      "path": "app/clients/[id]/page.tsx"
+    },
+    {
+      "id": "CalendarSettingsPage",
+      "label": "CalendarSettingsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 479,
+      "is_duplicate": true,
+      "path": "app/settings/calendar/page.tsx"
+    },
+    {
+      "id": "TestDataPage",
+      "label": "TestDataPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 614,
+      "is_duplicate": false,
+      "path": "app/settings/test-data/page.tsx"
+    },
+    {
+      "id": "SecuritySettingsPage",
+      "label": "SecuritySettingsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 316,
+      "is_duplicate": false,
+      "path": "app/settings/security/page.tsx"
+    },
+    {
+      "id": "TrackingPixelsPage",
+      "label": "TrackingPixelsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 56,
+      "is_duplicate": false,
+      "path": "app/settings/tracking-pixels/page.tsx"
+    },
+    {
+      "id": "ProfilePage",
+      "label": "ProfilePage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 513,
+      "is_duplicate": false,
+      "path": "app/settings/profile/page.tsx"
+    },
+    {
+      "id": "PWASettingsPage",
+      "label": "PWASettingsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 329,
+      "is_duplicate": false,
+      "path": "app/settings/pwa/page.tsx"
+    },
+    {
+      "id": "LandingPageSettings",
+      "label": "LandingPageSettings",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 449,
+      "is_duplicate": false,
+      "path": "app/settings/landing-page/page.tsx"
+    },
+    {
+      "id": "GiftCertificatesPage",
+      "label": "GiftCertificatesPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 25,
+      "is_duplicate": false,
+      "path": "app/payments/gift-certificates/page.tsx"
+    },
+    {
+      "id": "NewProductPage",
+      "label": "NewProductPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 358,
+      "is_duplicate": false,
+      "path": "app/products/new/page.tsx"
+    },
+    {
+      "id": "ProductDetailPage",
+      "label": "ProductDetailPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 583,
+      "is_duplicate": false,
+      "path": "app/products/[id]/page.tsx"
+    },
+    {
+      "id": "EnterpriseDashboardPage",
+      "label": "EnterpriseDashboardPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 531,
+      "is_duplicate": false,
+      "path": "app/enterprise/dashboard/page.tsx"
+    },
+    {
+      "id": "SocialAuthCallbackPage",
+      "label": "SocialAuthCallbackPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 152,
+      "is_duplicate": true,
+      "path": "app/auth/[provider]/callback/page.tsx"
+    },
+    {
+      "id": "AdminBookingRulesPage",
+      "label": "AdminBookingRulesPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 295,
+      "is_duplicate": false,
+      "path": "app/admin/booking-rules/page.tsx"
+    },
+    {
+      "id": "AdminUsersPage",
+      "label": "AdminUsersPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 338,
+      "is_duplicate": false,
+      "path": "app/admin/users/page.tsx"
+    },
+    {
+      "id": "WebhooksPage",
+      "label": "WebhooksPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 232,
+      "is_duplicate": false,
+      "path": "app/admin/webhooks/page.tsx"
+    },
+    {
+      "id": "AdminServicesPage",
+      "label": "AdminServicesPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 340,
+      "is_duplicate": false,
+      "path": "app/admin/services/page.tsx"
+    },
+    {
+      "id": "SimpleAgentsPage",
+      "label": "SimpleAgentsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 54,
+      "is_duplicate": false,
+      "path": "app/agents/simple/page.tsx"
+    },
+    {
+      "id": "AgentAnalyticsPage",
+      "label": "AgentAnalyticsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 343,
+      "is_duplicate": false,
+      "path": "app/agents/analytics/page.tsx"
+    },
+    {
+      "id": "BarberEarningsPage",
+      "label": "BarberEarningsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 397,
+      "is_duplicate": false,
+      "path": "app/barber/earnings/page.tsx"
+    },
+    {
+      "id": "BarberAvailabilityPage",
+      "label": "BarberAvailabilityPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 454,
+      "is_duplicate": false,
+      "path": "app/barber/availability/page.tsx"
+    },
+    {
+      "id": "WelcomePage",
+      "label": "WelcomePage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 388,
+      "is_duplicate": false,
+      "path": "app/dashboard/welcome/page.tsx"
+    },
+    {
+      "id": "StaffInvitationsPage",
+      "label": "StaffInvitationsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 478,
+      "is_duplicate": false,
+      "path": "app/dashboard/staff/invitations/page.tsx"
+    },
+    {
+      "id": "BarbershopDashboardPage",
+      "label": "BarbershopDashboardPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 421,
+      "is_duplicate": false,
+      "path": "app/barbershop/[id]/dashboard/page.tsx"
+    },
+    {
+      "id": "OrganizationBookingPage",
+      "label": "OrganizationBookingPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 184,
+      "is_duplicate": false,
+      "path": "app/book/[slug]/page.tsx"
+    },
+    {
+      "id": "PrivacyPolicyPage",
+      "label": "PrivacyPolicyPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 595,
+      "is_duplicate": false,
+      "path": "app/(public)/privacy/page.tsx"
+    },
+    {
+      "id": "TermsOfServicePage",
+      "label": "TermsOfServicePage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 393,
+      "is_duplicate": false,
+      "path": "app/(public)/terms/page.tsx"
+    },
+    {
+      "id": "CookiePolicyPage",
+      "label": "CookiePolicyPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 546,
+      "is_duplicate": false,
+      "path": "app/(public)/cookies/page.tsx"
+    },
+    {
+      "id": "ContactsPage",
+      "label": "ContactsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 466,
+      "is_duplicate": false,
+      "path": "app/marketing/contacts/page.tsx"
+    },
+    {
+      "id": "BookingLinksPage",
+      "label": "BookingLinksPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 525,
+      "is_duplicate": false,
+      "path": "app/marketing/booking-links/page.tsx"
+    },
+    {
+      "id": "TemplatesPage",
+      "label": "TemplatesPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 424,
+      "is_duplicate": false,
+      "path": "app/marketing/templates/page.tsx"
+    },
+    {
+      "id": "CampaignsPage",
+      "label": "CampaignsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 364,
+      "is_duplicate": false,
+      "path": "app/marketing/campaigns/page.tsx"
+    },
+    {
+      "id": "MarketingBillingPage",
+      "label": "MarketingBillingPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 526,
+      "is_duplicate": false,
+      "path": "app/marketing/billing/page.tsx"
+    },
+    {
+      "id": "MarketingAnalyticsPage",
+      "label": "MarketingAnalyticsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 405,
+      "is_duplicate": false,
+      "path": "app/analytics/marketing/page.tsx"
+    },
+    {
+      "id": "UnifiedFinancePage",
+      "label": "UnifiedFinancePage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 427,
+      "is_duplicate": false,
+      "path": "app/finance/unified/page.tsx"
+    },
+    {
+      "id": "TransactionsPage",
+      "label": "TransactionsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 544,
+      "is_duplicate": false,
+      "path": "app/finance/transactions/page.tsx"
+    },
+    {
+      "id": "CommissionsPage",
+      "label": "CommissionsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 510,
+      "is_duplicate": false,
+      "path": "app/(auth)/commissions/page.tsx"
+    },
+    {
+      "id": "BusinessToolsPage",
+      "label": "BusinessToolsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 96,
+      "is_duplicate": false,
+      "path": "app/(auth)/tools/page.tsx"
+    },
+    {
+      "id": "LogoutPage",
+      "label": "LogoutPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 47,
+      "is_duplicate": false,
+      "path": "app/(auth)/logout/page.tsx"
+    },
+    {
+      "id": "CompliancePage",
+      "label": "CompliancePage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 14,
+      "is_duplicate": false,
+      "path": "app/(auth)/compliance/page.tsx"
+    },
+    {
+      "id": "SupportPage",
+      "label": "SupportPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 142,
+      "is_duplicate": false,
+      "path": "app/(auth)/support/page.tsx"
+    },
+    {
+      "id": "DataManagementPage",
+      "label": "DataManagementPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 45,
+      "is_duplicate": false,
+      "path": "app/(auth)/data/page.tsx"
+    },
+    {
+      "id": "PrivacySettingsPage",
+      "label": "PrivacySettingsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 25,
+      "is_duplicate": false,
+      "path": "app/(auth)/settings/privacy/page.tsx"
+    },
+    {
+      "id": "IntegrationsPage",
+      "label": "IntegrationsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 676,
+      "is_duplicate": false,
+      "path": "app/(auth)/dashboard/integrations/page.tsx"
+    },
+    {
+      "id": "NotificationsSettingsPage",
+      "label": "NotificationsSettingsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 225,
+      "is_duplicate": true,
+      "path": "app/(auth)/settings/notifications/page.tsx"
+    },
+    {
+      "id": "AppointmentExportPage",
+      "label": "AppointmentExportPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 266,
+      "is_duplicate": false,
+      "path": "app/(auth)/appointments/export/page.tsx"
+    },
+    {
+      "id": "EnterprisePage",
+      "label": "EnterprisePage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 863,
+      "is_duplicate": false,
+      "path": "app/(auth)/dashboard/enterprise/page.tsx"
+    },
+    {
+      "id": "AIAnalyticsPage",
+      "label": "AIAnalyticsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 553,
+      "is_duplicate": false,
+      "path": "app/(auth)/dashboard/ai-analytics/page.tsx"
+    },
+    {
+      "id": "CatalogPage",
+      "label": "CatalogPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 1190,
+      "is_duplicate": false,
+      "path": "app/(auth)/dashboard/catalog/page.tsx"
+    },
+    {
+      "id": "MarketingPage",
+      "label": "MarketingPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 572,
+      "is_duplicate": false,
+      "path": "app/(auth)/dashboard/marketing/page.tsx"
+    },
+    {
+      "id": "IntegrationsCallbackPage",
+      "label": "IntegrationsCallbackPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 266,
+      "is_duplicate": true,
+      "path": "app/(auth)/dashboard/integrations/callback/page.tsx"
+    },
+    {
+      "id": "FinancialAnalyticsPage",
+      "label": "FinancialAnalyticsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 557,
+      "is_duplicate": false,
+      "path": "app/(auth)/finance/analytics/page.tsx"
+    },
+    {
+      "id": "PayoutProcessPage",
+      "label": "PayoutProcessPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 543,
+      "is_duplicate": false,
+      "path": "app/(auth)/payouts/process/page.tsx"
+    },
+    {
+      "id": "ServiceDashboardPage",
+      "label": "ServiceDashboardPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 419,
+      "is_duplicate": false,
+      "path": "app/(auth)/services/dashboard/page.tsx"
+    },
+    {
+      "id": "PricingPlansPage",
+      "label": "PricingPlansPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 288,
+      "is_duplicate": false,
+      "path": "app/billing/plans/page.tsx"
+    },
+    {
+      "id": "CheckoutPage",
+      "label": "CheckoutPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 408,
+      "is_duplicate": false,
+      "path": "app/billing/checkout/page.tsx"
+    },
+    {
+      "id": "RevenuePage",
+      "label": "RevenuePage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 475,
+      "is_duplicate": false,
+      "path": "app/analytics/revenue/page.tsx"
+    },
+    {
+      "id": "OverviewPage",
+      "label": "OverviewPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 379,
+      "is_duplicate": false,
+      "path": "app/analytics/overview/page.tsx"
+    },
+    {
+      "id": "ReviewsAnalyticsPage",
+      "label": "ReviewsAnalyticsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 495,
+      "is_duplicate": false,
+      "path": "app/analytics/reviews/page.tsx"
+    },
+    {
+      "id": "ReviewTemplatesPage",
+      "label": "ReviewTemplatesPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 804,
+      "is_duplicate": false,
+      "path": "app/reviews/templates/page.tsx"
+    },
+    {
+      "id": "ReviewDetailPage",
+      "label": "ReviewDetailPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 570,
+      "is_duplicate": false,
+      "path": "app/reviews/[id]/page.tsx"
+    },
+    {
+      "id": "ReviewAnalyticsPage",
+      "label": "ReviewAnalyticsPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 609,
+      "is_duplicate": false,
+      "path": "app/reviews/analytics/page.tsx"
+    },
+    {
+      "id": "AcceptInvitationPage",
+      "label": "AcceptInvitationPage",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 318,
+      "is_duplicate": false,
+      "path": "app/invitations/[token]/page.tsx"
+    },
+    {
+      "id": "MetaPixelService",
+      "label": "MetaPixelService",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 672,
+      "is_duplicate": false,
+      "path": "lib/meta-pixel.ts"
+    },
+    {
+      "id": "OptimizedDateCalculations",
+      "label": "OptimizedDateCalculations",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 457,
+      "is_duplicate": true,
+      "path": "lib/optimized-date-calculations.ts"
+    },
+    {
+      "id": "RetryManager",
+      "label": "RetryManager",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 350,
+      "is_duplicate": false,
+      "path": "lib/RetryManager.ts"
+    },
+    {
+      "id": "CalendarErrorHandler",
+      "label": "CalendarErrorHandler",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 99,
+      "is_duplicate": true,
+      "path": "lib/calendar-error-handler.ts"
+    },
+    {
+      "id": "API_BASE_URL",
+      "label": "API_BASE_URL",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 730,
+      "is_duplicate": false,
+      "path": "lib/api/calendar.ts"
+    },
+    {
+      "id": "api",
+      "label": "api",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 14,
+      "is_duplicate": false,
+      "path": "lib/api/index.ts"
+    },
+    {
+      "id": "LoadingDots",
+      "label": "LoadingDots",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 307,
+      "is_duplicate": true,
+      "path": "hooks/useCalendarAnimations.tsx"
+    },
+    {
+      "id": "AuthContext",
+      "label": "AuthContext",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 535,
+      "is_duplicate": false,
+      "path": "contexts/AuthContext.tsx"
+    },
+    {
+      "id": "VALIDATION_CONSTANTS",
+      "label": "VALIDATION_CONSTANTS",
+      "size": 6,
+      "color": "#9CA3AF",
+      "category": "other",
+      "usage_count": 0,
+      "size_lines": 353,
+      "is_duplicate": false,
+      "path": "types/booking-links.ts"
+    }
+  ],
+  "edges": [
+    {
+      "source": "SimpleLoading",
+      "target": "LoadingSpinner",
+      "weight": 1
+    },
+    {
+      "source": "RecurringPatternCreator",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ServiceForm",
+      "target": "Select",
+      "weight": 1
+    },
+    {
+      "source": "ServiceForm",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "NetworkStatus",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "LegalDocument",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "WebhookConfiguration",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "BarberDashboardLayout",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "BarberDashboardLayout",
+      "target": "SixFigureAnalyticsDashboard",
+      "weight": 1
+    },
+    {
+      "source": "DevHealthMonitor",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "CookieConsent",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "PrivacyDashboard",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "RecurringSeriesManager",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "RecurringSeriesManager",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "OrganizationLandingPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "QuickActions",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "WebhookTester",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "PWAInstallPrompt",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ScheduleGrid",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "TimeOffManager",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "BulkAvailabilityUpdater",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "TrialWarningSystem",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "PaymentErrorRecovery",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "StripePaymentForm",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "PricingCalculator",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "MultiStepRegistration",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "AccountSetup",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "AccountSetup",
+      "target": "ValidationDisplay",
+      "weight": 1
+    },
+    {
+      "source": "BusinessTypeSelection",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "BusinessInformation",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "PaymentSetup",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "PricingConfirmation",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "EnhancedCalendarExport",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ValidatedSelect",
+      "target": "Select",
+      "weight": 1
+    },
+    {
+      "source": "DataExportRequestComponent",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "DataExportRequestComponent",
+      "target": "Select",
+      "weight": 1
+    },
+    {
+      "source": "LocationForm",
+      "target": "Select",
+      "weight": 1
+    },
+    {
+      "source": "LocationForm",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "OrganizationForm",
+      "target": "Select",
+      "weight": 1
+    },
+    {
+      "source": "OrganizationForm",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "UserInviteForm",
+      "target": "Select",
+      "weight": 1
+    },
+    {
+      "source": "UserInviteForm",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "BulkSelectableAppointmentList",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "LinkCustomizer",
+      "target": "Modal",
+      "weight": 1
+    },
+    {
+      "source": "AppointmentCancellation",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ShareBookingModal",
+      "target": "Modal",
+      "weight": 1
+    },
+    {
+      "source": "ProductForm",
+      "target": "Select",
+      "weight": 1
+    },
+    {
+      "source": "ProductForm",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "CancellationPolicyManager",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "CancellationPolicyManager",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "RescheduleModal",
+      "target": "Modal",
+      "weight": 1
+    },
+    {
+      "source": "RescheduleModal",
+      "target": "Input",
+      "weight": 1
+    },
+    {
+      "source": "RescheduleModal",
+      "target": "Textarea",
+      "weight": 1
+    },
+    {
+      "source": "SixFBComplianceDashboard",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ProgressIndicator",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ErrorHandler",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ConversionMetricsPanel",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "TrackingAnalyticsDashboard",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "TrackingAnalyticsDashboard",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "TrackingAnalyticsDashboard",
+      "target": "AnalyticsCard",
+      "weight": 1
+    },
+    {
+      "source": "TrackingPixelSettings",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "TrackingPixelSettings",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "PlatformComparisonCharts",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ConversionFunnelChart",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "IntegrationCard",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ConversionTrackingSetup",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ConversionTrackingSetup",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "ReviewManagementPanel",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ReviewManagementPanel",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "GA4TestSuite",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "GA4TestSuite",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "SnapshotDashboard",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "SnapshotDashboard",
+      "target": "SixFigureAnalyticsDashboard",
+      "weight": 1
+    },
+    {
+      "source": "AIInsightsPanel",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "BenchmarkWidget",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "BillingSettingsExample",
+      "target": "BusinessOwnerGuard",
+      "weight": 1
+    },
+    {
+      "source": "CampaignBuilder",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "CampaignBuilder",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "TemplateManager",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "TemplateManager",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "ContactList",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "TemplateEditor",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "CampaignAnalytics",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "CampaignAnalytics",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "CampaignCard",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "UsageChart",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "RealTimeAnalytics",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ExportProgress",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ExportBuilder",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "DataPreview",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "FieldMapper",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "FileUpload",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ImportProgress",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ImportWizard",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "Service6FBCompliance",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ServicePerformanceMetrics",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ServiceTemplateRecommendations",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ServiceAnalyticsPanel",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ServicePricingOptimization",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ServiceBulkOperations",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ServiceQuickActions",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ServiceOverviewGrid",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "RecurringAppointmentWizard",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "RecurringAppointmentWizard",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "BlackoutDateManager",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "BlackoutDateManager",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "ClientRetentionChart",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ClientRetentionChart",
+      "target": "PageLoading",
+      "weight": 1
+    },
+    {
+      "source": "AppointmentPatterns",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "AppointmentPatterns",
+      "target": "PageLoading",
+      "weight": 1
+    },
+    {
+      "source": "SixFigureAnalyticsDashboard",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "SixFigureAnalyticsDashboard",
+      "target": "PageLoading",
+      "weight": 1
+    },
+    {
+      "source": "EnhancedAnalyticsDashboard",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "EnhancedAnalyticsDashboard",
+      "target": "AIInsightsPanel",
+      "weight": 1
+    },
+    {
+      "source": "EnhancedAnalyticsDashboard",
+      "target": "BenchmarkWidget",
+      "weight": 1
+    },
+    {
+      "source": "RevenueChart",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "RevenueChart",
+      "target": "PageLoading",
+      "weight": 1
+    },
+    {
+      "source": "ServiceRevenueChart",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ServiceRevenueChart",
+      "target": "PageLoading",
+      "weight": 1
+    },
+    {
+      "source": "ComparisonChart",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ComparisonChart",
+      "target": "PageLoading",
+      "weight": 1
+    },
+    {
+      "source": "PerformanceMetrics",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "PerformanceMetrics",
+      "target": "PageLoading",
+      "weight": 1
+    },
+    {
+      "source": "ContactsSection",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ClientsSection",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "SegmentsSection",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "CampaignsSection",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "LoyaltySection",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "PayoutsSection",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "GiftCertificatesSection",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "EarningsSection",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "CommissionsSection",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "TransactionsSection",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "BillingSection",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "MarketingAnalyticsSection",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "MarketingAnalyticsSection",
+      "target": "UsageChart",
+      "weight": 1
+    },
+    {
+      "source": "ClientAnalyticsSection",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ClientAnalyticsSection",
+      "target": "ClientInsightsChart",
+      "weight": 1
+    },
+    {
+      "source": "RevenueAnalyticsSection",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "RevenueAnalyticsSection",
+      "target": "RevenueChart",
+      "weight": 1
+    },
+    {
+      "source": "ReviewsAnalyticsSection",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ProductivityAnalyticsSection",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "AnalyticsCard",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ChurnPredictionPanel",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "DemandForecastPanel",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "DemandForecastPanel",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "PricingOptimizationPanel",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "RevenueForecastChart",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "BarberAnalyticsView",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ManagerAnalyticsView",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "EnterpriseAnalyticsView",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "RootLayout",
+      "target": "ThemeToggle",
+      "weight": 1
+    },
+    {
+      "source": "UnifiedCustomersPage",
+      "target": "PageLoading",
+      "weight": 1
+    },
+    {
+      "source": "UnifiedCustomersPage",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "UnifiedCustomersPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ClientsPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ClientsPage",
+      "target": "VirtualList",
+      "weight": 1
+    },
+    {
+      "source": "CheckEmailPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "CalendarPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "CalendarPage",
+      "target": "CalendarSkeleton",
+      "weight": 1
+    },
+    {
+      "source": "CalendarPage",
+      "target": "CalendarVisualFeedback",
+      "weight": 1
+    },
+    {
+      "source": "CalendarPage",
+      "target": "CalendarNetworkStatus",
+      "weight": 1
+    },
+    {
+      "source": "CalendarPage",
+      "target": "UnifiedCalendar",
+      "weight": 1
+    },
+    {
+      "source": "CalendarPage",
+      "target": "CreateAppointmentModal",
+      "weight": 1
+    },
+    {
+      "source": "CalendarPage",
+      "target": "TimePickerModal",
+      "weight": 1
+    },
+    {
+      "source": "CalendarPage",
+      "target": "RescheduleModal",
+      "weight": 1
+    },
+    {
+      "source": "ProductsPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "MyBookingsPage",
+      "target": "LoadingSpinner",
+      "weight": 1
+    },
+    {
+      "source": "MyBookingsPage",
+      "target": "VirtualList",
+      "weight": 1
+    },
+    {
+      "source": "DashboardPage",
+      "target": "PageLoading",
+      "weight": 1
+    },
+    {
+      "source": "DashboardPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "DashboardPage",
+      "target": "TimezoneSetupModal",
+      "weight": 1
+    },
+    {
+      "source": "DashboardPage",
+      "target": "CalendarDayMini",
+      "weight": 1
+    },
+    {
+      "source": "VerifyEmailPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "RegisterPage",
+      "target": "MultiStepRegistration",
+      "weight": 1
+    },
+    {
+      "source": "BookPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "BookPage",
+      "target": "UnifiedCalendar",
+      "weight": 1
+    },
+    {
+      "source": "BookPage",
+      "target": "TimeSlots",
+      "weight": 1
+    },
+    {
+      "source": "BookPage",
+      "target": "PaymentForm",
+      "weight": 1
+    },
+    {
+      "source": "BookPage",
+      "target": "TimezoneTooltip",
+      "weight": 1
+    },
+    {
+      "source": "MarketingDashboard",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "FinanceHubPage",
+      "target": "PageLoading",
+      "weight": 1
+    },
+    {
+      "source": "FinanceHubPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ExportPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ExportPage",
+      "target": "ExportBuilder",
+      "weight": 1
+    },
+    {
+      "source": "ImportPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ImportPage",
+      "target": "ImportWizard",
+      "weight": 1
+    },
+    {
+      "source": "LoginPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "LoginPage",
+      "target": "ValidatedInput",
+      "weight": 1
+    },
+    {
+      "source": "LoginPage",
+      "target": "RateLimitIndicator",
+      "weight": 1
+    },
+    {
+      "source": "OfflinePage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "RecurringAppointmentsPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "RecurringAppointmentsPage",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "UnifiedAnalyticsPage",
+      "target": "DateRangeSelector",
+      "weight": 1
+    },
+    {
+      "source": "UnifiedAnalyticsPage",
+      "target": "PageLoading",
+      "weight": 1
+    },
+    {
+      "source": "ReviewsPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ReviewsPage",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "CalendarSettingsPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "CalendarSettingsPage",
+      "target": "CalendarSync",
+      "weight": 1
+    },
+    {
+      "source": "CalendarSettingsPage",
+      "target": "CalendarConflictResolver",
+      "weight": 1
+    },
+    {
+      "source": "TestDataPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "SecuritySettingsPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "SecuritySettingsPage",
+      "target": "TwoFactorAuth",
+      "weight": 1
+    },
+    {
+      "source": "TrackingPixelsPage",
+      "target": "TrackingPixelSettings",
+      "weight": 1
+    },
+    {
+      "source": "ProfilePage",
+      "target": "TimezoneSelector",
+      "weight": 1
+    },
+    {
+      "source": "PWASettingsPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "LandingPageSettings",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "LandingPageSettings",
+      "target": "Select",
+      "weight": 1
+    },
+    {
+      "source": "GiftCertificatesPage",
+      "target": "GiftCertificates",
+      "weight": 1
+    },
+    {
+      "source": "NewProductPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ProductDetailPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ProductDetailPage",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "EnterpriseDashboardPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "EnterpriseDashboardPage",
+      "target": "PageLoading",
+      "weight": 1
+    },
+    {
+      "source": "SocialAuthCallbackPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "AdminUsersPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "AdminUsersPage",
+      "target": "AccessControl",
+      "weight": 1
+    },
+    {
+      "source": "WebhooksPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "BarberEarningsPage",
+      "target": "StripeConnectOnboarding",
+      "weight": 1
+    },
+    {
+      "source": "BarberAvailabilityPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "BarberAvailabilityPage",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "WelcomePage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "StaffInvitationsPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "StaffInvitationsPage",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "StaffInvitationsPage",
+      "target": "Select",
+      "weight": 1
+    },
+    {
+      "source": "BarbershopDashboardPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "BarbershopDashboardPage",
+      "target": "PageLoading",
+      "weight": 1
+    },
+    {
+      "source": "BarbershopDashboardPage",
+      "target": "SnapshotDashboard",
+      "weight": 1
+    },
+    {
+      "source": "PrivacyPolicyPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "CookiePolicyPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ContactsPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "BookingLinksPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "TemplatesPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "CampaignsPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "MarketingBillingPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "MarketingAnalyticsPage",
+      "target": "AnalyticsLayout",
+      "weight": 1
+    },
+    {
+      "source": "MarketingAnalyticsPage",
+      "target": "AnalyticsFilters",
+      "weight": 1
+    },
+    {
+      "source": "MarketingAnalyticsPage",
+      "target": "DateRangeSelector",
+      "weight": 1
+    },
+    {
+      "source": "MarketingAnalyticsPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "MarketingAnalyticsPage",
+      "target": "PageLoading",
+      "weight": 1
+    },
+    {
+      "source": "MarketingAnalyticsPage",
+      "target": "UsageChart",
+      "weight": 1
+    },
+    {
+      "source": "UnifiedFinancePage",
+      "target": "PageLoading",
+      "weight": 1
+    },
+    {
+      "source": "UnifiedFinancePage",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "UnifiedFinancePage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "UnifiedFinancePage",
+      "target": "DateRangeSelector",
+      "weight": 1
+    },
+    {
+      "source": "TransactionsPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "TransactionsPage",
+      "target": "DateRangeSelector",
+      "weight": 1
+    },
+    {
+      "source": "TransactionsPage",
+      "target": "PageLoading",
+      "weight": 1
+    },
+    {
+      "source": "CommissionsPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "CommissionsPage",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "CompliancePage",
+      "target": "SixFBComplianceDashboard",
+      "weight": 1
+    },
+    {
+      "source": "PrivacySettingsPage",
+      "target": "PrivacyDashboard",
+      "weight": 1
+    },
+    {
+      "source": "IntegrationsPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "IntegrationsPage",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "NotificationsSettingsPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "AppointmentExportPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "AppointmentExportPage",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "EnterprisePage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "EnterprisePage",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "EnterprisePage",
+      "target": "OrganizationForm",
+      "weight": 1
+    },
+    {
+      "source": "EnterprisePage",
+      "target": "LocationForm",
+      "weight": 1
+    },
+    {
+      "source": "EnterprisePage",
+      "target": "UserInviteForm",
+      "weight": 1
+    },
+    {
+      "source": "AIAnalyticsPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "AIAnalyticsPage",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "CatalogPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "CatalogPage",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "CatalogPage",
+      "target": "Select",
+      "weight": 1
+    },
+    {
+      "source": "CatalogPage",
+      "target": "ServiceForm",
+      "weight": 1
+    },
+    {
+      "source": "CatalogPage",
+      "target": "ProductForm",
+      "weight": 1
+    },
+    {
+      "source": "MarketingPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "MarketingPage",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "IntegrationsCallbackPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "FinancialAnalyticsPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "PayoutProcessPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "PayoutProcessPage",
+      "target": "Select",
+      "weight": 1
+    },
+    {
+      "source": "ServiceDashboardPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ServiceDashboardPage",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "PricingPlansPage",
+      "target": "PricingCalculator",
+      "weight": 1
+    },
+    {
+      "source": "CheckoutPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "RevenuePage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "OverviewPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "OverviewPage",
+      "target": "SixFigureAnalyticsDashboard",
+      "weight": 1
+    },
+    {
+      "source": "ReviewsAnalyticsPage",
+      "target": "AnalyticsLayout",
+      "weight": 1
+    },
+    {
+      "source": "ReviewsAnalyticsPage",
+      "target": "DateRangeSelector",
+      "weight": 1
+    },
+    {
+      "source": "ReviewsAnalyticsPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ReviewsAnalyticsPage",
+      "target": "PageLoading",
+      "weight": 1
+    },
+    {
+      "source": "ReviewTemplatesPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ReviewDetailPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ReviewAnalyticsPage",
+      "target": "Card",
+      "weight": 1
+    },
+    {
+      "source": "ReviewAnalyticsPage",
+      "target": "Tabs",
+      "weight": 1
+    },
+    {
+      "source": "AcceptInvitationPage",
+      "target": "Card",
+      "weight": 1
+    }
+  ],
+  "statistics": {
+    "total_components": 390,
+    "total_dependencies": 291,
+    "duplicate_candidates": 105,
+    "unused_components": 334,
+    "categories": {
+      "other": 390
+    }
+  }
+}
