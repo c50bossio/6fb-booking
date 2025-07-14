@@ -426,6 +426,8 @@ export default function BookPage() {
           status: 'available',
           duration_minutes: 30,
           price: SERVICES.find(s => s.id === selectedService)?.amount || 0,
+          user_id: null, // No user for available slots
+          created_at: new Date().toISOString(),
           // Custom properties
           isAvailableSlot: true,
           originalTime: slot.time,
