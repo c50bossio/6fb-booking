@@ -120,9 +120,9 @@ export default function UnifiedAnalyticsPage() {
             },
             appointments: {
               total: analytics.appointment_summary.total_appointments,
-              completed: analytics.appointment_summary.completed_appointments,
-              cancelled: analytics.appointment_summary.cancelled_appointments,
-              noShow: analytics.appointment_summary.no_show_appointments
+              completed: Math.round(analytics.appointment_summary.total_appointments * (1 - analytics.appointment_summary.cancellation_rate / 100 - analytics.appointment_summary.no_show_rate / 100)),
+              cancelled: Math.round(analytics.appointment_summary.total_appointments * analytics.appointment_summary.cancellation_rate / 100),
+              noShow: Math.round(analytics.appointment_summary.total_appointments * analytics.appointment_summary.no_show_rate / 100)
             },
             clients: {
               total: analytics.client_summary.total_clients,
