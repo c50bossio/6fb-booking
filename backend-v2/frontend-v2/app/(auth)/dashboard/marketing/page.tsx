@@ -322,7 +322,7 @@ export default function MarketingPage() {
       )}
 
       {!showCampaignBuilder && !showTemplateManager && (
-        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
+        <Tabs value={selectedTab} onValueChange={setSelectedTab} defaultValue="campaigns" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
             <TabsTrigger value="templates">Templates</TabsTrigger>
