@@ -20,7 +20,7 @@ interface CalendarStatus {
 interface GoogleCalendar {
   id: string
   summary: string
-  primary: boolean
+  primary?: boolean
   accessRole: string
   timeZone?: string
 }
@@ -62,7 +62,7 @@ export default function CalendarSettingsPage() {
   const checkCalendarStatus = async () => {
     try {
       setLoading(true)
-      const response = await calendarApi.getConnectionStatus()
+      const response = await calendarApi.getConnectionStatus() as CalendarStatus
       setStatus(response)
       
       if (response.connected && response.valid) {

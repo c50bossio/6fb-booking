@@ -580,16 +580,17 @@ export function MessageVariantTester({
               <Label htmlFor="primary-metric">Primary Metric</Label>
               <Select 
                 value={testConfig.primary_metric} 
-                onValueChange={(value) => setTestConfig(prev => ({
+                onChange={(value) => setTestConfig(prev => ({
                   ...prev,
                   primary_metric: value as any
                 }))}
-              >
-                <option value="response_rate">Response Rate</option>
-                <option value="conversion_rate">Conversion Rate</option>
-                <option value="revenue">Revenue Generated</option>
-                <option value="engagement">Engagement Score</option>
-              </Select>
+                options={[
+                  { value: 'response_rate', label: 'Response Rate' },
+                  { value: 'conversion_rate', label: 'Conversion Rate' },
+                  { value: 'revenue', label: 'Revenue Generated' },
+                  { value: 'engagement', label: 'Engagement Score' }
+                ]}
+              />
             </div>
           </div>
         </Card>
@@ -829,7 +830,7 @@ export function MessageVariantTester({
   if (!isOpen) return null
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="large">
+    <Modal isOpen={isOpen} onClose={onClose} size="xl">
       <div className="p-6 max-h-screen overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -848,11 +849,15 @@ export function MessageVariantTester({
           </div>
           
           <div className="flex items-center space-x-3">
-            <Select value={view} onValueChange={(value) => setView(value as any)}>
-              <option value="overview">Overview</option>
-              <option value="create">Create Test</option>
-              {activeTest && <option value="results">Results</option>}
-            </Select>
+            <Select 
+              value={view} 
+              onChange={(value) => setView(value as any)}
+              options={[
+                { value: 'overview', label: 'Overview' },
+                { value: 'create', label: 'Create Test' },
+                ...(activeTest ? [{ value: 'results', label: 'Results' }] : [])
+              ]}
+            />
             <Button variant="ghost" size="sm" onClick={onClose}>
               ×
             </Button>

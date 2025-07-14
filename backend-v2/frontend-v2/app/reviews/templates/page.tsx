@@ -808,7 +808,13 @@ export default function ReviewTemplatesPage() {
           setIsCreateModalOpen(false)
           setEditingTemplate(null)
         }}
-        onSave={editingTemplate ? handleUpdateTemplate : handleCreateTemplate}
+        onSave={(templateData) => {
+          if (editingTemplate) {
+            handleUpdateTemplate(templateData as ReviewTemplateUpdate)
+          } else {
+            handleCreateTemplate(templateData as ReviewTemplateCreate)
+          }
+        }}
         isLoading={createMutation.isPending || updateMutation.isPending}
       />
     </div>

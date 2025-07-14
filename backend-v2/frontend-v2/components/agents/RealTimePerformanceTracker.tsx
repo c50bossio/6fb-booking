@@ -295,7 +295,7 @@ export function RealTimePerformanceTracker({
                 Real-Time Performance
               </h2>
             </div>
-            <Badge variant={isConnected ? 'success' : 'danger'}>
+            <Badge variant={isConnected ? 'success' : 'destructive'}>
               {isConnected ? 'Connected' : 'Disconnected'}
             </Badge>
           </div>
@@ -423,7 +423,7 @@ export function RealTimePerformanceTracker({
                 Active Agents
               </span>
             </div>
-            <Badge variant={data.current_period_performance.agents_running > 0 ? 'success' : 'danger'}>
+            <Badge variant={data.current_period_performance.agents_running > 0 ? 'success' : 'destructive'}>
               {data.current_period_performance.agents_running > 0 ? 'Online' : 'Offline'}
             </Badge>
           </div>

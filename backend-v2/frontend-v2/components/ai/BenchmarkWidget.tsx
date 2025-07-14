@@ -12,7 +12,7 @@ import { Card, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { 
   ArrowTrendingUpIcon,
-  TrendingDownIcon,
+  ArrowTrendingDownIcon,
   MinusIcon,
   InformationCircleIcon,
   ChevronUpIcon,
@@ -110,7 +110,7 @@ export default function BenchmarkWidget({
   const getPerformanceIcon = (percentile: number) => {
     if (percentile >= 75) return <ArrowTrendingUpIcon className="w-4 h-4" />
     if (percentile >= 50) return <MinusIcon className="w-4 h-4" />
-    return <TrendingDownIcon className="w-4 h-4" />
+    return <ArrowTrendingDownIcon className="w-4 h-4" />
   }
 
   const getPerformanceText = (percentile: number) => {

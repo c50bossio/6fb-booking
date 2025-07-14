@@ -217,7 +217,7 @@ export function AgentCard({
               {agent.name}
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              {agentsApi.getAgentTypeDisplay(agent.agent_type || 'customer_service')}
+              {agentsApi.getAgentTypeDisplay('customer_service')}
             </p>
           </div>
         </div>

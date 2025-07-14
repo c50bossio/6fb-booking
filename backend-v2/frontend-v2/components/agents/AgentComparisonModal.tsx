@@ -56,7 +56,7 @@ const COMPARISON_METRICS: ComparisonMetric[] = [
   {
     name: 'Success Rate',
     icon: <Target className="w-4 h-4" />,
-    getValue: (agent) => agent.success_rate || 0,
+    getValue: (agent) => 0, // TODO: Add success_rate to AgentInstance interface
     format: 'percentage',
     higherIsBetter: true
   },
@@ -77,14 +77,14 @@ const COMPARISON_METRICS: ComparisonMetric[] = [
   {
     name: 'Revenue per Conversation',
     icon: <DollarSign className="w-4 h-4" />,
-    getValue: (agent) => agent.revenue_per_conversation || 0,
+    getValue: (agent) => 0, // TODO: Add revenue_per_conversation to AgentInstance interface
     format: 'currency',
     higherIsBetter: true
   },
   {
     name: 'Response Time',
     icon: <Zap className="w-4 h-4" />,
-    getValue: (agent) => agent.avg_response_time || 0,
+    getValue: (agent) => 0, // TODO: Add avg_response_time to AgentInstance interface
     format: 'time',
     higherIsBetter: false,
     unit: 's'
@@ -201,7 +201,7 @@ export function AgentComparisonModal({
   if (!isOpen) return null
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="large">
+    <Modal isOpen={isOpen} onClose={onClose} size="xl">
       <div className="p-6 max-h-screen overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -215,10 +215,14 @@ export function AgentComparisonModal({
           </div>
           
           <div className="flex items-center space-x-3">
-            <Select value={comparisonView} onValueChange={(value) => setComparisonView(value as 'table' | 'cards')}>
-              <option value="table">Table View</option>
-              <option value="cards">Card View</option>
-            </Select>
+            <Select 
+              value={comparisonView} 
+              onChange={(value) => setComparisonView(value as 'table' | 'cards')}
+              options={[
+                { value: 'table', label: 'Table View' },
+                { value: 'cards', label: 'Card View' }
+              ]}
+            />
             <Button variant="ghost" size="sm" onClick={onClose}>
               <X className="w-4 h-4" />
             </Button>
@@ -248,7 +252,7 @@ export function AgentComparisonModal({
                       {agent.name}
                     </p>
                     <p className="text-xs text-gray-600 dark:text-gray-400">
-                      {agentsApi.getAgentTypeDisplay(agent.agent_type || 'customer_service')}
+                      {agentsApi.getAgentTypeDisplay('customer_service')}
                     </p>
                   </div>
                 </div>
@@ -332,7 +336,7 @@ export function AgentComparisonModal({
                           {agent.name}
                         </h4>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {agentsApi.getAgentTypeDisplay(agent.agent_type || 'customer_service')}
+                          {agentsApi.getAgentTypeDisplay('customer_service')}
                         </p>
                       </div>
                     </div>

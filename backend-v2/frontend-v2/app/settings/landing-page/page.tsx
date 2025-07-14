@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 import { Input } from '@/components/ui/Input'
 import { Label } from "@/components/ui/Label"
 import { Switch } from '@/components/ui/Switch'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
+import { Select } from '@/components/ui/Select'
 import { toast } from '@/hooks/use-toast'
 import { 
   PaintBrushIcon,
@@ -86,9 +86,9 @@ export default function LandingPageSettings() {
     try {
       // Get user profile to get organization slug
       const profile = await getProfile()
-      if (profile?.organization?.slug) {
-        setOrganizationSlug(profile.organization.slug)
-      }
+      // TODO: Get organization slug from user profile when available
+      // For now, use a default organization slug
+      setOrganizationSlug('default-org')
       
       // Load landing page settings
       const response = await fetch('/api/v1/organizations/current/landing-page-settings', {
@@ -426,17 +426,13 @@ export default function LandingPageSettings() {
               <Label htmlFor="testimonial-source">Testimonial Source</Label>
               <Select
                 value={settings.testimonial_source}
-                onValueChange={(testimonial_source) => setSettings({ ...settings, testimonial_source })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="gmb_auto">Google My Business (Auto)</SelectItem>
-                  <SelectItem value="custom">Custom Testimonials</SelectItem>
-                  <SelectItem value="generic">Generic Testimonials</SelectItem>
-                </SelectContent>
-              </Select>
+                onChange={(testimonial_source) => setSettings({ ...settings, testimonial_source: testimonial_source as string })}
+                options={[
+                  { value: 'gmb_auto', label: 'Google My Business (Auto)' },
+                  { value: 'custom', label: 'Custom Testimonials' },
+                  { value: 'generic', label: 'Generic Testimonials' }
+                ]}
+              />
               <p className="text-xs text-gray-500 mt-1">
                 Auto-sync testimonials from Google My Business or use custom ones
               </p>

@@ -249,12 +249,7 @@ export default function SecuritySettingsPage() {
       <SocialAccountsManager />
 
       {/* Trusted Devices */}
-      <TrustedDevices 
-        onDeviceRemoved={() => {
-          // If current device is removed, redirect to login
-          router.push('/login')
-        }}
-      />
+      <TrustedDevices />
 
       {/* Login History */}
       <Card>
@@ -290,27 +285,19 @@ export default function SecuritySettingsPage() {
         <Card className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <CardContent className="bg-background p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
             <TwoFactorSetup
-              onSetup={handleEnable2FA}
-              onCancel={() => setShowSetup(false)}
-              availableMethods={['sms', 'email', 'totp']}
+              onEnable={() => setShowSetup(false)}
             />
           </CardContent>
         </Card>
       )}
 
       {/* Verification Modal */}
-      <TwoFactorAuth
-        isOpen={show2FAVerification}
-        onClose={() => setShow2FAVerification(false)}
-        onVerify={handleVerify2FA}
-        method={selectedMethod}
-        phoneNumber="+1 (555) ***-**67"
-        email="user@example.com"
-        onResend={async () => {
-          // Mock resend
-          console.log('Resending code...')
-        }}
-      />
+      {show2FAVerification && (
+        <TwoFactorAuth
+          onEnable={() => setShow2FAVerification(false)}
+          onDisable={() => setShow2FAVerification(false)}
+        />
+      )}
     </div>
   )
 }

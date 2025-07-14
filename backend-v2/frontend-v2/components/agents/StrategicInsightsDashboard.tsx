@@ -557,13 +557,17 @@ export function StrategicInsightsDashboard({ data, dateRange }: StrategicInsight
         </div>
         
         <div className="flex items-center space-x-3">
-          <Select value={selectedInsight} onValueChange={(value) => setSelectedInsight(value as any)}>
-            <option value="overview">Overview</option>
-            <option value="revenue">Revenue Analysis</option>
-            <option value="customers">Customer Insights</option>
-            <option value="marketing">Marketing Performance</option>
-            <option value="operations">Operations</option>
-          </Select>
+          <Select 
+            value={selectedInsight} 
+            onChange={(value) => setSelectedInsight(value as any)}
+            options={[
+              { value: 'overview', label: 'Overview' },
+              { value: 'revenue', label: 'Revenue Analysis' },
+              { value: 'customers', label: 'Customer Insights' },
+              { value: 'marketing', label: 'Marketing Performance' },
+              { value: 'operations', label: 'Operations' }
+            ]}
+          />
         </div>
       </div>
 

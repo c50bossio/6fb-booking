@@ -17,7 +17,6 @@ import {
   Activity,
   Clock,
   Zap,
-  Globe,
   Smartphone,
   Mail,
   MessageSquare,
@@ -33,7 +32,8 @@ import {
   Database,
   Cloud,
   Webhook,
-  API
+  Network,
+  Copy
 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
@@ -372,7 +372,7 @@ export function IntegrationHub({ isOpen, onClose }: IntegrationHubProps) {
   const handleTestIntegration = async (integrationId: string) => {
     try {
       setLoading(true)
-      // Mock API test
+      // Mock Network test
       await new Promise(resolve => setTimeout(resolve, 2000))
       
       setActiveIntegrations(prev => prev.map(integration => 
@@ -438,7 +438,7 @@ export function IntegrationHub({ isOpen, onClose }: IntegrationHubProps) {
           </p>
         </div>
         <div className="text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400">API Calls Today</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Network Calls Today</p>
           <p className="text-lg font-bold text-gray-900 dark:text-white">
             {integration.usage_stats.api_calls_today.toLocaleString()}
           </p>
@@ -460,7 +460,7 @@ export function IntegrationHub({ isOpen, onClose }: IntegrationHubProps) {
       {/* Rate Limits */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-gray-600 dark:text-gray-400">API Rate Limit</span>
+          <span className="text-sm text-gray-600 dark:text-gray-400">Network Rate Limit</span>
           <span className="text-sm font-medium text-gray-900 dark:text-white">
             {integration.rate_limits.current.toLocaleString()} / {integration.rate_limits.limit.toLocaleString()}
           </span>
@@ -577,7 +577,7 @@ export function IntegrationHub({ isOpen, onClose }: IntegrationHubProps) {
   if (!isOpen) return null
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="large">
+    <Modal isOpen={isOpen} onClose={onClose} size="xl">
       <div className="p-6 max-h-screen overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -623,7 +623,7 @@ export function IntegrationHub({ isOpen, onClose }: IntegrationHubProps) {
           <Card className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">API Calls Today</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Network Calls Today</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {activeIntegrations.reduce((sum, i) => sum + i.usage_stats.api_calls_today, 0).toLocaleString()}
                 </p>
@@ -648,15 +648,19 @@ export function IntegrationHub({ isOpen, onClose }: IntegrationHubProps) {
         {/* Filters */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-3">
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <option value="all">All Categories</option>
-              <option value="communication">Communication</option>
-              <option value="analytics">Analytics</option>
-              <option value="payment">Payments</option>
-              <option value="marketing">Marketing</option>
-              <option value="scheduling">Scheduling</option>
-              <option value="ai">AI Services</option>
-            </Select>
+            <Select 
+              value={selectedCategory} 
+              onChange={(value) => setSelectedCategory(value as string)}
+              options={[
+                { value: 'all', label: 'All Categories' },
+                { value: 'communication', label: 'Communication' },
+                { value: 'analytics', label: 'Analytics' },
+                { value: 'payment', label: 'Payments' },
+                { value: 'marketing', label: 'Marketing' },
+                { value: 'scheduling', label: 'Scheduling' },
+                { value: 'ai', label: 'AI Services' }
+              ]}
+            />
           </div>
           <div className="flex items-center space-x-2">
             <Button variant="outline" size="sm">
@@ -690,7 +694,7 @@ export function IntegrationHub({ isOpen, onClose }: IntegrationHubProps) {
           <Modal 
             isOpen={!!selectedIntegration} 
             onClose={() => setSelectedIntegration(null)}
-            size="medium"
+            size="md"
           >
             <div className="p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">

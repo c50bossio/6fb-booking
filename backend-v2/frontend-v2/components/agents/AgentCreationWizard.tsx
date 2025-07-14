@@ -212,7 +212,7 @@ export function AgentCreationWizard({ templates, onClose, onSuccess }: AgentCrea
                   <h4 className="font-medium">Agent Settings</h4>
                   
                   {/* Rebooking specific settings */}
-                  {selectedTemplate.agent_type === 'rebooking' && (
+                  {selectedTemplate.agent_type === 'retention_specialist' && (
                     <div className="space-y-3">
                       <div>
                         <Label>Rebooking Interval (days)</Label>
@@ -245,7 +245,7 @@ export function AgentCreationWizard({ templates, onClose, onSuccess }: AgentCrea
                   )}
 
                   {/* Birthday specific settings */}
-                  {selectedTemplate.agent_type === 'birthday_wishes' && (
+                  {selectedTemplate.agent_type === 'marketing_assistant' && (
                     <div className="space-y-3">
                       <div>
                         <Label>Birthday Discount (%)</Label>
@@ -464,7 +464,7 @@ export function AgentCreationWizard({ templates, onClose, onSuccess }: AgentCrea
   }
 
   return (
-    <Modal isOpen={true} onClose={onClose} size="large">
+    <Modal isOpen={true} onClose={onClose} size="xl">
       <div className="p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

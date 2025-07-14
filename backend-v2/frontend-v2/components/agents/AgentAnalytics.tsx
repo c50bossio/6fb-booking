@@ -55,7 +55,7 @@ export function AgentAnalytics({ data, dateRange }: AgentAnalyticsProps) {
 
   const getTrendPercentage = (type: string) => {
     // Mock trend percentage - in real implementation, calculate from historical data
-    return ((Math.random() * 20 + 5) ?? 0).toFixed(1)
+    return (Math.random() * 20 + 5).toFixed(1)
   }
 
   return (

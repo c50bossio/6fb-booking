@@ -86,7 +86,7 @@ export const PricingOptimizationPanel: React.FC<PricingOptimizationPanelProps> =
   }
 
   const totalRevenueImpact = optimizations?.reduce((sum, opt) => sum + opt.expected_revenue_impact, 0) || 0
-  const avgConfidence = optimizations?.reduce((sum, opt) => sum + opt.confidence_score, 0) / (optimizations?.length || 1) || 0
+  const avgConfidence = optimizations && optimizations.length > 0 ? optimizations.reduce((sum, opt) => sum + opt.confidence_score, 0) / optimizations.length : 0
   const positiveImpactServices = optimizations?.filter(opt => opt.expected_revenue_impact > 0) || []
   const highConfidenceRecommendations = optimizations?.filter(opt => opt.confidence_score >= 80) || []
 
@@ -256,7 +256,7 @@ export const PricingOptimizationPanel: React.FC<PricingOptimizationPanelProps> =
                           <span className="text-xs text-muted-foreground">
                             {formatCurrency(optimization.current_price)} → {formatCurrency(optimization.recommended_price)}
                           </span>
-                          <Badge size="sm" className={getImpactColor(priceChange)}>
+                          <Badge className={getImpactColor(priceChange)}>
                             {priceChange >= 0 ? '+' : ''}{priceChangePercent.toFixed(0)}%
                           </Badge>
                         </div>
@@ -269,7 +269,7 @@ export const PricingOptimizationPanel: React.FC<PricingOptimizationPanelProps> =
                         </span>
                         {getImpactIcon(optimization.expected_revenue_impact)}
                       </div>
-                      <Badge size="sm" className={getConfidenceColor(optimization.confidence_score)}>
+                      <Badge className={getConfidenceColor(optimization.confidence_score)}>
                         {optimization.confidence_score}%
                       </Badge>
                     </div>

@@ -244,7 +244,7 @@ export const ChurnPredictionPanel: React.FC<ChurnPredictionPanelProps> = ({
                   <CardContent className="p-3">
                     <div className="flex items-center justify-between mb-2">
                       <h5 className="font-medium text-sm">{client.client_name}</h5>
-                      <Badge className={getRiskColor(client.risk_level)} size="sm">
+                      <Badge className={getRiskColor(client.risk_level)}>
                         {(client.churn_probability * 100).toFixed(0)}%
                       </Badge>
                     </div>

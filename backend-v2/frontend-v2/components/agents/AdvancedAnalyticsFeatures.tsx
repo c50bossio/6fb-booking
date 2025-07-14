@@ -781,12 +781,16 @@ export function AdvancedAnalyticsFeatures({ data, dateRange }: AdvancedAnalytics
             <Download className="w-4 h-4 mr-2" />
             Export
           </Button>
-          <Select value={selectedAnalysis} onValueChange={(value) => setSelectedAnalysis(value as any)}>
-            <option value="customers">Customer Analysis</option>
-            <option value="market">Market Analysis</option>
-            <option value="growth">Growth Predictions</option>
-            <option value="predictions">AI Predictions</option>
-          </Select>
+          <Select 
+            value={selectedAnalysis} 
+            onChange={(value) => setSelectedAnalysis(value as any)}
+            options={[
+              { value: 'customers', label: 'Customer Analysis' },
+              { value: 'market', label: 'Market Analysis' },
+              { value: 'growth', label: 'Growth Predictions' },
+              { value: 'predictions', label: 'AI Predictions' }
+            ]}
+          />
         </div>
       </div>
 

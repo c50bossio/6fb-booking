@@ -49,9 +49,9 @@ export const RevenueForecastChart: React.FC<RevenueForecastChartProps> = ({
   }, [timeHorizon])
 
   const totalForecast = forecast?.reduce((sum, item) => sum + item.predicted_revenue, 0) || 0
-  const avgConfidence = forecast?.reduce((sum, item) => 
+  const avgConfidence = forecast && forecast.length > 0 ? forecast.reduce((sum, item) => 
     sum + ((item.confidence_interval.upper - item.confidence_interval.lower) / item.predicted_revenue), 0
-  ) / (forecast?.length || 1) || 0
+  ) / forecast.length : 0
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {

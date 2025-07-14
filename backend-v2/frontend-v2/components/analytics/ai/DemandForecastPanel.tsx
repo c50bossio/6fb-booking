@@ -89,7 +89,7 @@ export const DemandForecastPanel: React.FC<DemandForecastPanelProps> = ({
     return timeSlot
   }
 
-  const avgUtilization = patterns?.reduce((sum, p) => sum + p.capacity_utilization, 0) / (patterns?.length || 1) || 0
+  const avgUtilization = patterns && patterns.length > 0 ? patterns.reduce((sum, p) => sum + p.capacity_utilization, 0) / patterns.length : 0
   const peakDemand = Math.max(...(patterns?.map(p => p.predicted_demand) || [0]))
   const totalRecommendations = patterns?.reduce((sum, p) => sum + p.recommendations.length, 0) || 0
 
@@ -119,7 +119,7 @@ export const DemandForecastPanel: React.FC<DemandForecastPanelProps> = ({
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
-            <Tabs value={selectedTimeframe} onValueChange={(value: any) => setSelectedTimeframe(value)}>
+            <Tabs value={selectedTimeframe} onValueChange={(value: any) => setSelectedTimeframe(value)} defaultValue="weekly">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="hourly">Hourly</TabsTrigger>
                 <TabsTrigger value="daily">Daily</TabsTrigger>
