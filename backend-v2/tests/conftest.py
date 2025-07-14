@@ -88,7 +88,8 @@ def test_user(db: Session) -> User:
         email="test@example.com",
         name="Test User",
         hashed_password=get_password_hash("testpass123"),
-        role="user"
+        role="user",
+        email_verified=True  # Tests require verified users for login
     )
     db.add(user)
     db.commit()
@@ -103,7 +104,8 @@ def test_admin(db: Session) -> User:
         email="admin@example.com",
         name="Admin User",
         hashed_password=get_password_hash("adminpass123"),
-        role="admin"
+        role="admin",
+        email_verified=True  # Tests require verified users for login
     )
     db.add(admin)
     db.commit()

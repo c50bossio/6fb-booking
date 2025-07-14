@@ -439,7 +439,7 @@ async def register(
         email=user_data.email,
         name=user_data.name,
         hashed_password=hashed_password,
-        role=user_data.role,
+        role=user_type_value,
         trial_started_at=trial_start,
         trial_expires_at=trial_end,
         trial_active=True,

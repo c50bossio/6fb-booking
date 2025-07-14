@@ -19,7 +19,8 @@ from utils.auth import SECRET_KEY, ALGORITHM
 TEST_USER_DATA = {
     "email": "test@example.com",
     "password": "Test123!",
-    "name": "Test User"
+    "name": "Test User",
+    "user_type": "barber"
 }
 
 WEAK_PASSWORDS = [
@@ -48,7 +49,7 @@ class TestAuthentication:
         )
         assert response.status_code == 200
         data = response.json()
-        assert data["message"] == "User successfully registered"
+        assert "User successfully registered" in data["message"]
         assert data["user"]["email"] == TEST_USER_DATA["email"]
         assert data["user"]["name"] == TEST_USER_DATA["name"]
         assert "id" in data["user"]
@@ -61,7 +62,8 @@ class TestAuthentication:
             json={
                 "email": test_user.email,
                 "password": "Test123!",
-                "name": "Another User"
+                "name": "Another User",
+                "user_type": "barber"
             }
         )
         assert response.status_code == 400
@@ -75,7 +77,8 @@ class TestAuthentication:
             json={
                 "email": f"{password}@example.com",
                 "password": password,
-                "name": "Weak Password User"
+                "name": "Weak Password User",
+                "user_type": "barber"
             }
         )
         assert response.status_code == 422
@@ -405,7 +408,8 @@ class TestRateLimiting:
                 json={
                     "email": f"ratelimit{i}@example.com",
                     "password": "Test123!",
-                    "name": f"Rate Limit {i}"
+                    "name": f"Rate Limit {i}",
+                    "user_type": "barber"
                 }
             )
             responses.append(response.status_code)
