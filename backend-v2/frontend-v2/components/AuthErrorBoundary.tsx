@@ -207,7 +207,7 @@ export class AuthErrorBoundary extends Component<AuthErrorBoundaryProps, AuthErr
               <Button 
                 onClick={this.handleRetry}
                 className="w-full"
-                variant="default"
+                variant="primary"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Try Again ({maxRetries - retryCount} attempts left)
@@ -278,7 +278,7 @@ export class AuthErrorBoundary extends Component<AuthErrorBoundaryProps, AuthErr
             <Button 
               onClick={this.handleRetry}
               className="w-full"
-              variant="default"
+              variant="primary"
             >
               <RefreshCw className="h-4 w-4 mr-2" />
               Retry Connection
@@ -318,7 +318,7 @@ export class AuthErrorBoundary extends Component<AuthErrorBoundaryProps, AuthErr
             <Button 
               onClick={this.handleRetry}
               className="w-full"
-              variant="default"
+              variant="primary"
             >
               <RefreshCw className="h-4 w-4 mr-2" />
               Try Again
