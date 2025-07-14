@@ -14,7 +14,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from sqlalchemy import text, inspect, MetaData
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
-from models import *
+from models import User, Appointment, Client, Service, Payment, BarberAvailability
 import time
 from datetime import datetime, timedelta
 import json

@@ -268,7 +268,7 @@ export default function FinancialAnalyticsPage() {
 
         {/* Key Metrics */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card variant="elevated" animated>
+          <Card variant="elevated">
             <CardContent>
               <div className="flex items-center justify-between mb-2">
                 <CurrencyDollarIcon className="w-5 h-5 text-green-600" />
@@ -288,7 +288,7 @@ export default function FinancialAnalyticsPage() {
             </CardContent>
           </Card>
 
-          <Card variant="elevated" animated animationDelay={100}>
+          <Card variant="elevated">
             <CardContent>
               <div className="flex items-center justify-between mb-2">
                 <CreditCardIcon className="w-5 h-5 text-blue-600" />
@@ -308,7 +308,7 @@ export default function FinancialAnalyticsPage() {
             </CardContent>
           </Card>
 
-          <Card variant="elevated" animated animationDelay={200}>
+          <Card variant="elevated">
             <CardContent>
               <div className="flex items-center justify-between mb-2">
                 <ReceiptPercentIcon className="w-5 h-5 text-purple-600" />
@@ -328,7 +328,7 @@ export default function FinancialAnalyticsPage() {
             </CardContent>
           </Card>
 
-          <Card variant="elevated" animated animationDelay={300}>
+          <Card variant="elevated">
             <CardContent>
               <div className="flex items-center justify-between mb-2">
                 <BanknotesIcon className="w-5 h-5 text-orange-600" />
