@@ -647,11 +647,11 @@ export default function EnterprisePage() {
                         <div className="mt-2 space-y-1 text-xs">
                           <div className="flex justify-between gap-4">
                             <span className="text-muted-foreground">Chairs:</span>
-                            <span>{location.total_chairs || location.chairs_count || 0}</span>
+                            <span>{location.total_chairs || 0}</span>
                           </div>
                           <div className="flex justify-between gap-4">
                             <span className="text-muted-foreground">Active:</span>
-                            <span>{location.active_chairs || location.barbers_count || 0}</span>
+                            <span>{location.active_chairs || 0}</span>
                           </div>
                           <div className="flex justify-between gap-4">
                             <span className="text-muted-foreground">Revenue:</span>

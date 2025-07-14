@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Bot, BarChart3, Settings, Activity, Zap, AlertCircle, Flask } from 'lucide-react'
+import { Plus, Bot, BarChart3, Settings, Activity, Zap, AlertCircle, TestTube } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card } from "@/components/ui/Card"
 import { Badge } from '@/components/ui/Badge'
@@ -258,7 +258,7 @@ export default function AgentsPage() {
             }}
             disabled={agentInstances.length === 0}
           >
-            <Flask className="w-4 h-4 mr-2" />
+            <TestTube className="w-4 h-4 mr-2" />
             A/B Testing Lab
           </Button>
           
@@ -347,6 +347,7 @@ export default function AgentsPage() {
               key={agent.id}
               agent={agent}
               onAction={handleAgentAction}
+              onTestMessages={handleTestMessages}
               performanceRank={getAgentPerformanceRank(agent.id)}
               totalAgents={agentInstances.length}
               roiData={generateMockROIData(agent)}
@@ -378,6 +379,36 @@ export default function AgentsPage() {
           onSuccess={() => {
             setShowCreateWizard(false)
             loadAgentsData()
+          }}
+        />
+      )}
+
+      {/* Agent Comparison Modal */}
+      {showComparison && (
+        <AgentComparisonModal
+          isOpen={showComparison}
+          onClose={() => setShowComparison(false)}
+          agents={agentInstances}
+          selectedAgentId={selectedComparisonAgent}
+          onOptimize={handleOptimizeAgent}
+        />
+      )}
+
+      {/* Message Variant Tester */}
+      {showVariantTester && selectedTestAgent && (
+        <MessageVariantTester
+          isOpen={showVariantTester}
+          onClose={() => {
+            setShowVariantTester(false)
+            setSelectedTestAgent(null)
+          }}
+          agent={selectedTestAgent}
+          onTestComplete={(test) => {
+            toast({
+              title: 'Test Complete',
+              description: `A/B test "${test.name}" has finished with results available`,
+              variant: 'default'
+            })
           }}
         />
       )}

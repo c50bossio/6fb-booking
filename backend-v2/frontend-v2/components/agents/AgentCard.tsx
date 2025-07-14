@@ -26,7 +26,8 @@ import {
   Sliders,
   TrendingDown,
   Star,
-  Medal
+  Medal,
+  TestTube
 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -45,6 +46,7 @@ import {
 interface AgentCardProps {
   agent: AgentInstance
   onAction: (agentId: number, action: 'activate' | 'pause' | 'delete' | 'optimize') => Promise<void>
+  onTestMessages?: (agent: AgentInstance) => void
   isLoading?: boolean
   performanceRank?: number
   totalAgents?: number
@@ -65,6 +67,7 @@ interface AgentCardProps {
 export function AgentCard({ 
   agent, 
   onAction, 
+  onTestMessages,
   isLoading = false, 
   performanceRank,
   totalAgents,
@@ -458,6 +461,18 @@ export function AgentCard({
             <Target className="w-4 h-4 mr-1" />
             Compare
           </Button>
+
+          {onTestMessages && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => onTestMessages(agent)}
+              className="text-purple-600 hover:text-purple-900 hover:bg-purple-50 dark:text-purple-400 dark:hover:text-purple-300 dark:hover:bg-purple-900/20"
+            >
+              <TestTube className="w-4 h-4 mr-1" />
+              A/B Test
+            </Button>
+          )}
 
           {canDelete && (
             <Button
