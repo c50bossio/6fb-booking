@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bookedbarber-v2
+  labels:
+    app: bookedbarber
+    version: v2
+    environment: production

@@ -1,0 +1,75 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: bookedbarber-v2-production
+
+namespace: bookedbarber-v2
+
+resources:
+- namespace.yaml
+- configmap.yaml
+- secrets.yaml
+- postgres-deployment.yaml
+- redis-deployment.yaml
+- backend-deployment.yaml
+- celery-deployment.yaml
+- ingress.yaml
+- monitoring.yaml
+- network-policies.yaml
+
+images:
+- name: bookedbarber/backend
+  newTag: latest
+
+commonLabels:
+  app.kubernetes.io/name: bookedbarber
+  app.kubernetes.io/version: v2.0.0
+  app.kubernetes.io/component: api
+  app.kubernetes.io/part-of: bookedbarber-platform
+
+patchesStrategicMerge:
+- |-
+  apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: bookedbarber-config
+    namespace: bookedbarber-v2
+  data:
+    ENVIRONMENT: production
+    LOG_LEVEL: INFO
+    SENTRY_TRACES_SAMPLE_RATE: "0.1"
+
+patchesJson6902:
+- target:
+    version: v1
+    kind: Secret
+    name: bookedbarber-secrets
+  patch: |-
+    - op: replace
+      path: /stringData/DATABASE_URL
+      value: "postgresql://bookedbarber:${POSTGRES_PASSWORD}@postgres-service:5432/bookedbarber_production"
+
+configMapGenerator:
+- name: deployment-info
+  literals:
+  - deployment.timestamp=$(date -u +%Y%m%d%H%M%S)
+  - deployment.commit=${GIT_COMMIT:-unknown}
+  - deployment.version=v2.0.0
+
+secretGenerator:
+- name: tls-secret
+  type: kubernetes.io/tls
+  files:
+  - tls.crt
+  - tls.key
+
+replicas:
+- name: bookedbarber-backend
+  count: 3
+- name: celery-worker
+  count: 2
+- name: postgres
+  count: 1
+- name: redis
+  count: 1

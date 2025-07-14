@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bookedbarber-config
+  namespace: bookedbarber-v2
+data:
+  # Application Configuration
+  ENVIRONMENT: "production"
+  APP_NAME: "BookedBarber V2"
+  
+  # Database Configuration
+  DATABASE_TIMEOUT: "30"
+  DATABASE_POOL_SIZE: "20"
+  DATABASE_MAX_OVERFLOW: "30"
+  
+  # Redis Configuration  
+  REDIS_MAX_CONNECTIONS: "50"
+  REDIS_RETRY_ON_TIMEOUT: "true"
+  REDIS_SOCKET_CONNECT_TIMEOUT: "5"
+  REDIS_SOCKET_TIMEOUT: "5"
+  
+  # Cache Configuration
+  ENABLE_CACHING: "true"
+  CACHE_DEFAULT_TTL: "300"
+  CACHE_MAX_SIZE: "1000"
+  
+  # Security Configuration
+  CORS_ALLOW_CREDENTIALS: "true"
+  CORS_MAX_AGE: "3600"
+  
+  # Rate Limiting
+  RATE_LIMIT_ENABLED: "true"
+  DEFAULT_RATE_LIMIT: "100/minute"
+  AUTH_RATE_LIMIT: "5/minute"
+  
+  # Monitoring Configuration
+  SENTRY_ENVIRONMENT: "production"
+  SENTRY_TRACES_SAMPLE_RATE: "0.1"
+  LOG_LEVEL: "INFO"
+  
+  # External Services Configuration
+  STRIPE_WEBHOOK_TOLERANCE: "300"
+  SENDGRID_TIMEOUT: "30"
+  TWILIO_TIMEOUT: "30"
+  
+  # Production URLs
+  FRONTEND_URL: "https://bookedbarber.com"
+  API_URL: "https://api.bookedbarber.com"
