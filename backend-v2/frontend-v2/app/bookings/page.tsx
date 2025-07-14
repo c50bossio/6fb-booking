@@ -614,9 +614,8 @@ export default function MyBookingsPage() {
       {/* Cancel Confirmation Dialog */}
       <CancelConfirmationDialog
         isOpen={cancelConfirmation.isOpen}
-        onClose={() => setCancelConfirmation({ isOpen: false, bookingId: null })}
-        onConfirm={confirmCancelBooking}
-        loading={cancellingId !== null}
+        onCancel={() => setCancelConfirmation({ isOpen: false, bookingId: null })}
+        onConfirm={() => confirmCancelBooking()}
       />
     </div>
   )
