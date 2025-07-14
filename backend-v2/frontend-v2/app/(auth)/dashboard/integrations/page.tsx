@@ -414,18 +414,18 @@ export default function IntegrationsPage() {
                     </CardHeader>
                     <CardContent className="space-y-3">
                       <div className="text-xs text-muted-foreground space-y-1">
-                        {integration.connected_at && (
-                          <p>Connected: {new Date(integration.connected_at).toLocaleDateString()}</p>
+                        {integration.created_at && (
+                          <p>Connected: {new Date(integration.created_at).toLocaleDateString()}</p>
                         )}
-                        {integration.last_sync && (
-                          <p>Last sync: {new Date(integration.last_sync).toLocaleDateString()}</p>
+                        {integration.last_sync_at && (
+                          <p>Last sync: {new Date(integration.last_sync_at).toLocaleDateString()}</p>
                         )}
                       </div>
 
-                      {integration.status === 'error' && integration.error_message && (
+                      {integration.status === 'error' && integration.last_error && (
                         <Alert variant="destructive">
                           <AlertDescription className="text-xs">
-                            {integration.error_message}
+                            {integration.last_error}
                           </AlertDescription>
                         </Alert>
                       )}
@@ -624,8 +624,8 @@ export default function IntegrationsPage() {
                           <div>
                             <h4 className="font-medium">{integration.name}</h4>
                             <p className="text-xs text-muted-foreground">
-                              Last checked: {integration.last_sync ? 
-                                new Date(integration.last_sync).toLocaleString() : 
+                              Last checked: {integration.last_sync_at ? 
+                                new Date(integration.last_sync_at).toLocaleString() : 
                                 'Never'
                               }
                             </p>

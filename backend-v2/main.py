@@ -6,7 +6,7 @@ from database import engine, Base
 import models
 # Import tracking models to register them with SQLAlchemy
 import models.tracking
-from routers import auth, bookings, appointments, payments, payouts, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health
+from routers import auth, appointments, payments, payouts, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, api_keys, commissions, privacy, ai_analytics, mfa, tracking, google_calendar, agents, billing, invitations, trial_monitoring, organizations, customer_pixels, public_booking, health
 from routers.services import public_router as services_public_router
 from utils.rate_limit import limiter, rate_limit_exceeded_handler
 from services.integration_service import IntegrationServiceFactory
@@ -283,7 +283,7 @@ app.include_router(auth.router, prefix="/api/v1")
 
 # Removed auth bypass - using real authentication only
 app.include_router(mfa.router, prefix="/api/v1")  # Multi-Factor Authentication endpoints
-app.include_router(bookings.router, prefix="/api/v1")
+# Removed deprecated bookings.router - use appointments.router instead
 app.include_router(appointments.router, prefix="/api/v1")  # Standardized appointment endpoints
 app.include_router(payments.router, prefix="/api/v1")
 app.include_router(payouts.router, prefix="/api/v1")
