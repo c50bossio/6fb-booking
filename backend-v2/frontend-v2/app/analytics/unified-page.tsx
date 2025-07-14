@@ -87,7 +87,7 @@ export default function UnifiedAnalyticsPage() {
           data = {
             type: 'manager',
             location: {
-              name: userData.barbershop_name || 'Main Location',
+              name: `${userData.first_name || ''} ${userData.last_name || ''}`.trim() || 'Main Location',
               revenue: analytics.revenue_summary.total_revenue,
               revenueGrowth: analytics.revenue_summary.revenue_growth,
               appointments: analytics.appointment_summary.total_appointments,
