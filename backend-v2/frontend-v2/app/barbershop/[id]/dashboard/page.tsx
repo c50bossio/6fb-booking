@@ -235,7 +235,7 @@ export default function BarbershopDashboardPage() {
 
         {/* Location Alerts */}
         {location.chair_occupancy < 70 && (
-          <Card variant="warning" className="mb-6" animated>
+          <Card variant="outlined" className="mb-6" animated>
             <CardContent className="flex items-center space-x-3">
               <ExclamationTriangleIcon className="w-6 h-6 text-warning-600 flex-shrink-0" />
               <div>
