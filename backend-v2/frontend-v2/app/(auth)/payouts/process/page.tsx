@@ -291,7 +291,7 @@ export default function PayoutProcessPage() {
               <Checkbox
                 id="include-retail"
                 checked={includeRetail}
-                onCheckedChange={setIncludeRetail}
+                onCheckedChange={(checked) => setIncludeRetail(checked === true)}
               />
               <Label htmlFor="include-retail" className="text-sm">
                 Include retail commissions

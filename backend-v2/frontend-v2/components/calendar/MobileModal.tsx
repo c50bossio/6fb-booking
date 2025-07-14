@@ -1,5 +1,24 @@
 'use client'
 
+/**
+ * @deprecated This component is deprecated and will be removed in v3.0.0
+ * Use ResponsiveModal from @/components/ui instead.
+ * 
+ * Migration Guide:
+ * 
+ * // Before
+ * import MobileModal from '@/components/calendar/MobileModal'
+ * 
+ * // After  
+ * import { ResponsiveModal } from '@/components/ui'
+ * 
+ * The ResponsiveModal provides the same mobile functionality with:
+ * - Better accessibility
+ * - Consistent styling with the design system
+ * - Enhanced animations
+ * - Automatic mobile detection
+ */
+
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { touchTargets, mobileSpacing } from '@/hooks/useResponsiveCalendar'
