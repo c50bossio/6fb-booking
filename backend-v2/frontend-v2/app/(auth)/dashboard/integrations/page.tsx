@@ -434,7 +434,7 @@ export default function IntegrationsPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleRefreshTokens(integration.id, integration.display_name)}
+                          onClick={() => handleRefreshTokens(integration.id, integration.name)}
                         >
                           <RefreshCw className="h-3 w-3 mr-1" />
                           Refresh
@@ -442,7 +442,7 @@ export default function IntegrationsPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleDisconnect(integration.id, integration.display_name)}
+                          onClick={() => handleDisconnect(integration.id, integration.name)}
                         >
                           <XCircle className="h-3 w-3 mr-1" />
                           Disconnect
@@ -622,7 +622,7 @@ export default function IntegrationsPage() {
                         <div className="flex items-center gap-3">
                           <IconComponent className="h-5 w-5" />
                           <div>
-                            <h4 className="font-medium">{integration.display_name}</h4>
+                            <h4 className="font-medium">{integration.name}</h4>
                             <p className="text-xs text-muted-foreground">
                               Last checked: {integration.last_sync ? 
                                 new Date(integration.last_sync).toLocaleString() : 

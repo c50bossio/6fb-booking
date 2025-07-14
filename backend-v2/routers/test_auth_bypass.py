@@ -3,7 +3,7 @@ Temporary auth bypass for testing frontend integration
 """
 from fastapi import APIRouter
 from datetime import datetime, timedelta, timezone
-from utils.auth_simple import create_access_token, create_refresh_token
+from utils.auth import create_access_token, create_refresh_token
 import schemas
 
 router = APIRouter(prefix="/auth-test", tags=["auth-test"])
