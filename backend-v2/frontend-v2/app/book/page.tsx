@@ -654,9 +654,9 @@ export default function BookPage() {
                 <div>
                   <h2 className="text-lg font-semibold mb-4">Choose a Date</h2>
                   <Calendar
-                    selectedDate={selectedDate}
-                    onDateSelect={handleDateSelect}
-                    bookingDates={bookingDates}
+                    selected={selectedDate}
+                    onSelect={handleDateSelect}
+                    mode="single"
                   />
                 </div>
 
