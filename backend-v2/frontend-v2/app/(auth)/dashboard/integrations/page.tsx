@@ -572,7 +572,7 @@ export default function IntegrationsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {healthSummary.overall_health_percentage}%
+                    {healthSummary.total_integrations > 0 ? Math.round((healthSummary.healthy_count / healthSummary.total_integrations) * 100) : 0}%
                   </div>
                   <p className="text-xs text-muted-foreground">
                     System health score
@@ -586,7 +586,7 @@ export default function IntegrationsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {healthSummary.average_response_time_ms}ms
+                    N/A
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Across all services
@@ -600,7 +600,7 @@ export default function IntegrationsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {healthSummary.uptime_percentage?.toFixed(1)}%
+                    N/A
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Last 30 days
