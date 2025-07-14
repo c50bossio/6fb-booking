@@ -176,20 +176,22 @@ export default function ReviewsAnalyticsPage() {
   }
 
   const ratingTrend = analyticsData.ratings.trend[analyticsData.ratings.trend.length - 1].rating > analyticsData.ratings.trend[0].rating
+  const ratingTrendDirection: "up" | "down" = ratingTrend ? 'up' : 'down'
+  const responseRateTrend: "up" | "down" = analyticsData.summary.responseRate > 80 ? 'up' : 'down'
 
   const metrics = [
     {
       title: 'Average Rating',
       value: analyticsData.summary.averageRating.toFixed(1),
       icon: <StarIcon className="w-5 h-5 text-yellow-600" />,
-      trend: ratingTrend ? 'up' : 'down',
+      trend: ratingTrendDirection,
       change: ratingTrend ? 2.1 : -1.5
     },
     {
       title: 'Total Reviews',
       value: analyticsData.summary.totalReviews,
       icon: <ChatBubbleLeftEllipsisIcon className="w-5 h-5 text-blue-600" />,
-      trend: 'up',
+      trend: 'up' as const,
       change: 15.3,
       changeLabel: 'vs last period'
     },
@@ -197,13 +199,13 @@ export default function ReviewsAnalyticsPage() {
       title: 'Response Rate',
       value: `${analyticsData.summary.responseRate}%`,
       icon: <CheckCircleIcon className="w-5 h-5 text-green-600" />,
-      trend: analyticsData.summary.responseRate > 80 ? 'up' : 'down'
+      trend: responseRateTrend
     },
     {
       title: 'Response Time',
       value: analyticsData.summary.averageResponseTime,
       icon: <ExclamationCircleIcon className="w-5 h-5 text-orange-600" />,
-      trend: 'neutral'
+      trend: 'neutral' as const
     }
   ]
 
