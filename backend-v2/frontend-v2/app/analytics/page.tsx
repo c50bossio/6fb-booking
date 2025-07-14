@@ -185,7 +185,7 @@ function UnifiedAnalyticsContent() {
         }
       case 'revenue':
         return (
-          <Suspense fallback={<PageLoading message="Loading revenue analytics..." />}>
+          <Suspense fallback={<PageLoading title="Loading revenue analytics..." />}>
             <RevenueAnalyticsSection 
               data={analyticsData.raw} 
               userRole={user.role} 
@@ -195,7 +195,7 @@ function UnifiedAnalyticsContent() {
         )
       case 'clients':
         return (
-          <Suspense fallback={<PageLoading message="Loading client analytics..." />}>
+          <Suspense fallback={<PageLoading title="Loading client analytics..." />}>
             <ClientAnalyticsSection 
               data={analyticsData.raw} 
               userRole={user.role}
@@ -205,7 +205,7 @@ function UnifiedAnalyticsContent() {
         )
       case 'marketing':
         return (
-          <Suspense fallback={<PageLoading message="Loading marketing analytics..." />}>
+          <Suspense fallback={<PageLoading title="Loading marketing analytics..." />}>
             <MarketingAnalyticsSection 
               userRole={user.role}
               dateRange={{ startDate, endDate }}
@@ -214,7 +214,7 @@ function UnifiedAnalyticsContent() {
         )
       case 'reviews':
         return (
-          <Suspense fallback={<PageLoading message="Loading review analytics..." />}>
+          <Suspense fallback={<PageLoading title="Loading review analytics..." />}>
             <ReviewsAnalyticsSection 
               userRole={user.role}
               dateRange={{ startDate, endDate }}
@@ -223,7 +223,7 @@ function UnifiedAnalyticsContent() {
         )
       case 'productivity':
         return (
-          <Suspense fallback={<PageLoading message="Loading productivity analytics..." />}>
+          <Suspense fallback={<PageLoading title="Loading productivity analytics..." />}>
             <ProductivityAnalyticsSection 
               data={analyticsData.raw}
               userRole={user.role}
@@ -282,7 +282,7 @@ function UnifiedAnalyticsContent() {
 
 export default function UnifiedAnalyticsPage() {
   return (
-    <Suspense fallback={<PageLoading message="Loading analytics..." />}>
+    <Suspense fallback={<PageLoading title="Loading analytics..." />}>
       <UnifiedAnalyticsContent />
     </Suspense>
   )
