@@ -334,6 +334,10 @@ interface CalendarSmartLoadingProps {
   showProgress?: boolean
   progress?: number
   showSkeleton?: boolean
+  context?: string
+  variant?: string
+  autoProgress?: boolean
+  onComplete?: () => void
 }
 
 /**
@@ -344,7 +348,11 @@ export function CalendarSmartLoading({
   view = 'month',
   showProgress = false,
   progress,
-  showSkeleton = true
+  showSkeleton = true,
+  context,
+  variant,
+  autoProgress,
+  onComplete
 }: CalendarSmartLoadingProps) {
   if (showSkeleton) {
     return <CalendarSkeleton view={view} />
