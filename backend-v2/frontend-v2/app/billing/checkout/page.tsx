@@ -64,7 +64,7 @@ export default function CheckoutPage() {
     initializeCheckout()
   }, [])
 
-  const handlePaymentSuccess = async (paymentMethodId: string) => {
+  const handlePaymentSuccess = async (paymentMethodId?: string) => {
     setCheckoutState({ step: 'processing' })
     
     try {
