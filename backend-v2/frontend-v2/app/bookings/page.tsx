@@ -336,7 +336,8 @@ export default function MyBookingsPage() {
       {bookings.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
           <EmptyState
-            type="bookings"
+            title="No Bookings Yet"
+            description="You haven't made any bookings yet. Book your first appointment to get started!"
             action={{
               label: 'Book Now',
               onClick: () => router.push('/book')
