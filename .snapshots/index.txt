@@ -1,1 +1,2 @@
 [20250702-081506] snapshot-feature/marketing-integrations-20250702-20250702-081506 - Branch: feature/marketing-integrations-20250702, Commit: 68cffed
+[20250713-195757] snapshot-deployment-clean-20250713-195757 - Branch: deployment-clean, Commit: 554c1552e

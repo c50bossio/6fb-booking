@@ -1,0 +1,10 @@
+554c1552e fix: correct IntegrationResponse property names to match interface
+537b01062 fix: correct integration property references for component compatibility
+0316f783f fix: use correct property name for integration display
+c3d108f14 fix: use correct IntegrationStatus enum values
+36ac000b0 fix: convert Set to Array for spread operator compatibility
+a74585ed2 fix: add type assertion for error property in OAuth callback
+eb9424ec6 fix: remove invalid size prop from Badge components in enterprise page
+0b6866ca6 fix: correct Progress component import paths in agent components
+68ab897f5 fix: resolve Textarea import path and Flask icon references
+f8a004d95 fix: replace invalid Flask icon and fix TypeScript errors

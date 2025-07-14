@@ -478,7 +478,7 @@ export default function IntegrationsPage() {
               <Button
                 key={category}
                 size="sm"
-                variant={selectedCategory === category ? "default" : "outline"}
+                variant={selectedCategory === category ? "primary" : "outline"}
                 onClick={() => setSelectedCategory(category)}
               >
                 {category === 'all' ? 'All' : category}
