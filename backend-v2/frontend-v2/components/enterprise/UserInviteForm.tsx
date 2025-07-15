@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Label } from "@/components/ui/Label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/Select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/radix-select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/Badge"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -397,7 +397,7 @@ export default function UserInviteForm({
                   <Label htmlFor="role">Role</Label>
                   <Select
                     value={selectedRole}
-                    onValueChange={handleRoleChange}
+                    onValueChange={(value: any) => handleRoleChange(value as keyof typeof ROLE_TEMPLATES)}
                   >
                     <SelectTrigger>
                       <SelectValue />
