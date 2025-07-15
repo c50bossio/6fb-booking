@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Label } from "@/components/ui/Label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/Select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/radix-select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/Badge"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -104,7 +104,7 @@ export default function ProductForm({
       newErrors.cost_per_item = 'Cost should be less than selling price'
     }
 
-    if (formData.commission_rate < 0 || formData.commission_rate > 1) {
+    if (formData.commission_rate !== undefined && (formData.commission_rate < 0 || formData.commission_rate > 1)) {
       newErrors.commission_rate = 'Commission rate must be between 0 and 100%'
     }
 
@@ -402,7 +402,7 @@ export default function ProductForm({
                       className={errors.commission_rate ? 'border-red-500' : ''}
                     />
                     <span className="text-sm text-muted-foreground min-w-0">
-                      ({(formData.commission_rate * 100).toFixed(1)}%)
+                      ({((formData.commission_rate || 0) * 100).toFixed(1)}%)
                     </span>
                   </div>
                   {errors.commission_rate && (
@@ -435,7 +435,7 @@ export default function ProductForm({
                     )}
                     <div className="flex justify-between border-t pt-1">
                       <span>Commission:</span>
-                      <span className="font-medium">{formatCurrency(formData.price * formData.commission_rate)}</span>
+                      <span className="font-medium">{formatCurrency(formData.price * (formData.commission_rate || 0))}</span>
                     </div>
                   </div>
                 </div>

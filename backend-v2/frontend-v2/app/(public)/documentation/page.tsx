@@ -21,8 +21,8 @@ import {
   ExclamationTriangleIcon,
   InformationCircleIcon
 } from '@heroicons/react/24/outline'
-import { Button } from '@/components/ui/Button'
-import { LogoFull } from '@/components/ui/Logo'
+import { Button } from '@/components/ui'
+import { LogoFull } from '@/components/ui'
 
 // Note: metadata removed due to 'use client' directive
 // This page is client-side rendered for interactivity

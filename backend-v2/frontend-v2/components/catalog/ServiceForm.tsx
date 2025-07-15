@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Label } from "@/components/ui/Label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/Select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/radix-select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/Badge"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -111,7 +111,7 @@ export default function ServiceForm({
       newErrors.duration_minutes = 'Duration must be greater than 0'
     }
 
-    if (formData.buffer_time_minutes < 0) {
+    if (formData.buffer_time_minutes !== undefined && formData.buffer_time_minutes < 0) {
       newErrors.buffer_time_minutes = 'Buffer time cannot be negative'
     }
 
