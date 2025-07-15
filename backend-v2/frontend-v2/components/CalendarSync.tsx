@@ -8,10 +8,11 @@ import { format } from 'date-fns'
 interface SyncStatus {
   connected: boolean
   total_appointments: number
-  synced_appointments: number
-  unsynced_appointments: number
-  sync_percentage: number
+  synced_appointments?: number
+  unsynced_appointments?: number
+  sync_percentage?: number
   last_sync?: string
+  sync_enabled: boolean
   error?: string
 }
 
@@ -50,6 +51,7 @@ export default function CalendarSync() {
         synced_appointments: 0,
         unsynced_appointments: 0,
         sync_percentage: 0,
+        sync_enabled: false,
         error: 'Failed to fetch sync status'
       })
     } finally {
@@ -69,9 +71,9 @@ export default function CalendarSync() {
 
       setSyncResult({
         success: result.results.synced || 0,
-        failed: result.results.failed || 0,
-        conflicts: result.results.conflicts || 0,
-        errors: result.results.errors || []
+        failed: Array.isArray(result.results.failed) ? result.results.failed.length : (result.results.failed || 0),
+        conflicts: 0,
+        errors: []
       })
 
       // Refresh sync status
@@ -100,10 +102,10 @@ export default function CalendarSync() {
       
       // Show result in sync result format
       setSyncResult({
-        success: result.results.deleted || 0,
-        failed: 0,
+        success: result.results.cleaned || 0,
+        failed: result.results.errors || 0,
         conflicts: 0,
-        errors: result.results.errors || []
+        errors: []
       })
 
       await fetchSyncStatus()

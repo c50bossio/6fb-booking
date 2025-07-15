@@ -39,10 +39,10 @@ export function RememberMe({
   useEffect(() => {
     // Get device information on mount
     const setupDevice = async () => {
-      setDeviceName(generateDeviceName(navigator.userAgent))
+      setDeviceName(generateDeviceName())
       
       if (userId) {
-        const trusted = await isDeviceTrusted(userId)
+        const trusted = isDeviceTrusted()
         setIsAlreadyTrusted(trusted)
       }
     }
@@ -55,8 +55,8 @@ export function RememberMe({
     
     // If checking the box and we have a userId, trust this device
     if (newChecked && userId) {
-      const deviceId = await generateDeviceFingerprint()
-      await trustDevice(deviceId, userId, trustDuration)
+      const deviceFingerprint = generateDeviceFingerprint()
+      trustDevice(deviceFingerprint)
     }
   }
 

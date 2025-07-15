@@ -128,7 +128,7 @@ const AppointmentCancellation: React.FC<AppointmentCancellationProps> = ({
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              service_id: appointment.service_id,
+              service_name: appointment.service_name,
               preferred_date: appointment.start_time,
               flexible_on_time: true,
               flexible_on_date: true,
@@ -354,17 +354,14 @@ const AppointmentCancellation: React.FC<AppointmentCancellationProps> = ({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <RadioGroup value={selectedReason} onValueChange={setSelectedReason}>
+            <RadioGroup value={selectedReason} onChange={setSelectedReason}>
               {cancellationReasons.map((reason) => (
-                <div key={reason.value} className="flex items-center space-x-2">
-                  <RadioGroupItem value={reason.value} id={reason.value} />
-                  <Label htmlFor={reason.value} className="cursor-pointer">
-                    <div>
-                      <div className="font-medium">{reason.label}</div>
-                      <div className="text-sm text-gray-600">{reason.description}</div>
-                    </div>
-                  </Label>
-                </div>
+                <RadioGroupItem key={reason.value} value={reason.value}>
+                  <div>
+                    <div className="font-medium">{reason.label}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">{reason.description}</div>
+                  </div>
+                </RadioGroupItem>
               ))}
             </RadioGroup>
 
@@ -373,7 +370,7 @@ const AppointmentCancellation: React.FC<AppointmentCancellationProps> = ({
                 <Checkbox 
                   id="emergency" 
                   checked={isEmergency}
-                  onCheckedChange={setIsEmergency}
+                  onCheckedChange={(checked) => setIsEmergency(checked === true)}
                 />
                 <Label htmlFor="emergency" className="text-sm">
                   This is a genuine emergency (may qualify for additional refund)
@@ -396,7 +393,7 @@ const AppointmentCancellation: React.FC<AppointmentCancellationProps> = ({
               <Checkbox 
                 id="waitlist" 
                 checked={joinWaitlist}
-                onCheckedChange={setJoinWaitlist}
+                onCheckedChange={(checked) => setJoinWaitlist(checked === true)}
               />
               <Label htmlFor="waitlist" className="text-sm">
                 Add me to the waitlist for similar appointments

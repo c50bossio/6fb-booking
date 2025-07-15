@@ -605,7 +605,7 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
                 {/* Copy Button */}
                 <Button
                   onClick={copyUrl}
-                  variant={copiedUrl ? "success" : "primary"}
+                  variant={copiedUrl ? "secondary" : "primary"}
                   size="md"
                   fullWidth
                   leftIcon={copiedUrl ? 
