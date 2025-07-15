@@ -54,7 +54,7 @@ export function BarberAnalyticsView({ data, loading = false }: BarberAnalyticsVi
       value: `$${data.revenue.total.toLocaleString()}`,
       icon: <CurrencyDollarIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />,
       change: revenueGrowth,
-      trend: revenueGrowth > 0 ? 'up' : revenueGrowth < 0 ? 'down' : 'neutral'
+      trend: (revenueGrowth > 0 ? 'up' : revenueGrowth < 0 ? 'down' : 'neutral') as 'up' | 'down' | 'neutral'
     },
     {
       title: 'Appointments',
@@ -62,7 +62,7 @@ export function BarberAnalyticsView({ data, loading = false }: BarberAnalyticsVi
       icon: <CalendarDaysIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />,
       change: Math.round(data.performance.completionRate),
       changeLabel: 'completion',
-      trend: 'neutral'
+      trend: 'neutral' as 'up' | 'down' | 'neutral'
     },
     {
       title: 'Active Clients',
@@ -70,13 +70,13 @@ export function BarberAnalyticsView({ data, loading = false }: BarberAnalyticsVi
       icon: <UsersIcon className="w-5 h-5 text-green-600 dark:text-green-400" />,
       change: data.clients.retentionRate,
       changeLabel: 'retention',
-      trend: data.clients.retentionRate > 80 ? 'up' : 'down'
+      trend: (data.clients.retentionRate > 80 ? 'up' : 'down') as 'up' | 'down' | 'neutral'
     },
     {
       title: 'Average Rating',
       value: data.performance.averageRating.toFixed(1),
       icon: <StarIcon className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />,
-      trend: data.performance.averageRating >= 4.5 ? 'up' : 'neutral'
+      trend: (data.performance.averageRating >= 4.5 ? 'up' : 'neutral') as 'up' | 'down' | 'neutral'
     }
   ]
 

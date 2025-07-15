@@ -161,7 +161,7 @@ export default function MarketingDashboard() {
   return (
     <div className="space-y-8">
       {/* Welcome Section */}
-      <Card variant="accent" className="text-center">
+      <Card className="text-center">
         <CardContent className="p-8">
           <div className="flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mx-auto mb-4">
             <EnvelopeIcon className="w-8 h-8 text-primary-700 dark:text-primary-300" />
@@ -192,7 +192,7 @@ export default function MarketingDashboard() {
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
-          <Card key={index} variant="default" className="hover:shadow-lg transition-shadow">
+          <Card key={index} className="hover:shadow-lg transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
                 <div className="p-2 bg-teal-100 dark:bg-teal-900/30 rounded-lg text-teal-600 dark:text-teal-400">
@@ -268,7 +268,7 @@ export default function MarketingDashboard() {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Link href="/marketing/booking-links">
-          <Card variant="default" className="h-full hover:shadow-lg transition-all duration-200 cursor-pointer group">
+          <Card className="h-full hover:shadow-lg transition-all duration-200 cursor-pointer group">
             <CardHeader>
               <div className="flex items-center space-x-3">
                 <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-lg group-hover:bg-teal-200 dark:group-hover:bg-teal-800/40 transition-colors">
@@ -301,7 +301,7 @@ export default function MarketingDashboard() {
           </Card>
         </Link>
         <Link href="/marketing/contacts">
-          <Card variant="default" className="h-full hover:shadow-lg transition-all duration-200 cursor-pointer group">
+          <Card className="h-full hover:shadow-lg transition-all duration-200 cursor-pointer group">
             <CardHeader>
               <div className="flex items-center space-x-3">
                 <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg group-hover:bg-purple-200 dark:group-hover:bg-purple-800/40 transition-colors">
@@ -335,7 +335,7 @@ export default function MarketingDashboard() {
         </Link>
 
         <Link href="/marketing/analytics">
-          <Card variant="default" className="h-full hover:shadow-lg transition-all duration-200 cursor-pointer group">
+          <Card className="h-full hover:shadow-lg transition-all duration-200 cursor-pointer group">
             <CardHeader>
               <div className="flex items-center space-x-3">
                 <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg group-hover:bg-blue-200 dark:group-hover:bg-blue-800/40 transition-colors">

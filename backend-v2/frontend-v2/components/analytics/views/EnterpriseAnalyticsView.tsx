@@ -56,13 +56,13 @@ export function EnterpriseAnalyticsView({ data, loading = false }: EnterpriseAna
       value: `$${data.summary.totalRevenue.toLocaleString()}`,
       icon: <CurrencyDollarIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />,
       change: data.summary.revenueGrowth,
-      trend: data.summary.revenueGrowth > 0 ? 'up' : 'down'
+      trend: (data.summary.revenueGrowth > 0 ? 'up' : 'down') as 'up' | 'down'
     },
     {
       title: 'Locations',
       value: data.summary.totalLocations,
       icon: <BuildingStorefrontIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />,
-      trend: 'neutral'
+      trend: 'neutral' as 'neutral'
     },
     {
       title: 'Total Team',
@@ -70,13 +70,13 @@ export function EnterpriseAnalyticsView({ data, loading = false }: EnterpriseAna
       icon: <UserGroupIcon className="w-5 h-5 text-green-600 dark:text-green-400" />,
       change: data.summary.averageUtilization,
       changeLabel: 'utilization',
-      trend: data.summary.averageUtilization > 75 ? 'up' : 'down'
+      trend: (data.summary.averageUtilization > 75 ? 'up' : 'down') as 'up' | 'down'
     },
     {
       title: 'Active Clients',
       value: data.summary.totalClients.toLocaleString(),
       icon: <ChartBarIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />,
-      trend: 'up'
+      trend: 'up' as 'up'
     }
   ]
 

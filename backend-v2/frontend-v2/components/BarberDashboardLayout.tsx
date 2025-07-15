@@ -39,7 +39,7 @@ export function BarberDashboardLayout({ user, todayStats, upcomingAppointments }
 
       {/* Next Appointment Card */}
       {upcomingAppointments.length > 0 && (
-        <Card variant="default" padding="lg">
+        <Card>
           <CardContent>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Next Appointment</h3>

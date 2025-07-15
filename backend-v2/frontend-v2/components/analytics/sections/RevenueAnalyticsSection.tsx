@@ -45,7 +45,7 @@ export default function RevenueAnalyticsSection({ data, userRole, dateRange }: R
       title: 'Total Revenue',
       value: `$${revenueData.summary.total_revenue?.toLocaleString() || '0'}`,
       icon: <CurrencyDollarIcon className="w-5 h-5 text-green-600" />,
-      trend: revenueData.summary.revenue_growth > 0 ? 'up' : 'down',
+      trend: (revenueData.summary.revenue_growth > 0 ? 'up' : 'down') as 'up' | 'down' | 'neutral',
       change: Math.abs(revenueData.summary.revenue_growth || 0),
       changeLabel: 'vs last period'
     },
@@ -53,21 +53,21 @@ export default function RevenueAnalyticsSection({ data, userRole, dateRange }: R
       title: 'Average Ticket',
       value: `$${revenueData.summary.average_ticket_price?.toFixed(2) || '0'}`,
       icon: <ChartBarIcon className="w-5 h-5 text-blue-600" />,
-      trend: revenueData.summary.ticket_growth > 0 ? 'up' : 'down',
+      trend: (revenueData.summary.ticket_growth > 0 ? 'up' : 'down') as 'up' | 'down' | 'neutral',
       change: Math.abs(revenueData.summary.ticket_growth || 0)
     },
     {
       title: 'Monthly Recurring',
       value: `$${revenueData.summary.recurring_revenue?.toLocaleString() || '0'}`,
       icon: <ArrowTrendingUpIcon className="w-5 h-5 text-purple-600" />,
-      trend: 'up',
+      trend: 'up' as 'up' | 'down' | 'neutral',
       change: 15.3
     },
     {
       title: 'Projected Revenue',
       value: `$${revenueData.summary.projected_revenue?.toLocaleString() || '0'}`,
       icon: <ArrowTrendingUpIcon className="w-5 h-5 text-orange-600" />,
-      description: 'End of month'
+      trend: 'neutral' as 'up' | 'down' | 'neutral'
     }
   ]
 
@@ -97,8 +97,6 @@ export default function RevenueAnalyticsSection({ data, userRole, dateRange }: R
         </CardHeader>
         <CardContent>
           <RevenueChart 
-            data={revenueData.trends} 
-            period={selectedPeriod}
             height={400}
           />
         </CardContent>

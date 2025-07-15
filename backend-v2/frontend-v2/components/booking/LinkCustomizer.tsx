@@ -269,7 +269,7 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
           {/* Configuration Panel */}
           <div className="lg:col-span-2 space-y-6">
             {/* Service Selection */}
-            <Card variant="elevated" padding="lg">
+            <Card>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 rounded-ios bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
                   <WrenchScrewdriverIcon className="w-4 h-4 text-primary-600 dark:text-primary-400" />
@@ -311,7 +311,7 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
             </Card>
 
             {/* Barber Selection */}
-            <Card variant="elevated" padding="lg">
+            <Card>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 rounded-ios bg-accent-100 dark:bg-accent-900/30 flex items-center justify-center">
                   <UserIcon className="w-4 h-4 text-accent-600 dark:text-accent-400" />
@@ -354,7 +354,7 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
 
             {/* Date & Time Configuration */}
             {mode === 'set-parameters' && (
-              <Card variant="elevated" padding="lg">
+              <Card>
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-8 h-8 rounded-ios bg-success-100 dark:bg-success-900/30 flex items-center justify-center">
                     <CalendarIcon className="w-4 h-4 text-success-600 dark:text-success-400" />
@@ -448,7 +448,7 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
 
             {/* Advanced Settings */}
             {mode === 'set-parameters' && (
-              <Card variant="elevated" padding="lg">
+              <Card>
                 <button
                   onClick={() => setShowAdvanced(!showAdvanced)}
                   className="flex items-center gap-3 mb-4 w-full"
@@ -585,7 +585,7 @@ const LinkCustomizer: React.FC<LinkCustomizerProps> = ({
           {/* URL Preview Panel */}
           <div className="lg:col-span-1">
             <div className="sticky top-6">
-              <Card variant="elevated" padding="lg">
+              <Card>
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-8 h-8 rounded-ios bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
                     <LinkIcon className="w-4 h-4 text-primary-600 dark:text-primary-400" />

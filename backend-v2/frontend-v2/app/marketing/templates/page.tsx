@@ -233,8 +233,7 @@ export default function TemplatesPage() {
           return (
             <Card 
               key={category}
-              variant={filterCategory === category ? 'accent' : 'default'}
-              className="cursor-pointer hover:shadow-lg transition-all"
+              className={`cursor-pointer hover:shadow-lg transition-all ${filterCategory === category ? 'ring-2 ring-teal-500 bg-teal-50' : ''}`}
               onClick={() => setFilterCategory(filterCategory === category ? 'all' : category)}
             >
               <CardContent className="p-4 text-center">

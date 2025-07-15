@@ -377,7 +377,7 @@ export default function BulkAvailabilityUpdater({
       {activeTab === 'bulk' && (
         <div className="space-y-6">
           {/* Danger Zone */}
-          <Card variant="outlined" className="border-red-200">
+          <Card className="border-red-200">
             <CardHeader>
               <CardTitle className="text-red-800">Danger Zone</CardTitle>
             </CardHeader>

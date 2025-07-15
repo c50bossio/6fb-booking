@@ -29,9 +29,7 @@ export function QuickActions({ userRole, className = '' }: QuickActionsProps) {
   return (
     <div className={`animate-ios-fade ${className}`}>
       <Card 
-        variant="default" 
-        padding="lg"
-        className="backdrop-blur-2xl"
+        className="backdrop-blur-2xl p-6"
       >
         <CardContent className="p-0">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 tracking-tight">

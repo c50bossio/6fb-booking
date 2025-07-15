@@ -95,7 +95,6 @@ export function BusinessTypeSelection({
           return (
             <Card 
               key={type.id}
-              interactive={true}
               className={`
                 relative cursor-pointer transition-all duration-300 transform group
                 min-h-[300px] sm:min-h-[320px] md:min-h-[350px]

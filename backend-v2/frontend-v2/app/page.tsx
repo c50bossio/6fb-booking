@@ -141,56 +141,58 @@ export default function LandingPage() {
         }
       `}</style>
       
-      <main className="bg-white dark:bg-gray-900 mobile-safe no-overflow-x">
+      <main className="bg-white dark:bg-gray-900 mobile-safe no-overflow-x overflow-x-hidden">
       {/* Header Navigation */}
       <header className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+          <div className="flex justify-between items-center py-3 sm:py-4">
             <div className="flex items-center">
-              <LogoFull variant="auto" size="sm" href="/" className="scale-110" />
+              <LogoFull variant="auto" size="sm" href="/" className="scale-90 sm:scale-110" />
             </div>
-            <nav className="hidden md:flex items-center space-x-10">
-              <Link href="#pricing" className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-all duration-300 ease-out hover:scale-105 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
+            <nav className="hidden md:flex items-center space-x-6 lg:space-x-10">
+              <Link href="#pricing" className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-all duration-300 ease-out hover:scale-105 px-2 lg:px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
                 Pricing
               </Link>
-              <Link href="#features" className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-all duration-300 ease-out hover:scale-105 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
+              <Link href="#features" className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-all duration-300 ease-out hover:scale-105 px-2 lg:px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
                 Features
               </Link>
-              <Link href="#testimonials" className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-all duration-300 ease-out hover:scale-105 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
+              <Link href="#testimonials" className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-all duration-300 ease-out hover:scale-105 px-2 lg:px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
                 Testimonials
               </Link>
             </nav>
-            <AuthHeaderCTAs />
+            <div className="flex-shrink-0">
+              <AuthHeaderCTAs />
+            </div>
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 to-white dark:from-gray-900 dark:to-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
-          <div className="text-center space-y-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 xl:py-32">
+          <div className="text-center space-y-6 sm:space-y-8 lg:space-y-10">
             <div className="mx-auto">
-              <h1 className="text-6xl md:text-8xl font-black text-gray-900 dark:text-white mb-6 tracking-tight leading-[0.9]">
+              <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-gray-900 dark:text-white mb-4 sm:mb-6 tracking-tight leading-[0.85] sm:leading-[0.9] px-2">
                 BOOKEDBARBER
               </h1>
-              <div className="w-32 h-1 bg-primary-900 mx-auto mb-10"></div>
+              <div className="w-16 sm:w-24 lg:w-32 h-0.5 sm:h-1 bg-primary-900 mx-auto mb-6 sm:mb-8 lg:mb-10"></div>
             </div>
             
-            <h2 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white leading-[1.1] max-w-5xl mx-auto">
+            <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 dark:text-white leading-[1.1] sm:leading-[1.1] max-w-5xl mx-auto px-2">
               The booking platform that puts
-              <span className="text-primary-600 dark:text-primary-400"> your chair first</span>
+              <span className="text-primary-600 dark:text-primary-400 block sm:inline"> your chair first</span>
             </h2>
             
-            <p className="text-xl leading-relaxed text-gray-600 dark:text-gray-300 max-w-3xl mx-auto font-medium">
+            <p className="text-base sm:text-lg lg:text-xl leading-relaxed text-gray-600 dark:text-gray-300 max-w-3xl mx-auto font-medium px-4">
               Turn your chair into a thriving business with our all-in-one booking and management platform. 
               Built on proven Six Figure Barber methodology.
             </p>
 
-            <div className="pt-8">
+            <div className="pt-4 sm:pt-6 lg:pt-8">
               <AuthHeroCTAs />
             </div>
 
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 px-4">
               No credit card required • Setup in 2 minutes • Cancel anytime
             </p>
           </div>
@@ -213,19 +215,19 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {features.map((feature, index) => (
               <div 
                 key={index}
-                className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer group"
+                className="bg-white dark:bg-gray-900 p-4 sm:p-6 rounded-xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer group"
               >
-                <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/20 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-primary-200 dark:group-hover:bg-primary-800/30 transition-all duration-300">
-                  <feature.icon className="w-6 h-6 text-primary-600 dark:text-primary-400 group-hover:scale-110 transition-transform duration-300" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary-100 dark:bg-primary-900/20 rounded-lg flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 group-hover:bg-primary-200 dark:group-hover:bg-primary-800/30 transition-all duration-300">
+                  <feature.icon className="w-5 h-5 sm:w-6 sm:h-6 text-primary-600 dark:text-primary-400 group-hover:scale-110 transition-transform duration-300" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300">
                   {feature.title}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors duration-300">
+                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors duration-300">
                   {feature.description}
                 </p>
               </div>
@@ -246,25 +248,25 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {testimonials.map((testimonial, index) => (
               <div 
                 key={index}
-                className="bg-gray-50 dark:bg-gray-800 p-8 rounded-xl hover:shadow-lg hover:-translate-y-2 hover:bg-white dark:hover:bg-gray-700 transition-all duration-300 ease-out cursor-pointer group"
+                className="bg-gray-50 dark:bg-gray-800 p-6 sm:p-8 rounded-xl hover:shadow-lg hover:-translate-y-2 hover:bg-white dark:hover:bg-gray-700 transition-all duration-300 ease-out cursor-pointer group"
               >
-                <div className="flex mb-4">
+                <div className="flex mb-3 sm:mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <StarIcon key={i} className="w-5 h-5 text-yellow-400 fill-current group-hover:scale-110 transition-transform duration-300" style={{ transitionDelay: `${i * 50}ms` }} />
+                    <StarIcon key={i} className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 fill-current group-hover:scale-110 transition-transform duration-300" style={{ transitionDelay: `${i * 50}ms` }} />
                   ))}
                 </div>
-                <blockquote className="text-gray-700 dark:text-gray-300 mb-6 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors duration-300">
+                <blockquote className="text-sm sm:text-base text-gray-700 dark:text-gray-300 mb-4 sm:mb-6 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors duration-300 leading-relaxed">
                   "{testimonial.quote}"
                 </blockquote>
                 <div>
-                  <div className="font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300">
+                  <div className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300">
                     {testimonial.author}
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-300">
+                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-300">
                     {testimonial.role}
                   </div>
                 </div>
@@ -272,21 +274,21 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <div className="mt-16 text-center">
-            <div className="inline-flex items-center space-x-8 text-gray-600 dark:text-gray-400">
-              <div>
-                <div className="text-4xl font-bold text-gray-900 dark:text-white">10K+</div>
-                <div className="text-sm">Active Barbers</div>
+          <div className="mt-12 sm:mt-16 text-center">
+            <div className="flex flex-col sm:flex-row items-center justify-center space-y-6 sm:space-y-0 sm:space-x-6 lg:space-x-8 text-gray-600 dark:text-gray-400">
+              <div className="text-center">
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">10K+</div>
+                <div className="text-xs sm:text-sm">Active Barbers</div>
               </div>
-              <div className="w-px h-12 bg-gray-300 dark:bg-gray-700"></div>
-              <div>
-                <div className="text-4xl font-bold text-gray-900 dark:text-white">500K+</div>
-                <div className="text-sm">Appointments Booked</div>
+              <div className="hidden sm:block w-px h-12 bg-gray-300 dark:bg-gray-700"></div>
+              <div className="text-center">
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">500K+</div>
+                <div className="text-xs sm:text-sm">Appointments Booked</div>
               </div>
-              <div className="w-px h-12 bg-gray-300 dark:bg-gray-700"></div>
-              <div>
-                <div className="text-4xl font-bold text-gray-900 dark:text-white">$5M+</div>
-                <div className="text-sm">Revenue Processed</div>
+              <div className="hidden sm:block w-px h-12 bg-gray-300 dark:bg-gray-700"></div>
+              <div className="text-center">
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">$5M+</div>
+                <div className="text-xs sm:text-sm">Revenue Processed</div>
               </div>
             </div>
           </div>
@@ -305,51 +307,51 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
             {Object.entries(plans).map(([key, plan]) => (
               <div
                 key={key}
                 className={`relative bg-white dark:bg-gray-900 rounded-xl shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer group ${
                   selectedPlan === key ? 'ring-2 ring-primary-500 shadow-lg' : ''
-                } ${'popular' in plan && plan.popular ? 'scale-105' : ''}`}
+                } ${'popular' in plan && plan.popular ? 'sm:scale-105' : ''}`}
                 onClick={() => setSelectedPlan(key as any)}
               >
                 {'popular' in plan && plan.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="bg-gray-900 text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm group-hover:bg-primary-600 transition-colors duration-300">
+                  <div className="absolute -top-3 sm:-top-4 left-1/2 -translate-x-1/2">
+                    <span className="bg-gray-900 text-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium shadow-sm group-hover:bg-primary-600 transition-colors duration-300">
                       Most Popular
                     </span>
                   </div>
                 )}
                 
-                <div className="p-8">
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300">
+                <div className="p-6 sm:p-8">
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300">
                     {plan.name}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-6 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-300">
+                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4 sm:mb-6 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-300">
                     {plan.description}
                   </p>
                   
                   <div className="mb-6">
                     {typeof plan.price === 'number' ? (
                       <div className="flex items-baseline">
-                        <span className="text-4xl font-bold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300">
+                        <span className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300">
                           ${plan.price}
                         </span>
-                        <span className="text-gray-600 dark:text-gray-400 ml-2">/month</span>
+                        <span className="text-sm sm:text-base text-gray-600 dark:text-gray-400 ml-2">/month</span>
                       </div>
                     ) : (
-                      <div className="text-4xl font-bold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300">
+                      <div className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300">
                         {plan.price}
                       </div>
                     )}
                   </div>
 
-                  <ul className="space-y-3 mb-8">
+                  <ul className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
                     {plan.features.map((feature, index) => (
                       <li key={index} className="flex items-start transform transition-all duration-300 group-hover:translate-x-1">
-                        <CheckIcon className="w-5 h-5 text-primary-600 dark:text-primary-400 mt-0.5 mr-3 flex-shrink-0 group-hover:scale-110 transition-transform duration-300" style={{ transitionDelay: `${index * 50}ms` }} />
-                        <span className="text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors duration-300">
+                        <CheckIcon className="w-4 h-4 sm:w-5 sm:h-5 text-primary-600 dark:text-primary-400 mt-0.5 mr-2 sm:mr-3 flex-shrink-0 group-hover:scale-110 transition-transform duration-300" style={{ transitionDelay: `${index * 50}ms` }} />
+                        <span className="text-sm sm:text-base text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors duration-300">
                           {feature}
                         </span>
                       </li>
@@ -359,7 +361,7 @@ export default function LandingPage() {
                   <Link href={key === 'enterprise' ? "mailto:sales@bookedbarber.com?subject=Enterprise Consultation Request" : "/register"}>
                     <Button 
                       variant={key === 'enterprise' ? 'outline' : ('popular' in plan && plan.popular ? 'warning' : 'warning')} 
-                      className="w-full group-hover:scale-105 transition-transform duration-300"
+                      className="w-full group-hover:scale-105 transition-transform duration-300 min-h-[44px] text-sm sm:text-base"
                     >
                       {key === 'enterprise' ? 'Book a Consultation' : 'Start Free Trial'}
                     </Button>
@@ -385,43 +387,43 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-300 py-12">
+      <footer className="bg-gray-900 text-gray-300 py-8 sm:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+            <div className="sm:col-span-2 lg:col-span-1">
               <LogoFull variant="color" size="md" className="mb-4" href="#" />
-              <p className="text-sm">
+              <p className="text-sm leading-relaxed">
                 The command center for barbers who want to own their chair, own their brand.
               </p>
             </div>
             <div>
-              <h3 className="font-semibold mb-4">Product</h3>
+              <h3 className="font-semibold mb-3 sm:mb-4">Product</h3>
               <ul className="space-y-2 text-sm">
-                <li><Link href="/register" className="hover:text-white hover:translate-x-1 transition-all duration-200">Free Trial</Link></li>
-                <li><Link href="#features" className="hover:text-white hover:translate-x-1 transition-all duration-200">Features</Link></li>
-                <li><Link href="/billing/plans" className="hover:text-white hover:translate-x-1 transition-all duration-200">Pricing</Link></li>
-                <li><Link href="/login" className="hover:text-white hover:translate-x-1 transition-all duration-200">Login</Link></li>
+                <li><Link href="/register" className="hover:text-white hover:translate-x-1 transition-all duration-200 inline-block py-1">Free Trial</Link></li>
+                <li><Link href="#features" className="hover:text-white hover:translate-x-1 transition-all duration-200 inline-block py-1">Features</Link></li>
+                <li><Link href="/billing/plans" className="hover:text-white hover:translate-x-1 transition-all duration-200 inline-block py-1">Pricing</Link></li>
+                <li><Link href="/login" className="hover:text-white hover:translate-x-1 transition-all duration-200 inline-block py-1">Login</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold mb-4">Support</h3>
+              <h3 className="font-semibold mb-3 sm:mb-4">Support</h3>
               <ul className="space-y-2 text-sm">
-                <li><Link href="/documentation" className="hover:text-white hover:translate-x-1 transition-all duration-200">Documentation</Link></li>
-                <li><Link href="/contact" className="hover:text-white hover:translate-x-1 transition-all duration-200">Contact Us</Link></li>
-                <li><Link href="/faq" className="hover:text-white hover:translate-x-1 transition-all duration-200">FAQs</Link></li>
-                <li><Link href="/status" className="hover:text-white hover:translate-x-1 transition-all duration-200">Status</Link></li>
+                <li><Link href="/documentation" className="hover:text-white hover:translate-x-1 transition-all duration-200 inline-block py-1">Documentation</Link></li>
+                <li><Link href="/contact" className="hover:text-white hover:translate-x-1 transition-all duration-200 inline-block py-1">Contact Us</Link></li>
+                <li><Link href="/faq" className="hover:text-white hover:translate-x-1 transition-all duration-200 inline-block py-1">FAQs</Link></li>
+                <li><Link href="/status" className="hover:text-white hover:translate-x-1 transition-all duration-200 inline-block py-1">Status</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold mb-4">Legal</h3>
+              <h3 className="font-semibold mb-3 sm:mb-4">Legal</h3>
               <ul className="space-y-2 text-sm">
-                <li><Link href="/privacy" className="hover:text-white hover:translate-x-1 transition-all duration-200">Privacy Policy</Link></li>
-                <li><Link href="/terms" className="hover:text-white hover:translate-x-1 transition-all duration-200">Terms of Service</Link></li>
-                <li><Link href="/cookies" className="hover:text-white hover:translate-x-1 transition-all duration-200">Cookie Policy</Link></li>
+                <li><Link href="/privacy" className="hover:text-white hover:translate-x-1 transition-all duration-200 inline-block py-1">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="hover:text-white hover:translate-x-1 transition-all duration-200 inline-block py-1">Terms of Service</Link></li>
+                <li><Link href="/cookies" className="hover:text-white hover:translate-x-1 transition-all duration-200 inline-block py-1">Cookie Policy</Link></li>
               </ul>
             </div>
           </div>
-          <div className="mt-8 pt-8 border-t border-gray-800 text-center text-sm">
+          <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-gray-800 text-center text-xs sm:text-sm">
             <p>&copy; 2025 Booked Barber. All rights reserved.</p>
           </div>
         </div>

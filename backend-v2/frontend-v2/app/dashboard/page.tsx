@@ -332,7 +332,7 @@ function DashboardContent() {
 
           {/* Success Message */}
           {showSuccess && (
-            <Card variant="outlined" className="mb-6">
+            <Card className="mb-6">
               <CardContent className="flex items-center space-x-3">
                 <div className="flex-shrink-0">
                   <svg className="w-6 h-6 text-success-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -357,7 +357,7 @@ function DashboardContent() {
 
           {/* Timezone Warning */}
           {showTimezoneWarning && (
-            <Card variant="outlined" className="mb-6">
+            <Card className="mb-6">
               <CardContent className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="flex-shrink-0">
@@ -472,7 +472,7 @@ function DashboardContent() {
 
         {/* Success Message */}
         {showSuccess && (
-          <Card variant="outlined" className="mb-6">
+          <Card className="mb-6">
             <CardContent className="flex items-center space-x-3">
               <div className="flex-shrink-0">
                 <svg className="w-6 h-6 text-success-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -497,7 +497,7 @@ function DashboardContent() {
 
         {/* Timezone Warning */}
         {showTimezoneWarning && (
-          <Card variant="outlined" className="mb-6">
+          <Card className="mb-6">
             <CardContent className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="flex-shrink-0">
@@ -533,7 +533,7 @@ function DashboardContent() {
           <Card className="mb-6">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle as="h2">Welcome back!</CardTitle>
+                <CardTitle>Welcome back!</CardTitle>
                 <Button
                   onClick={() => router.push('/settings')}
                   variant="ghost"
@@ -566,7 +566,7 @@ function DashboardContent() {
                   />
                 </div>
                 
-                <Card variant="default">
+                <Card>
                   <CardContent>
                     <h3 className="font-semibold text-accent-900 mb-3">
                       {user?.role === 'admin' || user?.role === 'barber' ? 'Client Management' : 'Services'}
@@ -625,7 +625,7 @@ function DashboardContent() {
               </div>
 
               {user?.role === 'admin' && (
-                <Card variant="default" className="mt-6 border-l-4 border-accent-400">
+                <Card className="mt-6 border-l-4 border-accent-400">
                   <CardContent>
                     <h3 className="font-semibold text-accent-900 mb-2">🛠️ Admin Panel</h3>
                     <p className="text-accent-700 text-sm mb-3">

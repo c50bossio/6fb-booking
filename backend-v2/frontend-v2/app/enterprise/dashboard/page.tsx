@@ -206,7 +206,6 @@ export default function EnterpriseDashboardPage() {
             {alerts.map((alert, index) => (
               <Card
                 key={index}
-                variant={alert.type === 'warning' ? 'outlined' : alert.type === 'success' ? 'accent' : 'default'}
                 className="border-l-4"
               >
                 <CardContent className="flex items-center space-x-3 py-3">
@@ -225,7 +224,7 @@ export default function EnterpriseDashboardPage() {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card variant="elevated">
+          <Card>
             <CardContent>
               <div className="flex items-center justify-between mb-4">
                 <div className="p-2 bg-primary-100 dark:bg-primary-900 rounded-ios-lg">
@@ -252,7 +251,7 @@ export default function EnterpriseDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card variant="elevated">
+          <Card>
             <CardContent>
               <div className="flex items-center justify-between mb-4">
                 <div className="p-2 bg-accent-100 dark:bg-accent-900 rounded-ios-lg">
@@ -271,7 +270,7 @@ export default function EnterpriseDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card variant="elevated">
+          <Card>
             <CardContent>
               <div className="flex items-center justify-between mb-4">
                 <div className="p-2 bg-success-100 dark:bg-success-900 rounded-ios-lg">
@@ -290,7 +289,7 @@ export default function EnterpriseDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card variant="elevated">
+          <Card>
             <CardContent>
               <div className="flex items-center justify-between mb-4">
                 <div className="p-2 bg-warning-100 dark:bg-warning-900 rounded-ios-lg">
@@ -311,7 +310,7 @@ export default function EnterpriseDashboardPage() {
         </div>
 
         {/* Location Performance Matrix */}
-        <Card variant="elevated" className="mb-8">
+        <Card className="mb-8">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Location Performance</CardTitle>
@@ -418,7 +417,7 @@ export default function EnterpriseDashboardPage() {
         {/* Revenue Chart and Top Performers */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Revenue Trend Chart */}
-          <Card variant="elevated" className="lg:col-span-2">
+          <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle>Revenue Trend</CardTitle>
               <CardDescription>Revenue performance over time</CardDescription>
@@ -452,7 +451,7 @@ export default function EnterpriseDashboardPage() {
           </Card>
 
           {/* Top Performers */}
-          <Card variant="elevated">
+          <Card>
             <CardHeader>
               <CardTitle>Top Performers</CardTitle>
               <CardDescription>Highest revenue generators</CardDescription>
@@ -483,7 +482,7 @@ export default function EnterpriseDashboardPage() {
 
         {/* Additional Metrics */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
-          <Card variant="outlined">
+          <Card>
             <CardContent>
               <h4 className="text-ios-subheadline font-medium text-ios-gray-600 dark:text-zinc-400 mb-2">
                 NPS Score
@@ -497,7 +496,7 @@ export default function EnterpriseDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card variant="outlined">
+          <Card>
             <CardContent>
               <h4 className="text-ios-subheadline font-medium text-ios-gray-600 dark:text-zinc-400 mb-2">
                 Average Ticket
@@ -511,7 +510,7 @@ export default function EnterpriseDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card variant="outlined">
+          <Card>
             <CardContent>
               <h4 className="text-ios-subheadline font-medium text-ios-gray-600 dark:text-zinc-400 mb-2">
                 Staff Retention

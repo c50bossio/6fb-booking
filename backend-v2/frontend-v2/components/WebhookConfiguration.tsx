@@ -106,7 +106,7 @@ export default function WebhookConfiguration({ onWebhookSelect, onUpdate }: Webh
       ) : (
         <div className="space-y-4">
           {webhooks.map((webhook) => (
-            <Card key={webhook.id} variant="default" className="hover:shadow-md transition-shadow">
+            <Card key={webhook.id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">

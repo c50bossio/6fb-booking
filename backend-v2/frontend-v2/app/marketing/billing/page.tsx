@@ -207,7 +207,7 @@ export default function MarketingBillingPage() {
 
       {/* Current Plan Info */}
       {usageStats && (
-        <Card variant="accent">
+        <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -411,7 +411,7 @@ export default function MarketingBillingPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card variant="outlined">
+            <Card>
               <CardContent className="p-4 text-center">
                 <h4 className="font-medium text-gray-900 dark:text-white mb-2">
                   Quick Top-up
@@ -425,7 +425,7 @@ export default function MarketingBillingPage() {
                 </Button>
               </CardContent>
             </Card>
-            <Card variant="outlined">
+            <Card>
               <CardContent className="p-4 text-center">
                 <h4 className="font-medium text-gray-900 dark:text-white mb-2">
                   Auto-Recharge
@@ -439,7 +439,7 @@ export default function MarketingBillingPage() {
                 </Button>
               </CardContent>
             </Card>
-            <Card variant="outlined">
+            <Card>
               <CardContent className="p-4 text-center">
                 <h4 className="font-medium text-gray-900 dark:text-white mb-2">
                   Upgrade Plan
@@ -477,7 +477,6 @@ export default function MarketingBillingPage() {
                 {pricingPlans.map(plan => (
                   <Card 
                     key={plan.id} 
-                    variant={plan.isPopular ? 'accent' : 'outlined'}
                     className="relative"
                   >
                     {plan.isPopular && (

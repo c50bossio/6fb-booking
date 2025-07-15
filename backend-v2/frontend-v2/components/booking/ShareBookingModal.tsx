@@ -188,10 +188,7 @@ ${businessName}`
     return (
       <Card
         key={option.id}
-        variant="elevated"
-        padding="md"
-        interactive
-        className="group cursor-pointer hover:shadow-ios-lg hover:scale-[1.02] transition-all duration-200"
+        className="group cursor-pointer hover:shadow-ios-lg hover:scale-[1.02] transition-all duration-200 p-4 shadow-md"
         onClick={option.action}
       >
         <div className="flex flex-col items-center text-center space-y-3">

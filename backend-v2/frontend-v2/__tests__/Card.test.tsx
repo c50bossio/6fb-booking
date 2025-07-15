@@ -22,71 +22,58 @@ describe('Card Components', () => {
       
       const card = screen.getByTestId('card')
       expect(card).toBeInTheDocument()
-      expect(card).toHaveClass('bg-white')
-      expect(card).toHaveClass('rounded-ios-xl')
+      expect(card).toHaveClass('bg-card')
+      expect(card).toHaveClass('rounded-lg')
       expect(screen.getByText('Card content')).toBeInTheDocument()
     })
 
-    it('renders with different variants', () => {
-      const { rerender } = render(
-        <Card variant="elevated" data-testid="card">Content</Card>
+    it('renders with custom className', () => {
+      render(
+        <Card className="custom-class" data-testid="card">Content</Card>
       )
       
-      let card = screen.getByTestId('card')
-      expect(card).toHaveClass('shadow-ios-lg')
-      
-      rerender(<Card variant="glass" data-testid="card">Content</Card>)
-      card = screen.getByTestId('card')
-      expect(card).toHaveClass('bg-white/10')
-      expect(card).toHaveClass('backdrop-blur-ios')
-      
-      rerender(<Card variant="premium" data-testid="card">Content</Card>)
-      card = screen.getByTestId('card')
-      expect(card).toHaveClass('bg-gradient-to-br')
+      const card = screen.getByTestId('card')
+      expect(card).toHaveClass('custom-class')
     })
 
-    it('applies different padding sizes', () => {
-      const { rerender } = render(
-        <Card padding="none" data-testid="card">Content</Card>
+    it('applies custom styling through className', () => {
+      render(
+        <Card className="p-0" data-testid="card">Content</Card>
       )
       
-      let card = screen.getByTestId('card')
+      const card = screen.getByTestId('card')
       expect(card).toHaveClass('p-0')
-      
-      rerender(<Card padding="lg" data-testid="card">Content</Card>)
-      card = screen.getByTestId('card')
-      expect(card).toHaveClass('p-8')
     })
 
-    it('handles interactive prop', async () => {
+    it('handles onClick prop', async () => {
       const user = userEvent.setup()
+      const mockClick = jest.fn()
       
       render(
-        <Card interactive data-testid="card">
+        <Card onClick={mockClick} data-testid="card">
           Interactive content
         </Card>
       )
       
       const card = screen.getByTestId('card')
-      expect(card).toHaveClass('cursor-pointer')
-      expect(card).toHaveClass('hover:scale-[1.02]')
+      await user.click(card)
+      expect(mockClick).toHaveBeenCalledTimes(1)
     })
 
-    it('renders background patterns', () => {
+    it('renders with default background styling', () => {
       render(
-        <Card backgroundPattern="dots" data-testid="card">
-          Content with dots
+        <Card data-testid="card">
+          Content
         </Card>
       )
       
       const card = screen.getByTestId('card')
-      const pattern = card.querySelector('svg')
-      expect(pattern).toBeInTheDocument()
+      expect(card).toHaveClass('bg-card')
     })
 
-    it('applies animation delay', () => {
+    it('supports custom styles', () => {
       render(
-        <Card animationDelay={500} data-testid="card">
+        <Card style={{ animationDelay: '500ms' }} data-testid="card">
           Delayed content
         </Card>
       )
@@ -115,8 +102,8 @@ describe('Card Components', () => {
       
       const header = screen.getByTestId('header')
       expect(header).toBeInTheDocument()
-      expect(header).toHaveClass('border-b')
-      expect(header).toHaveClass('pb-4')
+      expect(header).toHaveClass('flex')
+      expect(header).toHaveClass('flex-col')
       expect(screen.getByText('Header content')).toBeInTheDocument()
     })
   })
@@ -128,12 +115,12 @@ describe('Card Components', () => {
       const title = screen.getByRole('heading', { level: 3 })
       expect(title).toBeInTheDocument()
       expect(title).toHaveTextContent('Test Title')
-      expect(title).toHaveClass('text-ios-headline')
+      expect(title).toHaveClass('text-2xl')
       expect(title).toHaveClass('font-semibold')
     })
 
     it('renders with different heading levels', () => {
-      render(<CardTitle as="h1">H1 Title</CardTitle>)
+      render(<CardTitle>H1 Title</CardTitle>)
       
       const title = screen.getByRole('heading', { level: 1 })
       expect(title).toBeInTheDocument()
@@ -148,8 +135,8 @@ describe('Card Components', () => {
       const description = screen.getByText('Test description')
       expect(description).toBeInTheDocument()
       expect(description.tagName).toBe('P')
-      expect(description).toHaveClass('text-ios-subheadline')
-      expect(description).toHaveClass('text-ios-gray-600')
+      expect(description).toHaveClass('text-sm')
+      expect(description).toHaveClass('text-muted-foreground')
     })
   })
 
@@ -177,9 +164,8 @@ describe('Card Components', () => {
       
       const footer = screen.getByTestId('footer')
       expect(footer).toBeInTheDocument()
-      expect(footer).toHaveClass('border-t')
-      expect(footer).toHaveClass('pt-6')
       expect(footer).toHaveClass('flex')
+      expect(footer).toHaveClass('items-center')
       expect(screen.getByText('Footer content')).toBeInTheDocument()
     })
   })
@@ -187,7 +173,7 @@ describe('Card Components', () => {
   describe('Full Card Integration', () => {
     it('renders complete card structure', () => {
       render(
-        <Card variant="elevated" padding="lg" data-testid="full-card">
+        <Card className="p-8 shadow-lg" data-testid="full-card">
           <CardHeader>
             <CardTitle>Card Title</CardTitle>
             <CardDescription>Card description</CardDescription>
@@ -211,8 +197,8 @@ describe('Card Components', () => {
       expect(screen.getByRole('button', { name: 'Action Button' })).toBeInTheDocument()
       
       // Check structure
-      expect(card).toHaveClass('p-8') // lg padding
-      expect(card).toHaveClass('shadow-ios-lg') // elevated variant
+      expect(card).toHaveClass('p-8') // custom padding
+      expect(card).toHaveClass('shadow-lg') // custom shadow
     })
   })
 })

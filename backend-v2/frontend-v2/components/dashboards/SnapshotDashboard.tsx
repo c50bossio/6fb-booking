@@ -86,9 +86,7 @@ export function SnapshotDashboard({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* Today's Bookings Card */}
         <Card 
-          variant="default" 
-          padding="sm" 
-          className="cursor-pointer hover:scale-[1.02] transition-transform" 
+          className="cursor-pointer hover:scale-[1.02] transition-transform p-3" 
           onClick={handleNavigateToBookings}
         >
           <CardContent className="flex items-center justify-between p-4">
@@ -104,9 +102,7 @@ export function SnapshotDashboard({
 
         {/* Today's Revenue Card */}
         <Card 
-          variant="default" 
-          padding="sm" 
-          className="cursor-pointer hover:scale-[1.02] transition-transform" 
+          className="cursor-pointer hover:scale-[1.02] transition-transform p-3" 
           onClick={handleNavigateToRevenue}
         >
           <CardContent className="flex items-center justify-between p-4">
@@ -122,9 +118,7 @@ export function SnapshotDashboard({
 
         {/* New Clients Card */}
         <Card 
-          variant="default" 
-          padding="sm" 
-          className="cursor-pointer hover:scale-[1.02] transition-transform" 
+          className="cursor-pointer hover:scale-[1.02] transition-transform p-3" 
           onClick={handleNavigateToClients}
         >
           <CardContent className="flex items-center justify-between p-4">
@@ -140,9 +134,7 @@ export function SnapshotDashboard({
 
         {/* Completion Rate Card */}
         <Card 
-          variant="default" 
-          padding="sm"
-          className="cursor-pointer hover:scale-[1.02] transition-transform"
+          className="cursor-pointer hover:scale-[1.02] transition-transform p-3"
           onClick={handleNavigateToPerformance}
         >
           <CardContent className="flex items-center justify-between p-4">

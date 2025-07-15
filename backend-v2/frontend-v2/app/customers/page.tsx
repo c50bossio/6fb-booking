@@ -276,7 +276,7 @@ function CustomerOverview({ summary, userRole }: { summary: any; userRole?: stri
     <div className="space-y-6">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card variant="elevated">
+        <Card>
           <CardContent>
             <div className="flex items-center justify-between mb-2">
               <UsersIcon className="w-5 h-5 text-blue-600" />
@@ -293,7 +293,7 @@ function CustomerOverview({ summary, userRole }: { summary: any; userRole?: stri
           </CardContent>
         </Card>
 
-        <Card variant="elevated">
+        <Card>
           <CardContent>
             <div className="flex items-center justify-between mb-2">
               <ChartBarIcon className="w-5 h-5 text-green-600" />
@@ -309,7 +309,7 @@ function CustomerOverview({ summary, userRole }: { summary: any; userRole?: stri
 
         {userRole !== 'client' && (
           <>
-            <Card variant="elevated">
+            <Card>
               <CardContent>
                 <div className="flex items-center justify-between mb-2">
                   <EnvelopeIcon className="w-5 h-5 text-purple-600" />
@@ -323,7 +323,7 @@ function CustomerOverview({ summary, userRole }: { summary: any; userRole?: stri
               </CardContent>
             </Card>
 
-            <Card variant="elevated">
+            <Card>
               <CardContent>
                 <div className="flex items-center justify-between mb-2">
                   <StarIcon className="w-5 h-5 text-orange-600" />

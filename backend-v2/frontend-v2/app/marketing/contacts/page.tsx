@@ -243,7 +243,6 @@ export default function ContactsPage() {
         {segments.map(segment => (
           <Card 
             key={segment.id}
-            variant={filterSegment === segment.id ? 'accent' : 'default'}
             className="cursor-pointer hover:shadow-lg transition-all"
             onClick={() => setFilterSegment(filterSegment === segment.id ? 'all' : segment.id)}
           >

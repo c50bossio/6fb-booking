@@ -224,7 +224,7 @@ export default function CampaignsPage() {
 
       {/* Campaign Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card variant="accent">
+        <Card>
           <CardContent className="p-4">
             <div className="text-3xl font-bold text-primary-900 dark:text-primary-100">
               {campaigns.length}

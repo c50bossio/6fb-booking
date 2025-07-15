@@ -144,8 +144,8 @@ export function GoogleOAuth({
 
   return (
     <Button
-      variant={variant}
-      size={size}
+      variant={variant === 'default' ? 'primary' : variant}
+      size={size === 'default' ? 'md' : size}
       onClick={handleGoogleSignIn}
       disabled={disabled || loading || !isGoogleLoaded}
       className={`${className} transition-all duration-200 hover:scale-105`}

@@ -161,8 +161,8 @@ export default function SixFigureAnalyticsDashboard({
       }
       
       // Check for required fields
-      const requiredFields = ['current_performance', 'targets', 'recommendations']
-      const missingFields = requiredFields.filter(field => !data[field])
+      const requiredFields = ['current_performance', 'targets', 'recommendations'] as const
+      const missingFields = requiredFields.filter(field => !data[field as keyof SixFigureBarberMetrics])
       if (missingFields.length > 0) {
         throw new Error(`Missing required fields: ${missingFields.join(', ')}`)
       }
@@ -284,7 +284,7 @@ export default function SixFigureAnalyticsDashboard({
       </Card>
 
       {/* AI Coach Section */}
-      <Card variant="elevated" padding="lg">
+      <Card>
         <CardContent>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">

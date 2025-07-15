@@ -589,8 +589,6 @@ export default function BookPage() {
               {SERVICES.map(service => (
                 <Card
                   key={service.id}
-                  variant="default"
-                  interactive
                   onClick={() => handleServiceSelect(service.id)}
                   className="cursor-pointer hover:border-primary-400"
                 >

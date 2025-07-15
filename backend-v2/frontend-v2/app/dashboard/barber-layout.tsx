@@ -90,7 +90,6 @@ export default function BarberDashboardLayout({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Appointments */}
         <Card 
-          variant="outlined" 
           className="backdrop-blur-2xl bg-gradient-to-br from-white/80 to-white/60 dark:from-gray-900/80 dark:to-gray-800/60 border-white/20 dark:border-white/10"
         >
           <CardContent className="p-6">
@@ -112,7 +111,6 @@ export default function BarberDashboardLayout({
 
         {/* Revenue */}
         <Card 
-          variant="outlined" 
           className="backdrop-blur-2xl bg-gradient-to-br from-white/80 to-white/60 dark:from-gray-900/80 dark:to-gray-800/60 border-white/20 dark:border-white/10"
         >
           <CardContent className="p-6">
@@ -134,7 +132,6 @@ export default function BarberDashboardLayout({
 
         {/* New Clients */}
         <Card 
-          variant="outlined" 
           className="backdrop-blur-2xl bg-gradient-to-br from-white/80 to-white/60 dark:from-gray-900/80 dark:to-gray-800/60 border-white/20 dark:border-white/10"
         >
           <CardContent className="p-6">
@@ -156,7 +153,6 @@ export default function BarberDashboardLayout({
 
         {/* Completion Rate */}
         <Card 
-          variant="outlined" 
           className="backdrop-blur-2xl bg-gradient-to-br from-white/80 to-white/60 dark:from-gray-900/80 dark:to-gray-800/60 border-white/20 dark:border-white/10"
         >
           <CardContent className="p-6">
@@ -180,7 +176,6 @@ export default function BarberDashboardLayout({
       {/* Next Appointment Card */}
       {nextAppointment && (
         <Card 
-          variant="outlined" 
           className="backdrop-blur-2xl bg-gradient-to-br from-white/80 to-white/60 dark:from-gray-900/80 dark:to-gray-800/60 border-white/20 dark:border-white/10"
         >
           <CardHeader>
