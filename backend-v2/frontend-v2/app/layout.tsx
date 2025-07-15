@@ -185,8 +185,12 @@ export default function RootLayout({
               <Toaster />
               <CookieConsent />
               <DevHealthMonitor />
-              <PWAInstallPrompt />
-              <ServiceWorkerUpdate />
+              {process.env.NODE_ENV === 'production' && (
+                <>
+                  <PWAInstallPrompt />
+                  <ServiceWorkerUpdate />
+                </>
+              )}
             </ErrorBoundary>
           </ToastProvider>
         </QueryProvider>

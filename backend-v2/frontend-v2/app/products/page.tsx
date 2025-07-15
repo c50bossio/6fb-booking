@@ -119,7 +119,6 @@ export default function ProductsPage() {
         </div>
       </div>
     )
-  }
   
   return (
     <div className="container max-w-7xl py-8 space-y-8">
@@ -227,9 +226,10 @@ export default function ProductsPage() {
                 { value: '', label: 'All Status' },
                 { value: ProductStatus.ACTIVE, label: 'Active' },
                 { value: ProductStatus.INACTIVE, label: 'Inactive' },
-                { value: ProductStatus.DRAFT, label: 'Draft' }
-              <option value={ProductStatus.ARCHIVED}>Archived</option>
-            </Select>
+                { value: ProductStatus.DRAFT, label: 'Draft' },
+                { value: ProductStatus.ARCHIVED, label: 'Archived' }
+              ]}
+            />
             
             <Button onClick={handleSearch} variant="outline">
               <Search className="w-4 h-4 mr-2" />
@@ -398,4 +398,5 @@ export default function ProductsPage() {
       )}
     </div>
   )
+}
 }

@@ -4939,10 +4939,11 @@ export interface CalendarSyncResponse {
 export interface CalendarSyncStatus {
   connected: boolean
   total_appointments: number
-  synced_appointments: number
-  unsynced_appointments: number
-  sync_percentage: number
+  synced_appointments?: number
+  unsynced_appointments?: number
+  sync_percentage?: number
   last_sync?: string
+  sync_enabled?: boolean
   error?: string
 }
 

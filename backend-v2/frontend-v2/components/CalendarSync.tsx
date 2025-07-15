@@ -1,19 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { calendarAPI } from '@/lib/api'
+import { calendarAPI, CalendarSyncStatus } from '@/lib/api'
 import { RefreshCw, AlertCircle, CheckCircle, Clock, Calendar, Info } from 'lucide-react'
 import { format } from 'date-fns'
-
-interface SyncStatus {
-  connected: boolean
-  total_appointments: number
-  synced_appointments: number
-  unsynced_appointments: number
-  sync_percentage: number
-  last_sync?: string
-  error?: string
-}
 
 interface SyncResult {
   success: number
@@ -23,7 +13,7 @@ interface SyncResult {
 }
 
 export default function CalendarSync() {
-  const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null)
+  const [syncStatus, setSyncStatus] = useState<CalendarSyncStatus | null>(null)
   const [syncing, setSyncing] = useState(false)
   const [loading, setLoading] = useState(true)
   const [dateRange, setDateRange] = useState({
@@ -47,9 +37,6 @@ export default function CalendarSync() {
       setSyncStatus({
         connected: false,
         total_appointments: 0,
-        synced_appointments: 0,
-        unsynced_appointments: 0,
-        sync_percentage: 0,
         error: 'Failed to fetch sync status'
       })
     } finally {
@@ -156,7 +143,7 @@ export default function CalendarSync() {
             <CheckCircle className="h-4 w-4 text-green-600" />
             <span className="text-sm font-medium text-green-600">Synced</span>
           </div>
-          <p className="text-2xl font-bold text-green-900">{syncStatus.synced_appointments}</p>
+          <p className="text-2xl font-bold text-green-900">{syncStatus.synced_appointments ?? 0}</p>
         </div>
 
         <div className="bg-yellow-50 rounded-lg p-4">
@@ -164,7 +151,7 @@ export default function CalendarSync() {
             <AlertCircle className="h-4 w-4 text-yellow-600" />
             <span className="text-sm font-medium text-yellow-600">Not Synced</span>
           </div>
-          <p className="text-2xl font-bold text-yellow-900">{syncStatus.unsynced_appointments}</p>
+          <p className="text-2xl font-bold text-yellow-900">{syncStatus.unsynced_appointments ?? 0}</p>
         </div>
 
         <div className="bg-primary-50 rounded-lg p-4">
@@ -172,7 +159,7 @@ export default function CalendarSync() {
             <Info className="h-4 w-4 text-primary-600" />
             <span className="text-sm font-medium text-primary-600">Sync Rate</span>
           </div>
-          <p className="text-2xl font-bold text-primary-900">{syncStatus.sync_percentage}%</p>
+          <p className="text-2xl font-bold text-primary-900">{syncStatus.sync_percentage ?? 0}%</p>
         </div>
       </div>
 
@@ -182,7 +169,7 @@ export default function CalendarSync() {
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
               className="bg-primary-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${syncStatus.sync_percentage}%` }}
+              style={{ width: `${syncStatus.sync_percentage ?? 0}%` }}
             />
           </div>
           {syncStatus.last_sync && (

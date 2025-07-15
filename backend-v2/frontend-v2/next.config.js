@@ -209,6 +209,8 @@ const nextConfig = {
 
   // Headers for security and performance
   async headers() {
+    const isDev = process.env.NODE_ENV === 'development'
+    
     return [
       {
         source: '/:path*',
@@ -232,7 +234,26 @@ const nextConfig = {
           {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()'
-          }
+          },
+          // Development cache-busting headers
+          ...(isDev ? [
+            {
+              key: 'Cache-Control',
+              value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0'
+            },
+            {
+              key: 'Pragma',
+              value: 'no-cache'
+            },
+            {
+              key: 'Expires',
+              value: '0'
+            },
+            {
+              key: 'Surrogate-Control',
+              value: 'no-store'
+            }
+          ] : [])
         ]
       },
       {

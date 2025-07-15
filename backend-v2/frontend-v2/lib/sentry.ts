@@ -117,7 +117,15 @@ export const Sentry = {
   setUser: (user: any) => {},
   setTag: (key: string, value: any) => {},
   setContext: (key: string, context: any) => {},
-  withScope: (fn: (scope: any) => void) => fn({}),
+  withScope: (fn: (scope: any) => void) => {
+    const mockScope = {
+      setTag: (key: string, value: any) => {},
+      setContext: (key: string, context: any) => {},
+      setUser: (user: any) => {},
+      addBreadcrumb: (breadcrumb: any) => {},
+    }
+    return fn(mockScope)
+  },
   startSpan: (options: any, fn: () => any) => fn(),
   lastEventId: () => 'dev-mode',
   captureUserFeedback: (feedback: any) => console.log('Feedback:', feedback),
