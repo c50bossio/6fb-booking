@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { Cookie, Settings, X, ChevronDown, ChevronUp, Shield, BarChart3, Target, Zap } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { Switch } from '@/components/ui/Switch'
+import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import useCookieConsent, { type CookieCategories } from '@/hooks/useCookieConsent'

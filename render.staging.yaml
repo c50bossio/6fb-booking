@@ -1,0 +1,45 @@
+# Render.com staging deployment configuration for 6FB Booking Platform
+# This file configures staging environment services
+# Deploy from staging branch to keep separate from production
+
+services:
+  # Frontend V2 Next.js Application - Staging
+  - type: web
+    name: sixfb-frontend-v2-staging
+    env: node
+    region: oregon
+    plan: starter
+    buildCommand: |
+      cd backend-v2/frontend-v2 && \
+      npm install --legacy-peer-deps && \
+      npm run build
+    startCommand: cd backend-v2/frontend-v2 && npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_ENVIRONMENT
+        value: staging
+      - key: NEXT_PUBLIC_API_URL
+        value: https://sixfb-backend-v2-staging.onrender.com
+      # Test Stripe publishable key
+      - key: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+        sync: false  # Set test key in Render dashboard
+      # Disable GA for staging
+      - key: NEXT_PUBLIC_GA_TRACKING_ID
+        value: ""  # Empty to disable tracking
+      - key: PORT
+        value: 3000
+      # Next.js settings
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+      - key: NEXT_PUBLIC_DISABLE_SPEEDY
+        value: "false"
+      # Staging feature flags
+      - key: NEXT_PUBLIC_ENABLE_DEBUG_PANEL
+        value: "true"
+      - key: NEXT_PUBLIC_SHOW_TEST_DATA
+        value: "true"
+    healthCheckPath: /
+    autoDeploy: false  # Manual deploy for staging
+    branch: deployment-clean  # Deploy from deployment-clean branch
+    numInstances: 1
