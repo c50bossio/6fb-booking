@@ -379,8 +379,11 @@ export default function RescheduleModal({
           {/* Error Display */}
           {errors.general && (
             <ErrorDisplay 
-              error={errors.general} 
-              onRetry={() => setErrors({ ...errors, general: undefined })}
+              type="generic"
+              title="Error"
+              message={errors.general}
+              onAction={() => setErrors({ ...errors, general: undefined })}
+              actionLabel="Dismiss"
             />
           )}
 
