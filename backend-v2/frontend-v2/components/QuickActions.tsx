@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent } from '@/components/ui/Card'
+import { Card, CardContent } from '@/components/ui/card'
 import { getQuickActionsForRole, type QuickAction } from '@/lib/navigation'
 
 interface QuickActionsProps {

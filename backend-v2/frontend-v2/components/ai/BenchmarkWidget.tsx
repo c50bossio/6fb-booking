@@ -8,7 +8,7 @@
  */
 
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent } from '@/components/ui/Card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/Badge'
 import { 
   ArrowTrendingUpIcon,

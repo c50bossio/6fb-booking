@@ -3,7 +3,7 @@
 import React, { Component, ReactNode, useCallback } from 'react'
 import { ExclamationTriangleIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
+import { Card } from '@/components/ui/card'
 import type { CalendarError } from '@/types/calendar'
 import { retryWithBackoff, isOnline } from '@/lib/RetryManager'
 

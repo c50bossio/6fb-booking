@@ -7,7 +7,7 @@ import { verifyEmail } from '@/lib/api'
 import { useAsyncOperation } from '@/lib/useAsyncOperation'
 import { LoadingButton, ErrorDisplay, SuccessMessage } from '@/components/LoadingStates'
 import { Button } from '@/components/ui/Button'
-import { Card, CardContent } from "@/components/ui/Card"
+import { Card, CardContent } from '@/components/ui/card'
 import { Logo } from '@/components/ui/Logo'
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react'
 

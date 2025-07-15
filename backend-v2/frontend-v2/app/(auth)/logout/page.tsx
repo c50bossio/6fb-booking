@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { Loader2 } from 'lucide-react'
-import { Card } from "@/components/ui/Card"
+import { Card } from '@/components/ui/card'
 
 export default function LogoutPage() {
   const router = useRouter()

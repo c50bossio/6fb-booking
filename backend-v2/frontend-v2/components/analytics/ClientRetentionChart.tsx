@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { getClientRetentionAnalytics } from '@/lib/api'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
 import { LineChart, BarChart, DoughnutChart, chartUtils } from './ChartComponents'
 

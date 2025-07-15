@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Bot, BarChart3, Settings, Activity, Zap, AlertCircle, TestTube, Link } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { Card } from "@/components/ui/Card"
+import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/Badge'
 import { AgentCard } from '@/components/agents/AgentCard'
 import { AgentCreationWizard } from '@/components/agents/AgentCreationWizard'

@@ -9,7 +9,7 @@ import {
 } from '@/lib/api'
 import { LoadingSkeleton, ErrorDisplay } from '@/components/LoadingStates'
 import { Button } from '@/components/ui/Button'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 

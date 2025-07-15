@@ -3,7 +3,7 @@
 import React, { ReactNode } from 'react'
 import { format } from 'date-fns'
 import { Calendar, PrinterIcon, Download, ExternalLink } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/Button'
 
 interface LegalDocumentProps {

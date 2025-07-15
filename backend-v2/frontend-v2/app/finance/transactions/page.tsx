@@ -20,7 +20,7 @@ import {
   ClockIcon
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { DateRangeSelector, DateRangePreset } from '@/components/analytics/shared/DateRangeSelector'
 import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
 

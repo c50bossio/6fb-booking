@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
-import { Switch } from '@/components/ui/Switch'
+import { Switch } from '@/components/ui/switch'
 // Temporary Modal replacement for build testing  
 const TemplateModal = ({ isOpen, onClose, title, children }: any) => {
   if (!isOpen) return null

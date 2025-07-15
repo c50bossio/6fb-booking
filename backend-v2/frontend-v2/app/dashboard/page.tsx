@@ -11,7 +11,7 @@ import { BarberDashboardLayout } from '@/components/BarberDashboardLayout'
 import { useAsyncOperation } from '@/lib/useAsyncOperation'
 import { PageLoading, ErrorDisplay, SuccessMessage } from '@/components/LoadingStates'
 import { Button } from '@/components/ui/Button'
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/Card"
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
 import { QuickActions } from '@/components/QuickActions'
 import CalendarDayMini from '@/components/calendar/CalendarDayMini'
 import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton'

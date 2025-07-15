@@ -7,7 +7,7 @@ import AccessControl from '@/components/auth/AccessControl'
 import { LoadingButton, ErrorDisplay } from '@/components/LoadingStates'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select } from '@/components/ui/Select'
 import { Badge } from '@/components/ui/Badge'
 import { toastSuccess, toastError } from '@/hooks/use-toast'

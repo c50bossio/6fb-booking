@@ -9,7 +9,7 @@ import {
 } from '@stripe/react-stripe-js'
 import { StripeElementsOptions } from '@stripe/stripe-js'
 import { Button } from '@/components/ui/Button'
-import { Card, CardContent } from '@/components/ui/Card'
+import { Card, CardContent } from '@/components/ui/card'
 import { AlertCircle, Loader2, Lock } from 'lucide-react'
 import { getStripe, parseStripeError, PaymentErrorType } from '@/lib/stripe'
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { getSixFigureBarberMetrics, SixFigureBarberMetrics } from '@/lib/api'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/Button'
 import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
 import { formatters } from '@/lib/formatters'

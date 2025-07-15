@@ -8,7 +8,7 @@ import { getDefaultDashboard } from '@/lib/routeGuards'
 import { useAsyncOperation } from '@/lib/useAsyncOperation'
 import { LoadingButton, ErrorDisplay, SuccessMessage } from '@/components/LoadingStates'
 import { Button } from '@/components/ui/Button'
-import { Card, CardContent } from "@/components/ui/Card"
+import { Card, CardContent } from '@/components/ui/card'
 import { Logo } from '@/components/ui/Logo'
 import { useFormValidation, validators } from '@/hooks/useFormValidation'
 import { ValidatedInput, PasswordStrengthIndicator } from '@/components/forms/ValidatedInput'

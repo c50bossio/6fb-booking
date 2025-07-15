@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { CheckCircle, Clock, AlertCircle, Loader2, ChevronRight, X, ArrowRight, Download, Upload, Wifi, WifiOff } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/Badge'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
