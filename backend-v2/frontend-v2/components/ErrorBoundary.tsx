@@ -20,8 +20,8 @@ const Sentry = {
 };
 
 const reportApiError = () => {};
-const captureUserFeedback = () => {};
-const addUserActionBreadcrumb = () => {};
+const captureUserFeedback = (data: any, eventId: string) => {};
+const addUserActionBreadcrumb = (message: string, category: string, data?: any) => {};
 
 interface Props {
   children: ReactNode
@@ -73,7 +73,7 @@ export class ErrorBoundary extends Component<Props, State> {
     console.error('ErrorBoundary caught an error:', error, errorInfo)
     
     // Capture the error with Sentry and get the event ID
-    const sentryEventId = Sentry.withScope((scope) => {
+    const sentryEventId = Sentry.withScope((scope: any) => {
       // Add context about the error boundary
       scope.setTag('errorBoundary', true)
       scope.setTag('errorBoundary.feature', this.props.feature || 'unknown')
@@ -153,7 +153,7 @@ export class ErrorBoundary extends Component<Props, State> {
     const { feedbackData, sentryEventId } = this.state
     
     if (feedbackData.name && feedbackData.email && feedbackData.comments) {
-      captureUserFeedback(feedbackData, sentryEventId)
+      captureUserFeedback(feedbackData, sentryEventId || '')
       
       addUserActionBreadcrumb(
         'User feedback submitted',
