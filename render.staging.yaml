@@ -3,6 +3,97 @@
 # Deploy from staging branch to keep separate from production
 
 services:
+  # Backend V2 API Service - Staging
+  - type: web
+    name: sixfb-backend-v2-staging
+    env: python
+    region: oregon
+    plan: starter
+    buildCommand: cd backend-v2 && pip install -r requirements.txt
+    startCommand: cd backend-v2 && uvicorn main:app --host 0.0.0.0 --port $PORT --log-level info
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.10"
+      - key: ENVIRONMENT
+        value: staging
+      - key: DEBUG
+        value: "true"
+      - key: LOG_LEVEL
+        value: debug
+      - key: FRONTEND_URL
+        value: https://sixfb-frontend-v2-staging.onrender.com
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: ENCRYPTION_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sixfb-staging-db
+          property: connectionString
+      # Stripe test keys (set manually in dashboard)
+      - key: STRIPE_SECRET_KEY
+        sync: false  # Use sk_test_ keys for staging
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false  # Use pk_test_ keys for staging
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false  # Use whsec_test_ keys for staging
+      - key: STRIPE_CONNECT_CLIENT_ID
+        sync: false  # Test Connect client ID
+      # External services (optional for staging)
+      - key: SENDGRID_API_KEY
+        sync: false  # Set manually if email testing needed
+      - key: FROM_EMAIL
+        value: staging@bookedbarber.com
+      - key: GOOGLE_CLIENT_ID
+        sync: false  # Set manually if Google Calendar testing needed
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false  # Set manually if Google Calendar testing needed
+      # CORS configuration for staging
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://sixfb-frontend-v2-staging.onrender.com,http://localhost:3000,http://localhost:3001
+      # Database settings (optimized for staging)
+      - key: DB_POOL_SIZE
+        value: "5"
+      - key: DB_MAX_OVERFLOW
+        value: "10"
+      - key: DB_POOL_TIMEOUT
+        value: "20"
+      # Performance settings (reduced for staging)
+      - key: MAX_WORKERS
+        value: "1"
+      - key: WEB_CONCURRENCY
+        value: "1"
+      # Security settings (relaxed for staging)
+      - key: SECURE_COOKIES
+        value: "false"
+      - key: SESSION_COOKIE_SECURE
+        value: "false"
+      # Rate limiting (relaxed for staging)
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "120"
+      # Staging feature flags
+      - key: ENABLE_SWAGGER_UI
+        value: "true"
+      - key: ALLOW_TEST_ENDPOINTS
+        value: "true"
+      - key: ENABLE_DEMO_MODE
+        value: "true"
+      - key: SHOW_DEBUG_INFO
+        value: "true"
+      # Disable production features in staging
+      - key: ENABLE_ANALYTICS_TRACKING
+        value: "false"
+      - key: ENABLE_EMAIL_CAMPAIGNS
+        value: "false"
+      - key: ENABLE_PAYMENT_PROCESSING
+        value: "true"  # Test payments enabled
+    healthCheckPath: /health
+    autoDeploy: false  # Manual deploy for staging
+    branch: deployment-clean  # Deploy from deployment-clean branch
+    numInstances: 1
+
   # Frontend V2 Next.js Application - Staging
   - type: web
     name: sixfb-frontend-v2-staging
@@ -44,3 +135,13 @@ services:
     autoDeploy: false  # Manual deploy for staging
     branch: deployment-clean  # Deploy from deployment-clean branch
     numInstances: 1
+
+# Database for staging environment
+databases:
+  - name: sixfb-staging-db
+    databaseName: sixfb_staging
+    user: sixfb_staging
+    region: oregon
+    plan: starter  # $7/month for staging testing
+    ipAllowList: []  # Allow connections from all Render services
+    postgresMajorVersion: 15  # Latest stable version
