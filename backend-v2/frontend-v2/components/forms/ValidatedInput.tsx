@@ -122,6 +122,7 @@ export const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
             ref={ref}
             type={inputType}
             disabled={disabled}
+            showPasswordToggle={false} // Disable Input's password toggle to prevent conflicts
             autoComplete={
               props.autoComplete || 
               (type === 'password' && !props.autoComplete ? 'current-password' : 
