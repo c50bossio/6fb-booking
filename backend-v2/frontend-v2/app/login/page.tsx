@@ -84,13 +84,10 @@ function LoginContent() {
     }
 
     try {
-      console.log('Starting login...')
       setIsSubmitting(true)
       const response = await loginActions.execute(() => login(values.email, values.password))
-      console.log('Login response:', response)
       
       if (response.access_token) {
-        console.log('Token received, fetching profile...')
         // Token is already stored in the login function
         
         // Handle device trust if remember me is checked
@@ -98,33 +95,24 @@ function LoginContent() {
           try {
             const deviceFingerprint = generateDeviceFingerprint()
             trustDevice(deviceFingerprint) // Trust for 30 days
-            console.log('✅ Device trusted successfully')
           } catch (error) {
-            console.error('Failed to trust device:', error)
             // Continue with login even if device trust fails
           }
         }
         
-        // Fetch user profile to determine role
-        console.log('✅ Login successful, starting redirect process...')
-        
         // Set up a timeout fallback to ensure redirect happens
         const redirectTimeout = setTimeout(() => {
-          console.log('⏰ Timeout fallback - forcing redirect to dashboard')
           window.location.href = '/dashboard'
         }, 3000)
         
         try {
-          console.log('📋 Fetching user profile...')
           const userProfile = await getProfile()
-          console.log('✅ User profile fetched:', userProfile)
           
           // Clear timeout since we got profile successfully
           clearTimeout(redirectTimeout)
           
           // Always redirect to dashboard for now
           const dashboardUrl = '/dashboard'
-          console.log('🎯 Redirecting to:', dashboardUrl)
           
           // Use both methods to ensure redirect works
           router.push(dashboardUrl)
@@ -132,25 +120,19 @@ function LoginContent() {
           // Also set a backup using window.location after short delay
           setTimeout(() => {
             if (window.location.pathname === '/login') {
-              console.log('🔄 Router.push failed, using window.location fallback')
               window.location.href = dashboardUrl
             }
           }, 1000)
           
         } catch (profileError) {
-          console.error('❌ Failed to fetch user profile:', profileError)
-          
           // Clear timeout and redirect anyway
           clearTimeout(redirectTimeout)
           
-          console.log('🎯 Redirecting to dashboard despite profile error...')
           window.location.href = '/dashboard'
         }
         
         // Reset rate limit on successful login
         rateLimit.resetAttempts()
-      } else {
-        console.log('No access token in response')
       }
     } catch (err: any) {
       // Increment rate limit attempts on failed login
@@ -164,7 +146,6 @@ function LoginContent() {
         setVerificationError(false)
         setShowResendButton(false)
       }
-      console.error('Login failed:', err)
     } finally {
       setIsSubmitting(false)
     }
@@ -181,7 +162,6 @@ function LoginContent() {
       setVerificationError(false)
       setShowResendButton(false)
     } catch (error: any) {
-      console.error('Resend verification failed:', error)
       // Error will be shown by the useAsyncOperation
     }
   }
@@ -190,8 +170,8 @@ function LoginContent() {
     <main className="flex min-h-screen flex-col items-center justify-center p-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center space-y-4">
-          <Logo variant="mono" size="lg" className="mx-auto" href="#" />
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome Back</h2>
+          <Logo variant="mono" size="lg" className="mx-auto" href="/" />
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome Back</h1>
           <p className="mt-2 text-gray-700 dark:text-gray-300">
             Sign in to manage your barbershop
           </p>
@@ -287,7 +267,11 @@ function LoginContent() {
                   onChange={setRememberMe}
                   className="flex-1"
                 />
-                <Link href="/forgot-password" className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 ml-4">
+                <Link 
+                  href="/forgot-password" 
+                  className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 ml-4"
+                  aria-label="Reset your password"
+                >
                   Forgot password?
                 </Link>
               </div>
@@ -309,11 +293,19 @@ function LoginContent() {
               <div className="text-center space-y-2">
                 <p className="text-sm text-gray-700 dark:text-gray-300">
                   Don't have an account?{' '}
-                  <Link href="/register" className="font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+                  <Link 
+                  href="/register" 
+                  className="font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+                  aria-label="Sign up for a new BookedBarber account"
+                >
                     Create account
                   </Link>
                 </p>
-                <Link href="/" className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+                <Link 
+                  href="/" 
+                  className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+                  aria-label="Return to BookedBarber homepage"
+                >
                   Back to home
                 </Link>
               </div>
