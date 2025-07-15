@@ -103,12 +103,12 @@ services:
     plan: starter
     buildCommand: |
       cd backend-v2/frontend-v2 && \
-      npm ci && \
+      npm install --legacy-peer-deps && \
       npm run build
     startCommand: cd backend-v2/frontend-v2 && npm run start
     envVars:
       - key: NODE_ENV
-        value: staging
+        value: production
       - key: NEXT_PUBLIC_ENVIRONMENT
         value: staging
       - key: NEXT_PUBLIC_API_URL
