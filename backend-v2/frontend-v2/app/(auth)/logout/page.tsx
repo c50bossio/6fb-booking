@@ -1,47 +1,25 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/hooks/useAuth'
-import { Loader2 } from 'lucide-react'
-import { Card } from '@/components/ui/card'
+import React from 'react'
 
 export default function LogoutPage() {
-  const router = useRouter()
-  const { logout } = useAuth()
-
-  useEffect(() => {
-    const performLogout = async () => {
-      try {
-        // Perform logout
-        await logout()
-        
-        // Small delay for better UX
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        // Redirect to login page
-        router.push('/login')
-      } catch (error) {
-        console.error('Logout error:', error)
-        // Still redirect to login even if logout fails
-        router.push('/login')
-      }
-    }
-
-    performLogout()
-  }, [logout, router])
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <Card className="p-8 max-w-sm w-full">
-        <div className="flex flex-col items-center space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <h2 className="text-xl font-semibold">Signing out...</h2>
-          <p className="text-gray-600 text-center">
-            Please wait while we securely sign you out.
+    <div className="container mx-auto py-6 space-y-6">
+      <div className="rounded-lg border bg-white shadow-sm p-6">
+        <div className="flex flex-col space-y-1.5 pb-6">
+          <h3 className="text-2xl font-semibold leading-none tracking-tight">
+            Logout
+          </h3>
+          <p className="text-sm text-gray-600">
+            You have been successfully logged out
           </p>
         </div>
-      </Card>
+        <div className="text-center py-8">
+          <p className="text-gray-600">
+            Logout functionality coming soon...
+          </p>
+        </div>
+      </div>
     </div>
   )
 }
