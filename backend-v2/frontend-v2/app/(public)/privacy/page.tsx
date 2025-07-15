@@ -1,44 +1,187 @@
 'use client'
 
 import React from 'react'
-import { Shield, Eye, Lock, Database, Download, Trash2 } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/Button'
-import LegalDocument, { LegalSection, LegalList } from '@/components/LegalDocument'
 
 const PrivacyPolicyPage = () => {
-  const lastUpdated = new Date('2025-07-02')
-  const effectiveDate = new Date('2025-07-02')
-
-  const relatedDocuments = [
-    {
-      title: 'Terms of Service',
-      href: '/terms',
-      description: 'Our terms and conditions for using BookedBarber'
-    },
-    {
-      title: 'Cookie Policy',
-      href: '/cookies',
-      description: 'Detailed information about cookies and tracking technologies'
-    }
-  ]
-
-  const contactInfo = {
-    email: 'privacy@bookedbarber.com',
-    dpo: 'dpo@bookedbarber.com',
-    address: '[Your Company Address]',
-    phone: '[Your Phone Number]'
-  }
-
   return (
-    <LegalDocument
-      title="Privacy Policy"
-      lastUpdated={lastUpdated}
-      effectiveDate={effectiveDate}
-      icon={<Shield className="h-12 w-12 text-primary" />}
-      relatedDocuments={relatedDocuments}
-      contactInfo={contactInfo}
-    >
+    <div className="container mx-auto py-6 space-y-6">
+      <div className="rounded-lg border bg-white shadow-sm p-6">
+        <div className="flex flex-col space-y-1.5 pb-6">
+          <h3 className="text-2xl font-semibold leading-none tracking-tight">
+            Privacy Policy
+          </h3>
+          <p className="text-sm text-gray-600">
+            How we collect, use, and protect your personal information
+          </p>
+        </div>
+        
+        <div className="space-y-6">
+          {/* Quick Summary */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <h4 className="text-lg font-medium text-blue-800 mb-4">Privacy at a Glance</h4>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <h5 className="font-medium text-blue-800 mb-2">We collect minimal data</h5>
+                <p className="text-sm text-blue-700">Only what's necessary to provide our booking service</p>
+              </div>
+              <div>
+                <h5 className="font-medium text-blue-800 mb-2">You have control</h5>
+                <p className="text-sm text-blue-700">Access, export, or delete your data anytime</p>
+              </div>
+              <div>
+                <h5 className="font-medium text-blue-800 mb-2">Transparent cookies</h5>
+                <p className="text-sm text-blue-700">Clear choices about analytics and marketing tracking</p>
+              </div>
+              <div>
+                <h5 className="font-medium text-blue-800 mb-2">GDPR compliant</h5>
+                <p className="text-sm text-blue-700">Full compliance with data protection regulations</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Your Rights */}
+          <div className="border rounded-lg p-6">
+            <h4 className="text-lg font-medium mb-4">Your Privacy Rights</h4>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <div className="text-center p-4 border rounded-lg">
+                <div className="h-8 w-8 text-green-500 mx-auto mb-2">👁️</div>
+                <h5 className="font-medium mb-1">Access</h5>
+                <p className="text-sm text-gray-600">See what data we have about you</p>
+              </div>
+              <div className="text-center p-4 border rounded-lg">
+                <div className="h-8 w-8 text-blue-500 mx-auto mb-2">📥</div>
+                <h5 className="font-medium mb-1">Export</h5>
+                <p className="text-sm text-gray-600">Download your data in a portable format</p>
+              </div>
+              <div className="text-center p-4 border rounded-lg">
+                <div className="h-8 w-8 text-orange-500 mx-auto mb-2">🔒</div>
+                <h5 className="font-medium mb-1">Correct</h5>
+                <p className="text-sm text-gray-600">Update or fix incorrect information</p>
+              </div>
+              <div className="text-center p-4 border rounded-lg">
+                <div className="h-8 w-8 text-red-500 mx-auto mb-2">🗑️</div>
+                <h5 className="font-medium mb-1">Delete</h5>
+                <p className="text-sm text-gray-600">Remove your data permanently</p>
+              </div>
+            </div>
+            <div className="mt-4 text-center">
+              <a href="/settings/privacy" className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                Manage Your Privacy Settings
+              </a>
+            </div>
+          </div>
+
+          {/* Main Content Sections */}
+          <section>
+            <h4 className="text-lg font-medium mb-3">1. Introduction</h4>
+            <p className="text-gray-600 mb-4">
+              Welcome to BookedBarber. We respect your privacy and are committed to protecting your personal data. 
+              This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our service.
+            </p>
+          </section>
+
+          <section>
+            <h4 className="text-lg font-medium mb-3">2. Information We Collect</h4>
+            
+            <div className="space-y-4">
+              <div>
+                <h5 className="font-medium mb-2">Account Information</h5>
+                <ul className="text-sm text-gray-600 space-y-1 ml-4">
+                  <li>• Name and contact details (email, phone number)</li>
+                  <li>• Username and password</li>
+                  <li>• Profile picture (optional)</li>
+                  <li>• Business information (for barbers/shop owners)</li>
+                </ul>
+              </div>
+
+              <div>
+                <h5 className="font-medium mb-2">Booking Information</h5>
+                <ul className="text-sm text-gray-600 space-y-1 ml-4">
+                  <li>• Appointment dates and times</li>
+                  <li>• Service preferences</li>
+                  <li>• Booking history</li>
+                  <li>• Special requests or notes</li>
+                </ul>
+              </div>
+
+              <div>
+                <h5 className="font-medium mb-2">Payment Information</h5>
+                <ul className="text-sm text-gray-600 space-y-1 ml-4">
+                  <li>• Payment method details (processed by Stripe)</li>
+                  <li>• Transaction history</li>
+                  <li>• Billing address</li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <h4 className="text-lg font-medium mb-3">3. How We Use Your Information</h4>
+            <ul className="text-sm text-gray-600 space-y-1">
+              <li>• Process and manage bookings</li>
+              <li>• Facilitate payments</li>
+              <li>• Send appointment reminders</li>
+              <li>• Provide customer support</li>
+              <li>• Improve our services</li>
+              <li>• Send marketing communications (with consent)</li>
+            </ul>
+          </section>
+
+          <section>
+            <h4 className="text-lg font-medium mb-3">4. Data Sharing</h4>
+            <p className="text-gray-600 mb-2">We share data with:</p>
+            <ul className="text-sm text-gray-600 space-y-1">
+              <li>• <strong>Stripe</strong>: Payment processing</li>
+              <li>• <strong>SendGrid</strong>: Email delivery</li>
+              <li>• <strong>Twilio</strong>: SMS messaging</li>
+              <li>• <strong>Google</strong>: Calendar integration, analytics</li>
+              <li>• Barbershops you book with</li>
+              <li>• Law enforcement (when legally required)</li>
+            </ul>
+          </section>
+
+          <section>
+            <h4 className="text-lg font-medium mb-3">5. Data Security</h4>
+            <ul className="text-sm text-gray-600 space-y-1">
+              <li>• Encryption in transit (TLS/SSL)</li>
+              <li>• Encryption at rest (AES-256)</li>
+              <li>• Secure password storage</li>
+              <li>• Regular security audits</li>
+              <li>• Limited access controls</li>
+            </ul>
+          </section>
+
+          <section>
+            <h4 className="text-lg font-medium mb-3">6. Your Rights</h4>
+            <ul className="text-sm text-gray-600 space-y-1">
+              <li>• <strong>Access</strong>: Request copy of your data</li>
+              <li>• <strong>Rectification</strong>: Correct inaccurate data</li>
+              <li>• <strong>Erasure</strong>: Request deletion of data</li>
+              <li>• <strong>Portability</strong>: Receive data in structured format</li>
+              <li>• <strong>Object</strong>: Object to direct marketing</li>
+            </ul>
+          </section>
+
+          <section>
+            <h4 className="text-lg font-medium mb-3">7. Contact Information</h4>
+            <p className="text-gray-600">
+              For privacy questions or to exercise your rights, contact us at{' '}
+              <a href="mailto:privacy@bookedbarber.com" className="text-blue-600 hover:underline">
+                privacy@bookedbarber.com
+              </a>
+            </p>
+          </section>
+        </div>
+        
+        <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-center text-blue-800 font-medium">
+            Your privacy is important to us. This policy reflects our commitment to protecting your personal data and respecting your privacy rights.
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
       {/* Quick Summary */}
       <Card className="mb-8 bg-blue-50 border-blue-200">
         <CardHeader>
