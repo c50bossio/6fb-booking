@@ -1,44 +1,24 @@
 'use client'
 
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/Button'
-import { DocumentArrowUpIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline'
-import Link from 'next/link'
+import React from 'react'
 
 export default function DataManagementPage() {
   return (
-    <div className="container mx-auto py-10">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Data Management</h1>
-        <p className="text-gray-600">Import and export your business data</p>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-6">
-        <Card className="p-6">
-          <div className="flex items-center mb-4">
-            <DocumentArrowUpIcon className="h-8 w-8 text-blue-500 mr-3" />
-            <h2 className="text-xl font-semibold">Import Data</h2>
-          </div>
-          <p className="text-gray-600 mb-4">
-            Import client information, services, and historical data from CSV files or other systems.
+    <div className="container mx-auto py-6 space-y-6">
+      <div className="rounded-lg border bg-white shadow-sm p-6">
+        <div className="flex flex-col space-y-1.5 pb-6">
+          <h3 className="text-2xl font-semibold leading-none tracking-tight">
+            Data Management
+          </h3>
+          <p className="text-sm text-gray-600">
+            Import and export your business data
           </p>
-          <Link href="/import">
-            <Button className="w-full">Go to Import</Button>
-          </Link>
-        </Card>
-
-        <Card className="p-6">
-          <div className="flex items-center mb-4">
-            <DocumentArrowDownIcon className="h-8 w-8 text-green-500 mr-3" />
-            <h2 className="text-xl font-semibold">Export Data</h2>
-          </div>
-          <p className="text-gray-600 mb-4">
-            Export your business data for backup, analysis, or migration to other systems.
+        </div>
+        <div className="text-center py-8">
+          <p className="text-gray-600">
+            Data management functionality coming soon...
           </p>
-          <Link href="/export">
-            <Button className="w-full">Go to Export</Button>
-          </Link>
-        </Card>
+        </div>
       </div>
     </div>
   )
