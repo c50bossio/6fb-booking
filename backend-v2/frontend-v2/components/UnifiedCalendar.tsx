@@ -1128,8 +1128,15 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
             showConflictModal: false, 
             conflictAnalysis: null 
           }))}
-          conflicts={state.conflictAnalysis.conflicts}
-          onResolve={(resolution) => {
+          analysis={state.conflictAnalysis}
+          appointmentData={{
+            client_name: 'Client',
+            service_name: 'Service',
+            start_time: new Date().toISOString(),
+            duration_minutes: 60,
+            barber_name: 'Barber'
+          }}
+          onResolveConflict={(resolution) => {
             // Handle conflict resolution
             setState(prev => ({ 
               ...prev, 
@@ -1137,6 +1144,18 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
               conflictAnalysis: null 
             }))
           }}
+          onProceedAnyway={() => {
+            setState(prev => ({ 
+              ...prev, 
+              showConflictModal: false, 
+              conflictAnalysis: null 
+            }))
+          }}
+          onCancel={() => setState(prev => ({ 
+            ...prev, 
+            showConflictModal: false, 
+            conflictAnalysis: null 
+          }))}
         />
       )}
     </div>
