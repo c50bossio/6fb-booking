@@ -410,7 +410,7 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
     return optimizedAppointmentFilter(appointments, {
       startDate,
       endDate,
-      selectedBarberId
+      barberId: selectedBarberId
     })
   }, [appointments, state.currentDate, view, selectedBarberId, optimizedAppointmentFilter])
 
