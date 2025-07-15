@@ -486,20 +486,19 @@ export default function TrackingPixelSettings() {
     const getStatusIcon = () => {
       switch (testStatus) {
         case 'testing':
-          return <Loader2 className="h-3 w-3 animate-spin text-blue-500" title="Testing connection..." />
+          return <Loader2 className="h-3 w-3 animate-spin text-blue-500" />
         case 'success':
           const timeAgo = lastTest ? Math.floor((Date.now() - lastTest.getTime()) / 60000) : 0
           const timeText = timeAgo < 1 ? 'just now' : `${timeAgo}m ago`
           return (
             <div className="flex items-center">
-              <CheckCircle2 className="h-3 w-3 text-green-500" title={`Test passed ${timeText}`} />
+              <CheckCircle2 className="h-3 w-3 text-green-500" />
             </div>
           )
         case 'error':
           return (
             <AlertTriangle 
               className="h-3 w-3 text-orange-500 cursor-help" 
-              title={error || 'Test failed'}
             />
           )
         default:
