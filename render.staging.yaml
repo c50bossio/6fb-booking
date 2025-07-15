@@ -9,9 +9,12 @@ services:
     env: node
     region: oregon
     plan: starter
-    buildCommand: npm install --legacy-peer-deps && npm run build
-    rootDir: backend-v2/frontend-v2
-    startCommand: npm run start
+    buildCommand: |
+      cd backend-v2/frontend-v2 && \
+      ls -la components/ui/ | head -5 && \
+      npm install --legacy-peer-deps && \
+      npm run build
+    startCommand: cd backend-v2/frontend-v2 && npm run start
     envVars:
       - key: NODE_ENV
         value: production
