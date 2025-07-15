@@ -84,7 +84,7 @@ export function SentryPerformanceMonitor({
           entries.forEach((entry) => {
             addUserActionBreadcrumb(
               'Long task detected',
-              'performance',
+              'interaction',
               {
                 feature,
                 page,
@@ -110,7 +110,7 @@ export function SentryPerformanceMonitor({
           entries.forEach((entry) => {
             addUserActionBreadcrumb(
               `Paint timing: ${entry.name}`,
-              'performance',
+              'interaction',
               {
                 feature,
                 page,
@@ -140,7 +140,7 @@ export function SentryPerformanceMonitor({
         if (memory) {
           addUserActionBreadcrumb(
             'Memory usage tracked',
-            'performance',
+            'interaction',
             {
               feature,
               page,
