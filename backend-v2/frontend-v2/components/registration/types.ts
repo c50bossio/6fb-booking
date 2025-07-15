@@ -21,6 +21,12 @@ export interface RegistrationData {
   // Additional metadata
   referralCode?: string
   timezone?: string
+  
+  // OAuth Information (optional)
+  isOAuthUser?: boolean
+  oauthProvider?: 'google' | 'facebook' | 'apple'
+  oauthId?: string
+  profilePicture?: string
 }
 
 export interface RegistrationStep {

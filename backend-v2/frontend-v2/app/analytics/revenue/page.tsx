@@ -195,7 +195,7 @@ export default function RevenuePage({}: RevenuePageProps) {
   if (error) {
     return (
       <div className="space-y-6">
-        <Card variant="outlined">
+        <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-3">
               <ExclamationTriangleIcon className="w-6 h-6 text-error-600 dark:text-error-400" />

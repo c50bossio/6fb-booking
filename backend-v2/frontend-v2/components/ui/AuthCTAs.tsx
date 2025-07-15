@@ -46,7 +46,7 @@ export function AuthHeaderCTAs({ className = '' }: { className?: string }) {
     return (
       <nav role="navigation" aria-label="Account actions" className={`flex items-center space-x-3 ${className}`}>
         <CTAButton ctaId="login" size="md" showIcon={false} />
-        <CTAButton ctaId="register" size="lg" showIcon={true} />
+        <CTAButton ctaId="register" size="md" showIcon={true} />
       </nav>
     )
   }

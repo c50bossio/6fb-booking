@@ -1,0 +1,326 @@
+{
+  "description": "BookedBarber V2 DNS Configuration Template",
+  "version": "1.0.0",
+  "domain": "bookedbarber.com",
+  "ttl_defaults": {
+    "short": 300,
+    "medium": 3600,
+    "long": 86400
+  },
+  "records": {
+    "root_domain": [
+      {
+        "type": "A",
+        "name": "@",
+        "value": "192.0.2.1",
+        "ttl": 300,
+        "description": "Main domain A record - UPDATE WITH YOUR SERVER IP",
+        "priority": "high",
+        "cloudflare_proxied": true
+      },
+      {
+        "type": "AAAA",
+        "name": "@",
+        "value": "2001:db8::1",
+        "ttl": 300,
+        "description": "IPv6 support - UPDATE WITH YOUR IPv6 ADDRESS",
+        "priority": "medium",
+        "cloudflare_proxied": true,
+        "optional": true
+      }
+    ],
+    "www_subdomain": [
+      {
+        "type": "CNAME",
+        "name": "www",
+        "value": "bookedbarber.com",
+        "ttl": 3600,
+        "description": "WWW subdomain redirect to main domain",
+        "priority": "high",
+        "cloudflare_proxied": true
+      }
+    ],
+    "api_subdomain": [
+      {
+        "type": "CNAME",
+        "name": "api",
+        "value": "bookedbarber.com",
+        "ttl": 300,
+        "description": "API subdomain for backend services",
+        "priority": "high",
+        "cloudflare_proxied": true
+      }
+    ],
+    "app_subdomain": [
+      {
+        "type": "CNAME",
+        "name": "app",
+        "value": "bookedbarber.com",
+        "ttl": 300,
+        "description": "App subdomain for main application interface",
+        "priority": "high",
+        "cloudflare_proxied": true
+      }
+    ],
+    "admin_subdomain": [
+      {
+        "type": "CNAME",
+        "name": "admin",
+        "value": "bookedbarber.com",
+        "ttl": 300,
+        "description": "Admin subdomain for administrative interface",
+        "priority": "high",
+        "cloudflare_proxied": true
+      }
+    ],
+    "staging_subdomain": [
+      {
+        "type": "CNAME",
+        "name": "staging",
+        "value": "bookedbarber.com",
+        "ttl": 300,
+        "description": "Staging environment subdomain",
+        "priority": "medium",
+        "cloudflare_proxied": false,
+        "environment": "staging"
+      }
+    ],
+    "email_records": [
+      {
+        "type": "MX",
+        "name": "@",
+        "value": "10 mx1.forwardemail.net",
+        "ttl": 3600,
+        "description": "Primary mail exchange record",
+        "priority": "high"
+      },
+      {
+        "type": "MX",
+        "name": "@",
+        "value": "20 mx2.forwardemail.net",
+        "ttl": 3600,
+        "description": "Secondary mail exchange record",
+        "priority": "high"
+      },
+      {
+        "type": "TXT",
+        "name": "@",
+        "value": "v=spf1 include:_spf.google.com ~all",
+        "ttl": 3600,
+        "description": "SPF record for email authentication",
+        "priority": "high"
+      },
+      {
+        "type": "TXT",
+        "name": "_dmarc",
+        "value": "v=DMARC1; p=quarantine; rua=mailto:admin@bookedbarber.com",
+        "ttl": 3600,
+        "description": "DMARC policy for email security",
+        "priority": "high"
+      }
+    ],
+    "verification_records": [
+      {
+        "type": "TXT",
+        "name": "@",
+        "value": "google-site-verification=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "ttl": 3600,
+        "description": "Google Search Console verification - UPDATE WITH YOUR CODE",
+        "priority": "medium",
+        "service": "google_search_console"
+      },
+      {
+        "type": "TXT",
+        "name": "@",
+        "value": "facebook-domain-verification=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "ttl": 3600,
+        "description": "Facebook domain verification - UPDATE WITH YOUR CODE",
+        "priority": "medium",
+        "service": "facebook_business"
+      }
+    ],
+    "security_records": [
+      {
+        "type": "CAA",
+        "name": "@",
+        "value": "0 issue \"letsencrypt.org\"",
+        "ttl": 86400,
+        "description": "Certificate Authority Authorization for Let's Encrypt",
+        "priority": "high"
+      },
+      {
+        "type": "CAA",
+        "name": "@",
+        "value": "0 issuewild \"letsencrypt.org\"",
+        "ttl": 86400,
+        "description": "Wildcard certificate authorization for Let's Encrypt",
+        "priority": "high"
+      },
+      {
+        "type": "CAA",
+        "name": "@",
+        "value": "0 iodef \"mailto:security@bookedbarber.com\"",
+        "ttl": 86400,
+        "description": "CAA violation reporting email",
+        "priority": "medium"
+      }
+    ],
+    "monitoring_records": [
+      {
+        "type": "CNAME",
+        "name": "status",
+        "value": "stats.uptimerobot.com",
+        "ttl": 3600,
+        "description": "Status page subdomain",
+        "priority": "low",
+        "service": "uptimerobot"
+      }
+    ],
+    "development_records": [
+      {
+        "type": "A",
+        "name": "dev",
+        "value": "127.0.0.1",
+        "ttl": 300,
+        "description": "Development environment - LOCAL ONLY",
+        "priority": "low",
+        "environment": "development",
+        "cloudflare_proxied": false
+      }
+    ]
+  },
+  "dns_providers": {
+    "cloudflare": {
+      "nameservers": [
+        "jared.ns.cloudflare.com",
+        "keenan.ns.cloudflare.com"
+      ],
+      "api_endpoint": "https://api.cloudflare.com/client/v4",
+      "features": ["proxy", "ddos_protection", "ssl", "analytics"]
+    },
+    "route53": {
+      "nameservers": [
+        "ns-1234.awsdns-12.com",
+        "ns-5678.awsdns-56.co.uk",
+        "ns-9012.awsdns-90.net",
+        "ns-3456.awsdns-34.org"
+      ],
+      "api_endpoint": "https://route53.amazonaws.com",
+      "features": ["health_checks", "latency_routing", "geolocation"]
+    }
+  },
+  "health_checks": [
+    {
+      "name": "Main Site Health",
+      "url": "https://bookedbarber.com/health",
+      "method": "GET",
+      "expected_status": 200,
+      "timeout": 10,
+      "interval": 60,
+      "failure_threshold": 3
+    },
+    {
+      "name": "API Health",
+      "url": "https://api.bookedbarber.com/health",
+      "method": "GET",
+      "expected_status": 200,
+      "timeout": 10,
+      "interval": 30,
+      "failure_threshold": 2
+    },
+    {
+      "name": "App Health",
+      "url": "https://app.bookedbarber.com/health",
+      "method": "GET",
+      "expected_status": 200,
+      "timeout": 10,
+      "interval": 60,
+      "failure_threshold": 3
+    }
+  ],
+  "failover_configuration": {
+    "primary_server": {
+      "ip": "192.0.2.1",
+      "location": "US-East",
+      "provider": "render"
+    },
+    "backup_server": {
+      "ip": "192.0.2.2",
+      "location": "US-West",
+      "provider": "railway"
+    },
+    "failover_rules": [
+      {
+        "trigger": "primary_health_check_failure",
+        "action": "switch_to_backup",
+        "ttl": 60,
+        "notification": "email"
+      },
+      {
+        "trigger": "primary_recovery",
+        "action": "switch_to_primary",
+        "ttl": 300,
+        "notification": "email"
+      }
+    ]
+  },
+  "geolocation_routing": {
+    "enabled": false,
+    "rules": [
+      {
+        "region": "US",
+        "server": "us-east-1",
+        "ip": "192.0.2.1"
+      },
+      {
+        "region": "EU",
+        "server": "eu-west-1",
+        "ip": "192.0.2.3"
+      },
+      {
+        "region": "APAC",
+        "server": "ap-southeast-1",
+        "ip": "192.0.2.4"
+      }
+    ]
+  },
+  "monitoring_alerts": {
+    "email_notifications": [
+      "admin@bookedbarber.com",
+      "devops@bookedbarber.com"
+    ],
+    "slack_webhook": "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK",
+    "sms_notifications": [
+      "+1234567890"
+    ],
+    "alert_conditions": [
+      {
+        "type": "dns_resolution_failure",
+        "threshold": 3,
+        "window": "5m"
+      },
+      {
+        "type": "high_response_time",
+        "threshold": "2s",
+        "window": "10m"
+      },
+      {
+        "type": "ssl_certificate_expiry",
+        "threshold": "30d",
+        "window": "daily"
+      }
+    ]
+  },
+  "backup_strategies": {
+    "dns_backup": {
+      "provider": "route53",
+      "sync_interval": "1h",
+      "enabled": true
+    },
+    "config_backup": {
+      "location": "git_repository",
+      "frequency": "on_change",
+      "retention": "90d"
+    }
+  }
+}

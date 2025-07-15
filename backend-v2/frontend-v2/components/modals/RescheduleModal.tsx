@@ -18,7 +18,7 @@ import {
 import { Modal, ModalBody, ModalFooter } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Input, Textarea } from '@/components/ui/Input'
-import { Switch } from '@/components/ui/Switch'
+import { Switch } from '@/components/ui/switch'
 import { ButtonLoading } from '@/components/ui/LoadingStates'
 import { ErrorDisplay } from '@/components/ui/ErrorStates'
 import { 

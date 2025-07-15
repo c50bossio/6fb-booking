@@ -2955,7 +2955,30 @@ class TrialStatusResponse(BaseModel):
             return max(0, days_remaining)
         return v
 
+# OAuth registration schema
+class GoogleOAuthRegistrationData(BaseModel):
+    """Google OAuth registration data"""
+    # Google OAuth data
+    email: EmailStr
+    name: str = Field(..., min_length=1, max_length=200)
+    google_id: str = Field(..., min_length=1)
+    profile_picture: Optional[str] = None
+    
+    # User preferences
+    user_type: UserType = UserType.BARBER
+    phone: Optional[str] = None
+    business_type: str = Field("individual", pattern="^(individual|studio|salon|enterprise)$")
+    accept_marketing: bool = False
+    timezone: str = "America/New_York"
+
+class GoogleOAuthRegistrationResponse(BaseModel):
+    """Response after Google OAuth registration"""
+    message: str
+    user: 'User'
+    requires_setup: bool = True  # User needs to complete business setup
+
 # Model rebuilds to resolve forward references
 SMSConversationResponse.model_rebuild()
 OrganizationResponse.model_rebuild()
 UserOrganizationResponse.model_rebuild()
+GoogleOAuthRegistrationResponse.model_rebuild()

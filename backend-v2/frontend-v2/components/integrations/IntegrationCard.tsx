@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
-import { Switch } from '@/components/ui/Switch'
+import { Switch } from '@/components/ui/switch'
 import { AlertCircle, CheckCircle, XCircle, RefreshCw, Settings, ExternalLink, Loader2 } from 'lucide-react'
 import {
   Dialog,

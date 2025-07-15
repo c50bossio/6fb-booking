@@ -1,0 +1,153 @@
+{
+  "description": "BookedBarber V2 Subdomain Configuration Templates",
+  "version": "1.0.0",
+  "subdomains": {
+    "api": {
+      "subdomain": "api",
+      "purpose": "Backend API services",
+      "backend_url": "http://127.0.0.1:8000",
+      "x_frame_options": "DENY",
+      "csp_policy": "default-src 'self'; script-src 'none'; style-src 'none'; img-src 'none'",
+      "cors_headers": "add_header Access-Control-Allow-Origin \"https://bookedbarber.com, https://app.bookedbarber.com, https://admin.bookedbarber.com\" always;\nadd_header Access-Control-Allow-Methods \"GET, POST, PUT, DELETE, OPTIONS\" always;\nadd_header Access-Control-Allow-Headers \"Origin, X-Requested-With, Content-Type, Accept, Authorization\" always;\nadd_header Access-Control-Allow-Credentials \"true\" always;",
+      "rate_limit_zone": "api",
+      "rate_limit_burst": "20",
+      "static_cache_time": "1h",
+      "proxy_timeout": "60s",
+      "access_control": "",
+      "custom_locations": "# API-specific rate limiting for auth endpoints\nlocation ~ ^/api/v1/(auth|login|register) {\n    limit_req zone=login burst=5 nodelay;\n    proxy_pass http://127.0.0.1:8000;\n    proxy_http_version 1.1;\n    proxy_set_header Host $host;\n    proxy_set_header X-Real-IP $remote_addr;\n    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n    proxy_set_header X-Forwarded-Proto $scheme;\n}\n\n# Webhook endpoints\nlocation /webhooks/ {\n    limit_req zone=api burst=10 nodelay;\n    proxy_pass http://127.0.0.1:8000;\n    proxy_read_timeout 120s;\n}",
+      "custom_proxy_settings": "proxy_buffering off;\nproxy_request_buffering off;"
+    },
+    "app": {
+      "subdomain": "app",
+      "purpose": "Main application interface",
+      "backend_url": "http://127.0.0.1:3000",
+      "x_frame_options": "SAMEORIGIN",
+      "csp_policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://maps.googleapis.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.bookedbarber.com https://api.stripe.com; frame-src https://js.stripe.com;",
+      "cors_headers": "",
+      "rate_limit_zone": "general",
+      "rate_limit_burst": "30",
+      "static_cache_time": "1y",
+      "proxy_timeout": "30s",
+      "access_control": "",
+      "custom_locations": "# Dashboard-specific routes\nlocation /dashboard {\n    proxy_pass http://127.0.0.1:3000/dashboard;\n    proxy_http_version 1.1;\n    proxy_set_header Upgrade $http_upgrade;\n    proxy_set_header Connection 'upgrade';\n    proxy_set_header Host $host;\n    proxy_cache_bypass $http_upgrade;\n}\n\n# User authentication routes\nlocation /auth {\n    limit_req zone=login burst=10 nodelay;\n    proxy_pass http://127.0.0.1:3000/auth;\n}",
+      "custom_proxy_settings": ""
+    },
+    "admin": {
+      "subdomain": "admin",
+      "purpose": "Administrative interface",
+      "backend_url": "http://127.0.0.1:3000",
+      "x_frame_options": "DENY",
+      "csp_policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://api.bookedbarber.com;",
+      "cors_headers": "",
+      "rate_limit_zone": "login",
+      "rate_limit_burst": "10",
+      "static_cache_time": "1h",
+      "proxy_timeout": "60s",
+      "access_control": "# IP whitelist for admin access (uncomment and configure as needed)\n# allow 192.168.1.0/24;  # Office network\n# allow 10.0.0.0/8;      # VPN network\n# deny all;",
+      "custom_locations": "# Admin-specific routes\nlocation /admin {\n    # Additional security for admin routes\n    limit_req zone=login burst=5 nodelay;\n    proxy_pass http://127.0.0.1:3000/admin;\n    proxy_http_version 1.1;\n    proxy_set_header Host $host;\n    proxy_set_header X-Real-IP $remote_addr;\n    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n    proxy_set_header X-Forwarded-Proto $scheme;\n    \n    # Admin-specific headers\n    add_header X-Admin-Access \"true\";\n    add_header Cache-Control \"no-cache, no-store, must-revalidate\";\n}\n\n# System monitoring endpoints\nlocation /admin/monitoring {\n    # Restrict to admin users only\n    auth_basic \"Admin Monitoring\";\n    auth_basic_user_file /etc/nginx/.htpasswd;\n    proxy_pass http://127.0.0.1:3000/admin/monitoring;\n}",
+      "custom_proxy_settings": "proxy_buffering off;\nproxy_cache off;"
+    },
+    "staging": {
+      "subdomain": "staging",
+      "purpose": "Staging environment for testing",
+      "backend_url": "http://127.0.0.1:3001",
+      "x_frame_options": "SAMEORIGIN",
+      "csp_policy": "default-src 'self' 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.bookedbarber.com;",
+      "cors_headers": "",
+      "rate_limit_zone": "general",
+      "rate_limit_burst": "50",
+      "static_cache_time": "5m",
+      "proxy_timeout": "120s",
+      "access_control": "# Basic auth for staging environment\nauth_basic \"Staging Environment\";\nauth_basic_user_file /etc/nginx/.htpasswd-staging;",
+      "custom_locations": "# Staging-specific debugging\nlocation /debug {\n    proxy_pass http://127.0.0.1:3001/debug;\n    add_header X-Debug-Mode \"enabled\";\n}\n\n# Hot reload for development\nlocation /_next/webpack-hmr {\n    proxy_pass http://127.0.0.1:3001/_next/webpack-hmr;\n    proxy_http_version 1.1;\n    proxy_set_header Upgrade $http_upgrade;\n    proxy_set_header Connection \"upgrade\";\n}",
+      "custom_proxy_settings": "proxy_buffering off;\nproxy_read_timeout 300s;"
+    },
+    "status": {
+      "subdomain": "status",
+      "purpose": "Status and monitoring page",
+      "backend_url": "http://stats.uptimerobot.com",
+      "x_frame_options": "SAMEORIGIN",
+      "csp_policy": "default-src 'self' stats.uptimerobot.com; script-src 'self' 'unsafe-inline' stats.uptimerobot.com; style-src 'self' 'unsafe-inline' stats.uptimerobot.com; img-src 'self' data: stats.uptimerobot.com;",
+      "cors_headers": "",
+      "rate_limit_zone": "general",
+      "rate_limit_burst": "20",
+      "static_cache_time": "5m",
+      "proxy_timeout": "30s",
+      "access_control": "",
+      "custom_locations": "# Proxy all requests to UptimeRobot\nlocation / {\n    proxy_pass http://stats.uptimerobot.com;\n    proxy_set_header Host stats.uptimerobot.com;\n    proxy_set_header X-Real-IP $remote_addr;\n    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n    proxy_set_header X-Forwarded-Proto $scheme;\n    \n    # Cache status page responses\n    proxy_cache bookedbarber;\n    proxy_cache_valid 200 5m;\n}",
+      "custom_proxy_settings": ""
+    },
+    "dev": {
+      "subdomain": "dev",
+      "purpose": "Development environment",
+      "backend_url": "http://127.0.0.1:3002",
+      "x_frame_options": "SAMEORIGIN",
+      "csp_policy": "default-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self' data: blob:; connect-src 'self' ws: wss:;",
+      "cors_headers": "",
+      "rate_limit_zone": "general",
+      "rate_limit_burst": "100",
+      "static_cache_time": "0",
+      "proxy_timeout": "300s",
+      "access_control": "# Restrict to development IPs\nallow 127.0.0.1;\nallow 192.168.0.0/16;\nallow 10.0.0.0/8;\ndeny all;",
+      "custom_locations": "# Development hot reload\nlocation /_next/webpack-hmr {\n    proxy_pass http://127.0.0.1:3002/_next/webpack-hmr;\n    proxy_http_version 1.1;\n    proxy_set_header Upgrade $http_upgrade;\n    proxy_set_header Connection \"upgrade\";\n}\n\n# Development API\nlocation /dev-api {\n    proxy_pass http://127.0.0.1:8002;\n}",
+      "custom_proxy_settings": "proxy_buffering off;\nproxy_cache off;"
+    }
+  },
+  "shared_settings": {
+    "log_format": "subdomain '$remote_addr - $remote_user [$time_local] \"$request\" $status $body_bytes_sent \"$http_referer\" \"$http_user_agent\" \"$http_x_forwarded_for\" subdomain=$server_name'",
+    "access_log": "/var/log/nginx/subdomain-access.log subdomain",
+    "error_log": "/var/log/nginx/subdomain-error.log warn",
+    "client_max_body_size": "20M",
+    "keepalive_timeout": "65s",
+    "send_timeout": "60s"
+  },
+  "environment_specific": {
+    "production": {
+      "ssl_protocols": "TLSv1.2 TLSv1.3",
+      "add_header_always": true,
+      "access_log_enabled": true,
+      "gzip_enabled": true,
+      "rate_limiting_strict": true
+    },
+    "staging": {
+      "ssl_protocols": "TLSv1.2 TLSv1.3",
+      "add_header_always": false,
+      "access_log_enabled": true,
+      "gzip_enabled": true,
+      "rate_limiting_strict": false
+    },
+    "development": {
+      "ssl_protocols": "TLSv1.2 TLSv1.3",
+      "add_header_always": false,
+      "access_log_enabled": false,
+      "gzip_enabled": false,
+      "rate_limiting_strict": false
+    }
+  },
+  "security_profiles": {
+    "high_security": {
+      "description": "For admin and sensitive endpoints",
+      "x_frame_options": "DENY",
+      "csp_strict": true,
+      "hsts_max_age": "31536000",
+      "rate_limit_strict": true,
+      "access_control_required": true
+    },
+    "medium_security": {
+      "description": "For application endpoints",
+      "x_frame_options": "SAMEORIGIN",
+      "csp_strict": false,
+      "hsts_max_age": "31536000",
+      "rate_limit_strict": false,
+      "access_control_required": false
+    },
+    "low_security": {
+      "description": "For public endpoints",
+      "x_frame_options": "SAMEORIGIN",
+      "csp_strict": false,
+      "hsts_max_age": "31536000",
+      "rate_limit_strict": false,
+      "access_control_required": false
+    }
+  }
+}

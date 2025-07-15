@@ -41,7 +41,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { Select } from '@/components/ui/Select'
-import { Switch } from '@/components/ui/Switch'
+import { Switch } from '@/components/ui/switch'
 import { Modal } from '@/components/ui/Modal'
 import { Progress } from '@/components/ui/progress'
 

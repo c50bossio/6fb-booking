@@ -50,6 +50,16 @@ const buttonVariants = cva(
           'transition-all duration-250 cubic-bezier(0.4, 0, 0.2, 1)',
           'focus:ring-red-500 focus:ring-offset-2',
           'active:scale-[0.98]'
+        ],
+        warning: [
+          'bg-gradient-to-b from-yellow-500 to-amber-600',
+          'hover:from-yellow-600 hover:to-amber-700',
+          'text-white font-semibold',
+          'shadow-apple-md hover:shadow-apple-lg',
+          'border border-yellow-400/20',
+          'transition-all duration-250 cubic-bezier(0.4, 0, 0.2, 1)',
+          'focus:ring-yellow-500 focus:ring-offset-2',
+          'active:scale-[0.98]'
         ]
       },
       size: {

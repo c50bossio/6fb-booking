@@ -170,70 +170,82 @@ function LoginContent() {
     <main className="flex min-h-screen flex-col items-center justify-center p-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center space-y-4">
-          <Logo variant="mono" size="lg" className="mx-auto" href="/" />
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome Back</h1>
-          <p className="mt-2 text-gray-700 dark:text-gray-300">
+          <div className="animate-in fade-in duration-600 ease-out">
+            <Logo variant="mono" size="lg" className="mx-auto" href="/" />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white animate-in slide-in-from-bottom-4 duration-500 ease-out delay-200">Welcome Back</h1>
+          <p className="mt-2 text-gray-700 dark:text-gray-300 animate-in slide-in-from-bottom-2 duration-400 ease-out delay-300">
             Sign in to manage your barbershop
           </p>
         </div>
 
-        <Card className="mt-8">
+        <Card className="mt-8 animate-in slide-in-from-bottom-6 duration-600 ease-out delay-400">
           <CardContent>
             <Form onSubmit={handleSubmit} isSubmitting={loginState.loading}>
               {successMessage && (
-                <SuccessMessage message={successMessage} onDismiss={() => setSuccessMessage('')} />
+                <div className="animate-in slide-in-from-top-4 duration-500 ease-out">
+                  <SuccessMessage message={successMessage} onDismiss={() => setSuccessMessage('')} />
+                </div>
               )}
               
               {loginState.error && (
-                <FormError error={loginState.error} />
+                <div className="animate-in slide-in-from-top-4 duration-300 ease-out">
+                  <FormError error={loginState.error} />
+                </div>
               )}
 
               {verificationError && (
-                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-                  <div className="flex items-start space-x-3">
-                    <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-yellow-600" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                        Email Verification Required
-                      </h3>
-                      <p className="mt-1 text-sm text-yellow-700 dark:text-yellow-300">
-                        Please verify your email address before signing in. Check your inbox for a verification email.
-                      </p>
-                      {showResendButton && (
-                        <div className="mt-3">
-                          <LoadingButton
-                            onClick={handleResendVerification}
-                            loading={resendState.loading}
-                            loadingText="Sending..."
-                            variant="secondary"
-                            size="sm"
-                          >
-                            Resend Verification Email
-                          </LoadingButton>
-                        </div>
-                      )}
+                <div className="animate-in slide-in-from-top-4 duration-400 ease-out">
+                  <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 transition-all duration-300">
+                    <div className="flex items-start space-x-3">
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-yellow-600 animate-pulse" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200 animate-in fade-in duration-300 delay-100">
+                          Email Verification Required
+                        </h3>
+                        <p className="mt-1 text-sm text-yellow-700 dark:text-yellow-300 animate-in fade-in duration-300 delay-200">
+                          Please verify your email address before signing in. Check your inbox for a verification email.
+                        </p>
+                        {showResendButton && (
+                          <div className="mt-3 animate-in slide-in-from-bottom-2 duration-300 delay-300">
+                            <LoadingButton
+                              onClick={handleResendVerification}
+                              loading={resendState.loading}
+                              loadingText="Sending..."
+                              variant="secondary"
+                              size="sm"
+                            >
+                              Resend Verification Email
+                            </LoadingButton>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
 
               {resendState.error && (
-                <FormError error={resendState.error} />
+                <div className="animate-in slide-in-from-top-4 duration-300 ease-out">
+                  <FormError error={resendState.error} />
+                </div>
               )}
 
               {/* Rate Limiting Indicator */}
               {(rateLimit.attempts > 0 || rateLimit.isLocked) && (
-                <RateLimitIndicator
-                  attempts={rateLimit.attempts}
-                  maxAttempts={rateLimit.maxAttempts}
-                  lockedUntil={rateLimit.lockedUntil}
-                  variant="embedded"
-                  showWarning={true}
-                />
+                <div className="animate-in slide-in-from-top-4 duration-400 ease-out">
+                  <RateLimitIndicator
+                    attempts={rateLimit.attempts}
+                    maxAttempts={rateLimit.maxAttempts}
+                    lockedUntil={rateLimit.lockedUntil}
+                    variant="embedded"
+                    showWarning={true}
+                  />
+                </div>
               )}
 
               <FormField>
@@ -261,7 +273,7 @@ function LoginContent() {
                 />
               </FormField>
 
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between animate-in slide-in-from-bottom-2 duration-400 ease-out delay-100">
                 <EnhancedRememberMe
                   value={rememberMe}
                   onChange={setRememberMe}
@@ -269,7 +281,7 @@ function LoginContent() {
                 />
                 <Link 
                   href="/forgot-password" 
-                  className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 ml-4"
+                  className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 ml-4 transition-all duration-200 hover:underline"
                   aria-label="Reset your password"
                 >
                   Forgot password?
@@ -277,25 +289,28 @@ function LoginContent() {
               </div>
 
               <FormActions>
-                <Button
-                  type="submit"
-                  loading={loginState.loading}
-                  loadingText="Signing in..."
-                  variant="primary"
-                  fullWidth
-                  size="lg"
-                  disabled={!isFormValid || loginState.loading || rateLimit.isLocked}
-                >
-                  {rateLimit.isLocked ? 'Account Locked' : 'Sign in'}
-                </Button>
+                <div className="animate-in slide-in-from-bottom-4 duration-400 ease-out">
+                  <Button
+                    type="submit"
+                    loading={loginState.loading}
+                    loadingText="Signing in..."
+                    variant="primary"
+                    fullWidth
+                    size="lg"
+                    disabled={!isFormValid || loginState.loading || rateLimit.isLocked}
+                    className="transition-all duration-300 ease-in-out hover:scale-[1.02] active:scale-[0.98] disabled:hover:scale-100"
+                  >
+                    {rateLimit.isLocked ? 'Account Locked' : 'Sign in'}
+                  </Button>
+                </div>
               </FormActions>
 
               <div className="text-center space-y-2">
-                <p className="text-sm text-gray-700 dark:text-gray-300">
+                <p className="text-sm text-gray-700 dark:text-gray-300 animate-in fade-in duration-400 delay-300">
                   Don't have an account?{' '}
                   <Link 
                   href="/register" 
-                  className="font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+                  className="font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 transition-all duration-200 hover:underline"
                   aria-label="Sign up for a new BookedBarber account"
                 >
                     Create account
@@ -303,22 +318,24 @@ function LoginContent() {
                 </p>
                 <Link 
                   href="/" 
-                  className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+                  className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 transition-all duration-200 hover:underline animate-in fade-in duration-400 delay-400"
                   aria-label="Return to BookedBarber homepage"
                 >
                   Back to home
                 </Link>
               </div>
 
-              <SocialLoginGroup 
-                onError={(error) => {
-                  toast({
-                    variant: 'destructive',
-                    title: 'Social login error',
-                    description: error.message
-                  })
-                }}
-              />
+              <div className="animate-in slide-in-from-bottom-4 duration-500 ease-out delay-200">
+                <SocialLoginGroup 
+                  onError={(error) => {
+                    toast({
+                      variant: 'destructive',
+                      title: 'Social login error',
+                      description: error.message
+                    })
+                  }}
+                />
+              </div>
             </Form>
           </CardContent>
         </Card>

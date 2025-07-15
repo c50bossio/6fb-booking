@@ -1,0 +1,191 @@
+{
+  "description": "BookedBarber V2 CloudFlare Caching Rules Configuration",
+  "version": "1.0.0",
+  "rules": {
+    "static_assets": {
+      "description": "Cache static assets for 1 year",
+      "match": "*.bookedbarber.com/*.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|webp|avif)",
+      "cache_level": "cache_everything",
+      "browser_cache_ttl": 31536000,
+      "edge_cache_ttl": 7776000,
+      "always_cache_headers": true,
+      "cache_key": {
+        "ignore_query_strings": true,
+        "include_protocol": false,
+        "include_host": true
+      }
+    },
+    "api_endpoints": {
+      "description": "Bypass cache for API endpoints",
+      "match": "api.bookedbarber.com/*",
+      "cache_level": "bypass",
+      "browser_cache_ttl": 0,
+      "respect_origin_headers": true,
+      "bypass_reasons": [
+        "Dynamic content",
+        "User-specific data",
+        "Authentication required"
+      ]
+    },
+    "admin_area": {
+      "description": "No caching for admin area",
+      "match": "admin.bookedbarber.com/*",
+      "cache_level": "bypass",
+      "browser_cache_ttl": 0,
+      "security_level": "high"
+    },
+    "app_pages": {
+      "description": "Limited caching for app pages",
+      "match": "app.bookedbarber.com/*",
+      "cache_level": "standard",
+      "browser_cache_ttl": 3600,
+      "edge_cache_ttl": 7200,
+      "cache_on_cookie": false
+    },
+    "booking_pages": {
+      "description": "Cache booking pages with short TTL",
+      "match": "bookedbarber.com/book/*",
+      "cache_level": "aggressive",
+      "browser_cache_ttl": 1800,
+      "edge_cache_ttl": 3600,
+      "cache_deception_armor": true
+    },
+    "marketing_pages": {
+      "description": "Cache marketing and landing pages",
+      "match": "bookedbarber.com/(|pricing|features|about)*",
+      "cache_level": "aggressive",
+      "browser_cache_ttl": 14400,
+      "edge_cache_ttl": 86400,
+      "always_cache": true
+    },
+    "webhooks": {
+      "description": "Never cache webhook endpoints",
+      "match": "*.bookedbarber.com/webhooks/*",
+      "cache_level": "bypass",
+      "browser_cache_ttl": 0,
+      "disable_performance": true
+    },
+    "auth_endpoints": {
+      "description": "Never cache authentication endpoints",
+      "match": "*.bookedbarber.com/(auth|login|logout|register)/*",
+      "cache_level": "bypass",
+      "browser_cache_ttl": 0,
+      "security_level": "high"
+    }
+  },
+  "cache_settings": {
+    "global": {
+      "development_mode": false,
+      "cache_level": "aggressive",
+      "browser_cache_ttl": 14400,
+      "sort_query_string_for_cache": true,
+      "strip_comments": true,
+      "always_online": true
+    },
+    "security": {
+      "hotlink_protection": true,
+      "browser_integrity_check": true,
+      "challenge_ttl": 1800,
+      "security_level": "medium"
+    },
+    "performance": {
+      "minify_css": true,
+      "minify_html": true,
+      "minify_js": true,
+      "brotli": true,
+      "early_hints": true,
+      "http2_prioritization": true,
+      "image_optimization": {
+        "polish": "lossless",
+        "webp": true,
+        "avif": true
+      }
+    }
+  },
+  "edge_cache_ttl_by_status": {
+    "200": 86400,
+    "301": 3600,
+    "302": 300,
+    "404": 300,
+    "500": 0
+  },
+  "purge_rules": {
+    "deployment": {
+      "description": "Purge these patterns on deployment",
+      "patterns": [
+        "bookedbarber.com/*",
+        "app.bookedbarber.com/*",
+        "admin.bookedbarber.com/*"
+      ],
+      "exclude_static": true
+    },
+    "content_update": {
+      "description": "Purge on content updates",
+      "patterns": [
+        "bookedbarber.com/",
+        "bookedbarber.com/pricing",
+        "bookedbarber.com/features"
+      ]
+    },
+    "api_update": {
+      "description": "Clear API cache on backend updates",
+      "patterns": [
+        "api.bookedbarber.com/*"
+      ]
+    }
+  },
+  "custom_headers": {
+    "cache_control": {
+      "static_assets": "public, max-age=31536000, immutable",
+      "dynamic_content": "private, no-cache, no-store, must-revalidate",
+      "api_responses": "private, no-cache"
+    },
+    "security": {
+      "x_frame_options": "DENY",
+      "x_content_type_options": "nosniff",
+      "x_xss_protection": "1; mode=block",
+      "strict_transport_security": "max-age=31536000; includeSubDomains; preload",
+      "referrer_policy": "strict-origin-when-cross-origin"
+    },
+    "performance": {
+      "vary": "Accept-Encoding",
+      "x_cache_status": "HIT"
+    }
+  },
+  "geo_caching": {
+    "enabled": true,
+    "regions": {
+      "north_america": {
+        "cache_ttl_multiplier": 1.0,
+        "edge_locations": ["Chicago", "New York", "Los Angeles", "Toronto"]
+      },
+      "europe": {
+        "cache_ttl_multiplier": 1.2,
+        "edge_locations": ["London", "Frankfurt", "Amsterdam", "Paris"]
+      },
+      "asia_pacific": {
+        "cache_ttl_multiplier": 1.5,
+        "edge_locations": ["Singapore", "Tokyo", "Sydney", "Hong Kong"]
+      }
+    }
+  },
+  "cache_analytics": {
+    "enabled": true,
+    "metrics": [
+      "cache_hit_ratio",
+      "bandwidth_saved",
+      "response_time_improvement",
+      "edge_cache_hit_ratio"
+    ],
+    "alerts": {
+      "low_cache_hit_ratio": {
+        "threshold": 85,
+        "notification": "email"
+      },
+      "high_origin_load": {
+        "threshold": 70,
+        "notification": "slack"
+      }
+    }
+  }
+}

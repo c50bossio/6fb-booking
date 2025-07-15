@@ -1,0 +1,81 @@
+config:
+  target: 'http://localhost:8000'
+  plugins:
+    metrics-by-endpoint: {}
+    expect: {}
+    publish-metrics:
+      - type: json
+        path: '../reports/stress-test-results.json'
+  
+  # Stress test: Push beyond normal capacity
+  phases:
+    # Rapid ramp to breaking point
+    - duration: 300
+      arrivalRate: 50
+      rampTo: 2000
+      name: "Stress Ramp"
+    
+    # Sustain high load
+    - duration: 600
+      arrivalRate: 2000
+      name: "Stress Sustain"
+    
+    # Recovery test
+    - duration: 300
+      arrivalRate: 2000
+      rampTo: 10
+      name: "Recovery"
+
+  http:
+    timeout: 60
+    pool: 100
+    extendedMetrics: true
+
+  # Stress test thresholds (more lenient)
+  ensure:
+    - http.response_time.p95: 2000
+    - http.codes.200: 85
+    - http.codes.5xx: 5
+
+scenarios:
+  - name: "High Volume User Registration"
+    weight: 30
+    flow:
+      - post:
+          url: "/api/v1/auth/register"
+          headers:
+            Content-Type: "application/json"
+          json:
+            email: "stress+{{ $randomString() }}@example.com"
+            password: "StressTest123!"
+            first_name: "Stress"
+            last_name: "Test"
+            role: "client"
+          expect:
+            - statusCode: 201
+
+  - name: "Database Intensive Queries"
+    weight: 40
+    flow:
+      - get:
+          url: "/api/v1/barbers"
+          expect:
+            - statusCode: 200
+      
+      - get:
+          url: "/api/v1/services"
+          expect:
+            - statusCode: 200
+      
+      - get:
+          url: "/api/v1/appointments?page=1&limit=100"
+          expect:
+            - statusCode: 200
+
+  - name: "API Rate Limit Testing"
+    weight: 30
+    flow:
+      - loop:
+        - get:
+            url: "/api/v1/barbers"
+        count: 20

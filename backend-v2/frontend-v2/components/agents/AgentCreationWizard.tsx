@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/Label'
 import { Select } from '@/components/ui/Select'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/Badge'
-import { Switch } from '@/components/ui/Switch'
+import { Switch } from '@/components/ui/switch'
 import { Modal } from '@/components/ui/Modal'
 import { 
   agentsApi,

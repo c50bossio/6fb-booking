@@ -28,6 +28,8 @@ const Checkbox = React.forwardRef<
       minWidth: "16px",
       minHeight: "16px"
     }}
+    role="checkbox"
+    aria-checked={props.checked}
     {...props}
   >
     <CheckboxPrimitive.Indicator

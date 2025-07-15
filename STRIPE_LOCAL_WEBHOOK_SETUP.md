@@ -4,6 +4,7 @@ Since `localhost` URLs aren't publicly accessible, you need to use the Stripe CL
 
 ## Step 1: Install Stripe CLI
 
+
 ### macOS (using Homebrew):
 ```bash
 brew install stripe/stripe-cli/stripe

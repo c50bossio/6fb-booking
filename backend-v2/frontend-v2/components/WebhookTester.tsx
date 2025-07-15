@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from './ui/Button'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/Card'
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 
 interface WebhookTesterProps {
   selectedWebhookId: string | null

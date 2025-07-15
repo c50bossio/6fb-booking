@@ -1,0 +1,176 @@
+config:
+  target: 'http://localhost:8000'
+  plugins:
+    metrics-by-endpoint: {}
+    expect: {}
+    publish-metrics:
+      - type: json
+        path: '../reports/booking-flow-results.json'
+  
+  phases:
+    # Focus on booking flow performance
+    - duration: 300
+      arrivalRate: 20
+      name: "Booking Flow Test"
+
+  http:
+    timeout: 30
+    extendedMetrics: true
+
+  # Booking-specific performance requirements
+  ensure:
+    - http.response_time.p95: 300
+    - http.codes.200: 98
+    - http.codes.5xx: 0.1
+
+scenarios:
+  - name: "Complete Booking Flow"
+    weight: 100
+    flow:
+      # Step 1: User Registration
+      - post:
+          url: "/api/v1/auth/register"
+          headers:
+            Content-Type: "application/json"
+          json:
+            email: "booking+{{ $randomString() }}@example.com"
+            password: "BookingTest123!"
+            first_name: "Booking"
+            last_name: "Test"
+            role: "client"
+          capture:
+            - json: "$.access_token"
+              as: "auth_token"
+            - json: "$.user.id"
+              as: "user_id"
+          expect:
+            - statusCode: 201
+      
+      # Think time: User browses
+      - think: 5
+      
+      # Step 2: Browse barbers
+      - get:
+          url: "/api/v1/barbers"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          capture:
+            - json: "$[0].id"
+              as: "barber_id"
+            - json: "$[0].name"
+              as: "barber_name"
+          expect:
+            - statusCode: 200
+            - contentType: "application/json"
+      
+      # Think time: User reviews barber profile
+      - think: 8
+      
+      # Step 3: Get barber services
+      - get:
+          url: "/api/v1/services?barber_id={{ barber_id }}"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          capture:
+            - json: "$[0].id"
+              as: "service_id"
+            - json: "$[0].price"
+              as: "service_price"
+            - json: "$[0].duration"
+              as: "service_duration"
+          expect:
+            - statusCode: 200
+      
+      # Think time: User selects service
+      - think: 6
+      
+      # Step 4: Check availability
+      - get:
+          url: "/api/v1/barber-availability/{{ barber_id }}?date={{ $datetime() }}"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          capture:
+            - json: "$.available_slots[0]"
+              as: "time_slot"
+          expect:
+            - statusCode: 200
+            - hasProperty: "available_slots"
+      
+      # Think time: User picks time slot
+      - think: 10
+      
+      # Step 5: Create appointment
+      - post:
+          url: "/api/v1/appointments"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+            Content-Type: "application/json"
+          json:
+            barber_id: "{{ barber_id }}"
+            service_id: "{{ service_id }}"
+            appointment_datetime: "{{ time_slot }}"
+            notes: "Load test booking via complete flow"
+            client_phone: "+1234567890"
+          capture:
+            - json: "$.id"
+              as: "appointment_id"
+            - json: "$.total_amount"
+              as: "total_amount"
+          expect:
+            - statusCode: 201
+            - hasProperty: "id"
+      
+      # Think time: User reviews booking details
+      - think: 5
+      
+      # Step 6: Create payment intent
+      - post:
+          url: "/api/v1/payments/create-intent"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+            Content-Type: "application/json"
+          json:
+            amount: "{{ total_amount }}"
+            currency: "usd"
+            appointment_id: "{{ appointment_id }}"
+            payment_method_types: ["card"]
+          capture:
+            - json: "$.client_secret"
+              as: "payment_intent_secret"
+            - json: "$.id"
+              as: "payment_intent_id"
+          expect:
+            - statusCode: 200
+            - hasProperty: "client_secret"
+      
+      # Think time: User enters payment details
+      - think: 15
+      
+      # Step 7: Confirm payment (simulate)
+      - post:
+          url: "/api/v1/payments/confirm"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+            Content-Type: "application/json"
+          json:
+            payment_intent_id: "{{ payment_intent_id }}"
+            payment_method_id: "pm_card_visa"
+          expect:
+            - statusCode: 200
+      
+      # Step 8: Verify appointment status
+      - get:
+          url: "/api/v1/appointments/{{ appointment_id }}"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: 200
+            - hasProperty: "status"
+      
+      # Step 9: Calendar sync trigger (if enabled)
+      - post:
+          url: "/api/v1/calendar/sync"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: 200

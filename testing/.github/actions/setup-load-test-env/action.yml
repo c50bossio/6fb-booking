@@ -1,0 +1,114 @@
+# Reusable GitHub Action for setting up load test environment
+name: 'Setup Load Test Environment'
+description: 'Sets up the complete environment for running BookedBarber load tests'
+
+inputs:
+  node-version:
+    description: 'Node.js version to use'
+    required: false
+    default: '18'
+  python-version:
+    description: 'Python version to use'
+    required: false
+    default: '3.9'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: 'npm'
+        cache-dependency-path: testing/package-lock.json
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ inputs.python-version }}
+        cache: 'pip'
+    
+    - name: Install testing dependencies
+      shell: bash
+      working-directory: testing
+      run: |
+        npm ci
+        npm install -g artillery@latest
+    
+    - name: Install Python dependencies
+      shell: bash
+      working-directory: backend-v2
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        pip install -r requirements.txt
+    
+    - name: Setup test database
+      shell: bash
+      working-directory: backend-v2
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/6fb_booking_test
+      run: |
+        source venv/bin/activate
+        # Wait for database to be ready
+        timeout 30 bash -c 'until pg_isready -h localhost -p 5432; do sleep 1; done'
+        alembic upgrade head
+        
+        # Create test data if script exists
+        if [ -f scripts/setup-test-data.py ]; then
+          python scripts/setup-test-data.py
+        fi
+    
+    - name: Start backend server
+      shell: bash
+      working-directory: backend-v2
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/6fb_booking_test
+        REDIS_URL: redis://localhost:6379
+        ENVIRONMENT: testing
+        JWT_SECRET_KEY: test-secret-key-for-load-testing
+        STRIPE_SECRET_KEY: ${{ env.STRIPE_TEST_SECRET_KEY }}
+      run: |
+        source venv/bin/activate
+        uvicorn main:app --host 0.0.0.0 --port 8000 &
+        
+        # Wait for server to be ready with retry logic
+        timeout 60 bash -c 'until curl -f http://localhost:8000/health; do 
+          echo "Waiting for server..."
+          sleep 2
+        done'
+        
+        echo "Backend server is ready"
+    
+    - name: Verify environment health
+      shell: bash
+      run: |
+        echo "Verifying load test environment..."
+        
+        # Check backend health
+        response=$(curl -s http://localhost:8000/health)
+        if [[ $response == *"healthy"* ]]; then
+          echo "✅ Backend health check passed"
+        else
+          echo "❌ Backend health check failed: $response"
+          exit 1
+        fi
+        
+        # Check database health
+        db_response=$(curl -s http://localhost:8000/api/v1/health/database)
+        if [[ $? -eq 0 ]]; then
+          echo "✅ Database health check passed"
+        else
+          echo "❌ Database health check failed"
+          exit 1
+        fi
+        
+        # Check Artillery installation
+        if command -v artillery &> /dev/null; then
+          echo "✅ Artillery is installed: $(artillery --version)"
+        else
+          echo "❌ Artillery is not installed"
+          exit 1
+        fi
+        
+        echo "🚀 Load test environment is ready"

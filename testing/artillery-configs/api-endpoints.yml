@@ -1,0 +1,288 @@
+config:
+  target: 'http://localhost:8000'
+  plugins:
+    metrics-by-endpoint: {}
+    expect: {}
+    publish-metrics:
+      - type: json
+        path: '../reports/api-endpoints-results.json'
+  
+  phases:
+    # Comprehensive API endpoint testing
+    - duration: 600
+      arrivalRate: 100
+      name: "API Endpoint Load Test"
+
+  http:
+    timeout: 30
+    extendedMetrics: true
+
+  # API performance requirements
+  ensure:
+    - http.response_time.p95: 200
+    - http.codes.200: 99
+    - http.codes.4xx: 0.5
+    - http.codes.5xx: 0.01
+
+  # Test data for scenarios
+  payload:
+    testUsers:
+      - email: "api.test1@example.com"
+        password: "ApiTest123!"
+      - email: "api.test2@example.com"
+        password: "ApiTest123!"
+      - email: "api.test3@example.com"
+        password: "ApiTest123!"
+
+scenarios:
+  - name: "Authentication Endpoints"
+    weight: 15
+    flow:
+      # Register
+      - post:
+          url: "/api/v1/auth/register"
+          headers:
+            Content-Type: "application/json"
+          json:
+            email: "auth.load+{{ $randomString() }}@example.com"
+            password: "AuthLoad123!"
+            first_name: "Auth"
+            last_name: "Load"
+            role: "client"
+          capture:
+            - json: "$.access_token"
+              as: "access_token"
+            - json: "$.refresh_token"
+              as: "refresh_token"
+          expect:
+            - statusCode: 201
+      
+      # Refresh token
+      - post:
+          url: "/api/v1/auth/refresh"
+          headers:
+            Content-Type: "application/json"
+          json:
+            refresh_token: "{{ refresh_token }}"
+          expect:
+            - statusCode: 200
+      
+      # Logout
+      - post:
+          url: "/api/v1/auth/logout"
+          headers:
+            Authorization: "Bearer {{ access_token }}"
+          expect:
+            - statusCode: 200
+
+  - name: "User Management Endpoints"
+    weight: 10
+    flow:
+      - post:
+          url: "/api/v1/auth/login"
+          headers:
+            Content-Type: "application/json"
+          json:
+            email: "existing.user@example.com"
+            password: "ExistingUser123!"
+          capture:
+            - json: "$.access_token"
+              as: "auth_token"
+          expect:
+            - statusCode: 200
+      
+      - get:
+          url: "/api/v1/users/profile"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: 200
+      
+      - put:
+          url: "/api/v1/users/profile"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+            Content-Type: "application/json"
+          json:
+            first_name: "Updated"
+            last_name: "Name"
+          expect:
+            - statusCode: 200
+
+  - name: "Barber Endpoints"
+    weight: 15
+    flow:
+      - get:
+          url: "/api/v1/barbers"
+          expect:
+            - statusCode: 200
+      
+      - get:
+          url: "/api/v1/barbers/1"
+          expect:
+            - statusCode: 200
+      
+      - get:
+          url: "/api/v1/barber-availability/1"
+          expect:
+            - statusCode: 200
+
+  - name: "Service Endpoints"
+    weight: 10
+    flow:
+      - get:
+          url: "/api/v1/services"
+          expect:
+            - statusCode: 200
+      
+      - get:
+          url: "/api/v1/services?barber_id=1"
+          expect:
+            - statusCode: 200
+      
+      - get:
+          url: "/api/v1/services/1"
+          expect:
+            - statusCode: 200
+
+  - name: "Appointment Endpoints"
+    weight: 20
+    flow:
+      - post:
+          url: "/api/v1/auth/login"
+          headers:
+            Content-Type: "application/json"
+          json:
+            email: "client.appointments@example.com"
+            password: "ClientTest123!"
+          capture:
+            - json: "$.access_token"
+              as: "auth_token"
+          expect:
+            - statusCode: 200
+      
+      - get:
+          url: "/api/v1/appointments"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: 200
+      
+      - get:
+          url: "/api/v1/appointments/upcoming"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: 200
+      
+      - post:
+          url: "/api/v1/appointments"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+            Content-Type: "application/json"
+          json:
+            barber_id: 1
+            service_id: 1
+            appointment_datetime: "{{ $datetime() }}"
+          capture:
+            - json: "$.id"
+              as: "appointment_id"
+          expect:
+            - statusCode: 201
+      
+      - get:
+          url: "/api/v1/appointments/{{ appointment_id }}"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: 200
+
+  - name: "Payment Endpoints"
+    weight: 15
+    flow:
+      - post:
+          url: "/api/v1/auth/login"
+          headers:
+            Content-Type: "application/json"
+          json:
+            email: "payment.test@example.com"
+            password: "PaymentTest123!"
+          capture:
+            - json: "$.access_token"
+              as: "auth_token"
+          expect:
+            - statusCode: 200
+      
+      - get:
+          url: "/api/v1/payments/history"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: 200
+      
+      - post:
+          url: "/api/v1/payments/create-intent"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+            Content-Type: "application/json"
+          json:
+            amount: 5000
+            currency: "usd"
+            appointment_id: 1
+          expect:
+            - statusCode: 200
+
+  - name: "Analytics Endpoints"
+    weight: 10
+    flow:
+      - post:
+          url: "/api/v1/auth/login"
+          headers:
+            Content-Type: "application/json"
+          json:
+            email: "barber.analytics@example.com"
+            password: "BarberTest123!"
+          capture:
+            - json: "$.access_token"
+              as: "auth_token"
+          expect:
+            - statusCode: 200
+      
+      - get:
+          url: "/api/v1/analytics/revenue?period=week"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: 200
+      
+      - get:
+          url: "/api/v1/analytics/appointments?period=month"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: 200
+      
+      - get:
+          url: "/api/v1/dashboard/stats"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: 200
+
+  - name: "Health Check Endpoints"
+    weight: 5
+    flow:
+      - get:
+          url: "/health"
+          expect:
+            - statusCode: 200
+      
+      - get:
+          url: "/api/v1/health/database"
+          expect:
+            - statusCode: 200
+      
+      - get:
+          url: "/api/v1/health/redis"
+          expect:
+            - statusCode: 200

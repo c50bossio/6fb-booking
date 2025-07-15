@@ -68,28 +68,31 @@ export const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
       }
       
       if (showError) {
-        return <X className="h-4 w-4 text-red-500" />;
+        return <X className="h-4 w-4 text-red-500 animate-in zoom-in-50 duration-200" />;
       }
       
-      if (showSuccessState) {
-        return <Check className="h-4 w-4 text-green-500" />;
-      }
-      
+      // Password toggle has higher priority than success state
       if (type === 'password' && showPasswordToggle) {
         return (
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="focus:outline-none text-gray-400 hover:text-gray-600"
+            className="focus:outline-none text-gray-400 hover:text-gray-600 transition-all duration-200 hover:scale-110 active:scale-95"
             tabIndex={-1}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            aria-pressed={showPassword}
           >
             {showPassword ? (
-              <EyeOff className="h-4 w-4" />
+              <EyeOff className="h-4 w-4 animate-in fade-in duration-200" />
             ) : (
-              <Eye className="h-4 w-4" />
+              <Eye className="h-4 w-4 animate-in fade-in duration-200" />
             )}
           </button>
         );
+      }
+      
+      if (showSuccessState) {
+        return <Check className="h-4 w-4 text-green-500 animate-in zoom-in-50 duration-300" />;
       }
       
       return rightIcon;
@@ -129,10 +132,12 @@ export const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
                type === 'email' && !props.autoComplete ? 'username' : undefined)
             }
             className={cn(
-              'pr-10 transition-all duration-200',
+              'pr-10 transition-all duration-300 ease-in-out',
+              'focus:scale-[1.02] focus:shadow-lg focus:ring-2 focus:ring-offset-2',
+              'hover:border-primary-300 hover:shadow-sm',
               leftIcon && 'pl-10',
-              showError && 'border-red-500 focus:ring-red-500',
-              showSuccessState && 'border-green-500 focus:ring-green-500',
+              showError && 'border-red-500 focus:ring-red-500 focus:border-red-500 animate-shake',
+              showSuccessState && 'border-green-500 focus:ring-green-500 focus:border-green-500',
               disabled && 'cursor-not-allowed opacity-50',
               inputClassName
             )}
@@ -156,12 +161,13 @@ export const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
             id={`${props.id}-error`}
             className={cn(
               'flex items-center gap-1.5 text-sm text-red-500',
+              'animate-in slide-in-from-top-2 duration-300',
               errorClassName
             )}
             role="alert"
           >
-            <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
-            <span>{error}</span>
+            <AlertCircle className="h-3.5 w-3.5 flex-shrink-0 animate-pulse" />
+            <span className="animate-in fade-in duration-300 delay-100">{error}</span>
           </div>
         )}
         

@@ -29,9 +29,17 @@ export const socialProviders: Record<SocialProvider, SocialProviderInfo> = {
 }
 
 export function isProviderConfigured(provider: SocialProvider): boolean {
-  // For now, return false as social auth is not configured
-  // This can be updated when OAuth providers are configured
-  return false
+  // Check environment variables for OAuth configuration
+  switch (provider) {
+    case 'google':
+      return !!(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
+    case 'facebook':
+      return !!(process.env.NEXT_PUBLIC_FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET)
+    case 'github':
+      return !!(process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET)
+    default:
+      return false
+  }
 }
 
 export function getOAuthUrl(provider: SocialProvider): string {

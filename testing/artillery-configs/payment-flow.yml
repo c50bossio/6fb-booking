@@ -1,0 +1,218 @@
+config:
+  target: 'http://localhost:8000'
+  plugins:
+    metrics-by-endpoint: {}
+    expect: {}
+    publish-metrics:
+      - type: json
+        path: '../reports/payment-flow-results.json'
+  
+  phases:
+    # Payment system load testing
+    - duration: 300
+      arrivalRate: 25
+      name: "Payment Flow Test"
+
+  http:
+    timeout: 45
+    extendedMetrics: true
+
+  # Critical payment performance requirements
+  ensure:
+    - http.response_time.p95: 500
+    - http.codes.200: 99.5
+    - http.codes.5xx: 0.01
+
+scenarios:
+  - name: "Complete Payment Flow"
+    weight: 80
+    flow:
+      # Step 1: Authenticate user
+      - post:
+          url: "/api/v1/auth/login"
+          headers:
+            Content-Type: "application/json"
+          json:
+            email: "payment.client@example.com"
+            password: "PaymentClient123!"
+          capture:
+            - json: "$.access_token"
+              as: "auth_token"
+            - json: "$.user.id"
+              as: "user_id"
+          expect:
+            - statusCode: 200
+      
+      # Step 2: Get user's appointments (simulate existing booking)
+      - get:
+          url: "/api/v1/appointments?status=pending_payment"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          capture:
+            - json: "$[0].id"
+              as: "appointment_id"
+            - json: "$[0].total_amount"
+              as: "total_amount"
+          expect:
+            - statusCode: 200
+      
+      # Think time: User reviews payment details
+      - think: 8
+      
+      # Step 3: Create payment intent
+      - post:
+          url: "/api/v1/payments/create-intent"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+            Content-Type: "application/json"
+          json:
+            amount: "{{ total_amount }}"
+            currency: "usd"
+            appointment_id: "{{ appointment_id }}"
+            payment_method_types: ["card"]
+            metadata:
+              test_payment: "true"
+              load_test: "payment_flow"
+          capture:
+            - json: "$.client_secret"
+              as: "payment_intent_secret"
+            - json: "$.id"
+              as: "payment_intent_id"
+          expect:
+            - statusCode: 200
+            - hasProperty: "client_secret"
+            - hasProperty: "id"
+      
+      # Think time: User enters payment information
+      - think: 15
+      
+      # Step 4: Simulate payment method attachment
+      - post:
+          url: "/api/v1/payments/attach-method"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+            Content-Type: "application/json"
+          json:
+            payment_intent_id: "{{ payment_intent_id }}"
+            payment_method: "pm_card_visa"
+          expect:
+            - statusCode: 200
+      
+      # Step 5: Confirm payment
+      - post:
+          url: "/api/v1/payments/confirm"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+            Content-Type: "application/json"
+          json:
+            payment_intent_id: "{{ payment_intent_id }}"
+            return_url: "https://bookedbarber.com/payment-success"
+          capture:
+            - json: "$.status"
+              as: "payment_status"
+          expect:
+            - statusCode: 200
+            - hasProperty: "status"
+      
+      # Step 6: Verify payment status
+      - get:
+          url: "/api/v1/payments/{{ payment_intent_id }}/status"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: 200
+            - json: "$.status"
+              value: "succeeded"
+      
+      # Step 7: Verify appointment status updated
+      - get:
+          url: "/api/v1/appointments/{{ appointment_id }}"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: 200
+            - json: "$.payment_status"
+              value: "paid"
+
+  - name: "Payment History Access"
+    weight: 15
+    flow:
+      - post:
+          url: "/api/v1/auth/login"
+          headers:
+            Content-Type: "application/json"
+          json:
+            email: "payment.history@example.com"
+            password: "PaymentHistory123!"
+          capture:
+            - json: "$.access_token"
+              as: "auth_token"
+          expect:
+            - statusCode: 200
+      
+      - get:
+          url: "/api/v1/payments/history"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: 200
+      
+      - get:
+          url: "/api/v1/payments/history?limit=10&offset=0"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: 200
+      
+      - get:
+          url: "/api/v1/payments/receipts"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: 200
+
+  - name: "Payment Failure Handling"
+    weight: 5
+    flow:
+      - post:
+          url: "/api/v1/auth/login"
+          headers:
+            Content-Type: "application/json"
+          json:
+            email: "payment.failure@example.com"
+            password: "PaymentFailure123!"
+          capture:
+            - json: "$.access_token"
+              as: "auth_token"
+          expect:
+            - statusCode: 200
+      
+      # Create payment intent with declined card
+      - post:
+          url: "/api/v1/payments/create-intent"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+            Content-Type: "application/json"
+          json:
+            amount: 2500
+            currency: "usd"
+            appointment_id: 1
+            payment_method_types: ["card"]
+          capture:
+            - json: "$.id"
+              as: "payment_intent_id"
+          expect:
+            - statusCode: 200
+      
+      # Attempt payment with declined card
+      - post:
+          url: "/api/v1/payments/confirm"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+            Content-Type: "application/json"
+          json:
+            payment_intent_id: "{{ payment_intent_id }}"
+            payment_method_id: "pm_card_chargeDeclined"
+          expect:
+            - statusCode: 400
+            - hasProperty: "error"

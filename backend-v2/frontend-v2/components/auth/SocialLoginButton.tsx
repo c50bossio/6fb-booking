@@ -96,10 +96,17 @@ export function SocialLoginButton({
         ${fullWidth ? 'w-full' : ''}
         ${variant === 'outline' ? 'border-gray-300' : ''}
         flex items-center gap-3 font-medium
+        transition-all duration-200 ease-in-out
+        hover:scale-105 hover:shadow-md
+        active:scale-95
+        focus:ring-2 focus:ring-offset-2 focus:ring-primary-500
+        group
       `}
     >
-      {getProviderIcon()}
-      <span>{buttonText}</span>
+      <div className="transition-transform duration-200 group-hover:scale-110">
+        {getProviderIcon()}
+      </div>
+      <span className="transition-opacity duration-200 group-hover:opacity-90">{buttonText}</span>
     </Button>
   )
 }

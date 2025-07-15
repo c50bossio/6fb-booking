@@ -731,6 +731,116 @@ async def register_complete(
         "organization": organization
     }
 
+@router.post("/register-google", response_model=schemas.GoogleOAuthRegistrationResponse)
+@register_rate_limit
+async def register_google(
+    request: Request,
+    oauth_data: schemas.GoogleOAuthRegistrationData,
+    db: Session = Depends(get_db)
+):
+    """Register a new user via Google OAuth."""
+    client_ip = request.client.host if request.client else "unknown"
+    
+    # Check if user already exists
+    existing_user = db.query(models.User).filter(models.User.email == oauth_data.email).first()
+    if existing_user:
+        # If user exists, just return login tokens instead of registering again
+        access_token = create_access_token(data={"sub": existing_user.email})
+        refresh_token = create_refresh_token(data={"sub": existing_user.email})
+        
+        # Log successful OAuth login
+        audit_logger.log_auth_event(
+            "google_oauth_login",
+            user_id=existing_user.id,
+            ip_address=client_ip,
+            details={"google_id": oauth_data.google_id}
+        )
+        
+        raise HTTPException(
+            status_code=status.HTTP_200_OK,
+            detail="User already exists. Please log in instead.",
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "X-Refresh-Token": refresh_token
+            }
+        )
+    
+    # Parse name into first and last name
+    name_parts = oauth_data.name.split(' ', 1)
+    first_name = name_parts[0]
+    last_name = name_parts[1] if len(name_parts) > 1 else ""
+    
+    # Create new user with OAuth data
+    new_user = models.User(
+        email=oauth_data.email,
+        name=oauth_data.name,
+        first_name=first_name,
+        last_name=last_name,
+        phone=oauth_data.phone,
+        user_type=oauth_data.user_type,
+        timezone=oauth_data.timezone,
+        email_verified=True,  # OAuth emails are considered verified
+        is_oauth_user=True,
+        oauth_provider="google",
+        oauth_id=oauth_data.google_id,
+        profile_picture_url=oauth_data.profile_picture,
+        hashed_password="",  # No password for OAuth users
+        marketing_consent=oauth_data.accept_marketing
+    )
+    
+    db.add(new_user)
+    db.flush()  # Get the user ID
+    
+    # Create minimal organization for the user (they can set up details later)
+    organization = models.Organization(
+        name=f"{oauth_data.name}'s Business",
+        business_type=oauth_data.business_type,
+        owner_id=new_user.id,
+        chair_count=1,  # Default
+        barber_count=1,  # Default
+        description="",
+        address="",
+        phone=oauth_data.phone or "",
+        website="",
+        setup_completed=False  # Indicates user needs to complete setup
+    )
+    
+    db.add(organization)
+    db.flush()  # Get the organization ID
+    
+    # Create user-organization relationship
+    from models.organization import UserRole
+    user_org = models.UserOrganization(
+        user_id=new_user.id,
+        organization_id=organization.id,
+        role=UserRole.OWNER.value,
+        is_primary=True,
+        can_manage_billing=True,
+        can_manage_staff=True,
+        can_view_analytics=True
+    )
+    
+    db.add(user_org)
+    db.commit()
+    
+    # Log successful OAuth registration
+    audit_logger.log_auth_event(
+        "google_oauth_registration",
+        user_id=new_user.id,
+        ip_address=client_ip,
+        details={
+            "google_id": oauth_data.google_id,
+            "organization_id": organization.id,
+            "business_type": oauth_data.business_type
+        }
+    )
+    
+    return {
+        "message": "Google account successfully registered! You can complete your business setup in the dashboard.",
+        "user": new_user,
+        "requires_setup": True
+    }
+
 @router.post("/change-password", response_model=schemas.ChangePasswordResponse)
 async def change_password(
     request: Request,

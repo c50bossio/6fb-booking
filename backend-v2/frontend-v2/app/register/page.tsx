@@ -1,8 +1,9 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { MultiStepRegistration, RegistrationData } from '@/components/registration'
+import { SimpleRegistration } from '@/components/registration/SimpleRegistration'
+import { RegistrationData } from '@/components/registration/types'
 import { registerComplete, CompleteRegistrationData } from '@/lib/api'
 import { applyServiceTemplate } from '@/lib/api/service-templates'
 import Link from 'next/link'
@@ -16,12 +17,13 @@ export default function RegisterPage() {
   const { toast } = useToast()
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  
-  // Debug: Log when component mounts
-  React.useEffect(() => {
-    console.log('[RegisterPage] Component mounted successfully')
-    console.log('[RegisterPage] handleComplete function exists:', !!handleComplete)
+  const [isClient, setIsClient] = useState(false)
+
+  // Ensure client-side hydration
+  useEffect(() => {
+    setIsClient(true)
   }, [])
+  
 
   const handleComplete = async (data: RegistrationData) => {
     setLoading(true)
@@ -35,7 +37,7 @@ export default function RegisterPage() {
         email: data.email,
         password: data.password,
         user_type: data.businessType === 'individual' ? 'barber' : 'barbershop',
-        businessName: data.businessName || '',
+        businessName: data.businessName || `${data.name.split(' ')[0]}'s Barber Shop`,
         businessType: data.businessType === 'shop' ? 'studio' : (data.businessType || 'individual'),
         address: {
           street: '',
@@ -94,6 +96,15 @@ export default function RegisterPage() {
   }
 
 
+  // Show loading state during hydration
+  if (!isClient) {
+    return (
+      <div className="bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary-600 border-t-transparent"></div>
+      </div>
+    )
+  }
+
   return (
     <div className="bg-gray-50 dark:bg-gray-900">
 
@@ -101,19 +112,19 @@ export default function RegisterPage() {
       <header className="relative z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <Link href="/" className="flex items-center space-x-3 group">
-              <ArrowLeftIcon className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors" />
-              <LogoFull variant="auto" size="md" noLink={true} />
+            <Link href="/" className="flex items-center space-x-3 group transition-all duration-200 hover:transform hover:scale-105" aria-label="Go back to homepage">
+              <div className="p-2 rounded-lg group-hover:bg-primary-50 dark:group-hover:bg-primary-900/20 transition-all duration-200">
+                <ArrowLeftIcon className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200" />
+              </div>
+              <LogoFull variant="auto" size="md" noLink={true} className="h-12 transition-transform duration-200 group-hover:scale-105" />
             </Link>
             
-            <div className="flex items-center space-x-6">
-              <span className="hidden sm:flex items-center text-sm text-gray-600 dark:text-gray-400">
-                Already have an account?
-              </span>
+            <div className="flex items-center">
               <Link
                 href="/login"
-                className="text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 transition-colors"
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-primary-600 to-blue-600 hover:from-primary-700 hover:to-blue-700 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105"
               >
+                <span className="hidden sm:inline mr-2 text-primary-100">Already have an account?</span>
                 Sign in
               </Link>
             </div>
@@ -124,51 +135,20 @@ export default function RegisterPage() {
       {/* Hero Section */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4">
         <div className="text-center space-y-4">
-          <div className="inline-flex items-center justify-center p-2 bg-primary-100 dark:bg-primary-900/20 rounded-full">
+          <div className="inline-flex items-center justify-center p-2 bg-primary-100 dark:bg-primary-900/20 rounded-full hover:bg-primary-200 dark:hover:bg-primary-800/30 transition-all duration-300 animate-pulse">
             <SparklesIcon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
           </div>
           
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white">
-            Start Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-blue-600 dark:from-primary-400 dark:to-blue-400">Six Figure</span> Journey
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-blue-600 dark:from-primary-400 dark:to-blue-400">The System That Puts Your Chair First!</span>
           </h1>
           
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             Join thousands of barbers building their empire with BookedBarber's all-in-one platform
           </p>
 
-          {/* Trust Indicators */}
-          <div className="flex flex-wrap justify-center items-center gap-6 pt-4">
-            <div className="flex items-center space-x-2">
-              <CheckCircleIcon className="w-5 h-5 text-green-500" />
-              <span className="text-sm text-gray-600 dark:text-gray-400">14-day free trial</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <CheckCircleIcon className="w-5 h-5 text-green-500" />
-              <span className="text-sm text-gray-600 dark:text-gray-400">No credit card required</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <CheckCircleIcon className="w-5 h-5 text-green-500" />
-              <span className="text-sm text-gray-600 dark:text-gray-400">Cancel anytime</span>
-            </div>
-          </div>
 
-          {/* Social Proof - Success Metrics */}
-          <div className="pt-6">
-            <div className="flex flex-wrap justify-center items-center gap-8 text-center">
-              <div className="flex flex-col items-center">
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">2,500+</div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">Active Barbers</div>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">$1.2M+</div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">Revenue Generated</div>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">150k+</div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">Appointments Booked</div>
-              </div>
-            </div>
-          </div>
+
         </div>
       </div>
 
@@ -220,32 +200,67 @@ export default function RegisterPage() {
 
       {/* Registration Form Container */}
       <div className="relative z-10">
-        {/* Social Login Options */}
-        <div className="max-w-md mx-auto px-4 pb-8">
-          <SocialLoginGroup 
-            onError={(error) => {
-              toast({
-                variant: 'destructive',
-                title: 'Social login error',
-                description: error.message
-              })
-            }}
-          />
+        {/* Form Title */}
+        <div className="text-center mb-8">
+          <div className="inline-block bg-gradient-to-r from-primary-50 to-blue-50 dark:from-primary-900/30 dark:to-blue-900/30 rounded-2xl p-6 shadow-lg border border-primary-200 dark:border-primary-700">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
+              Start your 14 day free trial
+            </h2>
+            <div className="flex flex-wrap justify-center items-center gap-4 text-sm">
+              <div className="flex items-center space-x-2">
+                <CheckCircleIcon className="w-4 h-4 text-green-500" />
+                <span className="text-gray-600 dark:text-gray-400 font-medium">14-day free trial</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircleIcon className="w-4 h-4 text-green-500" />
+                <span className="text-gray-600 dark:text-gray-400 font-medium">No credit card required</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircleIcon className="w-4 h-4 text-green-500" />
+                <span className="text-gray-600 dark:text-gray-400 font-medium">Cancel anytime</span>
+              </div>
+            </div>
+          </div>
         </div>
+        {/* Unified Registration Form */}
+        <div className="max-w-md mx-auto px-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6">
+            {/* Social Login Section */}
+            <div className="mb-6">
+              <SocialLoginGroup 
+                onError={(error) => {
+                  toast({
+                    variant: 'destructive',
+                    title: 'Social login error',
+                    description: error.message
+                  })
+                }}
+              />
+            </div>
 
-        <MultiStepRegistration
-          onComplete={handleComplete}
-          loading={loading}
-          error={error}
-        />
+            {/* Divider */}
+            <div className="relative mb-6">
+              <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+            </div>
+
+            {/* Email Registration Section */}
+            <div>
+              <SimpleRegistration
+                onComplete={handleComplete}
+                loading={loading}
+                error={error}
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Customer Testimonials */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
         <div className="text-center mb-12">
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
             Trusted by Barbers Nationwide
-          </h3>
+          </h2>
           <p className="text-gray-600 dark:text-gray-300">
             See what other barbers are saying about BookedBarber
           </p>

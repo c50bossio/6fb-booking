@@ -93,11 +93,15 @@ export class UnifiedAPIClient {
 
     // Prepare headers
     const authHeaders = await this.authManager.getHeaders()
-    const headers = {
-      'Content-Type': 'application/json',
+    const headers: Record<string, string> = {
       'X-Request-ID': requestId,
       ...authHeaders,
       ...options.headers
+    }
+    
+    // Only add Content-Type for requests with body
+    if (options.body && method !== 'GET') {
+      headers['Content-Type'] = 'application/json'
     }
 
     // Prepare request config

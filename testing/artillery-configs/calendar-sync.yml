@@ -1,0 +1,186 @@
+config:
+  target: 'http://localhost:8000'
+  plugins:
+    metrics-by-endpoint: {}
+    expect: {}
+    publish-metrics:
+      - type: json
+        path: '../reports/calendar-sync-results.json'
+  
+  phases:
+    # Calendar integration load testing
+    - duration: 400
+      arrivalRate: 15
+      name: "Calendar Sync Test"
+
+  http:
+    timeout: 60
+    extendedMetrics: true
+
+  # Calendar sync performance requirements
+  ensure:
+    - http.response_time.p95: 800
+    - http.codes.200: 98
+    - http.codes.5xx: 0.5
+
+scenarios:
+  - name: "Google Calendar Integration Flow"
+    weight: 60
+    flow:
+      # Step 1: Barber authentication
+      - post:
+          url: "/api/v1/auth/login"
+          headers:
+            Content-Type: "application/json"
+          json:
+            email: "barber.calendar@example.com"
+            password: "BarberCalendar123!"
+          capture:
+            - json: "$.access_token"
+              as: "auth_token"
+            - json: "$.user.id"
+              as: "barber_id"
+          expect:
+            - statusCode: 200
+      
+      # Step 2: Check calendar connection status
+      - get:
+          url: "/api/v1/calendar/connection-status"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          capture:
+            - json: "$.connected"
+              as: "is_connected"
+          expect:
+            - statusCode: 200
+      
+      # Step 3: Get calendar events (if connected)
+      - get:
+          url: "/api/v1/calendar/events?start_date={{ $datetime() }}&end_date={{ $datetime() }}"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: 200
+      
+      # Think time: User reviews calendar
+      - think: 5
+      
+      # Step 4: Create appointment and trigger sync
+      - post:
+          url: "/api/v1/appointments"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+            Content-Type: "application/json"
+          json:
+            client_email: "calendar.client+{{ $randomString() }}@example.com"
+            client_name: "Calendar Test Client"
+            service_id: 1
+            appointment_datetime: "{{ $datetime() }}"
+            sync_to_calendar: true
+          capture:
+            - json: "$.id"
+              as: "appointment_id"
+          expect:
+            - statusCode: 201
+      
+      # Step 5: Verify calendar sync status
+      - get:
+          url: "/api/v1/calendar/sync-status/{{ appointment_id }}"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: 200
+            - hasProperty: "sync_status"
+      
+      # Step 6: Manual sync trigger test
+      - post:
+          url: "/api/v1/calendar/sync"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+            Content-Type: "application/json"
+          json:
+            appointment_ids: ["{{ appointment_id }}"]
+            force_sync: false
+          expect:
+            - statusCode: 200
+      
+      # Step 7: Get updated availability after sync
+      - get:
+          url: "/api/v1/barber-availability/{{ barber_id }}"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: 200
+
+  - name: "Two-Way Calendar Sync"
+    weight: 30
+    flow:
+      - post:
+          url: "/api/v1/auth/login"
+          headers:
+            Content-Type: "application/json"
+          json:
+            email: "twoway.sync@example.com"
+            password: "TwoWaySync123!"
+          capture:
+            - json: "$.access_token"
+              as: "auth_token"
+          expect:
+            - statusCode: 200
+      
+      # Check for external calendar events
+      - get:
+          url: "/api/v1/calendar/external-events"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: 200
+      
+      # Import external events
+      - post:
+          url: "/api/v1/calendar/import-events"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+            Content-Type: "application/json"
+          json:
+            sync_period_days: 30
+            conflict_resolution: "skip"
+          expect:
+            - statusCode: 200
+      
+      # Export local appointments to calendar
+      - post:
+          url: "/api/v1/calendar/export-appointments"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+            Content-Type: "application/json"
+          json:
+            date_range: "week"
+            include_blocked_time: true
+          expect:
+            - statusCode: 200
+
+  - name: "Calendar Webhook Processing"
+    weight: 10
+    flow:
+      # Simulate calendar webhook events
+      - post:
+          url: "/api/v1/webhooks/google-calendar"
+          headers:
+            Content-Type: "application/json"
+            X-Goog-Channel-ID: "load-test-channel"
+            X-Goog-Resource-State: "exists"
+          json:
+            kind: "api#channel"
+            id: "load-test-{{ $randomString() }}"
+            resourceId: "test-resource-id"
+            resourceUri: "https://www.googleapis.com/calendar/v3/calendars/primary/events"
+            token: "load-test-token"
+          expect:
+            - statusCode: 200
+      
+      # Check webhook processing status
+      - get:
+          url: "/api/v1/webhooks/calendar/status"
+          expect:
+            - statusCode: 200

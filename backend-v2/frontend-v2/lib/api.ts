@@ -329,6 +329,33 @@ export async function registerComplete(registrationData: CompleteRegistrationDat
   })
 }
 
+// Google OAuth registration interface
+export interface GoogleOAuthRegistrationData {
+  email: string
+  name: string
+  google_id: string
+  profile_picture?: string
+  user_type?: 'barber' | 'barbershop'
+  phone?: string
+  business_type?: 'individual' | 'studio' | 'salon' | 'enterprise'
+  accept_marketing?: boolean
+  timezone?: string
+}
+
+export interface GoogleOAuthRegistrationResponse {
+  message: string
+  user: any
+  requires_setup: boolean
+}
+
+// Google OAuth registration function
+export async function registerGoogle(oauthData: GoogleOAuthRegistrationData): Promise<GoogleOAuthRegistrationResponse> {
+  return fetchAPI('/api/v1/auth/register-google', {
+    method: 'POST',
+    body: JSON.stringify(oauthData),
+  })
+}
+
 // Trial status functions
 export interface TrialStatus {
   organization_id: number

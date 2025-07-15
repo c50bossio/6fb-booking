@@ -121,22 +121,42 @@ export default function LandingPage() {
   }
 
   return (
-    <main className="bg-white dark:bg-gray-900 mobile-safe no-overflow-x">
+    <>
+      <style jsx>{`
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 0.2; transform: scale(1); }
+          50% { opacity: 0.3; transform: scale(1.05); }
+        }
+        
+        .animate-pulse-slow {
+          animation: pulse-slow 4s ease-in-out infinite;
+        }
+        
+        .animation-delay-1000 {
+          animation-delay: 1s;
+        }
+        
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+      `}</style>
+      
+      <main className="bg-white dark:bg-gray-900 mobile-safe no-overflow-x">
       {/* Header Navigation */}
       <header className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
-              <LogoFull variant="auto" size="md" href="/" />
+              <LogoFull variant="auto" size="sm" href="/" className="scale-110" />
             </div>
             <nav className="hidden md:flex items-center space-x-10">
-              <Link href="/billing/plans" className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-all duration-250 hover:scale-105 px-2 py-1">
+              <Link href="#pricing" className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-all duration-300 ease-out hover:scale-105 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
                 Pricing
               </Link>
-              <Link href="#features" className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-all duration-250 hover:scale-105 px-2 py-1">
+              <Link href="#features" className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-all duration-300 ease-out hover:scale-105 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
                 Features
               </Link>
-              <Link href="#testimonials" className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-all duration-250 hover:scale-105 px-2 py-1">
+              <Link href="#testimonials" className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-all duration-300 ease-out hover:scale-105 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
                 Testimonials
               </Link>
             </nav>
@@ -153,12 +173,12 @@ export default function LandingPage() {
               <h1 className="text-6xl md:text-8xl font-black text-gray-900 dark:text-white mb-6 tracking-tight leading-[0.9]">
                 BOOKEDBARBER
               </h1>
-              <div className="w-32 h-1 bg-primary-600 mx-auto mb-10"></div>
+              <div className="w-32 h-1 bg-primary-900 mx-auto mb-10"></div>
             </div>
             
             <h2 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white leading-[1.1] max-w-5xl mx-auto">
-              The #1 Booking Platform for
-              <span className="text-primary-600 dark:text-primary-400"> Six Figure Barbers</span>
+              The booking platform that puts
+              <span className="text-primary-600 dark:text-primary-400"> your chair first</span>
             </h2>
             
             <p className="text-xl leading-relaxed text-gray-600 dark:text-gray-300 max-w-3xl mx-auto font-medium">
@@ -177,8 +197,8 @@ export default function LandingPage() {
         </div>
 
         {/* Decorative gradient orbs */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
-        <div className="absolute bottom-0 right-0 translate-x-1/3 translate-y-1/3 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow"></div>
+        <div className="absolute bottom-0 right-0 translate-x-1/3 translate-y-1/3 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow animation-delay-1000"></div>
       </section>
 
       {/* Features Section */}
@@ -197,15 +217,15 @@ export default function LandingPage() {
             {features.map((feature, index) => (
               <div 
                 key={index}
-                className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow"
+                className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer group"
               >
-                <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/20 rounded-lg flex items-center justify-center mb-4">
-                  <feature.icon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+                <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/20 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-primary-200 dark:group-hover:bg-primary-800/30 transition-all duration-300">
+                  <feature.icon className="w-6 h-6 text-primary-600 dark:text-primary-400 group-hover:scale-110 transition-transform duration-300" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300">
                   {feature.title}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300">
+                <p className="text-gray-600 dark:text-gray-300 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors duration-300">
                   {feature.description}
                 </p>
               </div>
@@ -215,7 +235,7 @@ export default function LandingPage() {
       </section>
 
       {/* Social Proof Section */}
-      <section className="py-20 bg-white dark:bg-gray-900">
+      <section id="testimonials" className="py-20 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
@@ -230,21 +250,21 @@ export default function LandingPage() {
             {testimonials.map((testimonial, index) => (
               <div 
                 key={index}
-                className="bg-gray-50 dark:bg-gray-800 p-8 rounded-xl"
+                className="bg-gray-50 dark:bg-gray-800 p-8 rounded-xl hover:shadow-lg hover:-translate-y-2 hover:bg-white dark:hover:bg-gray-700 transition-all duration-300 ease-out cursor-pointer group"
               >
                 <div className="flex mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <StarIcon key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                    <StarIcon key={i} className="w-5 h-5 text-yellow-400 fill-current group-hover:scale-110 transition-transform duration-300" style={{ transitionDelay: `${i * 50}ms` }} />
                   ))}
                 </div>
-                <blockquote className="text-gray-700 dark:text-gray-300 mb-6">
+                <blockquote className="text-gray-700 dark:text-gray-300 mb-6 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors duration-300">
                   "{testimonial.quote}"
                 </blockquote>
                 <div>
-                  <div className="font-semibold text-gray-900 dark:text-white">
+                  <div className="font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300">
                     {testimonial.author}
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                  <div className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-300">
                     {testimonial.role}
                   </div>
                 </div>
@@ -289,37 +309,37 @@ export default function LandingPage() {
             {Object.entries(plans).map(([key, plan]) => (
               <div
                 key={key}
-                className={`relative bg-white dark:bg-gray-900 rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer ${
-                  selectedPlan === key ? 'ring-2 ring-primary-500' : ''
+                className={`relative bg-white dark:bg-gray-900 rounded-xl shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer group ${
+                  selectedPlan === key ? 'ring-2 ring-primary-500 shadow-lg' : ''
                 } ${'popular' in plan && plan.popular ? 'scale-105' : ''}`}
                 onClick={() => setSelectedPlan(key as any)}
               >
                 {'popular' in plan && plan.popular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="bg-gray-900 text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm">
+                    <span className="bg-gray-900 text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm group-hover:bg-primary-600 transition-colors duration-300">
                       Most Popular
                     </span>
                   </div>
                 )}
                 
                 <div className="p-8">
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300">
                     {plan.name}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  <p className="text-gray-600 dark:text-gray-400 mb-6 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-300">
                     {plan.description}
                   </p>
                   
                   <div className="mb-6">
                     {typeof plan.price === 'number' ? (
                       <div className="flex items-baseline">
-                        <span className="text-4xl font-bold text-gray-900 dark:text-white">
+                        <span className="text-4xl font-bold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300">
                           ${plan.price}
                         </span>
                         <span className="text-gray-600 dark:text-gray-400 ml-2">/month</span>
                       </div>
                     ) : (
-                      <div className="text-4xl font-bold text-gray-900 dark:text-white">
+                      <div className="text-4xl font-bold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300">
                         {plan.price}
                       </div>
                     )}
@@ -327,21 +347,21 @@ export default function LandingPage() {
 
                   <ul className="space-y-3 mb-8">
                     {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-start">
-                        <CheckIcon className="w-5 h-5 text-primary-600 dark:text-primary-400 mt-0.5 mr-3 flex-shrink-0" />
-                        <span className="text-gray-700 dark:text-gray-300">
+                      <li key={index} className="flex items-start transform transition-all duration-300 group-hover:translate-x-1">
+                        <CheckIcon className="w-5 h-5 text-primary-600 dark:text-primary-400 mt-0.5 mr-3 flex-shrink-0 group-hover:scale-110 transition-transform duration-300" style={{ transitionDelay: `${index * 50}ms` }} />
+                        <span className="text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors duration-300">
                           {feature}
                         </span>
                       </li>
                     ))}
                   </ul>
 
-                  <Link href="/register">
+                  <Link href={key === 'enterprise' ? "mailto:sales@bookedbarber.com?subject=Enterprise Consultation Request" : "/register"}>
                     <Button 
-                      variant={'popular' in plan && plan.popular ? 'primary' : 'outline'} 
-                      className="w-full"
+                      variant={key === 'enterprise' ? 'outline' : ('popular' in plan && plan.popular ? 'warning' : 'warning')} 
+                      className="w-full group-hover:scale-105 transition-transform duration-300"
                     >
-                      Start Free Trial
+                      {key === 'enterprise' ? 'Book a Consultation' : 'Start Free Trial'}
                     </Button>
                   </Link>
                 </div>
@@ -375,29 +395,29 @@ export default function LandingPage() {
               </p>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Product</h4>
+              <h3 className="font-semibold mb-4">Product</h3>
               <ul className="space-y-2 text-sm">
-                <li><Link href="/register" className="hover:text-white">Free Trial</Link></li>
-                <li><Link href="#features" className="hover:text-white">Features</Link></li>
-                <li><Link href="/billing/plans" className="hover:text-white">Pricing</Link></li>
-                <li><Link href="/login" className="hover:text-white">Login</Link></li>
+                <li><Link href="/register" className="hover:text-white hover:translate-x-1 transition-all duration-200">Free Trial</Link></li>
+                <li><Link href="#features" className="hover:text-white hover:translate-x-1 transition-all duration-200">Features</Link></li>
+                <li><Link href="/billing/plans" className="hover:text-white hover:translate-x-1 transition-all duration-200">Pricing</Link></li>
+                <li><Link href="/login" className="hover:text-white hover:translate-x-1 transition-all duration-200">Login</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Support</h4>
+              <h3 className="font-semibold mb-4">Support</h3>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-white">Documentation</a></li>
-                <li><a href="#" className="hover:text-white">Contact Us</a></li>
-                <li><a href="#" className="hover:text-white">FAQs</a></li>
-                <li><a href="#" className="hover:text-white">Status</a></li>
+                <li><Link href="/documentation" className="hover:text-white hover:translate-x-1 transition-all duration-200">Documentation</Link></li>
+                <li><Link href="/contact" className="hover:text-white hover:translate-x-1 transition-all duration-200">Contact Us</Link></li>
+                <li><Link href="/faq" className="hover:text-white hover:translate-x-1 transition-all duration-200">FAQs</Link></li>
+                <li><Link href="/status" className="hover:text-white hover:translate-x-1 transition-all duration-200">Status</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Legal</h4>
+              <h3 className="font-semibold mb-4">Legal</h3>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-white">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-white">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-white">Cookie Policy</a></li>
+                <li><Link href="/privacy" className="hover:text-white hover:translate-x-1 transition-all duration-200">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="hover:text-white hover:translate-x-1 transition-all duration-200">Terms of Service</Link></li>
+                <li><Link href="/cookies" className="hover:text-white hover:translate-x-1 transition-all duration-200">Cookie Policy</Link></li>
               </ul>
             </div>
           </div>
@@ -407,6 +427,7 @@ export default function LandingPage() {
         </div>
       </footer>
       
-    </main>
+      </main>
+    </>
   )
 }

@@ -1,10 +1,10 @@
 // UI Components Export Index
 export { Button } from './Button';
-export { Card, CardContent, CardHeader, CardTitle, CardDescription } from './Card';
+export { Card, CardContent, CardHeader, CardTitle, CardDescription } from './card';
 export { Input } from './Input';
 export { Select } from './Select';
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs';
-export { Switch } from './Switch';
+export { Switch } from './switch';
 export { Label } from './Label';
 export { Calendar } from './Calendar';
 // Modal System

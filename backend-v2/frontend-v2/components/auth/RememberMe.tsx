@@ -67,8 +67,10 @@ export function RememberMe({
           id="remember-me"
           checked={checked}
           onCheckedChange={handleCheckedChange}
+          aria-labelledby="remember-me-label"
         />
         <Label
+          id="remember-me-label"
           htmlFor="remember-me"
           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 select-none cursor-pointer"
         >
@@ -77,7 +79,12 @@ export function RememberMe({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-4 w-4 p-0"
+                aria-label="Information about device trust feature"
+              >
                 <Info className="h-3 w-3" />
               </Button>
             </TooltipTrigger>
@@ -128,10 +135,11 @@ export function EnhancedRememberMe({ value, onChange, className }: EnhancedRemem
           checked={value}
           onCheckedChange={onChange}
           className="mt-1"
-          aria-label="Keep me signed in for 30 days on this device"
+          aria-labelledby="enhanced-remember-label"
         />
         <div className="space-y-1">
           <Label
+            id="enhanced-remember-label"
             htmlFor="enhanced-remember"
             className="text-sm font-medium cursor-pointer"
           >

@@ -1,0 +1,56 @@
+config:
+  target: 'http://localhost:8000'
+  plugins:
+    expect: {}
+    publish-metrics:
+      - type: json
+        path: '../reports/smoke-test-results.json'
+  
+  phases:
+    # Quick smoke test - 10 users for 2 minutes
+    - duration: 120
+      arrivalRate: 1
+      name: "Smoke Test"
+
+  http:
+    timeout: 10
+    extendedMetrics: true
+
+  # Basic functionality verification
+  ensure:
+    - http.response_time.p95: 500
+    - http.codes.200: 95
+    - http.codes.5xx: 0
+
+scenarios:
+  - name: "API Health Verification"
+    weight: 100
+    flow:
+      - get:
+          url: "/health"
+          expect:
+            - statusCode: 200
+            - hasProperty: "status"
+      
+      - get:
+          url: "/api/v1/health/database"
+          expect:
+            - statusCode: 200
+      
+      - get:
+          url: "/api/v1/barbers"
+          expect:
+            - statusCode: 200
+      
+      - post:
+          url: "/api/v1/auth/register"
+          headers:
+            Content-Type: "application/json"
+          json:
+            email: "smoke.test+{{ $randomString() }}@example.com"
+            password: "SmokeTest123!"
+            first_name: "Smoke"
+            last_name: "Test"
+            role: "client"
+          expect:
+            - statusCode: 201

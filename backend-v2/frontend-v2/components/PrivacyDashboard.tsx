@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Switch } from '@/components/ui/Switch'
+import { Switch } from '@/components/ui/switch'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ConfirmationDialog } from '@/components/ui/dialog'
 import useCookieConsent, { type CookieCategories, type ConsentPreferences } from '@/hooks/useCookieConsent'

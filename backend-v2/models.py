@@ -66,6 +66,12 @@ class User(Base):
     google_calendar_credentials = Column(Text, nullable=True)  # JSON encoded OAuth credentials
     google_calendar_id = Column(String, nullable=True)  # Selected calendar ID for sync
     
+    # OAuth integration fields
+    is_oauth_user = Column(Boolean, default=False)  # Whether user signed up via OAuth
+    oauth_provider = Column(String(20), nullable=True)  # google, facebook, apple, etc.
+    oauth_id = Column(String(255), nullable=True)  # OAuth provider's user ID
+    profile_picture_url = Column(String(500), nullable=True)  # User's profile picture URL
+    
     # Test data flag
     is_test_data = Column(Boolean, default=False)
     

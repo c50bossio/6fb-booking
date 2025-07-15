@@ -107,7 +107,7 @@ const Footer: React.FC<FooterProps> = ({
 
           {/* Product Links */}
           <div className="space-y-4">
-            <h4 className="font-semibold text-lg">Product</h4>
+            <h3 className="font-semibold text-lg">Product</h3>
             <nav className="space-y-2">
               <Link 
                 href="/features" 

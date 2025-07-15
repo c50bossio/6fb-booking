@@ -1,0 +1,335 @@
+config:
+  target: 'http://localhost:8000'
+  plugins:
+    metrics-by-endpoint: {}
+    statsd:
+      host: localhost
+      port: 8125
+      prefix: 'bookedbarber.load_test'
+    expect: {}
+    publish-metrics:
+      - type: json
+        path: '../reports/comprehensive-load-test-results.json'
+      - type: csv
+        path: '../reports/comprehensive-load-test-results.csv'
+  
+  # Performance benchmarks for 10,000+ concurrent users
+  phases:
+    # Phase 1: Warmup - 100 users (2 minutes)
+    - duration: 120
+      arrivalRate: 10
+      name: "Warmup Phase"
+    
+    # Phase 2: Ramp to 1,000 users (5 minutes)
+    - duration: 300
+      arrivalRate: 50
+      rampTo: 100
+      name: "Ramp to 1K"
+    
+    # Phase 3: Sustain 1,000 users (10 minutes)
+    - duration: 600
+      arrivalRate: 100
+      name: "Sustain 1K Users"
+    
+    # Phase 4: Ramp to 5,000 users (10 minutes)
+    - duration: 600
+      arrivalRate: 100
+      rampTo: 500
+      name: "Ramp to 5K"
+    
+    # Phase 5: Sustain 5,000 users (15 minutes)
+    - duration: 900
+      arrivalRate: 500
+      name: "Sustain 5K Users"
+    
+    # Phase 6: Ramp to 10,000 users (15 minutes)
+    - duration: 900
+      arrivalRate: 500
+      rampTo: 1000
+      name: "Ramp to 10K"
+    
+    # Phase 7: Peak load - 10,000 users (20 minutes)
+    - duration: 1200
+      arrivalRate: 1000
+      name: "Peak Load 10K Users"
+    
+    # Phase 8: Gradual ramp down (10 minutes)
+    - duration: 600
+      arrivalRate: 1000
+      rampTo: 100
+      name: "Ramp Down"
+
+  http:
+    timeout: 30
+    pool: 50
+    extendedMetrics: true
+  
+  # Performance thresholds for production readiness
+  ensure:
+    - http.response_time.p95: 200  # 95th percentile < 200ms
+    - http.response_time.p99: 500  # 99th percentile < 500ms
+    - http.request_rate: 1000      # Minimum 1000 requests/second
+    - http.codes.200: 99           # 99%+ success rate
+    - http.codes.4xx: 0.5          # < 0.5% client errors
+    - http.codes.5xx: 0.01         # < 0.01% server errors
+
+  environments:
+    development:
+      target: 'http://localhost:8000'
+    staging:
+      target: 'https://staging.bookedbarber.com'
+    production:
+      target: 'https://bookedbarber.com'
+
+scenarios:
+  # Realistic user behavior scenarios
+  - name: "New User Registration and Booking"
+    weight: 25
+    flow:
+      - post:
+          url: "/api/v1/auth/register"
+          headers:
+            Content-Type: "application/json"
+          json:
+            email: "loadtest+{{ $randomString() }}@example.com"
+            password: "LoadTest123!"
+            first_name: "Load"
+            last_name: "Test"
+            role: "client"
+          capture:
+            - json: "$.access_token"
+              as: "auth_token"
+          expect:
+            - statusCode: 201
+      
+      - think: 2
+      
+      - get:
+          url: "/api/v1/barbers"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          capture:
+            - json: "$[0].id"
+              as: "barber_id"
+          expect:
+            - statusCode: 200
+      
+      - think: 5
+      
+      - get:
+          url: "/api/v1/services?barber_id={{ barber_id }}"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          capture:
+            - json: "$[0].id"
+              as: "service_id"
+          expect:
+            - statusCode: 200
+      
+      - think: 3
+      
+      - get:
+          url: "/api/v1/barber-availability/{{ barber_id }}"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          capture:
+            - json: "$.available_slots[0]"
+              as: "time_slot"
+          expect:
+            - statusCode: 200
+      
+      - think: 10
+      
+      - post:
+          url: "/api/v1/appointments"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+            Content-Type: "application/json"
+          json:
+            barber_id: "{{ barber_id }}"
+            service_id: "{{ service_id }}"
+            appointment_datetime: "{{ time_slot }}"
+            notes: "Load test appointment"
+          expect:
+            - statusCode: 201
+
+  - name: "Returning User Booking"
+    weight: 40
+    flow:
+      - post:
+          url: "/api/v1/auth/login"
+          headers:
+            Content-Type: "application/json"
+          json:
+            email: "existing.user@example.com"
+            password: "ExistingUser123!"
+          capture:
+            - json: "$.access_token"
+              as: "auth_token"
+          expect:
+            - statusCode: 200
+      
+      - think: 1
+      
+      - get:
+          url: "/api/v1/appointments"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: 200
+      
+      - think: 3
+      
+      - get:
+          url: "/api/v1/barbers/favorite"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          capture:
+            - json: "$[0].id"
+              as: "barber_id"
+          expect:
+            - statusCode: 200
+            - hasProperty: "id"
+      
+      - think: 2
+      
+      - get:
+          url: "/api/v1/barber-availability/{{ barber_id }}"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          capture:
+            - json: "$.available_slots[0]"
+              as: "time_slot"
+          expect:
+            - statusCode: 200
+      
+      - think: 5
+      
+      - post:
+          url: "/api/v1/appointments"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+            Content-Type: "application/json"
+          json:
+            barber_id: "{{ barber_id }}"
+            service_id: 1
+            appointment_datetime: "{{ time_slot }}"
+          expect:
+            - statusCode: 201
+
+  - name: "Barber Dashboard Usage"
+    weight: 20
+    flow:
+      - post:
+          url: "/api/v1/auth/login"
+          headers:
+            Content-Type: "application/json"
+          json:
+            email: "barber.test@example.com"
+            password: "BarberTest123!"
+          capture:
+            - json: "$.access_token"
+              as: "auth_token"
+          expect:
+            - statusCode: 200
+      
+      - think: 1
+      
+      - get:
+          url: "/api/v1/dashboard/stats"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: 200
+      
+      - think: 2
+      
+      - get:
+          url: "/api/v1/appointments/today"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: 200
+      
+      - think: 3
+      
+      - get:
+          url: "/api/v1/analytics/revenue?period=week"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: 200
+      
+      - think: 5
+      
+      - get:
+          url: "/api/v1/calendar/sync-status"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: 200
+
+  - name: "Payment Processing"
+    weight: 10
+    flow:
+      - post:
+          url: "/api/v1/auth/login"
+          headers:
+            Content-Type: "application/json"
+          json:
+            email: "client.payment@example.com"
+            password: "PaymentTest123!"
+          capture:
+            - json: "$.access_token"
+              as: "auth_token"
+          expect:
+            - statusCode: 200
+      
+      - think: 2
+      
+      - post:
+          url: "/api/v1/payments/create-intent"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+            Content-Type: "application/json"
+          json:
+            amount: 5000
+            currency: "usd"
+            appointment_id: 1
+          capture:
+            - json: "$.client_secret"
+              as: "payment_intent"
+          expect:
+            - statusCode: 200
+      
+      - think: 10
+      
+      - post:
+          url: "/api/v1/payments/confirm"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+            Content-Type: "application/json"
+          json:
+            payment_intent_id: "{{ payment_intent }}"
+            payment_method_id: "pm_card_visa"
+          expect:
+            - statusCode: 200
+
+  - name: "API Health Check"
+    weight: 5
+    flow:
+      - get:
+          url: "/health"
+          expect:
+            - statusCode: 200
+            - hasProperty: "status"
+      
+      - get:
+          url: "/api/v1/health/database"
+          expect:
+            - statusCode: 200
+      
+      - get:
+          url: "/api/v1/health/redis"
+          expect:
+            - statusCode: 200

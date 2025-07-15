@@ -247,6 +247,7 @@ def configure_cors():
         "X-Requested-With",
         "X-CSRFToken",
         "Cache-Control",
+        "X-Request-ID",          # For request tracking and monitoring
         "X-Device-Fingerprint",  # For MFA device trust
         "X-Trust-Token",         # For MFA device trust
         "X-MFA-Token"           # For MFA session management
