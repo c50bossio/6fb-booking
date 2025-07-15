@@ -1189,4 +1189,4 @@ const CurrentTimeIndicator = React.memo(({ startHour, slotDuration }: { startHou
 CurrentTimeIndicator.displayName = 'CurrentTimeIndicator'
 
 export default UnifiedCalendar
-export type { UnifiedCalendarProps, CalendarView }
+export type { UnifiedCalendarProps }
