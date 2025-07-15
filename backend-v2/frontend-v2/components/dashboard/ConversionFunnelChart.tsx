@@ -11,7 +11,7 @@ import {
   LightBulbIcon,
   ArrowRightIcon,
   ChartBarIcon,
-  ArrowArrowTrendingDownIcon,
+  ArrowTrendingDownIcon,
   ArrowTrendingUpIcon,
   EyeIcon,
   CursorArrowRaysIcon,

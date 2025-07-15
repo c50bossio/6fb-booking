@@ -545,7 +545,7 @@ export default function ProductForm({
                   <Checkbox
                     id="published"
                     checked={formData.published}
-                    onCheckedChange={(checked) => handleInputChange('published', checked)}
+                    onCheckedChange={(checked) => handleInputChange('published', checked === true)}
                   />
                   <Label htmlFor="published" className="text-sm">
                     Published on online store
@@ -567,7 +567,7 @@ export default function ProductForm({
                     <Checkbox
                       id="requires_shipping"
                       checked={formData.requires_shipping}
-                      onCheckedChange={(checked) => handleInputChange('requires_shipping', checked)}
+                      onCheckedChange={(checked) => handleInputChange('requires_shipping', checked === true)}
                     />
                     <Label htmlFor="requires_shipping" className="text-sm flex items-center gap-1">
                       <Truck className="h-4 w-4" />
@@ -579,7 +579,7 @@ export default function ProductForm({
                     <Checkbox
                       id="taxable"
                       checked={formData.taxable}
-                      onCheckedChange={(checked) => handleInputChange('taxable', checked)}
+                      onCheckedChange={(checked) => handleInputChange('taxable', checked === true)}
                     />
                     <Label htmlFor="taxable" className="text-sm flex items-center gap-1">
                       <Receipt className="h-4 w-4" />

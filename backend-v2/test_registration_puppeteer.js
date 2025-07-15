@@ -4,8 +4,8 @@ async function testRegistration() {
     console.log('🚀 Starting registration test...');
     
     const browser = await puppeteer.launch({ 
-        headless: false,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
     });
     
     const page = await browser.newPage();
@@ -15,8 +15,54 @@ async function testRegistration() {
         console.log('📍 Navigating to registration page...');
         await page.goto('http://localhost:3000/register', { waitUntil: 'networkidle2' });
         
-        // Wait for form to load
-        await page.waitForSelector('form', { timeout: 10000 });
+        // Wait for page to load and check what's available
+        console.log('⏳ Waiting for page elements...');
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        
+        // Check what's on the page
+        const pageContent = await page.content();
+        console.log('📄 Page length:', pageContent.length);
+        
+        // Look for any forms or registration elements
+        const forms = await page.$$('form');
+        console.log('📝 Forms found:', forms.length);
+        
+        const inputs = await page.$$('input');
+        console.log('📝 Input fields found:', inputs.length);
+        
+        // Try to find specific registration elements
+        const registerButton = await page.$('button[type="submit"]');
+        const emailInput = await page.$('input[type="email"]');
+        
+        console.log('📧 Email input found:', !!emailInput);
+        console.log('🔘 Submit button found:', !!registerButton);
+        
+        if (forms.length === 0) {
+            console.log('❌ No forms found on registration page');
+            
+            // Check for JavaScript errors
+            const logs = await page.evaluate(() => {
+                const errors = [];
+                const logs = [];
+                
+                // Check for error messages in console
+                const errorElements = document.querySelectorAll('[role="alert"], .error, .alert-destructive');
+                errorElements.forEach(el => errors.push(el.textContent));
+                
+                // Check page title
+                logs.push('Title: ' + document.title);
+                
+                // Check if React is loaded
+                logs.push('React: ' + (typeof window.React !== 'undefined' ? 'loaded' : 'not loaded'));
+                
+                return { errors, logs };
+            });
+            
+            console.log('📊 Page logs:', logs.logs);
+            console.log('❌ Page errors:', logs.errors);
+            
+            return;
+        }
         
         // Test data
         const testData = {
@@ -41,7 +87,7 @@ async function testRegistration() {
         await page.click('button[type="submit"]');
         
         // Wait for result
-        await page.waitForTimeout(3000);
+        await new Promise(resolve => setTimeout(resolve, 3000));
         
         // Check if registration was successful
         const currentUrl = page.url();

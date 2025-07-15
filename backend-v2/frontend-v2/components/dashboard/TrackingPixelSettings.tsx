@@ -365,7 +365,7 @@ export default function TrackingPixelSettings() {
       ]
     }
 
-    const fieldExamples = examples[field] || ['']
+    const fieldExamples = examples[field as keyof typeof examples] || ['']
     const index = (placeholderIndex[field] || 0) % fieldExamples.length
     return fieldExamples[index]
   }
@@ -447,7 +447,7 @@ export default function TrackingPixelSettings() {
           }
           resolve({ 
             success: false, 
-            error: errors[field] || 'Unknown testing error'
+            error: errors[field as keyof typeof errors] || 'Unknown testing error'
           })
         }
       }, 1000 + Math.random() * 2000) // Random delay 1-3 seconds

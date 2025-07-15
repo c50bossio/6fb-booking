@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AnalyticsCard, AnalyticsCardGrid } from '@/components/analytics/shared/AnalyticsCard'
 import { 
   ArrowTrendingUpIcon,
-  ArrowArrowTrendingDownIcon,
+  ArrowTrendingDownIcon,
   CurrencyDollarIcon,
   UsersIcon,
   EyeIcon,
@@ -336,14 +336,14 @@ export default function TrackingAnalyticsDashboard({
       title: 'Total Revenue',
       value: formatCurrency(analytics.overview.total_revenue),
       change: analytics.overview.revenue_growth,
-      trend: analytics.overview.revenue_growth > 0 ? 'up' : analytics.overview.revenue_growth < 0 ? 'down' : 'neutral',
+      trend: analytics.overview.revenue_growth > 0 ? 'up' as const : analytics.overview.revenue_growth < 0 ? 'down' as const : 'neutral' as const,
       icon: <CurrencyDollarIcon className="w-6 h-6 text-green-600" />
     },
     {
       title: 'Conversions',
-      value: analytics.overview.total_bookings,
+      value: analytics.overview.total_bookings.toString(),
       change: analytics.overview.booking_growth,
-      trend: analytics.overview.booking_growth > 0 ? 'up' : analytics.overview.booking_growth < 0 ? 'down' : 'neutral',
+      trend: analytics.overview.booking_growth > 0 ? 'up' as const : analytics.overview.booking_growth < 0 ? 'down' as const : 'neutral' as const,
       icon: <CheckCircleIcon className="w-6 h-6 text-blue-600" />
     },
     {

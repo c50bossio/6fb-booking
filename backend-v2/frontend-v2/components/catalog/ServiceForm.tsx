@@ -353,7 +353,7 @@ export default function ServiceForm({
                   <Checkbox
                     id="variable_pricing"
                     checked={useVariablePricing}
-                    onCheckedChange={setUseVariablePricing}
+                    onCheckedChange={(checked) => setUseVariablePricing(checked === true)}
                   />
                   <Label htmlFor="variable_pricing" className="text-sm">
                     Enable variable pricing (min/max range)
@@ -463,7 +463,7 @@ export default function ServiceForm({
                   <Checkbox
                     id="is_active"
                     checked={formData.is_active}
-                    onCheckedChange={(checked) => handleInputChange('is_active', checked)}
+                    onCheckedChange={(checked) => handleInputChange('is_active', checked === true)}
                   />
                   <Label htmlFor="is_active" className="text-sm">
                     Service is active and available
@@ -474,7 +474,7 @@ export default function ServiceForm({
                   <Checkbox
                     id="is_bookable_online"
                     checked={formData.is_bookable_online}
-                    onCheckedChange={(checked) => handleInputChange('is_bookable_online', checked)}
+                    onCheckedChange={(checked) => handleInputChange('is_bookable_online', checked === true)}
                   />
                   <Label htmlFor="is_bookable_online" className="text-sm">
                     Allow online booking
@@ -485,7 +485,7 @@ export default function ServiceForm({
                   <Checkbox
                     id="is_package"
                     checked={formData.is_package}
-                    onCheckedChange={(checked) => handleInputChange('is_package', checked)}
+                    onCheckedChange={(checked) => handleInputChange('is_package', checked === true)}
                   />
                   <Label htmlFor="is_package" className="text-sm">
                     This is a service package

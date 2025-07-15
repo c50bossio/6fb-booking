@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Button, Input, Textarea } from '@/components/ui'
+import { Button } from '@/components/ui/Button'
+import { Input, Textarea } from '@/components/ui/Input'
 
 interface ContactForm {
   name: string
