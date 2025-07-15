@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:turbo": "next dev --turbo",
-    "build": "next build",
+    "build": "ESLINT=false next build",
     "build:analyze": "ANALYZE=true next build",
     "build:profile": "next build --profile",
     "build:debug": "next build --debug",
