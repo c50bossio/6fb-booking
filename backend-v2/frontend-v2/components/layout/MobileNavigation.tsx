@@ -138,7 +138,7 @@ export function MobileNavigation({ user }: MobileNavigationProps) {
                   
                   {/* Badge */}
                   {tab.badge && (
-                    <span className="absolute -top-2 -right-2 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-error-500 rounded-full">
+                    <span className="absolute -top-2 -right-2 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-600 rounded-full" aria-label="Notifications count">
                       {tab.badge}
                     </span>
                   )}

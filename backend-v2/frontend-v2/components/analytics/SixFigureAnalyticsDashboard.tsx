@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo, useCallback } from 'react'
 import { getSixFigureBarberMetrics, SixFigureBarberMetrics } from '@/lib/api'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/Button'
-import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
+import { PageLoading, ErrorDisplay } from '@/components/ui/LoadingSystem'
 import { formatters } from '@/lib/formatters'
 import { 
   ChatBubbleLeftEllipsisIcon, 
@@ -14,6 +14,9 @@ import {
   CheckCircleIcon,
   LightBulbIcon
 } from '@heroicons/react/24/outline'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
+import { MetricExplanations } from '@/lib/metric-explanations'
 
 interface SixFigureAnalyticsDashboardProps {
   userId: number
@@ -89,11 +92,17 @@ export default function SixFigureAnalyticsDashboard({
       }
 
       // Price optimization insight
-      if (metrics.recommendations.price_optimization.recommended_increase_percentage > 0) {
+      const increasePercentage = metrics.recommendations.price_optimization.recommended_increase_percentage
+      if (increasePercentage && increasePercentage > 0) {
+        // Safely format percentage with null checks
+        const formattedPercentage = typeof increasePercentage === 'number' && !isNaN(increasePercentage) 
+          ? increasePercentage.toFixed(1) 
+          : '0'
+        
         insights.push({
           type: 'tip',
           title: 'Pricing Optimization',
-          message: `Consider a ${metrics.recommendations.price_optimization.recommended_increase_percentage.toFixed(1)}% price increase to reach your six-figure goal faster.`,
+          message: `Consider a ${formattedPercentage}% price increase to reach your six-figure goal faster.`,
           actionText: 'Update Pricing'
         })
       }
@@ -379,7 +388,29 @@ export default function SixFigureAnalyticsDashboard({
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Monthly Progress</p>
+                <div className="flex items-center gap-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Monthly Progress</p>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button 
+                        type="button" 
+                        className="text-gray-400 hover:text-gray-600 transition-colors duration-200" 
+                        aria-label="Metric explanation"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <InformationCircleIcon className="w-5 h-5" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs p-3 text-sm">
+                      <div className="space-y-1">
+                        <p className="font-medium text-gray-900 dark:text-white">{MetricExplanations.monthlyProgress.explanation}</p>
+                        {MetricExplanations.monthlyProgress.details && (
+                          <p className="text-gray-600 dark:text-gray-400 text-xs">{MetricExplanations.monthlyProgress.details}</p>
+                        )}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {Math.round(progressPercentage)}%
                 </p>
@@ -407,7 +438,29 @@ export default function SixFigureAnalyticsDashboard({
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Average Ticket</p>
+                <div className="flex items-center gap-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Average Ticket</p>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button 
+                        type="button" 
+                        className="text-gray-400 hover:text-gray-600 transition-colors duration-200" 
+                        aria-label="Metric explanation"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <InformationCircleIcon className="w-5 h-5" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs p-3 text-sm">
+                      <div className="space-y-1">
+                        <p className="font-medium text-gray-900 dark:text-white">{MetricExplanations.averageTicket.explanation}</p>
+                        {MetricExplanations.averageTicket.details && (
+                          <p className="text-gray-600 dark:text-gray-400 text-xs">{MetricExplanations.averageTicket.details}</p>
+                        )}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {formatters.currency(current_performance.average_ticket)}
                 </p>
@@ -426,7 +479,29 @@ export default function SixFigureAnalyticsDashboard({
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Utilization Rate</p>
+                <div className="flex items-center gap-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Booking Rate</p>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button 
+                        type="button" 
+                        className="text-gray-400 hover:text-gray-600 transition-colors duration-200" 
+                        aria-label="Metric explanation"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <InformationCircleIcon className="w-5 h-5" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs p-3 text-sm">
+                      <div className="space-y-1">
+                        <p className="font-medium text-gray-900 dark:text-white">{MetricExplanations.bookingRate.explanation}</p>
+                        {MetricExplanations.bookingRate.details && (
+                          <p className="text-gray-600 dark:text-gray-400 text-xs">{MetricExplanations.bookingRate.details}</p>
+                        )}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {formatters.percentage(current_performance.utilization_rate)}
                 </p>
@@ -445,7 +520,29 @@ export default function SixFigureAnalyticsDashboard({
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Active Clients</p>
+                <div className="flex items-center gap-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Active Clients</p>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button 
+                        type="button" 
+                        className="text-gray-400 hover:text-gray-600 transition-colors duration-200" 
+                        aria-label="Metric explanation"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <InformationCircleIcon className="w-5 h-5" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs p-3 text-sm">
+                      <div className="space-y-1">
+                        <p className="font-medium text-gray-900 dark:text-white">{MetricExplanations.activeClients.explanation}</p>
+                        {MetricExplanations.activeClients.details && (
+                          <p className="text-gray-600 dark:text-gray-400 text-xs">{MetricExplanations.activeClients.details}</p>
+                        )}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {current_performance.total_active_clients}
                 </p>

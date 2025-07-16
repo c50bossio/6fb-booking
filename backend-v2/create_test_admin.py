@@ -39,12 +39,11 @@ def create_test_admin():
         # Create new admin user
         test_admin = User(
             email="admin.test@bookedbarber.com",
-            username="admin_test",
-            password_hash=pwd_context.hash("AdminTest123"),
+            name="Test Admin User",
+            hashed_password=pwd_context.hash("AdminTest123"),
             role="admin",
             is_active=True,
-            is_verified=True,
-            full_name="Test Admin User",
+            email_verified=True,
             phone="+1234567890"
         )
         

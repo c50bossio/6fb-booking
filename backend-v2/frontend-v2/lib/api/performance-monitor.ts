@@ -147,11 +147,9 @@ export class PerformanceMonitor {
 
     try {
       const result = await operation()
-      endTiming()
       this.endTiming(requestId, endpoint, method, 200, undefined, undefined, tags)
       return result
     } catch (error: any) {
-      endTiming()
       const status = error.status || 0
       this.endTiming(requestId, endpoint, method, status, undefined, undefined, tags)
       throw error

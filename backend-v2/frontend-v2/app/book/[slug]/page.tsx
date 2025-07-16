@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
-import { LoadingButton } from '@/components/LoadingStates'
+import { LoadingButton } from '@/components/ui/LoadingSystem'
 
 // Dynamically import to avoid SSR issues
 const ConversionOptimizedBooking = dynamic(

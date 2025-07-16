@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { getProfile, type User } from '@/lib/api'
-import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
+import { PageLoading, ErrorDisplay } from '@/components/ui/LoadingSystem'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/Button'
 import { 

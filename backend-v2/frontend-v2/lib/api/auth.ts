@@ -7,7 +7,11 @@
  * - Password reset and email verification
  * - Multi-factor authentication support
  * - Device trust management
+ * 
+ * UPDATED: Now uses Token Manager for consistent token handling
  */
+
+import { setTokens, clearTokens as clearTokensManager, getAccessToken, getRefreshToken } from '../tokenManager'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -196,9 +200,10 @@ export interface AuthError {
 
 /**
  * Get authorization headers with current JWT token
+ * UPDATED: Now uses Token Manager
  */
 function getAuthHeaders(): Record<string, string> {
-  const token = localStorage.getItem('access_token')
+  const token = getAccessToken()
   return {
     'Content-Type': 'application/json',
     ...(token && { Authorization: `Bearer ${token}` })
@@ -222,21 +227,23 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
 /**
  * Store authentication tokens securely
+ * UPDATED: Now uses Token Manager
  */
 function storeTokens(tokens: AuthToken): void {
-  localStorage.setItem('access_token', tokens.access_token)
-  if (tokens.refresh_token) {
-    localStorage.setItem('refresh_token', tokens.refresh_token)
-  }
+  setTokens({
+    access_token: tokens.access_token,
+    refresh_token: tokens.refresh_token,
+    token_type: tokens.token_type
+  })
 }
 
 /**
  * Clear stored authentication tokens
+ * UPDATED: Now uses Token Manager
  */
 function clearTokens(): void {
-  localStorage.removeItem('access_token')
-  localStorage.removeItem('refresh_token')
-  localStorage.removeItem('user_data')
+  clearTokensManager()
+  localStorage.removeItem('user_data') // Keep this for user data cleanup
 }
 
 // ===============================
@@ -326,9 +333,10 @@ export const authApi = {
 
   /**
    * Refresh access token using refresh token
+   * UPDATED: Now uses Token Manager
    */
   async refreshToken(): Promise<AuthToken> {
-    const refreshToken = localStorage.getItem('refresh_token')
+    const refreshToken = getRefreshToken()
     if (!refreshToken) {
       throw {
         detail: 'No refresh token available',
@@ -346,8 +354,8 @@ export const authApi = {
 
     const data = await handleResponse<AuthToken>(response)
     
-    // Update stored access token
-    localStorage.setItem('access_token', data.access_token)
+    // Update stored tokens using Token Manager
+    setTokens(data)
     
     return data
   },
@@ -507,9 +515,10 @@ export const authApi = {
 
   /**
    * Check if user is currently authenticated
+   * UPDATED: Now uses Token Manager
    */
   isAuthenticated(): boolean {
-    const token = localStorage.getItem('access_token')
+    const token = getAccessToken()
     return !!token
   },
 

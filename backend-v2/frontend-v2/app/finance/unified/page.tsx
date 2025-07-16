@@ -3,7 +3,7 @@
 import React, { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getProfile, fetchAPI, type User } from '@/lib/api'
-import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
+import { PageLoading, ErrorDisplay } from '@/components/ui/LoadingSystem'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/Button'

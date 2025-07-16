@@ -203,11 +203,14 @@ export interface AppointmentFilters {
 // Utility Functions
 // ===============================
 
+import { getAccessToken } from '../tokenManager'
+
 /**
  * Get authorization headers with current JWT token
+ * UPDATED: Now uses Token Manager for consistent token handling
  */
 function getAuthHeaders(): Record<string, string> {
-  const token = localStorage.getItem('access_token')
+  const token = getAccessToken()
   return {
     'Content-Type': 'application/json',
     ...(token && { Authorization: `Bearer ${token}` })

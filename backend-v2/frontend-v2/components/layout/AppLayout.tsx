@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { getProfile, type User } from '@/lib/api'
 import { handleAuthError, isProtectedRoute } from '@/lib/auth-error-handler'
 import { ThemeProvider } from '@/lib/theme-provider'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { Sidebar } from './Sidebar'
 import { MobileNavigation } from './MobileNavigation'
 import { Header } from './Header'
@@ -108,7 +109,8 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <ThemeProvider defaultTheme="system" storageKey="6fb-theme">
-      <div className="min-h-screen bg-gray-50 dark:bg-dark-surface-100 transition-colors duration-200">
+      <TooltipProvider>
+        <div className="min-h-screen bg-gray-50 dark:bg-dark-surface-100 transition-colors duration-200">
         {/* Desktop Layout */}
         {mounted && !isMobile && !isPublicRoute && (
           <div className="flex min-h-screen">
@@ -142,9 +144,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                             </svg>
                           </div>
                           <div className="ml-3">
-                            <h3 className="text-sm font-medium text-warning-800 dark:text-warning-200">
+                            <div className="text-sm font-medium text-warning-800 dark:text-warning-200" role="alert" aria-live="polite">
                               Connection Issue
-                            </h3>
+                            </div>
                             <div className="mt-2 text-sm text-warning-700 dark:text-warning-300">
                               <p>{error}</p>
                             </div>
@@ -186,9 +188,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                         </svg>
                       </div>
                       <div className="ml-3">
-                        <h3 className="text-sm font-medium text-warning-800 dark:text-warning-200">
+                        <div className="text-sm font-medium text-warning-800 dark:text-warning-200" role="alert" aria-live="polite">
                           Connection Issue
-                        </h3>
+                        </div>
                         <div className="mt-2 text-sm text-warning-700 dark:text-warning-300">
                           <p>{error}</p>
                         </div>
@@ -239,9 +241,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                             </svg>
                           </div>
                           <div className="ml-3">
-                            <h3 className="text-sm font-medium text-warning-800 dark:text-warning-200">
+                            <div className="text-sm font-medium text-warning-800 dark:text-warning-200" role="alert" aria-live="polite">
                               Connection Issue
-                            </h3>
+                            </div>
                             <div className="mt-2 text-sm text-warning-700 dark:text-warning-300">
                               <p>{error}</p>
                             </div>
@@ -277,7 +279,8 @@ export function AppLayout({ children }: AppLayoutProps) {
         
         {/* Test Data Indicator - Shows when test data is active */}
         {!isPublicRoute && user && <TestDataIndicator />}
-      </div>
+        </div>
+      </TooltipProvider>
     </ThemeProvider>
   )
 }

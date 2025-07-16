@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { getAppointmentPatterns } from '@/lib/api'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
+import { PageLoading, ErrorDisplay } from '@/components/ui/LoadingSystem'
 import { BarChart, LineChart, DoughnutChart, chartUtils } from './ChartComponents'
 
 interface AppointmentPatternsProps {

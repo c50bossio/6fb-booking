@@ -325,12 +325,12 @@ async def get_me(current_user: models.User = Depends(get_current_user), db: Sess
     
     # Set permission flags based on unified_role
     if current_user.unified_role:
-        user_data["is_business_owner"] = current_user.unified_role in ['enterprise_owner', 'shop_owner', 'individual_barber']
-        user_data["is_staff_member"] = current_user.unified_role in ['barber', 'shop_manager', 'receptionist']
-        user_data["is_system_admin"] = current_user.unified_role in ['super_admin', 'platform_admin']
-        user_data["can_manage_billing"] = current_user.unified_role in ['super_admin', 'enterprise_owner', 'shop_owner']
-        user_data["can_manage_staff"] = current_user.unified_role in ['super_admin', 'enterprise_owner', 'shop_owner', 'shop_manager']
-        user_data["can_view_analytics"] = current_user.unified_role not in ['client', 'viewer']
+        user_data["is_business_owner"] = current_user.unified_role in ['ENTERPRISE_OWNER', 'SHOP_OWNER', 'INDIVIDUAL_BARBER']
+        user_data["is_staff_member"] = current_user.unified_role in ['BARBER', 'SHOP_MANAGER', 'RECEPTIONIST']
+        user_data["is_system_admin"] = current_user.unified_role in ['SUPER_ADMIN', 'PLATFORM_ADMIN']
+        user_data["can_manage_billing"] = current_user.unified_role in ['SUPER_ADMIN', 'ENTERPRISE_OWNER', 'SHOP_OWNER']
+        user_data["can_manage_staff"] = current_user.unified_role in ['SUPER_ADMIN', 'ENTERPRISE_OWNER', 'SHOP_OWNER', 'SHOP_MANAGER']
+        user_data["can_view_analytics"] = current_user.unified_role not in ['CLIENT', 'VIEWER']
     
     return user_data
 

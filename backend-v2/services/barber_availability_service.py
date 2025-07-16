@@ -310,32 +310,35 @@ def is_barber_available(
         check_start_datetime = datetime.combine(check_date, start_time)
         check_end_datetime = datetime.combine(check_date, end_time)
         
+        # Get potential conflicts within a broader time window for precise checking
         conflict_query = db.query(
-            exists().where(
-                and_(
-                    models.Appointment.barber_id == barber_id,
-                    models.Appointment.status.in_(["scheduled", "confirmed", "pending"]),
-                    # Time overlap check with buffer consideration
-                    or_(
-                        # Requested time starts during existing appointment (with buffer)
-                        and_(
-                            models.Appointment.start_time <= check_start_datetime,
-                            models.Appointment.start_time + timedelta(minutes=models.Appointment.duration_minutes) > check_start_datetime
-                        ),
-                        # Existing appointment starts during requested time
-                        and_(
-                            models.Appointment.start_time >= check_start_datetime,
-                            models.Appointment.start_time < check_end_datetime
-                        )
-                    )
-                )
+            models.Appointment
+        ).filter(
+            and_(
+                models.Appointment.barber_id == barber_id,
+                models.Appointment.status.in_(["scheduled", "confirmed", "pending"]),
+                # Get appointments that might overlap (broader window)
+                models.Appointment.start_time >= check_start_datetime - timedelta(hours=2),
+                models.Appointment.start_time <= check_end_datetime + timedelta(hours=2)
             )
         )
         
         if exclude_appointment_id:
             conflict_query = conflict_query.filter(models.Appointment.id != exclude_appointment_id)
         
-        has_conflict = conflict_query.scalar()
+        # Get potentially conflicting appointments
+        potential_conflicts = conflict_query.all()
+        
+        # Check for actual conflicts in Python (precise datetime arithmetic)
+        has_conflict = False
+        for appointment in potential_conflicts:
+            appointment_start = appointment.start_time
+            appointment_end = appointment_start + timedelta(minutes=int(appointment.duration_minutes))
+            
+            # Check if there's any overlap
+            if not (check_end_datetime <= appointment_start or check_start_datetime >= appointment_end):
+                has_conflict = True
+                break
         
         return not has_conflict
     

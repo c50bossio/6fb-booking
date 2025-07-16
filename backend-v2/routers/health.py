@@ -41,7 +41,8 @@ async def detailed_health_check(db: Session = Depends(get_db)):
     
     # Database check
     try:
-        db.execute("SELECT 1")
+        from sqlalchemy import text
+        db.execute(text("SELECT 1"))
         health_status["checks"]["database"] = {
             "status": "healthy",
             "type": "postgresql" if "postgresql" in settings.database_url else "sqlite"
@@ -172,20 +173,21 @@ async def redis_health():
 async def database_health(db: Session = Depends(get_db)):
     """Database-specific health check"""
     try:
+        from sqlalchemy import text
         # Test query
-        result = db.execute("SELECT 1 as test")
+        result = db.execute(text("SELECT 1 as test"))
         
         # Get database info
         db_type = "postgresql" if "postgresql" in settings.database_url else "sqlite"
         
         if db_type == "postgresql":
             # PostgreSQL specific checks
-            size_result = db.execute("SELECT pg_database_size(current_database())")
+            size_result = db.execute(text("SELECT pg_database_size(current_database())"))
             size_bytes = size_result.scalar()
             
-            connections_result = db.execute(
+            connections_result = db.execute(text(
                 "SELECT count(*) FROM pg_stat_activity WHERE datname = current_database()"
-            )
+            ))
             active_connections = connections_result.scalar()
             
             return {

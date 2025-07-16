@@ -35,13 +35,13 @@ def get_organization_user_ids(user: User, db: Session) -> List[int]:
     This is used for organization-based data filtering.
     """
     # If user has no organization, return only their own ID
-    if not user.primary_organization_id:
+    if not user.primary_organization:
         return [user.id]
     
     # Get all users in the same organization
     from models.organization import UserOrganization
     user_orgs = db.query(UserOrganization).filter(
-        UserOrganization.organization_id == user.primary_organization_id
+        UserOrganization.organization_id == user.primary_organization.id
     ).all()
     
     return [uo.user_id for uo in user_orgs]
@@ -403,67 +403,17 @@ async def get_six_figure_barber_metrics(
         # Add timeout protection and error handling
         analytics_service = AnalyticsService(db)
         
-        # For now, return mock data to prevent dashboard hanging
-        # TODO: Fix the underlying database query performance issue
-        # Updated to match SixFigureBarberMetrics interface structure
-        return {
-            "current_performance": {
-                "monthly_revenue": 6690.0,
-                "annual_revenue_projection": 80280.0,
-                "average_ticket": 33.37,
-                "utilization_rate": 72.3,
-                "average_visits_per_client": 4.2,
-                "total_active_clients": 159
-            },
-            "targets": {
-                "annual_income_target": target_annual_income,
-                "monthly_revenue_target": target_annual_income / 12,
-                "daily_revenue_target": target_annual_income / 365,
-                "daily_clients_target": int((target_annual_income / 365) / 33.37),
-                "revenue_gap": target_annual_income - 80280.0,
-                "on_track": 80280.0 >= (target_annual_income * 0.8)  # True if within 20% of goal
-            },
-            "recommendations": {
-                "price_optimization": {
-                    "current_average_ticket": 33.37,
-                    "recommended_average_ticket": 38.38,  # Added missing field
-                    "recommended_increase_percentage": 15.0,
-                    "potential_annual_increase": 12042.0,
-                    "justification": "Your current pricing is below market average"
-                },
-                "client_acquisition": {
-                    "current_monthly_clients": 12,  # Renamed to match frontend
-                    "target_monthly_clients": 18,   # Renamed to match frontend
-                    "additional_clients_needed": 6,  # Added missing field
-                    "cost_per_acquisition": 25.0,
-                    "potential_annual_increase": 6000.0
-                },
-                "retention_improvement": {
-                    "current_retention_rate": 75.0,
-                    "target_retention_rate": 85.0,
-                    "potential_annual_increase": 8500.0,
-                    "strategies": ["Follow-up system", "Loyalty program", "Service quality improvements"]
-                },
-                "efficiency_optimization": {
-                    "current_utilization_rate": 72.3,
-                    "target_utilization_rate": 80.0,
-                    "potential_annual_increase": 4500.0,
-                    "suggestions": ["Better scheduling", "Reduce no-shows", "Optimize service times"]
-                }
-            },
-            "progress_tracking": {
-                "monthly_progress": 80.28,
-                "year_to_date_performance": 65.2,
-                "quarterly_trend": "improving",
-                "efficiency_trend": "stable"
-            },
-            "generated_at": datetime.utcnow().isoformat(),
-            "status": "mock_data",
-            "note": "Using mock data while fixing database performance"
-        }
+        # Use optimized analytics service with caching for better performance
+        try:
+            # Use cached analytics calculation for better performance
+            cached_metrics = analytics_service.get_six_figure_metrics_cached(target_user_id, target_annual_income)
+            if cached_metrics:
+                return cached_metrics
+        except Exception as cache_error:
+            print(f"Cache miss or error, falling back to live calculation: {cache_error}")
         
-        # Uncomment this line once database queries are optimized:
-        # return analytics_service.calculate_six_figure_barber_metrics(target_user_id, target_annual_income)
+        # Use real analytics calculation instead of mock data
+        return analytics_service.calculate_six_figure_barber_metrics(target_user_id, target_annual_income)
         
     except Exception as e:
         # Log the error but don't crash the dashboard

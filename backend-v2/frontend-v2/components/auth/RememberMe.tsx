@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
+import dynamic from 'next/dynamic'
 import { Label } from "@/components/ui/Label"
 import { Button } from '@/components/ui/Button'
 import {
@@ -124,8 +125,31 @@ interface EnhancedRememberMeProps {
   className?: string
 }
 
-export function EnhancedRememberMe({ value, onChange, className }: EnhancedRememberMeProps) {
+function EnhancedRememberMeClient({ value, onChange, className }: EnhancedRememberMeProps) {
   const [showTooltip, setShowTooltip] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return (
+      <div className={className}>
+        <div className="flex items-start space-x-3">
+          <div className="mt-1 h-4 w-4 rounded-sm border-2 border-gray-300 bg-white" />
+          <div className="space-y-1">
+            <Label className="text-sm font-medium cursor-pointer">
+              Keep me signed in
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              Stay signed in for 30 days on this device.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className={className}>
@@ -136,6 +160,7 @@ export function EnhancedRememberMe({ value, onChange, className }: EnhancedRemem
           onCheckedChange={onChange}
           className="mt-1"
           aria-labelledby="enhanced-remember-label"
+          aria-describedby="enhanced-remember-description"
         />
         <div className="space-y-1">
           <Label
@@ -145,7 +170,7 @@ export function EnhancedRememberMe({ value, onChange, className }: EnhancedRemem
           >
             Keep me signed in
           </Label>
-          <p className="text-xs text-muted-foreground">
+          <p id="enhanced-remember-description" className="text-xs text-muted-foreground">
             Stay signed in for 30 days on this device.{' '}
             <button
               type="button"
@@ -179,3 +204,20 @@ export function EnhancedRememberMe({ value, onChange, className }: EnhancedRemem
     </div>
   )
 }
+
+export const EnhancedRememberMe = dynamic(() => Promise.resolve(EnhancedRememberMeClient), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-start space-x-3">
+      <div className="mt-1 h-4 w-4 rounded-sm border-2 border-gray-300 bg-white" />
+      <div className="space-y-1">
+        <Label className="text-sm font-medium cursor-pointer">
+          Keep me signed in
+        </Label>
+        <p className="text-xs text-muted-foreground">
+          Stay signed in for 30 days on this device.
+        </p>
+      </div>
+    </div>
+  )
+}) as React.ComponentType<EnhancedRememberMeProps>

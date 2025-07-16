@@ -644,8 +644,27 @@ export function initializeMetaPixel(): MetaPixelService {
     const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID
     const appId = process.env.NEXT_PUBLIC_META_APP_ID
     
-    if (!pixelId) {
-      throw new Error('Meta Pixel ID not configured')
+    if (!pixelId || pixelId.trim() === '') {
+      console.warn('[Meta Pixel] Pixel ID not configured - Meta Pixel tracking disabled')
+      // Return a no-op service when not configured
+      metaPixelInstance = new MetaPixelService({
+        pixelId: 'disabled',
+        appId,
+        debugMode: false,
+        automaticConfig: false,
+        enableAdvancedMatching: false,
+        respectDNT: true,
+        consentMode: false,
+        testEventCode: undefined,
+        dataProcessingOptions: []
+      })
+      // Override methods to be no-ops
+      metaPixelInstance.init = async () => Promise.resolve()
+      metaPixelInstance.trackEvent = () => {}
+      metaPixelInstance.trackCustomEvent = () => {}
+      metaPixelInstance.trackPageView = () => {}
+      metaPixelInstance.setConsent = () => {}
+      return metaPixelInstance
     }
 
     metaPixelInstance = new MetaPixelService({

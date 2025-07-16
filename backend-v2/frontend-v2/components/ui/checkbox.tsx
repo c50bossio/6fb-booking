@@ -30,6 +30,8 @@ const Checkbox = React.forwardRef<
     }}
     role="checkbox"
     aria-checked={props.checked}
+    aria-label={props['aria-label'] || undefined}
+    aria-labelledby={props['aria-labelledby'] || undefined}
     {...props}
   >
     <CheckboxPrimitive.Indicator

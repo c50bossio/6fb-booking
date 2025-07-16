@@ -20,7 +20,7 @@ jest.mock('@/lib/api', () => ({
 // We'll use the real useAsyncOperation hook since it exists
 
 // Mock the LoadingStates components
-jest.mock('@/components/LoadingStates', () => ({
+jest.mock('@/components/ui/LoadingSystem', () => ({
   LoadingButton: ({ children, ...props }: any) => <button {...props}>{children}</button>,
   ErrorDisplay: ({ error, title }: any) => <div role="alert">{title}: {error}</div>,
   SuccessMessage: ({ message, onDismiss }: any) => (

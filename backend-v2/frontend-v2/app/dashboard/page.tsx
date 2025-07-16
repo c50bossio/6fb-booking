@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState, Suspense, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getProfile, logout, getMyBookings, getClientDashboardMetrics, getDashboardAnalytics, type User, type DashboardAnalytics } from '@/lib/api'
 import { handleAuthError } from '@/lib/auth-error-handler'
@@ -9,14 +9,17 @@ import { getDefaultDashboard } from '@/lib/routeGuards'
 import TimezoneSetupModal from '@/components/TimezoneSetupModal'
 import { BarberDashboardLayout } from '@/components/BarberDashboardLayout'
 import { useAsyncOperation } from '@/lib/useAsyncOperation'
-import { PageLoading, ErrorDisplay, SuccessMessage } from '@/components/LoadingStates'
+import { PageLoading, ErrorDisplay, SuccessMessage } from '@/components/ui/LoadingSystem'
 import { Button } from '@/components/ui/Button'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
 import { QuickActions } from '@/components/QuickActions'
+import { TestDataQuickActions } from '@/components/TestDataQuickActions'
 import CalendarDayMini from '@/components/calendar/CalendarDayMini'
 import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton'
 import { TrialStatusBanner } from '@/components/ui/TrialStatusBanner'
 import { TrialWarningSystem } from '@/components/ui/TrialWarningSystem'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { SmartLoading, ClientMetricsSkeleton, CalendarMiniSkeleton, QuickActionsSkeleton } from '@/components/dashboard/MetricsLoadingStates'
 
 // Simple Icon Components
 const BookIcon = () => (
@@ -91,9 +94,14 @@ function DashboardContent() {
   const [showSuccess, setShowSuccess] = useState(false)
   const [showTimezoneWarning, setShowTimezoneWarning] = useState(false)
   const [showTimezoneModal, setShowTimezoneModal] = useState(false)
+  const dataFetchedRef = useRef(false)
 
   useEffect(() => {
     async function fetchDashboardData() {
+      // Prevent multiple executions
+      if (dataFetchedRef.current) return
+      dataFetchedRef.current = true
+      
       try {
         console.log('Dashboard: Fetching user profile...')
         // Check authentication first
@@ -112,10 +120,16 @@ function DashboardContent() {
           return
         }
         
-        // Check if user should be redirected to role-specific dashboard
-        // Temporarily disabled to allow admin users to see the dashboard
+        // NOTE: Role-based dashboard routing disabled to preserve user's preferred UI experience
+        // Users (especially ENTERPRISE_OWNER) prefer to access their familiar dashboard interface
+        // instead of being automatically redirected to /admin
+        // 
+        // BACKEND PERMISSIONS STILL WORK: The permission fixes in auth.py ensure proper access control
+        // 
+        // Uncomment below if role-based routing is needed in the future:
         // const defaultDashboard = getDefaultDashboard(userData)
         // if (defaultDashboard !== '/dashboard' && window.location.pathname === '/dashboard') {
+        //   console.log(`Redirecting ${userData.unified_role} user to ${defaultDashboard}`)
         //   router.push(defaultDashboard)
         //   return
         // }
@@ -188,35 +202,10 @@ function DashboardContent() {
           }
         } catch (batchError) {
           console.error('Dashboard: Batch request failed:', batchError)
-          // Fallback to individual requests
-          try {
-            const bookingsData = await getMyBookings()
-            setBookings(bookingsData.bookings || [])
-          } catch (bookingError) {
-            console.warn('Failed to load bookings:', bookingError)
-            setBookings([])
-          }
-
-          if (userData.role === 'admin' || userData.role === 'barber') {
-            const [metricsResult, analyticsResult] = await Promise.allSettled([
-              getClientDashboardMetrics(),
-              getDashboardAnalytics(userData.id)
-            ])
-            
-            if (metricsResult.status === 'fulfilled') {
-              setClientMetrics(metricsResult.value)
-            } else {
-              console.warn('Failed to load client metrics:', metricsResult.reason)
-              setClientMetrics(null)
-            }
-            
-            if (analyticsResult.status === 'fulfilled') {
-              setAnalytics(analyticsResult.value)
-            } else {
-              console.warn('Failed to load analytics:', analyticsResult.reason)
-              setAnalytics(null)
-            }
-          }
+          // Set default values for failed batch requests
+          setBookings([])
+          setClientMetrics(null)
+          setAnalytics(null)
         }
       } catch (error) {
         console.error('Dashboard: Failed to load data:', error)
@@ -251,8 +240,8 @@ function DashboardContent() {
 
   // Handle redirect to login if user is not authenticated
   useEffect(() => {
-    // Check if we have a token in localStorage
-    const token = localStorage.getItem('token')
+    // Check if we have a token in localStorage (use same key as request batcher)
+    const token = localStorage.getItem('access_token')
     console.log('Dashboard: Checking auth - token exists:', !!token, 'loading:', loading, 'user:', !!user)
     
     if (!loading && !user && !token) {
@@ -294,7 +283,9 @@ function DashboardContent() {
     )
   }
 
-  // Render specialized barber dashboard layout
+  // Render rich dashboard layout with KPIs and analytics cards
+  // NOTE: This provides the rich dashboard with cards, metrics, and analytics
+  // Admin users should see this rich dashboard, not the basic Command Center
   if (user?.role === 'barber' || user?.role === 'admin' || user?.role === 'super_admin') {
     // Calculate completion rate from analytics data
     const completionRate = analytics?.appointment_summary ? 
@@ -384,11 +375,41 @@ function DashboardContent() {
             </Card>
           )}
 
-          <BarberDashboardLayout 
-            user={user}
-            todayStats={todayStats}
-            upcomingAppointments={upcomingAppointments}
-          />
+          <ErrorBoundary
+            feature="barber-dashboard"
+            userId={user.id.toString()}
+            fallback={
+              <Card className="border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800">
+                <CardContent className="p-6 text-center">
+                  <div className="w-12 h-12 text-amber-600 dark:text-amber-400 mx-auto mb-4">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.98-.833-2.75 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-amber-900 dark:text-amber-100 mb-2">
+                    Dashboard Temporarily Unavailable
+                  </h3>
+                  <p className="text-amber-700 dark:text-amber-200 mb-4">
+                    Your dashboard is experiencing issues. You can still access your calendar and other features.
+                  </p>
+                  <div className="flex gap-2 justify-center">
+                    <Button onClick={() => router.push('/calendar')} variant="outline" size="sm">
+                      Go to Calendar
+                    </Button>
+                    <Button onClick={() => window.location.reload()} variant="outline" size="sm">
+                      Refresh Page
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            }
+          >
+            <BarberDashboardLayout 
+              user={user}
+              todayStats={todayStats}
+              upcomingAppointments={upcomingAppointments}
+            />
+          </ErrorBoundary>
         </div>
 
         <TimezoneSetupModal
@@ -427,12 +448,12 @@ function DashboardContent() {
             </Button>
             {(user?.role === 'admin' || user?.role === 'barber') && (
               <Button 
-                onClick={() => router.push('/notifications')} 
+                onClick={() => router.push('/reviews/analytics')} 
                 variant="secondary" 
                 size="md"
                 leftIcon={<BellIcon />}
               >
-                Notifications
+                Analytics
               </Button>
             )}
             <Button 
@@ -526,7 +547,39 @@ function DashboardContent() {
 
         {/* Quick Actions - Prominent placement after warnings */}
         {user && (
-          <QuickActions userRole={user.role} className="mb-8" />
+          <ErrorBoundary
+            feature="quick-actions"
+            userId={user.id?.toString()}
+            fallback={
+              <Card className="mb-8 border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800">
+                <CardContent className="p-4 text-center">
+                  <p className="text-sm text-blue-700 dark:text-blue-200">
+                    Quick actions are temporarily unavailable.
+                  </p>
+                </CardContent>
+              </Card>
+            }
+          >
+            <SmartLoading
+              isLoading={loading}
+              error={null}
+              skeleton={<QuickActionsSkeleton />}
+            >
+              <QuickActions userRole={user.role} className="mb-8" />
+            </SmartLoading>
+          </ErrorBoundary>
+        )}
+
+        {/* Test Data Quick Actions for Development */}
+        {user && (
+          <ErrorBoundary
+            fallback={<div>Error loading test data actions</div>}
+            onError={(error) => {
+              console.error('Error in TestDataQuickActions:', error)
+            }}
+          >
+            <TestDataQuickActions userRole={user.role} className="mb-6" />
+          </ErrorBoundary>
         )}
 
         {user && (
@@ -558,12 +611,41 @@ function DashboardContent() {
                 
                 {/* Today's Appointments Mini Calendar */}
                 <div className="md:col-span-1">
-                  <CalendarDayMini
-                    appointments={bookings}
-                    selectedDate={new Date()}
-                    maxItems={3}
-                    onViewAll={() => router.push('/calendar')}
-                  />
+                  <ErrorBoundary
+                    feature="calendar-mini"
+                    fallback={
+                      <Card>
+                        <CardContent className="p-4 text-center">
+                          <div className="w-8 h-8 text-gray-400 mx-auto mb-2">
+                            <CalendarIcon />
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                            Calendar preview unavailable
+                          </p>
+                          <Button
+                            onClick={() => router.push('/calendar')}
+                            variant="outline"
+                            size="sm"
+                          >
+                            View Full Calendar
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    }
+                  >
+                    <SmartLoading
+                      isLoading={loading && bookings.length === 0}
+                      error={null}
+                      skeleton={<CalendarMiniSkeleton />}
+                    >
+                      <CalendarDayMini
+                        appointments={bookings}
+                        selectedDate={new Date()}
+                        maxItems={3}
+                        onViewAll={() => router.push('/calendar')}
+                      />
+                    </SmartLoading>
+                  </ErrorBoundary>
                 </div>
                 
                 <Card>
@@ -573,38 +655,52 @@ function DashboardContent() {
                     </h3>
                     {user?.role === 'admin' || user?.role === 'barber' ? (
                       <div className="space-y-2">
-                        {clientMetrics ? (
-                          <div className="text-sm space-y-1">
-                            <div>Total Clients: {clientMetrics.total_clients || 0}</div>
-                            <div>New This Month: {clientMetrics.new_clients_this_month || 0}</div>
-                            <div>VIP Clients: {clientMetrics.vip_clients || 0}</div>
-                          </div>
-                        ) : (
-                          <div className="text-sm text-gray-600">Loading metrics...</div>
-                        )}
+                        <SmartLoading
+                          isLoading={!clientMetrics && loading}
+                          error={null}
+                          skeleton={
+                            <div className="space-y-2">
+                              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32 animate-pulse"></div>
+                              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-28 animate-pulse"></div>
+                              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 animate-pulse"></div>
+                            </div>
+                          }
+                        >
+                          {clientMetrics ? (
+                            <div className="text-sm space-y-1">
+                              <div>Total Clients: {clientMetrics.total_clients || 0}</div>
+                              <div>New This Month: {clientMetrics.new_clients_this_month || 0}</div>
+                              <div>VIP Clients: {clientMetrics.vip_clients || 0}</div>
+                            </div>
+                          ) : (
+                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                              No metrics available
+                            </div>
+                          )}
+                        </SmartLoading>
                         <Button
-                          onClick={() => router.push('/clients')}
+                          onClick={() => router.push('/calendar')}
                           variant="ghost"
                           size="sm"
                           className="w-full justify-start text-primary-600 hover:text-primary-700 p-0"
                         >
-                          Manage clients →
+                          View appointments →
                         </Button>
                         <Button
-                          onClick={() => router.push('/import')}
+                          onClick={() => router.push('/reviews/analytics')}
                           variant="ghost"
                           size="sm"
                           className="w-full justify-start text-primary-600 hover:text-primary-700 p-0"
                         >
-                          Import data →
+                          View analytics →
                         </Button>
                         <Button
-                          onClick={() => router.push('/export')}
+                          onClick={() => router.push('/test-data')}
                           variant="ghost"
                           size="sm"
                           className="w-full justify-start text-primary-600 hover:text-primary-700 p-0"
                         >
-                          Export data →
+                          Manage test data →
                         </Button>
                       </div>
                     ) : (

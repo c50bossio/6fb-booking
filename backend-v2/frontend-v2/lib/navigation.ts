@@ -119,24 +119,39 @@ export function filterNavigationByRole(
   }
   
   // Map unified roles to equivalent access levels
+  // NOTE: Handle both uppercase (database) and lowercase (legacy) role formats
   const roleMapping: Record<string, string[]> = {
     // Platform-level roles
+    'SUPER_ADMIN': ['super_admin', 'admin', 'barber'],
     'super_admin': ['super_admin', 'admin', 'barber'],
+    'PLATFORM_ADMIN': ['super_admin', 'admin', 'barber'],
     'platform_admin': ['super_admin', 'admin', 'barber'],
     
     // Business owner roles - enterprise owners get everything
+    'ENTERPRISE_OWNER': ['super_admin', 'admin', 'barber'],
     'enterprise_owner': ['super_admin', 'admin', 'barber'],
+    'SHOP_OWNER': ['admin', 'barber'],
     'shop_owner': ['admin', 'barber'],
+    'INDIVIDUAL_BARBER': ['barber'],
     'individual_barber': ['barber'],
     
     // Staff roles
+    'SHOP_MANAGER': ['admin', 'barber'],
     'shop_manager': ['admin', 'barber'],
+    'BARBER': ['barber'],
     'barber': ['barber'],
-    'receptionist': ['barber'], // Can manage appointments
+    'RECEPTIONIST': ['barber'], // Can manage appointments
+    'receptionist': ['barber'],
     
     // Client roles
+    'CLIENT': ['user'],
     'client': ['user'],
-    'user': ['user']
+    'USER': ['user'],
+    'user': ['user'],
+    
+    // Legacy role compatibility
+    'admin': ['admin', 'barber'],
+    'super_admin': ['super_admin', 'admin', 'barber']
   }
   
   // Get equivalent roles for the user's role
@@ -708,6 +723,15 @@ export const quickActions: QuickAction[] = [
     icon: BanknotesIcon,
     description: 'View your earnings report',
     roles: ['barber']
+  },
+  
+  // Development & Testing quick actions
+  {
+    name: 'Test Data',
+    href: '/settings/test-data',
+    icon: BeakerIcon,
+    description: 'Create sample data for testing',
+    roles: ['admin', 'super_admin', 'shop_owner', 'enterprise_owner']
   },
   
   // AI & Analytics quick actions

@@ -223,7 +223,7 @@ class TokenManager {
   private async _performRefresh(retryAttempts: number, retryDelay: number): Promise<boolean> {
     const refreshToken = this.getRefreshToken()
     if (!refreshToken) {
-      console.warn('No refresh token available')
+      // Don't log warning for first-time visitors - this is normal
       return false
     }
 
@@ -317,11 +317,17 @@ class TokenManager {
     const tokenInfo = this.getTokenInfo()
     
     if (!tokenInfo) {
-      console.warn('No token available')
       return null
     }
 
     if (!tokenInfo.isValid) {
+      const refreshToken = this.getRefreshToken()
+      if (!refreshToken) {
+        // No refresh token available, can't refresh
+        this.clearTokens()
+        return null
+      }
+      
       console.log('Token expired, attempting refresh')
       const refreshSuccess = await this.refreshToken()
       
@@ -334,9 +340,12 @@ class TokenManager {
     }
 
     if (tokenInfo.needsRefresh) {
-      console.log('Token needs refresh, refreshing in background')
-      // Don't wait for refresh, return current token and refresh in background
-      this.refreshToken()
+      const refreshToken = this.getRefreshToken()
+      if (refreshToken) {
+        console.log('Token needs refresh, refreshing in background')
+        // Don't wait for refresh, return current token and refresh in background
+        this.refreshToken()
+      }
     }
 
     return tokenInfo.token

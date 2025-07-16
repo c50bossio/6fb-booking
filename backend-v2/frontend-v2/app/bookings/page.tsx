@@ -8,7 +8,7 @@ import { Calendar, Clock, DollarSign, MapPin, User, XCircle, CheckCircle, AlertC
 import VirtualList from '@/components/VirtualList'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CancelConfirmationDialog } from '@/components/ui/ConfirmationDialog'
-import { LoadingSpinner, ErrorDisplay } from '@/components/LoadingStates'
+import { LoadingSpinner, ErrorDisplay } from '@/components/ui/LoadingSystem'
 
 export default function MyBookingsPage() {
   const router = useRouter()

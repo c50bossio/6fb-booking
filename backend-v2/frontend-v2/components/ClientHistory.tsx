@@ -228,15 +228,15 @@ export default function ClientHistory({ clientId, history, client, onRefresh }: 
             <div className="text-sm text-blue-700">Appointments</div>
           </div>
           <div className="text-center p-4 bg-green-50 rounded-lg">
-            <div className="text-2xl font-bold text-green-600">${stats.totalRevenue.toFixed(2)}</div>
+            <div className="text-2xl font-bold text-green-600">${typeof stats.totalRevenue === 'number' ? stats.totalRevenue.toFixed(2) : '0.00'}</div>
             <div className="text-sm text-green-700">Total Revenue</div>
           </div>
           <div className="text-center p-4 bg-purple-50 rounded-lg">
-            <div className="text-2xl font-bold text-purple-600">${stats.avgTicket.toFixed(2)}</div>
+            <div className="text-2xl font-bold text-purple-600">${typeof stats.avgTicket === 'number' ? stats.avgTicket.toFixed(2) : '0.00'}</div>
             <div className="text-sm text-purple-700">Avg Ticket</div>
           </div>
           <div className="text-center p-4 bg-orange-50 rounded-lg">
-            <div className="text-2xl font-bold text-orange-600">{stats.completionRate.toFixed(1)}%</div>
+            <div className="text-2xl font-bold text-orange-600">{typeof stats.completionRate === 'number' ? stats.completionRate.toFixed(1) : '0.0'}%</div>
             <div className="text-sm text-orange-700">Completion</div>
           </div>
         </div>
@@ -391,7 +391,7 @@ export default function ClientHistory({ clientId, history, client, onRefresh }: 
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        ${appointment.price.toFixed(2)}
+                        ${typeof appointment.price === 'number' ? appointment.price.toFixed(2) : '0.00'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`text-sm font-medium ${getPaymentStatusColor(appointment.payment_status || 'pending')}`}>
@@ -438,7 +438,7 @@ export default function ClientHistory({ clientId, history, client, onRefresh }: 
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-lg font-bold text-gray-900">${appointment.price.toFixed(2)}</div>
+                      <div className="text-lg font-bold text-gray-900">${typeof appointment.price === 'number' ? appointment.price.toFixed(2) : '0.00'}</div>
                       <div className="flex gap-2 mt-1">
                         <button className="text-xs text-blue-600 hover:text-blue-900">View</button>
                         {appointment.status === 'scheduled' && (

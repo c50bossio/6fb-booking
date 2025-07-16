@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       
-      const backendResponse = await fetch(`${API_URL}/api/v1/privacy/consent`, {
+      const backendResponse = await fetch(`${API_URL}/api/v1/privacy/cookie-consent`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -45,13 +45,12 @@ export async function POST(request: NextRequest) {
           'User-Agent': request.headers.get('user-agent') || ''
         },
         body: JSON.stringify({
-          categories,
-          consentDate,
-          version,
-          metadata: {
-            userAgent: request.headers.get('user-agent'),
-            ip: request.ip || request.headers.get('x-forwarded-for'),
-            source: 'frontend-api'
+          session_id: crypto.randomUUID(),
+          preferences: {
+            functional: categories.necessary || false,
+            analytics: categories.analytics || false,
+            marketing: categories.marketing || false,
+            preferences: categories.functional || false
           }
         })
       })

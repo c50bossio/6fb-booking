@@ -448,7 +448,7 @@ def remove_user_from_organization(
 # Organization Statistics and Analytics
 
 @router.get("/{organization_id}/stats", response_model=OrganizationStatsResponse)
-def get_organization_stats(
+async def get_organization_stats(
     organization_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -484,8 +484,8 @@ def get_organization_stats(
         organization_id=organization_id,
         total_chairs=organization.total_chairs_count,
         active_staff=len(organization.user_organizations),
-        monthly_appointments=0,  # TODO: Calculate from appointments table
-        monthly_revenue=0.0,  # TODO: Calculate from payments table
+        monthly_appointments=await _calculate_monthly_appointments(db, organization.id),
+        monthly_revenue=await _calculate_monthly_revenue(db, organization.id),
         trial_days_remaining=organization.trial_days_remaining if organization.subscription_status == 'trial' else None,
         subscription_status=organization.subscription_status,
         enabled_features=organization.enabled_features
@@ -627,3 +627,70 @@ def get_organization_trial_status(
         "features_enabled": organization.features_enabled,
         "billing_plan": organization.billing_plan
     }
+
+
+async def _calculate_monthly_appointments(db: Session, organization_id: int) -> int:
+    """
+    Calculate total appointments for the current month for an organization.
+    Optimized query with proper indexing for better performance.
+    """
+    from datetime import datetime
+    from sqlalchemy import func, and_
+    from models import Appointment, UserOrganization
+    
+    # Get current month start
+    today = datetime.now()
+    month_start = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    try:
+        # Optimized query joining appointments with organization users
+        monthly_count = db.query(func.count(Appointment.id)).join(
+            UserOrganization, Appointment.user_id == UserOrganization.user_id
+        ).filter(
+            and_(
+                UserOrganization.organization_id == organization_id,
+                Appointment.start_time >= month_start,
+                Appointment.start_time < today
+            )
+        ).scalar()
+        
+        return monthly_count or 0
+        
+    except Exception as e:
+        # Log error but return 0 to prevent breaking the endpoint
+        print(f"Error calculating monthly appointments for org {organization_id}: {e}")
+        return 0
+
+
+async def _calculate_monthly_revenue(db: Session, organization_id: int) -> float:
+    """
+    Calculate total revenue for the current month for an organization.
+    Optimized query with proper indexing for better performance.
+    """
+    from datetime import datetime
+    from sqlalchemy import func, and_
+    from models import Payment, UserOrganization
+    
+    # Get current month start
+    today = datetime.now()
+    month_start = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    try:
+        # Optimized query joining payments with organization users
+        monthly_revenue = db.query(func.sum(Payment.amount)).join(
+            UserOrganization, Payment.user_id == UserOrganization.user_id
+        ).filter(
+            and_(
+                UserOrganization.organization_id == organization_id,
+                Payment.status == 'completed',
+                Payment.created_at >= month_start,
+                Payment.created_at < today
+            )
+        ).scalar()
+        
+        return float(monthly_revenue or 0.0)
+        
+    except Exception as e:
+        # Log error but return 0.0 to prevent breaking the endpoint
+        print(f"Error calculating monthly revenue for org {organization_id}: {e}")
+        return 0.0

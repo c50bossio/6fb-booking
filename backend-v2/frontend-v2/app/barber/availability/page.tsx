@@ -313,10 +313,11 @@ export default function BarberAvailabilityPage() {
               {regularAvailability.map((day, index) => (
                 <div key={index} className="flex items-center gap-4 p-4 border rounded-lg">
                   <Switch
+                    id={`availability-${index}`}
                     checked={day.is_active}
                     onCheckedChange={(checked: boolean) => updateRegularAvailability(index, { is_active: checked })}
                   />
-                  <Label className="w-24">{DAYS_OF_WEEK[index]}</Label>
+                  <Label htmlFor={`availability-${index}`} className="w-24">{DAYS_OF_WEEK[index]}</Label>
                   <div className="flex items-center gap-2 flex-1">
                     <Clock className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                     <Input
@@ -324,6 +325,7 @@ export default function BarberAvailabilityPage() {
                       value={day.start_time}
                       onChange={(e) => updateRegularAvailability(index, { start_time: e.target.value })}
                       disabled={!day.is_active}
+                      aria-label={`Start time for ${DAYS_OF_WEEK[index]}`}
                       className="w-32 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                     />
                     <span className="text-gray-900 dark:text-white">to</span>
@@ -332,6 +334,7 @@ export default function BarberAvailabilityPage() {
                       value={day.end_time}
                       onChange={(e) => updateRegularAvailability(index, { end_time: e.target.value })}
                       disabled={!day.is_active}
+                      aria-label={`End time for ${DAYS_OF_WEEK[index]}`}
                       className="w-32 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                     />
                   </div>

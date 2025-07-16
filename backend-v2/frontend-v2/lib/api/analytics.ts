@@ -374,8 +374,10 @@ export interface AnalyticsExportResponse {
 /**
  * Get authorization headers with current JWT token
  */
+import { getAccessToken } from '../tokenManager'
+
 function getAuthHeaders(): Record<string, string> {
-  const token = localStorage.getItem('access_token')
+  const token = getAccessToken()
   return {
     'Content-Type': 'application/json',
     ...(token && { Authorization: `Bearer ${token}` })

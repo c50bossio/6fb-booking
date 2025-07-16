@@ -53,7 +53,7 @@ export default function ProductivityAnalyticsSection({ data, userRole, dateRange
 
   const metrics = [
     {
-      title: 'Utilization Rate',
+      title: 'Booking Rate',
       value: `${productivityData.summary.utilizationRate}%`,
       icon: <ChartBarIcon className="w-5 h-5 text-blue-600" />,
       trend: (productivityData.summary.utilizationRate > 80 ? 'up' : 'down') as 'up' | 'down' | 'neutral'

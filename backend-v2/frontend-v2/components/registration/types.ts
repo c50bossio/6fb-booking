@@ -17,6 +17,7 @@ export interface RegistrationData {
   serviceTemplate?: string
   acceptTerms: boolean
   acceptMarketing: boolean
+  acceptTestData?: boolean
   
   // Additional metadata
   referralCode?: string

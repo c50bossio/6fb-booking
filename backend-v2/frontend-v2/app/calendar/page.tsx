@@ -5,18 +5,20 @@ import { useRouter } from 'next/navigation'
 import { handleAuthError } from '@/lib/auth-error-handler'
 // Using UnifiedCalendar for all calendar views
 
-// Import unified calendar component
+// Import unified calendar component with lazy loading for performance
 import { Suspense, lazy } from 'react'
-import UnifiedCalendar from '@/components/UnifiedCalendar'
+import { LazyComponents } from '@/lib/lazy-loading'
 const CalendarSync = lazy(() => import('@/components/CalendarSync'))
 const CalendarConflictResolver = lazy(() => import('@/components/CalendarConflictResolver'))
+// Use lazy-loaded UnifiedCalendar instead of direct import
+const UnifiedCalendar = LazyComponents.UnifiedCalendar
 import CreateAppointmentModal from '@/components/modals/CreateAppointmentModal'
 import TimePickerModal from '@/components/modals/TimePickerModal'
 import RescheduleModal from '@/components/modals/RescheduleModal'
 import { format } from 'date-fns'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/Button'
-import { LoadingButton, ErrorDisplay } from '@/components/LoadingStates'
+import { LoadingButton, ErrorDisplay } from '@/components/ui/LoadingSystem'
 import { getMyBookings, cancelBooking, rescheduleBooking, getProfile, getAllUsers, getLocations, type BookingResponse, type Location } from '@/lib/api'
 import { useCalendarOptimisticUpdates } from '@/lib/calendar-optimistic-updates'
 import { useCalendarApiEnhanced } from '@/lib/calendar-api-enhanced'
@@ -151,7 +153,7 @@ export default function CalendarPage() {
   const { executeRequest, abortRequests, clearCache } = useRequestDeduplication()
 
   // Performance optimizations
-  const { measureRender, optimizedAppointmentFilter } = useCalendarPerformance()
+  const { optimizedAppointmentFilter } = useCalendarPerformance()
   
   // Visual feedback system
   const { 
@@ -688,95 +690,40 @@ export default function CalendarPage() {
           </div>
         </div>
         
-        <div className="order-2 lg:order-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
-          {/* View Mode Switcher - Mobile Optimized */}
-          <div className="calendar-view-switcher flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1 w-full sm:w-auto">
-            <button
-              onClick={() => setViewMode('day')}
-              className={`calendar-nav-button flex-1 sm:flex-initial px-4 py-2 text-sm font-medium rounded transition-colors min-h-[44px] ${
-                viewMode === 'day' 
-                  ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-              }`}
-            >
-              Day
-            </button>
-            <button
-              onClick={() => setViewMode('week')}
-              className={`calendar-nav-button flex-1 sm:flex-initial px-4 py-2 text-sm font-medium rounded transition-colors min-h-[44px] ${
-                viewMode === 'week' 
-                  ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-              }`}
-            >
-              Week
-            </button>
-            <button
-              onClick={() => setViewMode('month')}
-              className={`calendar-nav-button flex-1 sm:flex-initial px-4 py-2 text-sm font-medium rounded transition-colors min-h-[44px] ${
-                viewMode === 'month' 
-                  ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-              }`}
-            >
-              Month
-            </button>
-          </div>
-          
-          {/* Action Buttons - Mobile Optimized */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+        {/* Controls Section */}
+        <div className="calendar-controls flex flex-col gap-4 w-full lg:w-auto">
+          {/* View Switcher & Primary Actions */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            {/* Compact View Switcher */}
+            <div className="view-switcher bg-gray-100 dark:bg-gray-800 rounded-lg p-1 flex gap-1">
+              {(['day', 'week', 'month'] as const).map((view) => (
+                <button
+                  key={view}
+                  onClick={() => setViewMode(view)}
+                  className={`px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 min-w-[60px] ${
+                    viewMode === view 
+                      ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' 
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  {view.charAt(0).toUpperCase() + view.slice(1)}
+                </button>
+              ))}
+            </div>
+            
+            {/* Primary Action */}
             <Button 
               onClick={() => setShowCreateModal(true)}
-              className="calendar-action-button flex items-center justify-center gap-2 min-h-[44px] w-full sm:w-auto"
+              className="calendar-action-button bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors shadow-sm"
             >
               <PlusIcon className="w-4 h-4" />
               <span className="hidden sm:inline">New Appointment</span>
               <span className="sm:hidden">New</span>
             </Button>
-            
-            {/* Google Calendar Sync Button - Only for barbers - Mobile Responsive */}
-            {user?.role === 'barber' && (
-              <div className="hidden sm:flex items-center gap-2">
-                <Button 
-                  variant="outline"
-                  onClick={() => setShowSyncPanel(!showSyncPanel)}
-                  className="calendar-action-button flex items-center gap-2 min-h-[44px]"
-                >
-                  <ArrowsRightLeftIcon className="w-4 h-4" />
-                  <span className="hidden lg:inline">Sync</span>
-                </Button>
-                
-                <Button 
-                  variant="outline"
-                  onClick={() => setShowConflictResolver(!showConflictResolver)}
-                  className="calendar-action-button flex items-center gap-2 min-h-[44px]"
-                >
-                  <ExclamationTriangleIcon className="w-4 h-4" />
-                  <span className="hidden lg:inline">Conflicts</span>
-                </Button>
-                
-                <Button 
-                  variant="outline"
-                  onClick={() => router.push('/barber-availability')}
-                  className="calendar-action-button flex items-center gap-2 min-h-[44px]"
-                >
-                  <CalendarDaysIcon className="w-4 h-4" />
-                  <span className="hidden lg:inline">Availability</span>
-                </Button>
-              </div>
-            )}
-            
-            {/* Recurring Appointments Button - For all users */}
-            <Button 
-              variant="outline"
-              onClick={() => router.push('/recurring')}
-              className="calendar-action-button flex items-center justify-center gap-2 min-h-[44px] w-full sm:w-auto"
-            >
-              <ClockIcon className="w-4 h-4" />
-              <span className="hidden sm:inline">Recurring</span>
-              <span className="sm:hidden">Recurring</span>
-            </Button>
-            
+          </div>
+          
+          {/* Secondary Actions */}
+          <div className="flex flex-wrap items-center gap-2">
             {/* Export Button */}
             <CalendarExport 
               appointments={bookings}
@@ -785,6 +732,48 @@ export default function CalendarPage() {
                 console.log(`Exported appointments in ${format} format`)
               }}
             />
+            
+            {/* Recurring Appointments */}
+            <Button 
+              variant="outline"
+              onClick={() => router.push('/recurring')}
+              className="flex items-center gap-2 px-3 py-2 text-sm"
+            >
+              <ClockIcon className="w-4 h-4" />
+              <span className="hidden sm:inline">Recurring</span>
+            </Button>
+            
+            {/* Barber-specific tools */}
+            {user?.role === 'barber' && (
+              <>
+                <Button 
+                  variant="outline"
+                  onClick={() => setShowSyncPanel(!showSyncPanel)}
+                  className="flex items-center gap-2 px-3 py-2 text-sm"
+                >
+                  <ArrowsRightLeftIcon className="w-4 h-4" />
+                  <span className="hidden lg:inline">Sync</span>
+                </Button>
+                
+                <Button 
+                  variant="outline"
+                  onClick={() => setShowConflictResolver(!showConflictResolver)}
+                  className="flex items-center gap-2 px-3 py-2 text-sm"
+                >
+                  <ExclamationTriangleIcon className="w-4 h-4" />
+                  <span className="hidden lg:inline">Conflicts</span>
+                </Button>
+                
+                <Button 
+                  variant="outline"
+                  onClick={() => router.push('/barber-availability')}
+                  className="flex items-center gap-2 px-3 py-2 text-sm"
+                >
+                  <CalendarDaysIcon className="w-4 h-4" />
+                  <span className="hidden lg:inline">Availability</span>
+                </Button>
+              </>
+            )}
             
             {/* Mobile menu for additional options */}
             <CalendarMobileMenu

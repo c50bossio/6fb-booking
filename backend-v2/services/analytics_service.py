@@ -16,9 +16,16 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, and_, or_, case, extract
 from sqlalchemy.sql import text
 import calendar
+import time
+import hashlib
+import json
 
 from models import User, Appointment, Payment, Client, Service, BarberAvailability
 from schemas import DateRange
+
+# Simple in-memory cache for analytics (in production, use Redis)
+_analytics_cache = {}
+_cache_ttl = 300  # 5 minutes cache TTL
 
 
 class AnalyticsService:
@@ -1871,4 +1878,156 @@ class AnalyticsService:
                 "days": days
             },
             "last_updated": datetime.utcnow().isoformat()
+        }
+
+    def get_six_figure_metrics_cached(self, user_id: int, target_annual_income: float) -> Optional[Dict[str, Any]]:
+        """
+        Get Six Figure Barber metrics with caching for better performance.
+        
+        Args:
+            user_id: User ID to get metrics for
+            target_annual_income: Target annual income for calculations
+            
+        Returns:
+            Cached metrics or None if cache miss
+        """
+        # Create cache key
+        cache_key = hashlib.md5(f"six_figure_{user_id}_{target_annual_income}".encode()).hexdigest()
+        current_time = time.time()
+        
+        # Check cache
+        if cache_key in _analytics_cache:
+            cached_data, timestamp = _analytics_cache[cache_key]
+            if current_time - timestamp < _cache_ttl:
+                return cached_data
+            else:
+                # Remove expired cache entry
+                del _analytics_cache[cache_key]
+        
+        # Cache miss - calculate fresh data with optimized queries
+        try:
+            # Use optimized query with proper indexes
+            revenue_data = self._get_optimized_revenue_data(user_id)
+            appointment_data = self._get_optimized_appointment_data(user_id)
+            
+            # Calculate metrics efficiently
+            metrics = self._calculate_six_figure_metrics(revenue_data, appointment_data, target_annual_income)
+            
+            # Cache the result
+            _analytics_cache[cache_key] = (metrics, current_time)
+            
+            # Clean up old cache entries (simple cleanup)
+            if len(_analytics_cache) > 100:
+                oldest_key = min(_analytics_cache.keys(), key=lambda k: _analytics_cache[k][1])
+                del _analytics_cache[oldest_key]
+            
+            return metrics
+            
+        except Exception as e:
+            # Log error but don't cache failures
+            print(f"Error calculating cached metrics: {e}")
+            return None
+
+    def _get_optimized_revenue_data(self, user_id: int) -> Dict[str, float]:
+        """Get revenue data with optimized database queries."""
+        # Use indexed query for better performance
+        today = datetime.now()
+        month_start = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        
+        # Single optimized query with aggregation
+        revenue_query = self.db.query(
+            func.sum(Payment.amount).label('monthly_revenue'),
+            func.count(Payment.id).label('payment_count'),
+            func.avg(Payment.amount).label('avg_payment')
+        ).filter(
+            Payment.user_id == user_id,
+            Payment.status == 'completed',
+            Payment.created_at >= month_start
+        ).first()
+        
+        monthly_revenue = float(revenue_query.monthly_revenue or 0)
+        payment_count = int(revenue_query.payment_count or 0)
+        avg_payment = float(revenue_query.avg_payment or 0)
+        
+        return {
+            'monthly_revenue': monthly_revenue,
+            'annual_revenue_projection': monthly_revenue * 12,
+            'average_ticket': avg_payment,
+            'payment_count': payment_count
+        }
+
+    def _get_optimized_appointment_data(self, user_id: int) -> Dict[str, Any]:
+        """Get appointment data with optimized database queries."""
+        today = datetime.now()
+        month_start = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        
+        # Single optimized query for appointment stats
+        appointment_query = self.db.query(
+            func.count(Appointment.id).label('total_appointments'),
+            func.sum(func.case([(Appointment.status == 'completed', 1)], else_=0)).label('completed'),
+            func.sum(func.case([(Appointment.status == 'cancelled', 1)], else_=0)).label('cancelled'),
+            func.count(func.distinct(Appointment.client_id)).label('unique_clients')
+        ).filter(
+            Appointment.user_id == user_id,
+            Appointment.start_time >= month_start
+        ).first()
+        
+        total_appointments = int(appointment_query.total_appointments or 0)
+        completed = int(appointment_query.completed or 0)
+        cancelled = int(appointment_query.cancelled or 0)
+        unique_clients = int(appointment_query.unique_clients or 0)
+        
+        utilization_rate = (completed / total_appointments * 100) if total_appointments > 0 else 75.0
+        avg_visits_per_client = (completed / unique_clients) if unique_clients > 0 else 4.0
+        
+        return {
+            'total_appointments': total_appointments,
+            'completed_appointments': completed,
+            'cancelled_appointments': cancelled,
+            'utilization_rate': utilization_rate,
+            'unique_clients': unique_clients,
+            'average_visits_per_client': avg_visits_per_client
+        }
+
+    def _calculate_six_figure_metrics(self, revenue_data: Dict, appointment_data: Dict, target_annual_income: float) -> Dict[str, Any]:
+        """Calculate Six Figure Barber metrics from optimized data."""
+        monthly_revenue = revenue_data['monthly_revenue']
+        annual_projection = revenue_data['annual_revenue_projection']
+        
+        # Calculate if on track to target
+        on_track = annual_projection >= target_annual_income * 0.8  # 80% threshold
+        
+        return {
+            "current_performance": {
+                "monthly_revenue": monthly_revenue,
+                "annual_revenue_projection": annual_projection,
+                "average_ticket": revenue_data['average_ticket'],
+                "utilization_rate": appointment_data['utilization_rate'],
+                "average_visits_per_client": appointment_data['average_visits_per_client'],
+                "total_active_clients": appointment_data['unique_clients']
+            },
+            "targets": {
+                "annual_income_target": target_annual_income,
+                "monthly_revenue_target": target_annual_income / 12,
+                "on_track": on_track,
+                "target_monthly_deficit": max(0, (target_annual_income / 12) - monthly_revenue)
+            },
+            "recommendations": {
+                "price_optimization": {
+                    "recommended_increase_percentage": 15.0 if not on_track else 5.0,
+                    "potential_annual_impact": target_annual_income * 0.15 if not on_track else target_annual_income * 0.05
+                },
+                "client_acquisition": {
+                    "monthly_new_clients_needed": max(0, int((target_annual_income / 12 - monthly_revenue) / revenue_data['average_ticket'])),
+                    "retention_improvement_target": 85.0
+                }
+            },
+            "coaching_insights": [
+                {
+                    "category": "revenue",
+                    "priority": "high" if not on_track else "medium",
+                    "message": f"You're {'on track' if on_track else 'behind target'} for your ${target_annual_income:,.0f} annual goal.",
+                    "actionable": True
+                }
+            ]
         }

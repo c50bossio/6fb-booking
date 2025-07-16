@@ -6,7 +6,7 @@ from database import engine, Base
 import models
 # Import tracking models to register them with SQLAlchemy
 import models.tracking
-from routers import auth, appointments, payments, payouts, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, ai_analytics, google_calendar, billing, invitations, trial_monitoring, organizations, health
+from routers import auth, appointments, payments, payouts, clients, users, timezones, calendar, services, barber_availability, recurring_appointments, webhooks, analytics, dashboard, booking_rules, notifications, imports, sms_conversations, sms_webhooks, barbers, webhook_management, enterprise, marketing, short_urls, notification_preferences, test_data, reviews, integrations, ai_analytics, google_calendar, billing, invitations, trial_monitoring, organizations, health, locations, public_booking, communication_analytics
 # Temporarily disabled while fixing schemas_new imports:
 # api_keys, commissions, privacy, mfa, tracking, agents, customer_pixels, public_booking
 from routers.services import public_router as services_public_router
@@ -31,10 +31,10 @@ Base.metadata.create_all(bind=engine)
 # Create FastAPI app with all dependencies resolved
 app = FastAPI(title="6FB Booking API v2")
 
-# Root health check endpoint
+# Root health check endpoint (CORS-enabled)
 @app.get("/health")
 async def health_check():
-    """Simple health check endpoint"""
+    """Simple health check endpoint with CORS support"""
     return {"status": "healthy", "service": "BookedBarber API"}
 
 # Add rate limiter to app state
@@ -315,7 +315,7 @@ app.include_router(notification_preferences.router)  # No prefix, includes its o
 # app.include_router(email_analytics.router, prefix="/api/v1")  # Disabled - service archived
 app.include_router(test_data.router, prefix="/api/v1")
 app.include_router(reviews.router, prefix="/api/v1")  # Re-enabled for testing
-# app.include_router(locations.router, prefix="/api/v1")  # Temporarily disabled - needs proper schema implementation
+app.include_router(locations.router, prefix="/api/v1")
 app.include_router(integrations.router)  # Integration management endpoints - re-enabled for testing
 # app.include_router(api_keys.router, prefix="/api/v1")  # API key management - temporarily disabled  
 # app.include_router(commissions.router, prefix="/api/v1")  # Commission management - temporarily disabled
@@ -326,10 +326,11 @@ app.include_router(trial_monitoring.router, prefix="/api/v1")  # Trial expiratio
 # app.include_router(privacy.router)  # GDPR compliance and privacy management - temporarily disabled
 # app.include_router(cache.router)  # Redis cache management and monitoring - disabled due to archived services
 app.include_router(ai_analytics.router, prefix="/api/v1")  # Revolutionary AI-powered cross-user analytics
+app.include_router(communication_analytics.router, prefix="/api/v1")  # Unified communication analytics dashboard
 # app.include_router(agents.router, prefix="/api/v1")  # AI Agent management - temporarily disabled
-# app.include_router(tracking.router)  # Conversion tracking and attribution - temporarily disabled
+# app.include_router(tracking.router)  # Conversion tracking and attribution - disabled due to schemas_new import
 # app.include_router(customer_pixels.router)  # Customer tracking pixel management - temporarily disabled  
-# app.include_router(public_booking.router)  # Public booking endpoints - temporarily disabled
+app.include_router(public_booking.router)  # Public booking endpoints
 # app.include_router(products.router)  # Product management and Shopify integration - disabled due to bleach dependency
 # app.include_router(shopify_webhooks.router)  # Shopify webhook handlers for real-time sync - disabled due to bleach dependency
 
@@ -340,22 +341,7 @@ app.include_router(services_public_router, prefix="/api/v1")
 def root():
     return {"message": "6FB Booking API v2"}
 
-@app.get("/health")
-def health_check():
-    """Enhanced health check including Sentry status"""
-    health_status = {"status": "healthy"}
-    
-    # Add Sentry health information if configured
-    if sentry_configured:
-        try:
-            from config.sentry import sentry_health_check
-            health_status["sentry"] = sentry_health_check()
-        except Exception as e:
-            health_status["sentry"] = {"enabled": False, "error": str(e)}
-    else:
-        health_status["sentry"] = {"enabled": False}
-    
-    return health_status
+# Duplicate health endpoint removed - using single health endpoint above
 
 @app.get("/security/status")
 def security_status():

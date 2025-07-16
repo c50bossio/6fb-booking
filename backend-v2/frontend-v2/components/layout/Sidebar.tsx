@@ -11,6 +11,8 @@ import {
 } from '@heroicons/react/24/outline'
 import { type User, type UnifiedUserRole } from '@/lib/api'
 import { useThemeStyles } from '@/hooks/useTheme'
+import { NavigationItem as NavigationItemComponent } from './NavigationItem'
+import { useClickDebounce } from '@/hooks/useDebounce'
 import { filterNavigationByRole, navigationItems, type NavigationItem } from '@/lib/navigation'
 import { Logo } from '@/components/ui/Logo'
 import { UserPermissions, RoleMigrationHelper } from '@/lib/permissions'
@@ -25,6 +27,9 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname()
   const { colors, isDark } = useThemeStyles()
   const [expandedSections, setExpandedSections] = useState<Set<string>>(() => new Set(['dashboard', 'calendar & scheduling']))
+  
+  // Debounced toggle to prevent rapid clicking
+  const { debouncedCallback: debouncedToggle, isDebouncing } = useClickDebounce(onToggleCollapse, 300)
   
   // Helper function to get role display name
   const getRoleDisplayName = (user: User): string => {
@@ -48,11 +53,17 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
     setExpandedSections(newExpanded)
   }
 
-  // Memoize navigation items to prevent re-renders
-  const filteredNavigationItems = useMemo(() => 
-    filterNavigationByRole(navigationItems, user?.unified_role || user?.role), 
-    [user?.unified_role, user?.role]
-  )
+  // Memoize navigation items and separate Settings from main navigation
+  const { mainNavigationItems, settingsItem } = useMemo(() => {
+    const allItems = filterNavigationByRole(navigationItems, user?.unified_role || user?.role)
+    const settings = allItems.find(item => item.name === 'Settings')
+    const mainItems = allItems.filter(item => item.name !== 'Settings')
+    
+    return {
+      mainNavigationItems: mainItems,
+      settingsItem: settings
+    }
+  }, [user?.unified_role, user?.role])
 
   const isActive = (href: string) => {
     if (href === '/dashboard') {
@@ -62,104 +73,25 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
   }
 
   const renderNavigationItem = (item: NavigationItem, level = 0, index = 0) => {
-    const active = isActive(item.href)
-    const hasChildren = item.children && item.children.length > 0
-    const isExpanded = expandedSections.has(item.name.toLowerCase())
-    const IconComponent = item.icon
-
-    const itemClasses = `
-      group flex items-center w-full text-left px-3 py-2.5 text-sm font-medium rounded-ios-lg
-      transition-all duration-200 ease-out cursor-pointer relative
-      ${active 
-        ? `bg-primary-100 dark:bg-primary-900/20 text-primary-800 dark:text-primary-200 shadow-ios-sm` 
-        : `text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white`
-      }
-      ${level > 0 ? 'ml-6' : ''}
-    `
-
-    const content = (
-      <div className="flex items-center justify-between w-full">
-        <div className="flex items-center">
-          <IconComponent 
-            className={`
-              flex-shrink-0 w-5 h-5 mr-3 transition-colors duration-200
-              ${active ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300'}
-              ${collapsed ? 'mr-0' : 'mr-3'}
-            `} 
-          />
-          {!collapsed && (
-            <span className="truncate">{item.name}</span>
-          )}
-        </div>
-        
-        {!collapsed && hasChildren && (
-          <ChevronRightIcon 
-            className={`
-              w-4 h-4 text-gray-400 transition-transform duration-200
-              ${isExpanded ? 'rotate-90' : ''}
-            `}
-          />
-        )}
-        
-        {!collapsed && (item.badge !== undefined) && (
-          <span className="ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200">
-            {item.badge}
-          </span>
-        )}
-        
-        {!collapsed && item.isNew && (
-          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
-            New
-          </span>
-        )}
-      </div>
-    )
-
-    // Generate unique key using href or fallback to name with level and index
-    const uniqueKey = item.href || `${item.name}-level-${level}-${index}`
-    
     return (
-      <div key={uniqueKey}>
-        {hasChildren ? (
-          <button
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              toggleSection(item.name.toLowerCase())
-            }}
-            className={itemClasses}
-            title={collapsed ? item.name : undefined}
-            type="button"
-            aria-expanded={isExpanded}
-            aria-label={`Toggle ${item.name} section`}
-          >
-            {content}
-          </button>
-        ) : (
-          <Link
-            href={item.href}
-            className={itemClasses}
-            title={collapsed ? item.name : undefined}
-            aria-label={item.name}
-            role="menuitem"
-          >
-            {content}
-          </Link>
-        )}
-        
-        {!collapsed && hasChildren && isExpanded && item.children && (
-          <div className="mt-1 space-y-1">
-            {item.children.map((child, index) => renderNavigationItem(child, level + 1, index))}
-          </div>
-        )}
-      </div>
+      <NavigationItemComponent
+        key={`${item.name}-${level}-${index}`}
+        item={item}
+        level={level}
+        index={index}
+        isActive={isActive}
+        expandedSections={expandedSections}
+        toggleSection={toggleSection}
+        collapsed={collapsed}
+        renderNavigationItem={renderNavigationItem}
+      />
     )
   }
 
   return (
     <aside className={`
       relative flex flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700
-      transition-all duration-300 ease-out
+      transition-all duration-300 ease-in-out
       ${collapsed ? 'w-16' : 'w-64'}
       h-full overflow-hidden z-10
     `}>
@@ -176,15 +108,18 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
         <button
           onClick={() => {
             console.log('Sidebar: Toggle collapse clicked')
-            onToggleCollapse()
+            debouncedToggle()
           }}
+          disabled={isDebouncing}
           type="button"
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           className={`
             p-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400
             hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200
-            transition-colors duration-200
+            transition-all duration-300 ease-in-out
             ${collapsed ? 'absolute top-4 right-2' : 'ml-auto'}
+            ${isDebouncing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+            disabled:opacity-50 disabled:cursor-not-allowed
           `}
         >
           {collapsed ? (
@@ -216,10 +151,21 @@ export function Sidebar({ user, collapsed, onToggleCollapse }: SidebarProps) {
         </div>
       )}
 
-      {/* Navigation */}
-      <nav className="flex-1 px-4 py-4 space-y-1" role="navigation" aria-label="Main navigation">
-        {filteredNavigationItems.map((item, index) => renderNavigationItem(item, 0, index))}
+      {/* Main Navigation */}
+      <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto" role="navigation" aria-label="Main navigation">
+        {mainNavigationItems.map((item, index) => 
+          renderNavigationItem(item, 0, index)
+        )}
       </nav>
+
+      {/* Settings Section - Positioned at bottom */}
+      {settingsItem && (
+        <div className="px-4 pb-4">
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+            {renderNavigationItem(settingsItem, 0, 0)}
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <div className="p-4 border-t border-gray-200 dark:border-gray-700">

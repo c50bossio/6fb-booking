@@ -117,6 +117,12 @@ from .invitation import (
     StaffInvitation, InvitationStatus, InvitationRole
 )
 
+# Import location models to register them with SQLAlchemy
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+from location_models import BarbershopLocation, BarberLocation, ChairInventory, CompensationPlan
+
 __all__ = [
     # Main models from parent models.py
     'UnifiedUserRole', 'User', 'Appointment', 'Payment', 'Service', 'BarberAvailability',
@@ -160,5 +166,7 @@ __all__ = [
     # Aliases
     'Location',
     # Invitation Models
-    'StaffInvitation', 'InvitationStatus', 'InvitationRole'
+    'StaffInvitation', 'InvitationStatus', 'InvitationRole',
+    # Location Models
+    'BarbershopLocation', 'BarberLocation', 'ChairInventory', 'CompensationPlan'
 ]

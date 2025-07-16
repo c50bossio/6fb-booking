@@ -8,7 +8,7 @@ import { BarberAnalyticsView } from '@/components/analytics/views/BarberAnalytic
 import { ManagerAnalyticsView } from '@/components/analytics/views/ManagerAnalyticsView'
 import { EnterpriseAnalyticsView } from '@/components/analytics/views/EnterpriseAnalyticsView'
 import { DateRangeSelector, DateRangePreset } from '@/components/analytics/shared/DateRangeSelector'
-import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
+import { PageLoading, ErrorDisplay } from '@/components/ui/LoadingSystem'
 
 export default function UnifiedAnalyticsPage() {
   const router = useRouter()

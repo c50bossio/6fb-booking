@@ -31,12 +31,12 @@ export interface GA4Event {
   category?: string
   label?: string
   value?: number
-  customParameters?: Record<string, any>
+  customParameters?: Record<string, string | number | boolean>
 }
 
 export interface GA4User {
   id?: string
-  properties?: Record<string, any>
+  properties?: Record<string, string | number | boolean>
 }
 
 export interface GA4EcommerceItem {
@@ -58,10 +58,17 @@ export interface ConsentStatus {
 }
 
 // Global gtag type
+// GA4 gtag function type
+type GTagFunction = (
+  command: 'config' | 'event' | 'consent' | 'set' | 'get',
+  targetId?: string,
+  config?: Record<string, unknown>
+) => void
+
 declare global {
   interface Window {
-    gtag: (...args: any[]) => void
-    dataLayer: any[]
+    gtag: GTagFunction
+    dataLayer: Array<Record<string, unknown>>
     ga4Analytics?: GA4Analytics
   }
 }
@@ -121,8 +128,12 @@ class GA4Analytics {
       window.dataLayer = window.dataLayer || []
       
       // Define gtag function
-      window.gtag = function(...args: any[]) {
-        window.dataLayer.push(args)
+      window.gtag = function(
+        command: 'config' | 'event' | 'consent' | 'set' | 'get',
+        targetId?: string,
+        config?: Record<string, unknown>
+      ) {
+        window.dataLayer.push(arguments)
       }
 
       // Configure gtag with timestamp

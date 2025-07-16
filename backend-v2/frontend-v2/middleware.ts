@@ -28,6 +28,8 @@ const publicRoutes = [
   '/terms',
   '/privacy', 
   '/cookies',
+  '/dashboard-preview', // Allow dashboard preview without auth
+  '/test-dashboards', // Allow dashboard testing without auth
 ]
 
 // List of routes that require admin role
@@ -103,9 +105,9 @@ export function middleware(request: NextRequest) {
   // Check if the route is admin-only
   const isAdminRoute = adminRoutes.some(route => path === route || path.startsWith(route + '/'))
 
-  // Protected routes that require authentication
+  // Protected routes that require authentication (excluding dashboard-preview)
   const protectedRoutes = ['/dashboard', '/appointments', '/clients', '/analytics', '/settings']
-  const isProtectedRoute = protectedRoutes.some(route => path.startsWith(route))
+  const isProtectedRoute = protectedRoutes.some(route => path.startsWith(route)) && !path.startsWith('/dashboard-preview')
   
   // Simplified auth page handling - always allow access to login/register
   // Let the frontend handle auth state validation

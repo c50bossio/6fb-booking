@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Calendar Access</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .auth-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .auth-info h3 {
+            margin: 0 0 10px 0;
+            color: #1976d2;
+        }
+        .credentials {
+            font-family: monospace;
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+        }
+        .button-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #1976d2;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 0 10px;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #1565c0;
+        }
+        .instructions {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .instructions ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>BookedBarber Calendar Test Access</h1>
+        
+        <div class="auth-info">
+            <h3>Test Account Information</h3>
+            <div class="credentials">
+                <strong>Email:</strong> test_claude@example.com<br>
+                <strong>Password:</strong> testpassword123<br>
+                <strong>Role:</strong> client (converted from barber)
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3>How to Access Calendar with Test Data:</h3>
+            <ol>
+                <li>Click the "Login & Access Calendar" button below</li>
+                <li>If prompted to login, use the credentials above</li>
+                <li>The calendar page should load with test appointments</li>
+                <li>Open browser DevTools (F12) to check for console errors</li>
+                <li>Look for any JavaScript errors in the Console tab</li>
+            </ol>
+        </div>
+        
+        <div class="button-container">
+            <a href="http://localhost:3000/login" class="btn">Go to Login Page</a>
+            <a href="http://localhost:3000/calendar" class="btn">Direct Calendar Access</a>
+        </div>
+        
+        <div class="instructions">
+            <h3>Alternative Method (JavaScript Console):</h3>
+            <p>If you need to manually set authentication tokens, open the browser console and run:</p>
+            <div class="credentials">
+// Set authentication token<br>
+localStorage.setItem('token', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsYXVkZUBleGFtcGxlLmNvbSIsInJvbGUiOiJjbGllbnQiLCJleHAiOjE3NTI1OTY2NjgsInR5cGUiOiJhY2Nlc3MifQ.fg9xiEwEPp1NsPUJdAVUec8NJ6NPRCnd4Benm-NjCH4');<br>
+<br>
+// Set user info<br>
+localStorage.setItem('user', JSON.stringify({<br>
+&nbsp;&nbsp;email: 'test_claude@example.com',<br>
+&nbsp;&nbsp;name: 'Claude Test',<br>
+&nbsp;&nbsp;role: 'client'<br>
+}));<br>
+<br>
+// Reload page<br>
+window.location.reload();
+            </div>
+        </div>
+        
+        <div class="auth-info">
+            <h3>What to Look For:</h3>
+            <ul>
+                <li><strong>Console Errors:</strong> JavaScript errors preventing calendar loading</li>
+                <li><strong>Network Failures:</strong> Failed API calls to backend</li>
+                <li><strong>Authentication Issues:</strong> Token expiration or invalid credentials</li>
+                <li><strong>Component Errors:</strong> React component rendering issues</li>
+                <li><strong>Calendar Data:</strong> Whether test appointments are displayed</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // Auto-setup authentication if on same domain
+        if (window.location.hostname === 'localhost') {
+            console.log('Setting up test authentication...');
+            
+            const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X2NsYXVkZUBleGFtcGxlLmNvbSIsInJvbGUiOiJjbGllbnQiLCJleHAiOjE3NTI1OTY2NjgsInR5cGUiOiJhY2Nlc3MifQ.fg9xiEwEPp1NsPUJdAVUec8NJ6NPRCnd4Benm-NjCH4';
+            
+            // Try different token storage keys
+            localStorage.setItem('token', accessToken);
+            localStorage.setItem('access_token', accessToken);
+            localStorage.setItem('6fb_access_token', accessToken);
+            
+            // Set user info
+            const userInfo = {
+                email: 'test_claude@example.com',
+                name: 'Claude Test',
+                role: 'client'
+            };
+            localStorage.setItem('user', JSON.stringify(userInfo));
+            localStorage.setItem('6fb_user', JSON.stringify(userInfo));
+            
+            console.log('Test authentication tokens set in localStorage');
+        }
+    </script>
+</body>
+</html>

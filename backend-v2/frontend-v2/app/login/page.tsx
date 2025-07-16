@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { login, getProfile, resendVerification } from '@/lib/api'
 import { getDefaultDashboard } from '@/lib/routeGuards'
 import { useAsyncOperation } from '@/lib/useAsyncOperation'
-import { LoadingButton, ErrorDisplay, SuccessMessage } from '@/components/LoadingStates'
+import { LoadingButton, ErrorDisplay, SuccessMessage } from '@/components/ui/LoadingSystem'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Logo } from '@/components/ui/Logo'
@@ -291,7 +292,7 @@ function LoginContent() {
                 </Link>
               </div>
 
-              <FormActions>
+              <FormActions align="center">
                 <div className="animate-in slide-in-from-bottom-4 duration-400 ease-out">
                   <Button
                     type="submit"
@@ -347,10 +348,30 @@ function LoginContent() {
   )
 }
 
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><p className="text-gray-600">Loading...</p></div>}>
-      <LoginContent />
-    </Suspense>
+const LoginPageClient = dynamic(() => Promise.resolve(LoginContent), {
+  ssr: false,
+  loading: () => (
+    <div className="flex min-h-screen items-center justify-center" role="status" aria-label="Loading login form">
+      <div className="max-w-md w-full space-y-6">
+        <div className="text-center space-y-4">
+          <div className="animate-pulse">
+            <div className="h-12 w-32 bg-gray-200 rounded mx-auto"></div>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">Welcome Back</h1>
+          <p className="text-gray-700">Sign in to manage your barbershop</p>
+        </div>
+        <div className="bg-white border rounded-lg p-6 shadow-sm">
+          <div className="space-y-4" aria-label="Loading form fields">
+            <div className="h-12 bg-gray-100 rounded animate-pulse" aria-label="Email field loading"></div>
+            <div className="h-12 bg-gray-100 rounded animate-pulse" aria-label="Password field loading"></div>
+            <div className="h-12 bg-blue-100 rounded animate-pulse" aria-label="Sign in button loading"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   )
+})
+
+export default function LoginPage() {
+  return <LoginPageClient />
 }

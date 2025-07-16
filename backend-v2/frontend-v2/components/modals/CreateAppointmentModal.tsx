@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { format } from 'date-fns'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
-import { LoadingButton, ErrorDisplay } from '@/components/LoadingStates'
+import { LoadingButton, ErrorDisplay } from '@/components/ui/LoadingSystem'
 import { Input } from '@/components/ui/Input'
 import { 
   searchClients,
@@ -412,10 +412,60 @@ export default function CreateAppointmentModal({
     }
   }
 
+  const validateForm = () => {
+    const errors: string[] = []
+    
+    // Check required fields
+    if (!selectedService) {
+      errors.push('Please select a service')
+    }
+    if (!selectedDate) {
+      errors.push('Please select a date')
+    }
+    if (!selectedTime) {
+      errors.push('Please select a time')
+    }
+    
+    // Check client requirements for admin/barber bookings
+    if (!isPublicBooking && !selectedClient) {
+      errors.push('Please select a client or create a new one')
+    }
+    
+    // Check new client form if it's being shown
+    if (showCreateClient) {
+      if (!newClientData.first_name.trim()) {
+        errors.push('Client first name is required')
+      }
+      if (!newClientData.last_name.trim()) {
+        errors.push('Client last name is required')
+      }
+      if (!newClientData.email.trim()) {
+        errors.push('Client email is required')
+      } else if (!/\S+@\S+\.\S+/.test(newClientData.email)) {
+        errors.push('Please enter a valid email address')
+      }
+    }
+    
+    return errors
+  }
+
   const handleSubmit = async () => {
-    if (!selectedService || !selectedDate || !selectedTime) {
-      setError('Please fill in all required fields')
+    const validationErrors = validateForm()
+    
+    if (validationErrors.length > 0) {
+      setError(validationErrors[0]) // Show first error
       return
+    }
+    
+    // If new client form is open, create client first
+    if (showCreateClient) {
+      try {
+        await handleCreateClient()
+        // handleCreateClient will set selectedClient and hide the form
+        // Continue with appointment creation below
+      } catch (err) {
+        return // Error is already handled in handleCreateClient
+      }
     }
     
     // Client selection is only required for admin/barber users creating appointments for clients
@@ -460,7 +510,10 @@ export default function CreateAppointmentModal({
     }
   }
 
-  const isFormValid = selectedService && selectedDate && selectedTime
+  const isFormValid = () => {
+    const validationErrors = validateForm()
+    return validationErrors.length === 0
+  }
 
   return (
     <Modal
@@ -664,7 +717,11 @@ export default function CreateAppointmentModal({
               <button
                 type="button"
                 onClick={() => setIsServiceDropdownOpen(!isServiceDropdownOpen)}
-                className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 text-left flex items-center justify-between hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
+                className={`w-full bg-white dark:bg-gray-800 border rounded-lg px-4 py-3 text-left flex items-center justify-between transition-colors ${
+                  !selectedService && error
+                    ? 'border-red-300 dark:border-red-600 hover:border-red-400 dark:hover:border-red-500'
+                    : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+                }`}
               >
                 <span className={selectedService ? 'text-gray-900 dark:text-white' : 'text-gray-500'}>
                   {selectedService ? selectedService.name : 'Select service'}
@@ -816,7 +873,11 @@ export default function CreateAppointmentModal({
                   setSelectedDate(newDate)
                 }}
                 min={format(new Date(), 'yyyy-MM-dd')}
-                className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 text-gray-900 dark:text-white"
+                className={`w-full bg-white dark:bg-gray-700 border rounded-lg px-4 py-3 text-gray-900 dark:text-white ${
+                  !selectedDate && error
+                    ? 'border-red-300 dark:border-red-600'
+                    : 'border-gray-300 dark:border-gray-600'
+                }`}
               />
               <CalendarDaysIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
             </div>
@@ -847,7 +908,11 @@ export default function CreateAppointmentModal({
                   }
                 }}
                 disabled={!selectedDate || !selectedService}
-                className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 text-left flex items-center justify-between hover:border-gray-400 dark:hover:border-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`w-full bg-white dark:bg-gray-800 border rounded-lg px-4 py-3 text-left flex items-center justify-between transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                  !selectedTime && error
+                    ? 'border-red-300 dark:border-red-600 hover:border-red-400 dark:hover:border-red-500'
+                    : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+                }`}
               >
                 <span className={selectedTime ? 'text-gray-900 dark:text-white' : 'text-gray-500'}>
                   {selectedTime || 'Select time'}
@@ -992,7 +1057,7 @@ export default function CreateAppointmentModal({
             <LoadingButton
               onClick={handleSubmit}
               loading={loading}
-              disabled={!isFormValid}
+              disabled={!isFormValid()}
               className="min-w-[180px] bg-primary-600 hover:bg-primary-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:transform-none disabled:shadow-none"
             >
               Create Appointment

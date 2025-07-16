@@ -14,6 +14,7 @@ import logging
 from database import get_db
 from dependencies import get_current_user
 from models import User
+from services.background_tasks import schedule_account_deletion
 from models.consent import (
     UserConsent, CookieConsent, DataProcessingLog, DataExportRequest, LegalConsentAudit,
     ConsentType as ConsentTypeModel, ConsentStatus as ConsentStatusModel,
@@ -573,8 +574,8 @@ async def request_account_deletion(
         
         db.commit()
         
-        # TODO: Add background task to schedule permanent deletion
-        # background_tasks.add_task(schedule_account_deletion, current_user.id, days=30)
+        # Schedule permanent deletion in background task for GDPR compliance
+        background_tasks.add_task(schedule_account_deletion, current_user.id, days=30)
         
         logger.info(f"Account deletion requested for user {current_user.id}")
         

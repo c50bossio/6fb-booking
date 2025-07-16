@@ -709,6 +709,461 @@
 }
 
 /* ============================================
+   11. Magnetic Snap Animations for Drag & Drop
+   ============================================ */
+
+/* Magnetic snap variables */
+:root {
+  --magnetic-snap-distance: 20px;
+  --magnetic-attraction-force: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --magnetic-snap-duration: 200ms;
+  --magnetic-glow-intensity: 0.4;
+  --magnetic-pulse-scale: 1.02;
+}
+
+/* Dark mode magnetic variables */
+[data-theme="dark"], 
+.dark {
+  --magnetic-glow-intensity: 0.3;
+}
+
+/* Magnetic field effect for valid drop zones */
+.magnetic-field {
+  position: relative;
+  transition: all var(--magnetic-snap-duration) var(--magnetic-attraction-force);
+}
+
+.magnetic-field::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, 
+    rgba(16, 185, 129, 0.08) 0%, 
+    rgba(16, 185, 129, 0.15) 50%, 
+    rgba(16, 185, 129, 0.08) 100%
+  );
+  opacity: 0;
+  transition: all var(--magnetic-snap-duration) var(--magnetic-attraction-force);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Dark mode magnetic field - stronger opacity */
+[data-theme="dark"] .magnetic-field::before, 
+.dark .magnetic-field::before {
+  background: linear-gradient(135deg, 
+    rgba(34, 197, 94, 0.12) 0%, 
+    rgba(34, 197, 94, 0.2) 50%, 
+    rgba(34, 197, 94, 0.12) 100%
+  );
+}
+
+/* Magnetic attraction zone - activates when dragging is near */
+.magnetic-field.magnetic-active::before {
+  opacity: var(--magnetic-glow-intensity);
+  transform: scale(var(--magnetic-pulse-scale));
+  animation: magneticPulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes magneticPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+    transform: scale(var(--magnetic-pulse-scale));
+  }
+  100% {
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+    transform: scale(1);
+  }
+}
+
+/* Dark mode magnetic pulse */
+[data-theme="dark"] .magnetic-field.magnetic-active::before, 
+.dark .magnetic-field.magnetic-active::before {
+  animation: magneticPulseDark 1s ease-in-out infinite alternate;
+}
+
+@keyframes magneticPulseDark {
+  0% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.3);
+    transform: scale(var(--magnetic-pulse-scale));
+  }
+  100% {
+    box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+    transform: scale(1);
+  }
+}
+
+/* Dragged appointment magnetic enhancement */
+.dragged-appointment-magnetic {
+  position: relative;
+  transition: all var(--magnetic-snap-duration) var(--magnetic-attraction-force);
+  z-index: 1000;
+  transform-origin: center;
+}
+
+/* Scale effect when dragging */
+.dragged-appointment-magnetic.dragging {
+  transform: scale(1.08) rotate(1deg);
+  box-shadow: 
+    0 12px 32px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.2);
+  filter: brightness(1.1);
+}
+
+/* Magnetic snap proximity effect */
+.dragged-appointment-magnetic.near-magnetic-field {
+  transform: scale(1.05) rotate(0.5deg);
+  animation: magneticFloat 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes magneticFloat {
+  0% {
+    transform: scale(1.05) rotate(0.5deg) translateY(-1px);
+  }
+  100% {
+    transform: scale(1.05) rotate(-0.5deg) translateY(1px);
+  }
+}
+
+/* Snapped to slot effect */
+.dragged-appointment-magnetic.snapped-to-slot {
+  transform: scale(1.02);
+  animation: magneticSnap var(--magnetic-snap-duration) var(--magnetic-attraction-force);
+}
+
+@keyframes magneticSnap {
+  0% {
+    transform: scale(1.08) rotate(1deg);
+  }
+  50% {
+    transform: scale(0.98) rotate(-0.5deg);
+  }
+  100% {
+    transform: scale(1.02) rotate(0deg);
+  }
+}
+
+/* Time slot magnetic enhancement */
+.time-slot-magnetic {
+  position: relative;
+  transition: all var(--magnetic-snap-duration) var(--magnetic-attraction-force);
+  overflow: visible;
+}
+
+/* Magnetic attraction indicator */
+.time-slot-magnetic::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  opacity: 0;
+  transition: all var(--magnetic-snap-duration) var(--magnetic-attraction-force);
+  pointer-events: none;
+}
+
+/* Active magnetic field on time slot */
+.time-slot-magnetic.magnetic-attraction::after {
+  border-color: rgba(16, 185, 129, 0.7);
+  opacity: 1;
+  animation: magneticAttraction 0.6s ease-in-out infinite alternate;
+}
+
+/* Dark mode magnetic attraction */
+[data-theme="dark"] .time-slot-magnetic.magnetic-attraction::after, 
+.dark .time-slot-magnetic.magnetic-attraction::after {
+  border-color: rgba(34, 197, 94, 0.6);
+}
+
+@keyframes magneticAttraction {
+  0% {
+    border-color: rgba(16, 185, 129, 0.5);
+    transform: scale(1);
+  }
+  100% {
+    border-color: rgba(16, 185, 129, 0.9);
+    transform: scale(1.03);
+  }
+}
+
+/* Dark mode magnetic attraction animation */
+@keyframes magneticAttractionDark {
+  0% {
+    border-color: rgba(34, 197, 94, 0.4);
+    transform: scale(1);
+  }
+  100% {
+    border-color: rgba(34, 197, 94, 0.8);
+    transform: scale(1.03);
+  }
+}
+
+[data-theme="dark"] .time-slot-magnetic.magnetic-attraction::after, 
+.dark .time-slot-magnetic.magnetic-attraction::after {
+  animation: magneticAttractionDark 0.6s ease-in-out infinite alternate;
+}
+
+/* Magnetic center alignment helper */
+.magnetic-center-guide {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  background: rgba(16, 185, 129, 0.9);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform var(--magnetic-snap-duration) var(--magnetic-attraction-force);
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.3);
+}
+
+/* Dark mode magnetic center guide */
+[data-theme="dark"] .magnetic-center-guide, 
+.dark .magnetic-center-guide {
+  background: rgba(34, 197, 94, 0.8);
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.3);
+}
+
+.time-slot-magnetic.magnetic-attraction .magnetic-center-guide {
+  transform: translate(-50%, -50%) scale(1);
+  animation: magneticCenterPulse 0.8s ease-in-out infinite;
+}
+
+@keyframes magneticCenterPulse {
+  0%, 100% {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.5);
+  }
+}
+
+/* Invalid drop zone magnetic rejection */
+.time-slot-magnetic.magnetic-rejection {
+  animation: magneticRejection 0.3s ease-out;
+}
+
+@keyframes magneticRejection {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
+}
+
+.time-slot-magnetic.magnetic-rejection::after {
+  border-color: rgba(239, 68, 68, 0.6);
+  opacity: 1;
+  animation: rejectionPulse 0.3s ease-out;
+}
+
+@keyframes rejectionPulse {
+  0% {
+    border-color: rgba(239, 68, 68, 0.2);
+    transform: scale(1);
+  }
+  50% {
+    border-color: rgba(239, 68, 68, 0.8);
+    transform: scale(1.05);
+  }
+  100% {
+    border-color: rgba(239, 68, 68, 0.2);
+    transform: scale(1);
+  }
+}
+
+/* Successful drop magnetic confirmation */
+.magnetic-drop-success {
+  animation: magneticDropSuccess 0.8s var(--magnetic-attraction-force);
+  transform-origin: center;
+}
+
+@keyframes magneticDropSuccess {
+  0% {
+    transform: scale(1.05);
+    background: rgba(16, 185, 129, 0.15);
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+  }
+  30% {
+    transform: scale(0.95);
+    background: rgba(16, 185, 129, 0.25);
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+  }
+  60% {
+    transform: scale(1.02);
+    background: rgba(16, 185, 129, 0.1);
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+  }
+  100% {
+    transform: scale(1);
+    background: transparent;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+/* Dark mode drop success */
+@keyframes magneticDropSuccessDark {
+  0% {
+    transform: scale(1.05);
+    background: rgba(34, 197, 94, 0.2);
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
+  }
+  30% {
+    transform: scale(0.95);
+    background: rgba(34, 197, 94, 0.3);
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2);
+  }
+  60% {
+    transform: scale(1.02);
+    background: rgba(34, 197, 94, 0.1);
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.1);
+  }
+  100% {
+    transform: scale(1);
+    background: transparent;
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+  }
+}
+
+[data-theme="dark"] .magnetic-drop-success, 
+.dark .magnetic-drop-success {
+  animation: magneticDropSuccessDark 0.8s var(--magnetic-attraction-force);
+}
+
+/* Magnetic trail effect during drag */
+.magnetic-trail {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: rgba(16, 185, 129, 0.5);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 999;
+  animation: magneticTrailFade 0.5s linear forwards;
+  box-shadow: 0 0 4px rgba(16, 185, 129, 0.3);
+}
+
+/* Dark mode magnetic trail */
+[data-theme="dark"] .magnetic-trail, 
+.dark .magnetic-trail {
+  background: rgba(34, 197, 94, 0.4);
+  box-shadow: 0 0 4px rgba(34, 197, 94, 0.3);
+}
+
+@keyframes magneticTrailFade {
+  0% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+}
+
+/* Week view magnetic enhancements */
+.week-view .time-slot-magnetic {
+  min-height: 40px;
+}
+
+.week-view .magnetic-center-guide {
+  width: 3px;
+  height: 3px;
+}
+
+/* Day view magnetic enhancements */
+.day-view .time-slot-magnetic {
+  min-height: 40px;
+}
+
+.day-view .magnetic-center-guide {
+  width: 4px;
+  height: 4px;
+}
+
+/* Mobile magnetic optimizations */
+@media (max-width: 768px) {
+  :root {
+    --magnetic-snap-distance: 15px;
+    --magnetic-snap-duration: 150ms;
+    --magnetic-pulse-scale: 1.01;
+  }
+  
+  .magnetic-center-guide {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .time-slot-magnetic::after {
+    inset: -6px;
+  }
+  
+  /* Enhanced touch feedback for magnetic snap */
+  .time-slot-magnetic.magnetic-attraction {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+  }
+  
+  /* Dark mode mobile magnetic attraction */
+  [data-theme="dark"] .time-slot-magnetic.magnetic-attraction, 
+  .dark .time-slot-magnetic.magnetic-attraction {
+    background: rgba(34, 197, 94, 0.08);
+    border: 1px solid rgba(34, 197, 94, 0.15);
+  }
+}
+
+/* Reduced motion support for magnetic animations */
+@media (prefers-reduced-motion: reduce) {
+  .magnetic-field,
+  .dragged-appointment-magnetic,
+  .time-slot-magnetic,
+  .magnetic-center-guide {
+    animation: none !important;
+    transition: opacity 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .magnetic-field::before {
+    background: rgba(0, 128, 0, 0.4);
+    border: 2px solid rgba(0, 128, 0, 0.8);
+  }
+  
+  .time-slot-magnetic.magnetic-attraction::after {
+    border-color: rgba(0, 128, 0, 1);
+    border-width: 3px;
+  }
+  
+  .magnetic-center-guide {
+    background: rgba(0, 128, 0, 1);
+    border: 2px solid rgba(255, 255, 255, 1);
+    width: 6px;
+    height: 6px;
+  }
+  
+  /* High contrast drop zones */
+  .magnetic-field.magnetic-active::before {
+    background: rgba(0, 128, 0, 0.5) !important;
+    border: 3px solid rgba(0, 128, 0, 1) !important;
+  }
+  
+  .magnetic-rejection::after {
+    border-color: rgba(128, 0, 0, 1) !important;
+    border-width: 3px !important;
+  }
+}
+
+/* ============================================
    Additional Enhancements
    ============================================ */
 

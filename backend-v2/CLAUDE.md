@@ -356,6 +356,20 @@ When encountering new crash patterns:
 4. **Clean Architecture**: Maintain separation of concerns
 5. **Performance First**: Test performance impact of changes
 
+## 📋 User Roles & Permissions Reference
+
+**CRITICAL**: Always reference `/Users/bossio/6fb-booking/USER_ROLES_REFERENCE.md` before implementing role-based features.
+
+### Role Validation Checklist
+- [ ] **CLIENT** = customer booking appointments (NOT business user)
+- [ ] **BARBER** = individual barber working at a shop
+- [ ] **SHOP_OWNER** = owns single barbershop location
+- [ ] **ENTERPRISE_OWNER** = owns multiple barbershop locations
+- [ ] Verify permission matrix for feature access
+- [ ] Check data scope restrictions
+
+**Never confuse CLIENT (customer) with ENTERPRISE_OWNER (business owner)**
+
 ## 🔧 Common V2 Tasks
 
 ### Adding a New Endpoint

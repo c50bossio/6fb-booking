@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Calendar } from '@/components/ui/Calendar'
-import { LoadingButton, ErrorDisplay } from '@/components/LoadingStates'
+import { LoadingButton, ErrorDisplay } from '@/components/ui/LoadingSystem'
 import { 
   createRecurringPattern, 
   previewPatternOccurrences,

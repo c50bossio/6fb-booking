@@ -213,4 +213,12 @@ export function toastInfo(message: string, description?: string) {
   })
 }
 
+export function toastWarning(message: string, description?: string) {
+  return toast({
+    variant: "default",
+    title: message,
+    description,
+  })
+}
+
 export { useToast, toast }

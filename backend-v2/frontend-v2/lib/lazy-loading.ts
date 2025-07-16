@@ -2,7 +2,7 @@
 
 import React, { lazy, ComponentType, Suspense, memo, useState, useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
-import { Loading, LoadingSpinner, CardLoading } from '@/components/ui/LoadingStates'
+import { LoadingSpinner, CardSkeleton, PageLoading } from '@/components/ui/LoadingSystem'
 import { cn } from '@/lib/utils'
 
 /**
@@ -44,46 +44,55 @@ export const LazyComponents = {
   Calendar: createLazyComponent(
     () => import('@/components/ui/Calendar'),
     { 
-      loading: () => React.createElement(CardLoading, { className: "h-96" }),
+      loading: () => React.createElement(CardSkeleton, { className: "h-96" }),
+      ssr: false 
+    }
+  ),
+
+  // Unified Calendar (very heavy - 1,450 lines)
+  UnifiedCalendar: createLazyComponent(
+    () => import('@/components/UnifiedCalendar'),
+    { 
+      loading: () => React.createElement(CardSkeleton, { className: "h-screen" }),
       ssr: false 
     }
   ),
   
   // Chart components (large chart.js bundle)
-  // Analytics: createLazyComponent(
-  //   () => import('@/components/analytics/Analytics'),
-  //   { 
-  //     loading: () => React.createElement(Loading, { variant: "spinner", text: "Loading analytics..." }),
-  //     ssr: false 
-  //   }
-  // ),
+  Analytics: createLazyComponent(
+    () => import('@/components/analytics/EnhancedAnalyticsDashboard'),
+    { 
+      loading: () => React.createElement(PageLoading, { message: "Loading analytics..." }),
+      ssr: false 
+    }
+  ),
   
   // Payment components (Stripe bundle)
   PaymentForm: createLazyComponent(
     () => import('@/components/PaymentForm'),
     { 
-      loading: () => React.createElement(Loading, { variant: "skeleton", text: "Loading payment form..." }),
+      loading: () => React.createElement(PageLoading, { message: "Loading payment form..." }),
       ssr: false 
     }
   ),
   
   // Integration components (heavy with external APIs)
-  // IntegrationsPanel: createLazyComponent(
-  //   () => import('@/components/integrations/IntegrationsPanel'),
-  //   { 
-  //     loading: () => React.createElement(CardLoading, { className: "h-64" }),
-  //     ssr: false 
-  //   }
-  // ),
+  IntegrationsPanel: createLazyComponent(
+    () => import('@/components/integrations/IntegrationsPanel'),
+    { 
+      loading: () => React.createElement(CardSkeleton, { className: "h-64" }),
+      ssr: false 
+    }
+  ),
   
   // Settings components
-  // SettingsPanel: createLazyComponent(
-  //   () => import('@/components/settings/SettingsPanel'),
-  //   { 
-  //     loading: () => React.createElement(Loading, { variant: "dots", text: "Loading settings..." }),
-  //     ssr: false 
-  //   }
-  // ),
+  SettingsPanel: createLazyComponent(
+    () => import('@/components/ui/TrialStatusBanner'),
+    { 
+      loading: () => React.createElement(PageLoading, { message: "Loading settings..." }),
+      ssr: false 
+    }
+  ),
   
   // Admin components (heavy forms and data tables)
   // AdminDashboard: createLazyComponent(
@@ -97,41 +106,41 @@ export const LazyComponents = {
 
 // Route-based lazy loading
 export const LazyPages = {
-  // Dashboard route
-  // Dashboard: createLazyComponent(
-  //   () => import('@/app/(auth)/dashboard/page'),
-  //   { 
-  //     loading: () => React.createElement(Loading, { variant: "spinner", text: "Loading dashboard...", overlay: true }),
-  //     ssr: true 
-  //   }
-  // ),
+  // Analytics route (heavy charts and calculations)
+  AnalyticsPage: createLazyComponent(
+    () => import('@/app/analytics/page'),
+    { 
+      loading: () => React.createElement(PageLoading, { message: "Loading analytics..." }),
+      ssr: false 
+    }
+  ),
   
-  // Calendar route
-  // CalendarPage: createLazyComponent(
-  //   () => import('@/app/(auth)/calendar/page'),
-  //   { 
-  //     loading: () => React.createElement(Loading, { variant: "skeleton", text: "Loading calendar...", overlay: true }),
-  //     ssr: false 
-  //   }
-  // ),
-  
-  // Analytics route
-  // AnalyticsPage: createLazyComponent(
-  //   () => import('@/app/(auth)/analytics/page'),
-  //   { 
-  //     loading: () => React.createElement(Loading, { variant: "bar", text: "Loading analytics...", overlay: true }),
-  //     ssr: false 
-  //   }
-  // ),
-  
-  // Settings route
-  // SettingsPage: createLazyComponent(
-  //   () => import('@/app/(auth)/settings/page'),
-  //   { 
-  //     loading: () => React.createElement(Loading, { variant: "dots", text: "Loading settings...", overlay: true }),
-  //     ssr: true 
-  //   }
-  // ),
+  // Calendar route (heavy calendar component)
+  CalendarPage: createLazyComponent(
+    () => import('@/app/calendar/page'),
+    { 
+      loading: () => React.createElement(PageLoading, { message: "Loading calendar..." }),
+      ssr: false 
+    }
+  ),
+
+  // Marketing routes (external API integrations)
+  MarketingPage: createLazyComponent(
+    () => import('@/app/marketing/page'),
+    { 
+      loading: () => React.createElement(PageLoading, { message: "Loading marketing tools..." }),
+      ssr: false 
+    }
+  ),
+
+  // Admin routes (heavy data tables and forms)
+  AdminPage: createLazyComponent(
+    () => import('@/app/admin/page'),
+    { 
+      loading: () => React.createElement(PageLoading, { message: "Loading admin panel..." }),
+      ssr: false 
+    }
+  ),
 }
 
 // Intersection Observer based lazy loading for images and content

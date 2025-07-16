@@ -58,22 +58,33 @@ export function useAuth(): AuthState & { logout: () => Promise<void> } {
       return
     }
     
-    console.log('🔍 checkAuthState: Starting enhanced authentication check')
+    console.log('🔍 checkAuthState: Starting authentication check')
     
     updateGlobalState({ isChecking: true, isLoading: true, error: null })
     
     // Add timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
-      console.warn('🔍 checkAuthState: Auth check timeout after 5s')
+      console.warn('🔍 checkAuthState: Auth check timeout after 2s, assuming no auth')
       updateGlobalState({ user: null, isLoading: false, isChecking: false, hasChecked: true })
-    }, 5000)
+    }, 2000)
     
     try {
+      // Check if we have any token first (quick sync check)
+      const hasValidToken = isTokenValid()
+      console.log('🔍 checkAuthState: Token validity check result:', hasValidToken)
+      
+      if (!hasValidToken) {
+        console.log('🔍 checkAuthState: No valid token, user not authenticated')
+        updateGlobalState({ user: null, isLoading: false, isChecking: false, hasChecked: true })
+        clearTimeout(timeoutId)
+        return
+      }
+
       // Use token manager to get valid token (with automatic refresh)
       const token = await getValidToken()
       
       if (!token) {
-        console.log('🔍 checkAuthState: No valid token available')
+        console.log('🔍 checkAuthState: No valid token available after refresh attempt')
         clearTokens()
         updateGlobalState({ user: null, isLoading: false, isChecking: false, hasChecked: true })
         clearTimeout(timeoutId)

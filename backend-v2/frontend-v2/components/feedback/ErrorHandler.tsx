@@ -247,7 +247,7 @@ export function ErrorHandler({
                   {error.actions.map((action) => (
                     <Button
                       key={action.id}
-                      variant={action.type === 'primary' ? 'default' : action.type === 'danger' ? 'destructive' : 'outline'}
+                      variant={action.type === 'primary' ? 'primary' : action.type === 'danger' ? 'destructive' : 'outline'}
                       size="sm"
                       onClick={() => handleAction(error.id, action.id)}
                       disabled={action.disabled || errorActionStates[action.id]}

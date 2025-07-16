@@ -86,13 +86,13 @@ async def get_available_slots(db: Session, target_date: date, user_timezone: Opt
     now_business = datetime.now(business_tz)
     
     if target_date == now_business.date():
-        now_plus_buffer = now_business + timedelta(minutes=settings.min_lead_time_minutes)
+        now_plus_buffer = now_business + timedelta(minutes=int(settings.min_lead_time_minutes))
         
         # Round up to next slot interval properly (handle hour overflow)
         next_slot_time = now_plus_buffer.replace(second=0, microsecond=0)
-        if next_slot_time.minute % settings.slot_duration_minutes != 0:
+        if next_slot_time.minute % int(settings.slot_duration_minutes) != 0:
             # Calculate how many minutes to add to reach next slot
-            minutes_to_add = settings.slot_duration_minutes - (next_slot_time.minute % settings.slot_duration_minutes)
+            minutes_to_add = int(settings.slot_duration_minutes) - (next_slot_time.minute % int(settings.slot_duration_minutes))
             next_slot_time = next_slot_time + timedelta(minutes=minutes_to_add)
         
         # Use the later of business start or next available slot
@@ -110,7 +110,7 @@ async def get_available_slots(db: Session, target_date: date, user_timezone: Opt
             "datetime": current_time,  # Keep business timezone datetime for comparisons
             "datetime_user": current_time_user  # User timezone for display
         })
-        current_time += timedelta(minutes=settings.slot_duration_minutes)
+        current_time += timedelta(minutes=int(settings.slot_duration_minutes))
     
     # Get existing appointments for the day (convert to UTC for database query)
     start_of_day = business_tz.localize(datetime.combine(target_date, time.min))
@@ -136,7 +136,7 @@ async def get_available_slots(db: Session, target_date: date, user_timezone: Opt
     
     for slot in all_slots:
         is_available = True
-        slot_end = slot["datetime"] + timedelta(minutes=settings.slot_duration_minutes)
+        slot_end = slot["datetime"] + timedelta(minutes=int(settings.slot_duration_minutes))
         
         # Convert slot times to UTC for comparison with database times
         slot_start_utc = slot["datetime"].astimezone(pytz.UTC)
@@ -149,7 +149,7 @@ async def get_available_slots(db: Session, target_date: date, user_timezone: Opt
             else:
                 appointment_start = appointment.start_time
                 
-            appointment_end = appointment_start + timedelta(minutes=appointment.duration_minutes)
+            appointment_end = appointment_start + timedelta(minutes=int(appointment.duration_minutes))
             
             # Check if there's any overlap
             if not (slot_end_utc <= appointment_start or slot_start_utc >= appointment_end):
@@ -164,7 +164,7 @@ async def get_available_slots(db: Session, target_date: date, user_timezone: Opt
                     db=db,
                     barber_id=barber_id,
                     start_time=slot_start_utc,
-                    duration_minutes=settings.slot_duration_minutes
+                    duration_minutes=int(settings.slot_duration_minutes)
                 )
                 if not is_calendar_available:
                     is_available = False
@@ -227,7 +227,7 @@ async def get_available_slots(db: Session, target_date: date, user_timezone: Opt
             "start": settings.business_start_time.strftime("%H:%M"),
             "end": settings.business_end_time.strftime("%H:%M")
         },
-        "slot_duration_minutes": settings.slot_duration_minutes
+        "slot_duration_minutes": int(settings.slot_duration_minutes)
     }
 
 async def get_next_available_slot(db: Session, start_date: date, user_timezone: Optional[str] = None, max_days_ahead: int = 7, barber_id: Optional[int] = None, include_calendar_sync: bool = True) -> Optional[datetime]:
@@ -250,18 +250,18 @@ async def get_next_available_slot(db: Session, start_date: date, user_timezone: 
     
     # Start searching from the given date
     current_date = start_date
-    max_search_date = start_date + timedelta(days=min(max_days_ahead, settings.max_advance_days))
+    max_search_date = start_date + timedelta(days=min(max_days_ahead, int(settings.max_advance_days)))
     
     # Calculate the minimum allowed booking time (same logic as slot generation)
     now_business = datetime.now(business_tz)
     
     if current_date == now_business.date():
-        min_allowed_time = now_business + timedelta(minutes=settings.min_lead_time_minutes)
+        min_allowed_time = now_business + timedelta(minutes=int(settings.min_lead_time_minutes))
         # Round up to next slot interval properly (handle hour overflow)
         min_allowed_time = min_allowed_time.replace(second=0, microsecond=0)
-        if min_allowed_time.minute % settings.slot_duration_minutes != 0:
+        if min_allowed_time.minute % int(settings.slot_duration_minutes) != 0:
             # Calculate how many minutes to add to reach next slot
-            minutes_to_add = settings.slot_duration_minutes - (min_allowed_time.minute % settings.slot_duration_minutes)
+            minutes_to_add = int(settings.slot_duration_minutes) - (min_allowed_time.minute % int(settings.slot_duration_minutes))
             min_allowed_time = min_allowed_time + timedelta(minutes=minutes_to_add)
     else:
         # For future dates, start from beginning of business day
@@ -383,7 +383,7 @@ async def get_available_slots_with_barber_availability(
                     "start": settings.business_start_time.strftime("%H:%M"),
                     "end": settings.business_end_time.strftime("%H:%M")
                 },
-                "slot_duration_minutes": settings.slot_duration_minutes,
+                "slot_duration_minutes": int(settings.slot_duration_minutes),
                 "availability_note": "Barber not available on this day"
             }
         
@@ -422,7 +422,7 @@ async def get_available_slots_with_barber_availability(
                 "start": settings.business_start_time.strftime("%H:%M"),
                 "end": settings.business_end_time.strftime("%H:%M")
             },
-            "slot_duration_minutes": settings.slot_duration_minutes
+            "slot_duration_minutes": int(settings.slot_duration_minutes)
         }
     
     else:
@@ -469,7 +469,7 @@ async def get_available_slots_with_barber_availability(
                 "start": settings.business_start_time.strftime("%H:%M"),
                 "end": settings.business_end_time.strftime("%H:%M")
             },
-            "slot_duration_minutes": settings.slot_duration_minutes
+            "slot_duration_minutes": int(settings.slot_duration_minutes)
         }
 
 
@@ -496,12 +496,12 @@ def _generate_slots_for_period(
     now_business = datetime.now(business_tz)
     
     if target_date == now_business.date():
-        now_plus_buffer = now_business + timedelta(minutes=settings.min_lead_time_minutes)
+        now_plus_buffer = now_business + timedelta(minutes=int(settings.min_lead_time_minutes))
         
         # Round up to next slot interval properly
         next_slot_time = now_plus_buffer.replace(second=0, microsecond=0)
-        if next_slot_time.minute % settings.slot_duration_minutes != 0:
-            minutes_to_add = settings.slot_duration_minutes - (next_slot_time.minute % settings.slot_duration_minutes)
+        if next_slot_time.minute % int(settings.slot_duration_minutes) != 0:
+            minutes_to_add = int(settings.slot_duration_minutes) - (next_slot_time.minute % int(settings.slot_duration_minutes))
             next_slot_time = next_slot_time + timedelta(minutes=minutes_to_add)
         
         # Use the later of period start or next available slot
@@ -517,7 +517,7 @@ def _generate_slots_for_period(
             "datetime": current_time,  # Keep business timezone datetime for comparisons
             "datetime_user": current_time_user  # User timezone for display
         })
-        current_time += timedelta(minutes=settings.slot_duration_minutes)
+        current_time += timedelta(minutes=int(settings.slot_duration_minutes))
     
     return slots
 
@@ -547,7 +547,7 @@ def _filter_slots_by_appointments(
     
     for slot in slots:
         is_available = True
-        slot_end = slot["datetime"] + timedelta(minutes=settings.slot_duration_minutes)
+        slot_end = slot["datetime"] + timedelta(minutes=int(settings.slot_duration_minutes))
         
         # Convert slot times to UTC for comparison with database times
         slot_start_utc = slot["datetime"].astimezone(pytz.UTC)
@@ -560,11 +560,11 @@ def _filter_slots_by_appointments(
             else:
                 appointment_start = appointment.start_time
                 
-            appointment_end = appointment_start + timedelta(minutes=appointment.duration_minutes)
+            appointment_end = appointment_start + timedelta(minutes=int(appointment.duration_minutes))
             
             # Add buffer times
-            buffer_before = timedelta(minutes=appointment.buffer_time_before or 0)
-            buffer_after = timedelta(minutes=appointment.buffer_time_after or 0)
+            buffer_before = timedelta(minutes=int(appointment.buffer_time_before or 0))
+            buffer_after = timedelta(minutes=int(appointment.buffer_time_after or 0))
             
             appointment_start_with_buffer = appointment_start - buffer_before
             appointment_end_with_buffer = appointment_end + buffer_after
@@ -658,14 +658,14 @@ def create_booking(
     logger.info(f"BOOKING_DEBUG: Validating booking time constraints...")
     # Get current time in business timezone for validation
     now_business = datetime.now(business_tz)
-    min_booking_time = now_business + timedelta(minutes=settings.min_lead_time_minutes)
-    max_booking_time = now_business + timedelta(days=settings.max_advance_days)
+    min_booking_time = now_business + timedelta(minutes=int(settings.min_lead_time_minutes))
+    max_booking_time = now_business + timedelta(days=int(settings.max_advance_days))
     
     if start_time_business < min_booking_time:
-        raise ValueError(f"Booking must be at least {settings.min_lead_time_minutes} minutes in advance")
+        raise ValueError(f"Booking must be at least {int(settings.min_lead_time_minutes)} minutes in advance")
     
     if start_time_business > max_booking_time:
-        raise ValueError(f"Booking cannot be more than {settings.max_advance_days} days in advance")
+        raise ValueError(f"Booking cannot be more than {int(settings.max_advance_days)} days in advance")
     logger.info(f"BOOKING_DEBUG: Completed booking time constraints validation in {time_module.time() - step_start_time:.3f}s")
     
     # If barber_id is specified, validate barber availability
@@ -787,18 +787,11 @@ def create_booking(
                 and_(
                     models.Appointment.barber_id == barber_id,
                     models.Appointment.status.in_(["scheduled", "confirmed", "pending"]),
-                    # More precise conflict detection: appointments that would overlap
-                    or_(
-                        # New appointment starts during existing appointment
-                        and_(
-                            models.Appointment.start_time <= start_time_utc,
-                            models.Appointment.start_time + timedelta(minutes=models.Appointment.duration_minutes) > start_time_utc
-                        ),
-                        # Existing appointment starts during new appointment
-                        and_(
-                            models.Appointment.start_time >= start_time_utc,
-                            models.Appointment.start_time < appointment_end_time
-                        )
+                    # Check for potential conflicts within a reasonable time window
+                    # We'll do more precise conflict detection after retrieving the records
+                    and_(
+                        models.Appointment.start_time >= start_time_utc - timedelta(hours=2),
+                        models.Appointment.start_time <= appointment_end_time + timedelta(hours=2)
                     )
                 )
             )
@@ -841,11 +834,11 @@ def create_booking(
             appointment_start = appointment.start_time
             
         # Calculate appointment end time with duration
-        appointment_end = appointment_start + timedelta(minutes=appointment.duration_minutes)
+        appointment_end = appointment_start + timedelta(minutes=int(appointment.duration_minutes))
         
         # Add buffer times for more accurate conflict detection
-        appointment_buffer_before = timedelta(minutes=appointment.buffer_time_before or 0)
-        appointment_buffer_after = timedelta(minutes=appointment.buffer_time_after or 0)
+        appointment_buffer_before = timedelta(minutes=int(appointment.buffer_time_before or 0))
+        appointment_buffer_after = timedelta(minutes=int(appointment.buffer_time_after or 0))
         
         appointment_start_with_buffer = appointment_start - appointment_buffer_before
         appointment_end_with_buffer = appointment_end + appointment_buffer_after
@@ -1087,7 +1080,7 @@ def create_guest_booking(
         else:
             appointment_start = appointment.start_time
             
-        appointment_end = appointment_start + timedelta(minutes=appointment.duration_minutes)
+        appointment_end = appointment_start + timedelta(minutes=int(appointment.duration_minutes))
         
         # Check if there's any overlap
         if not (end_time_utc <= appointment_start or start_time_utc >= appointment_end):
@@ -1257,6 +1250,21 @@ def get_booking_by_id(db: Session, booking_id: int, user_id: int) -> Optional[mo
         )
     ).first()
 
+def get_booking_for_update(db: Session, booking_id: int, current_user: models.User) -> Optional[models.Appointment]:
+    """Get a booking for update with admin/barber permissions."""
+    # Admin users can update any appointment
+    if current_user.role in ['admin', 'super_admin']:
+        return db.query(models.Appointment).filter(models.Appointment.id == booking_id).first()
+    
+    # Barbers can update appointments they are assigned to
+    if current_user.role == 'barber':
+        appointment = db.query(models.Appointment).filter(models.Appointment.id == booking_id).first()
+        if appointment and (appointment.user_id == current_user.id or appointment.barber_id == current_user.id):
+            return appointment
+    
+    # Regular users can only update their own appointments
+    return get_booking_by_id(db, booking_id, current_user.id)
+
 # Alias for appointment router compatibility
 def get_booking(db: Session, booking_id: int, user_id: int) -> Optional[models.Appointment]:
     """Get a specific booking by ID for a user. Alias for get_booking_by_id."""
@@ -1383,14 +1391,15 @@ def update_booking(
     db: Session,
     booking_id: int,
     user_id: int,
-    update_data: Dict[str, Any]
+    update_data: Dict[str, Any],
+    current_user: Optional[models.User] = None
 ) -> Optional[models.Appointment]:
     """Update an existing booking.
     
     Args:
         db: Database session
         booking_id: ID of the booking to update
-        user_id: ID of the user making the update
+        user_id: ID of the user making the update (deprecated - use current_user)
         update_data: Dictionary containing fields to update
             - service: New service name (optional)
             - booking_date: New date (optional)
@@ -1398,12 +1407,17 @@ def update_booking(
             - notes: Updated notes (optional)
             - barber_id: New barber ID (optional)
             - user_timezone: User's timezone for time conversion (optional)
+        current_user: Current user object for permission checks
     
     Returns:
         Updated appointment object or None if booking not found
     """
-    # Get the existing booking
-    booking = get_booking_by_id(db, booking_id, user_id)
+    # Get the existing booking with proper permissions
+    if current_user:
+        booking = get_booking_for_update(db, booking_id, current_user)
+    else:
+        # Fallback to old behavior for backward compatibility
+        booking = get_booking_by_id(db, booking_id, user_id)
     
     if not booking:
         return None
@@ -1441,7 +1455,7 @@ def update_booking(
             new_start_time_business = business_tz.localize(datetime.combine(new_date, time(hour, minute)))
         else:
             # Keep existing time but on new date
-            old_time = booking.start_time_module.time()
+            old_time = booking.start_time.time()
             new_start_time_business = business_tz.localize(datetime.combine(new_date, old_time))
         
         # Convert to UTC for storage
@@ -1449,14 +1463,14 @@ def update_booking(
         
         # Validate new booking time constraints
         now_business = datetime.now(business_tz)
-        min_booking_time = now_business + timedelta(minutes=settings.min_lead_time_minutes)
-        max_booking_time = now_business + timedelta(days=settings.max_advance_days)
+        min_booking_time = now_business + timedelta(minutes=int(settings.min_lead_time_minutes))
+        max_booking_time = now_business + timedelta(days=int(settings.max_advance_days))
         
         if new_start_time_business < min_booking_time:
-            raise ValueError(f"Booking must be at least {settings.min_lead_time_minutes} minutes in advance")
+            raise ValueError(f"Booking must be at least {int(settings.min_lead_time_minutes)} minutes in advance")
         
         if new_start_time_business > max_booking_time:
-            raise ValueError(f"Booking cannot be more than {settings.max_advance_days} days in advance")
+            raise ValueError(f"Booking cannot be more than {int(settings.max_advance_days)} days in advance")
         
         # Check if booking is within business hours
         booking_time_obj = new_start_time_business.time()
@@ -1495,7 +1509,7 @@ def update_booking(
             else:
                 appointment_start = appointment.start_time
                 
-            appointment_end = appointment_start + timedelta(minutes=appointment.duration_minutes)
+            appointment_end = appointment_start + timedelta(minutes=int(appointment.duration_minutes))
             
             # Check if there's any overlap
             if not (end_time_utc <= appointment_start or new_start_time_utc >= appointment_end):
@@ -1559,17 +1573,19 @@ def reschedule_booking(
     user_id: int,
     new_date: date,
     new_time: str,
-    user_timezone: Optional[str] = None
+    user_timezone: Optional[str] = None,
+    current_user: Optional[models.User] = None
 ) -> Optional[models.Appointment]:
     """Reschedule an existing booking to a new date and time.
     
     Args:
         db: Database session
         booking_id: ID of the booking to reschedule
-        user_id: ID of the user making the reschedule
+        user_id: ID of the user making the reschedule (deprecated - use current_user)
         new_date: New date for the booking
         new_time: New time in HH:MM format (in user's timezone)
         user_timezone: User's timezone string. If None, uses business timezone.
+        current_user: Current user object for permission checks
     
     Returns:
         Updated appointment object or None if booking not found
@@ -1581,7 +1597,7 @@ def reschedule_booking(
         'user_timezone': user_timezone
     }
     
-    return update_booking(db, booking_id, user_id, update_data)
+    return update_booking(db, booking_id, user_id, update_data, current_user)
 
 
 def get_all_bookings(
@@ -1627,11 +1643,10 @@ def get_all_bookings(
     # Order by start time (most recent first)
     query = query.order_by(models.Appointment.start_time.desc())
     
-    # Apply pagination and eager load relationships
+    # Apply pagination and eager load relationships (excluding client due to encryption issues)
     from sqlalchemy.orm import joinedload
     appointments = query.options(
         joinedload(models.Appointment.barber),
-        joinedload(models.Appointment.client),
         joinedload(models.Appointment.user)
     ).offset(skip).limit(limit).all()
     

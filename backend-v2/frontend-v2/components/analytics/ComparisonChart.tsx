@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { analyticsAPI, RevenueAnalytics } from '@/lib/api'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
+import { PageLoading, ErrorDisplay } from '@/components/ui/LoadingSystem'
 import { BarChart } from './ChartComponents'
 import { formatters } from '@/lib/formatters'
 

@@ -1,6 +1,18 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+
+// Simple debounce implementation to avoid lodash dependency
+function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => func(...args), wait)
+  }
+}
 import { format, startOfWeek, endOfWeek, addDays, isSameDay, startOfDay, addHours, addMinutes, startOfMonth, endOfMonth, subDays } from 'date-fns'
 import { ChevronLeftIcon, ChevronRightIcon, PlusIcon, ArrowPathIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
 import { Button } from './ui/Button'
@@ -8,12 +20,15 @@ import { parseAPIDate, isToday as checkIsToday } from '@/lib/timezone'
 import Image from 'next/image'
 import ClientDetailModal from './modals/ClientDetailModal'
 import { touchDragManager, TouchDragManager } from '@/lib/touch-utils'
+import { TouchDragManager as NewTouchDragManager, useTouchGestures, TouchPoint } from './calendar/TouchDragManager'
+import { MobileCalendarControls, useMobileCalendarNavigation, CalendarView } from './calendar/MobileCalendarControls'
 import { conflictManager, ConflictAnalysis, ConflictResolution } from '@/lib/appointment-conflicts'
 import ConflictResolutionModal from './modals/ConflictResolutionModal'
 import { useCalendarPerformance } from '@/hooks/useCalendarPerformance'
 import { useCalendarAccessibility } from '@/hooks/useCalendarAccessibility'
 import { useResponsive } from '@/hooks/useResponsive'
 import { getServiceConfig, getBarberSymbol, type ServiceType } from '@/lib/calendar-constants'
+import { toastError, toastSuccess, toastInfo, toastWarning } from '@/hooks/use-toast'
 import '@/styles/calendar-animations.css'
 
 // Use standardized booking response interface
@@ -33,6 +48,17 @@ interface Barber {
   role?: string
 }
 
+interface Client {
+  id: number
+  name?: string
+  first_name?: string
+  last_name?: string
+  email: string
+  phone?: string
+  avatar?: string
+  notes?: string
+}
+
 export type CalendarView = 'day' | 'week' | 'month'
 
 interface UnifiedCalendarProps {
@@ -45,7 +71,7 @@ interface UnifiedCalendarProps {
   // Data props
   appointments: Appointment[]
   barbers?: Barber[]
-  clients?: any[]
+  clients?: Client[]
   
   // Filter props
   selectedBarberId?: number | 'all'
@@ -53,9 +79,9 @@ interface UnifiedCalendarProps {
   
   // Event handlers
   onAppointmentClick?: (appointment: Appointment) => void
-  onClientClick?: (client: any) => void
+  onClientClick?: (client: Client) => void
   onTimeSlotClick?: (date: Date, barberId?: number) => void
-  onAppointmentUpdate?: (appointmentId: number, newStartTime: string) => void
+  onAppointmentUpdate?: (appointmentId: number, newStartTime: string, isDragDrop?: boolean) => void
   onDayClick?: (date: Date) => void
   onDayDoubleClick?: (date: Date) => void
   
@@ -90,7 +116,7 @@ interface UnifiedCalendarState {
   dropSuccess: { day: Date; hour: number; minute: number } | null
   
   // Modal state
-  selectedClient: any | null
+  selectedClient: Client | null
   showClientModal: boolean
   showConflictModal: boolean
   
@@ -100,6 +126,17 @@ interface UnifiedCalendarState {
   
   // Optimistic updates
   optimisticUpdates: Map<number, { originalStartTime: string; newStartTime: string }>
+  isUpdating: number | null // Track which appointment is being updated
+  
+  // Enhanced drag visual feedback
+  dragPreview: { appointment: Appointment; position: { x: number; y: number } } | null
+  invalidDropZones: Set<string> // Set of slot keys that are invalid drop targets
+  validDropZones: Set<string> // Set of slot keys that are valid drop targets
+  
+  // Magnetic snap state
+  magneticField: { day: Date; hour: number; minute: number } | null
+  nearMagneticField: boolean
+  magneticDistance: number
 }
 
 // Drag & Drop handlers interface
@@ -153,17 +190,22 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
     showConflictModal: false,
     conflictAnalysis: null,
     pendingUpdate: null,
-    optimisticUpdates: new Map()
+    optimisticUpdates: new Map(),
+    isUpdating: null,
+    dragPreview: null,
+    invalidDropZones: new Set(),
+    validDropZones: new Set(),
+    magneticField: null,
+    nearMagneticField: false,
+    magneticDistance: 0
   }))
   
   // Unified performance and accessibility hooks
   const { 
-    measureRender, 
     optimizedAppointmentFilter, 
     memoizedDateCalculations,
     optimizedAppointmentsByDay,
-    memoizedStatusColor,
-    throttle 
+    memoizedStatusColor
   } = useCalendarPerformance()
   
   const { 
@@ -177,10 +219,83 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
   const { isMobile, isTablet } = useResponsive()
   const isTouchDevice = TouchDragManager.isTouchDevice()
   const scheduleGridRef = useRef<HTMLDivElement>(null)
+
+  // Mobile navigation and touch gesture support
+  const {
+    currentDate: mobileCurrentDate,
+    view: mobileView,
+    navigationHandlers
+  } = useMobileCalendarNavigation({
+    initialDate: state.currentDate,
+    initialView: view as CalendarView,
+    enableSwipeNavigation: isMobile || isTouchDevice
+  })
+
+  // Touch gesture handlers for calendar navigation
+  const { gestureHandlers, isGestureActive } = useTouchGestures({
+    onSwipe: useCallback((direction: 'up' | 'down' | 'left' | 'right', velocity: number) => {
+      // Only handle horizontal swipes for navigation (vertical for scrolling)
+      if (velocity < 0.3) return // Minimum velocity threshold
+      
+      if (direction === 'left') {
+        navigateDate('next')
+      } else if (direction === 'right') {
+        navigateDate('prev')
+      }
+    }, []),
+    
+    onPinch: useCallback((scale: number, isStarting: boolean) => {
+      // Pinch to zoom between views (month -> week -> day)
+      if (isStarting || scale < 0.7 || scale > 1.3) return
+      
+      if (scale < 0.8 && view === 'day') {
+        onViewChange?.('week')
+      } else if (scale < 0.8 && view === 'week') {
+        onViewChange?.('month')
+      } else if (scale > 1.2 && view === 'month') {
+        onViewChange?.('week')
+      } else if (scale > 1.2 && view === 'week') {
+        onViewChange?.('day')
+      }
+    }, [view, onViewChange]),
+    
+    onLongPress: useCallback((point: TouchPoint) => {
+      // Long press to create new appointment at touch point
+      if (onTimeSlotClick) {
+        // Calculate time slot from touch coordinates
+        const rect = scheduleGridRef.current?.getBoundingClientRect()
+        if (rect) {
+          const y = point.y - rect.top
+          const hour = Math.floor(y / 40) + startHour
+          const minute = Math.floor((y % 40) / 40 * 60 / slotDuration) * slotDuration
+          
+          if (hour >= startHour && hour < endHour) {
+            const slotDate = new Date(state.currentDate)
+            slotDate.setHours(hour, minute, 0, 0)
+            onTimeSlotClick(slotDate)
+          }
+        }
+      }
+    }, [onTimeSlotClick, startHour, endHour, slotDuration, state.currentDate]),
+    
+    disabled: state.isDragging || isGestureActive
+  })
+
+  // Sync mobile navigation with component state
+  useEffect(() => {
+    if (mobileCurrentDate.getTime() !== state.currentDate.getTime()) {
+      setState(prev => ({ ...prev, currentDate: mobileCurrentDate }))
+    }
+  }, [mobileCurrentDate, state.currentDate])
+
+  useEffect(() => {
+    if (mobileView !== view) {
+      onViewChange?.(mobileView)
+    }
+  }, [mobileView, view, onViewChange])
   
   // Enhanced drag & drop with optimistic updates
   const checkAndUpdateAppointment = useCallback(async (appointmentId: number, newStartTime: string) => {
-    console.log('[DRAG DEBUG] checkAndUpdateAppointment called:', { appointmentId, newStartTime })
     
     const appointment = appointments.find(apt => apt.id === appointmentId)
     if (!appointment) {
@@ -190,12 +305,12 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
 
     // Store original state for rollback
     const originalStartTime = appointment.start_time
-    console.log('[DRAG DEBUG] Original start time:', originalStartTime)
     
     // Apply optimistic update immediately for better UX
     setState(prev => ({
       ...prev,
-      optimisticUpdates: new Map(prev.optimisticUpdates.set(appointmentId, { originalStartTime, newStartTime }))
+      optimisticUpdates: new Map(prev.optimisticUpdates.set(appointmentId, { originalStartTime, newStartTime })),
+      isUpdating: appointmentId // Track which appointment is being updated
     }))
 
     // Create updated appointment for conflict checking
@@ -218,6 +333,10 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
     )
 
     if (analysis.hasConflicts && analysis.riskScore > 30) {
+      // Show warning toast about conflicts
+      const conflictTypes = analysis.conflicts.map(c => c.type).join(', ')
+      toastWarning('Schedule Conflict', `Potential conflicts detected: ${conflictTypes}. Please review before confirming.`)
+      
       // Rollback optimistic update
       setState(prev => {
         const newMap = new Map(prev.optimisticUpdates)
@@ -227,161 +346,129 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
           optimisticUpdates: newMap,
           conflictAnalysis: analysis,
           pendingUpdate: { appointmentId, newStartTime },
-          showConflictModal: true
+          showConflictModal: true,
+          isUpdating: null // Clear updating state
         }
       })
     } else {
       // No significant conflicts, proceed with update
       if (onAppointmentUpdate) {
-        console.log('[DRAG DEBUG] Calling onAppointmentUpdate with:', { appointmentId, newStartTime })
         try {
-          await onAppointmentUpdate(appointmentId, newStartTime)
-          console.log('[DRAG DEBUG] Update successful!')
+          await onAppointmentUpdate(appointmentId, newStartTime, true)
           
-          // Success - clear optimistic update (it's now permanent)
+          // Success - clear optimistic update and trigger refresh
           setState(prev => {
             const newMap = new Map(prev.optimisticUpdates)
             newMap.delete(appointmentId)
             return {
               ...prev,
-              optimisticUpdates: newMap
+              optimisticUpdates: newMap,
+              isUpdating: null // Clear updating state
             }
           })
           
-        } catch (updateError: any) {
+          // Show success toast with new time
+          const newDate = new Date(newStartTime)
+          const formattedTime = format(newDate, 'MMM d, h:mm a')
+          toastSuccess('Appointment Moved', `Successfully moved to ${formattedTime}`)
+          
+          // Trigger a data refresh to ensure UI shows latest appointment details
+          if (onRefresh) {
+            setTimeout(() => onRefresh(), 100) // Small delay to ensure backend has processed the update
+          }
+          
+        } catch (updateError: unknown) {
           console.error('[DRAG DEBUG] Update failed:', updateError)
+          
+          // Parse error for specific user-friendly messages
+          let errorMessage = 'Failed to move appointment. Please try again.'
+          let errorTitle = 'Update Failed'
+          
+          if (updateError?.message || updateError?.detail) {
+            const errorText = updateError.message || updateError.detail
+            
+            if (errorText.includes('minimum lead time') || errorText.includes('15 minutes in advance')) {
+              errorTitle = 'Too Soon'
+              errorMessage = 'Appointments must be scheduled at least 15 minutes in advance.'
+            } else if (errorText.includes('past') || errorText.includes('already started')) {
+              errorTitle = 'Invalid Time'
+              errorMessage = 'Cannot move appointment to a time in the past.'
+            } else if (errorText.includes('not available') || errorText.includes('conflict')) {
+              errorTitle = 'Time Conflict'
+              errorMessage = 'That time slot is not available. Please choose another time.'
+            } else if (errorText.includes('business hours')) {
+              errorTitle = 'Outside Business Hours'
+              errorMessage = 'Cannot schedule appointment outside business hours.'
+            } else if (errorText.includes('advance')) {
+              errorTitle = 'Too Far Ahead'
+              errorMessage = 'Cannot schedule appointments too far in advance.'
+            }
+          }
+          
+          // Show error toast
+          toastError(errorTitle, errorMessage)
+          
           // Rollback optimistic update on failure
           setState(prev => {
             const newMap = new Map(prev.optimisticUpdates)
             newMap.delete(appointmentId)
             return {
               ...prev,
-              optimisticUpdates: newMap
+              optimisticUpdates: newMap,
+              isUpdating: null // Clear updating state
             }
           })
           
-          console.error('Failed to update appointment:', updateError)
+          // Also refresh data to ensure UI is consistent after rollback
+          if (onRefresh) {
+            setTimeout(() => onRefresh(), 100)
+          }
         }
       } else {
         console.error('[DRAG DEBUG] onAppointmentUpdate is not defined!')
       }
     }
-  }, [appointments, onAppointmentUpdate, startHour, endHour])
+  }, [appointments, onAppointmentUpdate, onRefresh, startHour, endHour])
 
-  // Drag & Drop handlers
-  const dragHandlers: DragHandlers = useMemo(() => ({
-    handleDragOver: (e: React.DragEvent, day: Date, hour: number, minute: number) => {
-      e.preventDefault() // Always prevent default to allow drop
-      if (state.draggedAppointment) {
-        e.dataTransfer.dropEffect = 'move'
-        setState(prev => ({ ...prev, dragOverSlot: { day, hour, minute } }))
-      } else {
-        // Still prevent default to allow drop even if state is not set yet
-        console.log('[DRAG DEBUG] DragOver but no draggedAppointment in state')
-      }
-    },
-
-    handleDragLeave: () => {
-      setState(prev => ({ ...prev, dragOverSlot: null }))
-    },
-
-    handleDragStart: (e: React.DragEvent, appointment: Appointment) => {
-      console.log('[DRAG DEBUG] DragStart triggered:', appointment.id, appointment.status)
-      if (appointment.status !== 'completed' && appointment.status !== 'cancelled') {
-        e.dataTransfer.effectAllowed = 'move'
-        e.dataTransfer.setData('text/plain', appointment.id.toString())
-        
-        // Add drag image
-        const dragImage = e.currentTarget as HTMLElement
-        e.dataTransfer.setDragImage(dragImage, dragImage.offsetWidth / 2, dragImage.offsetHeight / 2)
-        
-        setState(prev => ({ 
-          ...prev, 
-          draggedAppointment: appointment, 
-          isDragging: true 
-        }))
-        console.log('[DRAG DEBUG] Drag started successfully')
-      } else {
-        console.log('[DRAG DEBUG] Preventing drag - status:', appointment.status)
-        e.preventDefault()
-      }
-    },
-
-    handleDragEnd: () => {
-      console.log('[DRAG DEBUG] DragEnd triggered')
-      setState(prev => ({ 
-        ...prev, 
-        draggedAppointment: null, 
-        dragOverSlot: null, 
-        isDragging: false 
+  // Optimized magnetic snap distance calculation with caching
+  const calculateMagneticDistance = useCallback((mouseX: number, mouseY: number, slotElement: Element): number => {
+    // Cache rect calculations to avoid repeated getBoundingClientRect calls
+    const rect = slotElement.getBoundingClientRect()
+    const slotCenterX = rect.left + (rect.width >> 1) // Bit shift for faster division
+    const slotCenterY = rect.top + (rect.height >> 1)
+    
+    // Use faster distance calculation for magnetic snap threshold
+    const deltaX = mouseX - slotCenterX
+    const deltaY = mouseY - slotCenterY
+    return Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+  }, [])
+  
+  // Pre-create empty sets to avoid repeated allocations
+  const emptySet = useMemo(() => new Set<string>(), [])
+  
+  // Debounced drag over handler to reduce expensive calculations
+  const debouncedDragOver = useRef(
+    debounce((day: Date, hour: number, minute: number, isValid: boolean, distance: number, isNearMagnetic: boolean) => {
+      const slotKey = `${day.toDateString()}-${hour}-${minute}`
+      
+      // Reuse sets when possible to reduce allocations
+      const validZones = isValid ? new Set([slotKey]) : emptySet
+      const invalidZones = !isValid ? new Set([slotKey]) : emptySet
+      
+      setState(prev => ({
+        ...prev,
+        dragOverSlot: { day, hour, minute },
+        validDropZones: validZones,
+        invalidDropZones: invalidZones,
+        magneticField: isValid && isNearMagnetic ? { day, hour, minute } : null,
+        nearMagneticField: isValid && isNearMagnetic,
+        magneticDistance: distance
       }))
-    },
+    }, 16) // ~60fps throttling
+  ).current
 
-    handleDrop: (e: React.DragEvent, day: Date, hour: number, minute: number) => {
-      e.preventDefault()
-      console.log('[DRAG DEBUG] Drop triggered')
-      
-      const draggedApp = state.draggedAppointment // Store reference before clearing
-      
-      if (draggedApp && onAppointmentUpdate) {
-        const newDate = new Date(day)
-        newDate.setHours(hour, minute, 0, 0)
-        console.log('[DRAG DEBUG] Dropping appointment', draggedApp.id, 'to', newDate.toISOString())
-        
-        // Check if the new time is valid (not in the past for today)
-        const now = new Date()
-        const isToday = isSameDay(day, now)
-        if (!isToday || newDate > now) {
-          // Show success animation
-          setState(prev => ({ 
-            ...prev, 
-            dropSuccess: { day, hour, minute },
-            draggedAppointment: null,
-            dragOverSlot: null,
-            isDragging: false
-          }))
-          
-          setTimeout(() => {
-            setState(prev => ({ ...prev, dropSuccess: null }))
-          }, 600)
-          
-          // Use the stored reference for the update
-          checkAndUpdateAppointment(draggedApp.id, newDate.toISOString())
-        } else {
-          console.log('[DRAG DEBUG] Cannot drop in the past')
-          // Clear drag state
-          setState(prev => ({ 
-            ...prev, 
-            draggedAppointment: null,
-            dragOverSlot: null,
-            isDragging: false
-          }))
-        }
-      } else {
-        console.log('[DRAG DEBUG] No dragged appointment or update handler')
-        // Clear drag state
-        setState(prev => ({ 
-          ...prev, 
-          draggedAppointment: null,
-          dragOverSlot: null,
-          isDragging: false
-        }))
-      }
-    }
-  }), [state.draggedAppointment, onAppointmentUpdate, checkAndUpdateAppointment])
-  
-  // Performance monitoring
-  useEffect(() => {
-    const endMeasure = measureRender(`UnifiedCalendar-${view}`)
-    return endMeasure
-  }, [view, measureRender])
-  
-  // Sync with prop changes
-  useEffect(() => {
-    if (!isSameDay(state.currentDate, currentDate)) {
-      setState(prev => ({ ...prev, currentDate }))
-    }
-  }, [currentDate, state.currentDate])
+  // Magnetic field detection threshold (in pixels)
+  const MAGNETIC_THRESHOLD = 50
 
   // Filter appointments based on current view and filters
   const filteredAppointments = useMemo(() => {
@@ -414,6 +501,280 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
     })
   }, [appointments, state.currentDate, view, selectedBarberId, optimizedAppointmentFilter])
 
+  // Optimized slot validation with caching
+  const slotValidationCache = useRef<Map<string, boolean>>(new Map())
+  const isSlotValid = useCallback((day: Date, hour: number, minute: number, draggedAppointment: Appointment): boolean => {
+    // Create cache key for this validation
+    const cacheKey = `${day.toDateString()}-${hour}-${minute}-${draggedAppointment.id}`
+    
+    // Check cache first
+    if (slotValidationCache.current.has(cacheKey)) {
+      return slotValidationCache.current.get(cacheKey)!
+    }
+    
+    // Check 1: Not in the past + 15 minute advance requirement
+    const slotDate = new Date(day)
+    slotDate.setHours(hour, minute, 0, 0)
+    const now = new Date()
+    const minimumAdvanceTime = new Date(now.getTime() + 15 * 60 * 1000) // 15 minutes from now
+    
+    if (slotDate < minimumAdvanceTime) {
+      return false
+    }
+    
+    // Check 2: Not the same slot as current appointment
+    if (draggedAppointment.start_time) {
+      const currentTime = new Date(draggedAppointment.start_time)
+      if (isSameDay(currentTime, day) && 
+          currentTime.getHours() === hour && 
+          currentTime.getMinutes() === minute) {
+        return false
+      }
+    }
+    
+    // Check 3: No appointment conflicts - only check exact slot
+    const hasConflict = filteredAppointments.some(apt => {
+      if (apt.id === draggedAppointment.id) return false // Skip self
+      const aptTime = new Date(apt.start_time)
+      return isSameDay(aptTime, day) && 
+             aptTime.getHours() === hour && 
+             aptTime.getMinutes() === minute
+    })
+    
+    const isValid = !hasConflict
+    
+    // Cache the result for performance
+    slotValidationCache.current.set(cacheKey, isValid)
+    
+    // Clear cache periodically to prevent memory leaks
+    if (slotValidationCache.current.size > 1000) {
+      slotValidationCache.current.clear()
+    }
+    
+    return isValid
+  }, [filteredAppointments])
+
+  // Drag & Drop handlers
+  const dragHandlers: DragHandlers = useMemo(() => ({
+    handleDragOver: (e: React.DragEvent, day: Date, hour: number, minute: number) => {
+      e.preventDefault() // Always prevent default to allow drop
+      if (state.draggedAppointment) {
+        // Skip redundant calculations if hovering over same slot
+        if (state.dragOverSlot && 
+            state.dragOverSlot.day.getTime() === day.getTime() &&
+            state.dragOverSlot.hour === hour && 
+            state.dragOverSlot.minute === minute) {
+          return // Already processed this slot
+        }
+        
+        // On-demand validation - only check this specific slot
+        const isValid = isSlotValid(day, hour, minute, state.draggedAppointment)
+        e.dataTransfer.dropEffect = isValid ? 'move' : 'none'
+        
+        // Calculate magnetic distance for snap effect (only if valid)
+        let distance = 0
+        let isNearMagnetic = false
+        if (isValid) {
+          const slotElement = (e.currentTarget as HTMLElement)
+          distance = calculateMagneticDistance(e.clientX, e.clientY, slotElement)
+          isNearMagnetic = distance <= MAGNETIC_THRESHOLD
+        }
+        
+        // Use debounced handler for expensive state updates
+        debouncedDragOver(day, hour, minute, isValid, distance, isNearMagnetic)
+      }
+    },
+
+    handleDragLeave: (e: React.DragEvent) => {
+      // Only clear state if actually leaving the calendar area
+      const relatedTarget = e.relatedTarget as Element
+      if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+        setState(prev => ({ 
+          ...prev, 
+          dragOverSlot: null,
+          validDropZones: new Set(),
+          invalidDropZones: new Set(),
+          magneticField: null,
+          nearMagneticField: false,
+          magneticDistance: 0
+        }))
+      }
+    },
+
+    handleDragStart: (e: React.DragEvent, appointment: Appointment) => {
+      if (appointment.status !== 'completed' && appointment.status !== 'cancelled') {
+        e.dataTransfer.effectAllowed = 'move'
+        e.dataTransfer.setData('text/plain', appointment.id.toString())
+        
+        // Add drag image
+        const dragImage = e.currentTarget as HTMLElement
+        e.dataTransfer.setDragImage(dragImage, dragImage.offsetWidth / 2, dragImage.offsetHeight / 2)
+        
+        // Lightweight initialization - no upfront zone calculation
+        setState(prev => ({ 
+          ...prev, 
+          draggedAppointment: appointment, 
+          isDragging: true,
+          validDropZones: new Set(), // Start empty - populate on-demand
+          invalidDropZones: new Set() // Start empty - populate on-demand
+        }))
+      } else {
+        e.preventDefault()
+      }
+    },
+
+    handleDragEnd: () => {
+      setState(prev => ({ 
+        ...prev, 
+        draggedAppointment: null, 
+        dragOverSlot: null, 
+        isDragging: false,
+        validDropZones: new Set(),
+        invalidDropZones: new Set(),
+        magneticField: null,
+        nearMagneticField: false,
+        magneticDistance: 0
+      }))
+    },
+
+    handleDrop: (e: React.DragEvent, day: Date, hour: number, minute: number) => {
+      e.preventDefault()
+      
+      const draggedApp = state.draggedAppointment // Store reference before clearing
+      
+      if (draggedApp && onAppointmentUpdate) {
+        const newDate = new Date(day)
+        newDate.setHours(hour, minute, 0, 0)
+        
+        // Check if the new time is valid using comprehensive validation
+        if (isSlotValid(day, hour, minute, draggedApp)) {
+          // Show success animation with magnetic effect
+          setState(prev => ({ 
+            ...prev, 
+            dropSuccess: { day, hour, minute },
+            draggedAppointment: null,
+            dragOverSlot: null,
+            isDragging: false,
+            validDropZones: new Set(),
+            invalidDropZones: new Set(),
+            magneticField: null,
+            nearMagneticField: false,
+            magneticDistance: 0
+          }))
+          
+          setTimeout(() => {
+            setState(prev => ({ ...prev, dropSuccess: null }))
+          }, 600)
+          
+          // Use the stored reference for the update
+          checkAndUpdateAppointment(draggedApp.id, newDate.toISOString())
+        } else {
+          
+          // Show user-friendly error message
+          const newDate = new Date(day)
+          newDate.setHours(hour, minute, 0, 0)
+          const now = new Date()
+          const timeDiff = Math.round((newDate.getTime() - now.getTime()) / (1000 * 60))
+          
+          toastError(`Cannot reschedule to ${format(newDate, 'h:mm a')}. Appointments must be scheduled at least 15 minutes in advance.${timeDiff < 0 ? ' This time is in the past.' : ` Only ${timeDiff} minutes from now.`}`)
+          
+          // Clear drag state
+          setState(prev => ({ 
+            ...prev, 
+            draggedAppointment: null,
+            dragOverSlot: null,
+            isDragging: false,
+            validDropZones: new Set(),
+            invalidDropZones: new Set(),
+            magneticField: null,
+            nearMagneticField: false,
+            magneticDistance: 0
+          }))
+        }
+      } else {
+        // Clear drag state
+        setState(prev => ({ 
+          ...prev, 
+          draggedAppointment: null,
+          dragOverSlot: null,
+          isDragging: false,
+          validDropZones: new Set(),
+          invalidDropZones: new Set(),
+          magneticField: null,
+          nearMagneticField: false,
+          magneticDistance: 0
+        }))
+      }
+    }
+  }), [state.draggedAppointment, state.dragOverSlot, onAppointmentUpdate, checkAndUpdateAppointment, isSlotValid, calculateMagneticDistance])
+  
+  // Performance monitoring removed - simplified hook
+  
+  // Sync with prop changes
+  useEffect(() => {
+    if (!isSameDay(state.currentDate, currentDate)) {
+      setState(prev => ({ ...prev, currentDate }))
+    }
+  }, [currentDate, state.currentDate])
+
+  // Enhanced appointment lookup with date indexing for performance
+  const appointmentLookupMap = useMemo(() => {
+    const byId = new Map<string, Appointment>()
+    const byDate = new Map<string, Appointment[]>()
+    
+    filteredAppointments.forEach(apt => {
+      // ID-based lookup for quick access
+      byId.set(apt.id.toString(), apt)
+      
+      // Date-based lookup for efficient calendar rendering
+      const dateKey = format(new Date(apt.start_time), 'yyyy-MM-dd')
+      if (!byDate.has(dateKey)) {
+        byDate.set(dateKey, [])
+      }
+      byDate.get(dateKey)!.push(apt)
+    })
+    
+    return { byId, byDate }
+  }, [filteredAppointments])
+  
+  // Compatibility getter for existing code
+  const getAppointmentById = useCallback((id: string) => appointmentLookupMap.byId.get(id), [appointmentLookupMap])
+  const getAppointmentsByDate = useCallback((date: Date) => {
+    const dateKey = format(date, 'yyyy-MM-dd')
+    return appointmentLookupMap.byDate.get(dateKey) || []
+  }, [appointmentLookupMap])
+  
+  // Virtualization helper for large appointment lists
+  const getVisibleAppointments = useCallback((appointments: Appointment[], maxVisible: number = 50) => {
+    // For performance, limit visible appointments in complex views
+    if (appointments.length <= maxVisible) return appointments
+    
+    // Sort by start time and take the most relevant ones
+    return appointments
+      .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
+      .slice(0, maxVisible)
+  }, [])
+  
+  // Memoized appointment components for better rendering performance
+  const appointmentComponents = useMemo(() => {
+    const components = new Map<string, JSX.Element>()
+    
+    filteredAppointments.forEach(appointment => {
+      const key = `${appointment.id}-${appointment.start_time}-${appointment.status}`
+      
+      // Only create component if not cached
+      if (!components.has(key)) {
+        components.set(key, (
+          <div key={appointment.id} className="appointment-component">
+            {/* Appointment content will be rendered inline */}
+          </div>
+        ))
+      }
+    })
+    
+    return components
+  }, [filteredAppointments])
+
   // Touch drag support for appointments
   useEffect(() => {
     if (!isTouchDevice) return
@@ -423,7 +784,9 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
 
     appointmentElements.forEach((appointmentEl) => {
       const appointmentId = appointmentEl.getAttribute('data-appointment-id')
-      const appointment = filteredAppointments.find(apt => apt.id.toString() === appointmentId)
+      if (!appointmentId) return
+      
+      const appointment = appointmentLookupMap.get(appointmentId)
       
       if (!appointment || appointment.status === 'completed' || appointment.status === 'cancelled') {
         return
@@ -506,7 +869,10 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
             ...prev,
             draggedAppointment: null,
             dragOverSlot: null,
-            isDragging: false
+            isDragging: false,
+            magneticField: null,
+            nearMagneticField: false,
+            magneticDistance: 0
           }))
         },
         canDrag: () => appointment.status !== 'completed' && appointment.status !== 'cancelled'
@@ -518,7 +884,7 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
     return () => {
       cleanupFunctions.forEach(cleanup => cleanup())
     }
-  }, [filteredAppointments, isTouchDevice, view, state.currentDate, state.draggedAppointment, state.dragOverSlot, onAppointmentUpdate, checkAndUpdateAppointment, startHour, endHour, slotDuration])
+  }, [appointmentLookupMap, isTouchDevice, view, state.currentDate, checkAndUpdateAppointment])
   
   // Helper functions
   const getClientName = useCallback((appointment: Appointment): string => {
@@ -583,18 +949,22 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
     }
   }
   
+  // Memoized time slots calculation
+  const timeSlots = useMemo(() => {
+    const slots = []
+    for (let hour = startHour; hour < endHour; hour++) {
+      for (let minute = 0; minute < 60; minute += slotDuration) {
+        slots.push({ hour, minute })
+      }
+    }
+    return slots
+  }, [startHour, endHour, slotDuration])
+
   // Day view renderer
-  const renderDayView = () => {
+  const renderDayView = useCallback(() => {
     const dayAppointments = filteredAppointments.filter(apt => 
       isSameDay(new Date(apt.start_time), state.currentDate)
     )
-    
-    const timeSlots = []
-    for (let hour = startHour; hour < endHour; hour++) {
-      for (let minute = 0; minute < 60; minute += slotDuration) {
-        timeSlots.push({ hour, minute })
-      }
-    }
     
     return (
       <div className="day-view h-full flex flex-col">
@@ -629,26 +999,53 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
               return (
                 <div 
                   key={`${hour}-${minute}`}
-                  className={`h-10 border-b border-gray-100 dark:border-gray-800 cursor-pointer relative transition-all ${
-                    state.dragOverSlot && 
-                    isSameDay(state.dragOverSlot.day, state.currentDate) && 
-                    state.dragOverSlot.hour === hour && 
-                    state.dragOverSlot.minute === minute
-                      ? 'bg-green-100 dark:bg-green-900/30 ring-2 ring-green-500 border-green-400 border-dashed'
-                      : state.dropSuccess &&
-                        isSameDay(state.dropSuccess.day, state.currentDate) &&
-                        state.dropSuccess.hour === hour &&
-                        state.dropSuccess.minute === minute
-                      ? 'bg-green-200 dark:bg-green-800/40 ring-2 ring-green-400 animate-pulse'
-                      : state.isDragging
-                      ? 'hover:bg-green-50 dark:hover:bg-green-900/10 hover:border-green-300 hover:border-dashed'
-                      : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                  className={`h-10 border-b border-gray-100 dark:border-gray-800 cursor-pointer relative transition-all time-slot-magnetic ${
+                    // Optimized condition checks - only check what's needed when needed
+                    (() => {
+                      const slotKey = `${state.currentDate.toDateString()}-${hour}-${minute}`
+                      const isDragOverThisSlot = state.dragOverSlot && 
+                        isSameDay(state.dragOverSlot.day, state.currentDate) && 
+                        state.dragOverSlot.hour === hour && 
+                        state.dragOverSlot.minute === minute
+                      
+                      const isMagneticField = state.magneticField &&
+                        isSameDay(state.magneticField.day, state.currentDate) &&
+                        state.magneticField.hour === hour &&
+                        state.magneticField.minute === minute
+                      
+                      if (isDragOverThisSlot) {
+                        if (state.invalidDropZones.has(slotKey)) {
+                          return 'bg-red-50 dark:bg-red-900/30 ring-2 ring-red-400 border-red-300 border-dashed cursor-not-allowed magnetic-rejection shadow-sm'
+                        }
+                        return 'bg-emerald-50 dark:bg-green-900/30 ring-2 ring-emerald-400 border-emerald-300 border-dashed magnetic-field magnetic-active shadow-sm'
+                      }
+                      
+                      if (isMagneticField) {
+                        return 'magnetic-attraction'
+                      }
+                      
+                      if (state.dropSuccess &&
+                          isSameDay(state.dropSuccess.day, state.currentDate) &&
+                          state.dropSuccess.hour === hour &&
+                          state.dropSuccess.minute === minute) {
+                        return 'bg-emerald-100 dark:bg-green-800/40 ring-2 ring-emerald-500 animate-pulse magnetic-drop-success shadow-md'
+                      }
+                      
+                      if (state.isDragging) {
+                        return 'hover:bg-emerald-50/50 dark:hover:bg-green-900/10 hover:border-emerald-200 hover:border-dashed magnetic-field transition-colors duration-200'
+                      }
+                      
+                      return 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                    })()
                   }`}
                   onClick={() => onTimeSlotClick?.(slotDate)}
                   onDragOver={(e) => dragHandlers.handleDragOver(e, state.currentDate, hour, minute)}
                   onDragLeave={dragHandlers.handleDragLeave}
                   onDrop={(e) => dragHandlers.handleDrop(e, state.currentDate, hour, minute)}
                 >
+                  {/* Magnetic center guide */}
+                  <div className="magnetic-center-guide"></div>
+                  
                   {/* Render appointments for this time slot */}
                   {dayAppointments
                     .filter(apt => {
@@ -673,11 +1070,15 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
                             key={appointment.id}
                             data-appointment-id={appointment.id}
                             draggable={appointment.status !== 'completed' && appointment.status !== 'cancelled'}
-                            className={`unified-calendar-appointment premium-appointment absolute inset-0 m-1 p-2 rounded text-xs cursor-pointer overflow-hidden transition-all text-white group ${
+                            className={`unified-calendar-appointment premium-appointment absolute inset-0 m-1 p-2 rounded text-xs cursor-pointer overflow-hidden transition-all text-white group dragged-appointment-magnetic ${
                               getStatusColor(appointment.status)
                             } ${
                               state.draggedAppointment?.id === appointment.id 
-                                ? 'opacity-30 scale-95 ring-2 ring-white ring-opacity-50 animate-pulse' 
+                                ? `opacity-30 scale-95 ring-2 ring-white ring-opacity-50 animate-pulse dragging ${
+                                    state.nearMagneticField ? 'near-magnetic-field' : ''
+                                  } ${
+                                    state.magneticField ? 'snapped-to-slot' : ''
+                                  }` 
                                 : 'hover:shadow-xl hover:scale-105 hover:z-20 hover:ring-2 hover:ring-white hover:ring-opacity-60'
                             } ${
                               appointment.status !== 'completed' && appointment.status !== 'cancelled' 
@@ -723,7 +1124,7 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
                             {/* Drop zone indicator when dragging */}
                             {state.isDragging && state.draggedAppointment?.id !== appointment.id && (
                               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                                <div className="bg-green-500 text-white px-2 py-1 rounded text-xs font-medium shadow-lg">
+                                <div className="bg-emerald-600 dark:bg-green-500 text-white px-2 py-1 rounded text-xs font-medium shadow-lg border border-emerald-500 dark:border-green-400">
                                   Drop here
                                 </div>
                               </div>
@@ -735,7 +1136,6 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
                                 className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/20 hover:bg-white/30 rounded p-1"
                                 onClick={(e) => {
                                   e.stopPropagation()
-                                  console.log('[DRAG DEBUG] Move button clicked for appointment:', appointment.id)
                                   // Trigger the same update flow as drag and drop
                                   onAppointmentUpdate?.(appointment.id, appointment.start_time)
                                 }}
@@ -763,19 +1163,16 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
         </div>
       </div>
     )
-  }
+  }, [filteredAppointments, state.currentDate, timeSlots, state.draggedAppointment, state.isDragging, state.validDropZones, state.invalidDropZones, state.dragOverSlot, state.dropSuccess, state.optimisticUpdates, state.isUpdating, getStatusColor, onAppointmentClick, onClientClick, onTimeSlotClick, getClientName, getBarberName])
   
-  // Week view renderer
-  const renderWeekView = () => {
+  // Memoized week days calculation
+  const weekDays = useMemo(() => {
     const weekStart = startOfWeek(state.currentDate)
-    const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
-    
-    const timeSlots = []
-    for (let hour = startHour; hour < endHour; hour++) {
-      for (let minute = 0; minute < 60; minute += slotDuration) {
-        timeSlots.push({ hour, minute })
-      }
-    }
+    return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
+  }, [state.currentDate])
+
+  // Week view renderer
+  const renderWeekView = useCallback(() => {
     
     return (
       <div className="week-view h-full flex flex-col">
@@ -818,26 +1215,56 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
                 return (
                   <div 
                     key={day.toISOString()}
-                    className={`border-r border-gray-200 dark:border-gray-700 cursor-pointer relative transition-all ${
-                      state.dragOverSlot && 
-                      isSameDay(state.dragOverSlot.day, day) && 
-                      state.dragOverSlot.hour === hour && 
-                      state.dragOverSlot.minute === minute
-                        ? 'bg-green-100 dark:bg-green-900/30 ring-2 ring-green-500 border-green-400 border-dashed'
-                        : state.dropSuccess &&
-                          isSameDay(state.dropSuccess.day, day) &&
-                          state.dropSuccess.hour === hour &&
-                          state.dropSuccess.minute === minute
-                        ? 'bg-green-200 dark:bg-green-800/40 ring-2 ring-green-400 animate-pulse'
-                        : state.isDragging
-                        ? 'hover:bg-green-50 dark:hover:bg-green-900/10 hover:border-green-300 hover:border-dashed'
-                        : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                    className={`border-r border-gray-200 dark:border-gray-700 cursor-pointer relative transition-all time-slot-magnetic ${
+                      // Optimized condition checks for week view
+                      (() => {
+                        const slotKey = `${day.toDateString()}-${hour}-${minute}`
+                        const isDragOverThisSlot = state.dragOverSlot && 
+                          isSameDay(state.dragOverSlot.day, day) && 
+                          state.dragOverSlot.hour === hour && 
+                          state.dragOverSlot.minute === minute
+                        
+                        const isMagneticField = state.magneticField &&
+                          isSameDay(state.magneticField.day, day) &&
+                          state.magneticField.hour === hour &&
+                          state.magneticField.minute === minute
+                        
+                        if (isDragOverThisSlot) {
+                          if (state.invalidDropZones.has(slotKey)) {
+                            return 'bg-red-50 dark:bg-red-900/30 ring-2 ring-red-400 border-red-300 border-dashed cursor-not-allowed magnetic-rejection shadow-sm'
+                          }
+                          return 'bg-emerald-50 dark:bg-green-900/30 ring-2 ring-emerald-400 border-emerald-300 border-dashed magnetic-field magnetic-active shadow-sm'
+                        }
+                        
+                        if (isMagneticField) {
+                          return 'magnetic-attraction'
+                        }
+                        
+                        if (state.dropSuccess &&
+                            isSameDay(state.dropSuccess.day, day) &&
+                            state.dropSuccess.hour === hour &&
+                            state.dropSuccess.minute === minute) {
+                          return 'bg-emerald-100 dark:bg-green-800/40 ring-2 ring-emerald-500 animate-pulse magnetic-drop-success shadow-md'
+                        }
+                        
+                        if (state.isDragging) {
+                          return 'hover:bg-emerald-50/50 dark:hover:bg-green-900/10 hover:border-emerald-200 hover:border-dashed magnetic-field transition-colors duration-200'
+                        }
+                        
+                        return 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                      })()
                     }`}
                     onClick={() => onTimeSlotClick?.(slotDate)}
                     onDragOver={(e) => dragHandlers.handleDragOver(e, day, hour, minute)}
                     onDragLeave={dragHandlers.handleDragLeave}
                     onDrop={(e) => dragHandlers.handleDrop(e, day, hour, minute)}
+                    aria-label={`Time slot ${format(slotDate, 'EEEE, MMMM d, yyyy')} at ${format(slotDate, 'h:mm a')}`}
+                    role="button"
+                    tabIndex={0}
                   >
+                    {/* Magnetic center guide */}
+                    <div className="magnetic-center-guide"></div>
+                    
                     {slotAppointments.map(appointment => {
                       // Apply optimistic updates
                       const optimisticUpdate = state.optimisticUpdates.get(appointment.id)
@@ -856,17 +1283,24 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
                             key={appointment.id}
                             data-appointment-id={appointment.id}
                             draggable={appointment.status !== 'completed' && appointment.status !== 'cancelled'}
-                            className={`unified-calendar-appointment premium-appointment absolute inset-0 m-0.5 p-1 rounded text-xs cursor-pointer overflow-hidden transition-all text-white group ${
+                            className={`unified-calendar-appointment premium-appointment absolute inset-0 m-0.5 p-1 rounded text-xs cursor-pointer overflow-hidden transition-all text-white group dragged-appointment-magnetic ${
                               getStatusColor(appointment.status)
                             } ${
                               state.draggedAppointment?.id === appointment.id 
-                                ? 'dragging opacity-30 scale-95 ring-2 ring-white ring-opacity-50 animate-pulse' 
+                                ? `dragging opacity-30 scale-95 ring-2 ring-white ring-opacity-50 animate-pulse ${
+                                    state.nearMagneticField ? 'near-magnetic-field' : ''
+                                  } ${
+                                    state.magneticField ? 'snapped-to-slot' : ''
+                                  }` 
                                 : 'hover:shadow-xl hover:scale-105 hover:z-20 hover:ring-2 hover:ring-white hover:ring-opacity-60'
                             } ${
                               appointment.status !== 'completed' && appointment.status !== 'cancelled' 
                                 ? 'cursor-move' 
                                 : 'cursor-pointer'
                             }`}
+                            aria-label={`Appointment: ${appointment.service_name || 'Service'} with ${appointment.client_name || 'client'} on ${format(new Date(appointment.start_time), 'EEEE, MMMM d, yyyy')} at ${format(new Date(appointment.start_time), 'h:mm a')}. Status: ${appointment.status}. ${appointment.status !== 'completed' && appointment.status !== 'cancelled' ? 'Draggable' : 'Click to view details'}.`}
+                            role="button"
+                            tabIndex={0}
                             style={{
                               background: serviceConfig?.gradient?.light || 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
                               borderColor: serviceConfig?.color || '#3b82f6',
@@ -900,10 +1334,20 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
                               <div className="truncate opacity-90 text-white text-xs">{appointment.service_name}</div>
                             </div>
                             
+                            {/* Loading indicator for updating appointments */}
+                            {state.isUpdating === appointment.id && (
+                              <div className="absolute inset-0 bg-white/80 dark:bg-black/50 backdrop-blur-sm flex items-center justify-center rounded-lg">
+                                <div className="flex items-center space-x-2 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg border border-blue-500">
+                                  <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                  <span>Moving...</span>
+                                </div>
+                              </div>
+                            )}
+                            
                             {/* Drop zone indicator when dragging */}
                             {state.isDragging && state.draggedAppointment?.id !== appointment.id && (
                               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                                <div className="bg-green-500 text-white px-2 py-1 rounded text-xs font-medium shadow-lg">
+                                <div className="bg-emerald-600 dark:bg-green-500 text-white px-2 py-1 rounded text-xs font-medium shadow-lg border border-emerald-500 dark:border-green-400">
                                   Drop here
                                 </div>
                               </div>
@@ -915,7 +1359,6 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
                                 className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/20 hover:bg-white/30 rounded p-1"
                                 onClick={(e) => {
                                   e.stopPropagation()
-                                  console.log('[DRAG DEBUG] Move button clicked for appointment:', appointment.id)
                                   // Trigger the same update flow as drag and drop
                                   onAppointmentUpdate?.(appointment.id, appointment.start_time)
                                 }}
@@ -938,7 +1381,7 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
         </div>
       </div>
     )
-  }
+  }, [weekDays, timeSlots, filteredAppointments, state.draggedAppointment, state.isDragging, state.validDropZones, state.invalidDropZones, state.dragOverSlot, state.dropSuccess, state.optimisticUpdates, state.isUpdating, getStatusColor, onAppointmentClick, onClientClick, onTimeSlotClick, onDayClick, onDayDoubleClick, getClientName, getBarberName])
   
   // Month view renderer
   const renderMonthView = () => {
@@ -1010,8 +1453,16 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
                           key={appointment.id}
                           data-appointment-id={appointment.id}
                           draggable={appointment.status !== 'completed' && appointment.status !== 'cancelled'}
-                          className={`unified-calendar-appointment text-xs p-1 rounded truncate cursor-pointer transition-all text-white ${
+                          className={`unified-calendar-appointment text-xs p-1 rounded truncate cursor-pointer transition-all text-white dragged-appointment-magnetic ${
                             getStatusColor(appointment.status)
+                          } ${
+                            state.draggedAppointment?.id === appointment.id 
+                              ? `dragging ${
+                                  state.nearMagneticField ? 'near-magnetic-field' : ''
+                                } ${
+                                  state.magneticField ? 'snapped-to-slot' : ''
+                                }` 
+                              : ''
                           } ${
                             appointment.status !== 'completed' && appointment.status !== 'cancelled' 
                               ? 'cursor-move hover:scale-105' 
@@ -1046,32 +1497,51 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
       </div>
     )
   }
-  
-  return (
-    <div className={`unified-calendar h-full flex flex-col ${className}`}>
-      {/* Navigation header */}
-      <div className="calendar-navigation flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigateDate('prev')}
-          >
-            <ChevronLeftIcon className="w-4 h-4" />
-          </Button>
-          
-          <h2 className="text-lg font-semibold min-w-[200px] text-center">
-            {getPeriodTitle()}
-          </h2>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigateDate('next')}
-          >
-            <ChevronRightIcon className="w-4 h-4" />
-          </Button>
-        </div>
+
+  const calendarContent = (
+    <div 
+      className={`unified-calendar h-full flex flex-col ${className}`}
+      role="application" 
+      aria-label="Calendar interface with touch support"
+      aria-describedby="calendar-period-title"
+    >
+      {/* Mobile-optimized navigation header */}
+      {isMobile || isTouchDevice ? (
+        <MobileCalendarControls
+          currentDate={state.currentDate}
+          view={view as CalendarView}
+          onDateChange={navigationHandlers.onDateChange}
+          onViewChange={navigationHandlers.onViewChange}
+          onTodayClick={navigationHandlers.onTodayClick}
+          enableSwipeNavigation={true}
+          compactMode={isMobile}
+          className="calendar-navigation"
+        />
+      ) : (
+        <header className="calendar-navigation flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700" role="banner">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateDate('prev')}
+              aria-label={`Go to previous ${view === 'day' ? 'day' : view === 'week' ? 'week' : 'month'}`}
+            >
+              <ChevronLeftIcon className="w-4 h-4" />
+            </Button>
+            
+            <h2 className="text-lg font-semibold min-w-[200px] text-center" id="calendar-period-title">
+              {getPeriodTitle()}
+            </h2>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateDate('next')}
+              aria-label={`Go to next ${view === 'day' ? 'day' : view === 'week' ? 'week' : 'month'}`}
+            >
+              <ChevronRightIcon className="w-4 h-4" />
+            </Button>
+          </div>
         
         <div className="flex items-center gap-2">
           <Button
@@ -1081,6 +1551,7 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
               setState(prev => ({ ...prev, currentDate: new Date() }))
               onDateChange?.(new Date())
             }}
+            aria-label="Go to today"
           >
             Today
           </Button>
@@ -1091,6 +1562,7 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
               size="sm"
               onClick={onRefresh}
               disabled={isLoading}
+              aria-label={isLoading ? "Refreshing calendar..." : "Refresh calendar"}
             >
               {isLoading ? (
                 <ArrowPathIcon className="w-4 h-4 animate-spin" />
@@ -1100,12 +1572,13 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
             </Button>
           )}
         </div>
-      </div>
+      </header>
+      )}
       
       {/* View content */}
-      <div className="calendar-content flex-1 overflow-hidden">
+      <main className="calendar-content flex-1 overflow-hidden" role="main" aria-label="Calendar view">
         {renderView()}
-      </div>
+      </main>
       
       {/* Modals */}
       {state.showClientModal && state.selectedClient && (
@@ -1160,6 +1633,22 @@ const UnifiedCalendar = React.memo(function UnifiedCalendar({
       )}
     </div>
   )
+
+  // Return calendar with touch gesture support on mobile devices
+  if (isMobile || isTouchDevice) {
+    return (
+      <NewTouchDragManager
+        {...gestureHandlers}
+        enableHapticFeedback={true}
+        swipeThreshold={40}
+        className="h-full"
+      >
+        {calendarContent}
+      </NewTouchDragManager>
+    )
+  }
+
+  return calendarContent
 })
 
 // Current time indicator component

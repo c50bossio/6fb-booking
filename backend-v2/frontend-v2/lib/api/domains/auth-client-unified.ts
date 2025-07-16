@@ -6,6 +6,7 @@
 
 import { UnifiedAPIClient } from '../unified-client'
 import { RETRY_PRESETS } from '../types/common'
+import { setTokens as setTokenManagerTokens } from '../../tokenManager'
 
 // Import types from existing auth client for compatibility
 import type {
@@ -109,7 +110,7 @@ export class UnifiedAuthClient extends UnifiedAPIClient {
         tags: { 'auth.action': 'login' }
       })
 
-      // Store tokens and user data
+      // Store tokens in both auth systems for compatibility
       const authManager = this.getAuthManager()
       authManager.setTokens({
         accessToken: response.data.access_token,
@@ -117,8 +118,17 @@ export class UnifiedAuthClient extends UnifiedAPIClient {
         tokenType: response.data.token_type || 'Bearer'
       })
 
+      // ALSO store in Token Manager (the system used by the rest of the app)
+      setTokenManagerTokens({
+        access_token: response.data.access_token,
+        refresh_token: response.data.refresh_token,
+        token_type: response.data.token_type || 'Bearer'
+      })
+
       if (response.data.user) {
         authManager.setUser(response.data.user)
+        // Also store user data in localStorage for compatibility
+        localStorage.setItem('user_data', JSON.stringify(response.data.user))
       }
 
       return response.data

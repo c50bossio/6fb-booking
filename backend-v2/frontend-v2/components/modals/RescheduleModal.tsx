@@ -19,7 +19,7 @@ import { Modal, ModalBody, ModalFooter } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Input, Textarea } from '@/components/ui/Input'
 import { Switch } from '@/components/ui/switch'
-import { ButtonLoading } from '@/components/ui/LoadingStates'
+import { LoadingButton } from '@/components/ui/LoadingSystem'
 import { ErrorDisplay } from '@/components/ui/ErrorStates'
 import { 
   SERVICE_STYLES, 
@@ -672,12 +672,12 @@ export default function RescheduleModal({
               Cancel
             </Button>
             
-            <Button
+            <LoadingButton
               ref={submitButtonRef}
               onClick={handleSubmit}
               disabled={!newDate || !newTime || Object.keys(errors).length > 0}
-              variant="primary"
-              size="lg"
+              loading={loading}
+              loadingText="Rescheduling..."
               className={cn(
                 "px-8 min-w-[140px]",
                 `bg-gradient-to-r ${serviceConfig.gradient.from} ${serviceConfig.gradient.to}`,
@@ -685,9 +685,8 @@ export default function RescheduleModal({
               )}
               aria-describedby="submit-help"
             >
-              {loading && <ButtonLoading size="sm" />}
               Reschedule
-            </Button>
+            </LoadingButton>
           </div>
           <p id="submit-help" className="sr-only">
             Press Ctrl+Enter to quickly submit the form

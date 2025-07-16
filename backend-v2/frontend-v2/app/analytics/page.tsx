@@ -6,16 +6,20 @@ import { getProfile, getDashboardAnalytics, getEnterpriseAnalytics, type User } 
 import { AnalyticsLayout } from '@/components/analytics/AnalyticsLayout'
 import { DateRangeSelector, DateRangePreset } from '@/components/analytics/shared/DateRangeSelector'
 import { SkeletonStats, SkeletonCard } from '@/components/ui/skeleton-loader'
-import { PageLoading } from '@/components/ui/LoadingStates'
+import { PageLoading } from '@/components/ui/LoadingSystem'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import AIInsightsPanel from '@/components/ai/AIInsightsPanel'
+import AnalyticsErrorBoundary from '@/components/analytics/AnalyticsErrorBoundary'
 
-// Role-based view components
-import { BarberAnalyticsView } from '@/components/analytics/views/BarberAnalyticsView'
-import { ManagerAnalyticsView } from '@/components/analytics/views/ManagerAnalyticsView'
-import { EnterpriseAnalyticsView } from '@/components/analytics/views/EnterpriseAnalyticsView'
+// Import lazy components for better bundle splitting
+import { LazyComponents } from '@/lib/lazy-loading'
 
-// Lazy load specialized views
+// Lazy load role-based view components for better performance
+const BarberAnalyticsView = React.lazy(() => import('@/components/analytics/views/BarberAnalyticsView'))
+const ManagerAnalyticsView = React.lazy(() => import('@/components/analytics/views/ManagerAnalyticsView'))
+const EnterpriseAnalyticsView = React.lazy(() => import('@/components/analytics/views/EnterpriseAnalyticsView'))
+
+// Lazy load specialized views with optimized loading states
 const RevenueAnalyticsSection = React.lazy(() => import('@/components/analytics/sections/RevenueAnalyticsSection'))
 const ClientAnalyticsSection = React.lazy(() => import('@/components/analytics/sections/ClientAnalyticsSection'))
 const MarketingAnalyticsSection = React.lazy(() => import('@/components/analytics/sections/MarketingAnalyticsSection'))
@@ -175,61 +179,83 @@ function UnifiedAnalyticsContent() {
         // Role-based overview
         switch (analyticsData.type) {
           case 'enterprise':
-            return <EnterpriseAnalyticsView data={analyticsData} />
+            return (
+              <AnalyticsErrorBoundary>
+                <EnterpriseAnalyticsView data={analyticsData} />
+              </AnalyticsErrorBoundary>
+            )
           case 'manager':
-            return <ManagerAnalyticsView data={analyticsData} />
+            return (
+              <AnalyticsErrorBoundary>
+                <ManagerAnalyticsView data={analyticsData} />
+              </AnalyticsErrorBoundary>
+            )
           case 'barber':
-            return <BarberAnalyticsView data={analyticsData} />
+            return (
+              <AnalyticsErrorBoundary>
+                <BarberAnalyticsView data={analyticsData} />
+              </AnalyticsErrorBoundary>
+            )
           default:
             return <div>Unknown analytics view type</div>
         }
       case 'revenue':
         return (
-          <Suspense fallback={<PageLoading title="Loading revenue analytics..." />}>
-            <RevenueAnalyticsSection 
-              data={analyticsData.raw} 
-              userRole={user.role} 
-              dateRange={{ startDate, endDate }}
-            />
-          </Suspense>
+          <AnalyticsErrorBoundary>
+            <Suspense fallback={<PageLoading title="Loading revenue analytics..." />}>
+              <RevenueAnalyticsSection 
+                data={analyticsData.raw} 
+                userRole={user.role} 
+                dateRange={{ startDate, endDate }}
+              />
+            </Suspense>
+          </AnalyticsErrorBoundary>
         )
       case 'clients':
         return (
-          <Suspense fallback={<PageLoading title="Loading client analytics..." />}>
-            <ClientAnalyticsSection 
-              data={analyticsData.raw} 
-              userRole={user.role}
-              dateRange={{ startDate, endDate }}
-            />
-          </Suspense>
+          <AnalyticsErrorBoundary>
+            <Suspense fallback={<PageLoading title="Loading client analytics..." />}>
+              <ClientAnalyticsSection 
+                data={analyticsData.raw} 
+                userRole={user.role}
+                dateRange={{ startDate, endDate }}
+              />
+            </Suspense>
+          </AnalyticsErrorBoundary>
         )
       case 'marketing':
         return (
-          <Suspense fallback={<PageLoading title="Loading marketing analytics..." />}>
-            <MarketingAnalyticsSection 
-              userRole={user.role}
-              dateRange={{ startDate, endDate }}
-            />
-          </Suspense>
+          <AnalyticsErrorBoundary>
+            <Suspense fallback={<PageLoading title="Loading marketing analytics..." />}>
+              <MarketingAnalyticsSection 
+                userRole={user.role}
+                dateRange={{ startDate, endDate }}
+              />
+            </Suspense>
+          </AnalyticsErrorBoundary>
         )
       case 'reviews':
         return (
-          <Suspense fallback={<PageLoading title="Loading review analytics..." />}>
-            <ReviewsAnalyticsSection 
-              userRole={user.role}
-              dateRange={{ startDate, endDate }}
-            />
-          </Suspense>
+          <AnalyticsErrorBoundary>
+            <Suspense fallback={<PageLoading title="Loading review analytics..." />}>
+              <ReviewsAnalyticsSection 
+                userRole={user.role}
+                dateRange={{ startDate, endDate }}
+              />
+            </Suspense>
+          </AnalyticsErrorBoundary>
         )
       case 'productivity':
         return (
-          <Suspense fallback={<PageLoading title="Loading productivity analytics..." />}>
-            <ProductivityAnalyticsSection 
-              data={analyticsData.raw}
-              userRole={user.role}
-              dateRange={{ startDate, endDate }}
-            />
-          </Suspense>
+          <AnalyticsErrorBoundary>
+            <Suspense fallback={<PageLoading title="Loading productivity analytics..." />}>
+              <ProductivityAnalyticsSection 
+                data={analyticsData.raw}
+                userRole={user.role}
+                dateRange={{ startDate, endDate }}
+              />
+            </Suspense>
+          </AnalyticsErrorBoundary>
         )
       default:
         return <div>Invalid tab selected</div>
@@ -255,7 +281,9 @@ function UnifiedAnalyticsContent() {
     >
       {/* AI Insights Panel - Always visible at top */}
       <div className="mb-6">
-        <AIInsightsPanel userId={user.id} />
+        <AnalyticsErrorBoundary>
+          <AIInsightsPanel userId={user.id} />
+        </AnalyticsErrorBoundary>
       </div>
 
       {/* Tabbed Analytics Content */}

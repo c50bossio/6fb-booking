@@ -55,7 +55,7 @@ export default function RegisterPage() {
           terms: data.acceptTerms,
           privacy: data.acceptTerms,
           marketing: data.acceptMarketing,
-          testData: false
+          testData: data.acceptTestData || false
         }
       }
 

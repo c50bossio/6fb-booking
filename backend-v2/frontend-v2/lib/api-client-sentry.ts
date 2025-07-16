@@ -380,8 +380,17 @@ export const authApi = {
   },
 
   refreshToken: async () => {
+    // Get refresh token from storage
+    const refreshToken = typeof window !== 'undefined' 
+      ? localStorage.getItem('refresh_token') 
+      : null
+    
+    if (!refreshToken) {
+      throw new Error('No refresh token available')
+    }
+    
     return api.post('/api/v1/auth/refresh',
-      {},
+      { refresh_token: refreshToken },
       {
         feature: 'auth',
         tags: { 'auth.action': 'refresh_token' },

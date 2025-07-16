@@ -24,6 +24,7 @@ interface SimpleFormData {
   businessType: 'individual' | 'shop' | 'skip'
   acceptTerms: boolean
   acceptMarketing: boolean
+  acceptTestData: boolean
 }
 
 export function SimpleRegistration({ onComplete, loading, error }: SimpleRegistrationProps) {
@@ -37,7 +38,8 @@ export function SimpleRegistration({ onComplete, loading, error }: SimpleRegistr
     businessName: '',
     businessType: 'individual',
     acceptTerms: false,
-    acceptMarketing: false
+    acceptMarketing: false,
+    acceptTestData: false
   })
 
   const updateFormData = (field: keyof SimpleFormData, value: any) => {
@@ -79,6 +81,7 @@ export function SimpleRegistration({ onComplete, loading, error }: SimpleRegistr
       serviceTemplate: formData.businessType === 'shop' ? 'premium-salon' : 'basic-barber',
       acceptTerms: formData.acceptTerms,
       acceptMarketing: formData.acceptMarketing,
+      acceptTestData: formData.acceptTestData,
       referralCode: '',
       timezone: 'America/New_York'
     }
@@ -373,6 +376,22 @@ export function SimpleRegistration({ onComplete, loading, error }: SimpleRegistr
                 />
                 <div id="marketing-description" className="text-sm text-gray-600 dark:text-gray-400">
                   Send me tips, updates, and special offers to help grow my business
+                </div>
+              </label>
+            </div>
+
+            <div>
+              <label className="flex items-start space-x-3">
+                <input
+                  id="accept-test-data"
+                  type="checkbox"
+                  checked={formData.acceptTestData}
+                  onChange={(e) => updateFormData('acceptTestData', e.target.checked)}
+                  className="mt-1 text-primary-600 focus:ring-primary-500"
+                  aria-describedby="test-data-description"
+                />
+                <div id="test-data-description" className="text-sm text-gray-600 dark:text-gray-400">
+                  <span className="font-medium text-blue-600 dark:text-blue-400">🚀 Demo Mode:</span> Include sample appointments, clients, and services to explore the platform immediately
                 </div>
               </label>
             </div>

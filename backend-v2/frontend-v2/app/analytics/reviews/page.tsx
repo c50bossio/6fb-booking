@@ -8,7 +8,7 @@ import { AnalyticsCardGrid } from '@/components/analytics/shared/AnalyticsCard'
 import { DateRangeSelector, DateRangePreset } from '@/components/analytics/shared/DateRangeSelector'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/Button'
-import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
+import { PageLoading, ErrorDisplay } from '@/components/ui/LoadingSystem'
 import { 
   StarIcon,
   ChatBubbleLeftEllipsisIcon,

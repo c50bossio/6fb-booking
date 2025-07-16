@@ -334,14 +334,46 @@ export class RequestBatcher {
       },
     }
 
-    const response = await fetch(`${API_URL}${endpoint}`, config)
-    
-    if (!response.ok) {
-      const errorData = await response.text()
-      throw new Error(`HTTP ${response.status}: ${errorData}`)
-    }
+    try {
+      const response = await fetch(`${API_URL}${endpoint}`, config)
+      
+      if (!response.ok) {
+        const errorData = await response.text()
+        
+        // Handle specific error types
+        if (response.status === 401) {
+          // Authentication error - try to refresh token
+          console.warn('Authentication failed, token may be expired')
+          throw new Error(`Authentication failed: ${errorData}`)
+        } else if (response.status === 403) {
+          // Authorization error
+          console.warn('Access denied for endpoint:', endpoint)
+          throw new Error(`Access denied: ${errorData}`)
+        } else if (response.status === 404) {
+          // Not found error
+          console.warn('Endpoint not found:', endpoint)
+          throw new Error(`Endpoint not found: ${errorData}`)
+        } else {
+          // Other HTTP errors
+          throw new Error(`HTTP ${response.status}: ${errorData}`)
+        }
+      }
 
-    return response.json()
+      return response.json()
+    } catch (error) {
+      // Handle network errors (CORS, connection issues, etc.)
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        console.error('Network error - possible CORS issue:', {
+          endpoint,
+          apiUrl: API_URL,
+          hasToken: !!token
+        })
+        throw new Error('Network connection failed. Please check your internet connection and try again.')
+      }
+      
+      // Re-throw other errors
+      throw error
+    }
   }
 
   // Cache management

@@ -221,6 +221,7 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
             <input
               type="text"
               placeholder="Search bookings, clients..."
+              aria-label="Search bookings and clients"
               className={`
                 block w-full pl-10 pr-3 py-2 border ${colors.border.default} rounded-ios-lg
                 ${colors.background.primary} ${colors.text.primary}
@@ -250,6 +251,7 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
                   ${showShareMenu ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : ''}
                 `}
                 title="Booking Links"
+                aria-label="Booking Links"
               >
                 <LinkIcon className="w-5 h-5" />
               </button>
@@ -352,10 +354,11 @@ export function Header({ user, breadcrumbs, onMenuToggle, showMenuToggle = false
                 hover:${colors.background.secondary} hover:${colors.text.primary}
                 transition-colors duration-200
               `}
+              aria-label="Notifications"
             >
               <BellIcon className="w-5 h-5" />
               {/* Notification badge */}
-              <span className="absolute top-1 right-1 w-2 h-2 bg-error-500 rounded-full"></span>
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-700 rounded-full" aria-label="New notifications"></span>
             </button>
 
             {/* Notification Dropdown with Portal */}

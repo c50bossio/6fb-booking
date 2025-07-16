@@ -111,14 +111,14 @@ def enhance_appointments_list(appointments: List[models.Appointment], db: Sessio
             "client_id": appointment.client_id,
             "service_id": appointment.service_id,
             "service_name": appointment.service_name,
-            "start_time": appointment.start_time.isoformat() if appointment.start_time else None,
+            "start_time": appointment.start_time,
             "duration_minutes": appointment.duration_minutes,
             "price": appointment.price,
             "status": appointment.status,
             "notes": appointment.notes,
             "recurring_pattern_id": appointment.recurring_pattern_id,
             "google_event_id": appointment.google_event_id,
-            "created_at": appointment.created_at.isoformat() if appointment.created_at else None,
+            "created_at": appointment.created_at,
         }
         
         # Add barber name from cached data

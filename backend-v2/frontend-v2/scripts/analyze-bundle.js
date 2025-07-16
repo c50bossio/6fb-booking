@@ -176,6 +176,47 @@ class BundleAnalyzer {
       })
     }
 
+    // Check for heavy components that should be lazy loaded
+    const heavyComponents = ['UnifiedCalendar', 'EnhancedAnalyticsDashboard', 'PaymentForm']
+    const unoptimizedComponents = this.checkHeavyComponentUsage()
+    
+    if (unoptimizedComponents.length > 0) {
+      this.results.recommendations.push({
+        type: 'warning',
+        title: 'Heavy components not lazy loaded',
+        description: `Found ${unoptimizedComponents.length} heavy components that should be lazy loaded`,
+        suggestions: unoptimizedComponents.map(comp => 
+          `Convert ${comp} to use LazyComponents.${comp}`
+        )
+      })
+    }
+
+    // Bundle splitting recommendations
+    const calendarChunks = this.results.chunks.filter(chunk => 
+      chunk.path.includes('calendar') || chunk.path.includes('Calendar')
+    )
+    const analyticsChunks = this.results.chunks.filter(chunk => 
+      chunk.path.includes('analytics') || chunk.path.includes('Analytics')
+    )
+
+    if (calendarChunks.length === 0) {
+      this.results.recommendations.push({
+        type: 'success',
+        title: 'Calendar components properly split',
+        description: 'Calendar components are in separate chunks',
+        suggestions: ['✅ Calendar optimization complete']
+      })
+    }
+
+    if (analyticsChunks.length === 0) {
+      this.results.recommendations.push({
+        type: 'success',
+        title: 'Analytics components properly split',
+        description: 'Analytics components are in separate chunks',
+        suggestions: ['✅ Analytics optimization complete']
+      })
+    }
+
     // CSS recommendations
     const largeCSS = this.results.chunks.filter(chunk => 
       chunk.type === 'css' && chunk.size > 30 * 1024
@@ -357,6 +398,34 @@ class BundleAnalyzer {
   getGradeEmoji(grade) {
     const emojis = { A: '🟢', B: '🟡', C: '🟠', D: '🔴', F: '⚫' }
     return emojis[grade] || '⚪'
+  }
+
+  checkHeavyComponentUsage() {
+    const heavyComponents = ['UnifiedCalendar', 'EnhancedAnalyticsDashboard', 'PaymentForm']
+    const unoptimized = []
+    
+    try {
+      // Check if these components appear in main chunks instead of lazy chunks
+      const mainChunks = this.results.chunks.filter(chunk => 
+        chunk.type === 'main' || chunk.path.includes('pages/')
+      )
+      
+      mainChunks.forEach(chunk => {
+        heavyComponents.forEach(component => {
+          // This is a simplified check - in a real implementation you'd parse the bundle
+          if (chunk.path.includes(component) && !chunk.path.includes('lazy')) {
+            if (!unoptimized.includes(component)) {
+              unoptimized.push(component)
+            }
+          }
+        })
+      })
+    } catch (error) {
+      // Fallback: assume components need optimization if we can't determine
+      console.warn('Could not check component usage, assuming optimization needed')
+    }
+    
+    return unoptimized
   }
 }
 

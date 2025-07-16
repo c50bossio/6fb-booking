@@ -7,7 +7,11 @@ export const formatters = {
    * Format a number as USD currency
    */
   currency: (amount: number | null | undefined, options?: { showCents?: boolean }) => {
-    if (amount === null || amount === undefined) return '$0'
+    if (amount === null || amount === undefined || isNaN(amount)) return '$0'
+    
+    // Safely convert to number
+    const numAmount = Number(amount)
+    if (isNaN(numAmount)) return '$0'
     
     const formatter = new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -16,28 +20,36 @@ export const formatters = {
       maximumFractionDigits: options?.showCents !== false ? 2 : 0,
     })
     
-    return formatter.format(amount)
+    return formatter.format(numAmount)
   },
 
   /**
    * Format a number as a percentage
    */
   percentage: (value: number | null | undefined, decimals: number = 1) => {
-    if (value === null || value === undefined) return '0%'
+    if (value === null || value === undefined || isNaN(value)) return '0%'
     
-    return `${value.toFixed(decimals)}%`
+    // Safely convert to number and apply toFixed
+    const numValue = Number(value)
+    if (isNaN(numValue)) return '0%'
+    
+    return `${numValue.toFixed(decimals)}%`
   },
 
   /**
    * Format a number with commas for thousands
    */
   number: (value: number | null | undefined, decimals: number = 0) => {
-    if (value === null || value === undefined) return '0'
+    if (value === null || value === undefined || isNaN(value)) return '0'
+    
+    // Safely convert to number
+    const numValue = Number(value)
+    if (isNaN(numValue)) return '0'
     
     return new Intl.NumberFormat('en-US', {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
-    }).format(value)
+    }).format(numValue)
   },
 
   /**

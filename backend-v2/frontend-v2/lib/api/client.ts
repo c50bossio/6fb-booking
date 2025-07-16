@@ -2,14 +2,17 @@
  * API Client
  * 
  * Provides a unified HTTP client for API requests
+ * UPDATED: Now uses Token Manager for consistent token handling
  */
+
+import { getValidToken } from '../tokenManager'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 interface RequestOptions {
   method?: string
   headers?: Record<string, string>
-  body?: any
+  body?: Record<string, unknown> | string | FormData | null
 }
 
 class APIClient {
@@ -33,8 +36,8 @@ class APIClient {
       config.body = JSON.stringify(options.body)
     }
 
-    // Add auth token if available
-    const token = localStorage.getItem('access_token')
+    // Use Token Manager for consistent token handling (eliminates localStorage conflicts)
+    const token = await getValidToken()
     if (token) {
       config.headers = {
         ...config.headers,

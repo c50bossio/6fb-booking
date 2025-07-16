@@ -133,7 +133,7 @@ function RatingDistribution({ distribution, totalReviews }: RatingDistributionPr
                 
                 <div className="flex items-center space-x-2 w-20 text-sm">
                   <span className="font-medium">{count}</span>
-                  <span className="text-gray-500">({percentage.toFixed(1)}%)</span>
+                  <span className="text-gray-500">({typeof percentage === 'number' ? percentage.toFixed(1) : '0.0'}%)</span>
                 </div>
               </div>
             )
@@ -187,7 +187,7 @@ function PlatformBreakdown({ platformData }: PlatformBreakdownProps) {
                     <span className="text-gray-500">Average Rating:</span>
                     <div className="flex items-center space-x-1 mt-1">
                       <StarIconSolid className="w-4 h-4 text-yellow-400" />
-                      <span className="font-medium">{averageRating.toFixed(1)}</span>
+                      <span className="font-medium">{typeof averageRating === 'number' ? averageRating.toFixed(1) : '0.0'}</span>
                     </div>
                   </div>
                   
@@ -294,7 +294,7 @@ function ServicesMentioned({ services }: ServicesProps) {
                   <div className="flex items-center">
                     <StarIconSolid className="w-4 h-4 text-yellow-400" />
                     <span className="ml-1 text-sm font-medium">
-                      {rating.toFixed(1)}
+                      {typeof rating === 'number' ? rating.toFixed(1) : '0.0'}
                     </span>
                   </div>
                   <span className="text-sm text-gray-500">
@@ -354,7 +354,7 @@ export default function ReviewAnalyticsPage() {
 
     return {
       responseTimeDisplay,
-      monthChange: monthChange.toFixed(1),
+      monthChange: typeof monthChange === 'number' ? monthChange.toFixed(1) : '0.0',
       monthChangeType: monthChange > 0 ? 'increase' : monthChange < 0 ? 'decrease' : 'neutral'
     }
   }, [analytics])
@@ -465,9 +465,9 @@ export default function ReviewAnalyticsPage() {
             
             <MetricCard
               title="Average Rating"
-              value={`${analytics.average_rating.toFixed(1)} ⭐`}
+              value={`${typeof analytics.average_rating === 'number' ? analytics.average_rating.toFixed(1) : '0.0'} ⭐`}
               icon={<StarIcon className="w-5 h-5" />}
-              description={`${analytics.positive_percentage.toFixed(1)}% positive reviews`}
+              description={`${typeof analytics.positive_percentage === 'number' ? analytics.positive_percentage.toFixed(1) : '0.0'}% positive reviews`}
             />
             
             <MetricCard
@@ -556,7 +556,7 @@ export default function ReviewAnalyticsPage() {
                         : 'text-gray-600'
                   }`}>
                     {analytics.month_over_month_change > 0 ? '+' : ''}
-                    {analytics.month_over_month_change.toFixed(1)}%
+                    {typeof analytics.month_over_month_change === 'number' ? analytics.month_over_month_change.toFixed(1) : '0.0'}%
                   </span>
                 </div>
               </CardContent>

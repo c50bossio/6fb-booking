@@ -25,22 +25,41 @@ export default function AdminPage() {
         }
         setUser(userProfile)
 
-        // Load current booking settings
-        const currentSettings = await getBookingSettings()
-        setSettings(currentSettings)
-        setFormData({
-          business_name: currentSettings.business_name,
-          min_lead_time_minutes: currentSettings.min_lead_time_minutes,
-          max_advance_days: currentSettings.max_advance_days,
-          same_day_cutoff_time: currentSettings.same_day_cutoff_time || '',
-          business_start_time: currentSettings.business_start_time,
-          business_end_time: currentSettings.business_end_time,
-          slot_duration_minutes: currentSettings.slot_duration_minutes,
-          show_soonest_available: currentSettings.show_soonest_available,
-          allow_same_day_booking: currentSettings.allow_same_day_booking,
-          require_advance_booking: currentSettings.require_advance_booking,
-          business_type: currentSettings.business_type
-        })
+        // Load current booking settings with error handling
+        try {
+          const currentSettings = await getBookingSettings()
+          setSettings(currentSettings)
+          setFormData({
+            business_name: currentSettings.business_name || '',
+            min_lead_time_minutes: currentSettings.min_lead_time_minutes || 60,
+            max_advance_days: currentSettings.max_advance_days || 30,
+            same_day_cutoff_time: currentSettings.same_day_cutoff_time || '',
+            business_start_time: currentSettings.business_start_time || '09:00',
+            business_end_time: currentSettings.business_end_time || '18:00',
+            slot_duration_minutes: currentSettings.slot_duration_minutes || 30,
+            show_soonest_available: currentSettings.show_soonest_available || false,
+            allow_same_day_booking: currentSettings.allow_same_day_booking || true,
+            require_advance_booking: currentSettings.require_advance_booking || false,
+            business_type: currentSettings.business_type || 'general'
+          })
+        } catch (settingsError) {
+          console.warn('Failed to load booking settings, using defaults:', settingsError)
+          // Set reasonable defaults when backend is unavailable
+          setFormData({
+            business_name: '',
+            min_lead_time_minutes: 60,
+            max_advance_days: 30,
+            same_day_cutoff_time: '',
+            business_start_time: '09:00',
+            business_end_time: '18:00',
+            slot_duration_minutes: 30,
+            show_soonest_available: false,
+            allow_same_day_booking: true,
+            require_advance_booking: false,
+            business_type: 'general'
+          })
+          setError('Could not load current settings. Using default values. Changes will be saved when you submit.')
+        }
       } catch (err: any) {
         setError(err.message || 'Failed to load data')
         if (err.message.includes('401') || err.message.includes('Unauthorized')) {
@@ -114,11 +133,19 @@ export default function AdminPage() {
         throw new Error(validationError)
       }
 
-      // Prepare update data (remove empty strings)
+      // Prepare update data (remove empty strings and validate types)
       const updateData: BookingSettingsUpdate = {}
       Object.entries(formData).forEach(([key, value]) => {
         if (value !== '' && value !== null && value !== undefined) {
-          (updateData as any)[key] = value
+          // Convert numeric fields to proper integers
+          if (key === 'min_lead_time_minutes' || key === 'max_advance_days' || key === 'slot_duration_minutes') {
+            const numValue = typeof value === 'string' ? parseInt(value) : value
+            if (!isNaN(numValue)) {
+              (updateData as any)[key] = numValue
+            }
+          } else {
+            (updateData as any)[key] = value
+          }
         }
       })
 
@@ -358,7 +385,7 @@ export default function AdminPage() {
                       type="number"
                       min="0"
                       value={formData.min_lead_time_minutes || ''}
-                      onChange={(e) => handleInputChange('min_lead_time_minutes', parseInt(e.target.value))}
+                      onChange={(e) => handleInputChange('min_lead_time_minutes', e.target.value ? parseInt(e.target.value) : '')}
                       className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., 60"
                     />
@@ -371,7 +398,7 @@ export default function AdminPage() {
                       type="number"
                       min="1"
                       value={formData.max_advance_days || ''}
-                      onChange={(e) => handleInputChange('max_advance_days', parseInt(e.target.value))}
+                      onChange={(e) => handleInputChange('max_advance_days', e.target.value ? parseInt(e.target.value) : '')}
                       className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., 30"
                     />

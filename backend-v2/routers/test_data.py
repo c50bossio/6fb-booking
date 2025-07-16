@@ -1,15 +1,20 @@
 """
 Test Data API Router
 """
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
-from typing import Dict, Any
+from typing import Dict, Any, Optional
+from pydantic import BaseModel
 
 from database import get_db
 from dependencies import get_current_user
 from services import test_data_service
 import models
 import schemas
+
+class TestDataRefreshRequest(BaseModel):
+    customization: Optional[Dict[str, Any]] = None
+    include_enterprise: Optional[bool] = False
 
 router = APIRouter(
     prefix="/test-data",
@@ -18,15 +23,23 @@ router = APIRouter(
 
 @router.post("/create", response_model=Dict[str, Any])
 def create_test_data(
-    include_enterprise: bool = False,
+    create_request: TestDataRefreshRequest = Body(default=TestDataRefreshRequest()),
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Create test data for the current user
     
-    Args:
+    Request body can include:
+        customization: Optional customization settings  
         include_enterprise: If True, creates multi-location enterprise test data
     """
+    # Extract parameters from request body
+    include_enterprise = create_request.include_enterprise or False
+    
+    # Check if customization includes enterprise settings
+    if create_request.customization and create_request.customization.get("include_enterprise", False):
+        include_enterprise = True
+    
     result = test_data_service.create_test_data_for_user(db, current_user.id, include_enterprise=include_enterprise)
     
     if not result["success"]:
@@ -49,15 +62,23 @@ def delete_test_data(
 
 @router.post("/refresh", response_model=Dict[str, Any])
 def refresh_test_data(
-    include_enterprise: bool = False,
+    refresh_request: TestDataRefreshRequest = Body(default=TestDataRefreshRequest()),
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Delete and recreate test data (reset to default state)
     
-    Args:
+    Request body can include:
+        customization: Optional customization settings
         include_enterprise: If True, creates multi-location enterprise test data
     """
+    # Extract parameters from request body
+    include_enterprise = refresh_request.include_enterprise or False
+    
+    # Check if customization includes enterprise settings
+    if refresh_request.customization and refresh_request.customization.get("include_enterprise", False):
+        include_enterprise = True
+    
     # First delete existing test data
     delete_result = test_data_service.delete_test_data_for_user(db, current_user.id)
     if not delete_result["success"]:

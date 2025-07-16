@@ -1,6 +1,7 @@
 import { validateAPIRequest, validateAPIResponse, APIPerformanceMonitor, retryOperation, defaultRetryConfigs } from './apiUtils'
 import { authClient } from './api/domains/auth-client-unified'
 import { toast } from '@/hooks/use-toast'
+import { getValidToken } from './tokenManager'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -12,7 +13,13 @@ export interface WebhookEndpoint {
   description?: string
   events: string[]
   auth_type: 'none' | 'bearer' | 'basic' | 'hmac' | 'api_key'
-  auth_config?: Record<string, any>
+  auth_config?: {
+    token?: string
+    username?: string
+    password?: string
+    api_key?: string
+    secret?: string
+  }
   headers?: Record<string, string>
   is_active: boolean
   max_retries: number
@@ -39,7 +46,7 @@ export interface WebhookLog {
   request_url: string
   request_method: string
   request_headers?: Record<string, string>
-  request_body?: any
+  request_body?: Record<string, unknown> | string | null
   response_headers?: Record<string, string>
   response_body?: string
   response_time_ms?: number
@@ -77,7 +84,7 @@ export interface WebhookStats {
 }
 
 // Enhanced fetch wrapper with validation, monitoring, and automatic token refresh
-async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = true): Promise<any> {
+async function fetchAPI<T = unknown>(endpoint: string, options: RequestInit = {}, retry = true): Promise<T> {
   // Start performance monitoring
   const endTiming = APIPerformanceMonitor.startTiming(endpoint)
   
@@ -96,7 +103,9 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}, retry = tru
       // If JSON parsing fails, continue (might be form data or other format)
     }
   }
-  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
+  
+  // Skip token validation for auth endpoints to prevent circular dependency
+  const token = endpoint.includes('/auth/') ? null : await getValidToken()
   
   const config: RequestInit = {
     ...options,
@@ -246,14 +255,8 @@ export async function login(email: string, password: string) {
     const result = await authClient.login({ email, password });
     console.log('✅ Login successful with unified client:', result);
     
-    // The unified client handles token storage automatically,
-    // but we also need to set cookies for middleware compatibility
-    if (result.access_token) {
-      // Also set as httpOnly:false cookie so middleware can detect auth
-      // Note: httpOnly:false is needed because we're setting from client-side
-      document.cookie = `token=${result.access_token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`
-      console.log('✅ Additional cookie set for middleware compatibility');
-    }
+    // Token Manager handles all token storage including cookies automatically
+    // No need for duplicate cookie setting
     
     return result;
   } catch (error: any) {
@@ -265,20 +268,13 @@ export async function login(email: string, password: string) {
 export async function logout() {
   console.log('🚪 Logging out with unified client...');
   try {
-    // Use unified auth client for logout (handles token cleanup automatically)
+    // Use unified auth client for logout (handles all token cleanup automatically)
     await authClient.logout();
     console.log('✅ Logout successful with unified client');
-    
-    // Also clear cookie for middleware compatibility
-    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
-    console.log('✅ Cookie cleared for middleware compatibility');
   } catch (error: any) {
     console.error('❌ Logout failed with unified client:', error);
-    // Even if logout API fails, clear local storage and cookies
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
-    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=strict'
-    console.log('✅ Local storage and cookies cleared manually');
+    // Note: authClient.logout() handles token cleanup even if API call fails
+    // Token Manager ensures consistent cleanup
   }
 }
 
@@ -5148,9 +5144,10 @@ export const importsAPI = {
     
     // If progress tracking is needed, use XMLHttpRequest
     if (onProgress) {
-      return new Promise((resolve, reject) => {
+      return new Promise(async (resolve, reject) => {
         const xhr = new XMLHttpRequest()
-        const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
+        // Skip token validation for auth endpoints to prevent circular dependency
+        const token = endpoint.includes('/auth/') ? null : await getValidToken()
         
         xhr.upload.addEventListener('progress', (e) => {
           if (e.lengthComputable) {

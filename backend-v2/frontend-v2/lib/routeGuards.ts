@@ -127,8 +127,33 @@ export function isUser(user: User | null): boolean {
 export function getDefaultDashboard(user: User | null): string {
   if (!user) return '/login'
   
-  const role = user.role as UserRole
-  switch (role) {
+  // Check unified_role first (new system), fall back to legacy role
+  const unifiedRole = user.unified_role
+  const legacyRole = user.role as UserRole
+  
+  // Handle unified roles
+  if (unifiedRole) {
+    switch (unifiedRole) {
+      case 'SUPER_ADMIN':
+      case 'PLATFORM_ADMIN':
+      case 'ENTERPRISE_OWNER':
+        return '/admin'
+      case 'SHOP_OWNER':
+      case 'INDIVIDUAL_BARBER':
+      case 'SHOP_MANAGER':
+      case 'BARBER':
+        return '/dashboard'
+      case 'CLIENT':
+      case 'VIEWER':
+        return '/dashboard'
+      default:
+        // Fall through to legacy role check
+        break
+    }
+  }
+  
+  // Legacy role handling
+  switch (legacyRole) {
     case 'admin':
     case 'super_admin':
       return '/admin'

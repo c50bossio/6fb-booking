@@ -6,7 +6,7 @@ standardized "appointment" terminology that matches the database model.
 Designed to replace the mixed booking/appointment terminology over time.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date, datetime, time, timedelta
@@ -18,17 +18,6 @@ import models
 from database import get_db
 from routers.auth import get_current_user
 from utils.auth import require_admin_role, get_current_user_optional
-
-def require_admin_or_enterprise_owner(current_user: schemas.User = Depends(get_current_user)) -> schemas.User:
-    """Allow admin or enterprise owner access"""
-    if current_user.role == "admin":
-        return current_user
-    if hasattr(current_user, 'unified_role') and current_user.unified_role in ["enterprise_owner", "shop_owner", "super_admin"]:
-        return current_user
-    raise HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN,
-        detail="Admin or enterprise owner access required"
-    )
 from services import booking_service
 from services.appointment_enhancement import enhance_appointments_list
 from utils.rate_limit import (
@@ -39,6 +28,17 @@ from utils.rate_limit import (
     booking_cancel_rate_limit
 )
 from services.captcha_service import captcha_service
+
+def require_admin_or_enterprise_owner(current_user: schemas.User = Depends(get_current_user)) -> schemas.User:
+    """Allow admin, barber, or enterprise owner access"""
+    if current_user.role in ["admin", "barber", "super_admin"]:
+        return current_user
+    if hasattr(current_user, 'unified_role') and current_user.unified_role in ["enterprise_owner", "shop_owner", "super_admin"]:
+        return current_user
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Admin, barber, or enterprise owner access required"
+    )
 
 # Configure logger for this module
 logger = logging.getLogger(__name__)
@@ -416,7 +416,8 @@ def reschedule_appointment(
             user_id=current_user.id,
             new_date=new_date,
             new_time=new_time,
-            user_timezone=timezone
+            user_timezone=timezone,
+            current_user=current_user
         )
         if not db_appointment:
             raise HTTPException(status_code=404, detail="Appointment not found")
@@ -477,15 +478,15 @@ def get_all_appointments(
             barber_id=barber_id
         )
         
-        # Enhance appointments with barber and client names
-        enhanced_appointments = enhance_appointments_list(appointments, db)
-        
         return {
-            "appointments": enhanced_appointments,
+            "appointments": appointments,
             "total": total
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in get_all_appointments: {str(e)}", exc_info=True)
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 @router.post("/enhanced", response_model=schemas.AppointmentResponse)
 def create_enhanced_appointment(

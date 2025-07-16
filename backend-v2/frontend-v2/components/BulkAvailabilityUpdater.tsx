@@ -8,7 +8,7 @@ import {
   type BarberAvailability,
   type BarberAvailabilityCreate
 } from '@/lib/api'
-import { LoadingSkeleton, ErrorDisplay } from '@/components/LoadingStates'
+import { LoadingSkeleton, ErrorDisplay } from '@/components/ui/LoadingSystem'
 import { Button } from '@/components/ui/Button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/Input'

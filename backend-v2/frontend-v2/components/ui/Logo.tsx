@@ -76,7 +76,7 @@ export function Logo({
   if (hasError) {
     const textFallback = (
       <div 
-        className={`relative ${sizeClasses[size]} ${className} flex items-center justify-center transition-all duration-300 hover:scale-105`}
+        className={`relative ${sizeClasses[size]} ${className} flex items-center justify-center`}
         style={{
           filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.06))',
         }}
@@ -97,7 +97,7 @@ export function Logo({
   
   const logoImage = (
     <div 
-      className={`relative ${sizeClasses[size]} ${className} transition-all duration-300 hover:scale-105`}
+      className={`relative ${sizeClasses[size]} ${className}`}
       style={{
         filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.06))',
       }}

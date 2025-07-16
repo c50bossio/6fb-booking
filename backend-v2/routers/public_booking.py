@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from database import get_db
 from models.organization import Organization
 from models import User
-from schemas_new.tracking import PublicTrackingPixels
+# from schemas_new.tracking import PublicTrackingPixels
 
 router = APIRouter(
     prefix="/api/v1/public/booking",
@@ -38,7 +38,7 @@ class PublicOrganizationData(BaseModel):
     website: Optional[str] = None
     timezone: Optional[str] = "UTC"
     business_hours: Optional[Dict[str, Any]] = None
-    tracking_pixels: Optional[PublicTrackingPixels] = None
+    tracking_pixels: Optional[Dict[str, Any]] = None
 
 
 class BookingPageSettings(BaseModel):
@@ -96,15 +96,15 @@ async def get_organization_by_slug(
     
     # Create tracking pixels data
     tracking_pixels = None
-    if organization.tracking_enabled:
-        tracking_pixels = PublicTrackingPixels(
-            gtm_container_id=organization.gtm_container_id,
-            ga4_measurement_id=organization.ga4_measurement_id,
-            meta_pixel_id=organization.meta_pixel_id,
-            google_ads_conversion_id=organization.google_ads_conversion_id,
-            google_ads_conversion_label=organization.google_ads_conversion_label,
-            custom_tracking_code=organization.custom_tracking_code
-        )
+    if hasattr(organization, 'tracking_enabled') and organization.tracking_enabled:
+        tracking_pixels = {
+            "gtm_container_id": getattr(organization, 'gtm_container_id', None),
+            "ga4_measurement_id": getattr(organization, 'ga4_measurement_id', None),
+            "meta_pixel_id": getattr(organization, 'meta_pixel_id', None),
+            "google_ads_conversion_id": getattr(organization, 'google_ads_conversion_id', None),
+            "google_ads_conversion_label": getattr(organization, 'google_ads_conversion_label', None),
+            "custom_tracking_code": getattr(organization, 'custom_tracking_code', None)
+        }
     
     return PublicOrganizationData(
         id=organization.id,
@@ -123,6 +123,78 @@ async def get_organization_by_slug(
         business_hours=organization.business_hours,
         tracking_pixels=tracking_pixels
     )
+
+
+@router.get("/landing/{slug}")
+async def get_landing_page_data(
+    slug: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Get landing page data for organization by slug.
+    
+    This endpoint provides the data needed for organization landing pages.
+    It's an alias for the organization endpoint to match frontend expectations.
+    """
+    # Fetch organization by slug
+    organization = db.query(Organization).filter(
+        Organization.slug == slug,
+        Organization.is_active == True
+    ).first()
+    
+    if not organization:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Landing page not found or disabled"
+        )
+    
+    # Get primary owner/barber name
+    barber_name = None
+    if organization.primary_owner:
+        barber_name = organization.primary_owner.name
+        if not barber_name:
+            barber_name = organization.primary_owner.email.split('@')[0].title()
+    
+    # Build full address
+    address_parts = []
+    if organization.street_address:
+        address_parts.append(organization.street_address)
+    if organization.city:
+        address_parts.append(organization.city)
+    if organization.state:
+        address_parts.append(organization.state)
+    if organization.zip_code:
+        address_parts.append(organization.zip_code)
+    
+    full_address = ", ".join(address_parts) if address_parts else None
+    
+    # Create the landing page data structure expected by the frontend
+    from datetime import datetime
+    
+    return {
+        "organization_id": organization.id,
+        "organization_name": organization.name,
+        "organization_slug": organization.slug,
+        "description": organization.description,
+        "phone": organization.phone,
+        "email": organization.email,
+        "address": full_address,
+        "config": {
+            "enabled": True,
+            "logo_url": None,  # TODO: Implement logo storage
+            "primary_color": "#000000",
+            "accent_color": "#FFD700",
+            "background_preset": "gradient",
+            "custom_headline": f"Book with {barber_name or organization.name}",
+            "show_testimonials": True,
+            "testimonial_source": "google"
+        },
+        "services": [],  # TODO: Get actual services for organization
+        "testimonials": [],  # TODO: Get actual testimonials
+        "booking_url": f"/book/{organization.slug}",
+        "timezone": organization.timezone or "UTC",
+        "last_updated": datetime.now().isoformat()
+    }
 
 
 @router.get("/organization/{slug}/settings", response_model=BookingPageSettings)
@@ -243,4 +315,37 @@ async def create_public_booking(
         "status": "confirmed",
         "message": "Booking created successfully",
         "organization_id": organization.id
+    }
+
+
+@router.post("/landing/{slug}/track")
+async def track_landing_page_event(
+    slug: str,
+    tracking_data: dict,
+    db: Session = Depends(get_db)
+):
+    """
+    Track events on landing pages (page views, interactions, etc.).
+    
+    This endpoint receives tracking data from the frontend for analytics.
+    """
+    organization = db.query(Organization).filter(
+        Organization.slug == slug,
+        Organization.is_active == True
+    ).first()
+    
+    if not organization:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Organization with slug '{slug}' not found"
+        )
+    
+    # TODO: Implement actual tracking/analytics storage
+    # For now, just acknowledge the tracking request
+    
+    return {
+        "status": "tracked",
+        "event_type": tracking_data.get("event_type", "unknown"),
+        "organization_id": organization.id,
+        "timestamp": tracking_data.get("metadata", {}).get("timestamp")
     }

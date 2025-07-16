@@ -14,20 +14,16 @@ const nextConfig = {
 
   // TypeScript configuration
   typescript: {
-    // !! WARN !!
-    // Dangerously allow production builds to successfully complete even if
-    // your project has type errors.
-    // !! WARN !!
-    ignoreBuildErrors: true,
+    // Enable type checking for better code quality
+    ignoreBuildErrors: false,
   },
 
   // ESLint configuration
   eslint: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
-    ignoreDuringBuilds: true,
-    // Exclude all directories from ESLint checking
-    dirs: [],
+    // Enable ESLint during builds for code quality
+    ignoreDuringBuilds: false,
+    // Specify directories for ESLint checking
+    dirs: ['app', 'components', 'lib', 'hooks'],
   },
 
   // Environment variables
@@ -36,12 +32,76 @@ const nextConfig = {
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
   },
 
-  // Webpack configuration for better module resolution
+  // API proxy to forward requests to FastAPI backend
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/:path*`,
+      },
+    ]
+  },
+
+  // Webpack configuration for better module resolution and bundle optimization
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
     // Enhanced module resolution for Linux compatibility
     config.resolve.alias = {
       ...config.resolve.alias,
       '@': require('path').resolve(__dirname, '.'),
+    }
+
+    // Bundle optimization for better code splitting
+    if (!isServer && !dev) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            // Vendor libraries
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              priority: 10,
+              reuseExistingChunk: true,
+            },
+            // Common components shared across routes
+            common: {
+              minChunks: 2,
+              priority: 5,
+              reuseExistingChunk: true,
+              name: 'common',
+            },
+            // Calendar-specific components (heavy)
+            calendar: {
+              test: /[\\/]components[\\/](calendar|UnifiedCalendar)/,
+              name: 'calendar',
+              priority: 20,
+              reuseExistingChunk: true,
+            },
+            // Analytics components
+            analytics: {
+              test: /[\\/]components[\\/]analytics/,
+              name: 'analytics',
+              priority: 20,
+              reuseExistingChunk: true,
+            },
+            // Admin components
+            admin: {
+              test: /[\\/](app[\\/]admin|components[\\/]admin)/,
+              name: 'admin',
+              priority: 20,
+              reuseExistingChunk: true,
+            },
+            // Marketing components
+            marketing: {
+              test: /[\\/]components[\\/]marketing/,
+              name: 'marketing',
+              priority: 20,
+              reuseExistingChunk: true,
+            },
+          },
+        },
+      }
     }
     
     return config

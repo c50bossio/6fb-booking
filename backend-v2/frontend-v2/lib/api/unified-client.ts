@@ -54,8 +54,6 @@ export class UnifiedAPIClient {
         return await this.executeRequest<T>(requestId, fullUrl, endpoint, options)
       }, `${method} ${endpoint}`)
     } catch (error) {
-      endTiming()
-      
       // Enhanced error handling
       const apiError = this.enhanceError(error as Error, {
         endpoint,
@@ -64,16 +62,8 @@ export class UnifiedAPIClient {
         timestamp: new Date().toISOString()
       })
 
-      // Record error metrics
-      this.performanceMonitor.endTiming(
-        requestId,
-        endpoint,
-        method,
-        apiError.status || 0,
-        this.getRequestSize(options.body),
-        undefined,
-        options.tags
-      )
+      // Record error metrics using endTiming cleanup function
+      endTiming()
 
       throw apiError
     }

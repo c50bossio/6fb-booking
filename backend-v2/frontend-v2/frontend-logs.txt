@@ -1,0 +1,1166 @@
+
+> frontend-v2@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.30
+  - Local:        http://localhost:3000
+  - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 682ms
+ ✓ Compiled /middleware in 217ms (117 modules)
+📍 GET / [ANON]
+ ○ Compiling / ...
+🔓 Allowing access to auth page: /login
+📍 GET /login [ANON]
+ ✓ Compiled /login in 5.9s (1266 modules)
+ GET /login 200 in 5018ms
+ GET / 200 in 6083ms
+📍 GET /logos/logo-color.png [ANON]
+📍 GET /logos/logo-black.png [ANON]
+📍 GET /.well-known/appspecific/com.chrome.devtools.json [ANON]
+ ✓ Compiled /_not-found in 149ms (1254 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 230ms
+📍 GET /logos/logo-white.png [ANON]
+📍 GET /logos/logo-black.png [ANON]
+🔓 Allowing access to auth page: /login
+📍 GET /login [ANON]
+ GET /login 200 in 32ms
+📍 GET /.well-known/appspecific/com.chrome.devtools.json [ANON]
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 13ms
+📍 GET /logos/logo-black.png [ANON]
+ ✓ Compiled in 322ms (604 modules)
+📍 GET / [ANON]
+🔓 Allowing access to auth page: /login
+📍 GET /login [ANON]
+ ✓ Compiled in 311ms (602 modules)
+📍 GET / [ANON]
+🔓 Allowing access to auth page: /login
+📍 GET /login [ANON]
+ ✓ Compiled in 663ms (1266 modules)
+📍 GET / [ANON]
+🔓 Allowing access to auth page: /login
+📍 GET /login [ANON]
+ ✓ Compiled in 261ms (602 modules)
+📍 GET / [ANON]
+🔓 Allowing access to auth page: /login
+📍 GET /login [ANON]
+ ✓ Compiled in 286ms (602 modules)
+📍 GET / [ANON]
+🔓 Allowing access to auth page: /login
+📍 GET /login [ANON]
+ ✓ Compiled in 250ms (602 modules)
+📍 GET / [ANON]
+🔓 Allowing access to auth page: /login
+📍 GET /login [ANON]
+ ✓ Compiled in 260ms (602 modules)
+📍 GET / [ANON]
+🔓 Allowing access to auth page: /login
+📍 GET /login [ANON]
+🔓 Allowing access to auth page: /login
+📍 GET /login [ANON]
+ GET /login 200 in 100ms
+📍 GET /.well-known/appspecific/com.chrome.devtools.json [ANON]
+ ✓ Compiled /_not-found in 294ms (1254 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 394ms
+📍 GET /logos/logo-black.png [ANON]
+📍 GET /dashboard [AUTH]
+ ⨯ ./app/dashboard/page.tsx
+Error: 
+  [31mx[0m Unexpected token `main`. Expected jsx identifier
+     ,-[[36;1;4m/Users/bossio/6fb-booking/backend-v2/frontend-v2/app/dashboard/page.tsx[0m:414:1]
+ [2m414[0m |   }
+ [2m415[0m | 
+ [2m416[0m |   return (
+ [2m417[0m |     <main className="min-h-screen bg-gradient-to-br from-ios-gray-50 to-white dark:from-zinc-900 dark:to-zinc-800">
+     : [31;1m     ^^^^[0m
+ [2m418[0m |       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+ [2m419[0m |         {/* Header Section */}
+ [2m420[0m |         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 space-y-4 lg:space-y-0">
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/dashboard/page.tsx
+ ⨯ ./app/dashboard/page.tsx
+Error: 
+  [31mx[0m Unexpected token `main`. Expected jsx identifier
+     ,-[[36;1;4m/Users/bossio/6fb-booking/backend-v2/frontend-v2/app/dashboard/page.tsx[0m:414:1]
+ [2m414[0m |   }
+ [2m415[0m | 
+ [2m416[0m |   return (
+ [2m417[0m |     <main className="min-h-screen bg-gradient-to-br from-ios-gray-50 to-white dark:from-zinc-900 dark:to-zinc-800">
+     : [31;1m     ^^^^[0m
+ [2m418[0m |       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+ [2m419[0m |         {/* Header Section */}
+ [2m420[0m |         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 space-y-4 lg:space-y-0">
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/dashboard/page.tsx
+ ○ Compiling /[slug] ...
+📍 GET /dashboard [AUTH]
+📍 GET / [ANON]
+ ⨯ ./app/dashboard/page.tsx
+Error: 
+  [31mx[0m Unexpected token `main`. Expected jsx identifier
+     ,-[[36;1;4m/Users/bossio/6fb-booking/backend-v2/frontend-v2/app/dashboard/page.tsx[0m:414:1]
+ [2m414[0m |   }
+ [2m415[0m | 
+ [2m416[0m |   return (
+ [2m417[0m |     <main className="min-h-screen bg-gradient-to-br from-ios-gray-50 to-white dark:from-zinc-900 dark:to-zinc-800">
+     : [31;1m     ^^^^[0m
+ [2m418[0m |       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+ [2m419[0m |         {/* Header Section */}
+ [2m420[0m |         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 space-y-4 lg:space-y-0">
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/dashboard/page.tsx
+ GET /dashboard 500 in 410ms
+📍 GET /dashboard [AUTH]
+📍 GET /dashboard [AUTH]
+📍 GET / [ANON]
+📍 GET /.well-known/appspecific/com.chrome.devtools.json [AUTH]
+ GET /.well-known/appspecific/com.chrome.devtools.json 500 in 4ms
+📍 GET / [ANON]
+ GET / 500 in 6ms
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, lstat '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/vendor-chunks'
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving './vendor-chunks/get-nonce' in /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server for build dependencies doesn't lead to expected result '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/vendor-chunks/get-nonce.js', but to 'Error: Can't resolve './vendor-chunks/get-nonce' in '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server'' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ./vendor-chunks/get-nonce (expected /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/vendor-chunks/get-nonce.js)
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/webpack-runtime.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/webpack-runtime.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/app/_not-found/page.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/app/_not-found/page.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w>  at resolve commonjs /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving './vendor-chunks/clsx' in /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server for build dependencies doesn't lead to expected result '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/vendor-chunks/clsx.js', but to 'Error: Can't resolve './vendor-chunks/clsx' in '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server'' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ./vendor-chunks/clsx (expected /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/vendor-chunks/clsx.js)
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/webpack-runtime.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/webpack-runtime.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/app/_not-found/page.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/app/_not-found/page.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w>  at resolve commonjs /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving './vendor-chunks/@swc' in /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server for build dependencies doesn't lead to expected result '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/vendor-chunks/@swc.js', but to 'Error: Can't resolve './vendor-chunks/@swc' in '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server'' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ./vendor-chunks/@swc (expected /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/vendor-chunks/@swc.js)
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/webpack-runtime.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/webpack-runtime.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/app/_not-found/page.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/app/_not-found/page.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w>  at resolve commonjs /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving './vendor-chunks/react-style-singleton' in /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server for build dependencies doesn't lead to expected result '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/vendor-chunks/react-style-singleton.js', but to 'Error: Can't resolve './vendor-chunks/react-style-singleton' in '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server'' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ./vendor-chunks/react-style-singleton (expected /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/vendor-chunks/react-style-singleton.js)
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/webpack-runtime.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/webpack-runtime.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/app/_not-found/page.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/app/_not-found/page.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w>  at resolve commonjs /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving './vendor-chunks/class-variance-authority' in /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server for build dependencies doesn't lead to expected result '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/vendor-chunks/class-variance-authority.js', but to 'Error: Can't resolve './vendor-chunks/class-variance-authority' in '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server'' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ./vendor-chunks/class-variance-authority (expected /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/vendor-chunks/class-variance-authority.js)
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/webpack-runtime.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/webpack-runtime.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/app/_not-found/page.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/app/_not-found/page.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w>  at resolve commonjs /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+ GET /_next/static/webpack/2140a0172c310527.webpack.hot-update.json 500 in 6ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+📍 GET / [ANON]
+ ✓ Compiled /_error in 684ms (1483 modules)
+ GET / 500 in 612ms
+📍 GET / [ANON]
+📍 GET /dashboard [AUTH]
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /_next/static/webpack/2140a0172c310527.webpack.hot-update.json 404 in 778ms
+📍 GET /dashboard [AUTH]
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 785ms (1640 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /dashboard 200 in 909ms
+📍 GET /logos/logo-black.png [ANON]
+📍 GET /logos/logo-color.png [ANON]
+📍 GET /dashboard [AUTH]
+ GET / 200 in 951ms
+ GET /_next/static/css/app/layout.css?v=1752623128105 404 in 15ms
+ GET /_next/static/webpack/2140a0172c310527.webpack.hot-update.json 404 in 327ms
+ GET /_next/static/chunks/main-app.js?v=1752623128105 404 in 29ms
+ GET /_next/static/chunks/app/page.js 404 in 28ms
+ GET /dashboard 200 in 40ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 28ms
+📍 GET /.well-known/appspecific/com.chrome.devtools.json [AUTH]
+ GET /_next/static/css/app/layout.css?v=1752623128260 404 in 9ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 17ms
+ GET /_next/static/chunks/main-app.js?v=1752623128260 404 in 20ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 14ms
+📍 GET /dashboard [AUTH]
+ ✓ Compiled /[slug] in 100ms (789 modules)
+ ⨯ Error: Cannot find module './vendor-chunks/next.js'
+Require stack:
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/webpack-runtime.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/app/[slug]/page.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/compiled/jest-worker/processChild.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16) {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/webpack-runtime.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/app/[slug]/page.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/static-paths-worker.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/compiled/jest-worker/processChild.js'
+  ],
+  page: '/dashboard'
+}
+ ⨯ Error: Cannot find module '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/pages/_document.js'
+Require stack:
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js:109:84)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/next-server.js:714:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js'
+  ]
+}
+ GET /dashboard 500 in 681ms
+📍 GET /.well-known/appspecific/com.chrome.devtools.json [AUTH]
+ ⨯ Error: Cannot find module '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/pages/_document.js'
+Require stack:
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js:109:84)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/next-server.js:714:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js'
+  ]
+}
+ ⨯ Error: Cannot find module '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/pages/_document.js'
+Require stack:
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js:109:84)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/next-server.js:714:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js'
+  ]
+}
+ ⨯ Error: Cannot find module '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/pages/_document.js'
+Require stack:
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js:109:84)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/next-server.js:714:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js'
+  ]
+}
+ ⨯ Error: Cannot find module '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/pages/_document.js'
+Require stack:
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js:109:84)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/next-server.js:714:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js'
+  ]
+}
+ ⨯ Error: Cannot find module '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/pages/_document.js'
+Require stack:
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js:109:84)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/next-server.js:714:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js'
+  ]
+}
+ GET /_next/static/chunks/fallback/webpack.js 500 in 18ms
+ GET /_next/static/chunks/fallback/react-refresh.js 500 in 19ms
+ GET /_next/static/chunks/fallback/main.js 500 in 18ms
+ GET /_next/static/chunks/fallback/pages/_app.js 500 in 17ms
+ GET /_next/static/chunks/fallback/pages/_error.js 500 in 15ms
+ ⨯ Error: Cannot find module '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/pages/_document.js'
+Require stack:
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js:109:84)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/next-server.js:714:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js'
+  ]
+}
+ GET /.well-known/appspecific/com.chrome.devtools.json 500 in 15ms
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, lstat '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/vendor-chunks/get-nonce.js'
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving './vendor-chunks/get-nonce' in /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server for build dependencies doesn't lead to expected result '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/vendor-chunks/get-nonce.js', but to 'Error: Can't resolve './vendor-chunks/get-nonce' in '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server'' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ./vendor-chunks/get-nonce (expected /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/vendor-chunks/get-nonce.js)
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/webpack-runtime.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/webpack-runtime.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/app/[slug]/page.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/app/[slug]/page.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w>  at resolve commonjs /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving './vendor-chunks/clsx' in /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server for build dependencies doesn't lead to expected result '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/vendor-chunks/clsx.js', but to 'Error: Can't resolve './vendor-chunks/clsx' in '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server'' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ./vendor-chunks/clsx (expected /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/vendor-chunks/clsx.js)
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/webpack-runtime.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/webpack-runtime.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/app/[slug]/page.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/app/[slug]/page.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w>  at resolve commonjs /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving './vendor-chunks/react-style-singleton' in /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server for build dependencies doesn't lead to expected result '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/vendor-chunks/react-style-singleton.js', but to 'Error: Can't resolve './vendor-chunks/react-style-singleton' in '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server'' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ./vendor-chunks/react-style-singleton (expected /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/vendor-chunks/react-style-singleton.js)
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/webpack-runtime.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/webpack-runtime.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/app/[slug]/page.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/app/[slug]/page.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w>  at resolve commonjs /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving './vendor-chunks/class-variance-authority' in /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server for build dependencies doesn't lead to expected result '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/vendor-chunks/class-variance-authority.js', but to 'Error: Can't resolve './vendor-chunks/class-variance-authority' in '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server'' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ./vendor-chunks/class-variance-authority (expected /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/vendor-chunks/class-variance-authority.js)
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/webpack-runtime.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/webpack-runtime.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/app/[slug]/page.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/app/[slug]/page.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+<w>  at file dependencies /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w>  at file /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w>  at resolve commonjs /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+📍 GET /dashboard [AUTH]
+ ⨯ Error: Cannot find module './vendor-chunks/next.js'
+Require stack:
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/webpack-runtime.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/app/[slug]/page.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/compiled/jest-worker/processChild.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16) {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/webpack-runtime.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/app/[slug]/page.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/static-paths-worker.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/compiled/jest-worker/processChild.js'
+  ],
+  page: '/dashboard'
+}
+ ⨯ Error: Cannot find module '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/pages/_document.js'
+Require stack:
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js:109:84)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/next-server.js:714:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js'
+  ]
+}
+ GET /dashboard 500 in 552ms
+ ⨯ Error: Cannot find module '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/pages/_document.js'
+Require stack:
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js:109:84)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/next-server.js:714:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js'
+  ]
+}
+ ⨯ Error: Cannot find module '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/pages/_document.js'
+Require stack:
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js:109:84)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/next-server.js:714:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js'
+  ]
+}
+ ⨯ Error: Cannot find module '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/pages/_document.js'
+Require stack:
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js:109:84)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/next-server.js:714:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js'
+  ]
+}
+ ⨯ Error: Cannot find module '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/pages/_document.js'
+Require stack:
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js:109:84)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/next-server.js:714:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js'
+  ]
+}
+ ⨯ Error: Cannot find module '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/pages/_document.js'
+Require stack:
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js:109:84)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/next-server.js:714:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js'
+  ]
+}
+ GET /_next/static/chunks/fallback/webpack.js 500 in 22ms
+ GET /_next/static/chunks/fallback/main.js 500 in 18ms
+ GET /_next/static/chunks/fallback/react-refresh.js 500 in 15ms
+ GET /_next/static/chunks/fallback/pages/_app.js 500 in 16ms
+ GET /_next/static/chunks/fallback/pages/_error.js 500 in 16ms
+📍 GET /.well-known/appspecific/com.chrome.devtools.json [AUTH]
+ ⨯ Error: Cannot find module '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/pages/_document.js'
+Require stack:
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js:109:84)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/next-server.js:714:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js'
+  ]
+}
+ GET /.well-known/appspecific/com.chrome.devtools.json 500 in 4ms
+🔐 Unauthenticated user redirected to login: /dashboard → /login
+🔓 Allowing access to auth page: /login
+📍 GET /login [ANON]
+ ⨯ Error: Cannot find module './vendor-chunks/next.js'
+Require stack:
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/webpack-runtime.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/app/[slug]/page.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/compiled/jest-worker/processChild.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16) {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/webpack-runtime.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/app/[slug]/page.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/static-paths-worker.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/compiled/jest-worker/processChild.js'
+  ],
+  page: '/login'
+}
+ ⨯ Error: Cannot find module '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/pages/_document.js'
+Require stack:
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js:109:84)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/next-server.js:714:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js'
+  ]
+}
+ GET /login?redirect=%2Fdashboard 500 in 743ms
+ ⨯ Error: Cannot find module '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/pages/_document.js'
+Require stack:
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js:109:84)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/next-server.js:714:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js'
+  ]
+}
+ ⨯ Error: Cannot find module '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/pages/_document.js'
+Require stack:
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js:109:84)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/next-server.js:714:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js'
+  ]
+}
+ ⨯ Error: Cannot find module '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/pages/_document.js'
+Require stack:
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js:109:84)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/next-server.js:714:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js'
+  ]
+}
+ ⨯ Error: Cannot find module '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/pages/_document.js'
+Require stack:
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js:109:84)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/next-server.js:714:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js'
+  ]
+}
+ ⨯ Error: Cannot find module '/Users/bossio/6fb-booking/backend-v2/frontend-v2/.next/server/pages/_document.js'
+Require stack:
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js
+- /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js:109:84)
+    at /Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/next-server.js:714:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/require.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/load-components.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/build/utils.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-middleware.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/dev/hot-reloader-webpack.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/router-server.js',
+    '/Users/bossio/6fb-booking/backend-v2/frontend-v2/node_modules/next/dist/server/lib/start-server.js'
+  ]
+}
+ GET /_next/static/chunks/fallback/webpack.js 500 in 16ms
+ GET /_next/static/chunks/fallback/react-refresh.js 500 in 16ms
+ GET /_next/static/chunks/fallback/main.js 500 in 15ms
+ GET /_next/static/chunks/fallback/pages/_app.js 500 in 15ms
+ GET /_next/static/chunks/fallback/pages/_error.js 500 in 13ms
+[?25h

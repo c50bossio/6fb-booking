@@ -180,6 +180,33 @@ export const marketingApi = {
   },
   async deleteSMSTemplate(id: string) {
     return { success: true }
+  },
+  async getCampaignAnalytics(campaignId: string) {
+    // Placeholder for campaign-specific analytics
+    return {
+      impressions: 0,
+      clicks: 0,
+      conversions: 0,
+      cost: 0,
+      revenue: 0,
+      roi: 0
+    }
+  },
+  async getOverallAnalytics() {
+    // Placeholder for overall marketing analytics
+    return {
+      totalCampaigns: 0,
+      totalImpressions: 0,
+      totalClicks: 0,
+      totalConversions: 0,
+      totalCost: 0,
+      totalRevenue: 0,
+      averageRoi: 0
+    }
+  },
+  async createCampaign(campaign: any) {
+    // Placeholder for campaign creation
+    return { id: 1, ...campaign, status: 'active' }
   }
 }
 

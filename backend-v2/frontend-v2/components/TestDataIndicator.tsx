@@ -34,7 +34,7 @@ export function TestDataIndicator() {
 
   return (
     <Link href="/settings/test-data" className="fixed bottom-4 left-4 z-50 group">
-      <div className="bg-blue-500 text-white px-3 py-2 rounded-lg text-xs font-medium shadow-lg flex items-center gap-2 hover:bg-blue-600 transition-colors">
+      <div className="bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-medium shadow-lg flex items-center gap-2 hover:bg-blue-800 transition-colors">
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>

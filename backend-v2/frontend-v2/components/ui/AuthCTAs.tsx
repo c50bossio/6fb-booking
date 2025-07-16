@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { CTAButton, CTAGroup } from './CTASystem'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
@@ -59,9 +60,24 @@ export function AuthHeaderCTAs({ className = '' }: { className?: string }) {
 export function AuthHeroCTAs({ className = '' }: { className?: string }) {
   const { isAuthenticated, isLoading, user } = useAuth()
   const router = useRouter()
+  const [maxLoadingReached, setMaxLoadingReached] = useState(false)
 
-  // Show enhanced loading state
-  if (isLoading) {
+  // Failsafe: If loading takes too long, show register button anyway
+  useEffect(() => {
+    if (isLoading) {
+      const timeout = setTimeout(() => {
+        console.warn('Auth check taking too long, showing register button as fallback')
+        setMaxLoadingReached(true)
+      }, 3000) // 3 second max loading time
+
+      return () => clearTimeout(timeout)
+    } else {
+      setMaxLoadingReached(false)
+    }
+  }, [isLoading])
+
+  // Show enhanced loading state (but only for 3 seconds max)
+  if (isLoading && !maxLoadingReached) {
     return (
       <div className={`flex justify-center ${className}`}>
         <div className="h-12 w-48 bg-gray-200 dark:bg-gray-700 animate-pulse rounded"></div>

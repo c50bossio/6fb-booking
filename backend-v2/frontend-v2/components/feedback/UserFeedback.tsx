@@ -291,7 +291,7 @@ export function SuccessFeedback({
             {actions.map((action) => (
               <Button
                 key={action.id}
-                variant={action.variant || 'outline'}
+                variant={action.variant === 'default' ? 'primary' : action.variant || 'outline'}
                 size="sm"
                 onClick={action.action}
                 disabled={action.loading}

@@ -5,6 +5,10 @@ import { Card, CardContent } from '@/components/ui/card'
 import SixFigureAnalyticsDashboard from '@/components/analytics/SixFigureAnalyticsDashboard'
 import { CalendarIcon, BanknotesIcon, UserGroupIcon } from '@heroicons/react/24/outline'
 import { useRouter } from 'next/navigation'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
+import { MetricExplanations } from '@/lib/metric-explanations'
+import { useControlledTooltip } from '@/hooks/useControlledTooltip'
 
 /**
  * Interface for KPI statistics displayed in the snapshot dashboard
@@ -55,29 +59,53 @@ export function SnapshotDashboard({
   timeRange = '30d' 
 }: SnapshotDashboardProps) {
   const router = useRouter()
+  
+  // Controlled tooltip hooks for each metric
+  const bookingsTooltip = useControlledTooltip()
+  const revenueTooltip = useControlledTooltip()
+  const clientsTooltip = useControlledTooltip()
+  const completionTooltip = useControlledTooltip()
 
   /**
-   * Handle navigation to analytics pages
-   * These routes are prepared for future /analytics/* implementation
+   * Handle navigation to analytics pages with proper error handling
    */
   const handleNavigateToBookings = () => {
-    // Future: router.push('/analytics/bookings')
-    router.push('/dashboard')
+    try {
+      router.push('/calendar')
+    } catch (error) {
+      console.error('Navigation error:', error)
+      router.push('/dashboard')
+    }
   }
 
   const handleNavigateToRevenue = () => {
-    // Future: router.push('/analytics/revenue')
-    router.push('/barber/earnings')
+    try {
+      // Navigate to analytics page for revenue details
+      router.push('/reviews/analytics')
+    } catch (error) {
+      console.error('Navigation error:', error)
+      router.push('/dashboard')
+    }
   }
 
   const handleNavigateToClients = () => {
-    // Future: router.push('/analytics/clients')
-    router.push('/clients')
+    try {
+      // Navigate to calendar page to view client appointments
+      router.push('/calendar')
+    } catch (error) {
+      console.error('Navigation error:', error)
+      router.push('/dashboard')
+    }
   }
 
   const handleNavigateToPerformance = () => {
-    // Future: router.push('/analytics/performance')
-    router.push('/dashboard')
+    try {
+      // Navigate to analytics page for performance metrics
+      router.push('/reviews/analytics')
+    } catch (error) {
+      console.error('Navigation error:', error)
+      router.push('/dashboard')
+    }
   }
 
   return (
@@ -91,7 +119,31 @@ export function SnapshotDashboard({
         >
           <CardContent className="flex items-center justify-between p-4">
             <div>
-              <p className="text-sm text-gray-700 dark:text-zinc-300">Today's Bookings</p>
+              <div className="flex items-center gap-1">
+                <p className="text-sm text-gray-700 dark:text-zinc-300">Today's Bookings</p>
+                <Tooltip open={bookingsTooltip.isOpen} onOpenChange={bookingsTooltip.isOpen ? bookingsTooltip.onClose : bookingsTooltip.onOpen}>
+                  <TooltipTrigger asChild>
+                    <button 
+                      type="button" 
+                      className="text-gray-400 hover:text-gray-600 transition-colors duration-200" 
+                      aria-label="Metric explanation"
+                      onClick={bookingsTooltip.onToggle}
+                      onMouseEnter={bookingsTooltip.onOpen}
+                      onMouseLeave={bookingsTooltip.onClose}
+                    >
+                      <InformationCircleIcon className="w-5 h-5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-xs p-3 text-sm">
+                    <div className="space-y-1">
+                      <p className="font-medium">{MetricExplanations.todaysBookings.explanation}</p>
+                      {MetricExplanations.todaysBookings.details && (
+                        <p className="text-gray-300 text-xs">{MetricExplanations.todaysBookings.details}</p>
+                      )}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {todayStats.appointments}
               </p>
@@ -107,9 +159,33 @@ export function SnapshotDashboard({
         >
           <CardContent className="flex items-center justify-between p-4">
             <div>
-              <p className="text-sm text-gray-700 dark:text-zinc-300">Today's Revenue</p>
+              <div className="flex items-center gap-1">
+                <p className="text-sm text-gray-700 dark:text-zinc-300">Today's Revenue</p>
+                <Tooltip open={revenueTooltip.isOpen} onOpenChange={revenueTooltip.isOpen ? revenueTooltip.onClose : revenueTooltip.onOpen}>
+                  <TooltipTrigger asChild>
+                    <button 
+                      type="button" 
+                      className="text-gray-400 hover:text-gray-600 transition-colors duration-200" 
+                      aria-label="Metric explanation"
+                      onClick={revenueTooltip.onToggle}
+                      onMouseEnter={revenueTooltip.onOpen}
+                      onMouseLeave={revenueTooltip.onClose}
+                    >
+                      <InformationCircleIcon className="w-5 h-5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-xs p-3 text-sm">
+                    <div className="space-y-1">
+                      <p className="font-medium">{MetricExplanations.todaysRevenue.explanation}</p>
+                      {MetricExplanations.todaysRevenue.details && (
+                        <p className="text-gray-300 text-xs">{MetricExplanations.todaysRevenue.details}</p>
+                      )}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                ${todayStats.revenue}
+                ${todayStats.revenue.toFixed(2)}
               </p>
             </div>
             <BanknotesIcon className="w-8 h-8 text-green-500 opacity-50" />
@@ -123,7 +199,31 @@ export function SnapshotDashboard({
         >
           <CardContent className="flex items-center justify-between p-4">
             <div>
-              <p className="text-sm text-gray-700 dark:text-zinc-300">New Clients</p>
+              <div className="flex items-center gap-1">
+                <p className="text-sm text-gray-700 dark:text-zinc-300">New Clients</p>
+                <Tooltip open={clientsTooltip.isOpen} onOpenChange={clientsTooltip.isOpen ? clientsTooltip.onClose : clientsTooltip.onOpen}>
+                  <TooltipTrigger asChild>
+                    <button 
+                      type="button" 
+                      className="text-gray-400 hover:text-gray-600 transition-colors duration-200" 
+                      aria-label="Metric explanation"
+                      onClick={clientsTooltip.onToggle}
+                      onMouseEnter={clientsTooltip.onOpen}
+                      onMouseLeave={clientsTooltip.onClose}
+                    >
+                      <InformationCircleIcon className="w-5 h-5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-xs p-3 text-sm">
+                    <div className="space-y-1">
+                      <p className="font-medium">{MetricExplanations.newClients.explanation}</p>
+                      {MetricExplanations.newClients.details && (
+                        <p className="text-gray-300 text-xs">{MetricExplanations.newClients.details}</p>
+                      )}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {todayStats.newClients}
               </p>
@@ -139,7 +239,29 @@ export function SnapshotDashboard({
         >
           <CardContent className="flex items-center justify-between p-4">
             <div>
-              <p className="text-sm text-gray-700 dark:text-zinc-300">Completion Rate</p>
+              <div className="flex items-center gap-1">
+                <p className="text-sm text-gray-700 dark:text-zinc-300">Completion Rate</p>
+                <Tooltip open={completionTooltip.isOpen} onOpenChange={completionTooltip.isOpen ? completionTooltip.onClose : completionTooltip.onOpen}>
+                  <TooltipTrigger asChild>
+                    <button 
+                      type="button" 
+                      className="text-gray-400 hover:text-gray-600 transition-colors duration-200" 
+                      aria-label="Metric explanation"
+                      onClick={completionTooltip.onToggle}
+                      onMouseEnter={completionTooltip.onOpen}
+                      onMouseLeave={completionTooltip.onClose}
+                    >
+                      <InformationCircleIcon className="w-5 h-5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-xs p-3 text-sm">
+                    <div className="space-y-1">
+                      <p className="font-medium">Percentage of bookings that are completed successfully</p>
+                      <p className="text-gray-300 text-xs">Measures reliability and shows no-show rates</p>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {todayStats.completionRate}%
               </p>

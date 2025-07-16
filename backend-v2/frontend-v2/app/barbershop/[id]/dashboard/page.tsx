@@ -18,7 +18,7 @@ import {
   InformationCircleIcon
 } from '@heroicons/react/24/outline'
 import { useAsyncOperation } from '@/lib/useAsyncOperation'
-import { PageLoading, ErrorDisplay } from '@/components/LoadingStates'
+import { PageLoading, ErrorDisplay } from '@/components/ui/LoadingSystem'
 import SnapshotDashboard from '@/components/dashboards/SnapshotDashboard'
 
 interface BarberInfo {

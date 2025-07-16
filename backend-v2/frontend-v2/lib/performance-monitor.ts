@@ -20,6 +20,17 @@ interface PerformanceReport {
     memoryUsage: number;
     cachePerformance: { hitRate: number; size: number };
     errorCount: number;
+    bundleMetrics: {
+      lazyComponentsLoaded: string[];
+      routeLoadTime: number;
+      estimatedBundleSize: number;
+    };
+    coreWebVitals: {
+      fcp?: number;
+      lcp?: number;
+      cls?: number;
+      fid?: number;
+    };
   };
   recommendations: string[];
 }
@@ -28,6 +39,8 @@ class ProductionPerformanceMonitor {
   private config: PerformanceConfig;
   private metrics: Map<string, number[]> = new Map();
   private reportingTimer?: NodeJS.Timeout;
+  private lazyComponentsLoaded: Set<string> = new Set();
+  private coreWebVitals: { fcp?: number; lcp?: number; cls?: number; fid?: number } = {};
 
   constructor(config: Partial<PerformanceConfig> = {}) {
     this.config = {
@@ -41,7 +54,108 @@ class ProductionPerformanceMonitor {
 
     if (this.config.enableMetrics) {
       this.startReporting();
+      this.initializeCoreWebVitalsTracking();
     }
+  }
+
+  // Track lazy component loading for bundle optimization
+  trackLazyComponentLoad(componentName: string): void {
+    this.lazyComponentsLoaded.add(componentName);
+    
+    if (this.config.enableLogging) {
+      console.log(`⚡ Lazy component loaded: ${componentName}`);
+    }
+  }
+
+  // Initialize Core Web Vitals tracking
+  private initializeCoreWebVitalsTracking(): void {
+    if (typeof window === 'undefined') return;
+
+    // First Contentful Paint
+    if ('PerformanceObserver' in window) {
+      try {
+        const observer = new PerformanceObserver((list) => {
+          const entries = list.getEntries();
+          if (entries.length > 0) {
+            this.coreWebVitals.fcp = entries[0].startTime;
+          }
+        });
+        observer.observe({ entryTypes: ['paint'] });
+      } catch (e) {
+        // Silently fail if not supported
+      }
+
+      // Largest Contentful Paint
+      try {
+        const lcpObserver = new PerformanceObserver((list) => {
+          const entries = list.getEntries();
+          const lastEntry = entries[entries.length - 1];
+          this.coreWebVitals.lcp = lastEntry.startTime;
+        });
+        lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
+      } catch (e) {
+        // Silently fail if not supported
+      }
+
+      // Cumulative Layout Shift
+      try {
+        let clsValue = 0;
+        const clsObserver = new PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) {
+            const clsEntry = entry as any;
+            if (!clsEntry.hadRecentInput) {
+              clsValue += clsEntry.value;
+            }
+          }
+          this.coreWebVitals.cls = clsValue;
+        });
+        clsObserver.observe({ entryTypes: ['layout-shift'] });
+      } catch (e) {
+        // Silently fail if not supported
+      }
+
+      // First Input Delay
+      try {
+        const fidObserver = new PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) {
+            const fidEntry = entry as any;
+            this.coreWebVitals.fid = fidEntry.processingStart - fidEntry.startTime;
+          }
+        });
+        fidObserver.observe({ entryTypes: ['first-input'] });
+      } catch (e) {
+        // Silently fail if not supported
+      }
+    }
+  }
+
+  // Estimate current route bundle size
+  private estimateRouteBundleSize(): number {
+    const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+    
+    // Estimated bundle sizes for different routes (in KB)
+    const routeSizes: Record<string, number> = {
+      '/': 150,
+      '/dashboard': 300,
+      '/calendar': 450, // Heavy due to UnifiedCalendar
+      '/analytics': 600, // Heavy due to chart libraries
+      '/admin': 400,
+      '/marketing': 350,
+      '/settings': 250
+    };
+
+    return routeSizes[currentPath] || 200;
+  }
+
+  // Calculate route load time
+  private getRouteLoadTime(): number {
+    if (typeof window !== 'undefined' && 'performance' in window) {
+      const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+      if (navigation) {
+        return navigation.loadEventEnd - navigation.fetchStart;
+      }
+    }
+    return 0;
   }
 
   recordRenderTime(component: string, time: number): void {
@@ -115,7 +229,13 @@ class ProductionPerformanceMonitor {
         renderTimes,
         memoryUsage,
         cachePerformance: { hitRate: 0, size: 0 }, // Placeholder
-        errorCount: 0 // Placeholder
+        errorCount: 0, // Placeholder
+        bundleMetrics: {
+          lazyComponentsLoaded: Array.from(this.lazyComponentsLoaded),
+          routeLoadTime: this.getRouteLoadTime(),
+          estimatedBundleSize: this.estimateRouteBundleSize()
+        },
+        coreWebVitals: this.coreWebVitals
       },
       recommendations
     };

@@ -171,17 +171,19 @@ export default function LandingPage() {
       <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 to-white dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 xl:py-32">
           <div className="text-center space-y-6 sm:space-y-8 lg:space-y-10">
-            <div className="mx-auto">
-              <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-gray-900 dark:text-white mb-4 sm:mb-6 tracking-tight leading-[0.85] sm:leading-[0.9] px-2">
-                BOOKEDBARBER
-              </h1>
-              <div className="w-16 sm:w-24 lg:w-32 h-0.5 sm:h-1 bg-primary-900 mx-auto mb-6 sm:mb-8 lg:mb-10"></div>
+            <div className="flex justify-center items-center mb-6 sm:mb-8 lg:mb-10">
+              <LogoFull 
+                size="xl"
+                variant="auto"
+                href={null}
+                className="h-16 sm:h-20 md:h-24 lg:h-28 xl:h-32"
+              />
             </div>
             
-            <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 dark:text-white leading-[1.1] sm:leading-[1.1] max-w-5xl mx-auto px-2">
+            <h1 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 dark:text-white leading-[1.1] sm:leading-[1.1] max-w-5xl mx-auto px-2">
               The booking platform that puts
               <span className="text-primary-600 dark:text-primary-400 block sm:inline"> your chair first</span>
-            </h2>
+            </h1>
             
             <p className="text-base sm:text-lg lg:text-xl leading-relaxed text-gray-600 dark:text-gray-300 max-w-3xl mx-auto font-medium px-4">
               Turn your chair into a thriving business with our all-in-one booking and management platform. 
