@@ -53,39 +53,50 @@ async def list_clients(
     current_user: User = Depends(get_current_user)
 ):
     """List clients with pagination and filtering"""
-    query = db.query(Client)
-    
-    # Search by name, email, or phone
-    if search:
-        search_filter = or_(
-            Client.first_name.ilike(f"%{search}%"),
-            Client.last_name.ilike(f"%{search}%"),
-            Client.email.ilike(f"%{search}%"),
-            Client.phone.ilike(f"%{search}%")
+    try:
+        # Build query with ORM
+        query = db.query(Client)
+        
+        # Apply search filter
+        if search:
+            search_filter = or_(
+                Client.first_name.ilike(f"%{search}%"),
+                Client.last_name.ilike(f"%{search}%"),
+                Client.email.ilike(f"%{search}%"),
+                Client.phone.ilike(f"%{search}%")
+            )
+            query = query.filter(search_filter)
+        
+        # Apply customer type filter
+        if customer_type:
+            query = query.filter(Client.customer_type == customer_type)
+        
+        # Apply tags filter
+        if tags:
+            query = query.filter(Client.tags.ilike(f"%{tags}%"))
+        
+        # Get total count
+        total = query.count()
+        
+        # Apply pagination and ordering
+        offset = (page - 1) * page_size
+        clients = query.order_by(Client.created_at.desc()).offset(offset).limit(page_size).all()
+        
+        return {
+            "clients": clients,
+            "total": total,
+            "page": page,
+            "page_size": page_size
+        }
+    except Exception as e:
+        # Log the error for debugging
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in list_clients: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve clients"
         )
-        query = query.filter(search_filter)
-    
-    # Filter by customer type
-    if customer_type:
-        query = query.filter(Client.customer_type == customer_type)
-    
-    # Filter by tags
-    if tags:
-        query = query.filter(Client.tags.ilike(f"%{tags}%"))
-    
-    # Get total count
-    total = query.count()
-    
-    # Apply pagination
-    offset = (page - 1) * page_size
-    clients = query.offset(offset).limit(page_size).all()
-    
-    return {
-        "clients": clients,
-        "total": total,
-        "page": page,
-        "page_size": page_size
-    }
 
 
 @router.get("/{client_id}", response_model=ClientSchema)
