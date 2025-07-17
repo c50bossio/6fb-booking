@@ -33,6 +33,7 @@ import json
 import httpx
 import logging
 from config.settings import get_settings
+from services.availability_service import AvailabilityService
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
@@ -459,7 +460,40 @@ async def create_appointment(
             appointment_data.client_id = client.id
             customer_type = "new"
 
-    # Create appointment
+    # Verify service exists
+    if appointment_data.service_id:
+        service = db.query(Service).filter(Service.id == appointment_data.service_id).first()
+        if not service:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Service not found"
+            )
+
+    # Check availability before creating appointment to prevent race conditions
+    availability_service = AvailabilityService(db)
+    
+    # Calculate end time based on service duration
+    start_datetime = datetime.combine(
+        appointment_data.appointment_date, 
+        appointment_data.appointment_time
+    )
+    end_time = (start_datetime + timedelta(minutes=appointment_data.service_duration)).time()
+    
+    is_available, conflicts = availability_service.check_real_time_availability(
+        barber_id=appointment_data.barber_id,
+        date=appointment_data.appointment_date,
+        start_time=appointment_data.appointment_time,
+        end_time=end_time,
+        service_duration=appointment_data.service_duration
+    )
+    
+    if not is_available:
+        conflict_messages = [c.message for c in conflicts]
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Time slot not available: {'; '.join(conflict_messages)}"
+        )
+
+    # Create appointment only after availability is confirmed
     new_appointment = Appointment(
         barber_id=appointment_data.barber_id,
         client_id=client.id,

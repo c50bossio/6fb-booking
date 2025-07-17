@@ -1211,6 +1211,12 @@ async def reset_password(request: ResetPasswordRequest, db: Session = Depends(ge
         user.updated_at = datetime.utcnow()
         db.commit()
 
+        # Blacklist the reset token to prevent reuse
+        token_blacklist_service.blacklist_token(request.token)
+        
+        # Invalidate all existing tokens for this user to force re-authentication
+        token_blacklist_service.invalidate_user_tokens(user.id)
+
         # Log password reset
         log_user_action(
             action="password_reset_completed",

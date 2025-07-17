@@ -7,7 +7,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, or_, func
 from pydantic import BaseModel, Field
 
@@ -105,12 +105,14 @@ async def get_payouts(
     if end_date:
         query = query.filter(CommissionPayment.created_at <= end_date)
     
-    commission_payments = query.all()
+    # Eagerly load barber data to avoid N+1 queries
+    commission_payments = query.options(joinedload(CommissionPayment.barber)).all()
     
     # Convert to payout format
     payouts = []
     for cp in commission_payments:
-        barber = db.query(Barber).filter(Barber.id == cp.barber_id).first()
+        # Use already loaded barber data instead of making a new query
+        barber = cp.barber
         barber_user = barber.user if barber else None
         
         # Map payment status to payout status
