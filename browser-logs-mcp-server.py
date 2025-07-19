@@ -259,7 +259,7 @@ class BrowserLogsMCP:
         """Connect to Chrome DevTools Protocol."""
         try:
             # First, get list of available tabs
-            tabs_response = requests.get(f"http://localhost:{port}/json")
+            tabs_response = requests.get(f"http://localhost:{port}/json", timeout=10)
             if tabs_response.status_code != 200:
                 return CallToolResult(
                     content=[TextContent(

@@ -9,7 +9,7 @@ import requests
 def test_frontend_health():
     """Check if frontend is running"""
     try:
-        response = requests.get("http://localhost:3001")
+        response = requests.get("http://localhost:3001", timeout=10)
         print(f"Frontend Status: {response.status_code}")
         return response.status_code == 200
     except Exception as e:
@@ -20,7 +20,7 @@ def test_frontend_health():
 def test_backend_health():
     """Check if backend is running"""
     try:
-        response = requests.get("http://localhost:8000/docs")
+        response = requests.get("http://localhost:8000/docs", timeout=10)
         print(f"Backend Status: {response.status_code}")
         return response.status_code == 200
     except Exception as e:

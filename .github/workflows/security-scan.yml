@@ -426,7 +426,8 @@ jobs:
         with:
           status: 'warning'
           channel: '#security-alerts'
-          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           custom_payload: |
             {
               "blocks": [

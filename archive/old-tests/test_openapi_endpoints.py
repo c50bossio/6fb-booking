@@ -13,7 +13,7 @@ def check_openapi_endpoints():
     """Get and analyze OpenAPI schema"""
     print("📋 FETCHING OPENAPI SCHEMA")
 
-    response = requests.get(f"{API_BASE_URL}/openapi.json")
+    response = requests.get(f"{API_BASE_URL}/openapi.json", timeout=10)
 
     if response.status_code == 200:
         schema = response.json()

@@ -182,7 +182,7 @@ class AdaptiveLearningSystem:
     def _generate_execution_id(self, task_description: str, command: str) -> str:
         """Generate unique execution ID"""
         content = f"{task_description}_{command}_{datetime.now().timestamp()}"
-        return hashlib.md5(content.encode()).hexdigest()[:12]
+        return hashlib.sha256(content.encode()).hexdigest()[:12]
     
     def _store_execution(self, execution: CommandExecution):
         """Store execution record in database"""
@@ -222,7 +222,7 @@ class AdaptiveLearningSystem:
     
     def _update_pattern_performance(self, pattern: str, execution: CommandExecution):
         """Update performance metrics for a specific pattern"""
-        pattern_id = hashlib.md5(pattern.encode()).hexdigest()[:8]
+        pattern_id = hashlib.sha256(pattern.encode()).hexdigest()[:8]
         
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()

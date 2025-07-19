@@ -16,7 +16,7 @@ async def demo_browser_debugging():
     
     # Get available tabs
     import requests
-    tabs_response = requests.get("http://localhost:9222/json")
+    tabs_response = requests.get("http://localhost:9222/json", timeout=10)
     tabs = tabs_response.json()
     
     # Find the 6fb-booking tab

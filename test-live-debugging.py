@@ -15,7 +15,7 @@ async def test_live_debugging():
     print("=" * 60)
     
     # Get the 6fb-booking tab
-    tabs_response = requests.get("http://localhost:9222/json")
+    tabs_response = requests.get("http://localhost:9222/json", timeout=10)
     tabs = tabs_response.json()
     
     booking_tab = None
