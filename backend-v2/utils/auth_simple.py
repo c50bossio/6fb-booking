@@ -71,11 +71,12 @@ def authenticate_user_simple(db: Session, email: str, password: str):
             return False
             
         print("Authentication successful")
-        # Return user data as dict
+        # Return user data as dict - use unified_role for consistency
         return {
             "id": user_row.id,
             "email": user_row.email,
-            "role": user_row.role,
+            "role": user_row.role,  # Keep actual role
+            "unified_role": user_row.role,  # Ensure unified_role matches
             "is_active": user_row.is_active
         }
     except Exception as e:

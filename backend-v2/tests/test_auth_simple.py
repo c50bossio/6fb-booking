@@ -21,12 +21,13 @@ def test_register_user(client, db: Session, mock_notification_service, disable_r
         json={
             "email": "newuser@example.com",
             "password": "TestPass123!",
-            "name": "New User"
+            "name": "New User",
+            "user_type": "barber"
         }
     )
     assert response.status_code == 200
     data = response.json()
-    assert data["message"] == "User successfully registered"
+    assert "User successfully registered" in data["message"]  # Updated to handle email verification message
     assert data["user"]["email"] == "newuser@example.com"
     assert data["user"]["name"] == "New User"
 
@@ -42,7 +43,9 @@ def test_login_user(client, db: Session, disable_rate_limiting):
     user = User(
         email="logintest@example.com",
         name="Login Test",
-        hashed_password=get_password_hash("testpass123")
+        hashed_password=get_password_hash("testpass123"),
+        role="barber",  # Add required role field
+        email_verified=True  # Enable login for test user
     )
     db.add(user)
     db.commit()
@@ -73,7 +76,9 @@ def test_get_current_user(client, db: Session, disable_rate_limiting):
     user = User(
         email="currentuser@example.com",
         name="Current User",
-        hashed_password=get_password_hash("testpass123")
+        hashed_password=get_password_hash("testpass123"),
+        role="barber",  # Add required role field
+        email_verified=True  # Enable login for test user
     )
     db.add(user)
     db.commit()
@@ -115,4 +120,4 @@ def test_invalid_login(client, disable_rate_limiting):
         }
     )
     assert response.status_code == 401
-    assert "Incorrect username or password" in response.json()["detail"]
+    assert "Incorrect username or password" in response.json()["error"]["message"]

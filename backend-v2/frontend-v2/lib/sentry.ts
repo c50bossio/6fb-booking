@@ -111,13 +111,27 @@ export async function withSentryContext<T>(
 
 // Minimal Sentry-like export for compatibility
 export const Sentry = {
-  captureException: (error: Error) => console.error('Exception:', error),
+  captureException: (error: Error) => {
+    console.error('Exception:', error)
+    return 'dev-mode-event-id'
+  },
   captureMessage: (message: string) => console.log('Message:', message),
   addBreadcrumb: (breadcrumb: any) => {},
   setUser: (user: any) => {},
   setTag: (key: string, value: any) => {},
   setContext: (key: string, context: any) => {},
-  withScope: (fn: (scope: any) => void) => fn({}),
+  withScope: (fn: (scope: any) => void) => {
+    // Provide a mock scope object with the expected methods
+    const mockScope = {
+      setTag: (key: string, value: any) => {},
+      setContext: (key: string, context: any) => {},
+      setUser: (user: any) => {},
+      addBreadcrumb: (breadcrumb: any) => {},
+      setLevel: (level: string) => {},
+      setFingerprint: (fingerprint: string[]) => {},
+    }
+    return fn(mockScope)
+  },
   startSpan: (options: any, fn: () => any) => fn(),
   lastEventId: () => 'dev-mode',
   captureUserFeedback: (feedback: any) => console.log('Feedback:', feedback),
